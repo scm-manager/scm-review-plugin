@@ -16,10 +16,11 @@ node('docker') {
 
   timeout(activity: true, time: 20, unit: 'MINUTES') {
 
+    Git git = new Git(this)
+
     catchError {
 
       Maven mvn = setupMavenBuild()
-      Git git = new Git(this)
 
       stage('Checkout') {
         checkout scm
