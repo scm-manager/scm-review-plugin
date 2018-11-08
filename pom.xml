@@ -32,7 +32,7 @@
     </repository>
 
     <repository>
-      <id>maven.scm-manager.org</id>
+      <id>maven.scm-manager.org/snapshots</id>
       <name>scm-manager snapshot repository</name>
       <url>http://maven.scm-manager.org/nexus/content/repositories/snapshots</url>
       <releases>
