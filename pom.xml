@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>scm-plugins</artifactId>
+    <groupId>sonia.scm.plugins</groupId>
+    <version>2.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>sonia.scm.plugins</groupId>
+  <artifactId>scm-review-plugin</artifactId>
+  <version>2.0.0-SNAPSHOT</version>
+  <name>scm-review-plugin</name>
+  <packaging>smp</packaging>
+  <url>https://bitbucket.org/scm-manager/scm-review-plugin</url>
+  <description>SCM-Manager Review Plugin</description>
+
+  <scm>
+    <connection>scm:hg:http://bitbucket.org/scm-manager/scm-review-plugin</connection>
+    <developerConnection>scm:hg:https://bitbucket.org/scm-manager/scm-review-plugin</developerConnection>
+    <url>http://bitbucket.org/scm-manager/scm-review-plugin</url>
+  </scm>
+
+  <repositories>
+    
+    <repository>
+      <id>maven.scm-manager.org</id>
+      <name>scm-manager release repository</name>
+      <url>http://maven.scm-manager.org/nexus/content/groups/public</url>
+    </repository>
+  
+  </repositories>
+
+</project>
