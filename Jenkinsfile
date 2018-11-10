@@ -23,7 +23,7 @@ node('docker') {
       Maven mvn = setupMavenBuild()
 
       stage('Checkout') {
-        emptyDir();
+        deleteDir()
         checkout scm
       }
 
