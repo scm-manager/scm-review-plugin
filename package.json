@@ -10,11 +10,13 @@
     "flow": "flow check"
   },
   "dependencies": {
-    "@scm-manager/ui-extensions": "^0.1.1"
+    "@scm-manager/ui-extensions": "^0.1.1",
+    "@scm-manager/ui-components": "latest",
+    "@scm-manager/ui-types": "latest"
   },
   "devDependencies": {
     "@scm-manager/ui-bundler": "^0.0.19",
-    "react-router-dom": "^4.3.1",
-    "jest": "^23.6.0"
+    "jest": "^23.6.0",
+    "react-router-dom": "^4.3.1"
   }
 }

@@ -50,7 +50,7 @@
     </repository>
 
     <repository>
-      <id>maven.scm-manager.org/snapshots</id>
+      <id>maven.scm-manager.org_snapshots</id>
       <name>scm-manager snapshot repository</name>
       <url>http://maven.scm-manager.org/nexus/content/repositories/snapshots</url>
       <releases>
@@ -63,5 +63,36 @@
     </repository>
 
   </repositories>
+  
+  <profiles>
+    <profile>
+      <id>ci</id>
+    </profile>
+    <profile>
+      <id>link-ui</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
 
+      <build>
+        <plugins>
+
+          <plugin>
+            <groupId>sonia.scm.maven</groupId>
+            <artifactId>smp-maven-plugin</artifactId>
+            <version>1.0.0-alpha-3</version>
+            <extensions>true</extensions>
+            <configuration>
+              <links>
+                <link>@scm-manager/ui-types</link>
+                <link>@scm-manager/ui-components</link>
+              </links>
+            </configuration>
+          </plugin>
+
+        </plugins>
+      </build>
+
+    </profile>
+  </profiles>
 </project>
