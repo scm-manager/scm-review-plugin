@@ -6,7 +6,6 @@
     "build": "ui-bundler plugin",
     "watch": "ui-bundler plugin -w",
     "lint": "ui-bundler lint",
-    "test": "ui-bundler test --ci",
     "flow": "flow check"
   },
   "dependencies": {
