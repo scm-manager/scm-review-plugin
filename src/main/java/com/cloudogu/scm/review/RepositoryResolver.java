@@ -29,14 +29,14 @@ public class RepositoryResolver {
       throw notFound(ContextEntry.ContextBuilder.entity(namespaceAndName));
     }
 
-    if (!isSupported(repository)) {
+    if (!repositorySupportsMerge(repository)) {
       throw new PullRequestNotSupportedException(repository);
     }
 
     return repository;
   }
 
-  private boolean isSupported(Repository repository) {
+  private boolean repositorySupportsMerge(Repository repository) {
     try (RepositoryService service = serviceFactory.create(repository)) {
       return service.isSupported(Command.MERGE);
     }

@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
+import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.api.Command;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.web.JsonEnricherBase;
 import sonia.scm.web.JsonEnricherContext;
 
@@ -18,34 +22,39 @@ import static sonia.scm.web.VndMediaType.REPOSITORY;
 public class RepositoryLinkEnricher extends JsonEnricherBase {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
+  private final RepositoryServiceFactory serviceFactory;
 
   @Inject
-  public RepositoryLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, ObjectMapper objectMapper) {
+  public RepositoryLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, ObjectMapper objectMapper, RepositoryServiceFactory serviceFactory) {
     super(objectMapper);
     this.scmPathInfoStore = scmPathInfoStore;
+    this.serviceFactory = serviceFactory;
   }
 
   @Override
   public void enrich(JsonEnricherContext context) {
 
-    // TODO check if the repository is supported
-    // using RepositoryResolver ???
-
     if (resultHasMediaType(REPOSITORY, context)) {
-
       JsonNode repositoryNode = context.getResponseEntity();
       String namespace = repositoryNode.get("namespace").asText();
       String name = repositoryNode.get("name").asText();
 
-      String newPullRequest = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestResource.class)
-        .method("create")
-        .parameters(namespace, name)
-        .href();
+      if (repositorySupportsMerge(namespace, name)) {
+        String newPullRequest = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestResource.class)
+          .method("create")
+          .parameters(namespace, name)
+          .href();
 
-      JsonNode newPullRequestNode = createObject(singletonMap("href", value(newPullRequest)));
+        JsonNode newPullRequestNode = createObject(singletonMap("href", value(newPullRequest)));
 
-      addPropertyNode(repositoryNode.get("_links"), "newPullRequest", newPullRequestNode);
+        addPropertyNode(repositoryNode.get("_links"), "newPullRequest", newPullRequestNode);
+      }
     }
   }
 
+  private boolean repositorySupportsMerge(String namespace, String name) {
+    try (RepositoryService service = serviceFactory.create(new NamespaceAndName(namespace, name))) {
+      return service.isSupported(Command.MERGE);
+    }
+  }
 }
