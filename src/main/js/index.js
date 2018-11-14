@@ -10,8 +10,12 @@ import { Route } from "react-router-dom";
 
 // new
 
-const NewPullRequestNavLink = ({url}) => {
-  return <NavLink to={`${url}/pull-requests/add`} label="New Pull Request" />;
+const NewPullRequestNavLink = ({url, repository}) => {
+  if (repository._links.newPullRequest) {
+    return <NavLink to={`${url}/pull-requests/add`} label="New Pull Request"/>;
+  } else {
+    return <></>;
+  }
 };
 
 binder.bind("repository.navigation", NewPullRequestNavLink);
@@ -26,8 +30,12 @@ binder.bind("repository.route", NewPullRequestRoute);
 
 // list
 
-const PullRequestNavLink = ({url}) => {
-  return <NavLink to={`${url}/pull-requests`} label="Pull Requests" />;
+const PullRequestNavLink = ({url, repository}) => {
+  if (repository._links.pullRequests) {
+    return <NavLink to={`${url}/pull-requests`} label="Pull Requests"/>;
+  } else {
+    return <></>;
+  }
 };
 
 binder.bind("repository.navigation", PullRequestNavLink);
