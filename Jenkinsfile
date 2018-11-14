@@ -1,7 +1,7 @@
 #!groovy
 
 // Keep the version in sync with the one used in pom.xml in order to get correct syntax completion.
-@Library('github.com/cloudogu/ces-build-lib@59d3e94')
+@Library('github.com/cloudogu/ces-build-lib@263fcfe')
 import com.cloudogu.ces.cesbuildlib.*
 
 node('docker') {
@@ -38,10 +38,12 @@ node('docker') {
 
       stage('SonarQube') {
 
-        analyzeWith(mvn)
+        def sonarQube = new SonarCloud(this, [sonarQubeEnv: 'sonarcloud.io-scm'])
 
-        if (!waitForQualityGateWebhookToBeCalled()) {
-          currentBuild.result = 'UNSTABLE'
+        sonarQube.analyzeWith(mvn)
+
+        if (!sonarQube.waitForQualityGateWebhookToBeCalled()) {
+          currentBuild.result ='UNSTABLE'
         }
       }
     }
@@ -72,46 +74,6 @@ Maven setupMavenBuild() {
   return mvn
 }
 
-void analyzeWith(Maven mvn) {
-
-  withSonarQubeEnv('sonarcloud.io-scm') {
-
-    String mvnArgs = "${env.SONAR_MAVEN_GOAL} " +
-      "-Dsonar.host.url=${env.SONAR_HOST_URL} " +
-      "-Dsonar.login=${env.SONAR_AUTH_TOKEN} "
-
-    if (isPullRequest()) {
-      echo "Analysing SQ in PR mode"
-      mvnArgs += "-Dsonar.pullrequest.base=${env.CHANGE_TARGET} " +
-        "-Dsonar.pullrequest.branch=${env.CHANGE_BRANCH} " +
-        "-Dsonar.pullrequest.key=${env.CHANGE_ID} " +
-        "-Dsonar.pullrequest.provider=bitbucketcloud " +
-        "-Dsonar.pullrequest.bitbucketcloud.owner=scm-manager " +
-        "-Dsonar.pullrequest.bitbucketcloud.repository=scm-review-plugin "
-    } else {
-      mvnArgs += " -Dsonar.branch.name=${env.BRANCH_NAME} "
-      if (!isMainBranch()) {
-        // Avoid exception "The main branch must not have a target" on main branch
-        mvnArgs += " -Dsonar.branch.target=${mainBranch} "
-      }
-    }
-    mvn "${mvnArgs}"
-  }
-}
-
 boolean isMainBranch() {
   return mainBranch.equals(env.BRANCH_NAME)
 }
-
-boolean waitForQualityGateWebhookToBeCalled() {
-  boolean isQualityGateSucceeded = true
-  timeout(time: 5, unit: 'MINUTES') { // Needed when there is no webhook for example
-    def qGate = waitForQualityGate()
-    echo "SonarQube Quality Gate status: ${qGate.status}"
-    if (qGate.status != 'OK') {
-      isQualityGateSucceeded = false
-    }
-  }
-  return isQualityGateSucceeded
-}
-
