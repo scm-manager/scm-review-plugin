@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review;
 
 import org.apache.shiro.SecurityUtils;
-import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.NamespaceAndName;
 
 import javax.inject.Inject;
