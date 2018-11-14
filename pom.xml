@@ -45,6 +45,12 @@
       <version>7.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-validator-provider-11</artifactId>
+      <version>${resteasy.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <repositories>

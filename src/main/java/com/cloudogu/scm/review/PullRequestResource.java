@@ -17,8 +17,10 @@ import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.time.Instant;
 
-@Path("v2/pull-requests")
+@Path(PullRequestResource.PULL_REQUESTS_PATH_V2)
 public class PullRequestResource {
+
+  public static final String PULL_REQUESTS_PATH_V2 = "v2/pull-requests";
 
   private final PullRequestStoreFactory storeFactory;
 
