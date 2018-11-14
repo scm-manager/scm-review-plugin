@@ -36,11 +36,9 @@ class PullRequestStoreFactoryTest {
     Repository repository = RepositoryTestData.createHeartOfGold("git");
     repository.setId("42");
 
-
-    when(repositoryResolver.resolve(namespaceAndName)).thenReturn(repository);
     when(dataStoreFactory.getStore(PullRequest.class, "42")).thenReturn(store);
 
-    PullRequestStore store = storeFactory.create(namespaceAndName);
+    PullRequestStore store = storeFactory.create(repository);
     assertThat(store).isNotNull();
   }
 }

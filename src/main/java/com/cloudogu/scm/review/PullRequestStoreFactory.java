@@ -9,17 +9,14 @@ import javax.inject.Inject;
 
 public class PullRequestStoreFactory {
 
-  private final RepositoryResolver repositoryResolver;
   private final DataStoreFactory dataStoreFactory;
 
   @Inject
-  public PullRequestStoreFactory(RepositoryResolver repositoryResolver, DataStoreFactory dataStoreFactory) {
-    this.repositoryResolver = repositoryResolver;
+  public PullRequestStoreFactory(DataStoreFactory dataStoreFactory) {
     this.dataStoreFactory = dataStoreFactory;
   }
 
-  public PullRequestStore create(NamespaceAndName namespaceAndName) {
-    Repository repository = repositoryResolver.resolve(namespaceAndName);
+  public PullRequestStore create(Repository repository) {
     DataStore<PullRequest> store = dataStoreFactory.getStore(PullRequest.class, repository.getId());
     return new PullRequestStore(store);
   }

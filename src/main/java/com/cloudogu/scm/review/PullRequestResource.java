@@ -2,6 +2,7 @@ package com.cloudogu.scm.review;
 
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -22,10 +23,14 @@ public class PullRequestResource {
 
   public static final String PULL_REQUESTS_PATH_V2 = "v2/pull-requests";
 
+  private final RepositoryResolver repositoryResolver;
+  private final BranchResolver branchResolver;
   private final PullRequestStoreFactory storeFactory;
 
   @Inject
-  public PullRequestResource(PullRequestStoreFactory storeFactory) {
+  public PullRequestResource(RepositoryResolver repositoryResolver, BranchResolver branchResolver, PullRequestStoreFactory storeFactory) {
+    this.repositoryResolver = repositoryResolver;
+    this.branchResolver = branchResolver;
     this.storeFactory = storeFactory;
   }
 
@@ -34,7 +39,12 @@ public class PullRequestResource {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequest pullRequest) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    PullRequestStore store = storeFactory.create(namespaceAndName);
+    Repository repository = repositoryResolver.resolve(namespaceAndName);
+
+    verifyBranchExists(repository, pullRequest.getSource());
+    verifyBranchExists(repository, pullRequest.getTarget());
+
+    PullRequestStore store = storeFactory.create(repository);
 
     String author = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     pullRequest.setAuthor(author);
@@ -44,4 +54,7 @@ public class PullRequestResource {
     return Response.created(location).build();
   }
 
+  private void verifyBranchExists(Repository repository, String branchName) {
+    branchResolver.resolve(repository, branchName);
+  }
 }

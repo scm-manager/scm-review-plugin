@@ -11,7 +11,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,25 +35,28 @@ import static org.mockito.Mockito.when;
 @SubjectAware(configuration = "classpath:com/cloudogu/scm/review/shiro.ini")
 public class PullRequestResourceTest {
 
-  private static final NamespaceAndName NAMESPACE_AND_NAME = new NamespaceAndName("space", "name");
-
   @Rule
   public final ShiroRule shiroRule = new ShiroRule();
 
+  private final RepositoryResolver repositoryResolver = mock(RepositoryResolver.class);
+  private final BranchResolver branchResolver = mock(BranchResolver.class);
   private final PullRequestStoreFactory storeFactory = mock(PullRequestStoreFactory.class);
   private final PullRequestStore store = mock(PullRequestStore.class);
   private final UriInfo uriInfo = mock(UriInfo.class);
-  private final PullRequestResource pullRequestResource = new PullRequestResource(storeFactory);
+  private final PullRequestResource pullRequestResource = new PullRequestResource(repositoryResolver, branchResolver, storeFactory);
   private final ArgumentCaptor<PullRequest> pullRequestStoreCaptor = ArgumentCaptor.forClass(PullRequest.class);
 
   private Dispatcher dispatcher;
 
+  private final MockHttpResponse response = new MockHttpResponse();
+
   @Before
   public void init() {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
-    when(storeFactory.create(NAMESPACE_AND_NAME)).thenReturn(store);
+    when(storeFactory.create(null)).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
     dispatcher = MockDispatcherFactory.createDispatcher();
+    dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     dispatcher.getRegistry().addSingletonResource(pullRequestResource);
   }
 
@@ -63,7 +69,6 @@ public class PullRequestResourceTest {
         .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
         .contentType(MediaType.APPLICATION_JSON);
-    MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
 
@@ -83,12 +88,51 @@ public class PullRequestResourceTest {
         .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
         .contentType(MediaType.APPLICATION_JSON);
-    MockHttpResponse response = new MockHttpResponse();
 
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
     verify(store, never()).add(any());
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldHandleMissingRepository() throws URISyntaxException, IOException {
+    when(repositoryResolver.resolve(new NamespaceAndName("space", "X")))
+      .thenThrow(new NotFoundException("x", "y"));
+    byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/space/X")
+        .content(pullRequestJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertExceptionFrom(response)
+      .isOffClass(NotFoundException.class)
+      .hasMessageMatching("could not find.*");
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldHandleMissingBranch() throws URISyntaxException, IOException {
+    Repository repository = new Repository();
+    when(repositoryResolver.resolve(new NamespaceAndName("space", "X")))
+      .thenReturn(repository);
+    when(branchResolver.resolve(repository, "sourceBranch")).thenThrow(new NotFoundException("x", "y"));
+    byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/space/X")
+        .content(pullRequestJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertExceptionFrom(response)
+      .isOffClass(NotFoundException.class)
+      .hasMessageMatching("could not find.*");
   }
 
   private byte[] loadJson(String s) throws IOException {
