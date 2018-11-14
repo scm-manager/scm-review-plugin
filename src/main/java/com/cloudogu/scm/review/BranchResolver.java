@@ -4,6 +4,7 @@ import sonia.scm.repository.Branch;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.BranchesCommandBuilder;
+import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
@@ -22,8 +23,8 @@ public class BranchResolver {
   }
 
   public Branch resolve(Repository repository, String branchName) {
-    try {
-      BranchesCommandBuilder branchesCommand = repositoryServiceFactory.create(repository).getBranchesCommand();
+    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      BranchesCommandBuilder branchesCommand = repositoryService.getBranchesCommand();
       List<Branch> allBranches = branchesCommand.getBranches().getBranches();
       return allBranches
         .stream()
