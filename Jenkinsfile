@@ -29,6 +29,7 @@ node('docker') {
 
       stage('Build') {
         mvn 'clean install -DskipTests'
+        archive 'target/*.smp'
       }
 
       stage('Unit Test') {
