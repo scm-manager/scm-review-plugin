@@ -4,14 +4,14 @@ import {
   Title,
   Subtitle,
   SubmitButton,
-  ErrorNotification,
-  Notification
+  ErrorNotification
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import injectSheet from "react-jss";
 import type {PullRequest} from "./PullRequest";
 import {createPullRequest} from "./pullRequest";
+import { translate } from "react-i18next";
 
 const styles = {
   controlButtons: {
@@ -21,15 +21,15 @@ const styles = {
 
 type Props = {
   repository: Repository,
-  classes: any
+  classes: any,
+  t: string => string
 };
 
 type State = {
   pullRequest?: PullRequest,
   loading: boolean,
   error?: Error,
-  disabled: boolean,
-  success?: boolean
+  disabled: boolean
 };
 
 class Create extends React.Component<Props, State> {
@@ -40,6 +40,10 @@ class Create extends React.Component<Props, State> {
       disabled: true
     };
   }
+
+  pullRequestCreated = () => {
+    //TODO: if overview pull request page exists - open that!
+  };
 
   submit = () => {
     const { pullRequest } = this.state;
@@ -53,7 +57,8 @@ class Create extends React.Component<Props, State> {
           this.setState({ loading: false, error: result.error });
         }
         else {
-          this.setState({ loading: false, success: true });
+          this.setState({ loading: false });
+          this.pullRequestCreated();
         }
       });
   };
@@ -73,23 +78,20 @@ class Create extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, classes } = this.props;
-    const { loading, error, disabled, success } = this.state;
+    const { repository, classes, t } = this.props;
+    const { loading, error, disabled } = this.state;
 
     let notification = null;
     if(error) {
       notification = <ErrorNotification error={error} />
-    } 
-    else if(success){
-     notification = <Notification type={"success"} children={"added new pull request successful"}/>
     }
 
     return (
       <div className="columns">
         <div className="column">
-          <Title title="Pull Request" />
+          <Title title={t("scm-review-plugin.create.title")} />
           <Subtitle
-            subtitle={"Creates a new Pull Request for " + repository.name}
+            subtitle={t("scm-review-plugin.create.subtitle") + repository.name}
           />
           {notification}
           <CreateForm
@@ -112,7 +114,7 @@ class Create extends React.Component<Props, State> {
 
           <div className={classes.controlButtons}>
             <SubmitButton
-              label="Submit"
+              label={t("scm-review-plugin.create.submitButton")}
               action={this.submit}
               loading={loading}
               disabled={disabled}
@@ -125,4 +127,4 @@ class Create extends React.Component<Props, State> {
 }
 
 
-export default injectSheet(styles)(Create);
+export default injectSheet(styles)(translate("plugins")(Create));

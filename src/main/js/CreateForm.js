@@ -4,10 +4,12 @@ import type { Repository } from "@scm-manager/ui-types";
 import {InputField, Textarea, Select, ErrorNotification} from "@scm-manager/ui-components";
 import type {PullRequest} from "./PullRequest";
 import {getBranches} from "./pullRequest";
+import { translate } from "react-i18next";
 
 type Props = {
   repository: Repository,
-  onChange: (pr: PullRequest) => void
+  onChange: (pr: PullRequest) => void,
+  t: string => string
 };
 
 type State = {
@@ -67,6 +69,7 @@ class CreateForm extends React.Component<Props, State> {
   };
 
   render() {
+    const {t} = this.props;
     const {loading, error} = this.state;
     const options = this.state.branches.map((branch) => ({
       label: branch,
@@ -82,15 +85,15 @@ class CreateForm extends React.Component<Props, State> {
 
         <div className="columns">
           <div className="column">
-            <Select name="source" label="Source Branch" options={options} onChange={this.handleFormChange} loading={loading}/>
+            <Select name="source" label={t("scm-review-plugin.create.sourceBranch")} options={options} onChange={this.handleFormChange} loading={loading}/>
           </div>
           <div className="column">
-            <Select name="target" label="Target Branch" options={options} onChange={this.handleFormChange} loading={loading}/>
+            <Select name="target" label={t("scm-review-plugin.create.targetBranch")} options={options} onChange={this.handleFormChange} loading={loading}/>
           </div>
         </div>
 
-        <InputField name="title" label="Title" onChange={this.handleFormChange} />
-        <Textarea name="description" label="Description" onChange={this.handleFormChange} />
+        <InputField name="title" label={t("scm-review-plugin.create.newTitle")} onChange={this.handleFormChange} />
+        <Textarea name="description" label={t("scm-review-plugin.create.description")} onChange={this.handleFormChange} />
 
       </form>
     );
@@ -98,4 +101,4 @@ class CreateForm extends React.Component<Props, State> {
 
 }
 
-export default CreateForm;
+export default translate("plugins")(CreateForm);
