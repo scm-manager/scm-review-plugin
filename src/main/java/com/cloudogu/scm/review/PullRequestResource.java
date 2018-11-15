@@ -16,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.Date;
+import java.time.Instant;
 
 @Path(PullRequestResource.PULL_REQUESTS_PATH_V2)
 public class PullRequestResource {
@@ -48,7 +48,7 @@ public class PullRequestResource {
 
     String author = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     pullRequest.setAuthor(author);
-    pullRequest.setCreationDate(new Date());
+    pullRequest.setCreationDate(Instant.now());
     String id = store.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
