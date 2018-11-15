@@ -11,7 +11,7 @@ import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.time.Instant;
+import java.util.Date;
 
 @Getter
 @Builder
@@ -31,5 +31,5 @@ public class PullRequest {
   @Setter
   private String author;
   @Setter
-  private Instant creationDate;
+  private Date creationDate;
 }
