@@ -39,7 +39,7 @@ public class RepositoryLinkEnricher extends JsonEnricherBase {
       String namespace = repositoryNode.get("namespace").asText();
       String name = repositoryNode.get("name").asText();
 
-      if (repositorySupportsMerge(namespace, name)) {
+      if (repositorySupportsReviews(namespace, name)) {
         String newPullRequest = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestResource.class)
           .method("create")
           .parameters(namespace, name)
@@ -52,9 +52,9 @@ public class RepositoryLinkEnricher extends JsonEnricherBase {
     }
   }
 
-  private boolean repositorySupportsMerge(String namespace, String name) {
+  private boolean repositorySupportsReviews(String namespace, String name) {
     try (RepositoryService service = serviceFactory.create(new NamespaceAndName(namespace, name))) {
-      return service.isSupported(Command.MERGE);
+      return service.isSupported(Command.BRANCHES);
     }
   }
 }
