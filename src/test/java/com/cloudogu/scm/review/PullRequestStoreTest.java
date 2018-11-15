@@ -1,22 +1,21 @@
 package com.cloudogu.scm.review;
 
 import com.google.common.collect.Maps;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
+import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -25,6 +24,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PullRequestStoreTest {
 
+  private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
+
+  private final Map<String, PullRequest> backingMap = Maps.newHashMap();
   @Mock
   private DataStore<PullRequest> dataStore;
 
@@ -33,7 +35,6 @@ class PullRequestStoreTest {
 
   @BeforeEach
   public void setUpStore() {
-    Map<String, PullRequest> backingMap = Maps.newHashMap();
     // delegate store methods to backing map
     when(dataStore.getAll()).thenReturn(backingMap);
     doAnswer(invocationOnMock -> {
@@ -46,9 +47,49 @@ class PullRequestStoreTest {
 
   @Test
   public void testAdd() {
-    assertThat(store.add(createPullRequest())).isEqualTo("1");
-    assertThat(store.add(createPullRequest())).isEqualTo("2");
-    assertThat(store.add(createPullRequest())).isEqualTo("3");
+    assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("1");
+    assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("2");
+    assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("3");
+  }
+
+  @Test
+  public void shouldCreateUniqueIdsWhenAccessedInParallel() throws InterruptedException {
+    Semaphore semaphore = new Semaphore(2);
+    semaphore.acquire(2);
+    store = new PullRequestStore(dataStore) {
+      @Override
+      String createId() {
+        String id = super.createId();
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          fail("got interrupted", e);
+        }
+        return id;
+      }
+    };
+    Thread first = new Thread() {
+      @Override
+      public void run() {
+        PullRequest pullRequest = createPullRequest();
+        pullRequest.setAuthor("first");
+        store.add(REPOSITORY, pullRequest);
+        semaphore.release();
+      }
+    };
+    Thread second = new Thread() {
+      @Override
+      public void run() {
+        PullRequest pullRequest = createPullRequest();
+        pullRequest.setAuthor("second");
+        store.add(REPOSITORY, pullRequest);
+        semaphore.release();
+      }
+    };
+    first.start();
+    second.start();
+    semaphore.acquire(2);
+    assertThat(backingMap.size()).isEqualTo(2);
   }
 
   private PullRequest createPullRequest() {

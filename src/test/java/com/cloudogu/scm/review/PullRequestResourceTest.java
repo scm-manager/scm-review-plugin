@@ -54,7 +54,7 @@ public class PullRequestResourceTest {
   public void init() {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
-    when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
+    when(store.add(any(), pullRequestStoreCaptor.capture())).thenReturn("1");
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     dispatcher.getRegistry().addSingletonResource(pullRequestResource);
@@ -92,7 +92,7 @@ public class PullRequestResourceTest {
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
-    verify(store, never()).add(any());
+    verify(store, never()).add(any(), any());
   }
 
   @Test

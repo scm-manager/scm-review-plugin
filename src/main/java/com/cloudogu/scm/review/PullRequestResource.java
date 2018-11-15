@@ -49,7 +49,7 @@ public class PullRequestResource {
     String author = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     pullRequest.setAuthor(author);
     pullRequest.setCreationDate(Instant.now());
-    String id = store.add(pullRequest);
+    String id = store.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
   }
