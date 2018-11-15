@@ -17,22 +17,31 @@ type Props = {
 };
 
 type State = {
-  pullRequest?: Object // TODO add type
+  pullRequest?: Object, // TODO add type
+  loading: boolean,
+  error?: Error
 };
 
 class Create extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.state = {};
+    this.state = {
+      loading: false
+    };
   }
 
   submit = () => {
     const { pullRequest } = this.state;
     const { repository } = this.props;
 
+    //this.setState({loading: true});
     // TODO handle loading, success and error
-    apiClient.post(repository._links.newPullRequest.href, pullRequest);
+    apiClient.post(repository._links.newPullRequest.href, pullRequest)
+      .catch(cause => {
+        const error = new Error(`could not fetch users: ${cause.message}`);
+        this.setState({error: error});
+      });;
   };
 
   handleFormChange = (pullRequest) => {
@@ -43,6 +52,11 @@ class Create extends React.Component<Props, State> {
 
   render() {
     const {repository, classes} = this.props;
+    const {loading, error} = this.state;
+  console.log(this.state.pullRequest);
+
+  if(error)
+    return <ErrorNotification error={error}/>;
 
     return (
       <div className="columns">
@@ -69,7 +83,7 @@ class Create extends React.Component<Props, State> {
           </p>
 
           <div className={classes.controlButtons}>
-            <SubmitButton label="Submit" action={this.submit} />
+            <SubmitButton label="Submit" action={this.submit} loading={loading}/>
           </div>
         </div>
       </div>
