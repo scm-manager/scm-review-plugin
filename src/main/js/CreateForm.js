@@ -1,8 +1,9 @@
 //@flow
 import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
-import {apiClient, InputField, Textarea, Select} from "@scm-manager/ui-components";
+import {InputField, Textarea, Select, ErrorNotification} from "@scm-manager/ui-components";
 import type {PullRequest} from "./PullRequest";
+import {getBranches} from "./pullRequest";
 
 type Props = {
   repository: Repository,
@@ -12,7 +13,8 @@ type Props = {
 type State = {
   pullRequest?: PullRequest,
   branches: string[],
-  loading: boolean
+  loading: boolean,
+  error?: boolean
 };
 
 class CreateForm extends React.Component<Props, State> {
@@ -27,21 +29,27 @@ class CreateForm extends React.Component<Props, State> {
 
   componentDidMount() {
     const { repository } = this.props;
-    // TODO error handling
-    apiClient.get(repository._links.branches.href)
-      .then(response => response.json())
-      .then(collection => collection._embedded.branches)
-      .then(branches => branches.map(b => b.name))
-      .then(names => this.setState(
-        {
-          branches: names,
-          loading: false,
-          pullRequest: {
-            source: names[0], //set first entry, otherwise nothing is select in state even if one branch is shown in Select component at beginning
-            target: names[0]
-          }
+      getBranches(repository._links.branches.href)
+      .then(result => {
+        if(result.error){
+          this.setState({
+            loading: false,
+            error: result.error
+          });
         }
-        ));
+        else {
+          this.setState(
+            {
+              branches: result,
+              loading: false,
+              pullRequest: {
+                source: result[0], //set first entry, otherwise nothing is select in state even if one branch is shown in Select component at beginning
+                target: result[0]
+              }
+            }
+          )
+        }
+      });
   }
 
   handleFormChange = (value: string, name: string) => {
@@ -59,11 +67,15 @@ class CreateForm extends React.Component<Props, State> {
   };
 
   render() {
-    const {loading} = this.state;
+    const {loading, error} = this.state;
     const options = this.state.branches.map((branch) => ({
       label: branch,
       value: branch
     }));
+
+    if(error){
+      return <ErrorNotification error={error} />
+    }
 
     return (
       <form>

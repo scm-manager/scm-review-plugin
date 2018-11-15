@@ -1,16 +1,17 @@
 //@flow
 import React from "react";
 import {
-  apiClient,
   Title,
   Subtitle,
   SubmitButton,
-  ErrorNotification
+  ErrorNotification,
+  Notification
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import injectSheet from "react-jss";
 import type {PullRequest} from "./PullRequest";
+import {createPullRequest} from "./pullRequest";
 
 const styles = {
   controlButtons: {
@@ -27,7 +28,8 @@ type State = {
   pullRequest?: PullRequest,
   loading: boolean,
   error?: Error,
-  disabled: boolean
+  disabled: boolean,
+  success?: boolean
 };
 
 class Create extends React.Component<Props, State> {
@@ -44,15 +46,15 @@ class Create extends React.Component<Props, State> {
     const { repository } = this.props;
 
     this.setState({ loading: true });
-    // TODO handle loading, success
-    apiClient
-      .post(repository._links.newPullRequest.href, pullRequest)
-      .then(this.setState({ loading: false }))
-      .catch(cause => {
-        const error = new Error(
-          `could not create pull request: ${cause.message}`
-        );
-        this.setState({ error: error });
+
+    createPullRequest(repository._links.newPullRequest.href, pullRequest)
+      .then( result => {
+        if(result.error){
+          this.setState({ loading: false, error: result.error });
+        }
+        else {
+          this.setState({ loading: false, success: true });
+        }
       });
   };
 
@@ -72,11 +74,15 @@ class Create extends React.Component<Props, State> {
 
   render() {
     const { repository, classes } = this.props;
-    const { loading, error, disabled } = this.state;
+    const { loading, error, disabled, success } = this.state;
 
-    const errorNotification = error ? (
-      <ErrorNotification error={error} />
-    ) : null;
+    let notification = null;
+    if(error) {
+      notification = <ErrorNotification error={error} />
+    } 
+    else if(success){
+     notification = <Notification type={"success"} children={"added new pull request successful"}/>
+    }
 
     return (
       <div className="columns">
@@ -85,7 +91,7 @@ class Create extends React.Component<Props, State> {
           <Subtitle
             subtitle={"Creates a new Pull Request for " + repository.name}
           />
-          {errorNotification}
+          {notification}
           <CreateForm
             repository={repository}
             onChange={this.handleFormChange}
@@ -117,5 +123,6 @@ class Create extends React.Component<Props, State> {
     );
   }
 }
+
 
 export default injectSheet(styles)(Create);
