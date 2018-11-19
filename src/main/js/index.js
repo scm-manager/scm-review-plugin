@@ -8,17 +8,17 @@ import { Route } from "react-router-dom";
 // TODO add bindings with predicate for repository links
 // see core repository plugins (git, svn, mercurial) for an example
 
-// new
-
-const NewPullRequestNavLink = ({url, repository}) => {
-  if (repository._links.newPullRequest) {
-    return <NavLink to={`${url}/pull-requests/add`} label="New Pull Request"/>;
-  } else {
-    return <></>;
-  }
+const reviewSupportedPredicate = (props: Object) => {
+  return props.repository && props.repository._links.newPullRequest;
 };
 
-binder.bind("repository.navigation", NewPullRequestNavLink);
+// new
+
+const NewPullRequestNavLink = ({url}) => {
+  return <NavLink to={`${url}/pull-requests/add`} label="New Pull Request"/>;
+};
+
+binder.bind("repository.navigation", NewPullRequestNavLink, reviewSupportedPredicate);
 
 const NewPullRequestRoute = ({url, repository}) => {
   return <Route path={`${url}/pull-requests/add`}
@@ -30,12 +30,9 @@ binder.bind("repository.route", NewPullRequestRoute);
 
 // list
 
-const PullRequestNavLink = ({url, repository}) => {
-  if (repository._links.pullRequests) {
-    return <NavLink to={`${url}/pull-requests`} label="Pull Requests"/>;
-  } else {
-    return <></>;
-  }
+const PullRequestNavLink = ({url}) => {
+  return <NavLink to={`${url}/pull-requests`} label="Pull Requests"/>;
 };
 
-binder.bind("repository.navigation", PullRequestNavLink);
+
+binder.bind("repository.navigation", PullRequestNavLink, reviewSupportedPredicate);
