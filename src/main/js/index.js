@@ -5,9 +5,6 @@ import { NavLink } from "@scm-manager/ui-components";
 import Create from './Create';
 import { Route } from "react-router-dom";
 
-// TODO add bindings with predicate for repository links
-// see core repository plugins (git, svn, mercurial) for an example
-
 const reviewSupportedPredicate = (props: Object) => {
   return props.repository && props.repository._links.newPullRequest;
 };
@@ -33,6 +30,5 @@ binder.bind("repository.route", NewPullRequestRoute);
 const PullRequestNavLink = ({url}) => {
   return <NavLink to={`${url}/pull-requests`} label="Pull Requests"/>;
 };
-
 
 binder.bind("repository.navigation", PullRequestNavLink, reviewSupportedPredicate);
