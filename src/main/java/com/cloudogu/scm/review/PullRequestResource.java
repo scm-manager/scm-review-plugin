@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review;
 
 import org.apache.shiro.SecurityUtils;
+import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
@@ -44,6 +45,8 @@ public class PullRequestResource {
     verifyBranchExists(repository, pullRequest.getSource());
     verifyBranchExists(repository, pullRequest.getTarget());
 
+    verifyBranchesDiffer(pullRequest.getSource(), pullRequest.getTarget());
+
     PullRequestStore store = storeFactory.create(repository);
 
     String author = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
@@ -56,5 +59,13 @@ public class PullRequestResource {
 
   private void verifyBranchExists(Repository repository, String branchName) {
     branchResolver.resolve(repository, branchName);
+  }
+
+  private void verifyBranchesDiffer(String source, String target) {
+    ScmConstraintViolationException.Builder
+      .doThrow()
+      .violation("source branch and target branch must differ", "pullRequest", "source")
+      .violation("source branch and target branch must differ", "pullRequest", "target")
+      .when(source.equals(target));
   }
 }
