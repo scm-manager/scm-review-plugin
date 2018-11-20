@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review;
 
-import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
