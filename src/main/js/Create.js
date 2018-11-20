@@ -64,8 +64,9 @@ class Create extends React.Component<Props, State> {
   };
 
   verify = (pullRequest: PullRequest) => {
-    if(pullRequest.target && pullRequest.source && pullRequest.title){
-      return true;
+    const {source, target, title} = pullRequest;
+    if (source && target && title) {
+      return source !== target
     }
     return false;
   };
@@ -82,7 +83,7 @@ class Create extends React.Component<Props, State> {
     const { loading, error, disabled } = this.state;
 
     let notification = null;
-    if(error) {
+    if (error) {
       notification = <ErrorNotification error={error} />
     }
 
