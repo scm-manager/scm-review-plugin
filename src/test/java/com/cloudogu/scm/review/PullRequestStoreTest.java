@@ -61,7 +61,7 @@ class PullRequestStoreTest {
       String createId() {
         String id = super.createId();
         try {
-          Thread.sleep(1000);
+          Thread.sleep(200);
         } catch (InterruptedException e) {
           fail("got interrupted", e);
         }
