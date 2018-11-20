@@ -97,6 +97,22 @@ public class PullRequestResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
+  public void shouldRejectSameBranches() throws URISyntaxException, IOException {
+    byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest_sameBranches.json");
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/space/name")
+        .content(pullRequestJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    verify(store, never()).add(any(), any());
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
   public void shouldHandleMissingRepository() throws URISyntaxException, IOException {
     when(repositoryResolver.resolve(new NamespaceAndName("space", "X")))
       .thenThrow(new NotFoundException("x", "y"));
