@@ -14,6 +14,8 @@ import { translate } from "react-i18next";
 type Props = {
   repository: Repository,
   onChange: (pr: PullRequest) => void,
+
+  // Context props
   t: string => string
 };
 
@@ -29,12 +31,14 @@ class CreateForm extends React.Component<Props, State> {
     super(props);
     this.state = {
       branches: [],
-      loading: true
+      loading: false
     };
   }
 
   componentDidMount() {
     const { repository } = this.props;
+
+    this.setState({ ...this.state, loading: true });
     getBranches(repository._links.branches.href).then(result => {
       if (result.error) {
         this.setState({

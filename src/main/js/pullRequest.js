@@ -1,10 +1,12 @@
-import type {PullRequest} from "./PullRequest";
-import {apiClient} from "@scm-manager/ui-components";
+import type { PullRequest } from "./PullRequest";
+import { apiClient } from "@scm-manager/ui-components";
 
 export function createPullRequest(url: string, pullRequest: PullRequest) {
   return apiClient
     .post(url, pullRequest)
-    .then(response => { return response; })
+    .then(response => {
+      return response;
+    })
     .catch(cause => {
       const error = new Error(
         `could not create pull request: ${cause.message}`
@@ -14,14 +16,15 @@ export function createPullRequest(url: string, pullRequest: PullRequest) {
 }
 
 export function getBranches(url: string) {
-  return apiClient.get(url)
+  return apiClient
+    .get(url)
     .then(response => response.json())
     .then(collection => collection._embedded.branches)
-    .then(branches => { return branches.map(b => b.name); })
+    .then(branches => {
+      return branches.map(b => b.name);
+    })
     .catch(cause => {
-      const error = new Error(
-        `could not fetch branches: ${cause.message}`
-      );
+      const error = new Error(`could not fetch branches: ${cause.message}`);
       return { error: error };
     });
 }

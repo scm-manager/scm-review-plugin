@@ -1,4 +1,4 @@
-//@flow
+// @flow
 import React from "react";
 import {
   Title,
@@ -9,8 +9,8 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import injectSheet from "react-jss";
-import type {PullRequest} from "./PullRequest";
-import {createPullRequest} from "./pullRequest";
+import type { PullRequest } from "./PullRequest";
+import { createPullRequest } from "./pullRequest";
 import { translate } from "react-i18next";
 
 const styles = {
@@ -51,22 +51,22 @@ class Create extends React.Component<Props, State> {
 
     this.setState({ loading: true });
 
-    createPullRequest(repository._links.newPullRequest.href, pullRequest)
-      .then( result => {
-        if(result.error){
+    createPullRequest(repository._links.newPullRequest.href, pullRequest).then(
+      result => {
+        if (result.error) {
           this.setState({ loading: false, error: result.error });
-        }
-        else {
+        } else {
           this.setState({ loading: false });
           this.pullRequestCreated();
         }
-      });
+      }
+    );
   };
 
   verify = (pullRequest: PullRequest) => {
-    const {source, target, title} = pullRequest;
+    const { source, target, title } = pullRequest;
     if (source && target && title) {
-      return source !== target
+      return source !== target;
     }
     return false;
   };
@@ -84,7 +84,7 @@ class Create extends React.Component<Props, State> {
 
     let notification = null;
     if (error) {
-      notification = <ErrorNotification error={error} />
+      notification = <ErrorNotification error={error} />;
     }
 
     return (
@@ -126,6 +126,5 @@ class Create extends React.Component<Props, State> {
     );
   }
 }
-
 
 export default injectSheet(styles)(translate("plugins")(Create));

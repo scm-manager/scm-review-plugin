@@ -44,7 +44,7 @@ describe("API create pull request", () => {
     });
   });
 
-  it("should fail on creating pull request", () => {
+  it("should fail on creating pull request", done => {
     fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
       status: 500
     });
@@ -56,9 +56,7 @@ describe("API create pull request", () => {
   });
 
   it("should get branches successfully", done => {
-    fetchMock.getOnce("/api/v2" + BRANCH_URL,
-      branchRequest
-    );
+    fetchMock.getOnce("/api/v2" + BRANCH_URL, branchRequest);
 
     getBranches(BRANCH_URL).then(response => {
       expect(response).toEqual(["branchA", "branchB"]);
@@ -67,7 +65,7 @@ describe("API create pull request", () => {
     });
   });
 
-  it("should fail on getting branches", () => {
+  it("should fail on getting branches", done => {
     fetchMock.getOnce("/api/v2" + BRANCH_URL, {
       status: 500
     });
