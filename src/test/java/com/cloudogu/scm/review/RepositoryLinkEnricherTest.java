@@ -46,21 +46,21 @@ public class RepositoryLinkEnricherTest {
     pathInfoStore.set(() -> URI.create("/"));
     Provider<ScmPathInfoStore> pathInfoStoreProvider = Providers.of(pathInfoStore);
     when(serviceFactory.create(new NamespaceAndName("scmadmin", "web-resources"))).thenReturn(repositoryService);
-    when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
+    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(false);
 
     linkEnricher = new RepositoryLinkEnricher(pathInfoStoreProvider, objectMapper, serviceFactory);
 
   }
 
   @Test
-  public void shouldEnrichRepositoriesWithMergeSupport() {
+  public void shouldEnrichRepositoriesWithBranchSupport() {
     JsonEnricherContext context = new JsonEnricherContext(
       URI.create("/"),
       MediaType.valueOf(VndMediaType.REPOSITORY),
       rootNode
     );
 
-    when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
+    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
     linkEnricher.enrich(context);
 
     String newPrLink = context.getResponseEntity()
@@ -73,14 +73,14 @@ public class RepositoryLinkEnricherTest {
   }
 
   @Test
-  public void shouldNotEnrichRepositoriesWithoutMergeSupport() {
+  public void shouldNotEnrichRepositoriesWithoutBranchSupport() {
     JsonEnricherContext context = new JsonEnricherContext(
       URI.create("/"),
       MediaType.valueOf(VndMediaType.REPOSITORY),
       rootNode
     );
 
-    when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
+    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
     linkEnricher.enrich(context);
 
     String newPrLink = context.getResponseEntity()
