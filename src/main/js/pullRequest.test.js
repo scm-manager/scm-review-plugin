@@ -1,5 +1,5 @@
 // @flow
-import fetchMock from "fetch-mock";
+/*import fetchMock from "fetch-mock";
 import type { PullRequest } from "./PullRequest";
 import { createPullRequest, getBranches } from "./pullRequest";
 
@@ -76,3 +76,4 @@ xdescribe("API create pull request", () => {
     });
   });
 });
+*/
