@@ -52,6 +52,7 @@ class PullRequestStoreTest {
     assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("3");
   }
 
+  @SuppressWarnings("squid:S2925") // suppress warnings regarding Thread.sleep. Found no other way to test this.
   @Test
   public void shouldCreateUniqueIdsWhenAccessedInParallel() throws InterruptedException {
     Semaphore semaphore = new Semaphore(2);
@@ -61,7 +62,7 @@ class PullRequestStoreTest {
       String createId() {
         String id = super.createId();
         try {
-          Thread.sleep(200);
+            Thread.sleep(200);
         } catch (InterruptedException e) {
           fail("got interrupted", e);
         }
