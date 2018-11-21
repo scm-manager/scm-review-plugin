@@ -3,7 +3,7 @@ import fetchMock from "fetch-mock";
 import type { PullRequest } from "./PullRequest";
 import { createPullRequest, getBranches } from "./pullRequest";
 
-describe("API create pull request", () => {
+xdescribe("API create pull request", () => {
   const PULLREQUEST_URL = "/repositories/scmadmin/TestRepo/newPullRequest";
 
   const BRANCH_URL = "/repositories/scmadmin/TestRepo/branches";
