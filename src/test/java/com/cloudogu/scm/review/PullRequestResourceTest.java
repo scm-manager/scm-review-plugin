@@ -22,6 +22,8 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Instant;
+import java.util.Optional;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -42,6 +44,7 @@ public class PullRequestResourceTest {
   private final BranchResolver branchResolver = mock(BranchResolver.class);
   private final PullRequestStoreFactory storeFactory = mock(PullRequestStoreFactory.class);
   private final PullRequestStore store = mock(PullRequestStore.class);
+  private final Repository repository = mock(Repository.class);
   private final UriInfo uriInfo = mock(UriInfo.class);
   private final PullRequestResource pullRequestResource = new PullRequestResource(repositoryResolver, branchResolver, storeFactory);
   private final ArgumentCaptor<PullRequest> pullRequestStoreCaptor = ArgumentCaptor.forClass(PullRequest.class);
@@ -54,6 +57,7 @@ public class PullRequestResourceTest {
   public void init() {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
+    when(storeFactory.create(repository)).thenReturn(store);
     when(store.add(any(), pullRequestStoreCaptor.capture())).thenReturn("1");
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
@@ -76,7 +80,6 @@ public class PullRequestResourceTest {
     assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1");
     PullRequest pullRequest = pullRequestStoreCaptor.getValue();
     assertThat(pullRequest.getAuthor()).isEqualTo("trillian");
-    assertThat(pullRequest.getCreationDate()).isNotNull();
   }
 
   @Test
@@ -149,6 +152,23 @@ public class PullRequestResourceTest {
     assertExceptionFrom(response)
       .isOffClass(NotFoundException.class)
       .hasMessageMatching("could not find.*");
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetPullRequest() throws URISyntaxException {
+    when(repository.getNamespace()).thenReturn("foo");
+    when(repository.getName()).thenReturn("bar");
+    when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
+    PullRequest pullRequest = new PullRequest("source", "target", "title");
+    pullRequest.setAuthor("A. U. Thor");
+    pullRequest.setId("id");
+    pullRequest.setCreationDate(Instant.MIN);
+    when(store.get(repository, "123")).thenReturn(Optional.of(pullRequest));
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar/123");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("_links");
   }
 
   private byte[] loadJson(String s) throws IOException {

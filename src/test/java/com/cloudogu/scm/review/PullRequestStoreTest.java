@@ -18,8 +18,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PullRequestStoreTest {
@@ -33,8 +32,7 @@ class PullRequestStoreTest {
   @InjectMocks
   private PullRequestStore store;
 
-  @BeforeEach
-  public void setUpStore() {
+  private void setUpStore() {
     // delegate store methods to backing map
     when(dataStore.getAll()).thenReturn(backingMap);
     doAnswer(invocationOnMock -> {
@@ -47,6 +45,7 @@ class PullRequestStoreTest {
 
   @Test
   public void testAdd() {
+    setUpStore();
     assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("1");
     assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("2");
     assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("3");
@@ -55,6 +54,7 @@ class PullRequestStoreTest {
   @SuppressWarnings("squid:S2925") // suppress warnings regarding Thread.sleep. Found no other way to test this.
   @Test
   public void shouldCreateUniqueIdsWhenAccessedInParallel() throws InterruptedException {
+    setUpStore();
     Semaphore semaphore = new Semaphore(2);
     semaphore.acquire(2);
     store = new PullRequestStore(dataStore) {
@@ -94,14 +94,28 @@ class PullRequestStoreTest {
   }
 
   private PullRequest createPullRequest() {
-    return PullRequest.builder()
-      .title("Awesome PR")
-      .description("Hitchhiker's guide to the galaxy")
-      .source("develop")
-      .target("master")
-      .author("dent")
-      .creationDate(Instant.now())
-      .build();
+    PullRequest pullRequest = new PullRequest("develop", "master", "Awesome PR");
+    pullRequest.setDescription("Hitchhiker's guide to the galaxy");
+    pullRequest.setAuthor("dent");
+    return pullRequest;
   }
 
+  @Test
+  void shouldGetExistingPullRequest() {
+    PullRequest pr = new PullRequest();
+    when(dataStore.get("abc")).thenReturn(pr);
+    assertThat(store.get(REPOSITORY, "abc").get()).isEqualTo(pr);
+  }
+
+  @Test
+  void shouldReturnEmptyOptionalOnNonExistingPullRequest() {
+    assertThat(store.get(REPOSITORY, "iDontExist")).isEmpty();
+  }
+
+  @Test
+  void shouldSetCreationDateOnAdd() {
+    PullRequest pr = mock(PullRequest.class);
+    store.add(REPOSITORY, pr);
+    verify(pr).setCreationDate(any(Instant.class));
+  }
 }

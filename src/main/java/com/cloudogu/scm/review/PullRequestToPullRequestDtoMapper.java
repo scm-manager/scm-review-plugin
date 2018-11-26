@@ -1,0 +1,24 @@
+package com.cloudogu.scm.review;
+
+import de.otto.edison.hal.Links;
+import org.mapstruct.*;
+import sonia.scm.api.v2.resources.BaseMapper;
+
+import java.net.URI;
+
+import static de.otto.edison.hal.Links.linkingTo;
+
+@Mapper
+public abstract class PullRequestToPullRequestDtoMapper extends BaseMapper<PullRequest, PullRequestDto> {
+
+  @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
+  public abstract PullRequestDto map(PullRequest pullRequest, @Context URI location);
+
+  @AfterMapping
+  void appendLinks(@MappingTarget PullRequestDto target, @Context URI location) {
+    Links.Builder linksBuilder = linkingTo()
+      .self(location.toString());
+    target.add(linksBuilder.build());
+  }
+
+}

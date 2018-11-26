@@ -8,16 +8,14 @@ import sonia.scm.repository.Repository;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Optional;
 
 @Path(PullRequestResource.PULL_REQUESTS_PATH_V2)
 public class PullRequestResource {
@@ -27,12 +25,14 @@ public class PullRequestResource {
   private final RepositoryResolver repositoryResolver;
   private final BranchResolver branchResolver;
   private final PullRequestStoreFactory storeFactory;
+  private final PullRequestToPullRequestDtoMapper mapper;
 
   @Inject
   public PullRequestResource(RepositoryResolver repositoryResolver, BranchResolver branchResolver, PullRequestStoreFactory storeFactory) {
     this.repositoryResolver = repositoryResolver;
     this.branchResolver = branchResolver;
     this.storeFactory = storeFactory;
+    this.mapper = new PullRequestToPullRequestDtoMapperImpl();
   }
 
   @POST
@@ -51,10 +51,26 @@ public class PullRequestResource {
 
     String author = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     pullRequest.setAuthor(author);
-    pullRequest.setCreationDate(Instant.now());
     String id = store.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
+  }
+
+  @GET
+  @Path("{namespace}/{name}/{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response get(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("id") String id) {
+    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
+    Repository repository = repositoryResolver.resolve(namespaceAndName);
+
+    PullRequestStore pullRequestStore = storeFactory.create(repository);
+    Optional<PullRequest> pullRequest = pullRequestStore.get(repository, id);
+    URI location = uriInfo.getAbsolutePathBuilder().build();
+    if (pullRequest.isPresent()) {
+      return Response.ok(mapper.map(pullRequest.get(), location)).build();
+    }
+
+    return Response.status(404).build(); //TODO: Error message
   }
 
   private void verifyBranchExists(Repository repository, String branchName) {
