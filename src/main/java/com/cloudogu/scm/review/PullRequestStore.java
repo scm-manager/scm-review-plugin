@@ -7,7 +7,6 @@ import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 
 public class PullRequestStore {
