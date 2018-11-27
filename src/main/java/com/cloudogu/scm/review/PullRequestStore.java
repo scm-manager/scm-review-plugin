@@ -2,6 +2,7 @@ package com.cloudogu.scm.review;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Striped;
+import sonia.scm.NotFoundException;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 
@@ -34,11 +35,15 @@ public class PullRequestStore {
     }
   }
 
-  public Optional<PullRequest> get(Repository repository, String id) {
+  public PullRequest get(Repository repository, String id) {
     Lock lock = LOCKS.get(repository.getNamespaceAndName());
     lock.lock();
     try {
-      return Optional.ofNullable(store.get(id));
+      PullRequest result = store.get(id);
+      if (result == null) {
+        throw new NotFoundException(PullRequest.class, id);
+      }
+      return result;
     } finally {
       lock.unlock();
     }

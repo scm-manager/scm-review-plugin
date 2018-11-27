@@ -14,8 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.time.Instant;
-import java.util.Optional;
 
 @Path(PullRequestResource.PULL_REQUESTS_PATH_V2)
 public class PullRequestResource {
@@ -64,13 +62,10 @@ public class PullRequestResource {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
 
     PullRequestStore pullRequestStore = storeFactory.create(repository);
-    Optional<PullRequest> pullRequest = pullRequestStore.get(repository, id);
+    PullRequest pullRequest = pullRequestStore.get(repository, id);
     URI location = uriInfo.getAbsolutePathBuilder().build();
-    if (pullRequest.isPresent()) {
-      return Response.ok(mapper.map(pullRequest.get(), location)).build();
-    }
+    return Response.ok(mapper.map(pullRequest, location)).build();
 
-    return Response.status(404).build(); //TODO: Error message
   }
 
   private void verifyBranchExists(Repository repository, String branchName) {

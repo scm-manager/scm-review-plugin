@@ -1,12 +1,13 @@
 package com.cloudogu.scm.review;
 
 import com.google.common.collect.Maps;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.NotFoundException;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 
@@ -104,12 +105,12 @@ class PullRequestStoreTest {
   void shouldGetExistingPullRequest() {
     PullRequest pr = new PullRequest();
     when(dataStore.get("abc")).thenReturn(pr);
-    assertThat(store.get(REPOSITORY, "abc").get()).isEqualTo(pr);
+    assertThat(store.get(REPOSITORY, "abc")).isEqualTo(pr);
   }
 
   @Test
-  void shouldReturnEmptyOptionalOnNonExistingPullRequest() {
-    assertThat(store.get(REPOSITORY, "iDontExist")).isEmpty();
+  void shouldThrowNotFoundException() {
+    Assertions.assertThrows(NotFoundException.class, () -> store.get(REPOSITORY, "iDontExist"));
   }
 
   @Test

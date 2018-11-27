@@ -164,12 +164,13 @@ public class PullRequestResourceTest {
     pullRequest.setAuthor("A. U. Thor");
     pullRequest.setId("id");
     pullRequest.setCreationDate(Instant.MIN);
-    when(store.get(repository, "123")).thenReturn(Optional.of(pullRequest));
+    when(store.get(repository, "123")).thenReturn(pullRequest);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar/123");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("_links");
   }
+
 
   private byte[] loadJson(String s) throws IOException {
     URL url = Resources.getResource(s);
