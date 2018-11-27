@@ -11,6 +11,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
+@SuppressWarnings("squid:S2160")
 public class PullRequestDto extends HalRepresentation {
   private String id;
   private String author;
