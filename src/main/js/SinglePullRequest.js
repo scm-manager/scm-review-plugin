@@ -13,6 +13,14 @@ import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
 import { getPullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
+import injectSheet from "react-jss";
+import classNames from "classnames";
+
+const styles = {
+  bottomSpace: {
+    marginBottom: "1.5em"
+  }
+};
 
 type Props = {
   repository: Repository,
@@ -62,7 +70,7 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 
   render() {
-    const { repository, t } = this.props;
+    const { repository, t, classes } = this.props;
     const { pullRequest, error, loading } = this.state;
     let description = null;
     if (error) {
@@ -97,10 +105,9 @@ class SinglePullRequest extends React.Component<Props, State> {
             title={t("scm-review-plugin.create.title") + " #" + pullRequest.id}
           />
 
-          <section className="section ">
             <div className="media">
               <div className="media-content">
-                <Title title={pullRequest.title} />
+                <Subtitle subtitle={pullRequest.title} />
                 <div>
                   <span className="tag is-light is-medium">{pullRequest.source}</span>{" "}
                   <i className="fas fa-long-arrow-alt-right" />{" "}
@@ -112,13 +119,12 @@ class SinglePullRequest extends React.Component<Props, State> {
 
           {description}
 
-          <div className="media">
+          <div className={classNames("media", classes.bottomSpace)}>
             <div className="media-content">
               {pullRequest.author}
             </div>
             <div className="media-right"><DateFromNow date={pullRequest.creationDate} /></div>
           </div>
-          </section>
           <PullRequestInformation repository={repository}/>
         </div>
       </div>
@@ -126,4 +132,4 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 }
 
-export default withRouter(translate("plugins")(SinglePullRequest));
+export default withRouter(injectSheet(styles)(translate("plugins")(SinglePullRequest)));
