@@ -12,6 +12,7 @@ import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
 import { getPullRequest } from "./pullRequest";
+import PullRequestInformation from "./PullRequestInformation";
 
 type Props = {
   repository: Repository,
@@ -92,9 +93,11 @@ class SinglePullRequest extends React.Component<Props, State> {
     return (
       <div className="columns">
         <div className="column">
-          <Title
-            title={t("scm-review-plugin.create.title") + " #" + pullRequest.id}
-          />
+
+          <section className="section">
+            <Title
+              title={t("scm-review-plugin.create.title") + " #" + pullRequest.id}
+            />
             <div className="media">
               <div className="media-content">
                 <Subtitle subtitle={pullRequest.title} />
@@ -115,21 +118,8 @@ class SinglePullRequest extends React.Component<Props, State> {
             </div>
             <div className="media-right"><DateFromNow date={pullRequest.creationDate} /></div>
           </div>
-
-
-
-          <div className="tabs">
-            <ul>
-              <li className="is-active">
-                <a>Commits</a>
-              </li>
-              <li>
-                <a>Diff</a>
-              </li>
-            </ul>
-          </div>
-
-          <p>The Changelog ...</p>
+          </section>
+          <PullRequestInformation repository={repository}/>
         </div>
       </div>
     );

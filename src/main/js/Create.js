@@ -12,6 +12,7 @@ import injectSheet from "react-jss";
 import type { BasicPullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
 import { translate } from "react-i18next";
+import PullRequestInformation from "./PullRequestInformation";
 
 const styles = {
   controlButtons: {
@@ -100,18 +101,8 @@ class Create extends React.Component<Props, State> {
             onChange={this.handleFormChange}
           />
 
-          <div className="tabs">
-            <ul>
-              <li className="is-active">
-                <a>Commits</a>
-              </li>
-              <li>
-                <a>Diff</a>
-              </li>
-            </ul>
-          </div>
+          <PullRequestInformation repository={repository}/>
 
-          <p>The Changelog ...</p>
 
           <div className={classes.controlButtons}>
             <SubmitButton
