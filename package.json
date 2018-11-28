@@ -6,7 +6,7 @@
     "build": "ui-bundler plugin",
     "watch": "ui-bundler plugin -w",
     "lint": "ui-bundler lint",
-    "test": "ui-bundler test",
+    "test": "ui-bundler test --ci",
     "flow": "flow check"
   },
   "dependencies": {
@@ -15,7 +15,7 @@
     "@scm-manager/ui-types": "latest"
   },
   "devDependencies": {
-    "@scm-manager/ui-bundler": "^0.0.19",
+    "@scm-manager/ui-bundler": "^0.0.23",
     "jest": "^23.6.0",
     "react-router-dom": "^4.3.1",
     "fetch-mock": "^6.5.0",

@@ -1,7 +1,7 @@
 // @flow
 import fetchMock from "fetch-mock";
-//import type { PullRequest } from "./PullRequest";
-//import { createPullRequest, getBranches } from "./pullRequest";
+import type { PullRequest } from "./PullRequest";
+import { createPullRequest, getBranches } from "./pullRequest";
 
 
 //TODO: fix tests! Right now, Jenkins has problems with the tests
@@ -37,7 +37,8 @@ describe("API create pull request", () => {
   it("should be true", () => {
     expect(true).toBe(true);
   });
-  /*it("should create pull request successfully", done => {
+
+  it("should create pull request successfully", done => {
     fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
       status: 204
     });
@@ -79,5 +80,6 @@ describe("API create pull request", () => {
       expect(response.error).toBeDefined();
       done();
     });
-  });*/
+  });
+
 });
