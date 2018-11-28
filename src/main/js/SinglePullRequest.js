@@ -6,11 +6,13 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
+import { withRouter } from "react-router-dom";
 
 type Props = {
   repository: Repository,
   classes: any,
-  t: string => string
+  t: string => string,
+  match: any
 };
 
 type State = {
@@ -26,11 +28,12 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 
   render() {
-    const {t} = this.props;
+    const {repository, t} = this.props;
+    const { pullRequestNumber } = this.props.match.params;
     return (
       <div className="columns">
         <div className="column">
-          <Title title={t("scm-review-plugin.create.title")} />
+          <Title title={t("scm-review-plugin.create.title") + pullRequestNumber} />
           <div className="tabs">
             <ul>
               <li className="is-active">
@@ -50,4 +53,4 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 }
 
-export default (translate("plugins")(SinglePullRequest));
+export default withRouter(translate("plugins")(SinglePullRequest));
