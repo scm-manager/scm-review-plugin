@@ -7,20 +7,20 @@ import {
   Select,
   ErrorNotification
 } from "@scm-manager/ui-components";
-import type { PullRequest } from "./types/PullRequest";
+import type { BasicPullRequest } from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { translate } from "react-i18next";
 
 type Props = {
   repository: Repository,
-  onChange: (pr: PullRequest) => void,
+  onChange: (pr: BasicPullRequest) => void,
 
   // Context props
   t: string => string
 };
 
 type State = {
-  pullRequest?: PullRequest,
+  pullRequest?: BasicPullRequest,
   branches: string[],
   loading: boolean,
   error?: boolean

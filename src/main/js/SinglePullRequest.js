@@ -16,20 +16,20 @@ type Props = {
 };
 
 type State = {
-
+  pullRequestNumber: number
 };
 
 class SinglePullRequest extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-
+      pullRequestNumber : this.props.match.params.pullRequestNumber
     };
   }
 
   render() {
     const {repository, t} = this.props;
-    const { pullRequestNumber } = this.props.match.params;
+    const { pullRequestNumber } = this.state;
     return (
       <div className="columns">
         <div className="column">

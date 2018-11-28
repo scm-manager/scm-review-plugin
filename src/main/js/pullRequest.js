@@ -28,3 +28,16 @@ export function getBranches(url: string) {
       return { error: error };
     });
 }
+
+export function getPullRequest(url: string){
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .then(pullRequest => {
+      return {pullRequest: pullRequest}
+    })
+    .catch(cause => {
+      const error = new Error(`could not fetch pull request: ${cause.message}`);
+      return {error: error};
+    })
+}
