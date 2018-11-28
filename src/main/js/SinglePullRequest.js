@@ -6,7 +6,6 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
-import CreateForm from "./CreateForm";
 
 type Props = {
   repository: Repository,
@@ -27,19 +26,11 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 
   render() {
+    const {t} = this.props;
     return (
       <div className="columns">
         <div className="column">
           <Title title={t("scm-review-plugin.create.title")} />
-          <Subtitle
-            subtitle={t("scm-review-plugin.create.subtitle") + repository.name}
-          />
-          {notification}
-          <CreateForm
-            repository={repository}
-            onChange={this.handleFormChange}
-          />
-
           <div className="tabs">
             <ul>
               <li className="is-active">
@@ -53,14 +44,6 @@ class SinglePullRequest extends React.Component<Props, State> {
 
           <p>The Changelog ...</p>
 
-          <div className={classes.controlButtons}>
-            <SubmitButton
-              label={t("scm-review-plugin.create.submitButton")}
-              action={this.submit}
-              loading={loading}
-              disabled={disabled}
-            />
-          </div>
         </div>
       </div>
     );

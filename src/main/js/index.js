@@ -26,10 +26,10 @@ const NewPullRequestRoute = ({url, repository}) => {
 binder.bind("repository.route", NewPullRequestRoute);
 
 //  show single pullRequest
-const ShowPullRequestRoute = ({url, number}) => {
-  return <Route path={`${url}/pull-request/${number}`}
+const ShowPullRequestRoute = ({url}) => {
+  return <Route path={`${url}/pull-request/:pullRequestNumber`}
                 render={() => <SinglePullRequest/>}
-                exact/>;
+                />;
 };
 binder.bind("repository.route", ShowPullRequestRoute);
 
