@@ -34,9 +34,14 @@ const ShowPullRequestRoute = ({url, repository, match}) => {
 binder.bind("repository.route", ShowPullRequestRoute);
 
 // list
+function matches(route: any){
+  const regex = new RegExp(`.*(/pull-request)/.*`);
+  return route.location.pathname.match(regex);
+};
 
 const PullRequestNavLink = ({url}) => {
-  return <NavLink to={`${url}/pull-requests`} label="Pull Requests"/>;
+  return <NavLink to={`${url}/pull-requests`} label="Pull Requests" activeWhenMatch={matches}
+  />;
 };
 
 binder.bind("repository.navigation", PullRequestNavLink, reviewSupportedPredicate);

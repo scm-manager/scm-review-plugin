@@ -93,14 +93,14 @@ class SinglePullRequest extends React.Component<Props, State> {
     return (
       <div className="columns">
         <div className="column">
+          <Title
+            title={t("scm-review-plugin.create.title") + " #" + pullRequest.id}
+          />
 
-          <section className="section">
-            <Title
-              title={t("scm-review-plugin.create.title") + " #" + pullRequest.id}
-            />
+          <section className="section ">
             <div className="media">
               <div className="media-content">
-                <Subtitle subtitle={pullRequest.title} />
+                <Title title={pullRequest.title} />
                 <div>
                   <span className="tag is-light is-medium">{pullRequest.source}</span>{" "}
                   <i className="fas fa-long-arrow-alt-right" />{" "}
