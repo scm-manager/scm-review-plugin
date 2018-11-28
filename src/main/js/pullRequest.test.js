@@ -92,6 +92,7 @@ describe("API get pull request", () => {
     author: "admin",
     id: "1",
     creationDate: "2018-11-28",
+    state: "open",
     _links: {}
   };
 

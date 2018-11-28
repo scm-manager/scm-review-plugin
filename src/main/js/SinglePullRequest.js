@@ -53,7 +53,7 @@ class SinglePullRequest extends React.Component<Props, State> {
       "/" +
       repository.name +
       "/" +
-      pullRequestNumber;
+      pullRequestNumber; //TODO: use link if available
     getPullRequest(url).then(response => {
       if (response.error) {
         this.setState({
