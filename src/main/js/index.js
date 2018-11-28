@@ -3,6 +3,7 @@ import React from "react";
 import { binder } from "@scm-manager/ui-extensions";
 import { NavLink } from "@scm-manager/ui-components";
 import Create from './Create';
+import SinglePullRequest from './SinglePullRequest';
 import { Route } from "react-router-dom";
 
 const reviewSupportedPredicate = (props: Object) => {
@@ -22,8 +23,15 @@ const NewPullRequestRoute = ({url, repository}) => {
                 render={() => <Create repository={repository}/>}
                 exact/>;
 };
-
 binder.bind("repository.route", NewPullRequestRoute);
+
+//  show single pullRequest
+const ShowPullRequestRoute = ({url, number}) => {
+  return <Route path={`${url}/pull-request/${number}`}
+                render={() => <SinglePullRequest/>}
+                exact/>;
+};
+binder.bind("repository.route", ShowPullRequestRoute);
 
 // list
 

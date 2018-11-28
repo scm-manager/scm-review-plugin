@@ -9,7 +9,7 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import injectSheet from "react-jss";
-import type { PullRequest } from "./PullRequest";
+import type { PullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
 import { translate } from "react-i18next";
 

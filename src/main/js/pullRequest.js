@@ -1,4 +1,4 @@
-import type { PullRequest } from "./PullRequest";
+import type { PullRequest } from "./types/PullRequest";
 import { apiClient } from "@scm-manager/ui-components";
 
 export function createPullRequest(url: string, pullRequest: PullRequest) {

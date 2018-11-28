@@ -7,7 +7,7 @@ import {
   Select,
   ErrorNotification
 } from "@scm-manager/ui-components";
-import type { PullRequest } from "./PullRequest";
+import type { PullRequest } from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { translate } from "react-i18next";
 
