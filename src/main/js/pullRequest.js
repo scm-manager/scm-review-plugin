@@ -34,7 +34,7 @@ export function getPullRequest(url: string){
     .get(url)
     .then(response => response.json())
     .then(pullRequest => {
-      return {pullRequest: pullRequest}
+      return pullRequest
     })
     .catch(cause => {
       const error = new Error(`could not fetch pull request: ${cause.message}`);

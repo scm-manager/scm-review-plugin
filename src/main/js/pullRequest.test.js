@@ -106,7 +106,7 @@ describe("API get pull request", () => {
 
     getPullRequest(PULLREQUEST_URL)
       .then(response => {
-        expect(response.pullRequest).toEqual(pullRequest);
+        expect(response).toEqual(pullRequest);
         done();
       });
   });
