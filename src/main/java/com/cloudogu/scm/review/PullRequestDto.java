@@ -17,6 +17,8 @@ public class PullRequestDto extends HalRepresentation {
   private String author;
   private String source;
   private String target;
+  private String title;
+  private String description;
   private Instant creationDate;
 
   @Override
