@@ -1,13 +1,17 @@
 // @flow
 import React from "react";
 import {
-  ErrorNotification, SubmitButton, Subtitle, Title
+  Title,
+  Loading,
+  ErrorPage,
+  Subtitle,
+  DateFromNow
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
-import {getPullRequest} from "./pullRequest";
+import { getPullRequest } from "./pullRequest";
 
 type Props = {
   repository: Repository,
@@ -17,7 +21,6 @@ type Props = {
 };
 
 type State = {
-  pullRequestNumber: number,
   pullRequest: PullRequest,
   error?: Error,
   loading: boolean
@@ -27,42 +30,94 @@ class SinglePullRequest extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      pullRequestNumber : this.props.match.params.pullRequestNumber,
       loading: true,
       pullRequest: null
     };
   }
 
   componentDidMount(): void {
-    const {repository} = this.props;
-    const {pullRequestNumber} = this.state;
-    const url = "/pull-requests/" + repository.namespace + "/" + repository.name + "/" + pullRequestNumber;
-    getPullRequest(url)
-      .then(response => {
-        console.log(response);
-        if(response.error){
-          this.setState({
-            error: response.error,
-            loading: false
-          })
-        }
-        else {
-          this.setState({
-            pullRequest: response,
-            loading: false
-          })
-        }
-      });
+    const { repository } = this.props;
+    const pullRequestNumber = this.props.match.params.pullRequestNumber;
+    const url =
+      "/pull-requests/" +
+      repository.namespace +
+      "/" +
+      repository.name +
+      "/" +
+      pullRequestNumber;
+    getPullRequest(url).then(response => {
+      if (response.error) {
+        this.setState({
+          error: response.error,
+          loading: false
+        });
+      } else {
+        this.setState({
+          pullRequest: response,
+          loading: false
+        });
+      }
+    });
   }
 
   render() {
-    const {repository, t} = this.props;
-    const { pullRequestNumber } = this.state;
-    console.log(this.state);
+    const { repository, t } = this.props;
+    const { pullRequest, error, loading } = this.state;
+    let description = null;
+    if (error) {
+      return (
+        <ErrorPage
+          title={t("scm-review-plugin.show-pull-request.error-title")}
+          subtitle={t("scm-review-plugin.show-pull-request.error-subtitle")}
+          error={error}
+        />
+      );
+    }
+
+    if (!pullRequest || loading) {
+      return <Loading />;
+    }
+
+    if (pullRequest.description) {
+      description = (
+        <div className="media">
+          <div className="media-left">
+            {t("scm-review-plugin.show-pull-request.description")}
+          </div>
+          <div className="media-content">{pullRequest.description}</div>
+        </div>
+      );
+    }
+
     return (
       <div className="columns">
         <div className="column">
-          <Title title={t("scm-review-plugin.create.title") + pullRequestNumber + ".."} />
+          <Title
+            title={t("scm-review-plugin.create.title") + " #" + pullRequest.id}
+          />
+            <div className="media">
+              <div className="media-content">
+                <Subtitle subtitle={pullRequest.title} />
+                <div>
+                  <span className="tag is-light is-medium">{pullRequest.source}</span>{" "}
+                  <i className="fas fa-long-arrow-alt-right" />{" "}
+                  <span className="tag is-light is-medium">{pullRequest.target}</span>
+                </div>
+              </div>
+              <div className="media-right">{pullRequest.state}</div>
+            </div>
+
+          {description}
+
+          <div className="media">
+            <div className="media-content">
+              {pullRequest.author}
+            </div>
+            <div className="media-right"><DateFromNow date={pullRequest.creationDate} /></div>
+          </div>
+
+
+
           <div className="tabs">
             <ul>
               <li className="is-active">
@@ -75,7 +130,6 @@ class SinglePullRequest extends React.Component<Props, State> {
           </div>
 
           <p>The Changelog ...</p>
-
         </div>
       </div>
     );
