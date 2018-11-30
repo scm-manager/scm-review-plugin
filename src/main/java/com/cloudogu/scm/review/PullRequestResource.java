@@ -67,7 +67,6 @@ public class PullRequestResource {
     PullRequest pullRequest = pullRequestStore.get(id);
     URI location = uriInfo.getAbsolutePathBuilder().build();
     return Response.ok(mapper.map(pullRequest, location)).build();
-
   }
 
   @GET
@@ -78,8 +77,7 @@ public class PullRequestResource {
       .stream()
       .map(pr -> mapper.map(pr, uriInfo.getAbsolutePathBuilder().build()))
       .collect(Collectors.toList())
-    )
-      .build();
+    ).build();
   }
 
   private Repository getRepository(String namespace, String name) {
