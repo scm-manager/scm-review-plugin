@@ -1,8 +1,11 @@
 package com.cloudogu.scm.review;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.io.Resources;
+import org.assertj.core.util.Lists;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.mock.MockDispatcherFactory;
 import org.jboss.resteasy.mock.MockHttpRequest;
@@ -23,9 +26,14 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
+import static com.cloudogu.scm.review.TestData.createPullRequest;
+import static org.assertj.core.api.AssertionsForClassTypes.anyOf;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.atIndex;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -57,7 +65,7 @@ public class PullRequestResourceTest {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(repository)).thenReturn(store);
-    when(store.add(any(), pullRequestStoreCaptor.capture())).thenReturn("1");
+    when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     dispatcher.getRegistry().addSingletonResource(pullRequestResource);
@@ -94,7 +102,7 @@ public class PullRequestResourceTest {
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
-    verify(store, never()).add(any(), any());
+    verify(store, never()).add(any());
   }
 
   @Test
@@ -110,7 +118,7 @@ public class PullRequestResourceTest {
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
-    verify(store, never()).add(any(), any());
+    verify(store, never()).add(any());
   }
 
   @Test
@@ -163,11 +171,28 @@ public class PullRequestResourceTest {
     pullRequest.setAuthor("A. U. Thor");
     pullRequest.setId("id");
     pullRequest.setCreationDate(Instant.MIN);
-    when(store.get(repository, "123")).thenReturn(pullRequest);
+    when(store.get("123")).thenReturn(pullRequest);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar/123");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("_links");
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetPullRequests() throws URISyntaxException, IOException {
+    when(repository.getNamespace()).thenReturn("foo");
+    when(repository.getName()).thenReturn("bar");
+    when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
+    String id_1 = "id_1";
+    String id_2 = "ABC ID 2";
+    List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(id_1), createPullRequest(id_2));
+    when(store.getAll()).thenReturn(pullRequests);
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"id\":\""+id_1+"\"");
+    assertThat(response.getContentAsString()).contains("\"id\":\""+id_2+"\"");
   }
 
 
