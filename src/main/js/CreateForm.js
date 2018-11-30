@@ -90,7 +90,7 @@ class CreateForm extends React.Component<Props, State> {
     return (
       <form>
         <div className="columns">
-          <div className="column">
+          <div className="column is-clipped">
             <Select
               name="source"
               label={t("scm-review-plugin.create.sourceBranch")}
@@ -99,7 +99,7 @@ class CreateForm extends React.Component<Props, State> {
               loading={loading}
             />
           </div>
-          <div className="column">
+          <div className="column is-clipped">
             <Select
               name="target"
               label={t("scm-review-plugin.create.targetBranch")}
