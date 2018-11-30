@@ -2,6 +2,7 @@ package com.cloudogu.scm.review;
 
 import com.google.common.collect.Maps;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,10 +12,12 @@ import sonia.scm.NotFoundException;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 
+import javax.inject.Inject;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 
+import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,14 +27,18 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PullRequestStoreTest {
 
-  private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
+  private Repository repository = new Repository("1", "git", "space", "X");
 
   private final Map<String, PullRequest> backingMap = Maps.newHashMap();
   @Mock
   private DataStore<PullRequest> dataStore;
 
-  @InjectMocks
   private PullRequestStore store;
+
+  @BeforeEach
+  void init(){
+    store = new PullRequestStore(dataStore, repository);
+  }
 
   private void setUpStore() {
     // delegate store methods to backing map
@@ -47,9 +54,9 @@ class PullRequestStoreTest {
   @Test
   public void testAdd() {
     setUpStore();
-    assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("1");
-    assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("2");
-    assertThat(store.add(REPOSITORY, createPullRequest())).isEqualTo("3");
+    assertThat(store.add(createPullRequest())).isEqualTo("1");
+    assertThat(store.add(createPullRequest())).isEqualTo("2");
+    assertThat(store.add(createPullRequest())).isEqualTo("3");
   }
 
   @SuppressWarnings("squid:S2925") // suppress warnings regarding Thread.sleep. Found no other way to test this.
@@ -58,7 +65,7 @@ class PullRequestStoreTest {
     setUpStore();
     Semaphore semaphore = new Semaphore(2);
     semaphore.acquire(2);
-    store = new PullRequestStore(dataStore) {
+    store = new PullRequestStore(dataStore, repository) {
       @Override
       String createId() {
         String id = super.createId();
@@ -75,7 +82,7 @@ class PullRequestStoreTest {
       public void run() {
         PullRequest pullRequest = createPullRequest();
         pullRequest.setAuthor("first");
-        store.add(REPOSITORY, pullRequest);
+        store.add(pullRequest);
         semaphore.release();
       }
     };
@@ -84,7 +91,7 @@ class PullRequestStoreTest {
       public void run() {
         PullRequest pullRequest = createPullRequest();
         pullRequest.setAuthor("second");
-        store.add(REPOSITORY, pullRequest);
+        store.add(pullRequest);
         semaphore.release();
       }
     };
@@ -94,29 +101,37 @@ class PullRequestStoreTest {
     assertThat(backingMap.size()).isEqualTo(2);
   }
 
-  private PullRequest createPullRequest() {
-    PullRequest pullRequest = new PullRequest("develop", "master", "Awesome PR");
-    pullRequest.setDescription("Hitchhiker's guide to the galaxy");
-    pullRequest.setAuthor("dent");
-    return pullRequest;
-  }
 
   @Test
   void shouldGetExistingPullRequest() {
     PullRequest pr = new PullRequest();
     when(dataStore.get("abc")).thenReturn(pr);
-    assertThat(store.get(REPOSITORY, "abc")).isEqualTo(pr);
+    assertThat(store.get("abc")).isEqualTo(pr);
+  }
+
+  @Test
+  void shouldGetExistingPullRequests() {
+    Map<String, PullRequest> pullRequestMap = Maps.newHashMap() ;
+    PullRequest pullRequest1 = createPullRequest();
+    PullRequest pullRequest2 = createPullRequest();
+    pullRequestMap.put("1", pullRequest1);
+    pullRequestMap.put("2", pullRequest2);
+    when(dataStore.getAll()).thenReturn(pullRequestMap);
+    assertThat(store.getAll())
+      .asList()
+      .hasSize(2)
+      .containsExactlyInAnyOrder(pullRequest1,pullRequest2);
   }
 
   @Test
   void shouldThrowNotFoundException() {
-    Assertions.assertThrows(NotFoundException.class, () -> store.get(REPOSITORY, "iDontExist"));
+    Assertions.assertThrows(NotFoundException.class, () -> store.get( "iDontExist"));
   }
 
   @Test
   void shouldSetCreationDateOnAdd() {
     PullRequest pr = mock(PullRequest.class);
-    store.add(REPOSITORY, pr);
+    store.add( pr);
     verify(pr).setCreationDate(any(Instant.class));
   }
 }
