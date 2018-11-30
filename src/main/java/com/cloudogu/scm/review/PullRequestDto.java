@@ -20,6 +20,7 @@ public class PullRequestDto extends HalRepresentation {
   private String title;
   private String description;
   private Instant creationDate;
+  private String status;
 
   @Override
   @SuppressWarnings("squid:S1185") // We want to have this method available in this package

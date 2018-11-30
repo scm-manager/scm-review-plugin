@@ -12,7 +12,6 @@ import java.time.Instant;
 
 @Getter
 @RequiredArgsConstructor
-@NoArgsConstructor
 @XmlRootElement(name = "pull-request")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PullRequest {
@@ -33,4 +32,16 @@ public class PullRequest {
   @Setter
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant creationDate;
+  @Setter
+  private Status status;
+
+  public enum Status {
+    OPEN,
+    MERGED,
+    REJECTED
+  }
+
+  public PullRequest() {
+    status = Status.OPEN;
+  }
 }

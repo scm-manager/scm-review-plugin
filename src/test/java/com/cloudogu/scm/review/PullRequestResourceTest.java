@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
-import java.util.Optional;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
