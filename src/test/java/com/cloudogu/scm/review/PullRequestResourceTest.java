@@ -58,9 +58,15 @@ public class PullRequestResourceTest {
   private final MockHttpResponse response = new MockHttpResponse();
 
   private PullRequestResource pullRequestResource ;
+  private static final String REPOSITORY_NAME = "repo";
+  private static final String REPOSITORY_ID = "repo_ID";
+  private static final String REPOSITORY_NAMESPACE = "ns";
 
   @Before
   public void init() {
+    when(repository.getId()).thenReturn(REPOSITORY_ID);
+    when(repository.getName()).thenReturn(REPOSITORY_NAME);
+    when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     pullRequestResource = new PullRequestResource(repositoryResolver, branchResolver, storeFactory);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
@@ -73,7 +79,7 @@ public class PullRequestResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldCreateNewValidPullRequest() throws URISyntaxException, IOException {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request =
@@ -87,7 +93,34 @@ public class PullRequestResourceTest {
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
     assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1");
     PullRequest pullRequest = pullRequestStoreCaptor.getValue();
-    assertThat(pullRequest.getAuthor()).isEqualTo("trillian");
+    assertThat(pullRequest.getAuthor()).isEqualTo("rr");
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException {
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME+"/123");
+    dispatcher.invoke(request, response);
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException {
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME+"");
+    dispatcher.invoke(request, response);
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnCreatePR() throws URISyntaxException, IOException {
+    byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
+    MockHttpRequest request = MockHttpRequest  .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/space/name")
+      .content(pullRequestJson)
+      .contentType(MediaType.APPLICATION_JSON);
+    dispatcher.invoke(request, response);
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
   }
 
   @Test
@@ -142,16 +175,13 @@ public class PullRequestResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldHandleMissingBranch() throws URISyntaxException, IOException {
-    Repository repository = new Repository();
-    when(repositoryResolver.resolve(new NamespaceAndName("space", "X")))
-      .thenReturn(repository);
     when(branchResolver.resolve(repository, "sourceBranch")).thenThrow(new NotFoundException("x", "y"));
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request =
       MockHttpRequest
-        .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/space/X")
+        .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME)
         .content(pullRequestJson)
         .contentType(MediaType.APPLICATION_JSON);
 
@@ -163,17 +193,15 @@ public class PullRequestResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldGetPullRequest() throws URISyntaxException {
-    when(repository.getNamespace()).thenReturn("foo");
-    when(repository.getName()).thenReturn("bar");
-    when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     PullRequest pullRequest = new PullRequest("source", "target", "title");
     pullRequest.setAuthor("A. U. Thor");
     pullRequest.setId("id");
     pullRequest.setCreationDate(Instant.MIN);
     when(store.get("123")).thenReturn(pullRequest);
-    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar/123");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME+"/123");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("_links");
@@ -181,11 +209,9 @@ public class PullRequestResourceTest {
 
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldSortPullRequestsByLastModified() throws URISyntaxException, IOException {
-    when(repository.getNamespace()).thenReturn("foo");
-    when(repository.getName()).thenReturn("bar");
-    when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     String firstPR = "first_PR";
     String toDayUpdatedPR = "to_day_updated_PR";
     String lastPR = "last_PR";
@@ -207,7 +233,7 @@ public class PullRequestResourceTest {
     lastPullRequest.setLastModified(lastCreation);
 
     when(store.getAll()).thenReturn(Lists.newArrayList(lastPullRequest, firstPullRequest, toDayUpdatedPullRequest));
-    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME+"");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
@@ -220,26 +246,25 @@ public class PullRequestResourceTest {
     assertThat(pr_2.get("id").asText()).isEqualTo(toDayUpdatedPR);
     assertThat(pr_3.get("id").asText()).isEqualTo(firstPR);
   }
+
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetAllPullRequests() throws URISyntaxException, IOException {
-    when(repository.getNamespace()).thenReturn("foo");
-    when(repository.getName()).thenReturn("bar");
-    when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
+  @SubjectAware(username = "rr", password = "secret")
+  public void shouldGetAllPullRequests() throws URISyntaxException {
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     String id_1 = "id_1";
     String id_2 = "ABC ID 2";
     List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(id_1), createPullRequest(id_2));
     when(store.getAll()).thenReturn(pullRequests);
 
     // request all PRs without filter
-    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME+"");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"id\":\"" + id_1 + "\"");
     assertThat(response.getContentAsString()).contains("\"id\":\"" + id_2 + "\"");
 
     // request all PRs with filter: status=ALL
-    request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar?status=ALL");
+    request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME+"?status=ALL");
     response.reset();
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
@@ -248,30 +273,31 @@ public class PullRequestResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldGetOpenedPullRequests() throws URISyntaxException, IOException {
     verifyFilteredPullRequests(PullRequestStatusDto.OPEN.name());
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldGetClosedPullRequests() throws URISyntaxException, IOException {
     verifyFilteredPullRequests(PullRequestStatusDto.CLOSED.name());
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldGetRejectedPullRequests() throws URISyntaxException, IOException {
     verifyFilteredPullRequests(PullRequestStatusDto.REJECTED.name());
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldGetMergedPullRequests() throws URISyntaxException, IOException {
     verifyFilteredPullRequests(PullRequestStatusDto.MERGED.name());
   }
 
   @Test
+  @SubjectAware(username = "rr", password = "secret")
   public void shouldGetSelfLink() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/ns/repo" );

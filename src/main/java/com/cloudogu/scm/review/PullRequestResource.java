@@ -4,6 +4,7 @@ import org.apache.shiro.SecurityUtils;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -92,7 +93,9 @@ public class PullRequestResource {
 
   private Repository getRepository(String namespace, String name) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    return repositoryResolver.resolve(namespaceAndName);
+    Repository repository = repositoryResolver.resolve(namespaceAndName);
+    RepositoryPermissions.read(repository).check();
+    return repository;
   }
 
   private void verifyBranchExists(Repository repository, String branchName) {
