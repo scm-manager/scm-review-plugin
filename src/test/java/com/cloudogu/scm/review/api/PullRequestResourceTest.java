@@ -1,5 +1,11 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
+import com.cloudogu.scm.review.service.BranchResolver;
+import com.cloudogu.scm.review.service.PullRequest;
+import com.cloudogu.scm.review.service.PullRequestStatus;
+import com.cloudogu.scm.review.service.PullRequestStore;
+import com.cloudogu.scm.review.service.PullRequestStoreFactory;
+import com.cloudogu.scm.review.service.RepositoryResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
@@ -29,7 +35,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
+import static com.cloudogu.scm.review.api.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;

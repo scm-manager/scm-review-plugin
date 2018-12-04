@@ -1,5 +1,6 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.service;
 
+import com.cloudogu.scm.review.api.XmlInstantAdapter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

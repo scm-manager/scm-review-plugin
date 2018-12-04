@@ -1,5 +1,8 @@
 package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.service.PullRequest;
+import com.cloudogu.scm.review.service.PullRequestStatus;
+
 import java.time.Instant;
 
 public class TestData {

@@ -1,5 +1,6 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
+import com.cloudogu.scm.review.service.PullRequestStatus;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;

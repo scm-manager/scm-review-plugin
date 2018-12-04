@@ -1,7 +1,12 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
+import com.cloudogu.scm.review.service.BranchResolver;
+import com.cloudogu.scm.review.service.PullRequest;
+import com.cloudogu.scm.review.service.PullRequestStatus;
+import com.cloudogu.scm.review.service.PullRequestStore;
+import com.cloudogu.scm.review.service.PullRequestStoreFactory;
+import com.cloudogu.scm.review.service.RepositoryResolver;
 import org.apache.shiro.SecurityUtils;
-import sonia.scm.AlreadyExistsException;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;

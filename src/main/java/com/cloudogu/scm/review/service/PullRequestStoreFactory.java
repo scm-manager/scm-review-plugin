@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.service;
 
 import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
