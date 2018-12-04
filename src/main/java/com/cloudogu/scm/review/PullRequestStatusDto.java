@@ -4,6 +4,5 @@ public enum PullRequestStatusDto {
   ALL,
   OPEN,
   MERGED,
-  REJECTED,
-  CLOSED
+  REJECTED
 }

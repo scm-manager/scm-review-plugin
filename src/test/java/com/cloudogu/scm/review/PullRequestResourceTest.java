@@ -280,12 +280,6 @@ public class PullRequestResourceTest {
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
-  public void shouldGetClosedPullRequests() throws URISyntaxException, IOException {
-    verifyFilteredPullRequests(PullRequestStatusDto.CLOSED.name());
-  }
-
-  @Test
-  @SubjectAware(username = "rr", password = "secret")
   public void shouldGetRejectedPullRequests() throws URISyntaxException, IOException {
     verifyFilteredPullRequests(PullRequestStatusDto.REJECTED.name());
   }
@@ -331,9 +325,7 @@ public class PullRequestResourceTest {
     PullRequest mergedPR2 = createPullRequest("merged_2", PullRequestStatus.MERGED);
     PullRequest rejectedPR1 = createPullRequest("rejected_1", PullRequestStatus.REJECTED);
     PullRequest rejectedPR2 = createPullRequest("rejected_2", PullRequestStatus.REJECTED);
-    PullRequest closedPR1 = createPullRequest("closed_1", PullRequestStatus.CLOSED);
-    PullRequest closedPR2 = createPullRequest("closed_2", PullRequestStatus.CLOSED);
-    when(store.getAll()).thenReturn(Lists.newArrayList(openedPR1, openedPR2, closedPR1, closedPR2, rejectedPR1, rejectedPR2, closedPR1, closedPR2, mergedPR1, mergedPR2));
+    when(store.getAll()).thenReturn(Lists.newArrayList(openedPR1, openedPR2, rejectedPR1, rejectedPR2, mergedPR1, mergedPR2));
   }
 
 
