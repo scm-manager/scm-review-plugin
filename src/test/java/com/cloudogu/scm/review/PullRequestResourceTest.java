@@ -67,11 +67,12 @@ public class PullRequestResourceTest {
     when(repository.getId()).thenReturn(REPOSITORY_ID);
     when(repository.getName()).thenReturn(REPOSITORY_NAME);
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
+    when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE,REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     pullRequestResource = new PullRequestResource(repositoryResolver, branchResolver, storeFactory);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
-    when(storeFactory.create(repository)).thenReturn(store);
+    when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
@@ -121,6 +122,28 @@ public class PullRequestResourceTest {
       .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
     assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+  }
+
+  @Test
+  @SubjectAware(username = "rr", password = "secret")
+  public void shouldGetAlreadyExistsExceptionOnCreatePR() throws URISyntaxException, IOException {
+    PullRequest pr = new PullRequest();
+    pr.setStatus(PullRequestStatus.OPEN);
+    pr.setSource("source");
+    pr.setTarget("target");
+    pr.setTitle("title");
+    pr.setId("id");
+    when(store.getAll()).thenReturn(Lists.newArrayList(pr));
+
+
+    byte[] pullRequestJson = "{\"source\": \"source\", \"target\": \"target\", \"title\": \"pull request\"}".getBytes();
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    MockHttpRequest request = MockHttpRequest
+        .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME)
+      .content(pullRequestJson)
+      .contentType(MediaType.APPLICATION_JSON);
+    dispatcher.invoke(request, response);
+    assertExceptionFrom(response).hasMessageMatching("pull request with id id in repository with id .* already exists");
   }
 
   @Test
