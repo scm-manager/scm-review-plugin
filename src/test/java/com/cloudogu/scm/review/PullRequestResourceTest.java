@@ -135,7 +135,6 @@ public class PullRequestResourceTest {
     pr.setId("id");
     when(store.getAll()).thenReturn(Lists.newArrayList(pr));
 
-
     byte[] pullRequestJson = "{\"source\": \"source\", \"target\": \"target\", \"title\": \"pull request\"}".getBytes();
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     MockHttpRequest request = MockHttpRequest
