@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review;
 
 import org.apache.shiro.SecurityUtils;
+import sonia.scm.AlreadyExistsException;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -24,6 +25,9 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.stream.Collectors;
+
+import static sonia.scm.AlreadyExistsException.alreadyExists;
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
 @Path(PullRequestResource.PULL_REQUESTS_PATH_V2)
 public class PullRequestResource {
@@ -49,23 +53,36 @@ public class PullRequestResource {
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
 
     Repository repository = getRepository(namespace, name);
+    PullRequestStore store = storeFactory.create(repository);
+    pullRequestDto.setStatus(PullRequestStatus.OPEN);
+
+    verifyAlreadyExistsPullRequest(store, pullRequestDto, repository);
 
     verifyBranchExists(repository, pullRequestDto.getSource());
     verifyBranchExists(repository, pullRequestDto.getTarget());
 
     verifyBranchesDiffer(pullRequestDto.getSource(), pullRequestDto.getTarget());
-
-    PullRequestStore store = storeFactory.create(repository);
-
     String author = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     pullRequestDto.setAuthor(author);
-    pullRequestDto.setStatus(PullRequestStatus.OPEN);
     Instant now = Instant.now();
     pullRequestDto.setCreationDate(now);
     pullRequestDto.setLastModified(now);
     String id = store.add(mapper.map(pullRequestDto));
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
+  }
+
+  private void verifyAlreadyExistsPullRequest(PullRequestStore store, PullRequestDto pullRequestDto, Repository repository) {
+    store.getAll()
+      .stream()
+      .filter(pullRequest ->
+        pullRequest.getStatus().equals(pullRequestDto.getStatus()) &&
+        pullRequest.getSource().equals(pullRequestDto.getSource() )&&
+        pullRequest.getTarget().equals(pullRequestDto.getTarget()) )
+      .findFirst()
+      .ifPresent(pullRequest ->  {
+        throw alreadyExists(entity("pull request",pullRequest.getId()).in(repository));
+      });
   }
 
   @GET
