@@ -1,16 +1,11 @@
 package com.cloudogu.scm.review.api;
 
-import com.cloudogu.scm.review.service.BranchResolver;
-import com.cloudogu.scm.review.service.PullRequest;
+import com.cloudogu.scm.review.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.service.PullRequestService;
 import com.cloudogu.scm.review.service.PullRequestStatus;
-import com.cloudogu.scm.review.service.PullRequestStore;
-import com.cloudogu.scm.review.service.PullRequestStoreFactory;
-import com.cloudogu.scm.review.service.RepositoryResolver;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.ScmConstraintViolationException;
-import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -39,16 +34,12 @@ public class PullRequestResource {
 
   public static final String PULL_REQUESTS_PATH_V2 = "v2/pull-requests";
 
-  private final RepositoryResolver repositoryResolver;
-  private final BranchResolver branchResolver;
-  private final PullRequestStoreFactory storeFactory;
   private final PullRequestToPullRequestDtoMapper mapper;
+  private final PullRequestService service;
 
   @Inject
-  public PullRequestResource(RepositoryResolver repositoryResolver, BranchResolver branchResolver, PullRequestStoreFactory storeFactory) {
-    this.repositoryResolver = repositoryResolver;
-    this.branchResolver = branchResolver;
-    this.storeFactory = storeFactory;
+  public PullRequestResource(DefaultPullRequestService pullRequestService) {
+    this.service = pullRequestService;
     this.mapper = new PullRequestToPullRequestDtoMapperImpl();
   }
 
@@ -57,54 +48,38 @@ public class PullRequestResource {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
 
-    Repository repository = getRepository(namespace, name);
-    PullRequestStore store = storeFactory.create(repository);
+    Repository repository = service.getRepository(namespace, name);
     pullRequestDto.setStatus(PullRequestStatus.OPEN);
-
-    verifyAlreadyExistsPullRequest(store, pullRequestDto, repository);
-
-    verifyBranchExists(repository, pullRequestDto.getSource());
-    verifyBranchExists(repository, pullRequestDto.getTarget());
+    service.get(repository, pullRequestDto.getSource(), pullRequestDto.getTarget(), pullRequestDto.getStatus())
+      .ifPresent(pullRequest -> {
+        throw alreadyExists(entity("pull request", pullRequest.getId()).in(repository));
+      });
+    service.checkBranch(repository, pullRequestDto.getSource());
+    service.checkBranch(repository, pullRequestDto.getTarget());
 
     verifyBranchesDiffer(pullRequestDto.getSource(), pullRequestDto.getTarget());
-    String author = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
-    pullRequestDto.setAuthor(author);
+    pullRequestDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
     Instant now = Instant.now();
     pullRequestDto.setCreationDate(now);
     pullRequestDto.setLastModified(now);
-    String id = store.add(mapper.map(pullRequestDto));
+    String id = service.add(repository, mapper.map(pullRequestDto));
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
-  }
-
-  private void verifyAlreadyExistsPullRequest(PullRequestStore store, PullRequestDto pullRequestDto, Repository repository) {
-    store.getAll()
-      .stream()
-      .filter(pullRequest ->
-        pullRequest.getStatus().equals(pullRequestDto.getStatus()) &&
-        pullRequest.getSource().equals(pullRequestDto.getSource() )&&
-        pullRequest.getTarget().equals(pullRequestDto.getTarget()) )
-      .findFirst()
-      .ifPresent(pullRequest ->  {
-        throw alreadyExists(entity("pull request",pullRequest.getId()).in(repository));
-      });
   }
 
   @GET
   @Path("{namespace}/{name}/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response get(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("id") String id) {
-    PullRequestStore pullRequestStore = storeFactory.create(getRepository(namespace, name));
-    PullRequest pullRequest = pullRequestStore.get(id);
-    URI location = uriInfo.getAbsolutePathBuilder().build();
-    return Response.ok(mapper.map(pullRequest, location)).build();
+    return Response.ok(mapper.map(service.get(namespace, name, id), uriInfo.getAbsolutePathBuilder().build()))
+      .build();
   }
 
   @GET
   @Path("{namespace}/{name}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") PullRequestStatusDto pullRequestStatusDto) {
-    return Response.ok(storeFactory.create(getRepository(namespace, name)).getAll()
+    return Response.ok(service.getAll(namespace, name)
       .stream()
       .filter(pullRequest -> pullRequestStatusDto == null || pullRequestStatusDto == PullRequestStatusDto.ALL || pullRequest.getStatus().equals(PullRequestStatus.valueOf(pullRequestStatusDto.name())))
       .map(pr -> mapper.map(pr, uriInfo.getAbsolutePathBuilder().path(pr.getId()).build()))
@@ -113,16 +88,6 @@ public class PullRequestResource {
     ).build();
   }
 
-  private Repository getRepository(String namespace, String name) {
-    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    Repository repository = repositoryResolver.resolve(namespaceAndName);
-    RepositoryPermissions.read(repository).check();
-    return repository;
-  }
-
-  private void verifyBranchExists(Repository repository, String branchName) {
-    branchResolver.resolve(repository, branchName);
-  }
 
   private void verifyBranchesDiffer(String source, String target) {
     ScmConstraintViolationException.Builder

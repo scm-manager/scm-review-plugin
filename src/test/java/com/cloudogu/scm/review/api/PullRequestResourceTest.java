@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.api;
 
 import com.cloudogu.scm.review.service.BranchResolver;
+import com.cloudogu.scm.review.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.service.PullRequest;
 import com.cloudogu.scm.review.service.PullRequestStatus;
 import com.cloudogu.scm.review.service.PullRequestStore;
@@ -75,7 +76,8 @@ public class PullRequestResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE,REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    pullRequestResource = new PullRequestResource(repositoryResolver, branchResolver, storeFactory);
+    DefaultPullRequestService  service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory);
+    pullRequestResource = new PullRequestResource(service);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
