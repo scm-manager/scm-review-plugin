@@ -1,4 +1,4 @@
-import type { PullRequest } from "./PullRequest";
+import type { PullRequest } from "./types/PullRequest";
 import { apiClient } from "@scm-manager/ui-components";
 
 export function createPullRequest(url: string, pullRequest: PullRequest) {
@@ -27,4 +27,17 @@ export function getBranches(url: string) {
       const error = new Error(`could not fetch branches: ${cause.message}`);
       return { error: error };
     });
+}
+
+export function getPullRequest(url: string){
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .then(pullRequest => {
+      return pullRequest
+    })
+    .catch(cause => {
+      const error = new Error(`could not fetch pull request: ${cause.message}`);
+      return {error: error};
+    })
 }

@@ -1,7 +1,8 @@
 // @flow
 import fetchMock from "fetch-mock";
 import type { PullRequest } from "./PullRequest";
-import { createPullRequest, getBranches } from "./pullRequest";
+import {createPullRequest, getBranches, getPullRequest} from "./pullRequest";
+import type {Links} from "@scm-manager/ui-types";
 
 
 //TODO: fix tests! Right now, Jenkins has problems with the tests
@@ -32,10 +33,6 @@ describe("API create pull request", () => {
   afterEach(() => {
     fetchMock.reset();
     fetchMock.restore();
-  });
-
-  it("should be true", () => {
-    expect(true).toBe(true);
   });
 
   it("should create pull request successfully", done => {
@@ -82,4 +79,49 @@ describe("API create pull request", () => {
     });
   });
 
+});
+
+describe("API get pull request", () => {
+
+  const PULLREQUEST_URL = "/pull-request/scmadmin/TestRepo/1";
+
+  const pullRequest: PullRequest = {
+    source: "sourceBranch",
+    target: "targetBranch",
+    title: "This is a title",
+    author: "admin",
+    id: "1",
+    creationDate: "2018-11-28",
+    state: "open",
+    _links: {}
+  };
+
+  afterEach(() => {
+    fetchMock.reset();
+    fetchMock.restore();
+  });
+
+  it("should fetch pull request successfully", done => {
+    fetchMock.getOnce("/api/v2" + PULLREQUEST_URL,
+      pullRequest);
+
+    getPullRequest(PULLREQUEST_URL)
+      .then(response => {
+        expect(response).toEqual(pullRequest);
+        done();
+      });
+  });
+
+  it("should fail on fetching pull request", done => {
+
+    fetchMock.getOnce("/api/v2" + PULLREQUEST_URL, {
+      status: 500
+    });
+
+    getPullRequest(PULLREQUEST_URL)
+      .then(response => {
+        expect(response.error).toBeDefined();
+        done();
+      });
+  });
 });

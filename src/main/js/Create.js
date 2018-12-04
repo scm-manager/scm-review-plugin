@@ -9,9 +9,10 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import injectSheet from "react-jss";
-import type { PullRequest } from "./PullRequest";
+import type { BasicPullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
 import { translate } from "react-i18next";
+import PullRequestInformation from "./PullRequestInformation";
 
 const styles = {
   controlButtons: {
@@ -26,7 +27,7 @@ type Props = {
 };
 
 type State = {
-  pullRequest?: PullRequest,
+  pullRequest?: BasicPullRequest,
   loading: boolean,
   error?: Error,
   disabled: boolean
@@ -63,7 +64,7 @@ class Create extends React.Component<Props, State> {
     );
   };
 
-  verify = (pullRequest: PullRequest) => {
+  verify = (pullRequest: BasicPullRequest) => {
     const { source, target, title } = pullRequest;
     if (source && target && title) {
       return source !== target;
@@ -71,7 +72,7 @@ class Create extends React.Component<Props, State> {
     return false;
   };
 
-  handleFormChange = (pullRequest: PullRequest) => {
+  handleFormChange = (pullRequest: BasicPullRequest) => {
     this.setState({
       pullRequest,
       disabled: !this.verify(pullRequest)
@@ -100,18 +101,8 @@ class Create extends React.Component<Props, State> {
             onChange={this.handleFormChange}
           />
 
-          <div className="tabs">
-            <ul>
-              <li className="is-active">
-                <a>Commits</a>
-              </li>
-              <li>
-                <a>Diff</a>
-              </li>
-            </ul>
-          </div>
+          <PullRequestInformation repository={repository}/>
 
-          <p>The Changelog ...</p>
 
           <div className={classes.controlButtons}>
             <SubmitButton

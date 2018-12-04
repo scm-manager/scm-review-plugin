@@ -8,6 +8,11 @@
       "targetBranch": "Target Branch",
       "newTitle": "Title",
       "description": "Description"
+    },
+    "show-pull-request": {
+      "error-title": "Error",
+      "error-subtitle": "Unknown pull-request error",
+      "description": "Description"
     }
   }
 }
