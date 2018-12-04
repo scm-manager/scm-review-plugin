@@ -1,8 +1,7 @@
 package com.cloudogu.scm.review;
 
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.Size;
@@ -14,17 +13,17 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
 @XmlRootElement(name = "pull-request")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PullRequest {
 
   private String id;
-  @NonNull @Size(min = 1)
+  @Size(min = 1)
   private String source;
-  @NonNull @Size(min = 1)
+  @Size(min = 1)
   private String target;
-  @NonNull @Size(min = 1)
+  @Size(min = 1)
   private String title;
   private String description;
   private String author;
@@ -34,6 +33,4 @@ public class PullRequest {
   private Instant lastModified;
   private PullRequestStatus status;
 
-  public PullRequest() {
-  }
 }

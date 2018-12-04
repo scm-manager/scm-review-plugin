@@ -13,7 +13,10 @@ public class TestData {
 
   }
   public static PullRequest createPullRequest(String id, PullRequestStatus pullRequestStatus) {
-    PullRequest pullRequest = new PullRequest("develop", "master", "Awesome PR");
+    PullRequest pullRequest = new PullRequest();
+    pullRequest.setSource("develop");
+    pullRequest.setTarget("master");
+    pullRequest.setTitle("PR");
     pullRequest.setId(id);
     pullRequest.setDescription("Hitchhiker's guide to the galaxy");
     pullRequest.setAuthor("dent");

@@ -218,10 +218,7 @@ public class PullRequestResourceTest {
   @SubjectAware(username = "rr", password = "secret")
   public void shouldGetPullRequest() throws URISyntaxException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
-    PullRequest pullRequest = new PullRequest("source", "target", "title");
-    pullRequest.setAuthor("A. U. Thor");
-    pullRequest.setId("id");
-    pullRequest.setCreationDate(Instant.MIN);
+    PullRequest pullRequest = createPullRequest();
     when(store.get("123")).thenReturn(pullRequest);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME+"/123");
     dispatcher.invoke(request, response);
