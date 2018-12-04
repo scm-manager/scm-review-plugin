@@ -14,6 +14,8 @@ public abstract class PullRequestToPullRequestDtoMapper extends BaseMapper<PullR
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   public abstract PullRequestDto map(PullRequest pullRequest, @Context URI location);
 
+  public abstract PullRequest map(PullRequestDto pullRequestDto);
+
   @AfterMapping
   void appendLinks(@MappingTarget PullRequestDto target, @Context URI location) {
     Links.Builder linksBuilder = linkingTo()

@@ -25,15 +25,13 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
-import static org.assertj.core.api.AssertionsForClassTypes.anyOf;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.atIndex;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -53,15 +51,18 @@ public class PullRequestResourceTest {
   private final PullRequestStore store = mock(PullRequestStore.class);
   private final Repository repository = mock(Repository.class);
   private final UriInfo uriInfo = mock(UriInfo.class);
-  private final PullRequestResource pullRequestResource = new PullRequestResource(repositoryResolver, branchResolver, storeFactory);
   private final ArgumentCaptor<PullRequest> pullRequestStoreCaptor = ArgumentCaptor.forClass(PullRequest.class);
 
   private Dispatcher dispatcher;
 
   private final MockHttpResponse response = new MockHttpResponse();
 
+  private PullRequestResource pullRequestResource ;
+
   @Before
   public void init() {
+    when(repositoryResolver.resolve(any())).thenReturn(repository);
+    pullRequestResource = new PullRequestResource(repositoryResolver, branchResolver, storeFactory);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(repository)).thenReturn(store);
@@ -178,9 +179,50 @@ public class PullRequestResourceTest {
     assertThat(response.getContentAsString()).contains("_links");
   }
 
+
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetPullRequests() throws URISyntaxException, IOException {
+  public void shouldSortPullRequestsByLastModified() throws URISyntaxException, IOException {
+    when(repository.getNamespace()).thenReturn("foo");
+    when(repository.getName()).thenReturn("bar");
+    when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
+    String firstPR = "first_PR";
+    String toDayUpdatedPR = "to_day_updated_PR";
+    String lastPR = "last_PR";
+
+    Instant firstCreation = Instant.MIN;
+    Instant firstCreationPlusOneDay = firstCreation.plus(Duration.ofDays(1));
+    Instant lastCreation = Instant.MAX;
+
+    PullRequest firstPullRequest = createPullRequest(firstPR);
+    firstPullRequest.setCreationDate(firstCreationPlusOneDay);
+    firstPullRequest.setLastModified(firstCreationPlusOneDay);
+
+    PullRequest toDayUpdatedPullRequest = createPullRequest(toDayUpdatedPR);
+    toDayUpdatedPullRequest.setCreationDate(firstCreation);
+    toDayUpdatedPullRequest.setLastModified(Instant.now());
+
+    PullRequest lastPullRequest = createPullRequest(lastPR);
+    lastPullRequest.setCreationDate(lastCreation);
+    lastPullRequest.setLastModified(lastCreation);
+
+    when(store.getAll()).thenReturn(Lists.newArrayList(lastPullRequest, firstPullRequest, toDayUpdatedPullRequest));
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode pr_1 = jsonNode.path(0);
+    JsonNode pr_2 = jsonNode.path(1);
+    JsonNode pr_3 = jsonNode.path(2);
+
+    assertThat(pr_1.get("id").asText()).isEqualTo(lastPR);
+    assertThat(pr_2.get("id").asText()).isEqualTo(toDayUpdatedPR);
+    assertThat(pr_3.get("id").asText()).isEqualTo(firstPR);
+  }
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetAllPullRequests() throws URISyntaxException, IOException {
     when(repository.getNamespace()).thenReturn("foo");
     when(repository.getName()).thenReturn("bar");
     when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
@@ -188,11 +230,84 @@ public class PullRequestResourceTest {
     String id_2 = "ABC ID 2";
     List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(id_1), createPullRequest(id_2));
     when(store.getAll()).thenReturn(pullRequests);
+
+    // request all PRs without filter
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
-    assertThat(response.getContentAsString()).contains("\"id\":\""+id_1+"\"");
-    assertThat(response.getContentAsString()).contains("\"id\":\""+id_2+"\"");
+    assertThat(response.getContentAsString()).contains("\"id\":\"" + id_1 + "\"");
+    assertThat(response.getContentAsString()).contains("\"id\":\"" + id_2 + "\"");
+
+    // request all PRs with filter: status=ALL
+    request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/foo/bar?status=ALL");
+    response.reset();
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"id\":\"" + id_1 + "\"");
+    assertThat(response.getContentAsString()).contains("\"id\":\"" + id_2 + "\"");
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetOpenedPullRequests() throws URISyntaxException, IOException {
+    verifyFilteredPullRequests(PullRequestStatusDto.OPEN.name());
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetClosedPullRequests() throws URISyntaxException, IOException {
+    verifyFilteredPullRequests(PullRequestStatusDto.CLOSED.name());
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetRejectedPullRequests() throws URISyntaxException, IOException {
+    verifyFilteredPullRequests(PullRequestStatusDto.REJECTED.name());
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetMergedPullRequests() throws URISyntaxException, IOException {
+    verifyFilteredPullRequests(PullRequestStatusDto.MERGED.name());
+  }
+
+  @Test
+  public void shouldGetSelfLink() throws URISyntaxException, IOException {
+    initRepoWithPRs("ns", "repo");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/ns/repo" );
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    jsonNode.elements().forEachRemaining(node -> {
+      String actual = node.path("_links").path("self").path("href").asText();
+      assertThat(actual).contains("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/"+node.get("id").asText());
+    });
+  }
+
+  private void verifyFilteredPullRequests(String status) throws URISyntaxException, IOException {
+    initRepoWithPRs("ns", "repo");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=" + status);
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    jsonNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(status));
+  }
+
+  private void initRepoWithPRs(String namespace, String name) {
+    when(repository.getNamespace()).thenReturn(namespace);
+    when(repository.getName()).thenReturn(name);
+    when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
+    PullRequest openedPR1 = createPullRequest("opened_1", PullRequestStatus.OPEN);
+    PullRequest openedPR2 = createPullRequest("opened_2", PullRequestStatus.OPEN);
+    PullRequest mergedPR1 = createPullRequest("merged_1", PullRequestStatus.MERGED);
+    PullRequest mergedPR2 = createPullRequest("merged_2", PullRequestStatus.MERGED);
+    PullRequest rejectedPR1 = createPullRequest("rejected_1", PullRequestStatus.REJECTED);
+    PullRequest rejectedPR2 = createPullRequest("rejected_2", PullRequestStatus.REJECTED);
+    PullRequest closedPR1 = createPullRequest("closed_1", PullRequestStatus.CLOSED);
+    PullRequest closedPR2 = createPullRequest("closed_2", PullRequestStatus.CLOSED);
+    when(store.getAll()).thenReturn(Lists.newArrayList(openedPR1, openedPR2, closedPR1, closedPR2, rejectedPR1, rejectedPR2, closedPR1, closedPR2, mergedPR1, mergedPR2));
   }
 
 

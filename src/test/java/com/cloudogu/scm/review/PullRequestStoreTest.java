@@ -104,7 +104,7 @@ class PullRequestStoreTest {
 
   @Test
   void shouldGetExistingPullRequest() {
-    PullRequest pr = new PullRequest();
+    PullRequest pr = createPullRequest();
     when(dataStore.get("abc")).thenReturn(pr);
     assertThat(store.get("abc")).isEqualTo(pr);
   }
