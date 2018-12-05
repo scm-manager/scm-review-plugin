@@ -23,10 +23,10 @@ export default class PullRequestRow extends React.Component<Props> {
         <td>
           {pullRequest.target}
         </td>
-        <td className="is-hidden-mobile">{pullRequest.author}</td>
-        <td className="is-hidden-mobile"><DateFromNow date={pullRequest.creationDate} /></td>
+        <td className="is-hidden-mobile">{pullRequest.author ? pullRequest.author : ""}</td>
+        <td className="is-hidden-mobile">{pullRequest.creationDate ? <DateFromNow date={pullRequest.creationDate} />: ""}</td>
         <td className="is-hidden-mobile">
-          {pullRequest.status}
+          {pullRequest.status ? pullRequest.status : ""}
         </td>
       </tr>
     );
