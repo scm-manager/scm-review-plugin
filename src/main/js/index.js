@@ -8,7 +8,7 @@ import PullRequestList from "./PullRequestList";
 import { Route } from "react-router-dom";
 
 const reviewSupportedPredicate = (props: Object) => {
-  return props.repository && props.repository._links.newPullRequest;
+  return props.repository && props.repository._links.pullRequest;
 };
 
 // new

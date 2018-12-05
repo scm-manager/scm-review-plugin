@@ -52,7 +52,7 @@ class Create extends React.Component<Props, State> {
 
     this.setState({ loading: true });
 
-    createPullRequest(repository._links.newPullRequest.href, pullRequest).then(
+    createPullRequest(repository._links.pullRequest.href, pullRequest).then(
       result => {
         if (result.error) {
           this.setState({ loading: false, error: result.error });

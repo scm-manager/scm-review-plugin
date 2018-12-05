@@ -3,16 +3,22 @@
     "create": {
       "title": "Pull Request",
       "subtitle": "Creates a new Pull Request for ",
-      "submitButton": "Submit",
+      "submitButton": "Submit"
+    },
+    "pull-request":{
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
-      "newTitle": "Title",
-      "description": "Description"
+      "title": "Title",
+      "description": "Description",
+      "status": "Status"
     },
     "show-pull-request": {
       "error-title": "Error",
-      "error-subtitle": "Unknown pull-request error",
-      "description": "Description"
+      "error-subtitle": "Unknown pull-request error"
+    },
+    "pull-requests": {
+      "error-title": "Error",
+      "error-subtitle": "Unknown pull-request error"
     }
   }
 }

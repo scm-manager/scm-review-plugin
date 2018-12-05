@@ -91,7 +91,7 @@ class SinglePullRequest extends React.Component<Props, State> {
       description = (
         <div className="media">
           <div className="media-left">
-            {t("scm-review-plugin.show-pull-request.description")}
+            {t("scm-review-plugin.pull-request.description")}
           </div>
           <div className="media-content">{pullRequest.description}</div>
         </div>
