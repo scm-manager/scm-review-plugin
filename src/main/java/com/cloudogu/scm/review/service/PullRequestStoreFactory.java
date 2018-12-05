@@ -16,7 +16,7 @@ public class PullRequestStoreFactory {
   }
 
   public PullRequestStore create(Repository repository) {
-    DataStore<PullRequest> store = dataStoreFactory.getStore(PullRequest.class, repository.getId());
+    DataStore<PullRequest> store = dataStoreFactory.withType(PullRequest.class).withName("pullRequest").forRepository(repository).build();
     return new PullRequestStore(store, repository);
   }
 

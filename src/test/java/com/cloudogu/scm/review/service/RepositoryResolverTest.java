@@ -69,7 +69,7 @@ class RepositoryResolverTest {
     PullRequestNotSupportedException exception = assertThrows(PullRequestNotSupportedException.class, () -> resolver.resolve(namespaceAndName));
     ContextEntry contextEntry = exception.getContext().get(0);
     assertThat(contextEntry.getType()).isEqualTo("Repository");
-    assertThat(contextEntry.getId()).isEqualTo("test/HeartOfGold");
+    assertThat(contextEntry.getId()).isEqualTo("hitchhiker/HeartOfGold");
   }
 
 }
