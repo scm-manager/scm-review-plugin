@@ -13,7 +13,7 @@ import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
 import { getPullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
-import PullRequestButton from "./PullRequestButton";
+import MergeButton from "./MergeButton";
 import injectSheet from "react-jss";
 import classNames from "classnames";
 
@@ -127,7 +127,7 @@ class SinglePullRequest extends React.Component<Props, State> {
             <div className="media-right"><DateFromNow date={pullRequest.creationDate} /></div>
           </div>
           <PullRequestInformation repository={repository}/>
-          <PullRequestButton/>
+          <MergeButton/>
         </div>
       </div>
     );

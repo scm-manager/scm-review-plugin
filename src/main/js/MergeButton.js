@@ -2,27 +2,19 @@
 import React from "react";
 import {translate} from "react-i18next";
 import { Button, confirmAlert } from "@scm-manager/ui-components";
-import type { Permission } from "@scm-manager/ui-types";
 
 type Props = {
-  permission: Permission,
   namespace: string,
   repoName: string,
   confirmDialog?: boolean,
-  t: string => string,
-  mergeLoading,
-  mergePermission: (
-    permission: Permission,
-    namespace: string,
-    repoName: string
-  ) => void
+  t: string => string
 };
 
 type State = {
 
 };
 
-class PullRequestButton extends React.Component<Props, State> {
+class MergeButton extends React.Component<Props, State> {
   static defaultProps = {
     confirmDialog: true
   };
@@ -35,13 +27,6 @@ class PullRequestButton extends React.Component<Props, State> {
     };
   }
 
-  mergePermission = () => {
-    this.props.mergePermission(
-      this.props.permission,
-      this.props.namespace,
-      this.props.repoName
-    );
-  };
 
   confirmMerge = () => {
     const { t } = this.props;
@@ -51,7 +36,7 @@ class PullRequestButton extends React.Component<Props, State> {
       buttons: [
         {
           label: t("scm-review-plugin.show-pull-request.mergeButton.confirm-alert.submit"),
-          onClick: () => this.mergePermission()
+          onClick: () => null
         },
         {
           label: t("scm-review-plugin.show-pull-request.mergeButton.confirm-alert.cancel"),
@@ -63,12 +48,12 @@ class PullRequestButton extends React.Component<Props, State> {
 
   render() {
     const { confirmDialog, t } = this.props;
-    const action = confirmDialog ? this.confirmMerge : this.mergePermission;
+    const action = confirmDialog ? this.confirmMerge : null;
     return (
-      <Button label={t("scm-review-plugin.show-pull-request.mergeButton.button-title")} loading={this.props.mergeLoading} action={action} color="primary" />
+      <Button label={t("scm-review-plugin.show-pull-request.mergeButton.button-title")} loading={this.props.loading} action={action} color="primary" />
       /* scm-review-plugin.show-pull-request.mergeButton" */
     );
   }
 }
 
-export default translate("plugins")(PullRequestButton);
+export default translate("plugins")(MergeButton);
