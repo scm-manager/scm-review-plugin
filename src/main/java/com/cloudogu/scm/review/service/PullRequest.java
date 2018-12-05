@@ -1,11 +1,10 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.service;
 
+import com.cloudogu.scm.review.api.XmlInstantAdapter;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -14,17 +13,14 @@ import java.time.Instant;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
 @XmlRootElement(name = "pull-request")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PullRequest {
 
   private String id;
-  @NonNull @Size(min = 1)
   private String source;
-  @NonNull @Size(min = 1)
   private String target;
-  @NonNull @Size(min = 1)
   private String title;
   private String description;
   private String author;
@@ -34,6 +30,4 @@ public class PullRequest {
   private Instant lastModified;
   private PullRequestStatus status;
 
-  public PullRequest() {
-  }
 }

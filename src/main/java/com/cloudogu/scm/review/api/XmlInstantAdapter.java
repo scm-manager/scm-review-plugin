@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.time.Instant;

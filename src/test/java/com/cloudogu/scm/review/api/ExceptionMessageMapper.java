@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
 import org.jboss.resteasy.mock.MockHttpResponse;
 
