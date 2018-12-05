@@ -13,6 +13,7 @@ import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
 import { getPullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
+import PullRequestButton from "./PullRequestButton";
 import injectSheet from "react-jss";
 import classNames from "classnames";
 
@@ -114,7 +115,7 @@ class SinglePullRequest extends React.Component<Props, State> {
                   <span className="tag is-light is-medium">{pullRequest.target}</span>
                 </div>
               </div>
-              <div className="media-right">{pullRequest.state}</div>
+              <div className="media-right">{pullRequest.status}</div>
             </div>
 
           {description}
@@ -126,6 +127,7 @@ class SinglePullRequest extends React.Component<Props, State> {
             <div className="media-right"><DateFromNow date={pullRequest.creationDate} /></div>
           </div>
           <PullRequestInformation repository={repository}/>
+          <PullRequestButton/>
         </div>
       </div>
     );

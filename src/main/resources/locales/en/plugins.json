@@ -12,7 +12,16 @@
     "show-pull-request": {
       "error-title": "Error",
       "error-subtitle": "Unknown pull-request error",
-      "description": "Description"
+      "description": "Description",
+      "mergeButton": {
+        "button-title": "Merge Pull Request",
+        "confirm-alert": {
+          "title": "Merge Pull Request",
+          "message": "Do you really want to merge?",
+          "submit": "Yes",
+          "cancel": "No"
+        }
+      }
     }
   }
 }
