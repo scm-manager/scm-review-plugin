@@ -13,16 +13,6 @@ const reviewSupportedPredicate = (props: Object) => {
 
 // new
 
-const NewPullRequestNavLink = ({ url }) => {
-  return <NavLink to={`${url}/pull-requests/add`} label="New Pull Request" />;
-};
-
-binder.bind(
-  "repository.navigation",
-  NewPullRequestNavLink,
-  reviewSupportedPredicate
-);
-
 const NewPullRequestRoute = ({ url, repository }) => {
   return (
     <Route
@@ -48,7 +38,7 @@ binder.bind("repository.route", ShowPullRequestRoute);
 // list
 function matches(route: any) {
   const regex = new RegExp(`.*(/pull-request)/.*`);
-  return route.location.pathname.match(regex);
+  return route.location.pathname.match(regex) || route.location.pathname.match(`.*(pull-requests)/.*`);
 }
 
 const PullRequestNavLink = ({ url }) => {
@@ -70,8 +60,9 @@ binder.bind(
 const ShowPullRequestsRoute = ({ url, repository, match }) => {
   return (
     <Route
-      path={`${url}/pull-requests`}
+      path={`${url}/pull-requests/`}
       render={() => <PullRequestList repository={repository} />}
+      exact
     />
   );
 };

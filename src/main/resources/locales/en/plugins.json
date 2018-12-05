@@ -18,7 +18,8 @@
     },
     "pull-requests": {
       "error-title": "Error",
-      "error-subtitle": "Unknown pull-request error"
+      "error-subtitle": "Unknown pull-request error",
+      "createButton": "New Pull Request"
     }
   }
 }

@@ -1,17 +1,15 @@
 // @flow
 import React from "react";
 import {
-  Title,
   Loading,
   ErrorPage,
-  Subtitle,
-  DateFromNow, repositories
+  CreateButton
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
-import {getPullRequests} from "./pullRequest";
+import { getPullRequests } from "./pullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 
 type Props = {
@@ -53,8 +51,8 @@ class PullRequestList extends React.Component<Props, State> {
   }
 
   render() {
-
-    const {loading, error, pullRequests} = this.state;
+    const {t} = this.props;
+    const { loading, error, pullRequests } = this.state;
 
     if (error) {
       return (
@@ -70,8 +68,12 @@ class PullRequestList extends React.Component<Props, State> {
       return <Loading />;
     }
 
+    const to = `pull-requests/add`;
     return (
-      <PullRequestTable pullRequests={pullRequests}/>
+      <>
+        <PullRequestTable pullRequests={pullRequests} />
+        <CreateButton label={t("scm-review-plugin.pull-requests.createButton")} link={to} />
+      </>
     );
   }
 }
