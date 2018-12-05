@@ -12,6 +12,7 @@ import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +37,8 @@ class PullRequestStoreFactoryTest {
     Repository repository = RepositoryTestData.createHeartOfGold("git");
     repository.setId("42");
 
-    when(dataStoreFactory.getStore(PullRequest.class, "42")).thenReturn(store);
+    when(dataStoreFactory.getStore(any())).thenReturn((DataStore) store);
+    when(dataStoreFactory.withType(any())).thenCallRealMethod();
 
     PullRequestStore store = storeFactory.create(repository);
     assertThat(store).isNotNull();
