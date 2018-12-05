@@ -84,7 +84,7 @@ class PullRequestList extends React.Component<Props, State> {
 
     const to = `pull-requests/add`;
 
-    const createButton = this.props.repository._links.pullRequest ? (<CreateButton label={t("scm-review-plugin.pull-requests.createButton")} link={to} />) ? null;
+    const createButton = this.props.repository._links.pullRequest ? (<CreateButton label={t("scm-review-plugin.pull-requests.createButton")} link={to} />) : null;
     return (
       <>
         <div className={"is-pulled-right"}>
