@@ -4,6 +4,7 @@ import { binder } from "@scm-manager/ui-extensions";
 import { NavLink } from "@scm-manager/ui-components";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
+import PullRequestList from "./PullRequestList";
 import { Route } from "react-router-dom";
 
 const reviewSupportedPredicate = (props: Object) => {
@@ -65,3 +66,13 @@ binder.bind(
   PullRequestNavLink,
   reviewSupportedPredicate
 );
+
+const ShowPullRequestsRoute = ({ url, repository, match }) => {
+  return (
+    <Route
+      path={`${url}/pull-requests`}
+      render={() => <PullRequestList repository={repository} />}
+    />
+  );
+};
+binder.bind("repository.route", ShowPullRequestsRoute);
