@@ -20,7 +20,7 @@ class PullRequestTable extends React.Component<Props> {
           <th>{t("scm-review-plugin.pull-request.sourceBranch")}</th>
           <th>{t("scm-review-plugin.pull-request.targetBranch")}</th>
           <th>{t("scm-review-plugin.pull-request.author")}</th>
-          <th>{t("scm-review-plugin.pull-request.date")}</th>
+          <th className="is-hidden-mobile">{t("scm-review-plugin.pull-request.date")}</th>
           <th className="is-hidden-mobile">{t("scm-review-plugin.pull-request.status")}</th>
         </tr>
         </thead>
