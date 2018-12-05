@@ -47,13 +47,7 @@ class SinglePullRequest extends React.Component<Props, State> {
   componentDidMount(): void {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
-    const url =
-      "/pull-requests/" +
-      repository.namespace +
-      "/" +
-      repository.name +
-      "/" +
-      pullRequestNumber; //TODO: use link if available
+    const url = this.props.repository._links.pullRequest.href + "/" + pullRequestNumber; //TODO: use link if available
     getPullRequest(url).then(response => {
       if (response.error) {
         this.setState({

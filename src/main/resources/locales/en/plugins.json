@@ -10,7 +10,10 @@
       "targetBranch": "Target Branch",
       "title": "Title",
       "description": "Description",
-      "status": "Status"
+      "status": "Status",
+      "id": "ID",
+      "author": "Author",
+      "date": "Date"
     },
     "show-pull-request": {
       "error-title": "Error",
