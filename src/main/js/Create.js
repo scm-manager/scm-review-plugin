@@ -90,7 +90,7 @@ class Create extends React.Component<Props, State> {
 
     return (
       <div className="columns">
-        <div className="column">
+        <div className="column is-clipped">
           <Title title={t("scm-review-plugin.create.title")} />
           <Subtitle
             subtitle={t("scm-review-plugin.create.subtitle") + repository.name}
