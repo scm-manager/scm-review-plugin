@@ -22,9 +22,11 @@ const NewPullRequestRoute = ({ url, repository }) => {
     />
   );
 };
+
 binder.bind("repository.route", NewPullRequestRoute);
 
 //  show single pullRequest
+
 const ShowPullRequestRoute = ({ url, repository }) => {
   return (
     <Route
@@ -33,9 +35,11 @@ const ShowPullRequestRoute = ({ url, repository }) => {
     />
   );
 };
+
 binder.bind("repository.route", ShowPullRequestRoute);
 
 // list
+
 function matches(route: any) {
   const regex = new RegExp(`.*(/pull-request)/.*`);
   return route.location.pathname.match(regex) || route.location.pathname.match(`.*(pull-requests)/.*`);
@@ -57,7 +61,7 @@ binder.bind(
   reviewSupportedPredicate
 );
 
-const ShowPullRequestsRoute = ({ url, repository, match }) => {
+const ShowPullRequestsRoute = ({ url, repository }) => {
   return (
     <Route
       path={`${url}/pull-requests/`}
@@ -66,4 +70,5 @@ const ShowPullRequestsRoute = ({ url, repository, match }) => {
     />
   );
 };
+
 binder.bind("repository.route", ShowPullRequestsRoute);

@@ -2,10 +2,7 @@
 import fetchMock from "fetch-mock";
 import type { PullRequest } from "./PullRequest";
 import {createPullRequest, getBranches, getPullRequest, getPullRequests} from "./pullRequest";
-import type {Links} from "@scm-manager/ui-types";
 
-
-//TODO: fix tests! Right now, Jenkins has problems with the tests
 describe("API create pull request", () => {
   const PULLREQUEST_URL = "/repositories/scmadmin/TestRepo/newPullRequest";
 

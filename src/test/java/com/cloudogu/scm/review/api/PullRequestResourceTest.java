@@ -24,12 +24,14 @@ import org.mockito.ArgumentCaptor;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -265,9 +267,10 @@ public class PullRequestResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    JsonNode pr_1 = jsonNode.path(0);
-    JsonNode pr_2 = jsonNode.path(1);
-    JsonNode pr_3 = jsonNode.path(2);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    JsonNode pr_1 = prNode.path(0);
+    JsonNode pr_2 = prNode.path(1);
+    JsonNode pr_3 = prNode.path(2);
 
     assertThat(pr_1.get("id").asText()).isEqualTo(lastPR);
     assertThat(pr_2.get("id").asText()).isEqualTo(toDayUpdatedPR);
@@ -326,7 +329,8 @@ public class PullRequestResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    jsonNode.elements().forEachRemaining(node -> {
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    prNode.elements().forEachRemaining(node -> {
       String actual = node.path("_links").path("self").path("href").asText();
       assertThat(actual).contains("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/"+node.get("id").asText());
     });
@@ -339,7 +343,8 @@ public class PullRequestResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    jsonNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(status));
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    prNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(status));
   }
 
   private void initRepoWithPRs(String namespace, String name) {
@@ -359,5 +364,35 @@ public class PullRequestResourceTest {
   private byte[] loadJson(String s) throws IOException {
     URL url = Resources.getResource(s);
     return Resources.toByteArray(url);
+  }
+
+  @Test
+  @SubjectAware(username = "rr", password = "secret")
+  public void shouldReturnCollectionWithOnlySelfLink() throws URISyntaxException, IOException {
+    JsonNode links = invokeAndReturnLinks();
+
+    assertThat(links.has("self")).isTrue();
+    assertThat(links.has("create")).isFalse();
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldReturnCollectionWithCreateLink() throws URISyntaxException, IOException {
+    JsonNode links = invokeAndReturnLinks();
+
+    assertThat(links.has("create")).isTrue();
+  }
+
+  private JsonNode invokeAndReturnLinks() throws URISyntaxException, IOException {
+    initRepoWithPRs("hitchhiker", "DeepThought");
+
+    String uri = "/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/ns/repo";
+
+    MockHttpRequest request = MockHttpRequest.get(uri);
+    dispatcher.invoke(request, response);
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    return jsonNode.get("_links");
   }
 }

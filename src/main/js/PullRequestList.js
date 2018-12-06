@@ -6,7 +6,7 @@ import {
   CreateButton
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
-import type { PullRequest } from "./types/PullRequest";
+import type { PullRequestCollection } from "./types/PullRequest";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
 import { getPullRequests } from "./pullRequest";
@@ -19,7 +19,7 @@ type Props = {
 };
 
 type State = {
-  pullRequests: PullRequest[],
+  pullRequests: PullRequestCollection,
   error?: Error,
   loading: boolean,
   status: string
@@ -84,13 +84,13 @@ class PullRequestList extends React.Component<Props, State> {
 
     const to = `pull-requests/add`;
 
-    const createButton = this.props.repository._links.pullRequest ? (<CreateButton label={t("scm-review-plugin.pull-requests.createButton")} link={to} />) : null;
+    const createButton = pullRequests._links.create ? (<CreateButton label={t("scm-review-plugin.pull-requests.createButton")} link={to} />) : null;
     return (
       <>
-        <div className={"is-pulled-right"}>
+        <div className="is-pulled-right">
           <StatusSelector handleTypeChange={this.handleStatusChange} status={status ? status : "ALL"}/>
         </div>
-        <PullRequestTable pullRequests={pullRequests}/>
+        <PullRequestTable pullRequests={pullRequests._embedded.pullRequests}/>
         {createButton}
       </>
     );
