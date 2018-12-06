@@ -3,14 +3,20 @@ package com.cloudogu.scm.review.api;
 import com.cloudogu.scm.review.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.service.PullRequestService;
 import com.cloudogu.scm.review.service.PullRequestStatus;
+import de.otto.edison.hal.Embedded;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Link;
+import de.otto.edison.hal.Links;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -24,6 +30,7 @@ import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static sonia.scm.AlreadyExistsException.alreadyExists;
@@ -78,14 +85,29 @@ public class PullRequestResource {
   @GET
   @Path("{namespace}/{name}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") PullRequestStatusDto pullRequestStatusDto) {
-    return Response.ok(service.getAll(namespace, name)
+  public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("ALL") PullRequestStatusDto pullRequestStatusDto) {
+    Repository repository = service.getRepository(namespace, name);
+
+    List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)
       .stream()
-      .filter(pullRequest -> pullRequestStatusDto == null || pullRequestStatusDto == PullRequestStatusDto.ALL || pullRequest.getStatus().equals(PullRequestStatus.valueOf(pullRequestStatusDto.name())))
+      .filter(pullRequest -> pullRequestStatusDto == PullRequestStatusDto.ALL || pullRequest.getStatus().equals(PullRequestStatus.valueOf(pullRequestStatusDto.name())))
       .map(pr -> mapper.map(pr, uriInfo.getAbsolutePathBuilder().path(pr.getId()).build()))
       .sorted(Comparator.comparing(PullRequestDto::getLastModified).reversed())
-      .collect(Collectors.toList())
-    ).build();
+      .collect(Collectors.toList());
+
+    return Response.ok(createCollection(uriInfo, repository, pullRequestDtos)).build();
+  }
+
+  private HalRepresentation createCollection(UriInfo uriInfo, Repository repository, List<PullRequestDto> pullRequestDtos) {
+    String href = uriInfo.getAbsolutePath().toASCIIString();
+
+    Links.Builder builder = Links.linkingTo().self(href);
+
+    if (RepositoryPermissions.push(repository.getId()).isPermitted()) {
+      builder.single(Link.link("create", href));
+    }
+
+    return new HalRepresentation(builder.build(), Embedded.embedded("pullRequests", pullRequestDtos));
   }
 
 

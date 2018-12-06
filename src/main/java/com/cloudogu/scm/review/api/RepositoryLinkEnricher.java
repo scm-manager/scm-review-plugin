@@ -47,7 +47,7 @@ public class RepositoryLinkEnricher extends JsonEnricherBase {
 
         JsonNode newPullRequestNode = createObject(singletonMap("href", value(newPullRequest)));
 
-        addPropertyNode(repositoryNode.get("_links"), "newPullRequest", newPullRequestNode);
+        addPropertyNode(repositoryNode.get("_links"), "pullRequest", newPullRequestNode);
       }
     }
   }

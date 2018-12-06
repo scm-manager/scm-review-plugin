@@ -41,3 +41,16 @@ export function getPullRequest(url: string){
       return {error: error};
     })
 }
+
+export function getPullRequests(url: string){
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .then(pullRequests => {
+      return pullRequests
+    })
+    .catch(cause => {
+      const error = new Error(`could not fetch pull requests: ${cause.message}`);
+      return {error: error};
+    })
+}

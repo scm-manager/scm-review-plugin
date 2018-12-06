@@ -93,7 +93,7 @@ class CreateForm extends React.Component<Props, State> {
           <div className="column is-clipped">
             <Select
               name="source"
-              label={t("scm-review-plugin.create.sourceBranch")}
+              label={t("scm-review-plugin.pull-request.sourceBranch")}
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
@@ -102,7 +102,7 @@ class CreateForm extends React.Component<Props, State> {
           <div className="column is-clipped">
             <Select
               name="target"
-              label={t("scm-review-plugin.create.targetBranch")}
+              label={t("scm-review-plugin.pull-request.targetBranch")}
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
@@ -112,12 +112,12 @@ class CreateForm extends React.Component<Props, State> {
 
         <InputField
           name="title"
-          label={t("scm-review-plugin.create.newTitle")}
+          label={t("scm-review-plugin.pull-request.title")}
           onChange={this.handleFormChange}
         />
         <Textarea
           name="description"
-          label={t("scm-review-plugin.create.description")}
+          label={t("scm-review-plugin.pull-request.description")}
           onChange={this.handleFormChange}
         />
       </form>

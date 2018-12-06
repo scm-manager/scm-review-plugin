@@ -13,6 +13,8 @@ import type { BasicPullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
 import { translate } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
+import type { History } from "history";
+import {withRouter} from "react-router-dom";
 
 const styles = {
   controlButtons: {
@@ -23,7 +25,8 @@ const styles = {
 type Props = {
   repository: Repository,
   classes: any,
-  t: string => string
+  t: string => string,
+  history: History
 };
 
 type State = {
@@ -43,7 +46,8 @@ class Create extends React.Component<Props, State> {
   }
 
   pullRequestCreated = () => {
-    //TODO: if overview pull request page exists - open that!
+    const { history, repository } = this.props;
+    history.push(`/repo/${repository.namespace}/${repository.name}/pull-requests`);
   };
 
   submit = () => {
@@ -52,7 +56,7 @@ class Create extends React.Component<Props, State> {
 
     this.setState({ loading: true });
 
-    createPullRequest(repository._links.newPullRequest.href, pullRequest).then(
+    createPullRequest(repository._links.pullRequest.href, pullRequest).then(
       result => {
         if (result.error) {
           this.setState({ loading: false, error: result.error });
@@ -118,4 +122,4 @@ class Create extends React.Component<Props, State> {
   }
 }
 
-export default injectSheet(styles)(translate("plugins")(Create));
+export default withRouter(injectSheet(styles)(translate("plugins")(Create)));

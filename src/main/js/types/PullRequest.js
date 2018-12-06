@@ -1,5 +1,5 @@
 // @flow
-import type { Links } from "@scm-manager/ui-types";
+import type { Collection, Links } from "@scm-manager/ui-types";
 
 export type BasicPullRequest = {
   source: string,
@@ -14,4 +14,10 @@ export type PullRequest = BasicPullRequest & {
   creationDate: string,
   state: string,
   _links: Links
+}
+
+export type PullRequestCollection = Collection & {
+  _embedded: {
+    pullRequests: PullRequest[]
+  }
 }
