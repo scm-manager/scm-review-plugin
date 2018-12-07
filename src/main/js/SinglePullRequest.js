@@ -69,10 +69,7 @@ class SinglePullRequest extends React.Component<Props, State> {
 
   getMergeDryRun(pullRequest: PullRequest) {
     const { repository } = this.props;
-    merge(repository._links.mergeDryRun.href, {
-      sourceRevision: pullRequest.source,
-      targetRevision: pullRequest.target
-    }).then(response => {
+    merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
       if (response.error) {
         this.setState({ mergeLoading: false, mergePossible: false });
       } else {
@@ -84,10 +81,7 @@ class SinglePullRequest extends React.Component<Props, State> {
   merge = () => {
     const { repository } = this.props;
     const { pullRequest } = this.state;
-    merge(repository._links.merge.href, {
-      sourceRevision: pullRequest.source,
-      targetRevision: pullRequest.target
-    }).then(response => {
+    merge(repository._links.merge.href, pullRequest).then(response => {
       console.log(response.error);
       if (response.error) {
         this.setState({ error: response.error, loading: false });
@@ -166,12 +160,12 @@ class SinglePullRequest extends React.Component<Props, State> {
               <DateFromNow date={pullRequest.creationDate} />
             </div>
           </div>
-          <PullRequestInformation repository={repository} />
           <MergeButton
             merge={() => this.merge()}
             mergePossible={mergePossible}
             loading={mergeLoading}
           />
+          <PullRequestInformation repository={repository} />
         </div>
       </div>
     );

@@ -60,8 +60,11 @@ export function merge(url: string, pullRequest: PullRequest){
     .post(url, {
       sourceRevision: pullRequest.source,
       targetRevision: pullRequest.target
-    })
+    }, "application/vnd.scmm-mergeCommand+json")
     .catch(cause => {
+      if(cause == apiClient.CONFLICT_ERROR){
+        console.log("conflict");
+      }
       const error = new Error(`could not merge pull request: ${cause.message}`);
       return {error: error};
     })

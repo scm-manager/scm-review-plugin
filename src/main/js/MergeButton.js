@@ -11,7 +11,6 @@ type Props = {
 };
 
 type State = {
-  color: string,
   confirmDialog?: boolean
 };
 
@@ -19,7 +18,6 @@ class MergeButton extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      color: this.props.mergePossible ? "primary": "warning",
       confirmDialog: true
     };
   }
@@ -51,9 +49,10 @@ class MergeButton extends React.Component<Props, State> {
   };
 
   render() {
-    const { t, merge, loading } = this.props;
-    const { confirmDialog, color } = this.state;
+    const { t, merge, loading, mergePossible } = this.props;
+    const { confirmDialog } = this.state;
     const action = confirmDialog ? this.confirmMerge : merge;
+    const color = mergePossible ? "primary": "warning";
     return (
       <Button
         label={t(
