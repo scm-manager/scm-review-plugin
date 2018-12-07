@@ -1,11 +1,11 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.RepositoryResolver;
-import com.cloudogu.scm.review.comment.dto.CommentDto;
-import com.cloudogu.scm.review.comment.dto.CommentMapper;
-import com.cloudogu.scm.review.comment.dto.CommentMapperImpl;
+import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
+import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
+import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -33,7 +33,7 @@ import static com.cloudogu.scm.review.HalRepresentations.createCollection;
 public class CommentRootResource {
 
 
-  private final CommentMapper mapper;
+  private final PullRequestCommentMapper mapper;
   private final RepositoryResolver repositoryResolver;
   private final CommentService service;
   private final Provider<CommentResource> commentResourceProvider;
@@ -42,7 +42,7 @@ public class CommentRootResource {
   @Inject
   public CommentRootResource(RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider) {
     this.repositoryResolver = repositoryResolver;
-    this.mapper = new CommentMapperImpl();
+    this.mapper = new PullRequestCommentMapperImpl();
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
   }
@@ -60,12 +60,12 @@ public class CommentRootResource {
                          @PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
-                         @NotNull CommentDto commentDto) {
+                         @NotNull PullRequestCommentDto pullRequestCommentDto) {
 
-    commentDto.setDate(Instant.now());
-    commentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
+    pullRequestCommentDto.setDate(Instant.now());
+    pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
 
-    String id = service.add(namespace, name, pullRequestId, mapper.map(commentDto));
+    String id = service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
   }
@@ -79,10 +79,10 @@ public class CommentRootResource {
                          @PathParam("pullRequestId") String pullRequestId) {
 
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    List<Comment> list = service.getAll(namespace, name, pullRequestId);
-    List<CommentDto> dtoList = list.stream()
+    List<PullRequestComment> list = service.getAll(namespace, name, pullRequestId);
+    List<PullRequestCommentDto> dtoList = list.stream()
       .map(mapper::map)
       .collect(Collectors.toList());
-    return Response.ok(createCollection(uriInfo, repository.getId(), dtoList, "comments")).build();
+    return Response.ok(createCollection(uriInfo, repository.getId(), dtoList, "pullRequestComments")).build();
   }
 }

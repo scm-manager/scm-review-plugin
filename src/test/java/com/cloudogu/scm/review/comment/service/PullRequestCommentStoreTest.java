@@ -23,11 +23,11 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class CommentStoreTest {
+public class PullRequestCommentStoreTest {
 
-  private final Map<String, Comments> backingMap = Maps.newHashMap();
+  private final Map<String, PullRequestComments> backingMap = Maps.newHashMap();
   @Mock
-  private DataStore<Comments> dataStore;
+  private DataStore<PullRequestComments> dataStore;
 
   private CommentStore store;
 
@@ -39,18 +39,18 @@ public class CommentStoreTest {
 
     doAnswer(invocationOnMock -> {
       String id = invocationOnMock.getArgument(0);
-      Comments comments = invocationOnMock.getArgument(1);
-      backingMap.put(id, comments);
+      PullRequestComments pullRequestComments = invocationOnMock.getArgument(1);
+      backingMap.put(id, pullRequestComments);
       return null;
-    }).when(dataStore).put(anyString(), any(Comments.class));
+    }).when(dataStore).put(anyString(), any(PullRequestComments.class));
   }
 
   @Test
   public void shouldAddTheFirstComment() {
     val pullRequestId = "1";
     when(dataStore.get(pullRequestId)).thenReturn(null);
-    Comment comment = new Comment("id", "my comment", "author", Instant.now());
-    store.add(pullRequestId, comment);
+    PullRequestComment pullRequestComment = new PullRequestComment("id", "my Comment", "author", Instant.now());
+    store.add(pullRequestId, pullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
       .hasSize(1)
@@ -60,10 +60,10 @@ public class CommentStoreTest {
   @Test
   public void shouldAddCommentToExistingCommentList() {
     val pullRequestId = "1";
-    val oldPRComment  = new Comment("id", "my comment", "author", Instant.now());
-    val pullRequestComments = new Comments();
-    val newPullRequestComment   = new Comment("id_1", "my new comment", "author", Instant.now());
-    pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
+    val oldPRComment  = new PullRequestComment("id", "my comment", "author", Instant.now());
+    val pullRequestComments = new PullRequestComments();
+    val newPullRequestComment   = new PullRequestComment("id_1", "my new comment", "author", Instant.now());
+    pullRequestComments.setPullRequestComments(Lists.newArrayList(oldPRComment));
 
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
     store.add(pullRequestId, newPullRequestComment);
@@ -71,7 +71,7 @@ public class CommentStoreTest {
       .isNotEmpty()
       .hasSize(1)
       .containsKeys(pullRequestId);
-    assertThat(pullRequestComments.getComments())
+    assertThat(pullRequestComments.getPullRequestComments())
       .isNotEmpty()
       .containsExactly(oldPRComment, newPullRequestComment);
   }

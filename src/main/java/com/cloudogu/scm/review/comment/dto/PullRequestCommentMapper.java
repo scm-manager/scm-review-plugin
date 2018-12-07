@@ -1,6 +1,6 @@
 package com.cloudogu.scm.review.comment.dto;
 
-import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -13,13 +13,13 @@ import java.net.URI;
 import static de.otto.edison.hal.Links.linkingTo;
 
 @Mapper
-public abstract class CommentMapper extends BaseMapper<Comment, CommentDto> {
+public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestComment, PullRequestCommentDto> {
 
 
-  public abstract Comment map(CommentDto commentDto) ;
+  public abstract PullRequestComment map(PullRequestCommentDto pullRequestCommentDto) ;
 
   @AfterMapping
-  void appendLinks(@MappingTarget CommentDto target, @Context URI location) {
+  void appendLinks(@MappingTarget PullRequestCommentDto target, @Context URI location) {
     Links.Builder linksBuilder = linkingTo()
       .self(location.toString());
     target.add(linksBuilder.build());

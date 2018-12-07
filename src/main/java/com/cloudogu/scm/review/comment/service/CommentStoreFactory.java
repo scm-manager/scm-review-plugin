@@ -18,7 +18,7 @@ public class CommentStoreFactory {
   }
 
   public CommentStore create(Repository repository) {
-    DataStore<Comments> store = dataStoreFactory.withType(Comments.class).withName(PULL_REQUEST_COMMENT_STORE_DIRECTORY).forRepository(repository).build();
+    DataStore<PullRequestComments> store = dataStoreFactory.withType(PullRequestComments.class).withName(PULL_REQUEST_COMMENT_STORE_DIRECTORY).forRepository(repository).build();
     return new CommentStore(store);
   }
 

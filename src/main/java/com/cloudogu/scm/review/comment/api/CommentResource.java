@@ -1,7 +1,7 @@
 package com.cloudogu.scm.review.comment.api;
 
 
-import com.cloudogu.scm.review.comment.dto.CommentDto;
+import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
 import com.cloudogu.scm.review.comment.service.CommentService;
 
 import javax.inject.Inject;
@@ -48,7 +48,7 @@ public class CommentResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
                          @PathParam("commentId") String commentId,
-                         CommentDto commentDto) {
+                         PullRequestCommentDto pullRequestCommentDto) {
     return Response.ok().build();
   }
 }

@@ -11,6 +11,9 @@ import java.util.List;
 
 public class HalRepresentations {
 
+  private HalRepresentations() {
+  }
+
   public static HalRepresentation createCollection(UriInfo uriInfo, String repositoryId, List<? extends HalRepresentation> dtoList, String attributeName) {
     String href = uriInfo.getAbsolutePath().toASCIIString();
 

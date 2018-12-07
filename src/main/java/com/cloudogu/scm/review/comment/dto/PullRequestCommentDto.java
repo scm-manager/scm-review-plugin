@@ -14,10 +14,12 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-public class CommentDto extends HalRepresentation {
+@SuppressWarnings("squid:S2160")
+public class PullRequestCommentDto extends HalRepresentation {
 
   @NonNull
   @Size(min = 1)
+  @SuppressWarnings("squid:S1700")
   private String comment;
 
   private String author;

@@ -18,7 +18,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Comment {
+public class PullRequestComment {
 
   private String id;
   private String comment;

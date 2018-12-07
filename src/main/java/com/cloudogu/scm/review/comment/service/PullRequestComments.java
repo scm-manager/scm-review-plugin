@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @XmlRootElement(name = "pull-request-comments")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Comments {
+public class PullRequestComments {
 
-  private List<Comment> comments = new ArrayList<>();
+  private List<PullRequestComment> pullRequestComments = new ArrayList<>();
 }

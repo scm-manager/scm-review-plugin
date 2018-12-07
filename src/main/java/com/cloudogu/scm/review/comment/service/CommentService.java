@@ -25,16 +25,16 @@ public class CommentService {
    * @param namespace
    * @param name
    * @param pullRequestId
-   * @param comment
-   * @return the id of the created comment
+   * @param pullRequestComment
+   * @return the id of the created pullRequestComment
    */
-  public String add(String namespace, String name, String pullRequestId, Comment comment) {
-    return getCommentStore(namespace, name).add(pullRequestId, comment);
+  public String add(String namespace, String name, String pullRequestId, PullRequestComment pullRequestComment) {
+    return getCommentStore(namespace, name).add(pullRequestId, pullRequestComment);
   }
 
-  public List<Comment> getAll(String namespace, String name, String pullRequestId) {
+  public List<PullRequestComment> getAll(String namespace, String name, String pullRequestId) {
     return Optional.ofNullable(getCommentStore(namespace, name).get(pullRequestId))
-      .map(Comments::getComments)
+      .map(PullRequestComments::getPullRequestComments)
       .orElse(Lists.newArrayList());
   }
 

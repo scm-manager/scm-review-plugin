@@ -11,32 +11,32 @@ public class CommentStore {
 
   private static final Striped<Lock> LOCKS = Striped.lock(10);
 
-  private final DataStore<Comments> store;
+  private final DataStore<PullRequestComments> store;
 
-  CommentStore(DataStore<Comments> store) {
+  CommentStore(DataStore<PullRequestComments> store) {
     this.store = store;
   }
 
-  public String add(String pullRequestId, Comment comment) {
+  public String add(String pullRequestId, PullRequestComment pullRequestComment) {
     Lock lock = LOCKS.get(pullRequestId);
     String commentId;
     lock.lock();
     try {
-      Comments comments = Optional.ofNullable(store.get(pullRequestId)).orElse(new Comments());
+      PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
       commentId = createId();
-      comment.setId(commentId);
-      comments.getComments().add(comment);
-      store.put(pullRequestId, comments);
+      pullRequestComment.setId(commentId);
+      pullRequestComments.getPullRequestComments().add(pullRequestComment);
+      store.put(pullRequestId, pullRequestComments);
     } finally {
       lock.unlock();
     }
     return commentId;
   }
 
-  public Comments get(String pullRequestId) {
+  public PullRequestComments get(String pullRequestId) {
     Lock lock = LOCKS.get(pullRequestId);
     lock.lock();
-    Comments result;
+    PullRequestComments result;
     try {
       result = store.get(pullRequestId);
     } finally {
