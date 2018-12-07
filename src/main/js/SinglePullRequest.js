@@ -63,8 +63,9 @@ class SinglePullRequest extends React.Component<Props, State> {
     });
   }
 
-  merge(repository: Repository, pullRequest: PullRequest) {
-
+  merge = () => {
+    const {repository} = this.props;
+    const {pullRequest} = this.state;
     merge(repository._links.merge.href, {
         sourceRevision: pullRequest.source,
         targetRevision: pullRequest.target
@@ -143,7 +144,7 @@ class SinglePullRequest extends React.Component<Props, State> {
             </div>
           </div>
           <PullRequestInformation repository={repository} />
-          <MergeButton merge={this.merge} repository={repository} pullRequest={pullRequest}/>
+          <MergeButton merge={() => this.merge()}/>
         </div>
       </div>
     );
