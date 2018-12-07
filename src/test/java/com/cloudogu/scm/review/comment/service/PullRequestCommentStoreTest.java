@@ -63,7 +63,7 @@ public class PullRequestCommentStoreTest {
     val oldPRComment  = new PullRequestComment("id", "my comment", "author", Instant.now());
     val pullRequestComments = new PullRequestComments();
     val newPullRequestComment   = new PullRequestComment("id_1", "my new comment", "author", Instant.now());
-    pullRequestComments.setPullRequestComments(Lists.newArrayList(oldPRComment));
+    pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
 
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
     store.add(pullRequestId, newPullRequestComment);
@@ -71,7 +71,7 @@ public class PullRequestCommentStoreTest {
       .isNotEmpty()
       .hasSize(1)
       .containsKeys(pullRequestId);
-    assertThat(pullRequestComments.getPullRequestComments())
+    assertThat(pullRequestComments.getComments())
       .isNotEmpty()
       .containsExactly(oldPRComment, newPullRequestComment);
   }

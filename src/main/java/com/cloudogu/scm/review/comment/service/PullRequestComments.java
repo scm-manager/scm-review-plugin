@@ -13,5 +13,5 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PullRequestComments {
 
-  private List<PullRequestComment> pullRequestComments = new ArrayList<>();
+  private List<PullRequestComment> comments = new ArrayList<>();
 }

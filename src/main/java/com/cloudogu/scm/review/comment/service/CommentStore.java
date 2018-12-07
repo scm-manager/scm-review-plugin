@@ -25,7 +25,7 @@ public class CommentStore {
       PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
       commentId = createId();
       pullRequestComment.setId(commentId);
-      pullRequestComments.getPullRequestComments().add(pullRequestComment);
+      pullRequestComments.getComments().add(pullRequestComment);
       store.put(pullRequestId, pullRequestComments);
     } finally {
       lock.unlock();

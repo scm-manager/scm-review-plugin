@@ -34,7 +34,7 @@ public class CommentService {
 
   public List<PullRequestComment> getAll(String namespace, String name, String pullRequestId) {
     return Optional.ofNullable(getCommentStore(namespace, name).get(pullRequestId))
-      .map(PullRequestComments::getPullRequestComments)
+      .map(PullRequestComments::getComments)
       .orElse(Lists.newArrayList());
   }
 
