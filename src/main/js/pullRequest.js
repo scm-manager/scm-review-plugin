@@ -54,3 +54,15 @@ export function getPullRequests(url: string){
       return {error: error};
     })
 }
+
+export function merge(url: string, pullRequest: PullRequest){
+  return apiClient
+    .post(url, {
+      sourceRevision: pullRequest.source,
+      targetRevision: pullRequest.target
+    })
+    .catch(cause => {
+      const error = new Error(`could not merge pull request: ${cause.message}`);
+      return {error: error};
+    })
+}

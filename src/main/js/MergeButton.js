@@ -2,10 +2,13 @@
 import React from "react";
 import { translate } from "react-i18next";
 import { Button, confirmAlert } from "@scm-manager/ui-components";
+import type {Repository} from "@scm-manager/ui-types";
+import type {PullRequest} from "./types/PullRequest";
 
 type Props = {
-  namespace: string,
-  repoName: string,
+  repository: Repository,
+  pullRequest: PullRequest,
+  merge: (Repository) => void,
   t: string => string
 };
 
@@ -25,9 +28,10 @@ class MergeButton extends React.Component<Props, State> {
     };
   }
 
-  merge = () => {
-    //TODO: perform merge!
-  };
+  clicked = () => {
+    const {repository, merge, pullRequest} = this.props;
+    merge(repository, pullRequest);
+};
 
   confirmMerge = () => {
     const { t } = this.props;
@@ -43,7 +47,7 @@ class MergeButton extends React.Component<Props, State> {
           label: t(
             "scm-review-plugin.show-pull-request.mergeButton.confirm-alert.submit"
           ),
-          onClick: () => this.merge()
+          onClick: () => this.clicked()
         },
         {
           label: t(
@@ -56,9 +60,9 @@ class MergeButton extends React.Component<Props, State> {
   };
 
   render() {
-    const { t } = this.props;
+    const { t, clicked } = this.props;
     const { confirmDialog, loading, color } = this.state;
-    const action = confirmDialog ? this.confirmMerge : this.merge;
+    const action = confirmDialog ? this.confirmMerge : this.clicked;
     return (
       <Button
         label={t(

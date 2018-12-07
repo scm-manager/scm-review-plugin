@@ -10,7 +10,7 @@ import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
-import { getPullRequest } from "./pullRequest";
+import {getPullRequest, merge} from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import injectSheet from "react-jss";
@@ -63,6 +63,22 @@ class SinglePullRequest extends React.Component<Props, State> {
     });
   }
 
+  merge(repository: Repository, pullRequest: PullRequest) {
+
+    merge(repository._links.merge.href, {
+        sourceRevision: pullRequest.source,
+        targetRevision: pullRequest.target
+      })
+      .then(response => {
+        console.log(response.error);
+        if (response.error) {
+          this.setState({ error: response.error, loading: false });
+        } else {
+          console.log("merged");
+        }
+      });
+  }
+
   render() {
     const { repository, t, classes } = this.props;
     const { pullRequest, error, loading } = this.state;
@@ -85,8 +101,13 @@ class SinglePullRequest extends React.Component<Props, State> {
       description = (
         <div className="media">
           <div className="media-content">
-            {pullRequest.description.split("\n").map((line) => {
-              return <span>{line}<br /></span>;
+            {pullRequest.description.split("\n").map(line => {
+              return (
+                <span>
+                  {line}
+                  <br />
+                </span>
+              );
             })}
           </div>
         </div>
@@ -96,35 +117,39 @@ class SinglePullRequest extends React.Component<Props, State> {
     return (
       <div className="columns">
         <div className="column">
-          <Title
-            title={" #" + pullRequest.id + " " + pullRequest.title  }
-          />
+          <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
 
-            <div className="media">
-              <div className="media-content">
-                <div>
-                  <span className="tag is-light is-medium">{pullRequest.source}</span>{" "}
-                  <i className="fas fa-long-arrow-alt-right" />{" "}
-                  <span className="tag is-light is-medium">{pullRequest.target}</span>
-                </div>
+          <div className="media">
+            <div className="media-content">
+              <div>
+                <span className="tag is-light is-medium">
+                  {pullRequest.source}
+                </span>{" "}
+                <i className="fas fa-long-arrow-alt-right" />{" "}
+                <span className="tag is-light is-medium">
+                  {pullRequest.target}
+                </span>
               </div>
-              <div className="media-right">{pullRequest.status}</div>
             </div>
+            <div className="media-right">{pullRequest.status}</div>
+          </div>
 
           {description}
 
           <div className={classNames("media", classes.bottomSpace)}>
-            <div className="media-content">
-              {pullRequest.author}
+            <div className="media-content">{pullRequest.author}</div>
+            <div className="media-right">
+              <DateFromNow date={pullRequest.creationDate} />
             </div>
-            <div className="media-right"><DateFromNow date={pullRequest.creationDate} /></div>
           </div>
-          <PullRequestInformation repository={repository}/>
-          <MergeButton/>
+          <PullRequestInformation repository={repository} />
+          <MergeButton merge={this.merge} repository={repository} pullRequest={pullRequest}/>
         </div>
       </div>
     );
   }
 }
 
-export default withRouter(injectSheet(styles)(translate("plugins")(SinglePullRequest)));
+export default withRouter(
+  injectSheet(styles)(translate("plugins")(SinglePullRequest))
+);
