@@ -1,5 +1,12 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
+import com.cloudogu.scm.review.service.BranchResolver;
+import com.cloudogu.scm.review.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.service.PullRequest;
+import com.cloudogu.scm.review.service.PullRequestStatus;
+import com.cloudogu.scm.review.service.PullRequestStore;
+import com.cloudogu.scm.review.service.PullRequestStoreFactory;
+import com.cloudogu.scm.review.service.RepositoryResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
@@ -17,19 +24,21 @@ import org.mockito.ArgumentCaptor;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 
-import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
+import static com.cloudogu.scm.review.api.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -67,11 +76,13 @@ public class PullRequestResourceTest {
     when(repository.getId()).thenReturn(REPOSITORY_ID);
     when(repository.getName()).thenReturn(REPOSITORY_NAME);
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
+    when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE,REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    pullRequestResource = new PullRequestResource(repositoryResolver, branchResolver, storeFactory);
+    DefaultPullRequestService  service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory);
+    pullRequestResource = new PullRequestResource(service);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
-    when(storeFactory.create(repository)).thenReturn(store);
+    when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
@@ -121,6 +132,27 @@ public class PullRequestResourceTest {
       .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
     assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+  }
+
+  @Test
+  @SubjectAware(username = "rr", password = "secret")
+  public void shouldGetAlreadyExistsExceptionOnCreatePR() throws URISyntaxException, IOException {
+    PullRequest pr = new PullRequest();
+    pr.setStatus(PullRequestStatus.OPEN);
+    pr.setSource("source");
+    pr.setTarget("target");
+    pr.setTitle("title");
+    pr.setId("id");
+    when(store.getAll()).thenReturn(Lists.newArrayList(pr));
+
+    byte[] pullRequestJson = "{\"source\": \"source\", \"target\": \"target\", \"title\": \"pull request\"}".getBytes();
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    MockHttpRequest request = MockHttpRequest
+        .post("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME)
+      .content(pullRequestJson)
+      .contentType(MediaType.APPLICATION_JSON);
+    dispatcher.invoke(request, response);
+    assertExceptionFrom(response).hasMessageMatching("pull request with id id in repository with id .* already exists");
   }
 
   @Test
@@ -196,10 +228,7 @@ public class PullRequestResourceTest {
   @SubjectAware(username = "rr", password = "secret")
   public void shouldGetPullRequest() throws URISyntaxException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
-    PullRequest pullRequest = new PullRequest("source", "target", "title");
-    pullRequest.setAuthor("A. U. Thor");
-    pullRequest.setId("id");
-    pullRequest.setCreationDate(Instant.MIN);
+    PullRequest pullRequest = createPullRequest();
     when(store.get("123")).thenReturn(pullRequest);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/"+REPOSITORY_NAMESPACE+"/"+REPOSITORY_NAME+"/123");
     dispatcher.invoke(request, response);
@@ -238,9 +267,10 @@ public class PullRequestResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    JsonNode pr_1 = jsonNode.path(0);
-    JsonNode pr_2 = jsonNode.path(1);
-    JsonNode pr_3 = jsonNode.path(2);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    JsonNode pr_1 = prNode.path(0);
+    JsonNode pr_2 = prNode.path(1);
+    JsonNode pr_3 = prNode.path(2);
 
     assertThat(pr_1.get("id").asText()).isEqualTo(lastPR);
     assertThat(pr_2.get("id").asText()).isEqualTo(toDayUpdatedPR);
@@ -299,7 +329,8 @@ public class PullRequestResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    jsonNode.elements().forEachRemaining(node -> {
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    prNode.elements().forEachRemaining(node -> {
       String actual = node.path("_links").path("self").path("href").asText();
       assertThat(actual).contains("/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/"+node.get("id").asText());
     });
@@ -312,7 +343,8 @@ public class PullRequestResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    jsonNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(status));
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    prNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(status));
   }
 
   private void initRepoWithPRs(String namespace, String name) {
@@ -332,5 +364,35 @@ public class PullRequestResourceTest {
   private byte[] loadJson(String s) throws IOException {
     URL url = Resources.getResource(s);
     return Resources.toByteArray(url);
+  }
+
+  @Test
+  @SubjectAware(username = "rr", password = "secret")
+  public void shouldReturnCollectionWithOnlySelfLink() throws URISyntaxException, IOException {
+    JsonNode links = invokeAndReturnLinks();
+
+    assertThat(links.has("self")).isTrue();
+    assertThat(links.has("create")).isFalse();
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldReturnCollectionWithCreateLink() throws URISyntaxException, IOException {
+    JsonNode links = invokeAndReturnLinks();
+
+    assertThat(links.has("create")).isTrue();
+  }
+
+  private JsonNode invokeAndReturnLinks() throws URISyntaxException, IOException {
+    initRepoWithPRs("hitchhiker", "DeepThought");
+
+    String uri = "/" + PullRequestResource.PULL_REQUESTS_PATH_V2 + "/ns/repo";
+
+    MockHttpRequest request = MockHttpRequest.get(uri);
+    dispatcher.invoke(request, response);
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    return jsonNode.get("_links");
   }
 }

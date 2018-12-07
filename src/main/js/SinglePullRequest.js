@@ -4,7 +4,6 @@ import {
   Title,
   Loading,
   ErrorPage,
-  Subtitle,
   DateFromNow
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
@@ -48,13 +47,7 @@ class SinglePullRequest extends React.Component<Props, State> {
   componentDidMount(): void {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
-    const url =
-      "/pull-requests/" +
-      repository.namespace +
-      "/" +
-      repository.name +
-      "/" +
-      pullRequestNumber; //TODO: use link if available
+    const url = repository._links.pullRequest.href + "/" + pullRequestNumber;
     getPullRequest(url).then(response => {
       if (response.error) {
         this.setState({
@@ -91,10 +84,11 @@ class SinglePullRequest extends React.Component<Props, State> {
     if (pullRequest.description) {
       description = (
         <div className="media">
-          <div className="media-left">
-            {t("scm-review-plugin.show-pull-request.description")}
+          <div className="media-content">
+            {pullRequest.description.split("\n").map((line) => {
+              return <span>{line}<br /></span>;
+            })}
           </div>
-          <div className="media-content">{pullRequest.description}</div>
         </div>
       );
     }
@@ -103,12 +97,11 @@ class SinglePullRequest extends React.Component<Props, State> {
       <div className="columns">
         <div className="column">
           <Title
-            title={t("scm-review-plugin.create.title") + " #" + pullRequest.id}
+            title={" #" + pullRequest.id + " " + pullRequest.title  }
           />
 
             <div className="media">
               <div className="media-content">
-                <Subtitle subtitle={pullRequest.title} />
                 <div>
                   <span className="tag is-light is-medium">{pullRequest.source}</span>{" "}
                   <i className="fas fa-long-arrow-alt-right" />{" "}

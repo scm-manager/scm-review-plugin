@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,7 +47,7 @@ public class RepositoryLinkEnricher extends JsonEnricherBase {
 
         JsonNode newPullRequestNode = createObject(singletonMap("href", value(newPullRequest)));
 
-        addPropertyNode(repositoryNode.get("_links"), "newPullRequest", newPullRequestNode);
+        addPropertyNode(repositoryNode.get("_links"), "pullRequest", newPullRequestNode);
       }
     }
   }

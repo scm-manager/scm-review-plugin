@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.service;
 
 import sonia.scm.ContextEntry;
 import sonia.scm.repository.NamespaceAndName;

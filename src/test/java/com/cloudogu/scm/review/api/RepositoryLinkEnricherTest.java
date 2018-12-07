@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,7 +65,7 @@ public class RepositoryLinkEnricherTest {
 
     String newPrLink = context.getResponseEntity()
       .get("_links")
-      .get("newPullRequest")
+      .get("pullRequest")
       .get("href")
       .asText();
 
@@ -85,7 +85,7 @@ public class RepositoryLinkEnricherTest {
 
     String newPrLink = context.getResponseEntity()
       .get("_links")
-      .get("newPullRequest")
+      .get("pullRequest")
       .asText();
 
     assertThat(newPrLink).isEqualTo("");
@@ -103,7 +103,7 @@ public class RepositoryLinkEnricherTest {
 
     boolean hasNewPullRequestLink = context.getResponseEntity()
       .get("_links")
-      .has("newPullRequest");
+      .has("pullRequest");
 
     assertThat(hasNewPullRequestLink).isFalse();
   }

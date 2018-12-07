@@ -1,5 +1,6 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.api;
 
+import com.cloudogu.scm.review.service.PullRequest;
 import de.otto.edison.hal.Links;
 import org.mapstruct.*;
 import sonia.scm.api.v2.resources.BaseMapper;
