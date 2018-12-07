@@ -10,7 +10,7 @@ import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
-import {getPullRequest, merge} from "./pullRequest";
+import { getPullRequest, merge } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import injectSheet from "react-jss";
@@ -32,7 +32,9 @@ type Props = {
 type State = {
   pullRequest: PullRequest,
   error?: Error,
-  loading: boolean
+  loading: boolean,
+  mergePossible?: boolean,
+  mergeLoading: boolean
 };
 
 class SinglePullRequest extends React.Component<Props, State> {
@@ -40,7 +42,8 @@ class SinglePullRequest extends React.Component<Props, State> {
     super(props);
     this.state = {
       loading: true,
-      pullRequest: null
+      pullRequest: null,
+      mergeLoading: true
     };
   }
 
@@ -59,30 +62,50 @@ class SinglePullRequest extends React.Component<Props, State> {
           pullRequest: response,
           loading: false
         });
+        this.getMergeDryRun(response);
+      }
+    });
+  }
+
+  getMergeDryRun(pullRequest: PullRequest) {
+    const { repository } = this.props;
+    merge(repository._links.mergeDryRun.href, {
+      sourceRevision: pullRequest.source,
+      targetRevision: pullRequest.target
+    }).then(response => {
+      if (response.error) {
+        this.setState({ mergeLoading: false, mergePossible: false });
+      } else {
+        this.setState({ mergePossible: true, mergeLoading: false });
       }
     });
   }
 
   merge = () => {
-    const {repository} = this.props;
-    const {pullRequest} = this.state;
+    const { repository } = this.props;
+    const { pullRequest } = this.state;
     merge(repository._links.merge.href, {
-        sourceRevision: pullRequest.source,
-        targetRevision: pullRequest.target
-      })
-      .then(response => {
-        console.log(response.error);
-        if (response.error) {
-          this.setState({ error: response.error, loading: false });
-        } else {
-          console.log("merged");
-        }
-      });
-  }
+      sourceRevision: pullRequest.source,
+      targetRevision: pullRequest.target
+    }).then(response => {
+      console.log(response.error);
+      if (response.error) {
+        this.setState({ error: response.error, loading: false });
+      } else {
+        console.log("merged");
+      }
+    });
+  };
 
   render() {
     const { repository, t, classes } = this.props;
-    const { pullRequest, error, loading } = this.state;
+    const {
+      pullRequest,
+      error,
+      loading,
+      mergeLoading,
+      mergePossible
+    } = this.state;
     let description = null;
     if (error) {
       return (
@@ -144,7 +167,11 @@ class SinglePullRequest extends React.Component<Props, State> {
             </div>
           </div>
           <PullRequestInformation repository={repository} />
-          <MergeButton merge={() => this.merge()}/>
+          <MergeButton
+            merge={() => this.merge()}
+            mergePossible={mergePossible}
+            loading={mergeLoading}
+          />
         </div>
       </div>
     );

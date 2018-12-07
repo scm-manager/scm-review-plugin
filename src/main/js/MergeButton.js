@@ -5,11 +5,12 @@ import { Button, confirmAlert } from "@scm-manager/ui-components";
 
 type Props = {
   merge: () => void,
+  mergePossible: boolean,
+  loading: boolean,
   t: string => string
 };
 
 type State = {
-  loading: boolean,
   color: string,
   confirmDialog?: boolean
 };
@@ -18,8 +19,7 @@ class MergeButton extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      color: "primary",
-      loading: false,
+      color: this.props.mergePossible ? "primary": "warning",
       confirmDialog: true
     };
   }
@@ -51,8 +51,8 @@ class MergeButton extends React.Component<Props, State> {
   };
 
   render() {
-    const { t, merge } = this.props;
-    const { confirmDialog, loading, color } = this.state;
+    const { t, merge, loading } = this.props;
+    const { confirmDialog, color } = this.state;
     const action = confirmDialog ? this.confirmMerge : merge;
     return (
       <Button
