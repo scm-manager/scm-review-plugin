@@ -1,7 +1,8 @@
 package com.cloudogu.scm.review;
 
-import com.cloudogu.scm.review.service.PullRequest;
-import com.cloudogu.scm.review.service.PullRequestStatus;
+
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 
 import java.time.Instant;
 
