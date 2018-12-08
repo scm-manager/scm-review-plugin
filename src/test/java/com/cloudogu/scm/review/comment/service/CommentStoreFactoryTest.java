@@ -1,7 +1,6 @@
-package com.cloudogu.scm.review.pullrequest.service;
+package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.comment.service.CommentStoreFactory;
-import com.cloudogu.scm.review.comment.service.CommentStore;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PullRequestStoreFactoryTest {
+class CommentStoreFactoryTest {
 
   @Mock
   private DataStoreFactory dataStoreFactory;
@@ -26,19 +25,7 @@ class PullRequestStoreFactoryTest {
   private DataStore<PullRequest> store;
 
   @InjectMocks
-  private PullRequestStoreFactory storeFactory;
-
-  @Test
-  public void testCreate() {
-    Repository repository = RepositoryTestData.createHeartOfGold("git");
-    repository.setId("42");
-
-    when(dataStoreFactory.getStore(any())).thenReturn((DataStore) store);
-    when(dataStoreFactory.withType(any())).thenCallRealMethod();
-
-    PullRequestStore store = storeFactory.create(repository);
-    assertThat(store).isNotNull();
-  }
+  private CommentStoreFactory storeFactory;
 
   @Test
   public void shouldCreateCommentStore() {
@@ -48,7 +35,7 @@ class PullRequestStoreFactoryTest {
     when(dataStoreFactory.getStore(any())).thenReturn((DataStore) store);
     when(dataStoreFactory.withType(any())).thenCallRealMethod();
 
-    PullRequestStore commentStore = storeFactory.create(repository);
+    CommentStore commentStore = storeFactory.create(repository);
     assertThat(commentStore).isNotNull();
   }
 }

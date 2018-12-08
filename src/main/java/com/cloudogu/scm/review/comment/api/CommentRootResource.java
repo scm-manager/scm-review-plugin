@@ -9,6 +9,7 @@ import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -40,9 +41,9 @@ public class CommentRootResource {
 
 
   @Inject
-  public CommentRootResource(RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider) {
-    this.repositoryResolver = repositoryResolver;
+  public CommentRootResource( RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider) {
     this.mapper = new PullRequestCommentMapperImpl();
+    this.repositoryResolver = repositoryResolver;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
   }
@@ -61,12 +62,12 @@ public class CommentRootResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
                          @NotNull PullRequestCommentDto pullRequestCommentDto) {
-
+    RepositoryPermissions.push(repositoryResolver.resolve(new NamespaceAndName(namespace, name))).check();
     pullRequestCommentDto.setDate(Instant.now());
     pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
 
-    String id = service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
-    URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
+    int id = service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
+    URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(id)).build();
     return Response.created(location).build();
   }
 
@@ -79,9 +80,10 @@ public class CommentRootResource {
                          @PathParam("pullRequestId") String pullRequestId) {
 
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    RepositoryPermissions.push(repository).check();
     List<PullRequestComment> list = service.getAll(namespace, name, pullRequestId);
     List<PullRequestCommentDto> dtoList = list.stream()
-      .map(mapper::map)
+      .map(pr -> mapper.map(pr,uriInfo.getAbsolutePathBuilder().path(String.valueOf(pr.getId())).build()))
       .collect(Collectors.toList());
     return Response.ok(createCollection(uriInfo, repository.getId(), dtoList, "pullRequestComments")).build();
   }

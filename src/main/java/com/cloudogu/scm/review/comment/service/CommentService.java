@@ -1,12 +1,16 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.Lists;
 import sonia.scm.repository.NamespaceAndName;
 
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
+
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
+import static sonia.scm.NotFoundException.notFound;
 
 public class CommentService {
 
@@ -28,7 +32,7 @@ public class CommentService {
    * @param pullRequestComment
    * @return the id of the created pullRequestComment
    */
-  public String add(String namespace, String name, String pullRequestId, PullRequestComment pullRequestComment) {
+  public int add(String namespace, String name, String pullRequestId, PullRequestComment pullRequestComment) {
     return getCommentStore(namespace, name).add(pullRequestId, pullRequestComment);
   }
 
@@ -36,6 +40,23 @@ public class CommentService {
     return Optional.ofNullable(getCommentStore(namespace, name).get(pullRequestId))
       .map(PullRequestComments::getComments)
       .orElse(Lists.newArrayList());
+  }
+
+  public PullRequestComment get(String namespace, String name, String pullRequestId, int commentId) {
+    return Optional.ofNullable(getCommentStore(namespace, name).get(pullRequestId))
+      .map(PullRequestComments::getComments)
+      .orElse(Lists.newArrayList())
+      .stream()
+      .filter(c -> c.getId() == commentId)
+      .findFirst()
+      .orElseThrow(() -> notFound(entity(PullRequestComment.class, String.valueOf(commentId))
+        .in(PullRequest.class, pullRequestId)
+        .in(new NamespaceAndName(namespace, name))));
+  }
+
+
+  public void delete(String namespace, String name, String pullRequestId, int commentId) {
+    getCommentStore(namespace, name).delete(pullRequestId, commentId);
   }
 
   private CommentStore getCommentStore(String namespace, String name) {

@@ -20,7 +20,7 @@ import java.time.Instant;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PullRequestComment {
 
-  private String id;
+  private int id;
   private String comment;
   private String author;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)

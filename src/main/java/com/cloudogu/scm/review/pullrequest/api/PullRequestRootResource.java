@@ -65,7 +65,7 @@ public class PullRequestRootResource {
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
 
     Repository repository = service.getRepository(namespace, name);
-    RepositoryPermissions.read(repository).check();
+    RepositoryPermissions.push(repository).check();
     pullRequestDto.setStatus(PullRequestStatus.OPEN);
     service.get(repository, pullRequestDto.getSource(), pullRequestDto.getTarget(), pullRequestDto.getStatus())
       .ifPresent(pullRequest -> {

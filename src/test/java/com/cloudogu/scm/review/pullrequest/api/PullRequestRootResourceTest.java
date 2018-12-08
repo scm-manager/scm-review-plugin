@@ -91,7 +91,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "slarti", password = "secret")
   public void shouldCreateNewValidPullRequest() throws URISyntaxException, IOException {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request =
@@ -105,7 +105,7 @@ public class PullRequestRootResourceTest {
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
     assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1");
     PullRequest pullRequest = pullRequestStoreCaptor.getValue();
-    assertThat(pullRequest.getAuthor()).isEqualTo("rr");
+    assertThat(pullRequest.getAuthor()).isEqualTo("slarti");
   }
 
   @Test
@@ -132,11 +132,11 @@ public class PullRequestRootResourceTest {
       .content(pullRequestJson)
       .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:push:repo_ID\\]");
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetAlreadyExistsExceptionOnCreatePR() throws URISyntaxException, IOException {
     PullRequest pr = new PullRequest();
     pr.setStatus(PullRequestStatus.OPEN);
@@ -208,7 +208,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "slarti", password = "secret")
   public void shouldHandleMissingBranch() throws URISyntaxException, IOException {
     when(branchResolver.resolve(repository, "sourceBranch")).thenThrow(new NotFoundException("x", "y"));
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
