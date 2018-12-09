@@ -15,6 +15,20 @@ export function createPullRequest(url: string, pullRequest: PullRequest) {
     });
 }
 
+export function createPullRequestComment(url: string, comment: Comment) {
+  return apiClient
+    .post(url, comment)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(
+        `could not create pull request comment: ${cause.message}`
+      );
+      return { error: error };
+    });
+}
+
 export function getBranches(url: string) {
   return apiClient
     .get(url)
@@ -64,6 +78,18 @@ export function getPullRequestComments(url: string){
     })
     .catch(cause => {
       const error = new Error(`could not fetch pull request comments: ${cause.message}`);
+      return {error: error};
+    })
+}
+
+export function deletePullRequestComment(url: string){
+  return apiClient
+    .delete(url)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(`could not delete pull request comments: ${cause.message}`);
       return {error: error};
     })
 }

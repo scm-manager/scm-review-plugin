@@ -79,7 +79,7 @@ public class PullRequestRootResource {
     Instant now = Instant.now();
     pullRequestDto.setCreationDate(now);
     pullRequestDto.setLastModified(now);
-    String id = service.add(repository, mapper.map(pullRequestDto));
+    String id = service.add(repository, mapper.using(uriInfo).map(pullRequestDto));
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
   }
@@ -94,7 +94,7 @@ public class PullRequestRootResource {
     List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)
       .stream()
       .filter(pullRequest -> pullRequestStatusDto == PullRequestStatusDto.ALL || pullRequest.getStatus().equals(PullRequestStatus.valueOf(pullRequestStatusDto.name())))
-      .map(pr -> mapper.map(pr, repository))
+      .map(pr -> mapper.using(uriInfo).map(pr, repository))
       .sorted(Comparator.comparing(PullRequestDto::getLastModified).reversed())
       .collect(Collectors.toList());
 

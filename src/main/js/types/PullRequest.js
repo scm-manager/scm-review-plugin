@@ -16,8 +16,21 @@ export type PullRequest = BasicPullRequest & {
   _links: Links
 }
 
+export type Comment = {
+  comment: string,
+  author: string,
+  date: string,
+  _links: Links
+}
+
 export type PullRequestCollection = Collection & {
   _embedded: {
     pullRequests: PullRequest[]
+  }
+}
+
+export type Comments = Collection & {
+  _embedded: {
+    pullRequestComments: Comment[]
   }
 }

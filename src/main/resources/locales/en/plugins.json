@@ -23,6 +23,10 @@
       "error-title": "Error",
       "error-subtitle": "Unknown pull-request error",
       "createButton": "New Pull Request"
+    },
+    "comment":{
+      "add": "Add comment",
+      "delete": "Delete"
     }
   }
 }

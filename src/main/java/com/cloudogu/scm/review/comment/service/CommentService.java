@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.comment.service;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.Lists;
+import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 
 import javax.inject.Inject;
@@ -37,9 +38,14 @@ public class CommentService {
   }
 
   public List<PullRequestComment> getAll(String namespace, String name, String pullRequestId) {
-    return Optional.ofNullable(getCommentStore(namespace, name).get(pullRequestId))
-      .map(PullRequestComments::getComments)
-      .orElse(Lists.newArrayList());
+    try {
+      PullRequestComments value = getCommentStore(namespace, name).get(pullRequestId);
+      return Optional.ofNullable(value)
+        .map(PullRequestComments::getComments)
+        .orElse(Lists.newArrayList());
+    } catch (NotFoundException e) {
+      return Lists.newArrayList();
+    }
   }
 
   public PullRequestComment get(String namespace, String name, String pullRequestId, int commentId) {

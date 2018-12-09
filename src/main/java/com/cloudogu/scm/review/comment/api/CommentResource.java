@@ -8,6 +8,7 @@ import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import org.apache.shiro.SecurityUtils;
+import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
@@ -66,12 +67,16 @@ public class CommentResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     RepositoryPermissions.push(repository).check();
     String currentUser = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
-    PullRequestComment requestComment = service.get(namespace, name, pullRequestId, commentId);
-    if (!currentUser.equals(requestComment.getAuthor())) {
-      return Response.status(Response.Status.FORBIDDEN).build();
+    try{
+      PullRequestComment requestComment = service.get(namespace, name, pullRequestId, commentId);
+      if (!currentUser.equals(requestComment.getAuthor())) {
+        return Response.status(Response.Status.FORBIDDEN).build();
+      }
+      service.delete(namespace, name, pullRequestId, commentId);
+      return Response.noContent().build();
+    }catch(NotFoundException e){
+      return Response.noContent().build();
     }
-    service.delete(namespace, name, pullRequestId, commentId);
-    return Response.noContent().build();
   }
 
   @PUT

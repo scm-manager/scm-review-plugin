@@ -14,8 +14,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 public class PullRequestResource {
 
@@ -41,10 +43,10 @@ public class PullRequestResource {
   @GET
   @Path("")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response get(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+  public Response get(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     RepositoryPermissions.read(repository).check();
-    return Response.ok(mapper.map(service.get(namespace, name, pullRequestId),repository)).build();
+    return Response.ok(mapper.using(uriInfo).map(service.get(namespace, name, pullRequestId),repository)).build();
   }
 
 }
