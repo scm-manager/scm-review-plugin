@@ -33,8 +33,17 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     Links.Builder linksBuilder = linkingTo().self(getSelfLink(target, repository));
     if (RepositoryPermissions.push(repository).isPermitted()){
       linksBuilder.single(link("createComment", getCreateCommentLink(target, repository)));
+      linksBuilder.single(link("comments", getCommentsLink(target, repository)));
     }
     target.add(linksBuilder.build());
+  }
+
+  private String  getCommentsLink(PullRequestDto target, Repository repository){
+    return new LinkBuilder(() -> URI.create("/"), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class)
+      .method("getPullRequestResource").parameters()
+      .method("comments").parameters()
+      .method("getAll").parameters(repository.getNamespace(), repository.getName(), target.getId())
+      .href();
   }
 
   private String getSelfLink(@MappingTarget PullRequestDto target, @Context Repository repository) {

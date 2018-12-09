@@ -339,7 +339,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
-  public void shouldNotGetCreateCommentLinkForUserWithoutPushPermission() throws URISyntaxException, IOException {
+  public void shouldNotGetCommentLinkForUserWithoutPushPermission() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo" );
     dispatcher.invoke(request, response);
@@ -349,12 +349,13 @@ public class PullRequestRootResourceTest {
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
     prNode.elements().forEachRemaining(node -> {
       node.path("_links").path("createComment").isNull();
+      node.path("_links").path("comments").isNull();
     });
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
-  public void shouldGetCreateCommentLink() throws URISyntaxException, IOException {
+  public void shouldGetCommentLink() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo" );
     dispatcher.invoke(request, response);
@@ -364,6 +365,8 @@ public class PullRequestRootResourceTest {
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
     prNode.elements().forEachRemaining(node -> {
       String actual = node.path("_links").path("createComment").path("href").asText();
+      assertThat(actual).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/"+node.get("id").asText()+"/comments/");
+      actual = node.path("_links").path("comments").path("href").asText();
       assertThat(actual).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/"+node.get("id").asText()+"/comments/");
     });
   }
