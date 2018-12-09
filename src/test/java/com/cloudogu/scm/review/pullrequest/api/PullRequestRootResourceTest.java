@@ -333,7 +333,38 @@ public class PullRequestRootResourceTest {
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
     prNode.elements().forEachRemaining(node -> {
       String actual = node.path("_links").path("self").path("href").asText();
-      assertThat(actual).contains("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/"+node.get("id").asText());
+      assertThat(actual).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/"+node.get("id").asText());
+    });
+  }
+
+  @Test
+  @SubjectAware(username = "rr", password = "secret")
+  public void shouldNotGetCreateCommentLinkForUserWithoutPushPermission() throws URISyntaxException, IOException {
+    initRepoWithPRs("ns", "repo");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo" );
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    prNode.elements().forEachRemaining(node -> {
+      node.path("_links").path("createComment").isNull();
+    });
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldGetCreateCommentLink() throws URISyntaxException, IOException {
+    initRepoWithPRs("ns", "repo");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo" );
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    prNode.elements().forEachRemaining(node -> {
+      String actual = node.path("_links").path("createComment").path("href").asText();
+      assertThat(actual).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/"+node.get("id").asText()+"/comments/");
     });
   }
 

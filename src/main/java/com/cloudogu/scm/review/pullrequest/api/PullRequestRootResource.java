@@ -94,7 +94,7 @@ public class PullRequestRootResource {
     List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)
       .stream()
       .filter(pullRequest -> pullRequestStatusDto == PullRequestStatusDto.ALL || pullRequest.getStatus().equals(PullRequestStatus.valueOf(pullRequestStatusDto.name())))
-      .map(pr -> mapper.map(pr, uriInfo.getAbsolutePathBuilder().path(pr.getId()).build()))
+      .map(pr -> mapper.map(pr, repository))
       .sorted(Comparator.comparing(PullRequestDto::getLastModified).reversed())
       .collect(Collectors.toList());
 

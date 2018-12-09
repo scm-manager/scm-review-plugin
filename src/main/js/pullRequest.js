@@ -54,3 +54,16 @@ export function getPullRequests(url: string){
       return {error: error};
     })
 }
+
+export function getPullRequestComments(url: string){
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .then(pullRequestComments => {
+      return pullRequestComments
+    })
+    .catch(cause => {
+      const error = new Error(`could not fetch pull request comments: ${cause.message}`);
+      return {error: error};
+    })
+}
