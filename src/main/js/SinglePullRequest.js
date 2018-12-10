@@ -16,6 +16,7 @@ import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import injectSheet from "react-jss";
 import classNames from "classnames";
+import ManualMergeInformation from "./ManualMergeInformation";
 
 const styles = {
   bottomSpace: {
@@ -36,7 +37,6 @@ type State = {
   loading: boolean,
   mergePossible?: boolean,
   mergeLoading: boolean,
-  mergeConflict?: boolean,
   showNotification: boolean
 };
 
@@ -97,25 +97,33 @@ class SinglePullRequest extends React.Component<Props, State> {
   merge = () => {
     const { repository } = this.props;
     const { pullRequest } = this.state;
+    this.setMergeLoadingState();
     merge(repository._links.merge.href, pullRequest).then(response => {
       if (response.error) {
         this.setState({ error: response.error, mergeLoading: false });
       } else if (response.conflict) {
         this.setState({
-          mergeConflict: response.conflict,
+          mergePossible: true,
           mergeLoading: false
         });
       } else {
-        this.setState({ loading: true });
+        this.setState({ loading: true, mergeLoading: false });
         this.fetchPullRequest(true);
       }
+    });
+  };
+
+  setMergeLoadingState = () => {
+    this.setState({
+      mergeLoading: true
     });
   };
 
   onClose = () => {
     this.setState({
       ...this.state,
-      showNotification: false
+      showNotification: false,
+      mergeConflict: false
     });
   };
 
@@ -179,6 +187,8 @@ class SinglePullRequest extends React.Component<Props, State> {
           merge={() => this.merge()}
           mergePossible={mergePossible}
           loading={mergeLoading}
+          repository={repository}
+          pullRequest={pullRequest}
         />
       );
     }

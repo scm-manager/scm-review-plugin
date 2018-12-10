@@ -61,8 +61,7 @@ export function merge(url: string, pullRequest: PullRequest){
       sourceRevision: pullRequest.source,
       targetRevision: pullRequest.target
     }, "application/vnd.scmm-mergeCommand+json")
-    .catch(cause => {        console.log(cause);
-
+    .catch(cause => {
       if(cause == CONFLICT_ERROR){
         return {conflict: cause};
       }
