@@ -231,4 +231,17 @@ describe("API merge pull request", () => {
         done();
       });
   });
+
+  it("should return conflict on fetching pull requests", done => {
+
+    fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
+      status: 409
+    });
+
+    merge(PULLREQUEST_URL, pullRequest)
+      .then(response => {
+        expect(response.conflict).toBeDefined();
+        done();
+      });
+  });
 });

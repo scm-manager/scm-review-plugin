@@ -57,7 +57,8 @@ class SinglePullRequest extends React.Component<Props, State> {
           error: response.error,
           loading: false
         });
-      } else {
+      }
+      else {
         this.setState({
           pullRequest: response,
           loading: false
@@ -70,9 +71,13 @@ class SinglePullRequest extends React.Component<Props, State> {
   getMergeDryRun(pullRequest: PullRequest) {
     const { repository } = this.props;
     merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
-      if (response.error) {
+      if (response.conflict) {
         this.setState({ mergeLoading: false, mergePossible: false });
-      } else {
+      }
+      else if (response.error){
+        this.setState({error: true, mergeLoading: false})
+      }
+      else {
         this.setState({ mergePossible: true, mergeLoading: false });
       }
     });

@@ -63,7 +63,7 @@ export function merge(url: string, pullRequest: PullRequest){
     }, "application/vnd.scmm-mergeCommand+json")
     .catch(cause => {
       if(cause == CONFLICT_ERROR){
-        console.log("conflict");
+        return {conflict: cause};
       }
       const error = new Error(`could not merge pull request: ${cause.message}`);
       return {error: error};
