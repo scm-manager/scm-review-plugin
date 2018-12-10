@@ -173,7 +173,7 @@ class SinglePullRequest extends React.Component<Props, State> {
     }
 
     let mergeButton = null;
-    if (repository._links.merge.href && pullRequest.status && pullRequest.status === "OPEN") {
+    if (repository._links.merge.href) {
       mergeButton = (
         <MergeButton
           merge={() => this.merge()}

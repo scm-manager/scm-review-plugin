@@ -26,7 +26,8 @@
           "submit": "Yes",
           "cancel": "No"
         }
-      }
+      },
+      "notification": "Pull Request is merged successfully!"
     },
     "pull-requests": {
       "error-title": "Error",
