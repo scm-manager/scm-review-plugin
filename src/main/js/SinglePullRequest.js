@@ -35,7 +35,7 @@ type State = {
   error?: Error,
   loading: boolean,
   mergePossible?: boolean,
-  mergeLoading: boolean,
+  mergeButtonLoading: boolean,
   showNotification: boolean
 };
 
@@ -45,16 +45,16 @@ class SinglePullRequest extends React.Component<Props, State> {
     this.state = {
       loading: true,
       pullRequest: null,
-      mergeLoading: true,
+      mergeButtonLoading: true,
       showNotification: false
     };
   }
 
   componentDidMount(): void {
-    this.fetchPullRequest();
+    this.fetchPullRequest(false);
   }
 
-  fetchPullRequest(merged: boolean) {
+  fetchPullRequest(mergedPerformed: boolean) {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
     const url = repository._links.pullRequest.href + "/" + pullRequestNumber;
@@ -69,7 +69,7 @@ class SinglePullRequest extends React.Component<Props, State> {
           pullRequest: response,
           loading: false
         });
-        if (merged) {
+        if (mergedPerformed) {
           this.setState({
             showNotification: true
           });
@@ -84,37 +84,37 @@ class SinglePullRequest extends React.Component<Props, State> {
     const { repository } = this.props;
     merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
       if (response.conflict) {
-        this.setState({ mergeLoading: false, mergePossible: false });
+        this.setState({ mergeButtonLoading: false, mergePossible: false });
       } else if (response.error) {
-        this.setState({ error: true, mergeLoading: false });
+        this.setState({ error: true, mergeButtonLoading: false });
       } else {
-        this.setState({ mergePossible: true, mergeLoading: false });
+        this.setState({ mergePossible: true, mergeButtonLoading: false });
       }
     });
   }
 
-  merge = () => {
+  performMerge = () => {
     const { repository } = this.props;
     const { pullRequest } = this.state;
-    this.setMergeLoadingState();
+    this.setMergeButtonLoadingState();
     merge(repository._links.merge.href, pullRequest).then(response => {
       if (response.error) {
-        this.setState({ error: response.error, mergeLoading: false });
+        this.setState({ error: response.error, mergeButtonLoading: false });
       } else if (response.conflict) {
         this.setState({
           mergePossible: true,
-          mergeLoading: false
+          mergeButtonLoading: false
         });
       } else {
-        this.setState({ loading: true, mergeLoading: false });
+        this.setState({ loading: true, mergeButtonLoading: false });
         this.fetchPullRequest(true);
       }
     });
   };
 
-  setMergeLoadingState = () => {
+  setMergeButtonLoadingState = () => {
     this.setState({
-      mergeLoading: true
+      mergeButtonLoading: true
     });
   };
 
@@ -132,7 +132,7 @@ class SinglePullRequest extends React.Component<Props, State> {
       pullRequest,
       error,
       loading,
-      mergeLoading,
+      mergeButtonLoading,
       mergePossible,
       showNotification
     } = this.state;
@@ -183,9 +183,9 @@ class SinglePullRequest extends React.Component<Props, State> {
     if (repository._links.merge.href) {
       mergeButton = (
         <MergeButton
-          merge={() => this.merge()}
+          merge={() => this.performMerge()}
           mergePossible={mergePossible}
-          loading={mergeLoading}
+          loading={mergeButtonLoading}
           repository={repository}
           pullRequest={pullRequest}
         />
