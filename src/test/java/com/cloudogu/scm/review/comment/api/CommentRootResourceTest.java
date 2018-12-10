@@ -107,7 +107,7 @@ public class CommentRootResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnCreatePRComment() throws URISyntaxException, IOException {
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnCreatePRComment() throws URISyntaxException {
     byte[] pullRequestCommentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
     MockHttpRequest request =
       MockHttpRequest
@@ -115,7 +115,7 @@ public class CommentRootResourceTest {
         .content(pullRequestCommentJson)
         .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:push:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
   }
 
 
@@ -161,7 +161,7 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:push:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
   }
 
   @Test

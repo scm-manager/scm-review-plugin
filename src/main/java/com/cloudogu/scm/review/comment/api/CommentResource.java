@@ -51,7 +51,7 @@ public class CommentResource {
                       @PathParam("pullRequestId") String pullRequestId,
                       @PathParam("commentId") int commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    RepositoryPermissions.push(repository).check();
+    RepositoryPermissions.read(repository).check();
     PullRequestComment requestComment = service.get(namespace, name, pullRequestId, commentId);
     return Response.ok(mapper.map(requestComment,uriInfo.getAbsolutePathBuilder().build())).build();
   }
@@ -65,11 +65,11 @@ public class CommentResource {
                          @PathParam("pullRequestId") String pullRequestId,
                          @PathParam("commentId") int commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    RepositoryPermissions.push(repository).check();
+    RepositoryPermissions.read(repository).check();
     String currentUser = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     try{
       PullRequestComment requestComment = service.get(namespace, name, pullRequestId, commentId);
-      if (!currentUser.equals(requestComment.getAuthor())) {
+      if (!currentUser.equals(requestComment.getAuthor()) && !RepositoryPermissions.push(repository).isPermitted()) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
       service.delete(namespace, name, pullRequestId, commentId);
@@ -89,10 +89,10 @@ public class CommentResource {
                          @PathParam("commentId") int commentId,
                          PullRequestCommentDto pullRequestCommentDto) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    RepositoryPermissions.push(repository).check();
+    RepositoryPermissions.read(repository).check();
     String currentUser = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     PullRequestComment requestComment = service.get(namespace, name, pullRequestId, commentId);
-    if (!currentUser.equals(requestComment.getAuthor())) {
+    if (!currentUser.equals(requestComment.getAuthor()) && !RepositoryPermissions.push(repository).isPermitted()) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
     service.delete(namespace, name, pullRequestId, commentId);

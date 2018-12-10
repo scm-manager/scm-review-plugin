@@ -62,7 +62,7 @@ public class CommentRootResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
                          @NotNull PullRequestCommentDto pullRequestCommentDto) {
-    RepositoryPermissions.push(repositoryResolver.resolve(new NamespaceAndName(namespace, name))).check();
+    RepositoryPermissions.read(repositoryResolver.resolve(new NamespaceAndName(namespace, name))).check();
     pullRequestCommentDto.setDate(Instant.now());
     pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
 
@@ -80,7 +80,7 @@ public class CommentRootResource {
                          @PathParam("pullRequestId") String pullRequestId) {
 
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    RepositoryPermissions.push(repository).check();
+    RepositoryPermissions.read(repository).check();
     List<PullRequestComment> list = service.getAll(namespace, name, pullRequestId);
     List<PullRequestCommentDto> dtoList = list.stream()
       .map(pr -> mapper.map(pr,uriInfo.getAbsolutePathBuilder().path(String.valueOf(pr.getId())).build()))

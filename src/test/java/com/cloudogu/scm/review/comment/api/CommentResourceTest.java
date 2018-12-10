@@ -115,7 +115,7 @@ public class CommentResourceTest {
 
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:push:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
   }
 
 
@@ -188,6 +188,22 @@ public class CommentResourceTest {
   }
 
   @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldDeleteCommentÍfTheCurrentUserIsDifferentWithAuthorButHasPushPermission() throws URISyntaxException {
+    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
+    when(service.get("space", "name", "1", 1)).thenReturn(comment);
+    doNothing().when(service).delete("space", "name", "1", 1);
+    MockHttpRequest request =
+      MockHttpRequest
+        .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+  }
+
+  @Test
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnDeletePRComment() throws URISyntaxException, IOException {
     PullRequestComment comment = new PullRequestComment(1, "1. comment", "slarti", Instant.now());
@@ -199,13 +215,13 @@ public class CommentResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:push:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
   }
 
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
-  public void shouldForbiddenDeleteÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException {
+  @SubjectAware(username = "rr", password = "secret")
+  public void shouldForbiddenDeleteÍfTheAuthorIsNotTheCurrentUserAndThePushPermissionIsMissed() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
     when(service.get("space", "name", "1", 1)).thenReturn(comment);
     doNothing().when(service).delete("space", "name", "1", 1);
@@ -244,9 +260,34 @@ public class CommentResourceTest {
     assertEquals(HttpServletResponse.SC_ACCEPTED, response.getStatus());
   }
 
-  @Test
+ @Test
   @SubjectAware(username = "slarti", password = "secret")
-  public void shouldForbiddenUpdateÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException {
+  public void shouldUpdateCommentIfTheCurrentUserIsDifferentWithAuthorButHasPushPermission() throws URISyntaxException {
+    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
+    when(service.get("space", "name", "1", 1)).thenReturn(comment);
+
+    doNothing().when(service).delete("space", "name", "1", 1);
+    String newComment = "haha ";
+    when(service.add(eq("space"), eq("name"), eq("1"),
+      argThat(t -> t.getAuthor().equals("slarti")
+        && t.getDate() != null
+        && t.getComment().equals(newComment)
+      ))).thenReturn(1);
+    byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
+        .content(pullRequestCommentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_ACCEPTED, response.getStatus());
+  }
+
+  @Test
+  @SubjectAware(username = "rr", password = "secret")
+  public void shouldForbiddenUpdateIfTheAuthorIsNotTheCurrentUserAndThePushPermissionIsMissed() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
     when(service.get("space", "name", "1", 1)).thenReturn(comment);
     doNothing().when(service).delete("space", "name", "1", 1);
@@ -288,7 +329,7 @@ public class CommentResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:push:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
   }
 
 
