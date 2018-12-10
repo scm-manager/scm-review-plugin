@@ -5,23 +5,18 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfo;
-import sonia.scm.api.v2.resources.ScmPathInfoStore;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-@Singleton
+@SuppressWarnings("squid:S1192")
 public class PullRequestResourceLinks {
 
-  private final ScmPathInfoStore scmPathInfoStore;
+  private ScmPathInfo scmPathInfo;
 
-  @Inject
-  public PullRequestResourceLinks(ScmPathInfoStore scmPathInfoStore) {
-    this.scmPathInfoStore = scmPathInfoStore;
+  public PullRequestResourceLinks(ScmPathInfo scmPathInfo) {
+    this.scmPathInfo = scmPathInfo;
   }
 
   public PullRequestLinks pullRequest() {
-    return new PullRequestLinks(scmPathInfoStore.get());
+    return new PullRequestLinks(scmPathInfo);
   }
 
   public static class PullRequestLinks {
@@ -39,19 +34,19 @@ public class PullRequestResourceLinks {
     }
   }
 
-  public PullRequestCommentLinks pullRequestComment() {
-    return new PullRequestCommentLinks(scmPathInfoStore.get());
+  public PullRequestCommentsLinks pullRequestComments() {
+    return new PullRequestCommentsLinks(scmPathInfo);
   }
 
-  public static class PullRequestCommentLinks {
-    private final LinkBuilder pullRequestCommentLinkBuilder;
+  public static class PullRequestCommentsLinks {
+    private final LinkBuilder linkBuilder;
 
-    PullRequestCommentLinks(ScmPathInfo pathInfo) {
-      pullRequestCommentLinkBuilder = new LinkBuilder(pathInfo, PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class);
+    PullRequestCommentsLinks(ScmPathInfo pathInfo) {
+      linkBuilder = new LinkBuilder(pathInfo, PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class);
     }
 
     public String all(String namespace, String name, String pullRequestId) {
-      return pullRequestCommentLinkBuilder
+      return linkBuilder
         .method("getPullRequestResource").parameters()
         .method("comments").parameters()
         .method("getAll").parameters(namespace, name, pullRequestId)
@@ -59,7 +54,7 @@ public class PullRequestResourceLinks {
     }
 
     public String create(String namespace, String name, String pullRequestId) {
-      return pullRequestCommentLinkBuilder
+      return linkBuilder
         .method("getPullRequestResource").parameters()
         .method("comments").parameters()
         .method("create").parameters(namespace, name, pullRequestId)
