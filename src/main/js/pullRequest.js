@@ -1,5 +1,5 @@
 import type { PullRequest } from "./types/PullRequest";
-import { apiClient } from "@scm-manager/ui-components";
+import { apiClient, CONFLICT_ERROR } from "@scm-manager/ui-components";
 
 export function createPullRequest(url: string, pullRequest: PullRequest) {
   return apiClient
@@ -62,7 +62,7 @@ export function merge(url: string, pullRequest: PullRequest){
       targetRevision: pullRequest.target
     }, "application/vnd.scmm-mergeCommand+json")
     .catch(cause => {
-      if(cause == apiClient.CONFLICT_ERROR){
+      if(cause == CONFLICT_ERROR){
         console.log("conflict");
       }
       const error = new Error(`could not merge pull request: ${cause.message}`);
