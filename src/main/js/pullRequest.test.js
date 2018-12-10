@@ -241,6 +241,7 @@ describe("API merge pull request", () => {
     merge(PULLREQUEST_URL, pullRequest)
       .then(response => {
         expect(response.conflict).toBeDefined();
+        expect(response.error).toBeUndefined();
         done();
       });
   });

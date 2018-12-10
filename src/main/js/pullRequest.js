@@ -65,7 +65,9 @@ export function merge(url: string, pullRequest: PullRequest){
       if(cause == CONFLICT_ERROR){
         return {conflict: cause};
       }
-      const error = new Error(`could not merge pull request: ${cause.message}`);
-      return {error: error};
+      else {
+        const error = new Error(`could not merge pull request: ${cause.message}`);
+        return {error: error};
+      }
     })
 }

@@ -23,7 +23,7 @@ class MergeButton extends React.Component<Props, State> {
   }
 
   confirmMerge = () => {
-    const { t } = this.props;
+    const { t, merge } = this.props;
     confirmAlert({
       title: t(
         "scm-review-plugin.show-pull-request.mergeButton.confirm-alert.title"
@@ -36,7 +36,7 @@ class MergeButton extends React.Component<Props, State> {
           label: t(
             "scm-review-plugin.show-pull-request.mergeButton.confirm-alert.submit"
           ),
-          onClick: () => this.props.merge()
+          onClick: () => merge()
         },
         {
           label: t(

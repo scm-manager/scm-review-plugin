@@ -34,7 +34,8 @@ type State = {
   error?: Error,
   loading: boolean,
   mergePossible?: boolean,
-  mergeLoading: boolean
+  mergeLoading: boolean,
+  mergeConflict?: boolean
 };
 
 class SinglePullRequest extends React.Component<Props, State> {
@@ -87,11 +88,14 @@ class SinglePullRequest extends React.Component<Props, State> {
     const { repository } = this.props;
     const { pullRequest } = this.state;
     merge(repository._links.merge.href, pullRequest).then(response => {
-      console.log(response.error);
+      console.log(response);
       if (response.error) {
-        this.setState({ error: response.error, loading: false });
-      } else {
-        console.log("merged");
+        this.setState({ error: response.error, mergeLoading: false });
+      } else if (response.conflict){
+        this.setState({mergeConflict: response.conflict, mergeLoading: false})
+      }
+      else {
+        console.log("merged"); //TODO: neu fetchen?
       }
     });
   };
