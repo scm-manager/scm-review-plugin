@@ -16,7 +16,6 @@ type Props = {
 };
 
 type State = {
-  confirmDialog: boolean,
   mergeInformation: boolean
 };
 
@@ -24,7 +23,6 @@ class MergeButton extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      confirmDialog: true,
       mergeInformation: false
     };
   }
@@ -70,13 +68,12 @@ class MergeButton extends React.Component<Props, State> {
   render() {
     const {
       t,
-      merge,
       loading,
       mergePossible,
       repository,
       pullRequest
     } = this.props;
-    const { confirmDialog, mergeInformation } = this.state;
+    const { mergeInformation } = this.state;
     const action = mergePossible ? this.confirmMerge : this.showInformation;
     const color = mergePossible ? "primary" : "warning";
     return (

@@ -82,7 +82,7 @@ class PullRequestList extends React.Component<Props, State> {
       return <Loading />;
     }
 
-    const to = `pull-requests/add`;
+    const to = "pull-requests/add";
 
     const createButton = pullRequests._links.create ? (<CreateButton label={t("scm-review-plugin.pull-requests.createButton")} link={to} />) : null;
     return (

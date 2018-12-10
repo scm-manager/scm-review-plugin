@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from "react";
 import {
   Title,
@@ -16,7 +16,6 @@ import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import injectSheet from "react-jss";
 import classNames from "classnames";
-import ManualMergeInformation from "./ManualMergeInformation";
 
 const styles = {
   bottomSpace: {

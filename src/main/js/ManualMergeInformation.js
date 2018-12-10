@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
 import { translate } from "react-i18next";
@@ -34,7 +34,9 @@ class ManualMergeInformation extends React.Component<Props> {
         <div className="modal-background" />
         <div className="modal-card">
           <header className="modal-card-head">
-            <p className="modal-card-title">Modal title</p>
+            <p className="modal-card-title">{t(
+              "scm-review-plugin.show-pull-request.mergeButton.merge-information"
+            )}</p>
             <button
               className="delete"
               aria-label="close"

@@ -25,7 +25,8 @@
           "message": "Do you really want to merge?",
           "submit": "Yes",
           "cancel": "No"
-        }
+        },
+        "merge-information": "How to merge pull requests"
       },
       "notification": "Pull Request is merged successfully!"
     },
