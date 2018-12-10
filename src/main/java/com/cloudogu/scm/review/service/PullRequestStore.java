@@ -62,7 +62,18 @@ public class PullRequestStore {
     } finally {
       lock.unlock();
     }
+  }
 
+  public void update(PullRequest pullRequest) {
+    Lock lock = LOCKS.get(repository.getNamespaceAndName());
+    lock.lock();
+    try {
+      String id = pullRequest.getId();
+      pullRequest.setLastModified(Instant.now());
+      store.put(id, pullRequest);
+    } finally {
+      lock.unlock();
+    }
   }
 
   @VisibleForTesting

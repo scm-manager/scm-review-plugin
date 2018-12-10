@@ -56,4 +56,5 @@ public interface PullRequestService {
    */
   Repository getRepository(String namespace, String name);
 
+  void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus);
 }
