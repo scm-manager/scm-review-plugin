@@ -21,7 +21,6 @@ public class DefaultPullRequestService implements PullRequestService {
     this.storeFactory = storeFactory;
   }
 
-
   @Override
   public String add(Repository repository, PullRequest pullRequest) {
     return storeFactory.create(repository).add(pullRequest);
@@ -59,6 +58,16 @@ public class DefaultPullRequestService implements PullRequestService {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
     RepositoryPermissions.read(repository).check();
     return repository;
+  }
+
+  @Override
+  public void reject(Repository repository, PullRequest pullRequest) {
+    RepositoryPermissions.push(repository).check();
+    if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
+      this.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
+    } else {
+      throw new StatusChangeNotAllowedException(repository, pullRequest);
+    }
   }
 
   void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {

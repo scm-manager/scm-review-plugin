@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.api;
 
 import com.cloudogu.scm.review.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.service.PullRequest;
 import com.cloudogu.scm.review.service.PullRequestService;
 import com.cloudogu.scm.review.service.PullRequestStatus;
 import de.otto.edison.hal.Embedded;
@@ -96,6 +97,14 @@ public class PullRequestResource {
       .collect(Collectors.toList());
 
     return Response.ok(createCollection(uriInfo, repository, pullRequestDtos)).build();
+  }
+
+  @POST
+  @Path("{namespace}/{name}/{id}/reject")
+  public Response reject(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("id") String id) {
+    PullRequest pullRequest = service.get(namespace, name, id);
+    service.reject(service.getRepository(namespace, name), pullRequest);
+    return Response.noContent().build();
   }
 
   private HalRepresentation createCollection(UriInfo uriInfo, Repository repository, List<PullRequestDto> pullRequestDtos) {
