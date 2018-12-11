@@ -15,11 +15,11 @@ const styles = {
 type Props = {
   comment: Comment,
   refresh: () => void,
+  handleError : (error: Error) => void;
   t: string => string
 };
 
 type State = {
-  error?: Error,
   edit: boolean,
   updatedComment : string,
   loading: boolean
@@ -29,29 +29,40 @@ class PullRequestComment extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      loading: true,
+      loading: false,
       updatedComment: props.comment.comment,
       edit: false
     };
   }
 
-  updateMode = () => {
+  startUpdate = () => {
     this.setState({
       loading: false,
       edit: true
     });
   };
 
+  cancelUpdate = () => {
+    this.setState({
+      loading: false,
+      edit: false,
+      updatedComment : this.props.comment.comment
+    });
+  };
+
   update = () => {
-    const {comment} = this.props;
+    const {comment, handleError} = this.props;
     comment.comment = this.state.updatedComment;
+    this.setState({
+      loading: true
+    });
     updatePullRequestComment(comment._links.update.href, comment).then(response => {
       if (response.error) {
         this.setState({
-          error: response.error,
           loading: false,
           edit: false
         });
+        handleError(response.error);
       } else {
         this.setState({
           loading: false,
@@ -63,7 +74,6 @@ class PullRequestComment extends React.Component<Props, State> {
 
   delete = () => {
     const {comment} = this.props;
-    console.log("deleteComment: ");
     this.deletePullRequestComment(comment._links.delete.href);
   };
 
@@ -85,14 +95,35 @@ class PullRequestComment extends React.Component<Props, State> {
     });
   };
 
+  confirmCancelUpdate = () => {
+    const {t} = this.props;
+    confirmAlert({
+      title: t("scm-review-plugin.comment.confirm-cancel-update-alert.title"),
+      message: t("scm-review-plugin.comment.confirm-cancel-update-alert.message"),
+      buttons: [
+        {
+          label: t("scm-review-plugin.comment.confirm-cancel-update-alert.submit"),
+          onClick: () => this.cancelUpdate()
+        },
+        {
+          label: t("scm-review-plugin.comment.confirm-cancel-update-alert.cancel"),
+          onClick: () => null
+        }
+      ]
+    });
+  };
+
   deletePullRequestComment = (url: string) => {
-    const {refresh} = this.props;
+    const {refresh, handleError} = this.props;
+    this.setState({
+      loading: true
+    });
     deletePullRequestComment(url).then(response => {
       if (response.error) {
         this.setState({
-          error: response.error,
           loading: false
         });
+        handleError(response.error);
       } else {
         this.setState({
           loading: false
@@ -112,17 +143,26 @@ class PullRequestComment extends React.Component<Props, State> {
     const {t, comment} = this.props;
     const {loading, edit, updatedComment} = this.state;
 
-    if (loading && !comment) {
+    if (loading ) {
       return <Loading/>;
     }
     const deleteIcon = comment._links.delete ? (
-      <a className="level-item" onClick={this.confirmDelete}>
-        <span className="icon is-small"><i className="fas fa-trash"></i></span>
+      <a className="level-item"
+         onClick={this.confirmDelete}
+      >
+        <span className="icon is-small">
+          <i className="fas fa-trash">
+          </i>
+        </span>
       </a>
     ) : "";
+
     const editIcon = comment._links.update ? (
-      <a className="level-item" onClick={this.updateMode}>
-        <span className="icon is-small"><i className="fas fa-edit"></i></span>
+      <a className="level-item" onClick={this.startUpdate}>
+        <span className="icon is-small">
+          <i className="fas fa-edit">
+          </i>
+        </span>
       </a>
     ) : "";
 
@@ -133,13 +173,21 @@ class PullRequestComment extends React.Component<Props, State> {
       </div>
     );
 
-    const save = (
+    const saveCancel = (
       <div className="level-left">
-        <SubmitButton
-          label={t("scm-review-plugin.comment.save")}
-          action={this.update}
-          disabled={!comment || (comment && comment.comment === "")}
-        />
+        <div className="level-item">
+          <SubmitButton
+            label={t("scm-review-plugin.comment.save")}
+            action={this.update}
+            disabled={!comment || (comment && comment.comment === "")}
+          />
+        </div>
+        <div className="level-item">
+          <SubmitButton
+            label={t("scm-review-plugin.comment.cancel")}
+            action={this.confirmCancelUpdate}
+          />
+        </div>
       </div>
     );
 
@@ -156,7 +204,7 @@ class PullRequestComment extends React.Component<Props, State> {
     );
 
     const message = edit ? editMessage : displayMessage;
-    const controlPanel = edit ? save : icons;
+    const controlPanel = edit ? saveCancel : icons;
 
     return (
       <>
@@ -164,8 +212,7 @@ class PullRequestComment extends React.Component<Props, State> {
           <div className="media-content">
             <div className="content">
               <p>
-                <strong>{comment.author}</strong>
-                <span>   </span>
+                <strong>{comment.author} </strong>
                 <DateFromNow date={comment.date}/>
                 <br/>
                 {message}

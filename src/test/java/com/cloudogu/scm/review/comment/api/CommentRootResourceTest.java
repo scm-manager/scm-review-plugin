@@ -39,6 +39,7 @@ import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -172,6 +173,7 @@ public class CommentRootResourceTest {
       new PullRequestComment(2, "2. comment", "slarti", Instant.now()),
       new PullRequestComment(3, "3. comment", "slarti", Instant.now()));
     when(service.getAll("space", "name", "1")).thenReturn(list);
+    when(service.modificationsAllowed(eq("space"), eq("name"), eq("1"), anyInt(), any())).thenReturn(true);
     MockHttpRequest request =
       MockHttpRequest
         .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")

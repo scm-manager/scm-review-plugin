@@ -98,7 +98,8 @@ public class PullRequestRootResource {
       .sorted(Comparator.comparing(PullRequestDto::getLastModified).reversed())
       .collect(Collectors.toList());
 
-    return Response.ok(createCollection(uriInfo, repository.getId(), pullRequestDtos, "pullRequests")).build();
+    boolean permission = RepositoryPermissions.push(repository).isPermitted();
+    return Response.ok(createCollection(uriInfo, permission, pullRequestDtos, "pullRequests")).build();
   }
 
   private void verifyBranchesDiffer(String source, String target) {

@@ -3,8 +3,13 @@ package com.cloudogu.scm.review.comment.service;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.Lists;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.PrincipalCollection;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
+import sonia.scm.user.User;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -22,6 +27,30 @@ public class CommentService {
   public CommentService(RepositoryResolver repositoryResolver, CommentStoreFactory storeFactory) {
     this.repositoryResolver = repositoryResolver;
     this.storeFactory = storeFactory;
+  }
+
+  /**
+   * A User can modify a comment if he is the author or he has a push permission or he is admin
+   *
+   * @param namespace
+   * @param name
+   * @param pullRequestId
+   * @param commentId
+   * @param repository
+   * @return true if the user can update/delete a comment
+   */
+  public boolean modificationsAllowed(String namespace, String name, String pullRequestId, int commentId, Repository repository) {
+    return modificationsAllowed(repository, this.get(namespace, name, pullRequestId, commentId));
+  }
+
+  public boolean modificationsAllowed(Repository repository, PullRequestComment requestComment ) {
+    PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
+    String currentUser = principals.getPrimaryPrincipal().toString();
+    User user = (User) principals.asList().get(1);
+
+    return currentUser.equals(requestComment.getAuthor())
+      || RepositoryPermissions.push(repository).isPermitted()
+      || user.isAdmin();
   }
 
   /**

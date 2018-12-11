@@ -1,7 +1,7 @@
 // @flow
 import React from "react";
-import {ErrorPage, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
-import type {Comment, Comments, PullRequest} from "../types/PullRequest";
+import {ErrorNotification, ErrorPage, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
+import type {BasicComment, Comments, PullRequest} from "../types/PullRequest";
 import {translate} from "react-i18next";
 import {createPullRequestComment, getPullRequestComments} from "../pullRequest";
 import injectSheet from "react-jss";
@@ -20,8 +20,8 @@ type Props = {
 };
 
 type State = {
-  pullRequestComments: Comments,
-  actualComment: Comment,
+  pullRequestComments?: Comments,
+  newComment?: BasicComment,
   error?: Error,
   loading: boolean
 };
@@ -31,19 +31,33 @@ class PullRequestComments extends React.Component<Props, State> {
     super(props);
     this.state = {
       pullRequestComments: null,
-      actualComment: null,
+      newComment: null,
       loading: true
     };
   }
 
   componentDidMount(): void {
     const {pullRequest} = this.props;
-    if (pullRequest) {
+    if (pullRequest && pullRequest._links && pullRequest._links.comments  ) {
       this.updatePullRequestComments();
+    }else{
+      this.setState({
+        loading: false
+      });
     }
   }
 
+  handleError = (error : Error) => {
+    this.setState({
+      loading: false,
+      error : error
+    });
+  };
+
   updatePullRequestComments = () => {
+    this.setState({
+      loading: true
+    });
     const url = this.props.pullRequest._links.comments.href;
     getPullRequestComments(url).then(response => {
       if (response.error) {
@@ -60,11 +74,11 @@ class PullRequestComments extends React.Component<Props, State> {
     });
   };
 
-  handleFormChange = (value: string, name: string) => {
+  handleChanges = (value: string, name: string) => {
     this.setState(
       {
-        actualComment: {
-          ...this.state.actualComment,
+        newComment: {
+          ...this.state.newComment,
           [name]: value
         }
       },
@@ -72,41 +86,35 @@ class PullRequestComments extends React.Component<Props, State> {
   };
 
   submit = () => {
-    const {pullRequestComments, actualComment} = this.state;
+    const {pullRequestComments, newComment} = this.state;
     this.setState({loading: true});
 
-    createPullRequestComment(pullRequestComments._links.create.href, actualComment).then(
+    createPullRequestComment(pullRequestComments._links.create.href, newComment).then(
       result => {
         if (result.error) {
           this.setState({loading: false, error: result.error});
         } else {
-          this.setState({loading: false});
-          actualComment.comment = "";
-          this.componentDidMount();
+          newComment.comment = "";
+          this.updatePullRequestComments();
         }
       }
     );
   };
 
   render() {
-    const {t, classes} = this.props;
-    const {loading, error, pullRequestComments, actualComment} = this.state;
+    const {t} = this.props;
+    const {loading, error, pullRequestComments, newComment} = this.state;
 
     if (error) {
-      return (
-        <ErrorPage
-          title={t("scm-review-plugin.pull-requests.error-title")}
-          subtitle={t("scm-review-plugin.pull-requests.error-subtitle")}
-          error={error}
-        />
-      );
+      return <ErrorNotification error={error} />;
     }
 
-    if (!pullRequestComments) {
-      return <div/>;
-    }
+
     if (loading) {
       return <Loading/>;
+    }
+    if (!pullRequestComments) {
+      return <div/>;
     }
 
     if (pullRequestComments && pullRequestComments._embedded && pullRequestComments._embedded.pullRequestComments) {
@@ -115,7 +123,7 @@ class PullRequestComments extends React.Component<Props, State> {
       return (
         <>
           {comments.map((comment) => {
-            return <PullRequestComment comment={comment} refresh={() => this.updatePullRequestComments()}  />
+            return <PullRequestComment comment={comment} refresh={this.updatePullRequestComments} handleError={this.handleError} />
           })}
 
           {createAllowed ? (
@@ -126,7 +134,7 @@ class PullRequestComments extends React.Component<Props, State> {
                     <Textarea
                       name="comment"
                       placeholder={t("scm-review-plugin.comment.add")}
-                      onChange={this.handleFormChange}
+                      onChange={this.handleChanges}
                     />
                 </p>
               </div>
@@ -135,10 +143,9 @@ class PullRequestComments extends React.Component<Props, State> {
                   <SubmitButton
                     label={t("scm-review-plugin.comment.add")}
                     action={this.submit}
-                    disabled={!actualComment || (actualComment && actualComment.comment === "")}
+                    disabled={!newComment || (newComment && newComment.comment === "")}
                     loading={loading}
                   />
-
                 </p>
               </div>
             </div>
