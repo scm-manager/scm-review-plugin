@@ -59,5 +59,8 @@ public class DefaultPullRequestService implements PullRequestService {
     return repositoryResolver.resolve(new NamespaceAndName(namespace, name));
   }
 
-
+  void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
+    pullRequest.setStatus(newStatus);
+    storeFactory.create(repository).update(pullRequest);
+  }
 }

@@ -25,6 +25,7 @@ const styles = {
 type Props = {
   repository: Repository,
   classes: any,
+  match: any,
   t: string => string,
   history: History
 };
@@ -84,12 +85,20 @@ class Create extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, classes, t } = this.props;
-    const { loading, error, disabled } = this.state;
+    const { repository, classes, match, t } = this.props;
+    const { pullRequest, loading, error, disabled } = this.state;
 
     let notification = null;
     if (error) {
       notification = <ErrorNotification error={error} />;
+    }
+
+    let information = null;
+    if ( pullRequest ) {
+      information = <PullRequestInformation repository={repository}
+                              source={pullRequest.source}
+                              target={pullRequest.target}
+                              baseURL={match.url}/>;
     }
 
     return (
@@ -99,14 +108,15 @@ class Create extends React.Component<Props, State> {
           <Subtitle
             subtitle={t("scm-review-plugin.create.subtitle") + repository.name}
           />
+
           {notification}
+
           <CreateForm
             repository={repository}
             onChange={this.handleFormChange}
           />
 
-          <PullRequestInformation repository={repository}/>
-
+          {information}
 
           <div className={classes.controlButtons}>
             <SubmitButton
