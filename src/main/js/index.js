@@ -18,7 +18,6 @@ const NewPullRequestRoute = ({ url, repository }) => {
     <Route
       path={`${url}/pull-requests/add`}
       render={() => <Create repository={repository} />}
-      exact
     />
   );
 };
@@ -41,8 +40,8 @@ binder.bind("repository.route", ShowPullRequestRoute);
 // list
 
 function matches(route: any) {
-  const regex = new RegExp(`.*(/pull-request)/.*`);
-  return route.location.pathname.match(regex) || route.location.pathname.match(`.*(pull-requests)/.*`);
+  const regex = new RegExp(".*(/pull-request)/.*");
+  return route.location.pathname.match(regex) || route.location.pathname.match(".*(pull-requests)/.*");
 }
 
 const PullRequestNavLink = ({ url }) => {

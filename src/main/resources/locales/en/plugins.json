@@ -17,11 +17,23 @@
     },
     "show-pull-request": {
       "error-title": "Error",
-      "error-subtitle": "Unknown pull-request error"
+      "error-subtitle": "Unknown pull-request error",
+      "mergeButton": {
+        "button-title": "Merge Pull Request",
+        "confirm-alert": {
+          "title": "Merge Pull Request",
+          "message": "Do you really want to merge?",
+          "submit": "Yes",
+          "cancel": "No"
+        },
+        "merge-information": "Cannot be merged automatically"
+      },
+      "notification": "Pull Request is merged successfully!"
     },
     "pull-requests": {
       "error-title": "Error",
       "error-subtitle": "Unknown pull-request error",
+      "description": "Description",
       "createButton": "New Pull Request"
     },
     "comment":{
