@@ -105,9 +105,6 @@ class Create extends React.Component<Props, State> {
             onChange={this.handleFormChange}
           />
 
-          <PullRequestInformation repository={repository}/>
-
-
           <div className={classes.controlButtons}>
             <SubmitButton
               label={t("scm-review-plugin.create.submitButton")}

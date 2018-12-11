@@ -3,10 +3,9 @@ import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
 import { translate } from "react-i18next";
 import type { PullRequest } from "./types/PullRequest";
-import PullRequestComment from "./PullRequestComment";
+import PullRequestComments from "./comment/PullRequestComments";
 
 type Props = {
-  repository: Repository,
   pullRequest: PullRequest,
   t: string => string
 };
@@ -18,7 +17,7 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest, repository} = this.props;
+    const { pullRequest} = this.props;
     return (
       <>
           <div className="tabs">
@@ -37,7 +36,7 @@ class PullRequestInformation extends React.Component<Props> {
             </ul>
           </div>
 
-        <PullRequestComment pullRequest={pullRequest} repository={repository}/>
+        <PullRequestComments pullRequest={pullRequest} />
         </>
     );
   }

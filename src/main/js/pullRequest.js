@@ -29,6 +29,20 @@ export function createPullRequestComment(url: string, comment: Comment) {
     });
 }
 
+export function updatePullRequestComment(url: string, comment: Comment) {
+  return apiClient
+    .put(url, comment)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(
+        `could not update pull request comment: ${cause.message}`
+      );
+      return { error: error };
+    });
+}
+
 export function getBranches(url: string) {
   return apiClient
     .get(url)

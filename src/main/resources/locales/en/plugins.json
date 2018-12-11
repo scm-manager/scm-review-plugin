@@ -26,7 +26,15 @@
     },
     "comment":{
       "add": "Add comment",
-      "delete": "Delete"
+      "delete": "Delete",
+      "update": "Update",
+      "save": "Save",
+      "confirm-alert": {
+         "title": "Delete comment",
+         "message": "Do you really want to delete the comment?",
+         "submit": "Yes",
+         "cancel": "No"
+      }
     }
   }
 }

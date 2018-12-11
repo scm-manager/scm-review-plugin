@@ -118,7 +118,7 @@ class SinglePullRequest extends React.Component<Props, State> {
             </div>
             <div className="media-right"><DateFromNow date={pullRequest.creationDate} /></div>
           </div>
-          <PullRequestInformation pullRequest={pullRequest} repository={repository}/>
+          <PullRequestInformation pullRequest={pullRequest}/>
         </div>
       </div>
     );
