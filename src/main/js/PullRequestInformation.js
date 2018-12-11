@@ -51,10 +51,10 @@ class PullRequestInformation extends React.Component<Props> {
         <div className="tabs">
           <ul>
             <li className={ this.navigationClass("changesets") }>
-              <Link to={`${baseURL}/changesets`}>Commits</Link>
+              <Link to={`${baseURL}/changesets/`}>Commits</Link>
             </li>
             <li className={ this.navigationClass("diff") }>
-              <Link to={`${baseURL}/diff`}>Diff</Link>
+              <Link to={`${baseURL}/diff/`}>Diff</Link>
             </li>
           </ul>
         </div>
@@ -62,6 +62,12 @@ class PullRequestInformation extends React.Component<Props> {
         <Route
           path={`${baseURL}/changesets`}
           render={() => <Changesets repository={repository} source={source} target={target} />}
+          exact
+        />
+        <Route
+          path={`${baseURL}/changesets/:page`}
+          render={() => <Changesets repository={repository} source={source} target={target} />}
+          exact
         />
         <Route
           path={`${baseURL}/diff`}
