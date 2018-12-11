@@ -17,6 +17,7 @@ import javax.inject.Provider;
 
 import static java.util.Collections.singletonMap;
 import static sonia.scm.web.VndMediaType.REPOSITORY;
+import static sonia.scm.web.VndMediaType.REPOSITORY_COLLECTION;
 
 @Extension
 public class RepositoryLinkEnricher extends JsonEnricherBase {
@@ -33,22 +34,32 @@ public class RepositoryLinkEnricher extends JsonEnricherBase {
 
   @Override
   public void enrich(JsonEnricherContext context) {
-
     if (resultHasMediaType(REPOSITORY, context)) {
       JsonNode repositoryNode = context.getResponseEntity();
-      String namespace = repositoryNode.get("namespace").asText();
-      String name = repositoryNode.get("name").asText();
-
-      if (repositorySupportsReviews(namespace, name)) {
-        String newPullRequest = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestResource.class)
-          .method("create")
-          .parameters(namespace, name)
-          .href();
-
-        JsonNode newPullRequestNode = createObject(singletonMap("href", value(newPullRequest)));
-
-        addPropertyNode(repositoryNode.get("_links"), "pullRequest", newPullRequestNode);
+      enrichRepository(repositoryNode);
+    } else if (resultHasMediaType(REPOSITORY_COLLECTION, context)) {
+      JsonNode collectionNode = context.getResponseEntity();
+      JsonNode embedded = collectionNode.get("_embedded");
+      JsonNode repositories = embedded.get("repositories");
+      for (JsonNode repositoryNode : repositories) {
+        enrichRepository(repositoryNode);
       }
+    }
+  }
+
+  private void enrichRepository(JsonNode repositoryNode) {
+    String namespace = repositoryNode.get("namespace").asText();
+    String name = repositoryNode.get("name").asText();
+
+    if (repositorySupportsReviews(namespace, name)) {
+      String newPullRequest = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestResource.class)
+        .method("create")
+        .parameters(namespace, name)
+        .href();
+
+      JsonNode newPullRequestNode = createObject(singletonMap("href", value(newPullRequest)));
+
+      addPropertyNode(repositoryNode.get("_links"), "pullRequest", newPullRequestNode);
     }
   }
 
