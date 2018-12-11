@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
+import java.util.function.Supplier;
 
 public class PullRequestStore {
 
   private static final Striped<Lock> LOCKS = Striped.lock(10);
-
 
   private final DataStore<PullRequest> store;
   private Repository repository;
@@ -26,51 +26,46 @@ public class PullRequestStore {
   }
 
   public String add(PullRequest pullRequest) {
-    Lock lock = LOCKS.get(repository.getNamespaceAndName());
-    lock.lock();
-    try {
+    return withLockDo(() -> {
       String id = createId();
       pullRequest.setId(id);
       pullRequest.setCreationDate(Instant.now());
       store.put(id, pullRequest);
       return id;
-    } finally {
-      lock.unlock();
-    }
+    });
   }
 
   public List<PullRequest> getAll() {
-    Lock lock = LOCKS.get(repository.getNamespaceAndName());
-    lock.lock();
-    try {
+    return withLockDo(() -> {
       Map<String, PullRequest> result = store.getAll();
       return new ArrayList<>(result.values());
-    } finally {
-      lock.unlock();
-    }
+    });
   }
 
   public PullRequest get(String id) {
-    Lock lock = LOCKS.get(repository.getNamespaceAndName());
-    lock.lock();
-    try {
+    return withLockDo(() -> {
       PullRequest result = store.get(id);
       if (result == null) {
         throw new NotFoundException(PullRequest.class, id);
       }
       return result;
-    } finally {
-      lock.unlock();
-    }
+    });
   }
 
   public void update(PullRequest pullRequest) {
-    Lock lock = LOCKS.get(repository.getNamespaceAndName());
-    lock.lock();
-    try {
+    withLockDo(() -> {
       String id = pullRequest.getId();
       pullRequest.setLastModified(Instant.now());
       store.put(id, pullRequest);
+      return null;
+    });
+  }
+
+  private <T> T withLockDo(Supplier<T> worker) {
+    Lock lock = LOCKS.get(repository.getNamespaceAndName());
+    lock.lock();
+    try {
+      return worker.get();
     } finally {
       lock.unlock();
     }
@@ -80,5 +75,4 @@ public class PullRequestStore {
   String createId() {
     return String.valueOf(store.getAll().size() + 1);
   }
-
 }
