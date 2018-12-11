@@ -1,7 +1,7 @@
 // @flow
 import fetchMock from "fetch-mock";
 import type { PullRequest } from "./PullRequest";
-import {createPullRequest, getBranches, getPullRequest, getPullRequests} from "./pullRequest";
+import {createPullRequest, getBranches, getPullRequest, getPullRequests, merge} from "./pullRequest";
 
 describe("API create pull request", () => {
   const PULLREQUEST_URL = "/repositories/scmadmin/TestRepo/newPullRequest";
@@ -184,3 +184,66 @@ describe("API get pull requests", () => {
   });
 });
 
+describe("API merge pull request", () => {
+
+  const PULLREQUEST_URL = "/repository/scmadmin/TestRepo/merge";
+
+  const pullRequest: PullRequest = {
+    source: "sourceBranchA",
+    target: "targetBranchB",
+    title: "This is a title A",
+    author: "admin",
+    id: "1",
+    creationDate: "2018-11-28",
+    status: "open",
+    _links: {}
+  };
+
+  afterEach(() => {
+    fetchMock.reset();
+    fetchMock.restore();
+  });
+
+  it("should merge pull request successfully", done => {
+    fetchMock.postOnce("/api/v2" + PULLREQUEST_URL,
+      {
+        sourceRevision: pullRequest.source,
+        targetRevision: pullRequest.target
+      }
+      );
+
+    merge(PULLREQUEST_URL, pullRequest)
+      .then(response => {
+        expect(response.error).toBeUndefined();
+        done();
+      });
+  });
+
+  it("should fail on fetching pull requests", done => {
+
+    fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
+      status: 500
+    });
+
+    merge(PULLREQUEST_URL, pullRequest)
+      .then(response => {
+        expect(response.error).toBeDefined();
+        done();
+      });
+  });
+
+  //TODO: test this test again when jenkins uses current version of scmm2
+  xit("should return conflict on fetching pull requests", done => {
+
+    fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
+      status: 409
+    });
+
+    merge(PULLREQUEST_URL, pullRequest)
+      .then(response => {
+        expect(response.conflict).toBeDefined();
+        expect(response.error).toBeUndefined();
+        done();
+      });
+  });
+});
