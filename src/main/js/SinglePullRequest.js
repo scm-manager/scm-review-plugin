@@ -11,9 +11,10 @@ import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
-import { getPullRequest, merge } from "./pullRequest";
+import { getPullRequest, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
+import RejectButton from "./RejectButton";
 import injectSheet from "react-jss";
 import classNames from "classnames";
 
@@ -112,6 +113,13 @@ class SinglePullRequest extends React.Component<Props, State> {
     });
   };
 
+  performReject = () => {
+    const { pullRequest } = this.state;
+    reject(pullRequest._links.reject.href, pullRequest).then(response => {
+      this.fetchPullRequest(false);
+    });
+  };
+
   setMergeButtonLoadingState = () => {
     this.setState({
       mergeButtonLoading: true
@@ -180,7 +188,11 @@ class SinglePullRequest extends React.Component<Props, State> {
     }
 
     let mergeButton = null;
-    if (repository._links.merge.href) {
+    let rejectButton = null;
+    if (pullRequest._links.reject) {
+      rejectButton = <RejectButton reject={() => this.performReject()}/>;
+    }
+    if (repository._links.merge) {
       mergeButton = (
         <MergeButton
           merge={() => this.performMerge()}
@@ -223,6 +235,7 @@ class SinglePullRequest extends React.Component<Props, State> {
             </div>
           </div>
 
+          {rejectButton}
           {mergeButton}
 
           <PullRequestInformation baseURL={match.url} repository={repository} source={pullRequest.source} target={pullRequest.target}/>

@@ -89,3 +89,20 @@ export function createChangesetUrl(repository: Repository, source: string, targe
     return link.href.replace("{source}", encodeURIComponent(source)).replace("{target}", encodeURIComponent(target));
   }
 }
+
+export function reject(url: string, pullRequest: PullRequest){
+  return apiClient
+    .post(url, {
+      sourceRevision: pullRequest.source,
+      targetRevision: pullRequest.target
+    }, "application/vnd.scmm-mergeCommand+json")
+    .catch(cause => {
+      if (cause === CONFLICT_ERROR) {
+        return {conflict: cause};
+      }
+      else {
+        const error = new Error(`could not merge pull request: ${cause.message}`);
+        return {error: error};
+      }
+    });
+}

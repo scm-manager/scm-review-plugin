@@ -28,6 +28,15 @@
         },
         "merge-information": "Cannot be merged automatically"
       },
+      "rejectButton": {
+        "button-title": "Reject Pull Request",
+        "confirm-alert": {
+          "title": "Reject Pull Request",
+          "message": "Do you really want to reject this pull request?",
+          "submit": "Yes",
+          "cancel": "No"
+        }
+      },
       "notification": "Pull Request is merged successfully!"
     },
     "pull-requests": {

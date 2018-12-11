@@ -1,8 +1,13 @@
 package com.cloudogu.scm.review.api;
 
 import com.cloudogu.scm.review.service.PullRequest;
+import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
-import org.mapstruct.*;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
 
 import java.net.URI;
@@ -20,8 +25,8 @@ public abstract class PullRequestToPullRequestDtoMapper extends BaseMapper<PullR
   @AfterMapping
   void appendLinks(@MappingTarget PullRequestDto target, @Context URI location) {
     Links.Builder linksBuilder = linkingTo()
-      .self(location.toString());
+      .self(location.toString())
+      .single(Link.link("reject", location.toString() + "/reject"));
     target.add(linksBuilder.build());
   }
-
 }
