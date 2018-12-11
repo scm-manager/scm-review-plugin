@@ -18,7 +18,6 @@ const NewPullRequestRoute = ({ url, repository }) => {
     <Route
       path={`${url}/pull-requests/add`}
       render={() => <Create repository={repository} />}
-      exact
     />
   );
 };

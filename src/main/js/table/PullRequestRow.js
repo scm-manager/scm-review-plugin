@@ -15,7 +15,7 @@ export default class PullRequestRow extends React.Component<Props> {
 
   render() {
     const { pullRequest } = this.props;
-    const to = `pull-request/${pullRequest.id}`;
+    const to = `pull-request/${pullRequest.id}/changesets`;
     return (
       <tr>
         <td>{this.renderLink(to, pullRequest.title)}</td>

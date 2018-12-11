@@ -127,7 +127,7 @@ class SinglePullRequest extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, t, classes } = this.props;
+    const { repository, match, t, classes } = this.props;
     const {
       pullRequest,
       error,
@@ -225,7 +225,7 @@ class SinglePullRequest extends React.Component<Props, State> {
 
           {mergeButton}
 
-          <PullRequestInformation repository={repository} source={pullRequest.source} target={pullRequest.target}/>
+          <PullRequestInformation baseURL={match.url} repository={repository} source={pullRequest.source} target={pullRequest.target}/>
         </div>
       </div>
     );

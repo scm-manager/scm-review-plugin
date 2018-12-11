@@ -3,63 +3,73 @@ import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
 import { translate } from "react-i18next";
 import Changesets from "./Changesets";
+import {Route, Link, withRouter} from "react-router-dom";
+import Diff from "./Diff";
 
 type Props = {
   repository: Repository,
   source: string,
   target: string,
+  baseURL: string,
+
+  // context props
+  location: any,
   t: string => string
 };
 
-type State = {
-  activeTab: string
-};
+export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
+  let strippedUrl = url.substring(baseURL.length);
+  if (strippedUrl.startsWith("/")) {
+    strippedUrl = strippedUrl.substring(1);
+  }
+  const slash = strippedUrl.indexOf("/");
+  if (slash >= 0) {
+    strippedUrl = strippedUrl.substring(0, slash);
+  }
+  return strippedUrl === suffix;
+}
 
-class PullRequestInformation extends React.Component<Props, State> {
+class PullRequestInformation extends React.Component<Props> {
 
   constructor(props: Props) {
     super(props);
-    this.state = {
-      activeTab: "commits"
-    };
   }
 
-  changeTab = (activeTab: string, newTab: string) => {
-    if ( activeTab !== newTab ) {
-      this.setState({
-        activeTab: newTab
-      });
+  navigationClass(suffix: string) {
+    const { baseURL, location } = this.props;
+    if (isUrlSuffixMatching(baseURL, location.pathname, suffix)) {
+      return "is-active";
     }
-  };
+    return "";
+  }
 
   render() {
-    const { activeTab } = this.state;
+    const { repository, source, target, baseURL } = this.props;
+
     return (
       <>
         <div className="tabs">
           <ul>
-            <li className={ activeTab === "commits" ? "is-active": "" }>
-              <a onClick={() => this.changeTab(activeTab, "commits")}>Commits</a>
+            <li className={ this.navigationClass("changesets") }>
+              <Link to={`${baseURL}/changesets`}>Commits</Link>
             </li>
-            <li className={ activeTab === "diff" ? "is-active": "" }>
-              <a onClick={() => this.changeTab(activeTab, "diff")}>Diff</a>
+            <li className={ this.navigationClass("diff") }>
+              <Link to={`${baseURL}/diff`}>Diff</Link>
             </li>
           </ul>
         </div>
 
-        { this.renderActiveTab(activeTab) }
+        <Route
+          path={`${baseURL}/changesets`}
+          render={() => <Changesets repository={repository} source={source} target={target} />}
+        />
+        <Route
+          path={`${baseURL}/diff`}
+          render={() => <Diff repository={repository} source={source} target={target} />}
+        />
       </>
     );
   }
-
-  renderActiveTab(activeTab) {
-    const { repository, source, target } = this.props;
-    if (activeTab === "commits") {
-      return <Changesets repository={repository} source={source} target={target} />
-    } else {
-      return null;
-    }
-  }
 }
 
-export default (translate("plugins")(PullRequestInformation));
+export default withRouter(translate("plugins")(PullRequestInformation));

@@ -25,6 +25,7 @@ const styles = {
 type Props = {
   repository: Repository,
   classes: any,
+  match: any,
   t: string => string,
   history: History
 };
@@ -84,7 +85,7 @@ class Create extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, classes, t } = this.props;
+    const { repository, classes, match, t } = this.props;
     const { pullRequest, loading, error, disabled } = this.state;
 
     let notification = null;
@@ -96,7 +97,8 @@ class Create extends React.Component<Props, State> {
     if ( pullRequest ) {
       information = <PullRequestInformation repository={repository}
                               source={pullRequest.source}
-                              target={pullRequest.target} />;
+                              target={pullRequest.target}
+                              baseURL={match.url}/>;
     }
 
     return (
