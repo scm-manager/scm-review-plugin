@@ -1,19 +1,17 @@
 // @flow
 import fetchMock from "fetch-mock";
-import type { PullRequest } from "./PullRequest";
 import {
-  createChangesetLink,
   createChangesetUrl,
   createPullRequest,
   getBranches,
   getPullRequest,
   getPullRequests,
   createPullRequestComment,
-  getPullRequestComments,
-  merge
+  merge, updatePullRequestComment
 } from "./pullRequest";
+import type {BasicComment, BasicPullRequest, PullRequest} from "./types/PullRequest";
 import type {Repository} from "@scm-manager/ui-types";
-import {Comment} from "./types/PullRequest";
+import type {Comment} from "./types/PullRequest";
 import type {Comments} from "./types/PullRequest";
 
 describe("API create pull request", () => {
@@ -21,7 +19,7 @@ describe("API create pull request", () => {
 
   const BRANCH_URL = "/repositories/scmadmin/TestRepo/branches";
 
-  const pullRequest: PullRequest = {
+  const pullRequest: BasicPullRequest = {
     source: "sourceBranch",
     target: "targetBranch",
     title: "This is a title"
@@ -95,7 +93,7 @@ describe("API create pull request", () => {
 describe("API create comment", () => {
   const COMMENTS_URL = "/repositories/scmadmin/TestRepo/newPullRequest/comments";
 
-  const comment: Comment = {
+  const comment: BasicComment = {
     comment: "My Comment"
   };
 
@@ -121,7 +119,45 @@ describe("API create comment", () => {
       status: 500
     });
 
-    createPullRequest(COMMENTS_URL, comment).then(response => {
+    createPullRequestComment(COMMENTS_URL, comment).then(response => {
+      expect(response.error).toBeDefined();
+      done();
+    });
+  });
+
+
+});
+
+describe("API update comment", () => {
+  const COMMENTS_URL = "/repositories/scmadmin/TestRepo/newPullRequest/comments/1";
+
+  const comment: BasicComment = {
+    comment: "My Comment"
+  };
+
+  afterEach(() => {
+    fetchMock.reset();
+    fetchMock.restore();
+  });
+
+  it("should update comment successfully", done => {
+    fetchMock.putOnce("/api/v2" + COMMENTS_URL, {
+      status: 204
+    });
+
+    updatePullRequestComment(COMMENTS_URL, comment).then(response => {
+      expect(response.status).toBe(204);
+      expect(response.error).toBeUndefined();
+      done();
+    });
+  });
+
+  it("should fail on creating comment", done => {
+    fetchMock.putOnce("/api/v2" + COMMENTS_URL, {
+      status: 500
+    });
+
+    updatePullRequestComment(COMMENTS_URL, comment).then(response => {
       expect(response.error).toBeDefined();
       done();
     });
@@ -240,12 +276,37 @@ describe("API get comments", () => {
 
   const COMMENTS_URL = "/pull-requests/scmadmin/TestRepo/1/comments";
 
-  const comment_1: Comment= {
-    comment : "my 1. comment"
+  const comment_1: Comment = {
+    comment : "my 1. comment",
+    author: "author",
+    date: "2018-12-11T13:55:43.126Z",
+    _links: {
+      self: {
+        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+      },
+      update: {
+        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+      },
+      delete: {
+        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+      }
+    }
   };
-
-  const comment_2: Comment= {
-    comment : "my 2. comment"
+  const comment_2: Comment = {
+    comment : "my 2. comment",
+    author: "author",
+    date: "2018-12-11T13:55:43.126Z",
+    _links: {
+      self: {
+        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+      },
+      update: {
+        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+      },
+      delete: {
+        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+      }
+    }
   };
 
   const comments: Comments ={

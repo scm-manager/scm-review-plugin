@@ -1,8 +1,8 @@
 //@flow
-import type { PullRequest } from "./types/PullRequest";
+import type {BasicComment, BasicPullRequest, PullRequest} from "./types/PullRequest";
 import { apiClient, CONFLICT_ERROR } from "@scm-manager/ui-components";
 
-export function createPullRequest(url: string, pullRequest: PullRequest) {
+export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
     .post(url, pullRequest)
     .then(response => {
@@ -16,7 +16,7 @@ export function createPullRequest(url: string, pullRequest: PullRequest) {
     });
 };
 
-export function createPullRequestComment(url: string, comment: Comment) {
+export function createPullRequestComment(url: string, comment: BasicComment) {
   return apiClient
     .post(url, comment)
     .then(response => {
@@ -30,7 +30,7 @@ export function createPullRequestComment(url: string, comment: Comment) {
     });
 };
 
-export function updatePullRequestComment(url: string, comment: Comment) {
+export function updatePullRequestComment(url: string, comment: BasicComment) {
   return apiClient
     .put(url, comment)
     .then(response => {
