@@ -44,6 +44,10 @@
       "error-subtitle": "Unknown pull-request error",
       "description": "Description",
       "createButton": "New Pull Request"
+    },
+    "comment":{
+      "add": "Add comment",
+      "delete": "Delete"
     }
   }
 }
