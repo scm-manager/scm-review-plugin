@@ -1,7 +1,15 @@
 // @flow
 import fetchMock from "fetch-mock";
 import type { PullRequest } from "./PullRequest";
-import {createPullRequest, getBranches, getPullRequest, getPullRequests} from "./pullRequest";
+import {
+  createChangesetLink,
+  createChangesetUrl,
+  createPullRequest,
+  getBranches,
+  getPullRequest,
+  getPullRequests
+} from "./pullRequest";
+import type {Repository} from "@scm-manager/ui-types";
 
 describe("API create pull request", () => {
   const PULLREQUEST_URL = "/repositories/scmadmin/TestRepo/newPullRequest";
@@ -184,3 +192,56 @@ describe("API get pull requests", () => {
   });
 });
 
+
+describe("createChangesetLink tests", () => {
+
+  const baseRepository: Repository = {
+    namespace: "hitchhiker",
+    name: "deep-thought",
+    type: "git"
+  };
+
+  const createRepository = (incommingLink: string, templated: boolean) => {
+    const links = {};
+    if (incommingLink) {
+      links.incomingChangesets = {
+        href: incommingLink,
+        templated
+      };
+    }
+
+    return {
+      ...baseRepository,
+      _links: links
+    };
+  };
+
+  it("should create a valid changeset link", () => {
+    const repo = createRepository("/in/{source}/{target}/changesets", true);
+
+    const link = createChangesetUrl(repo, "develop", "master");
+    expect(link).toBe("/in/develop/master/changesets");
+  });
+
+  it("should return undefined for non templated link", () => {
+    const repo = createRepository("/in/{source}/{target}/changesets", false);
+
+    const link = createChangesetUrl(repo, "develop", "master");
+    expect(link).toBeUndefined();
+  });
+
+  it("should return undefinded for repositories without incomingChangesets link", () => {
+    const repo = createRepository();
+
+    const link = createChangesetUrl(repo, "develop", "master");
+    expect(link).toBeUndefined();
+  });
+
+  it("should encode the branch names", () => {
+    const repo = createRepository("/in/{source}/{target}/changesets", true);
+
+    const link = createChangesetUrl(repo, "feature/fjords-of-african", "release/earth-2.0");
+    expect(link).toBe("/in/feature%2Ffjords-of-african/release%2Fearth-2.0/changesets");
+  });
+
+});

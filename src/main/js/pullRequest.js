@@ -54,3 +54,20 @@ export function getPullRequests(url: string){
       return {error: error};
     })
 }
+
+export function getChangesets(url: string) {
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .catch(cause => {
+      const error = new Error(`could not fetch changesets: ${cause.message}`);
+      return {error: error};
+    })
+}
+
+export function createChangesetUrl(repository: Repository, source: string, target: string) {
+  const link = repository._links.incomingChangesets;
+  if (link && link.templated) {
+    return link.href.replace("{source}", encodeURIComponent(source)).replace("{target}", encodeURIComponent(target));
+  }
+}
