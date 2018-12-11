@@ -1,5 +1,8 @@
-package com.cloudogu.scm.review.service;
+package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
 import sonia.scm.EagerSingleton;
 import sonia.scm.plugin.Extension;

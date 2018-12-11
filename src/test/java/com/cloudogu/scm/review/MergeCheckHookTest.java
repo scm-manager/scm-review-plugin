@@ -1,6 +1,8 @@
-package com.cloudogu.scm.review.service;
+package com.cloudogu.scm.review;
 
-import com.cloudogu.scm.review.MergeCheckHook;
+import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
