@@ -6,7 +6,6 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
-import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
@@ -19,7 +18,7 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 @EagerSingleton @Extension
 public class MergeCheckHook {
 
-  private final PullRequestService service;
+  private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
 
   @Inject
@@ -32,19 +31,47 @@ public class MergeCheckHook {
   public void checkForMerges(PostReceiveRepositoryHookEvent event) {
     List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
     try (RepositoryService repositoryService = serviceFactory.create(event.getRepository())) {
-      pullRequests.forEach(pullRequest -> checkIfMerged(event.getRepository(), repositoryService, pullRequest));
+      new Worker(repositoryService, event).process(pullRequests);
     }
   }
 
-  private void checkIfMerged(Repository repository, RepositoryService repositoryService, PullRequest pullRequest) {
-    ChangesetPagingResult changesets;
-    try {
-      changesets = repositoryService.getLogCommand().setBranch(pullRequest.getSource()).setAncestorChangeset(pullRequest.getTarget()).setPagingLimit(1).getChangesets();
-    } catch (IOException e) {
-      throw new InternalRepositoryException(entity(PullRequest.class, pullRequest.getId()), "could not load changesets for pull request", e);
+  private class Worker {
+    private final RepositoryService repositoryService;
+    private final PostReceiveRepositoryHookEvent event;
+
+    private Worker(RepositoryService repositoryService, PostReceiveRepositoryHookEvent event) {
+      this.repositoryService = repositoryService;
+      this.event = event;
     }
-    if (changesets.getTotal() == 0) {
-      service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
+
+    private void process(List<PullRequest> pullRequests) {
+      pullRequests
+        .stream()
+        .filter(this::isOpen)
+        .filter(this::pullRequestIsMerged)
+        .forEach(this::setPullRequestMerged);
+    }
+
+    private boolean isOpen(PullRequest pullRequest) {
+      return pullRequest.getStatus() == PullRequestStatus.OPEN;
+    }
+
+    private boolean pullRequestIsMerged(PullRequest pullRequest) {
+      try {
+        ChangesetPagingResult changesets = repositoryService
+          .getLogCommand()
+          .setBranch(pullRequest.getSource())
+          .setAncestorChangeset(pullRequest.getTarget())
+          .setPagingLimit(1)
+          .getChangesets();
+        return changesets.getTotal() == 0;
+      } catch (IOException e) {
+        throw new InternalRepositoryException(entity(PullRequest.class, pullRequest.getId()), "could not load changesets for pull request", e);
+      }
+    }
+
+    private void setPullRequestMerged(PullRequest pullRequest) {
+      service.setStatus(event.getRepository(), pullRequest, PullRequestStatus.MERGED);
     }
   }
 }

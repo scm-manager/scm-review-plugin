@@ -55,6 +55,4 @@ public interface PullRequestService {
    * @return the repository wuth the given name and namespace
    */
   Repository getRepository(String namespace, String name);
-
-  void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus);
 }

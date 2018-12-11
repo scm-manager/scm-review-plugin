@@ -61,8 +61,7 @@ public class DefaultPullRequestService implements PullRequestService {
     return repository;
   }
 
-  @Override
-  public void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
+  void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
     pullRequest.setStatus(newStatus);
     storeFactory.create(repository).update(pullRequest);
   }
