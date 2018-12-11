@@ -47,12 +47,12 @@ public class MergeCheckHook {
     private void process(List<PullRequest> pullRequests) {
       pullRequests
         .stream()
-        .filter(this::pullRequestIsOpen)
+        .filter(this::pullRequestHasStatusOpen)
         .filter(this::pullRequestIsMerged)
         .forEach(this::setPullRequestMerged);
     }
 
-    private boolean pullRequestIsOpen(PullRequest pullRequest) {
+    private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
       return pullRequest.getStatus() == PullRequestStatus.OPEN;
     }
 
