@@ -37,7 +37,6 @@ class Changesets extends React.Component<Props, State> {
 
   getCurrentPage(): number {
     const { match } = this.props;
-    console.log(match.params);
     if (match.params.page) {
       return parseInt(match.params.page);
     }
