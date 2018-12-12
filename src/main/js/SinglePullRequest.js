@@ -191,8 +191,6 @@ class SinglePullRequest extends React.Component<Props, State> {
     let rejectButton = null;
     if (pullRequest._links.reject) {
       rejectButton = <RejectButton reject={() => this.performReject()}/>;
-    }
-    if (repository._links.merge) {
       mergeButton = (
         <MergeButton
           merge={() => this.performMerge()}
