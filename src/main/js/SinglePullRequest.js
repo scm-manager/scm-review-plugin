@@ -194,7 +194,7 @@ class SinglePullRequest extends React.Component<Props, State> {
 
     return (
       <div className="columns">
-        <div className="column">
+        <div className="column is-clipped">
           <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
 
           {mergeNotification}
