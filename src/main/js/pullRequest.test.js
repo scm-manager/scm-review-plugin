@@ -142,11 +142,11 @@ describe("API update comment", () => {
 
   it("should update comment successfully", done => {
     fetchMock.putOnce("/api/v2" + COMMENTS_URL, {
-      status: 202
+      status: 204
     });
 
     updatePullRequestComment(COMMENTS_URL, comment).then(response => {
-      expect(response.status).toBe(202);
+      expect(response.status).toBe(204);
       expect(response.error).toBeUndefined();
       done();
     });

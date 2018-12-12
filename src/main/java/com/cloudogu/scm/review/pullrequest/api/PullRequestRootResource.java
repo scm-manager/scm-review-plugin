@@ -47,9 +47,9 @@ public class PullRequestRootResource {
   private final Provider<PullRequestResource> pullRequestResourceProvider;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, DefaultPullRequestService pullRequestService, Provider<PullRequestResource> pullRequestResourceProvider) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, Provider<PullRequestResource> pullRequestResourceProvider) {
     this.mapper = mapper;
-    this.service = pullRequestService;
+    this.service = service;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
   }
 

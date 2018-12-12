@@ -25,22 +25,30 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public String add(Repository repository, PullRequest pullRequest) {
-    return storeFactory.create(repository).add(pullRequest);
+    return getStore(repository).add(pullRequest);
+  }
+
+  @Override
+  public void update(String namespace, String name, String pullRequestId, String title, String description) {
+    PullRequest pullRequest = get(namespace, name, pullRequestId);
+    pullRequest.setTitle(title);
+    pullRequest.setDescription(description);
+    getStore(namespace, name).update(pullRequest);
   }
 
   @Override
   public PullRequest get(String namespace, String name, String id) {
-    return storeFactory.create(getRepository(namespace, name)).get(id);
+    return getStore(getRepository(namespace, name)).get(id);
   }
 
   @Override
   public List<PullRequest> getAll(String namespace, String name) {
-    return storeFactory.create(getRepository(namespace, name)).getAll();
+    return getStore(namespace, name).getAll();
   }
 
   @Override
   public Optional<PullRequest> get(Repository repository, String source, String target, PullRequestStatus status) {
-    return storeFactory.create(repository).getAll()
+    return getStore(repository).getAll()
       .stream()
       .filter(pullRequest ->
         pullRequest.getStatus().equals(status) &&
@@ -61,6 +69,15 @@ public class DefaultPullRequestService implements PullRequestService {
 
   public void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
     pullRequest.setStatus(newStatus);
-    storeFactory.create(repository).update(pullRequest);
+    getStore(repository).update(pullRequest);
+
+  }
+
+  private PullRequestStore getStore(String namespace, String name) {
+    return getStore(getRepository(namespace, name));
+  }
+
+  private PullRequestStore getStore(Repository repository) {
+    return storeFactory.create(repository);
   }
 }
