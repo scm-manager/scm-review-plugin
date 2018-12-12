@@ -8,11 +8,8 @@ export function createPullRequest(url: string, pullRequest: PullRequest) {
     .then(response => {
       return response;
     })
-    .catch(cause => {
-      const error = new Error(
-        `could not create pull request: ${cause.message}`
-      );
-      return { error: error };
+    .catch(err => {
+      return { error: err };
     });
 };
 
@@ -22,11 +19,8 @@ export function createPullRequestComment(url: string, comment: Comment) {
     .then(response => {
       return response;
     })
-    .catch(cause => {
-      const error = new Error(
-        `could not create pull request comment: ${cause.message}`
-      );
-      return { error: error };
+    .catch(err => {
+      return { error: err };
     });
 };
 
@@ -38,9 +32,8 @@ export function getBranches(url: string) {
     .then(branches => {
       return branches.map(b => b.name);
     })
-    .catch(cause => {
-      const error = new Error(`could not fetch branches: ${cause.message}`);
-      return { error: error };
+    .catch(err => {
+      return { error: err };
     });
 };
 
@@ -51,9 +44,8 @@ export function getPullRequest(url: string){
     .then(pullRequest => {
       return pullRequest;
     })
-    .catch(cause => {
-      const error = new Error(`could not fetch pull request: ${cause.message}`);
-      return {error: error};
+    .catch(err => {
+      return {error: err};
     });
 };
 
@@ -64,9 +56,8 @@ export function getPullRequests(url: string){
     .then(pullRequests => {
       return pullRequests;
     })
-    .catch(cause => {
-      const error = new Error(`could not fetch pull requests: ${cause.message}`);
-      return {error: error};
+    .catch(err => {
+      return {error: err};
     });
 };
 
@@ -76,13 +67,12 @@ export function merge(url: string, pullRequest: PullRequest){
       sourceRevision: pullRequest.source,
       targetRevision: pullRequest.target
     }, "application/vnd.scmm-mergeCommand+json")
-    .catch(cause => {
-      if(cause === CONFLICT_ERROR){
+    .catch(err => {
+      if(err === CONFLICT_ERROR){
         return {conflict: cause};
       }
       else {
-        const error = new Error(`could not merge pull request: ${cause.message}`);
-        return {error: error};
+        return {error: err};
       }
     });
 };
@@ -91,9 +81,8 @@ export function getChangesets(url: string) {
   return apiClient
     .get(url)
     .then(response => response.json())
-    .catch(cause => {
-      const error = new Error(`could not fetch changesets: ${cause.message}`);
-      return {error: error};
+    .catch(err => {
+      return {error: err};
     });
 };
 
@@ -104,9 +93,8 @@ export function getPullRequestComments(url: string){
     .then(pullRequestComments => {
       return pullRequestComments;
     })
-    .catch(cause => {
-      const error = new Error(`could not fetch pull request comments: ${cause.message}`);
-      return {error: error};
+    .catch(err => {
+      return {error: err};
     });
 };
 
@@ -116,9 +104,8 @@ export function deletePullRequestComment(url: string){
     .then(response => {
       return response;
     })
-    .catch(cause => {
-      const error = new Error(`could not delete pull request comments: ${cause.message}`);
-      return {error: error};
+    .catch(err => {
+      return {error: err};
     })
 };
 
