@@ -1,27 +1,17 @@
 // @flow
 import React from "react";
-import {ErrorNotification, ErrorPage, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
-import type {BasicComment, Comments, PullRequest} from "../types/PullRequest";
-import {translate} from "react-i18next";
-import {createPullRequestComment, getPullRequestComments} from "../pullRequest";
-import injectSheet from "react-jss";
+import {ErrorNotification, Loading} from "@scm-manager/ui-components";
+import type { Comments, PullRequest} from "../types/PullRequest";
+import {getPullRequestComments} from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
-
-const styles = {
-  bottomSpace: {
-    marginBottom: "1.5em"
-  }
-};
+import CreateComment from "./CreateComment";
 
 type Props = {
-  pullRequest: PullRequest,
-  t: string => string,
-  classes: any
+  pullRequest: PullRequest
 };
 
 type State = {
   pullRequestComments?: Comments,
-  newComment?: BasicComment,
   error?: Error,
   loading: boolean
 };
@@ -31,7 +21,6 @@ class PullRequestComments extends React.Component<Props, State> {
     super(props);
     this.state = {
       pullRequestComments: null,
-      newComment: null,
       loading: true
     };
   }
@@ -74,41 +63,12 @@ class PullRequestComments extends React.Component<Props, State> {
     });
   };
 
-  handleChanges = (value: string, name: string) => {
-    this.setState(
-      {
-        newComment: {
-          ...this.state.newComment,
-          [name]: value
-        }
-      },
-    );
-  };
-
-  submit = () => {
-    const {pullRequestComments, newComment} = this.state;
-    this.setState({loading: true});
-
-    createPullRequestComment(pullRequestComments._links.create.href, newComment).then(
-      result => {
-        if (result.error) {
-          this.setState({loading: false, error: result.error});
-        } else {
-          newComment.comment = "";
-          this.updatePullRequestComments();
-        }
-      }
-    );
-  };
-
   render() {
-    const {t} = this.props;
-    const {loading, error, pullRequestComments, newComment} = this.state;
+    const {loading, error, pullRequestComments} = this.state;
 
     if (error) {
       return <ErrorNotification error={error} />;
     }
-
 
     if (loading) {
       return <Loading/>;
@@ -119,38 +79,15 @@ class PullRequestComments extends React.Component<Props, State> {
 
     if (pullRequestComments && pullRequestComments._embedded && pullRequestComments._embedded.pullRequestComments) {
       const comments = pullRequestComments._embedded.pullRequestComments;
-      const createAllowed = pullRequestComments._links.create;
+      const createLink = pullRequestComments._links.create? pullRequestComments._links.create.href: null;
       return (
         <>
           {comments.map((comment) => {
             return <PullRequestComment comment={comment} refresh={this.updatePullRequestComments} handleError={this.handleError} />
           })}
-
-          {createAllowed ? (
-          <article className="media">
-            <div className="media-content">
-              <div className="field">
-                <p className="control">
-                    <Textarea
-                      name="comment"
-                      placeholder={t("scm-review-plugin.comment.add")}
-                      onChange={this.handleChanges}
-                    />
-                </p>
-              </div>
-              <div className="field">
-                <p className="control">
-                  <SubmitButton
-                    label={t("scm-review-plugin.comment.add")}
-                    action={this.submit}
-                    disabled={!newComment || (newComment && newComment.comment === "")}
-                    loading={loading}
-                  />
-                </p>
-              </div>
-            </div>
-          </article>
-          ): ""}
+          {createLink?
+            (<CreateComment url={createLink} refresh={this.updatePullRequestComments} handleError={this.handleError} />)
+            :""}
         </>
       );
     }
@@ -158,4 +95,4 @@ class PullRequestComments extends React.Component<Props, State> {
 
 }
 
-export default injectSheet(styles)(translate("plugins")(PullRequestComments));
+export default PullRequestComments;

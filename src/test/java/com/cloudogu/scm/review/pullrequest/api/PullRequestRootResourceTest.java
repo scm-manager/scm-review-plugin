@@ -3,6 +3,8 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -71,6 +73,7 @@ public class PullRequestRootResourceTest {
   private static final String REPOSITORY_NAME = "repo";
   private static final String REPOSITORY_ID = "repo_ID";
   private static final String REPOSITORY_NAMESPACE = "ns";
+  private PullRequestMapper mapper = new PullRequestMapperImpl();
 
   @Before
   public void init() {
@@ -80,7 +83,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE,REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory);
-    pullRequestRootResource = new PullRequestRootResource(service, Providers.of(new PullRequestResource(service,null)));
+    pullRequestRootResource = new PullRequestRootResource(service, Providers.of(new PullRequestResource(mapper, service,null)));
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);

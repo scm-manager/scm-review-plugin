@@ -43,8 +43,8 @@ public class CommentRootResource {
 
 
   @Inject
-  public CommentRootResource( RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider) {
-    this.mapper = new PullRequestCommentMapperImpl();
+  public CommentRootResource(PullRequestCommentMapper mapper, RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider) {
+    this.mapper = mapper;
     this.repositoryResolver = repositoryResolver;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
@@ -68,7 +68,7 @@ public class CommentRootResource {
     pullRequestCommentDto.setDate(Instant.now());
     pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
 
-    int id = service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
+    String id = service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
     URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(id)).build();
     return Response.created(location).build();
   }
@@ -90,7 +90,7 @@ public class CommentRootResource {
         URI uri = uriInfo.getAbsolutePathBuilder().path(String.valueOf(pr.getId())).build();
         Map<String, URI> uriMap = Maps.newHashMap();
         uriMap.put("self",uri);
-        if (service.modificationsAllowed(namespace,name,pullRequestId,pr.getId(),repository)){
+        if (service.modificationsAllowed(pullRequestId,pr.getId(),repository)){
           uriMap.put("update",uri);
           uriMap.put("delete",uri);
         }

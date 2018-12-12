@@ -2,10 +2,12 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
@@ -39,7 +41,7 @@ import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -80,19 +82,19 @@ public class CommentRootResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentRootResource resource = new CommentRootResource(repositoryResolver, service, commentResourceProvider);
+    CommentRootResource resource = new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, commentResourceProvider);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     val pullRequestRootResource = new PullRequestRootResource(null,
-      Providers.of(new PullRequestResource(null, Providers.of(resource))));
+      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource))));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldCreateNewPullRequestComment() throws URISyntaxException {
-    when(service.add(eq("space"), eq("name"), eq("1"), argThat(t -> t.getAuthor().equals("slarti") && t.getDate() != null))).thenReturn(1);
+    when(service.add(eq("space"), eq("name"), eq("1"), argThat(t -> t.getAuthor().equals("slarti") && t.getDate() != null))).thenReturn("1");
     byte[] pullRequestCommentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
     MockHttpRequest request =
       MockHttpRequest
@@ -124,9 +126,9 @@ public class CommentRootResourceTest {
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetAllPullRequestComments() throws URISyntaxException, IOException {
     val list = Lists.newArrayList(
-      new PullRequestComment(1, "1. comment", "author", Instant.now()),
-      new PullRequestComment(2, "2. comment", "author", Instant.now()),
-      new PullRequestComment(3, "3. comment", "author", Instant.now()));
+      new PullRequestComment("1", "1. comment", "author", Instant.now()),
+      new PullRequestComment("2", "2. comment", "author", Instant.now()),
+      new PullRequestComment("3", "3. comment", "author", Instant.now()));
     when(service.getAll("space", "name", "1")).thenReturn(list);
     MockHttpRequest request =
       MockHttpRequest
@@ -152,9 +154,9 @@ public class CommentRootResourceTest {
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPRComment() throws URISyntaxException, IOException {
     val list = Lists.newArrayList(
-      new PullRequestComment(1, "1. comment", "author", Instant.now()),
-      new PullRequestComment(2, "2. comment", "author", Instant.now()),
-      new PullRequestComment(3, "3. comment", "author", Instant.now()));
+      new PullRequestComment("1", "1. comment", "author", Instant.now()),
+      new PullRequestComment("2", "2. comment", "author", Instant.now()),
+      new PullRequestComment("3", "3. comment", "author", Instant.now()));
     when(service.getAll("space", "name", "1")).thenReturn(list);
     MockHttpRequest request =
       MockHttpRequest
@@ -169,11 +171,11 @@ public class CommentRootResourceTest {
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetAllLinksÍfTheAuthorIsTheCurrentUser() throws URISyntaxException, IOException {
     val list = Lists.newArrayList(
-      new PullRequestComment(1, "1. comment", "slarti", Instant.now()),
-      new PullRequestComment(2, "2. comment", "slarti", Instant.now()),
-      new PullRequestComment(3, "3. comment", "slarti", Instant.now()));
+      new PullRequestComment("1", "1. comment", "slarti", Instant.now()),
+      new PullRequestComment("2", "2. comment", "slarti", Instant.now()),
+      new PullRequestComment("3", "3. comment", "slarti", Instant.now()));
     when(service.getAll("space", "name", "1")).thenReturn(list);
-    when(service.modificationsAllowed(eq("space"), eq("name"), eq("1"), anyInt(), any())).thenReturn(true);
+    when(service.modificationsAllowed(eq("1"), anyString(), any())).thenReturn(true);
     MockHttpRequest request =
       MockHttpRequest
         .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
@@ -206,9 +208,9 @@ public class CommentRootResourceTest {
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetOnlyTheSelfLinkÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
     val list = Lists.newArrayList(
-      new PullRequestComment(1, "1. comment", "author", Instant.now()),
-      new PullRequestComment(2, "2. comment", "author", Instant.now()),
-      new PullRequestComment(3, "3. comment", "author", Instant.now()));
+      new PullRequestComment("1", "1. comment", "author", Instant.now()),
+      new PullRequestComment("2", "2. comment", "author", Instant.now()),
+      new PullRequestComment("3", "3. comment", "author", Instant.now()));
     when(service.getAll("space", "name", "1")).thenReturn(list);
     MockHttpRequest request =
       MockHttpRequest

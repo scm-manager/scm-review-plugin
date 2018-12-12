@@ -8,7 +8,7 @@ import javax.inject.Inject;
 
 public class PullRequestStoreFactory {
 
-  private static final String PULL_REQUEST_STORE_DIRECTORY = "pullRequest";
+  private static final String PULL_REQUEST_STORE_NAME = "pullRequest";
 
   private final DataStoreFactory dataStoreFactory;
 
@@ -18,7 +18,7 @@ public class PullRequestStoreFactory {
   }
 
   public PullRequestStore create(Repository repository) {
-    DataStore<PullRequest> store = dataStoreFactory.withType(PullRequest.class).withName(PULL_REQUEST_STORE_DIRECTORY).forRepository(repository).build();
+    DataStore<PullRequest> store = dataStoreFactory.withType(PullRequest.class).withName(PULL_REQUEST_STORE_NAME).forRepository(repository).build();
     return new PullRequestStore(store, repository);
   }
 

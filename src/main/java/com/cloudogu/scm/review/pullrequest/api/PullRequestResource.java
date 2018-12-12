@@ -28,8 +28,8 @@ public class PullRequestResource {
   private final Provider<CommentRootResource> commentResourceProvider;
 
   @Inject
-  public PullRequestResource(DefaultPullRequestService service, Provider<CommentRootResource> commentResourceProvider) {
-    this.mapper = new PullRequestMapperImpl();
+  public PullRequestResource(PullRequestMapper mapper, DefaultPullRequestService service, Provider<CommentRootResource> commentResourceProvider) {
+    this.mapper = mapper;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
   }

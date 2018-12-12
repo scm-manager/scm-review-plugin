@@ -3,14 +3,7 @@ import React from "react";
 import {confirmAlert, DateFromNow, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
 import type {Comment} from "../types/PullRequest";
 import {translate} from "react-i18next";
-import injectSheet from "react-jss";
 import {deletePullRequestComment, updatePullRequestComment} from "../pullRequest";
-
-const styles = {
-  bottomSpace: {
-    marginBottom: "1.5em"
-  }
-};
 
 type Props = {
   comment: Comment,
@@ -179,7 +172,7 @@ class PullRequestComment extends React.Component<Props, State> {
           <SubmitButton
             label={t("scm-review-plugin.comment.save")}
             action={this.update}
-            disabled={!comment || (comment && comment.comment === "")}
+            disabled={updatedComment.trim() == ""}
           />
         </div>
         <div className="level-item">
@@ -229,4 +222,4 @@ class PullRequestComment extends React.Component<Props, State> {
   }
 }
 
-export default injectSheet(styles)(translate("plugins")(PullRequestComment));
+export default translate("plugins")(PullRequestComment);

@@ -12,6 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.NotFoundException;
+import sonia.scm.security.KeyGenerator;
+import sonia.scm.security.UUIDKeyGenerator;
 import sonia.scm.store.DataStore;
 
 import java.time.Instant;
@@ -32,10 +34,11 @@ class CommentStoreTest {
   private DataStore<PullRequestComments> dataStore;
 
   private CommentStore store;
+  private KeyGenerator keyGenerator = new UUIDKeyGenerator();
 
   @BeforeEach
   void init(){
-    store = new CommentStore(dataStore);
+    store = new CommentStore(dataStore, keyGenerator);
     // delegate store methods to backing map
     when(dataStore.getAll()).thenReturn(backingMap);
 
@@ -51,7 +54,7 @@ class CommentStoreTest {
    void shouldAddTheFirstComment() {
     val pullRequestId = "1";
     when(dataStore.get(pullRequestId)).thenReturn(null);
-    val pullRequestComment = new PullRequestComment(1, "my Comment", "author", Instant.now());
+    val pullRequestComment = new PullRequestComment("1","my Comment", "author", Instant.now());
     store.add(pullRequestId, pullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
@@ -62,9 +65,9 @@ class CommentStoreTest {
   @Test
   void shouldAddCommentToExistingCommentList() {
     val pullRequestId = "1";
-    val oldPRComment  = new PullRequestComment(1, "my comment", "author", Instant.now());
+    val oldPRComment  = new PullRequestComment("1", "my comment", "author", Instant.now());
     val pullRequestComments = new PullRequestComments();
-    val newPullRequestComment   = new PullRequestComment(2, "my new comment", "author", Instant.now());
+    val newPullRequestComment   = new PullRequestComment("2", "my new comment", "author", Instant.now());
     pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
 
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
@@ -79,62 +82,44 @@ class CommentStoreTest {
   }
 
   @Test
-  void shouldCreateNextId(){
-    // test the first id
-    when(dataStore.get("id")).thenReturn(null);
-    int id = store.createId("id");
-    assertThat(id).isEqualTo(1);
-
-    // test the next id
-    PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment(1, "my first comment", "author", Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment(2, "my second comment", "author", Instant.now()));
-
-    when(dataStore.get("id")).thenReturn(pullRequestComments);
-    id = store.createId("id");
-
-    assertThat(id).isEqualTo(3);
-  }
-
-  @Test
   void shouldDeleteAnExistingComment(){
     val pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment(1, "1. comment", "author", Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment(2, "2. comment", "author", Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment(3, "3. comment", "author", Instant.now()));
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", Instant.now()));
+    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", Instant.now()));
+    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", Instant.now()));
     val pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
-    store.delete(pullRequestId, 2);
+    store.delete(pullRequestId, "2");
 
     PullRequestComments comments = store.get(pullRequestId);
     assertThat(comments.getComments())
       .extracting("id")
-      .containsExactly(1,3);
+      .containsExactly("1","3");
 
     // delete a removed comment has no effect
-    store.delete(pullRequestId, 2);
+    store.delete(pullRequestId, "2");
 
     comments = store.get(pullRequestId);
     assertThat(comments.getComments())
       .extracting("id")
-      .containsExactly(1,3);
+      .containsExactly("1","3");
 
   }
 
   @Test
   void shouldGetPullRequestComments(){
     val pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment(1, "1. comment", "author", Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment(2, "2. comment", "author", Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment(3, "3. comment", "author", Instant.now()));
+    pullRequestComments.getComments().add(new PullRequestComment("1","1. comment", "author", Instant.now()));
+    pullRequestComments.getComments().add(new PullRequestComment("2","2. comment", "author", Instant.now()));
+    pullRequestComments.getComments().add(new PullRequestComment("3","3. comment", "author", Instant.now()));
     val pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
     PullRequestComments comments = store.get(pullRequestId);
     assertThat(comments.getComments())
       .extracting("id")
-      .containsExactly(1,2,3);
+      .containsExactly("1","2","3");
   }
 
   @Test

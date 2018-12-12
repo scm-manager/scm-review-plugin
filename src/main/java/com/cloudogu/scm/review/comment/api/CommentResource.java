@@ -3,8 +3,6 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
@@ -25,11 +23,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.time.Instant;
 
 public class CommentResource {
 
-  private final PullRequestCommentMapper mapper;
   private final CommentService service;
   private RepositoryResolver repositoryResolver;
 
@@ -37,7 +33,6 @@ public class CommentResource {
   @Inject
   public CommentResource(CommentService service, RepositoryResolver repositoryResolver) {
     this.repositoryResolver = repositoryResolver;
-    this.mapper = new PullRequestCommentMapperImpl();
     this.service = service;
   }
 
@@ -54,11 +49,11 @@ public class CommentResource {
                          @PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
-                         @PathParam("commentId") int commentId) {
+                         @PathParam("commentId") String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     RepositoryPermissions.read(repository).check();
     try {
-      if (!service.modificationsAllowed(namespace, name, pullRequestId, commentId, repository)) {
+      if (!service.modificationsAllowed(pullRequestId, commentId, repository)) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
       service.delete(namespace, name, pullRequestId, commentId);
@@ -84,19 +79,15 @@ public class CommentResource {
                          @PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
-                         @PathParam("commentId") int commentId,
+                         @PathParam("commentId") String commentId,
                          PullRequestCommentDto pullRequestCommentDto) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     RepositoryPermissions.read(repository).check();
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
-    String originalAuthor = comment.getAuthor();
     if (!service.modificationsAllowed(repository, comment)) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
-    service.delete(namespace, name, pullRequestId, commentId);
-    pullRequestCommentDto.setDate(Instant.now());
-    pullRequestCommentDto.setAuthor(originalAuthor);
-    service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
+    service.update(namespace, name, pullRequestId, commentId, pullRequestCommentDto.getComment());
     return Response.accepted().build();
   }
 }
