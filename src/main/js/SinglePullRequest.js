@@ -37,6 +37,7 @@ type State = {
   loading: boolean,
   mergePossible?: boolean,
   mergeButtonLoading: boolean,
+  rejectButtonLoading: boolean,
   showNotification: boolean
 };
 
@@ -47,6 +48,7 @@ class SinglePullRequest extends React.Component<Props, State> {
       loading: true,
       pullRequest: null,
       mergeButtonLoading: true,
+      rejectButtonLoading: false,
       showNotification: false
     };
   }
@@ -114,10 +116,16 @@ class SinglePullRequest extends React.Component<Props, State> {
   };
 
   performReject = () => {
-    const { pullRequest } = this.state;
-    reject(pullRequest._links.reject.href, pullRequest).then(response => {
-      this.fetchPullRequest(false);
-    });
+    this.setState({rejectButtonLoading: true});
+    const {pullRequest} = this.state;
+    reject(pullRequest).then(
+      () => {
+        this.setState({rejectButtonLoading: false});
+        this.fetchPullRequest(false);
+      }
+    ).catch(
+      cause => this.setState({error: new Error(`could not reject request: ${cause.message}`), rejectButtonLoading: false})
+    )
   };
 
   setMergeButtonLoadingState = () => {
@@ -142,6 +150,7 @@ class SinglePullRequest extends React.Component<Props, State> {
       loading,
       mergeButtonLoading,
       mergePossible,
+      rejectButtonLoading,
       showNotification
     } = this.state;
     let description = null;
@@ -190,7 +199,7 @@ class SinglePullRequest extends React.Component<Props, State> {
     let mergeButton = null;
     let rejectButton = null;
     if (pullRequest._links.reject) {
-      rejectButton = <RejectButton reject={() => this.performReject()}/>;
+      rejectButton = <RejectButton reject={() => this.performReject()} loading={rejectButtonLoading}/>;
       mergeButton = (
         <MergeButton
           merge={() => this.performMerge()}

@@ -1,6 +1,6 @@
 //@flow
-import type { PullRequest } from "./types/PullRequest";
-import { apiClient, CONFLICT_ERROR } from "@scm-manager/ui-components";
+import type {PullRequest} from "./types/PullRequest";
+import {apiClient, CONFLICT_ERROR} from "@scm-manager/ui-components";
 
 export function createPullRequest(url: string, pullRequest: PullRequest) {
   return apiClient
@@ -129,19 +129,7 @@ export function createChangesetUrl(repository: Repository, source: string, targe
   }
 }
 
-export function reject(url: string, pullRequest: PullRequest){
+export function reject(pullRequest: PullRequest){
   return apiClient
-    .post(url, {
-      sourceRevision: pullRequest.source,
-      targetRevision: pullRequest.target
-    }, "application/vnd.scmm-mergeCommand+json")
-    .catch(cause => {
-      if (cause === CONFLICT_ERROR) {
-        return {conflict: cause};
-      }
-      else {
-        const error = new Error(`could not merge pull request: ${cause.message}`);
-        return {error: error};
-      }
-    });
+    .post(pullRequest._links.reject.href);
 }

@@ -5,6 +5,7 @@ import { Button, confirmAlert } from "@scm-manager/ui-components";
 
 type Props = {
   reject: () => void,
+  loading: boolean,
   t: string => string
 };
 
@@ -40,7 +41,7 @@ class RejectButton extends React.Component<Props> {
   };
 
   render() {
-    const { t } = this.props;
+    const { t, loading } = this.props;
     const color = "warning";
     const action = this.confirmReject;
     return (
@@ -49,6 +50,7 @@ class RejectButton extends React.Component<Props> {
           "scm-review-plugin.show-pull-request.rejectButton.button-title"
         )}
         action={action}
+        loading={loading}
         color={color}
       />
     );
