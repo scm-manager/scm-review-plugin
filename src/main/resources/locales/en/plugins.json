@@ -5,6 +5,9 @@
       "subtitle": "Creates a new Pull Request for ",
       "submitButton": "Submit"
     },
+    "diff": {
+      "not-supported": "Diffs for pull request are not supported by the type of repository"
+    },
     "pull-request":{
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
