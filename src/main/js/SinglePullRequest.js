@@ -192,6 +192,21 @@ class SinglePullRequest extends React.Component<Props, State> {
       );
     }
 
+    let mergeSummary = null;
+    if (pullRequest.status !== "MERGED") {
+      mergeSummary = (
+        <>
+          {mergeButton}
+          <PullRequestInformation
+            baseURL={match.url}
+            repository={repository}
+            source={pullRequest.source}
+            target={pullRequest.target}
+          />
+        </>
+      );
+    }
+
     return (
       <div className="columns">
         <div className="column">
@@ -223,9 +238,7 @@ class SinglePullRequest extends React.Component<Props, State> {
             </div>
           </div>
 
-          {mergeButton}
-
-          <PullRequestInformation baseURL={match.url} repository={repository} source={pullRequest.source} target={pullRequest.target}/>
+          {mergeSummary}
         </div>
       </div>
     );
