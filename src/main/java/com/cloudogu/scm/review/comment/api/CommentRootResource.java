@@ -3,7 +3,6 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.google.common.collect.Maps;

@@ -86,7 +86,7 @@ public class CommentRootResourceTest {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
-    val pullRequestRootResource = new PullRequestRootResource(null,
+    val pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource))));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }

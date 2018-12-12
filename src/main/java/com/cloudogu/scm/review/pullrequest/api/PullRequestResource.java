@@ -2,7 +2,6 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
-import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import sonia.scm.repository.Repository;
