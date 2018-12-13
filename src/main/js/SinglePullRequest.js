@@ -48,10 +48,10 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    this.fetchPullRequest(false);
+    this.fetchPullRequest(true, false);
   }
 
-  fetchPullRequest(mergedPerformed: boolean) {
+  fetchPullRequest(doDryRun: boolean, mergePerformed: boolean) {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
     const url = repository._links.pullRequest.href + "/" + pullRequestNumber;
@@ -66,11 +66,12 @@ class SinglePullRequest extends React.Component<Props, State> {
           pullRequest: response,
           loading: false
         });
-        if (mergedPerformed) {
+        if (mergePerformed) {
           this.setState({
             showNotification: true
           });
-        } else {
+        }
+        if (doDryRun) {
           this.getMergeDryRun(response);
         }
       }
@@ -108,7 +109,7 @@ class SinglePullRequest extends React.Component<Props, State> {
         });
       } else {
         this.setState({ loading: true, mergeButtonLoading: false });
-        this.fetchPullRequest(true);
+        this.fetchPullRequest(false, true);
       }
     });
   };
@@ -119,7 +120,7 @@ class SinglePullRequest extends React.Component<Props, State> {
     reject(pullRequest).then(
       () => {
         this.setState({rejectButtonLoading: false});
-        this.fetchPullRequest(false);
+        this.fetchPullRequest(false, false);
       }
     ).catch(
       cause => this.setState({error: new Error(`could not reject request: ${cause.message}`), rejectButtonLoading: false})
