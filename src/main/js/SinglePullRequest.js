@@ -1,17 +1,11 @@
 //@flow
 import React from "react";
-import {
-  Title,
-  Loading,
-  ErrorPage,
-  DateFromNow,
-  Notification
-} from "@scm-manager/ui-components";
-import type { Repository } from "@scm-manager/ui-types";
-import type { PullRequest } from "./types/PullRequest";
-import { translate } from "react-i18next";
-import { withRouter } from "react-router-dom";
-import { getPullRequest, merge } from "./pullRequest";
+import {DateFromNow, ErrorPage, Loading, Notification, Title} from "@scm-manager/ui-components";
+import type {Repository} from "@scm-manager/ui-types";
+import type {PullRequest} from "./types/PullRequest";
+import {translate} from "react-i18next";
+import {withRouter} from "react-router-dom";
+import {getPullRequest, merge} from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import injectSheet from "react-jss";
@@ -81,16 +75,20 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 
   getMergeDryRun(pullRequest: PullRequest) {
-    const { repository } = this.props;
-    merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
-      if (response.conflict) {
-        this.setState({ mergeButtonLoading: false, mergePossible: false });
-      } else if (response.error) {
-        this.setState({ error: true, mergeButtonLoading: false });
-      } else {
-        this.setState({ mergePossible: true, mergeButtonLoading: false });
-      }
-    });
+    const {repository} = this.props;
+    if (repository._links.mergeDryRun && repository._links.mergeDryRun.href) {
+      merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
+        if (response.conflict) {
+          this.setState({mergeButtonLoading: false, mergePossible: false});
+        } else if (response.error) {
+          this.setState({error: true, mergeButtonLoading: false});
+        } else {
+          this.setState({mergePossible: true, mergeButtonLoading: false});
+        }
+      });
+    }else{
+      // TODO: what to do if the link doas not exists?
+    }
   }
 
   performMerge = () => {
@@ -180,7 +178,7 @@ class SinglePullRequest extends React.Component<Props, State> {
     }
 
     let mergeButton = null;
-    if (repository._links.merge.href) {
+    if (repository._links.merge && repository._links.merge.href) {
       mergeButton = (
         <MergeButton
           merge={() => this.performMerge()}
@@ -225,7 +223,7 @@ class SinglePullRequest extends React.Component<Props, State> {
 
           {mergeButton}
 
-          <PullRequestInformation baseURL={match.url} repository={repository} source={pullRequest.source} target={pullRequest.target}/>
+          <PullRequestInformation pullRequest={pullRequest} baseURL={match.url} repository={repository} source={pullRequest.source} target={pullRequest.target}/>
         </div>
       </div>
     );

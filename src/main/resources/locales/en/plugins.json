@@ -38,6 +38,25 @@
       "error-subtitle": "Unknown pull-request error",
       "description": "Description",
       "createButton": "New Pull Request"
+    },
+    "comment":{
+      "add": "Add comment",
+      "delete": "Delete",
+      "update": "Update",
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm-alert": {
+         "title": "Delete comment",
+         "message": "Do you really want to delete the comment?",
+         "submit": "Yes",
+         "cancel": "No"
+      },
+      "confirm-cancel-update-alert": {
+        "title": "Cancel Update",
+        "message": "Do you really want to reject the modifications on the comment?",
+        "submit": "Yes",
+        "cancel": "No"
+      }
     }
   }
 }

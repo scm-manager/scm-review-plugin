@@ -1,8 +1,8 @@
 //@flow
-import type { PullRequest } from "./types/PullRequest";
+import type {BasicComment, BasicPullRequest, PullRequest} from "./types/PullRequest";
 import { apiClient, CONFLICT_ERROR } from "@scm-manager/ui-components";
 
-export function createPullRequest(url: string, pullRequest: PullRequest) {
+export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
     .post(url, pullRequest)
     .then(response => {
@@ -15,6 +15,34 @@ export function createPullRequest(url: string, pullRequest: PullRequest) {
       return { error: error };
     });
 };
+
+export function createPullRequestComment(url: string, comment: BasicComment) {
+  return apiClient
+    .post(url, comment)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(
+        `could not create pull request comment: ${cause.message}`
+      );
+      return { error: error };
+    });
+};
+
+export function updatePullRequestComment(url: string, comment: BasicComment) {
+  return apiClient
+    .put(url, comment)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(
+        `could not update pull request comment: ${cause.message}`
+      );
+      return { error: error };
+    });
+}
 
 export function getBranches(url: string) {
   return apiClient
@@ -80,8 +108,33 @@ export function getChangesets(url: string) {
     .catch(cause => {
       const error = new Error(`could not fetch changesets: ${cause.message}`);
       return {error: error};
+    });
+};
+
+export function getPullRequestComments(url: string){
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .then(pullRequestComments => {
+      return pullRequestComments;
     })
-}
+    .catch(cause => {
+      const error = new Error(`could not fetch pull request comments: ${cause.message}`);
+      return {error: error};
+    });
+};
+
+export function deletePullRequestComment(url: string){
+  return apiClient
+    .delete(url)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(`could not delete pull request comments: ${cause.message}`);
+      return {error: error};
+    })
+};
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {
   return createIncomingUrl(repository, "incomingChangesets", source, target);
