@@ -5,9 +5,12 @@ import { translate } from "react-i18next";
 import Changesets from "./Changesets";
 import {Route, Link, withRouter} from "react-router-dom";
 import Diff from "./Diff";
+import PullRequestComments from "./comment/PullRequestComments";
+import type {PullRequest} from "./types/PullRequest";
 
 type Props = {
   repository: Repository,
+  pullRequest : PullRequest,
   source: string,
   target: string,
   baseURL: string,
@@ -44,21 +47,38 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { repository, source, target, baseURL } = this.props;
+    const { pullRequest, repository, source, target, baseURL } = this.props;
+
+    let commentTab = pullRequest? (
+      <li className={ this.navigationClass("comments") }>
+        <Link to={`${baseURL}/comments/`}>Comments</Link>
+      </li>
+    ) : "";
+
 
     return (
       <>
         <div className="tabs">
           <ul>
+
+            {commentTab}
+
             <li className={ this.navigationClass("changesets") }>
               <Link to={`${baseURL}/changesets/`}>Commits</Link>
             </li>
+
             <li className={ this.navigationClass("diff") }>
               <Link to={`${baseURL}/diff/`}>Diff</Link>
             </li>
+
           </ul>
         </div>
 
+        <Route
+          path={`${baseURL}/comments`}
+          render={() => <PullRequestComments pullRequest={pullRequest}/>}
+          exact
+        />
         <Route
           path={`${baseURL}/changesets`}
           render={() => <Changesets repository={repository} source={source} target={target} />}
