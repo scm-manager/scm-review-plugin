@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.Command;
@@ -26,22 +29,23 @@ import java.net.URL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class RepositoryLinkEnricherTest {
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class RepositoryLinkEnricherTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
   private RepositoryLinkEnricher linkEnricher;
-  private JsonNode rootNode;
+
   @Mock
   private RepositoryService repositoryService;
+
   @Mock
   private RepositoryServiceFactory serviceFactory;
 
-  @Before
-  public void setUp() throws IOException {
-    URL resource = Resources.getResource("com/cloudogu/scm/review/repository-001.json");
-    rootNode = objectMapper.readTree(resource);
+  private JsonNode rootNode;
 
+  @BeforeEach
+  void setUp() {
     ScmPathInfoStore pathInfoStore = new ScmPathInfoStore();
     pathInfoStore.set(() -> URI.create("/"));
     Provider<ScmPathInfoStore> pathInfoStoreProvider = Providers.of(pathInfoStore);
@@ -52,60 +56,105 @@ public class RepositoryLinkEnricherTest {
 
   }
 
-  @Test
-  public void shouldEnrichRepositoriesWithBranchSupport() {
-    JsonEnricherContext context = new JsonEnricherContext(
-      URI.create("/"),
-      MediaType.valueOf(VndMediaType.REPOSITORY),
-      rootNode
-    );
+  @Nested
+  class Repository {
 
-    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
-    linkEnricher.enrich(context);
+    @BeforeEach
+    void setUpRootNode() throws IOException {
+      URL resource = Resources.getResource("com/cloudogu/scm/review/repository-001.json");
+      rootNode = objectMapper.readTree(resource);
+    }
 
-    String newPrLink = context.getResponseEntity()
-      .get("_links")
-      .get("pullRequest")
-      .get("href")
-      .asText();
+    @Test
+    void shouldEnrichRepositoriesWithBranchSupport() {
+      JsonEnricherContext context = new JsonEnricherContext(
+        URI.create("/"),
+        MediaType.valueOf(VndMediaType.REPOSITORY),
+        rootNode
+      );
 
-    assertThat(newPrLink).isEqualTo("/v2/pull-requests/scmadmin/web-resources");
+      when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
+      linkEnricher.enrich(context);
+
+      String newPrLink = context.getResponseEntity()
+        .get("_links")
+        .get("pullRequest")
+        .get("href")
+        .asText();
+
+      assertThat(newPrLink).isEqualTo("/v2/pull-requests/scmadmin/web-resources");
+    }
+
+    @Test
+    void shouldNotEnrichRepositoriesWithoutBranchSupport() {
+      JsonEnricherContext context = new JsonEnricherContext(
+        URI.create("/"),
+        MediaType.valueOf(VndMediaType.REPOSITORY),
+        rootNode
+      );
+
+      when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(false);
+      linkEnricher.enrich(context);
+
+      JsonNode newPrLink = context.getResponseEntity()
+        .get("_links")
+        .get("pullRequest");
+
+      assertThat(newPrLink).isNull();
+    }
+
+    @Test
+    void shouldNotModifyObjectsWithUnsupportedMediaType() {
+      JsonEnricherContext context = new JsonEnricherContext(
+        URI.create("/"),
+        MediaType.valueOf(VndMediaType.USER),
+        rootNode
+      );
+
+      linkEnricher.enrich(context);
+
+      boolean hasNewPullRequestLink = context.getResponseEntity()
+        .get("_links")
+        .has("pullRequest");
+
+      assertThat(hasNewPullRequestLink).isFalse();
+    }
+
+
   }
 
-  @Test
-  public void shouldNotEnrichRepositoriesWithoutBranchSupport() {
-    JsonEnricherContext context = new JsonEnricherContext(
-      URI.create("/"),
-      MediaType.valueOf(VndMediaType.REPOSITORY),
-      rootNode
-    );
+  @Nested
+  class RepositoryCollection {
 
-    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
-    linkEnricher.enrich(context);
+    @BeforeEach
+    void setUpRootNode() throws IOException {
+      URL resource = Resources.getResource("com/cloudogu/scm/review/repository-collection-001.json");
+      rootNode = objectMapper.readTree(resource);
+    }
 
-    String newPrLink = context.getResponseEntity()
-      .get("_links")
-      .get("pullRequest")
-      .asText();
+    @Test
+    void shouldEnrichRepositoryCollection() {
+      JsonEnricherContext context = new JsonEnricherContext(
+        URI.create("/"),
+        MediaType.valueOf(VndMediaType.REPOSITORY_COLLECTION),
+        rootNode
+      );
+      when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
 
-    assertThat(newPrLink).isEqualTo("");
+      linkEnricher.enrich(context);
+
+      boolean hasPullRequestLink = context.getResponseEntity()
+        .get("_embedded")
+        .get("repositories")
+        .get(0)
+        .get("_links")
+        .has("pullRequest");
+
+      assertThat(hasPullRequestLink).isTrue();
+    }
+
+
   }
 
-  @Test
-  public void shouldNotModifyObjectsWithUnsupportedMediaType() {
-    JsonEnricherContext context = new JsonEnricherContext(
-      URI.create("/"),
-      MediaType.valueOf(VndMediaType.USER),
-      rootNode
-    );
-
-    linkEnricher.enrich(context);
-
-    boolean hasNewPullRequestLink = context.getResponseEntity()
-      .get("_links")
-      .has("pullRequest");
-
-    assertThat(hasNewPullRequestLink).isFalse();
-  }
 
 }

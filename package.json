@@ -15,10 +15,10 @@
     "@scm-manager/ui-types": "latest"
   },
   "devDependencies": {
-    "@scm-manager/ui-bundler": "^0.0.23",
-    "jest": "^23.6.0",
-    "react-router-dom": "^4.3.1",
+    "@scm-manager/ui-bundler": "^0.0.24",
     "fetch-mock": "^6.5.0",
-    "node-fetch": "^2.3.0"
+    "jest": "^23.6.0",
+    "node-fetch": "^2.3.0",
+    "react-router-dom": "^4.3.1"
   }
 }

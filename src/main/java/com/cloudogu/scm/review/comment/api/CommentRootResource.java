@@ -3,9 +3,9 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
+import com.google.common.collect.Maps;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -27,6 +27,7 @@ import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.HalRepresentations.createCollection;
@@ -41,8 +42,8 @@ public class CommentRootResource {
 
 
   @Inject
-  public CommentRootResource( RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider) {
-    this.mapper = new PullRequestCommentMapperImpl();
+  public CommentRootResource(PullRequestCommentMapper mapper, RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider) {
+    this.mapper = mapper;
     this.repositoryResolver = repositoryResolver;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
@@ -66,7 +67,7 @@ public class CommentRootResource {
     pullRequestCommentDto.setDate(Instant.now());
     pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
 
-    int id = service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
+    String id = service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
     URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(id)).build();
     return Response.created(location).build();
   }
@@ -82,9 +83,21 @@ public class CommentRootResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     RepositoryPermissions.read(repository).check();
     List<PullRequestComment> list = service.getAll(namespace, name, pullRequestId);
-    List<PullRequestCommentDto> dtoList = list.stream()
-      .map(pr -> mapper.map(pr,uriInfo.getAbsolutePathBuilder().path(String.valueOf(pr.getId())).build()))
+    List<PullRequestCommentDto> dtoList = list
+      .stream()
+      .map(pr -> {
+        URI uri = uriInfo.getAbsolutePathBuilder().path(String.valueOf(pr.getId())).build();
+        Map<String, URI> uriMap = Maps.newHashMap();
+        uriMap.put("self",uri);
+        if (service.modificationsAllowed(pullRequestId,pr.getId(),repository)){
+          uriMap.put("update",uri);
+          uriMap.put("delete",uri);
+        }
+        return mapper.map(pr, uriMap);
+      })
       .collect(Collectors.toList());
-    return Response.ok(createCollection(uriInfo, repository.getId(), dtoList, "pullRequestComments")).build();
+    boolean permission = RepositoryPermissions.read(repository).isPermitted();
+    return Response.ok(createCollection(uriInfo, permission, dtoList, "pullRequestComments")).build();
   }
+
 }

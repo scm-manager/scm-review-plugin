@@ -1,8 +1,8 @@
 //@flow
-import type {PullRequest} from "./types/PullRequest";
+import type {BasicComment, BasicPullRequest, PullRequest} from "./types/PullRequest";
 import {apiClient, CONFLICT_ERROR} from "@scm-manager/ui-components";
 
-export function createPullRequest(url: string, pullRequest: PullRequest) {
+export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
     .post(url, pullRequest)
     .then(response => {
@@ -13,7 +13,7 @@ export function createPullRequest(url: string, pullRequest: PullRequest) {
     });
 };
 
-export function createPullRequestComment(url: string, comment: Comment) {
+export function createPullRequestComment(url: string, comment: BasicComment) {
   return apiClient
     .post(url, comment)
     .then(response => {
@@ -23,6 +23,20 @@ export function createPullRequestComment(url: string, comment: Comment) {
       return { error: err };
     });
 };
+
+export function updatePullRequestComment(url: string, comment: BasicComment) {
+  return apiClient
+    .put(url, comment)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(
+        `could not update pull request comment: ${cause.message}`
+      );
+      return { error: error };
+    });
+}
 
 export function getBranches(url: string) {
   return apiClient
@@ -110,7 +124,15 @@ export function deletePullRequestComment(url: string){
 };
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {
-  const link = repository._links.incomingChangesets;
+  return createIncomingUrl(repository, "incomingChangesets", source, target);
+}
+
+export function createDiffUrl(repository: Repository, source: string, target: string) {
+  return createIncomingUrl(repository, "incomingDiff", source, target);
+}
+
+function createIncomingUrl(repository: Repository, linkName: string, source: string, target: string) {
+  const link = repository._links[linkName];
   if (link && link.templated) {
     return link.href.replace("{source}", encodeURIComponent(source)).replace("{target}", encodeURIComponent(target));
   }

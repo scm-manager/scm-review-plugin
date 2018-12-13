@@ -3,8 +3,11 @@ package com.cloudogu.scm.review.comment.service;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.Lists;
+import org.apache.shiro.SecurityUtils;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -25,6 +28,25 @@ public class CommentService {
   }
 
   /**
+   * A User can modify a comment if he is the author or he has a push permission
+   *
+   * @param pullRequestId
+   * @param commentId
+   * @param repository
+   * @return true if the user can update/delete a comment
+   */
+  public boolean modificationsAllowed(String pullRequestId, String commentId, Repository repository) {
+    return modificationsAllowed(repository, this.get(repository.getNamespace(), repository.getName(), pullRequestId, commentId));
+  }
+
+  public boolean modificationsAllowed(Repository repository, PullRequestComment requestComment ) {
+    String currentUser = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
+
+    return currentUser.equals(requestComment.getAuthor())
+      || RepositoryPermissions.push(repository).isPermitted();
+  }
+
+  /**
    * Add a Comment to the PullRequest with id <code>pullRequestId</code>
    *
    * @param namespace
@@ -33,7 +55,7 @@ public class CommentService {
    * @param pullRequestComment
    * @return the id of the created pullRequestComment
    */
-  public int add(String namespace, String name, String pullRequestId, PullRequestComment pullRequestComment) {
+  public String add(String namespace, String name, String pullRequestId, PullRequestComment pullRequestComment) {
     return getCommentStore(namespace, name).add(pullRequestId, pullRequestComment);
   }
 
@@ -48,12 +70,12 @@ public class CommentService {
     }
   }
 
-  public PullRequestComment get(String namespace, String name, String pullRequestId, int commentId) {
+  public PullRequestComment get(String namespace, String name, String pullRequestId, String commentId) {
     return Optional.ofNullable(getCommentStore(namespace, name).get(pullRequestId))
       .map(PullRequestComments::getComments)
       .orElse(Lists.newArrayList())
       .stream()
-      .filter(c -> c.getId() == commentId)
+      .filter(c -> c.getId().equals(commentId))
       .findFirst()
       .orElseThrow(() -> notFound(entity(PullRequestComment.class, String.valueOf(commentId))
         .in(PullRequest.class, pullRequestId)
@@ -61,11 +83,17 @@ public class CommentService {
   }
 
 
-  public void delete(String namespace, String name, String pullRequestId, int commentId) {
+  public void delete(String namespace, String name, String pullRequestId, String commentId) {
     getCommentStore(namespace, name).delete(pullRequestId, commentId);
+  }
+
+  public void update(String namespace, String name, String pullRequestId, String commentId, String newComment) {
+    getCommentStore(namespace, name).update(pullRequestId, commentId, newComment);
+
   }
 
   private CommentStore getCommentStore(String namespace, String name) {
     return storeFactory.create(repositoryResolver.resolve(new NamespaceAndName(namespace, name)));
   }
+
 }

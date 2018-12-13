@@ -6,6 +6,18 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfo;
 
+
+/**
+ * This class provide resource Links
+ *
+ *
+ * suppress squid:S1192 (String literals should not be duplicated)
+ * because the strings are here method names and it is easier to read that:
+ * method("getPullRequestResource").parameters().method("get") instead of that:
+ * method(GET_PULL_REQUEST_RESOURCE).parameters().method(GET)
+ *
+ * @author Mohamed Karray
+ */
 @SuppressWarnings("squid:S1192")
 public class PullRequestResourceLinks {
 

@@ -2,12 +2,12 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.inject.util.Providers;
@@ -29,12 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.Instant;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -78,105 +76,19 @@ public class CommentResourceTest {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
-    val pullRequestRootResource = new PullRequestRootResource(null,
-      Providers.of(new PullRequestResource(null,
-        Providers.of(new CommentRootResource(repositoryResolver, service, Providers.of(resource))))));
+    val pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
+      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
+        Providers.of(new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, Providers.of(resource))))));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
-  public void shouldGetComment() throws URISyntaxException, IOException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    MockHttpRequest request =
-      MockHttpRequest
-        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
-        .contentType(MediaType.APPLICATION_JSON);
-
-    dispatcher.invoke(request, response);
-
-    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    assertThat(jsonNode.get("comment").asText()).isEqualTo("1. comment");
-    assertThat(jsonNode.get("author").asText()).isEqualTo("author");
-  }
-
-  @Test
-  @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPRComment() throws URISyntaxException, IOException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    MockHttpRequest request =
-      MockHttpRequest
-        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
-        .contentType(MediaType.APPLICATION_JSON);
-
-
-    dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
-  }
-
-
-  @Test
-  @SubjectAware(username = "slarti", password = "secret")
-  public void shouldGetAllLinksÍfTheAuthorIsTheCurrentUser() throws URISyntaxException, IOException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "slarti", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    MockHttpRequest request =
-      MockHttpRequest
-        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
-        .contentType(MediaType.APPLICATION_JSON);
-
-    dispatcher.invoke(request, response);
-
-    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    assertThat(jsonNode.get("comment").asText()).isEqualTo("1. comment");
-    assertThat(jsonNode.get("author").asText()).isEqualTo("slarti");
-
-    assertThat(jsonNode.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-
-    assertThat(jsonNode.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-
-    assertThat(jsonNode.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-  }
-
-
-  @Test
-  @SubjectAware(username = "slarti", password = "secret")
-  public void shouldGetOnlyTheSelfLinkÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    MockHttpRequest request =
-      MockHttpRequest
-        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
-        .contentType(MediaType.APPLICATION_JSON);
-
-    dispatcher.invoke(request, response);
-
-    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    assertThat(jsonNode.get("comment").asText()).isEqualTo("1. comment");
-    assertThat(jsonNode.get("author").asText()).isEqualTo("author");
-
-    assertThat(jsonNode.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-
-    assertThat(jsonNode.get("_links").get("update")).isNull();
-
-    assertThat(jsonNode.get("_links").get("delete")).isNull();
-  }
-
-
-  @Test
-  @SubjectAware(username = "slarti", password = "secret")
   public void shouldDeleteCommentÍfTheAuthorIsTheCurrentUser() throws URISyntaxException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "slarti", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", 1);
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", Instant.now());
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    when(service.modificationsAllowed(eq("1"), eq("1"), any())).thenReturn(true);
+    doNothing().when(service).delete("space", "name", "1", "1");
     MockHttpRequest request =
       MockHttpRequest
         .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
@@ -190,9 +102,10 @@ public class CommentResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldDeleteCommentÍfTheCurrentUserIsDifferentWithAuthorButHasPushPermission() throws URISyntaxException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", 1);
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    when(service.modificationsAllowed( eq("1"), eq("1"), any())).thenReturn(true);
+    doNothing().when(service).delete("space", "name", "1", "1");
     MockHttpRequest request =
       MockHttpRequest
         .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
@@ -205,10 +118,10 @@ public class CommentResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnDeletePRComment() throws URISyntaxException, IOException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "slarti", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", 1);
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnDeletePRComment() throws URISyntaxException{
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", Instant.now());
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    doNothing().when(service).delete("space", "name", "1", "1");
     MockHttpRequest request =
       MockHttpRequest
         .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
@@ -222,9 +135,9 @@ public class CommentResourceTest {
   @Test
   @SubjectAware(username = "rr", password = "secret")
   public void shouldForbiddenDeleteÍfTheAuthorIsNotTheCurrentUserAndThePushPermissionIsMissed() throws URISyntaxException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", 1);
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    doNothing().when(service).delete("space", "name", "1", "1");
     MockHttpRequest request =
       MockHttpRequest
         .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
@@ -238,16 +151,16 @@ public class CommentResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldUpdateCommentÍfTheAuthorIsTheCurrentUser() throws URISyntaxException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "slarti", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-
-    doNothing().when(service).delete("space", "name", "1", 1);
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", Instant.now());
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    when(service.modificationsAllowed(any(), any())).thenReturn(true);
+    doNothing().when(service).delete("space", "name", "1", "1");
     String newComment = "haha ";
     when(service.add(eq("space"), eq("name"), eq("1"),
       argThat(t -> t.getAuthor().equals("slarti")
         && t.getDate() != null
         && t.getComment().equals(newComment)
-      ))).thenReturn(1);
+      ))).thenReturn("1");
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
     MockHttpRequest request =
       MockHttpRequest
@@ -263,16 +176,16 @@ public class CommentResourceTest {
  @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldUpdateCommentIfTheCurrentUserIsDifferentWithAuthorButHasPushPermission() throws URISyntaxException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-
-    doNothing().when(service).delete("space", "name", "1", 1);
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    when(service.modificationsAllowed(any(), any())).thenReturn(true);
+    doNothing().when(service).delete("space", "name", "1", "1");
     String newComment = "haha ";
     when(service.add(eq("space"), eq("name"), eq("1"),
       argThat(t -> t.getAuthor().equals("slarti")
         && t.getDate() != null
         && t.getComment().equals(newComment)
-      ))).thenReturn(1);
+      ))).thenReturn("1");
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
     MockHttpRequest request =
       MockHttpRequest
@@ -288,15 +201,15 @@ public class CommentResourceTest {
   @Test
   @SubjectAware(username = "rr", password = "secret")
   public void shouldForbiddenUpdateIfTheAuthorIsNotTheCurrentUserAndThePushPermissionIsMissed() throws URISyntaxException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", 1);
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    doNothing().when(service).delete("space", "name", "1", "1");
     String newComment = "haha ";
     when(service.add(eq("space"), eq("name"), eq("1"),
       argThat(t -> t.getAuthor().equals("author")
         && t.getDate() != null
         && t.getComment().equals(newComment)
-      ))).thenReturn(1);
+      ))).thenReturn("1");
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
     MockHttpRequest request =
       MockHttpRequest
@@ -311,16 +224,16 @@ public class CommentResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnUpdatePRComment() throws URISyntaxException, IOException {
-    PullRequestComment comment = new PullRequestComment(1, "1. comment", "author", Instant.now());
-    when(service.get("space", "name", "1", 1)).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", 1);
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnUpdatePRComment() throws URISyntaxException {
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    doNothing().when(service).delete("space", "name", "1", "1");
     String newComment = "haha ";
     when(service.add(eq("space"), eq("name"), eq("1"),
       argThat(t -> t.getAuthor().equals("author")
         && t.getDate() != null
         && t.getComment().equals(newComment)
-      ))).thenReturn(1);
+      ))).thenReturn("1");
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
     MockHttpRequest request =
       MockHttpRequest
