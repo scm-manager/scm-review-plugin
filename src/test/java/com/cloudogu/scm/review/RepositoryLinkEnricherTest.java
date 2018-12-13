@@ -80,15 +80,14 @@ public class RepositoryLinkEnricherTest {
       rootNode
     );
 
-    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
+    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(false);
     linkEnricher.enrich(context);
 
-    String newPrLink = context.getResponseEntity()
+    JsonNode newPrLink = context.getResponseEntity()
       .get("_links")
-      .get("pullRequest")
-      .asText();
+      .get("pullRequest");
 
-    assertThat(newPrLink).isEqualTo("");
+    assertThat(newPrLink).isNull();
   }
 
   @Test
