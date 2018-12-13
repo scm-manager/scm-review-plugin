@@ -35,7 +35,7 @@
         "button-title": "Reject Pull Request",
         "confirm-alert": {
           "title": "Reject Pull Request",
-          "message": "Do you really want to reject this pull request?",
+          "message": "Do you really want to reject this Pull Request?",
           "submit": "Yes",
           "cancel": "No"
         }
