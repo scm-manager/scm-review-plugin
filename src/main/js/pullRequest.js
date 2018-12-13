@@ -137,7 +137,15 @@ export function deletePullRequestComment(url: string){
 };
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {
-  const link = repository._links.incomingChangesets;
+  return createIncomingUrl(repository, "incomingChangesets", source, target);
+}
+
+export function createDiffUrl(repository: Repository, source: string, target: string) {
+  return createIncomingUrl(repository, "incomingDiff", source, target);
+}
+
+function createIncomingUrl(repository: Repository, linkName: string, source: string, target: string) {
+  const link = repository._links[linkName];
   if (link && link.templated) {
     return link.href.replace("{source}", encodeURIComponent(source)).replace("{target}", encodeURIComponent(target));
   }
