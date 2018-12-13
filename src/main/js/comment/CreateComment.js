@@ -1,7 +1,7 @@
 // @flow
 import React from "react";
 import {Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
-import type {BasicComment, PullRequest} from "../types/PullRequest";
+import type {BasicComment} from "../types/PullRequest";
 import {translate} from "react-i18next";
 import {createPullRequestComment} from "../pullRequest";
 
@@ -21,7 +21,6 @@ class CreateComment extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      newComment: null,
       loading: false
     };
   }
@@ -39,6 +38,10 @@ class CreateComment extends React.Component<Props, State> {
 
   submit = () => {
     const {newComment} = this.state;
+    if (!newComment) {
+      return;
+    }
+
     const {url, refresh, handleError} = this.props;
     this.setState({loading: true});
 
@@ -56,9 +59,14 @@ class CreateComment extends React.Component<Props, State> {
     );
   };
 
+  isValid() {
+    const {newComment} = this.state;
+    return !newComment || (newComment && newComment.comment &&  newComment.comment.trim() == "");
+  }
+
   render() {
     const {t, url} = this.props;
-    const {loading, newComment} = this.state;
+    const { loading } = this.state;
 
     if (loading) {
       return <Loading/>;
@@ -82,7 +90,7 @@ class CreateComment extends React.Component<Props, State> {
                   <SubmitButton
                     label={t("scm-review-plugin.comment.add")}
                     action={this.submit}
-                    disabled={!newComment || (newComment && newComment.comment &&  newComment.comment.trim() == "")}
+                    disabled={this.isValid()}
                     loading={loading}
                   />
                 </p>

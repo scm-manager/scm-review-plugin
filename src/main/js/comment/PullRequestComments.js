@@ -20,14 +20,13 @@ class PullRequestComments extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      pullRequestComments: null,
       loading: true
     };
   }
 
   componentDidMount(): void {
     const {pullRequest} = this.props;
-    if (pullRequest && pullRequest._links && pullRequest._links.comments  ) {
+    if (pullRequest && pullRequest._links && pullRequest._links.comments) {
       this.updatePullRequestComments();
     }else{
       this.setState({
