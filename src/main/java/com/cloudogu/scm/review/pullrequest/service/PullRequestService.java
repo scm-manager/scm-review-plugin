@@ -55,4 +55,5 @@ public interface PullRequestService {
    * @return the repository with the given name and namespace
    */
   Repository getRepository(String namespace, String name);
+  void reject(Repository repository, PullRequest pullRequest);
 }
