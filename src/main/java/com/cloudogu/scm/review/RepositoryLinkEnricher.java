@@ -10,18 +10,13 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.web.JsonEnricherBase;
-import sonia.scm.web.JsonEnricherContext;
+import sonia.scm.web.AbstractRepositoryJsonEnricher;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import static java.util.Collections.singletonMap;
-import static sonia.scm.web.VndMediaType.REPOSITORY;
-import static sonia.scm.web.VndMediaType.REPOSITORY_COLLECTION;
-
 @Extension
-public class RepositoryLinkEnricher extends JsonEnricherBase {
+public class RepositoryLinkEnricher extends AbstractRepositoryJsonEnricher {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
   private final RepositoryServiceFactory serviceFactory;
@@ -34,33 +29,13 @@ public class RepositoryLinkEnricher extends JsonEnricherBase {
   }
 
   @Override
-  public void enrich(JsonEnricherContext context) {
-    if (resultHasMediaType(REPOSITORY, context)) {
-      JsonNode repositoryNode = context.getResponseEntity();
-      enrichRepository(repositoryNode);
-    } else if (resultHasMediaType(REPOSITORY_COLLECTION, context)) {
-      JsonNode collectionNode = context.getResponseEntity();
-      JsonNode embedded = collectionNode.get("_embedded");
-      JsonNode repositories = embedded.get("repositories");
-      for (JsonNode repositoryNode : repositories) {
-        enrichRepository(repositoryNode);
-      }
-    }
-  }
-
-  private void enrichRepository(JsonNode repositoryNode) {
-    String namespace = repositoryNode.get("namespace").asText();
-    String name = repositoryNode.get("name").asText();
-
+  protected void enrichRepositoryNode(JsonNode repositoryNode, String namespace, String name) {
     if (repositorySupportsReviews(namespace, name)) {
       String newPullRequest = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class)
         .method("create")
         .parameters(namespace, name)
         .href();
-
-      JsonNode newPullRequestNode = createObject(singletonMap("href", value(newPullRequest)));
-
-      addPropertyNode(repositoryNode.get("_links"), "pullRequest", newPullRequestNode);
+      addLink(repositoryNode, "pullRequest", newPullRequest);
     }
   }
 
