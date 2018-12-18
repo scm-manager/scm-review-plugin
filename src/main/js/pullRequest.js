@@ -16,6 +16,20 @@ export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
     });
 };
 
+export function updatePullRequest(url: string, pullRequest: PullRequest) {
+  return apiClient
+    .put(url, pullRequest)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(
+        `could not update pull request: ${cause.message}`
+      );
+      return { error: error };
+    });
+};
+
 export function createPullRequestComment(url: string, comment: BasicComment) {
   return apiClient
     .post(url, comment)

@@ -5,6 +5,11 @@
       "subtitle": "Creates a new Pull Request for ",
       "submitButton": "Submit"
     },
+    "edit": {
+      "title": "Pull Request",
+      "subtitle": "Edit Pull Request for ",
+      "submitButton": "Save"
+    },
     "pull-request":{
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",

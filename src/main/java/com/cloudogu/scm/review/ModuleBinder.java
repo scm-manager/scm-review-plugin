@@ -2,6 +2,7 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
+import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.inject.AbstractModule;
 import org.mapstruct.factory.Mappers;
@@ -14,6 +15,6 @@ public class ModuleBinder extends AbstractModule {
   protected void configure() {
     bind(PullRequestMapper.class).to(Mappers.getMapper(PullRequestMapper.class).getClass());
     bind(PullRequestCommentMapper.class).to(Mappers.getMapper(PullRequestCommentMapper.class).getClass());
-    bind(PullRequestService.class).to(Mappers.getMapper(PullRequestService.class).getClass());
+    bind(PullRequestService.class).to(DefaultPullRequestService.class);
   }
 }
