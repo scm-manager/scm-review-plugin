@@ -3,6 +3,8 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
+import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
@@ -14,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -70,6 +73,15 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     RepositoryPermissions.push(repository).check();
     service.update(namespace, name, pullRequestId, pullRequestDto.getTitle(), pullRequestDto.getDescription());
+    return Response.noContent().build();
+  }
+
+
+  @POST
+  @Path("reject")
+  public Response reject(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+    PullRequest pullRequest = service.get(namespace, name, pullRequestId);
+    service.reject(service.getRepository(namespace, name), pullRequest);
     return Response.noContent().build();
   }
 }

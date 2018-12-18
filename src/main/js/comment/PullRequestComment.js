@@ -132,13 +132,8 @@ class PullRequestComment extends React.Component<Props, State> {
     });
   };
 
-  render() {
-    const {t, comment} = this.props;
-    const {loading, edit, updatedComment} = this.state;
-
-    if (loading ) {
-      return <Loading/>;
-    }
+  createEditIcons = () => {
+    const { comment } = this.props;
     const deleteIcon = comment._links.delete ? (
       <a className="level-item"
          onClick={this.confirmDelete}
@@ -159,14 +154,21 @@ class PullRequestComment extends React.Component<Props, State> {
       </a>
     ) : "";
 
-    const icons = (
-      <div className="level-left">
-        {deleteIcon}
-        {editIcon}
+    return (
+      <div className="media-right">
+        <div className="level-right">
+          {deleteIcon}
+          {editIcon}
+        </div>
       </div>
     );
+  };
 
-    const saveCancel = (
+  createEditButtons = () => {
+    const { t } = this.props;
+    const { updatedComment } = this.state;
+
+    return (
       <div className="level-left">
         <div className="level-item">
           <SubmitButton
@@ -183,21 +185,44 @@ class PullRequestComment extends React.Component<Props, State> {
         </div>
       </div>
     );
+  };
 
-    const displayMessage = comment.comment.split("\n").map((line) => {
+  createDisplayMessage = () => {
+    const { comment } = this.props;
+    return comment.comment.split("\n").map((line) => {
       return <span>{line}<br/></span>;
     });
+  };
 
-    const editMessage = (
+  createMessageEditor = () => {
+    const { updatedComment } = this.state;
+    return (
       <Textarea
         name="comment"
         value={updatedComment}
         onChange={this.handleUpdateChange}
       />
     );
+  };
 
-    const message = edit ? editMessage : displayMessage;
-    const controlPanel = edit ? saveCancel : icons;
+  render() {
+    const {comment} = this.props;
+    const {loading, edit} = this.state;
+
+    if (loading ) {
+      return <Loading/>;
+    }
+
+    let icons = null;
+    let editButtons = null;
+    let message = null;
+    if (edit) {
+      message = this.createMessageEditor();
+      editButtons = this.createEditButtons();
+    } else {
+      message = this.createDisplayMessage();
+      icons = this.createEditIcons();
+    }
 
     return (
       <>
@@ -210,11 +235,10 @@ class PullRequestComment extends React.Component<Props, State> {
                 <br/>
                 {message}
               </p>
+              {editButtons}
             </div>
-            <nav className="level is-mobile">
-              {controlPanel}
-            </nav>
           </div>
+          {icons}
         </article>
       </>
     );

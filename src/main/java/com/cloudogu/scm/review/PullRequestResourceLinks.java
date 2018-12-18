@@ -51,6 +51,13 @@ public class PullRequestResourceLinks {
         .method("update").parameters(namespace, name, pullRequestId)
         .href();
     }
+
+    public String reject(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("reject").parameters(namespace, name, pullRequestId)
+        .href();
+    }
   }
 
   public PullRequestCommentsLinks pullRequestComments() {

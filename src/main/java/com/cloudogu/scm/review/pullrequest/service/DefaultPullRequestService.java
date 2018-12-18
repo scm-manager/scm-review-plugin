@@ -2,9 +2,11 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.google.inject.Inject;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +23,6 @@ public class DefaultPullRequestService implements PullRequestService {
     this.branchResolver = branchResolver;
     this.storeFactory = storeFactory;
   }
-
 
   @Override
   public String add(Repository repository, PullRequest pullRequest) {
@@ -65,6 +66,16 @@ public class DefaultPullRequestService implements PullRequestService {
   @Override
   public Repository getRepository(String namespace, String name) {
     return repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+  }
+
+  @Override
+  public void reject(Repository repository, PullRequest pullRequest) {
+    RepositoryPermissions.push(repository).check();
+    if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
+      this.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
+    } else {
+      throw new StatusChangeNotAllowedException(repository, pullRequest);
+    }
   }
 
   public void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {

@@ -10,17 +10,13 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.web.JsonEnricherBase;
-import sonia.scm.web.JsonEnricherContext;
+import sonia.scm.web.AbstractRepositoryJsonEnricher;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import static java.util.Collections.singletonMap;
-import static sonia.scm.web.VndMediaType.REPOSITORY;
-
 @Extension
-public class RepositoryLinkEnricher extends JsonEnricherBase {
+public class RepositoryLinkEnricher extends AbstractRepositoryJsonEnricher {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
   private final RepositoryServiceFactory serviceFactory;
@@ -33,23 +29,13 @@ public class RepositoryLinkEnricher extends JsonEnricherBase {
   }
 
   @Override
-  public void enrich(JsonEnricherContext context) {
-
-    if (resultHasMediaType(REPOSITORY, context)) {
-      JsonNode repositoryNode = context.getResponseEntity();
-      String namespace = repositoryNode.get("namespace").asText();
-      String name = repositoryNode.get("name").asText();
-
-      if (repositorySupportsReviews(namespace, name)) {
-        String newPullRequest = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class)
-          .method("create")
-          .parameters(namespace, name)
-          .href();
-
-        JsonNode newPullRequestNode = createObject(singletonMap("href", value(newPullRequest)));
-
-        addPropertyNode(repositoryNode.get("_links"), "pullRequest", newPullRequestNode);
-      }
+  protected void enrichRepositoryNode(JsonNode repositoryNode, String namespace, String name) {
+    if (repositorySupportsReviews(namespace, name)) {
+      String newPullRequest = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class)
+        .method("create")
+        .parameters(namespace, name)
+        .href();
+      addLink(repositoryNode, "pullRequest", newPullRequest);
     }
   }
 

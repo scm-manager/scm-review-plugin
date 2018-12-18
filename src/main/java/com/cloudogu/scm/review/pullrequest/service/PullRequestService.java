@@ -68,4 +68,5 @@ public interface PullRequestService {
    */
   void update(String namespace, String name, String pullRequestId, String title, String description);
 
+  void reject(Repository repository, PullRequest pullRequest);
 }
