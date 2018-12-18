@@ -7,7 +7,7 @@
     },
     "edit": {
       "title": "Pull Request",
-      "subtitle": "Edit Pull Request for ",
+      "subtitle": "Edit pull request for ",
       "submitButton": "Save"
     },
     "diff": {
