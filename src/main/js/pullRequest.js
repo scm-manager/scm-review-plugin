@@ -19,11 +19,8 @@ export function updatePullRequest(url: string, pullRequest: PullRequest) {
     .then(response => {
       return response;
     })
-    .catch(cause => {
-      const error = new Error(
-        `could not update pull request: ${cause.message}`
-      );
-      return { error: error };
+    .catch(err => {
+      return { error: err };
     });
 };
 
