@@ -2,12 +2,12 @@
   "scm-review-plugin": {
     "create": {
       "title": "Pull Request",
-      "subtitle": "Creates a new pull request for ",
+      "subtitle": "Creates a new pull request for {{repositoryName}}",
       "submitButton": "Submit"
     },
     "edit": {
       "title": "Pull Request",
-      "subtitle": "Edit pull request for ",
+      "subtitle": "Edit pull request for {{repositoryName}}",
       "submitButton": "Save"
     },
     "diff": {

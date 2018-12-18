@@ -60,11 +60,6 @@ public interface PullRequestService {
    * Update the title and the description of the pull request with id <code>pullRequestId</code>
    * the modified Date will be set to now.
    *
-   * @param namespace
-   * @param name
-   * @param pullRequestId
-   * @param title
-   * @param description
    */
   void update(String namespace, String name, String pullRequestId, String title, String description);
 

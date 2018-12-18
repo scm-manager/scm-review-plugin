@@ -9,7 +9,7 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import type {PullRequest} from "./types/PullRequest";
 import { updatePullRequest } from "./pullRequest";
-import { translate } from "react-i18next";
+import { translate, Trans } from "react-i18next";
 import type { History } from "history";
 import {withRouter} from "react-router-dom";
 import EditForm from "./EditForm";
@@ -89,12 +89,13 @@ class Edit extends React.Component<Props, State> {
       return <Loading/>;
     }
 
+    let subtitle = (<Trans i18nKey="scm-review-plugin.edit.subtitle"  values={{ repositoryName: repository.name }}  /> );
     return (
       <div className="columns">
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.edit.title")} />
           <Subtitle
-            subtitle={t("scm-review-plugin.edit.subtitle") + repository.name}
+            subtitle={subtitle}
           />
 
           {notification}

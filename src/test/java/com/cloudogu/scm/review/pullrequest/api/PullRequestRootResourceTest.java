@@ -390,7 +390,7 @@ public class PullRequestRootResourceTest {
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
     prNode.elements().forEachRemaining(node -> {
       String actual = node.path("_links").path("update").path("href").asText();
-      assertThat(actual).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText()  );
+      assertThat(actual).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText());
     });
   }
 

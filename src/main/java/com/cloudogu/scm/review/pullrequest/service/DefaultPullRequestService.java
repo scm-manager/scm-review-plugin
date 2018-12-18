@@ -39,7 +39,7 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public PullRequest get(String namespace, String name, String id) {
-    return getStore(getRepository(namespace, name)).get(id);
+    return getStore(namespace, name).get(id);
   }
 
   @Override
