@@ -15,48 +15,11 @@ type Props = {
   t: string => string
 }
 
-type State = {
-  loading: boolean,
-  url?: string
-};
-
-class Diff extends React.Component<Props, State> {
-
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {
-      loading: true
-    };
-  }
-
-  componentDidMount(): void {
-    this.createUrl();
-  }
-
-  componentDidUpdate(prevProps: Props): void {
-    if(prevProps.source !== this.props.source || prevProps.target !== this.props.target || prevProps.repository !== this.props.repository){
-      this.setState({loading: true});
-      this.createUrl();
-    }
-  }
-
-  createUrl(){
-    const {source, target, repository} = this.props;
-    if(source && target && repository){
-      const url = createDiffUrl(repository, source, target);
-      this.setState({url: url, loading: false});
-    }
-  }
+class Diff extends React.Component<Props> {
 
   render() {
-    const { t } = this.props;
-    const {loading, url} = this.state;
-
-    console.log(url);
-    if(loading){
-      return <Loading/>;
-    }
+    const { t, repository, source, target } = this.props;
+    const url = createDiffUrl(repository, source, target);
 
     if (!url) {
       return <Notification type="danger">{t("scm-review-plugin.diff.not-supported")}</Notification>;
