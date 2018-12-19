@@ -1,6 +1,5 @@
 //@flow
 import React from "react";
-
 import {ErrorNotification, Loading} from "@scm-manager/ui-components";
 import { Switch, Route, withRouter } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
@@ -78,7 +77,6 @@ class SinglePullRequest extends React.Component<Props, State> {
     if (!pullRequest || loading) {
       return <Loading />;
     }
-
 
     return (
       <Switch>
