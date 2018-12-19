@@ -23,8 +23,8 @@ class PullRequestRow extends React.Component<Props> {
   }
 
   render() {
-    const { classes, pullRequest } = this.props;
-    const to = `pull-request/${pullRequest.id}/changesets/`;
+    const { pullRequest } = this.props;
+    const to = `pull-request/${pullRequest.id}/comments/`;
     return (
       <tr>
         <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>

@@ -1,0 +1,80 @@
+{
+  "page": 0,
+  "pageTotal": 1,
+  "_links": {
+    "self": {
+      "href": "http://localhost:8081/scm/api/v2/repositories/?page=0&pageSize=10"
+    },
+    "first": {
+      "href": "http://localhost:8081/scm/api/v2/repositories/?page=0&pageSize=10"
+    },
+    "last": {
+      "href": "http://localhost:8081/scm/api/v2/repositories/?page=0&pageSize=10"
+    },
+    "create": {
+      "href": "http://localhost:8081/scm/api/v2/repositories/"
+    }
+  },
+  "_embedded": {
+    "repositories": [
+      {
+        "contact": "",
+        "creationDate": "2018-12-11T12:57:48.661Z",
+        "description": "",
+        "healthCheckFailures": [],
+        "lastModified": "2018-12-11T13:24:06.099Z",
+        "namespace": "scmadmin",
+        "name": "web-resources",
+        "archived": false,
+        "type": "git",
+        "properties": {},
+        "_links": {
+          "self": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin"
+          },
+          "delete": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin"
+          },
+          "update": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin"
+          },
+          "permissions": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/permissions/"
+          },
+          "protocol": [
+            {
+              "href": "http://localhost:8081/scm/repo/scmadmin/scm-review-plugin",
+              "name": "http"
+            }
+          ],
+          "tags": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/tags/"
+          },
+          "branches": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/branches/"
+          },
+          "incomingChangesets": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/incoming/{source}/{target}/changesets",
+            "templated": true
+          },
+          "incomingDiff": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/incoming/{source}/{target}/diff",
+            "templated": true
+          },
+          "merge": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/merge/"
+          },
+          "mergeDryRun": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/merge/dry-run/"
+          },
+          "changesets": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/changesets/"
+          },
+          "sources": {
+            "href": "http://localhost:8081/scm/api/v2/repositories/scmadmin/scm-review-plugin/sources/"
+          }
+        }
+      }
+    ]
+  }
+}
