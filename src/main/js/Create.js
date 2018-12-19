@@ -11,7 +11,7 @@ import CreateForm from "./CreateForm";
 import injectSheet from "react-jss";
 import type { BasicPullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
-import { translate } from "react-i18next";
+import {Trans, translate} from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
 import type { History } from "history";
 import {withRouter} from "react-router-dom";
@@ -99,13 +99,14 @@ class Create extends React.Component<Props, State> {
                               pullRequest={pullRequest}
                               baseURL={match.url}/>;
     }
+    let subtitle = (<Trans i18nKey="scm-review-plugin.create.subtitle"  values={{ repositoryName: repository.name }}  /> );
 
     return (
       <div className="columns">
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.create.title")} />
           <Subtitle
-            subtitle={t("scm-review-plugin.create.subtitle") + repository.name}
+            subtitle={subtitle}
           />
 
           {notification}

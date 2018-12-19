@@ -37,8 +37,10 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @AfterMapping
   protected void appendLinks(@MappingTarget PullRequestDto target, @Context Repository repository) {
-    Links.Builder linksBuilder = linkingTo()
-      .self(pullRequestResourceLinks.pullRequest().self(repository.getNamespace(), repository.getName(), target.getId()));
+    Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest().self(repository.getNamespace(), repository.getName(), target.getId()));
+    if (RepositoryPermissions.push(repository).isPermitted()) {
+      linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest().update(repository.getNamespace(), repository.getName(), target.getId())));
+    }
     if (RepositoryPermissions.read(repository).isPermitted()) {
       linksBuilder.single(link("createComment", pullRequestResourceLinks.pullRequestComments().create(repository.getNamespace(), repository.getName(), target.getId())));
       linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments().all(repository.getNamespace(), repository.getName(), target.getId())));

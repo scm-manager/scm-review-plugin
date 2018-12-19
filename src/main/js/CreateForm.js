@@ -2,14 +2,13 @@
 import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
 import {
-  InputField,
-  Textarea,
   Select,
   ErrorNotification
 } from "@scm-manager/ui-components";
 import type { BasicPullRequest } from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { translate } from "react-i18next";
+import EditForm from "./EditForm";
 
 type Props = {
   repository: Repository,
@@ -111,16 +110,8 @@ class CreateForm extends React.Component<Props, State> {
           </div>
         </div>
 
-        <InputField
-          name="title"
-          label={t("scm-review-plugin.pull-request.title")}
-          onChange={this.handleFormChange}
-        />
-        <Textarea
-          name="description"
-          label={t("scm-review-plugin.pull-request.description")}
-          onChange={this.handleFormChange}
-        />
+        <EditForm description={""} title={""} handleFormChange={this.handleFormChange} />
+
       </form>
     );
   }
