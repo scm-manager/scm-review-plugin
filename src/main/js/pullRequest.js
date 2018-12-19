@@ -13,6 +13,17 @@ export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
     });
 };
 
+export function updatePullRequest(url: string, pullRequest: PullRequest) {
+  return apiClient
+    .put(url, pullRequest)
+    .then(response => {
+      return response;
+    })
+    .catch(err => {
+      return { error: err };
+    });
+};
+
 export function createPullRequestComment(url: string, comment: BasicComment) {
   return apiClient
     .post(url, comment)

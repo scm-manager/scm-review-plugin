@@ -2,8 +2,13 @@
   "scm-review-plugin": {
     "create": {
       "title": "Pull Request",
-      "subtitle": "Creates a new pull request for ",
+      "subtitle": "Creates a new pull request for {{repositoryName}}",
       "submitButton": "Submit"
+    },
+    "edit": {
+      "title": "Pull Request",
+      "subtitle": "Edit pull request for {{repositoryName}}",
+      "submitButton": "Save"
     },
     "diff": {
       "not-supported": "Diffs for pull request are not supported by the type of repository"

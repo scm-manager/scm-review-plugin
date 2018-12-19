@@ -88,6 +88,6 @@ public class CommentResource {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
     service.update(namespace, name, pullRequestId, commentId, pullRequestCommentDto.getComment());
-    return Response.accepted().build();
+    return Response.noContent().build();
   }
 }

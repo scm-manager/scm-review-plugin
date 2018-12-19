@@ -90,6 +90,51 @@ describe("API create pull request", () => {
 });
 
 
+describe("API update pull request", () => {
+  const PULLREQUEST_URL = "/repositories/scmadmin/TestRepo/newPullRequest";
+
+  const pullRequest: PullRequest = {
+    source: "sourceBranch",
+    target: "targetBranch",
+    title: "modified title",
+    destination: "modified description",
+    author: "admin",
+    id: "1",
+    creationDate: "2018-11-28",
+    status: "open",
+    _links: {}
+  };
+
+  afterEach(() => {
+    fetchMock.reset();
+    fetchMock.restore();
+  });
+
+  it("should update pull request successfully", done => {
+    fetchMock.putOnce("/api/v2" + PULLREQUEST_URL, {
+      status: 204
+    });
+
+    updatePullRequestComment(PULLREQUEST_URL, pullRequest).then(response => {
+      expect(response.status).toBe(204);
+      expect(response.error).toBeUndefined();
+      done();
+    });
+  });
+
+  it("should fail on creating pull request", done => {
+    fetchMock.putOnce("/api/v2" + PULLREQUEST_URL, {
+      status: 500
+    });
+
+    updatePullRequestComment(PULLREQUEST_URL, pullRequest).then(response => {
+      expect(response.error).toBeDefined();
+      done();
+    });
+  });
+
+});
+
 describe("API create comment", () => {
   const COMMENTS_URL = "/repositories/scmadmin/TestRepo/newPullRequest/comments";
 
@@ -142,11 +187,11 @@ describe("API update comment", () => {
 
   it("should update comment successfully", done => {
     fetchMock.putOnce("/api/v2" + COMMENTS_URL, {
-      status: 202
+      status: 204
     });
 
     updatePullRequestComment(COMMENTS_URL, comment).then(response => {
-      expect(response.status).toBe(202);
+      expect(response.status).toBe(204);
       expect(response.error).toBeUndefined();
       done();
     });
