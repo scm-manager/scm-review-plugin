@@ -23,7 +23,7 @@ class PullRequestRow extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest } = this.props;
+    const { classes, pullRequest } = this.props;
     const to = `pull-request/${pullRequest.id}/comments/`;
     return (
       <tr>
