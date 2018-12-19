@@ -54,7 +54,7 @@ class PullRequestInformation extends React.Component<Props> {
     let diffTab = null;
     let routes = null;
 
-    if (pullRequest.status === "OPEN") {
+    if (pullRequest.status && pullRequest.status === "OPEN") {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
           <Link to={`${baseURL}/changesets/`}>Commits</Link>

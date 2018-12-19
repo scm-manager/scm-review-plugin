@@ -96,10 +96,8 @@ class Create extends React.Component<Props, State> {
     let information = null;
     if ( pullRequest ) {
       information = <PullRequestInformation repository={repository}
-                              source={pullRequest.source}
-                              target={pullRequest.target}
-                              baseURL={match.url}
-                              status={"OPEN"}/>;
+                              pullRequest={pullRequest}
+                              baseURL={match.url}/>;
     }
 
     return (
