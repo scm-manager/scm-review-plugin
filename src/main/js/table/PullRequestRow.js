@@ -4,14 +4,10 @@ import { Link, withRouter } from "react-router-dom";
 import type { PullRequest } from "./../types/PullRequest";
 import { DateFromNow } from "@scm-manager/ui-components";
 import injectSheet from "react-jss";
+import classNames from "classnames";
 
 const styles = {
-  wordBreakColumn: {
-    WebkitHyphens: "auto",
-    MozHyphens: "auto",
-    MsHyphens: "auto",
-    hypens: "auto",
-    wordBreak: "break-all",
+  wordBreakMinWidth: {
     minWidth: "10em"
   }
 };
@@ -31,11 +27,15 @@ class PullRequestRow extends React.Component<Props> {
     const to = `pull-request/${pullRequest.id}/changesets/`;
     return (
       <tr>
-        <td className={classes.wordBreakColumn}>
+        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
           {this.renderLink(to, pullRequest.title)}
         </td>
-        <td className={classes.wordBreakColumn}>{pullRequest.source}</td>
-        <td className={classes.wordBreakColumn}>{pullRequest.target}</td>
+        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
+          {pullRequest.source}
+        </td>
+        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
+          {pullRequest.target}
+        </td>
         <td className="is-hidden-mobile">
           {pullRequest.author ? pullRequest.author : ""}
         </td>
