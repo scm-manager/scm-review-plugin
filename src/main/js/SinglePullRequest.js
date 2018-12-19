@@ -1,19 +1,20 @@
 //@flow
 import React from "react";
 import {
-  Title,
-  Loading,
-  ErrorPage,
   DateFromNow,
-  Notification
+  ErrorPage,
+  Loading,
+  Notification,
+  Title
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
-import { getPullRequest, merge } from "./pullRequest";
+import { getPullRequest, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
+import RejectButton from "./RejectButton";
 import injectSheet from "react-jss";
 import classNames from "classnames";
 
@@ -36,6 +37,7 @@ type State = {
   loading: boolean,
   mergePossible?: boolean,
   mergeButtonLoading: boolean,
+  rejectButtonLoading: boolean,
   showNotification: boolean
 };
 
@@ -46,15 +48,16 @@ class SinglePullRequest extends React.Component<Props, State> {
       loading: true,
       pullRequest: null,
       mergeButtonLoading: true,
+      rejectButtonLoading: false,
       showNotification: false
     };
   }
 
   componentDidMount(): void {
-    this.fetchPullRequest(false);
+    this.fetchPullRequest(true, false);
   }
 
-  fetchPullRequest(mergedPerformed: boolean) {
+  fetchPullRequest(doDryRun: boolean, mergePerformed: boolean) {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
     const url = repository._links.pullRequest.href + "/" + pullRequestNumber;
@@ -69,11 +72,12 @@ class SinglePullRequest extends React.Component<Props, State> {
           pullRequest: response,
           loading: false
         });
-        if (mergedPerformed) {
+        if (mergePerformed) {
           this.setState({
             showNotification: true
           });
-        } else {
+        }
+        if (doDryRun) {
           this.getMergeDryRun(response);
         }
       }
@@ -82,15 +86,19 @@ class SinglePullRequest extends React.Component<Props, State> {
 
   getMergeDryRun(pullRequest: PullRequest) {
     const { repository } = this.props;
-    merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
-      if (response.conflict) {
-        this.setState({ mergeButtonLoading: false, mergePossible: false });
-      } else if (response.error) {
-        this.setState({ error: true, mergeButtonLoading: false });
-      } else {
-        this.setState({ mergePossible: true, mergeButtonLoading: false });
-      }
-    });
+    if (repository._links.mergeDryRun && repository._links.mergeDryRun.href) {
+      merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
+        if (response.conflict) {
+          this.setState({ mergeButtonLoading: false, mergePossible: false });
+        } else if (response.error) {
+          this.setState({ error: true, mergeButtonLoading: false });
+        } else {
+          this.setState({ mergePossible: true, mergeButtonLoading: false });
+        }
+      });
+    } else {
+      // TODO: what to do if the link doas not exists?
+    }
   }
 
   performMerge = () => {
@@ -107,9 +115,25 @@ class SinglePullRequest extends React.Component<Props, State> {
         });
       } else {
         this.setState({ loading: true, mergeButtonLoading: false });
-        this.fetchPullRequest(true);
+        this.fetchPullRequest(false, true);
       }
     });
+  };
+
+  performReject = () => {
+    this.setState({ rejectButtonLoading: true });
+    const { pullRequest } = this.state;
+    reject(pullRequest)
+      .then(() => {
+        this.setState({ rejectButtonLoading: false });
+        this.fetchPullRequest(false, false);
+      })
+      .catch(cause =>
+        this.setState({
+          error: new Error(`could not reject request: ${cause.message}`),
+          rejectButtonLoading: false
+        })
+      );
   };
 
   setMergeButtonLoadingState = () => {
@@ -134,6 +158,7 @@ class SinglePullRequest extends React.Component<Props, State> {
       loading,
       mergeButtonLoading,
       mergePossible,
+      rejectButtonLoading,
       showNotification
     } = this.state;
     let description = null;
@@ -180,7 +205,14 @@ class SinglePullRequest extends React.Component<Props, State> {
     }
 
     let mergeButton = null;
-    if (repository._links.merge.href) {
+    let rejectButton = null;
+    if (pullRequest._links.reject) {
+      rejectButton = (
+        <RejectButton
+          reject={() => this.performReject()}
+          loading={rejectButtonLoading}
+        />
+      );
       mergeButton = (
         <MergeButton
           merge={() => this.performMerge()}
@@ -194,7 +226,7 @@ class SinglePullRequest extends React.Component<Props, State> {
 
     return (
       <div className="columns">
-        <div className="column">
+        <div className="column is-clipped">
           <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
 
           {mergeNotification}
@@ -223,13 +255,13 @@ class SinglePullRequest extends React.Component<Props, State> {
             </div>
           </div>
 
+          {rejectButton}
           {mergeButton}
+
           <PullRequestInformation
+            pullRequest={pullRequest}
             baseURL={match.url}
             repository={repository}
-            source={pullRequest.source}
-            target={pullRequest.target}
-            status={pullRequest.status}
           />
         </div>
       </div>

@@ -5,13 +5,13 @@ import { translate } from "react-i18next";
 import Changesets from "./Changesets";
 import { Route, Link, withRouter } from "react-router-dom";
 import Diff from "./Diff";
+import PullRequestComments from "./comment/PullRequestComments";
+import type {PullRequest} from "./types/PullRequest";
 
 type Props = {
   repository: Repository,
-  source: string,
-  target: string,
+  pullRequest : PullRequest,
   baseURL: string,
-  status: string,
 
   // context props
   location: any,
@@ -48,13 +48,13 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { repository, source, target, baseURL, status } = this.props;
+    const { pullRequest, repository, baseURL } = this.props;
 
     let changesetTab = null;
     let diffTab = null;
     let routes = null;
 
-    if (status === "OPEN") {
+    if (pullRequest.status === "OPEN") {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
           <Link to={`${baseURL}/changesets/`}>Commits</Link>
@@ -72,8 +72,8 @@ class PullRequestInformation extends React.Component<Props> {
             render={() => (
               <Changesets
                 repository={repository}
-                source={source}
-                target={target}
+                source={pullRequest.source}
+                target={pullRequest.target}
               />
             )}
             exact
@@ -83,8 +83,8 @@ class PullRequestInformation extends React.Component<Props> {
             render={() => (
               <Changesets
                 repository={repository}
-                source={source}
-                target={target}
+                source={pullRequest.source}
+                target={pullRequest.target}
               />
             )}
             exact
@@ -92,22 +92,34 @@ class PullRequestInformation extends React.Component<Props> {
           <Route
             path={`${baseURL}/diff`}
             render={() => (
-              <Diff repository={repository} source={source} target={target} />
+              <Diff repository={repository} source={pullRequest.source} target={pullRequest.target} />
             )}
           />
         </>
       );
     }
 
+    let commentTab = pullRequest? (
+      <li className={ this.navigationClass("comments") }>
+        <Link to={`${baseURL}/comments/`}>Comments</Link>
+      </li>
+    ) : "";
+
     return (
       <>
         <div className="tabs">
           <ul>
+            {commentTab}
             {changesetTab}
             {diffTab}
           </ul>
         </div>
         {routes}
+        <Route
+          path={`${baseURL}/comments`}
+          render={() => <PullRequestComments pullRequest={pullRequest}/>}
+          exact
+        />
       </>
     );
   }

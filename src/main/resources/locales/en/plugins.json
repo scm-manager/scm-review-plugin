@@ -2,7 +2,7 @@
   "scm-review-plugin": {
     "create": {
       "title": "Pull Request",
-      "subtitle": "Creates a new Pull Request for ",
+      "subtitle": "Creates a new pull request for ",
       "submitButton": "Submit"
     },
     "diff": {
@@ -20,24 +20,52 @@
     },
     "show-pull-request": {
       "error-title": "Error",
-      "error-subtitle": "Unknown pull-request error",
+      "error-subtitle": "Unknown pull request error",
       "mergeButton": {
-        "button-title": "Merge Pull Request",
+        "button-title": "Merge pull request",
         "confirm-alert": {
-          "title": "Merge Pull Request",
+          "title": "Merge pull request",
           "message": "Do you really want to merge?",
           "submit": "Yes",
           "cancel": "No"
         },
         "merge-information": "Cannot be merged automatically"
       },
-      "notification": "Pull Request is merged successfully!"
+      "rejectButton": {
+        "button-title": "Reject pull request",
+        "confirm-alert": {
+          "title": "Reject pull request",
+          "message": "Do you really want to reject this pull request?",
+          "submit": "Yes",
+          "cancel": "No"
+        }
+      },
+      "notification": "Pull request merged successfully!"
     },
     "pull-requests": {
       "error-title": "Error",
       "error-subtitle": "Unknown pull-request error",
       "description": "Description",
-      "createButton": "New Pull Request"
+      "createButton": "New pull request"
+    },
+    "comment":{
+      "add": "Add comment",
+      "delete": "Delete",
+      "update": "Update",
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm-alert": {
+         "title": "Delete comment",
+         "message": "Do you really want to delete the comment?",
+         "submit": "Yes",
+         "cancel": "No"
+      },
+      "confirm-cancel-update-alert": {
+        "title": "Cancel Update",
+        "message": "Do you really want to reject the modifications on the comment?",
+        "submit": "Yes",
+        "cancel": "No"
+      }
     }
   }
 }
