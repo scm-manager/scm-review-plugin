@@ -1,30 +1,51 @@
 // @flow
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 import type { PullRequest } from "./../types/PullRequest";
-import {DateFromNow} from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-components";
+import injectSheet from "react-jss";
+import classNames from "classnames";
+
+const styles = {
+  wordBreakMinWidth: {
+    minWidth: "10em"
+  }
+};
 
 type Props = {
+  classes: any,
   pullRequest: PullRequest
 };
 
-export default class PullRequestRow extends React.Component<Props> {
+class PullRequestRow extends React.Component<Props> {
   renderLink(to: string, label: string) {
     return <Link to={to}>{label}</Link>;
   }
 
   render() {
-    const { pullRequest } = this.props;
+    const { classes, pullRequest } = this.props;
     const to = `pull-request/${pullRequest.id}/comments/`;
     return (
       <tr>
-        <td>{this.renderLink(to, pullRequest.title)}</td>
-        <td>{pullRequest.source}</td>
-        <td>
+        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
+          {this.renderLink(to, pullRequest.title)}
+        </td>
+        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
+          {pullRequest.source}
+        </td>
+        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
           {pullRequest.target}
         </td>
-        <td className="is-hidden-mobile">{pullRequest.author ? pullRequest.author : ""}</td>
-        <td className="is-hidden-mobile">{pullRequest.creationDate ? <DateFromNow date={pullRequest.creationDate} />: ""}</td>
+        <td className="is-hidden-mobile">
+          {pullRequest.author ? pullRequest.author : ""}
+        </td>
+        <td className="is-hidden-mobile">
+          {pullRequest.creationDate ? (
+            <DateFromNow date={pullRequest.creationDate} />
+          ) : (
+            ""
+          )}
+        </td>
         <td className="is-hidden-mobile">
           {pullRequest.status ? pullRequest.status : ""}
         </td>
@@ -32,3 +53,5 @@ export default class PullRequestRow extends React.Component<Props> {
     );
   }
 }
+
+export default withRouter(injectSheet(styles)(PullRequestRow));
