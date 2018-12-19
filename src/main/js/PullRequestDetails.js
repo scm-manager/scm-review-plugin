@@ -124,7 +124,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       }
     ).catch(
       cause => this.setState({error: new Error(`could not reject request: ${cause.message}`), rejectButtonLoading: false})
-    )
+    );
   };
 
   setMergeButtonLoadingState = () => {
@@ -220,7 +220,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           </a>
 
         </div>
-      </div>)
+      </div>);
     }
 
     return (

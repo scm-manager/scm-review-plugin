@@ -47,7 +47,7 @@ class SinglePullRequest extends React.Component<Props, State> {
     }
   }
 
-  fetchPullRequest = () : void => {
+  fetchPullRequest = (): void => {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
     const url = repository._links.pullRequest.href + "/" + pullRequestNumber;

@@ -10,7 +10,7 @@ import type {PullRequest} from "./types/PullRequest";
 
 type Props = {
   repository: Repository,
-  pullRequest : PullRequest,
+  pullRequest: PullRequest,
   baseURL: string,
 
   // context props
@@ -35,9 +35,6 @@ export function isUrlSuffixMatching(
 }
 
 class PullRequestInformation extends React.Component<Props> {
-  constructor(props: Props) {
-    super(props);
-  }
 
   navigationClass(suffix: string) {
     const { baseURL, location } = this.props;
