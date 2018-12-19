@@ -1,57 +1,53 @@
 //@flow
 import React from "react";
-import {DateFromNow, ErrorPage, Loading, Notification, Title} from "@scm-manager/ui-components";
-import type {Repository} from "@scm-manager/ui-types";
+import {ErrorNotification, Loading} from "@scm-manager/ui-components";
+import { Switch, Route, withRouter } from "react-router-dom";
+import PullRequestDetails from "./PullRequestDetails";
+import type { Repository } from "@scm-manager/ui-types";
 import type {PullRequest} from "./types/PullRequest";
-import {translate} from "react-i18next";
-import {withRouter} from "react-router-dom";
-import {getPullRequest, merge, reject} from "./pullRequest";
-import PullRequestInformation from "./PullRequestInformation";
-import MergeButton from "./MergeButton";
-import RejectButton from "./RejectButton";
-import injectSheet from "react-jss";
-import classNames from "classnames";
-
-const styles = {
-  bottomSpace: {
-    marginBottom: "1.5em"
-  }
-};
+import {getPullRequest} from "./pullRequest";
+import type { History } from "history";
+import Edit from "./Edit";
 
 type Props = {
   repository: Repository,
-  classes: any,
-  t: string => string,
-  match: any
+  match: any,
+  history: History
 };
 
 type State = {
   pullRequest: PullRequest,
   error?: Error,
-  loading: boolean,
-  mergePossible?: boolean,
-  mergeButtonLoading: boolean,
-  rejectButtonLoading: boolean,
-  showNotification: boolean
+  loading: boolean
 };
 
 class SinglePullRequest extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      loading: true,
       pullRequest: null,
-      mergeButtonLoading: true,
-      rejectButtonLoading: false,
-      showNotification: false
+      loading: false
     };
   }
 
   componentDidMount(): void {
-    this.fetchPullRequest(true, false);
+    this.fetchPullRequest();
   }
 
-  fetchPullRequest(doDryRun: boolean, mergePerformed: boolean) {
+  /**
+   * update pull request only if needed
+   */
+  componentDidUpdate(): void {
+    const {history} = this.props;
+    // the /updated path is set from the sub components after an update of the pull request.
+    // this is a flag to perform fetching pull request
+    if (history && history.location.state && history.location.state.from && history.location.state.from.indexOf("/updated") > -1){
+        this.fetchPullRequest();
+        history.push();
+    }
+  }
+
+  fetchPullRequest = () : void => {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
     const url = repository._links.pullRequest.href + "/" + pullRequestNumber;
@@ -66,191 +62,29 @@ class SinglePullRequest extends React.Component<Props, State> {
           pullRequest: response,
           loading: false
         });
-        if (mergePerformed) {
-          this.setState({
-            showNotification: true
-          });
-        }
-        if (doDryRun) {
-          this.getMergeDryRun(response);
-        }
       }
-    });
-  }
-
-  getMergeDryRun(pullRequest: PullRequest) {
-    const {repository} = this.props;
-    if (repository._links.mergeDryRun && repository._links.mergeDryRun.href) {
-      merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
-        if (response.conflict) {
-          this.setState({mergeButtonLoading: false, mergePossible: false});
-        } else if (response.error) {
-          this.setState({error: true, mergeButtonLoading: false});
-        } else {
-          this.setState({mergePossible: true, mergeButtonLoading: false});
-        }
-      });
-    }else{
-      // TODO: what to do if the link doas not exists?
-    }
-  }
-
-  performMerge = () => {
-    const { repository } = this.props;
-    const { pullRequest } = this.state;
-    this.setMergeButtonLoadingState();
-    merge(repository._links.merge.href, pullRequest).then(response => {
-      if (response.error) {
-        this.setState({ error: response.error, mergeButtonLoading: false });
-      } else if (response.conflict) {
-        this.setState({
-          mergePossible: true,
-          mergeButtonLoading: false
-        });
-      } else {
-        this.setState({ loading: true, mergeButtonLoading: false });
-        this.fetchPullRequest(false, true);
-      }
-    });
-  };
-
-  performReject = () => {
-    this.setState({rejectButtonLoading: true});
-    const {pullRequest} = this.state;
-    reject(pullRequest).then(
-      () => {
-        this.setState({rejectButtonLoading: false});
-        this.fetchPullRequest(false, false);
-      }
-    ).catch(
-      cause => this.setState({error: new Error(`could not reject request: ${cause.message}`), rejectButtonLoading: false})
-    )
-  };
-
-  setMergeButtonLoadingState = () => {
-    this.setState({
-      mergeButtonLoading: true
-    });
-  };
-
-  onClose = () => {
-    this.setState({
-      ...this.state,
-      showNotification: false,
-      mergeConflict: false
     });
   };
 
   render() {
-    const { repository, match, t, classes } = this.props;
-    const {
-      pullRequest,
-      error,
-      loading,
-      mergeButtonLoading,
-      mergePossible,
-      rejectButtonLoading,
-      showNotification
-    } = this.state;
-    let description = null;
+    const { match, repository } = this.props;
+    const {loading, error, pullRequest} = this.state;
+
     if (error) {
-      return (
-        <ErrorPage
-          title={t("scm-review-plugin.show-pull-request.error-title")}
-          subtitle={t("scm-review-plugin.show-pull-request.error-subtitle")}
-          error={error}
-        />
-      );
+      return <ErrorNotification error={error} />;
     }
 
     if (!pullRequest || loading) {
       return <Loading />;
     }
 
-    if (pullRequest.description) {
-      description = (
-        <div className="media">
-          <div className="media-content">
-            {pullRequest.description.split("\n").map(line => {
-              return (
-                <span>
-                  {line}
-                  <br />
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      );
-    }
-
-    let mergeNotification = null;
-    if (showNotification) {
-      mergeNotification = (
-        <Notification
-          type={"info"}
-          children={t("scm-review-plugin.show-pull-request.notification")}
-          onClose={() => this.onClose()}
-        />
-      );
-    }
-
-    let mergeButton = null;
-    let rejectButton = null;
-    if (pullRequest._links.reject) {
-      rejectButton = <RejectButton reject={() => this.performReject()} loading={rejectButtonLoading}/>;
-      mergeButton = (
-        <MergeButton
-          merge={() => this.performMerge()}
-          mergePossible={mergePossible}
-          loading={mergeButtonLoading}
-          repository={repository}
-          pullRequest={pullRequest}
-        />
-      );
-    }
-
     return (
-      <div className="columns">
-        <div className="column is-clipped">
-          <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
-
-          {mergeNotification}
-
-          <div className="media">
-            <div className="media-content">
-              <div>
-                <span className="tag is-light is-medium">
-                  {pullRequest.source}
-                </span>{" "}
-                <i className="fas fa-long-arrow-alt-right" />{" "}
-                <span className="tag is-light is-medium">
-                  {pullRequest.target}
-                </span>
-              </div>
-            </div>
-            <div className="media-right">{pullRequest.status}</div>
-          </div>
-
-          {description}
-
-          <div className={classNames("media", classes.bottomSpace)}>
-            <div className="media-content">{pullRequest.author}</div>
-            <div className="media-right">
-              <DateFromNow date={pullRequest.creationDate} />
-            </div>
-          </div>
-
-          {rejectButton}
-          {mergeButton}
-
-          <PullRequestInformation pullRequest={pullRequest} baseURL={match.url} repository={repository} source={pullRequest.source} target={pullRequest.target}/>
-        </div>
-      </div>
+      <Switch>
+        <Route component={() => <Edit repository={repository}  pullRequest={pullRequest} />} path={`${match.url}/edit`} exact />
+        <Route component={() => <PullRequestDetails repository={repository} pullRequest={pullRequest} /> } path={`${match.url}`} />
+      </Switch>
     );
   }
 }
 
-export default withRouter(
-  injectSheet(styles)(translate("plugins")(SinglePullRequest))
-);
+export default withRouter(SinglePullRequest);

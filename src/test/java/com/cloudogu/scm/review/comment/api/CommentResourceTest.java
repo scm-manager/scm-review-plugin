@@ -170,7 +170,7 @@ public class CommentResourceTest {
 
     dispatcher.invoke(request, response);
 
-    assertEquals(HttpServletResponse.SC_ACCEPTED, response.getStatus());
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
   }
 
  @Test
@@ -195,7 +195,7 @@ public class CommentResourceTest {
 
     dispatcher.invoke(request, response);
 
-    assertEquals(HttpServletResponse.SC_ACCEPTED, response.getStatus());
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
   }
 
   @Test

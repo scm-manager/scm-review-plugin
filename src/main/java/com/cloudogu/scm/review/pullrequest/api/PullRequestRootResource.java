@@ -3,7 +3,6 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
-import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import org.apache.shiro.SecurityUtils;
@@ -47,9 +46,9 @@ public class PullRequestRootResource {
   private final Provider<PullRequestResource> pullRequestResourceProvider;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, DefaultPullRequestService pullRequestService, Provider<PullRequestResource> pullRequestResourceProvider) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, Provider<PullRequestResource> pullRequestResourceProvider) {
     this.mapper = mapper;
-    this.service = pullRequestService;
+    this.service = service;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
   }
 

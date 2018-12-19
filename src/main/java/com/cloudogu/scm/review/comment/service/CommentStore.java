@@ -9,6 +9,7 @@ import sonia.scm.store.DataStore;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class CommentStore {
 
@@ -23,40 +24,49 @@ public class CommentStore {
   }
 
   public String add(String pullRequestId, PullRequestComment pullRequestComment) {
-    Lock lock = LOCKS.get(pullRequestId);
-    String commentId;
-    lock.lock();
-    try {
+    return withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
-      commentId = keyGenerator.createKey();
+      String commentId = keyGenerator.createKey();
       pullRequestComment.setId(commentId);
       pullRequestComments.getComments().add(pullRequestComment);
       store.put(pullRequestId, pullRequestComments);
-    } finally {
-      lock.unlock();
-    }
-    return commentId;
+      return commentId;
+    });
+  }
+
+  public PullRequestComments get(String pullRequestId) {
+    return withLockDo(pullRequestId, () -> {
+      PullRequestComments result = store.get(pullRequestId);
+      if (result == null) {
+        throw new NotFoundException(PullRequest.class, pullRequestId);
+      }
+      return result;
+    });
   }
 
   public void update(String pullRequestId, String commentId, String newComment) {
-    PullRequestComments pullRequestComments = this.get(pullRequestId);
-    Lock lock = LOCKS.get(pullRequestId);
-    lock.lock();
-    try {
+    withLockDo(pullRequestId, () -> {
+      PullRequestComments pullRequestComments = this.get(pullRequestId);
       applyChange(commentId, pullRequestComments, comment -> comment.setComment(newComment));
       store.put(pullRequestId, pullRequestComments);
-    } finally {
-      lock.unlock();
-    }
+      return null;
+    });
   }
 
   public void delete(String pullRequestId, String commentId) {
-    Lock lock = LOCKS.get(pullRequestId);
-    lock.lock();
-    try {
+    withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
       applyChange(commentId, pullRequestComments, comment -> pullRequestComments.getComments().remove(comment));
       store.put(pullRequestId, pullRequestComments);
+      return null;
+    });
+  }
+
+  private <T> T withLockDo(String pullRequestId, Supplier<T> worker) {
+    Lock lock = LOCKS.get(pullRequestId);
+    lock.lock();
+    try {
+      return worker.get();
     } finally {
       lock.unlock();
     }
@@ -68,20 +78,5 @@ public class CommentStore {
       .filter(c -> c.getId().equals(commentId))
       .findFirst()
       .ifPresent(commentConsumer);
-  }
-
-  public PullRequestComments get(String pullRequestId) {
-    Lock lock = LOCKS.get(pullRequestId);
-    lock.lock();
-    PullRequestComments result;
-    try {
-      result = store.get(pullRequestId);
-      if (result == null) {
-        throw new NotFoundException(PullRequest.class, pullRequestId);
-      }
-    } finally {
-      lock.unlock();
-    }
-    return result;
   }
 }

@@ -55,5 +55,13 @@ public interface PullRequestService {
    * @return the repository with the given name and namespace
    */
   Repository getRepository(String namespace, String name);
+
+  /**
+   * Update the title and the description of the pull request with id <code>pullRequestId</code>
+   * the modified Date will be set to now.
+   *
+   */
+  void update(String namespace, String name, String pullRequestId, String title, String description);
+
   void reject(Repository repository, PullRequest pullRequest);
 }
