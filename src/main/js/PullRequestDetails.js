@@ -27,7 +27,7 @@ const styles = {
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
-    maxWidth: "12em"
+    maxWidth: "25em"
   }
 };
 
