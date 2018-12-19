@@ -50,8 +50,7 @@ class CreateForm extends React.Component<Props, State> {
           loading: false,
           pullRequest: {
             source: result[0], //set first entry, otherwise nothing is select in state even if one branch is shown in Select component at beginning
-            target: result[0],
-            status: "OPEN"
+            target: result[0]
           }
         });
       }

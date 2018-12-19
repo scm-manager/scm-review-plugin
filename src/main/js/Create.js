@@ -11,10 +11,10 @@ import CreateForm from "./CreateForm";
 import injectSheet from "react-jss";
 import type { BasicPullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
-import {Trans, translate} from "react-i18next";
+import { Trans, translate } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
 import type { History } from "history";
-import {withRouter} from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
 const styles = {
   controlButtons: {
@@ -48,7 +48,9 @@ class Create extends React.Component<Props, State> {
 
   pullRequestCreated = () => {
     const { history, repository } = this.props;
-    history.push(`/repo/${repository.namespace}/${repository.name}/pull-requests`);
+    history.push(
+      `/repo/${repository.namespace}/${repository.name}/pull-requests`
+    );
   };
 
   submit = () => {
@@ -94,20 +96,29 @@ class Create extends React.Component<Props, State> {
     }
 
     let information = null;
-    if ( pullRequest ) {
-      information = <PullRequestInformation repository={repository}
-                              pullRequest={pullRequest}
-                              baseURL={match.url}/>;
+    if (pullRequest) {
+      information = (
+        <PullRequestInformation
+          repository={repository}
+          source={pullRequest.source}
+          target={pullRequest.target}
+          status={"OPEN"}
+          baseURL={match.url}
+        />
+      );
     }
-    let subtitle = (<Trans i18nKey="scm-review-plugin.create.subtitle"  values={{ repositoryName: repository.name }}  /> );
+    let subtitle = (
+      <Trans
+        i18nKey="scm-review-plugin.create.subtitle"
+        values={{ repositoryName: repository.name }}
+      />
+    );
 
     return (
       <div className="columns">
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.create.title")} />
-          <Subtitle
-            subtitle={subtitle}
-          />
+          <Subtitle subtitle={subtitle} />
 
           {notification}
 

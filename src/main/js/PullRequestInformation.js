@@ -12,6 +12,9 @@ type Props = {
   repository: Repository,
   pullRequest: PullRequest,
   baseURL: string,
+  source: string,
+  target: string,
+  status: string,
 
   // context props
   location: any,
@@ -45,13 +48,13 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest, repository, baseURL } = this.props;
+    const { pullRequest, repository, baseURL, status, target, source } = this.props;
 
     let changesetTab = null;
     let diffTab = null;
     let routes = null;
 
-    if (pullRequest.status && pullRequest.status === "OPEN") {
+    if (status && status === "OPEN") {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
           <Link to={`${baseURL}/changesets/`}>Commits</Link>
@@ -69,8 +72,8 @@ class PullRequestInformation extends React.Component<Props> {
             render={() => (
               <Changesets
                 repository={repository}
-                source={pullRequest.source}
-                target={pullRequest.target}
+                source={source}
+                target={target}
               />
             )}
             exact
@@ -80,8 +83,8 @@ class PullRequestInformation extends React.Component<Props> {
             render={() => (
               <Changesets
                 repository={repository}
-                source={pullRequest.source}
-                target={pullRequest.target}
+                source={source}
+                target={target}
               />
             )}
             exact
@@ -89,7 +92,7 @@ class PullRequestInformation extends React.Component<Props> {
           <Route
             path={`${baseURL}/diff`}
             render={() => (
-              <Diff repository={repository} source={pullRequest.source} target={pullRequest.target} />
+              <Diff repository={repository} source={source} target={target} />
             )}
           />
         </>

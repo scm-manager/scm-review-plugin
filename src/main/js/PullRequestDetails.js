@@ -305,6 +305,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             repository={repository}
             source={pullRequest.source}
             target={pullRequest.target}
+            status={pullRequest.status}
           />
         </div>
       </div>
