@@ -1,11 +1,17 @@
 // @flow
 import React from "react";
-import {DateFromNow, Loading, Notification, Title, ErrorNotification} from "@scm-manager/ui-components";
-import type {Repository} from "@scm-manager/ui-types";
-import type {PullRequest} from "./types/PullRequest";
-import {translate} from "react-i18next";
-import {Link, withRouter} from "react-router-dom";
-import {merge, reject} from "./pullRequest";
+import {
+  DateFromNow,
+  Loading,
+  Notification,
+  Title,
+  ErrorNotification
+} from "@scm-manager/ui-components";
+import type { Repository } from "@scm-manager/ui-types";
+import type { PullRequest } from "./types/PullRequest";
+import { translate } from "react-i18next";
+import { Link, withRouter } from "react-router-dom";
+import { merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import type { History } from "history";
@@ -16,6 +22,12 @@ import RejectButton from "./RejectButton";
 const styles = {
   bottomSpace: {
     marginBottom: "1.5em"
+  },
+  tagShorter: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    maxWidth: "25em"
   }
 };
 
@@ -51,7 +63,7 @@ class PullRequestDetails extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    const { pullRequest} = this.props;
+    const { pullRequest } = this.props;
     this.getMergeDryRun(pullRequest);
   }
 
@@ -60,20 +72,21 @@ class PullRequestDetails extends React.Component<Props, State> {
     history.push({
       pathname: `${match.url}/comments`,
       state: {
-        from: this.props.match.url+"/updated",
+        from: this.props.match.url + "/updated"
       }
     });
   };
 
   getMergeDryRun(pullRequest: PullRequest) {
-    const {repository} = this.props;
+    const { repository } = this.props;
     if (repository._links.mergeDryRun && repository._links.mergeDryRun.href) {
       merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
         if (response.conflict) {
           this.setState({
             mergeButtonLoading: false,
             loading: false,
-            mergePossible: false});
+            mergePossible: false
+          });
         } else if (response.error) {
           this.setState({
             error: true,
@@ -84,10 +97,11 @@ class PullRequestDetails extends React.Component<Props, State> {
           this.setState({
             mergePossible: true,
             loading: false,
-            mergeButtonLoading: false});
+            mergeButtonLoading: false
+          });
         }
       });
-    }else{
+    } else {
       // TODO: what to do if the link does not exists?
     }
   }
@@ -108,23 +122,27 @@ class PullRequestDetails extends React.Component<Props, State> {
         this.setState({
           loading: true,
           showNotification: true,
-          mergeButtonLoading: false });
+          mergeButtonLoading: false
+        });
         this.updatePullRequest();
       }
     });
   };
 
   performReject = () => {
-    this.setState({rejectButtonLoading: true});
-    const {pullRequest} = this.state;
-    reject(pullRequest).then(
-      () => {
-        this.setState({rejectButtonLoading: false});
+    this.setState({ rejectButtonLoading: true });
+    const { pullRequest } = this.state;
+    reject(pullRequest)
+      .then(() => {
+        this.setState({ rejectButtonLoading: false });
         this.updatePullRequest();
-      }
-    ).catch(
-      cause => this.setState({error: new Error(`could not reject request: ${cause.message}`), rejectButtonLoading: false})
-    );
+      })
+      .catch(cause =>
+        this.setState({
+          error: new Error(`could not reject request: ${cause.message}`),
+          rejectButtonLoading: false
+        })
+      );
   };
 
   setMergeButtonLoadingState = () => {
@@ -152,7 +170,6 @@ class PullRequestDetails extends React.Component<Props, State> {
       rejectButtonLoading,
       showNotification
     } = this.state;
-    let description = null;
 
     if (error) {
       return <ErrorNotification error={error} />;
@@ -162,13 +179,14 @@ class PullRequestDetails extends React.Component<Props, State> {
       return <Loading />;
     }
 
+    let description = null;
     if (pullRequest.description) {
       description = (
         <div className="media">
           <div className="media-content">
             {pullRequest.description.split("\n").map(line => {
               return (
-                <span>
+                <span className="is-word-break">
                   {line}
                   <br />
                 </span>
@@ -193,7 +211,12 @@ class PullRequestDetails extends React.Component<Props, State> {
     let mergeButton = null;
     let rejectButton = null;
     if (pullRequest._links.reject) {
-      rejectButton = <RejectButton reject={() => this.performReject()} loading={rejectButtonLoading}/>;
+      rejectButton = (
+        <RejectButton
+          reject={() => this.performReject()}
+          loading={rejectButtonLoading}
+        />
+      );
       mergeButton = (
         <MergeButton
           merge={() => this.performMerge()}
@@ -206,21 +229,28 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
 
     let editButton = null;
-    if (pullRequest._links.update && pullRequest._links.update.href){
-      const toEdit = "/repo/"+repository.namespace+"/"+repository.name+"/pull-request/"+pullRequest.id+"/edit";
+    if (pullRequest._links.update && pullRequest._links.update.href) {
+      const toEdit =
+        "/repo/" +
+        repository.namespace +
+        "/" +
+        repository.name +
+        "/pull-request/" +
+        pullRequest.id +
+        "/edit";
       editButton = (
         <div className="level-right">
-        <div className="level-item">
-          <a className="level-item" >
+          <div className="level-item">
+            <a className="level-item">
               <span className="icon is-small">
-              <Link  to={toEdit}>
-                <i className="fas fa-edit"></i>
-              </Link>
+                <Link to={toEdit}>
+                  <i className="fas fa-edit" />
+                </Link>
               </span>
-          </a>
-
+            </a>
+          </div>
         </div>
-      </div>);
+      );
     }
 
     return (
@@ -231,7 +261,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           <div className="level-left">
             <div className="level-item">
-              <Title title={" #" + pullRequest.id + " " + pullRequest.title}/>
+              <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
             </div>
           </div>
 
@@ -241,11 +271,15 @@ class PullRequestDetails extends React.Component<Props, State> {
             <div className="media-content">
               <div>
                 <span className="tag is-light is-medium">
-                  {pullRequest.source}
+                  <span className={classes.tagShorter}>
+                    {pullRequest.source}
+                  </span>
                 </span>{" "}
-                <i className="fas fa-long-arrow-alt-right"/>{" "}
+                <i className="fas fa-long-arrow-alt-right" />{" "}
                 <span className="tag is-light is-medium">
-                  {pullRequest.target}
+                  <span className={classes.tagShorter}>
+                    {pullRequest.target}
+                  </span>
                 </span>
               </div>
             </div>
@@ -257,7 +291,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           <div className={classNames("media", classes.bottomSpace)}>
             <div className="media-content">{pullRequest.author}</div>
             <div className="media-right">
-              <DateFromNow date={pullRequest.creationDate}/>
+              <DateFromNow date={pullRequest.creationDate} />
             </div>
           </div>
 
@@ -265,12 +299,19 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           {mergeButton}
 
-          <PullRequestInformation pullRequest={pullRequest} baseURL={match.url} repository={repository}
-                                  source={pullRequest.source} target={pullRequest.target}/>
+          <PullRequestInformation
+            pullRequest={pullRequest}
+            baseURL={match.url}
+            repository={repository}
+            source={pullRequest.source}
+            target={pullRequest.target}
+          />
         </div>
       </div>
     );
   }
 }
 
-export default withRouter(injectSheet(styles)(translate("plugins")(PullRequestDetails)));
+export default withRouter(
+  injectSheet(styles)(translate("plugins")(PullRequestDetails))
+);
