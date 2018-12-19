@@ -225,7 +225,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
     return (
       <div className="columns">
-        <div className="column">
+        <div className="column is-clipped">
 
           {editButton}
 
