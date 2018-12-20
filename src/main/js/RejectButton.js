@@ -10,9 +10,6 @@ type Props = {
 };
 
 class RejectButton extends React.Component<Props> {
-  constructor(props: Props) {
-    super(props);
-  }
 
   confirmReject = () => {
     const { t, reject } = this.props;

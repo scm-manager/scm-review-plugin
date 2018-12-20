@@ -55,12 +55,12 @@ class Changesets extends React.Component<Props, State> {
         changesets,
         error: undefined,
         loading: false
-      })
+      });
     }).catch(error => {
       this.setState({
         error,
         loading: false
-      })
+      });
     });
   };
 
@@ -70,7 +70,7 @@ class Changesets extends React.Component<Props, State> {
       this.setState({
         loading: false,
         error: new Error("incoming changesets are not supported")
-      })
+      });
     } else {
       this.fetchChangesets(url);
     }

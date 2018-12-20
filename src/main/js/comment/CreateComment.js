@@ -61,7 +61,7 @@ class CreateComment extends React.Component<Props, State> {
 
   isValid() {
     const {newComment} = this.state;
-    return !newComment || (newComment && newComment.comment &&  newComment.comment.trim() == "");
+    return !newComment || (newComment && newComment.comment &&  newComment.comment.trim() === "");
   }
 
   render() {

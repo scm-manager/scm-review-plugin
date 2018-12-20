@@ -15,15 +15,15 @@ import {withRouter} from "react-router-dom";
 import EditForm from "./EditForm";
 
 type Props = {
-  repository : Repository,
-  pullRequest : PullRequest,
+  repository: Repository,
+  pullRequest: PullRequest,
   t: string => string,
   match: any,
   history: History
 };
 
 type State = {
-  modifiedPullRequest : PullRequest,
+  modifiedPullRequest: PullRequest,
   loading: boolean,
   error?: Error
 };

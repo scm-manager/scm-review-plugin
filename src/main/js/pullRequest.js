@@ -94,7 +94,7 @@ export function merge(url: string, pullRequest: PullRequest){
     }, "application/vnd.scmm-mergeCommand+json")
     .catch(err => {
       if(err === CONFLICT_ERROR){
-        return {conflict: cause};
+        return {conflict: err};
       }
       else {
         return {error: err};
@@ -131,7 +131,7 @@ export function deletePullRequestComment(url: string){
     })
     .catch(err => {
       return {error: err};
-    })
+    });
 };
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {

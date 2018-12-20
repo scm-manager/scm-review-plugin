@@ -35,7 +35,7 @@ class PullRequestComments extends React.Component<Props, State> {
     }
   }
 
-  handleError = (error : Error) => {
+  handleError = (error: Error) => {
     this.setState({
       loading: false,
       error : error
@@ -82,7 +82,7 @@ class PullRequestComments extends React.Component<Props, State> {
       return (
         <>
           {comments.map((comment) => {
-            return <PullRequestComment comment={comment} refresh={this.updatePullRequestComments} handleError={this.handleError} />
+            return (<PullRequestComment comment={comment} refresh={this.updatePullRequestComments} handleError={this.handleError} />);
           })}
           {createLink?
             (<CreateComment url={createLink} refresh={this.updatePullRequestComments} handleError={this.handleError} />)

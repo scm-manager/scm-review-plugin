@@ -3,24 +3,29 @@ import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
 import { translate } from "react-i18next";
 import Changesets from "./Changesets";
-import {Route, Link, withRouter} from "react-router-dom";
+import { Route, Link, withRouter } from "react-router-dom";
 import Diff from "./Diff";
 import PullRequestComments from "./comment/PullRequestComments";
 import type {PullRequest} from "./types/PullRequest";
 
 type Props = {
   repository: Repository,
-  pullRequest : PullRequest,
+  pullRequest: PullRequest,
+  baseURL: string,
   source: string,
   target: string,
-  baseURL: string,
+  status: string,
 
   // context props
   location: any,
   t: string => string
 };
 
-export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
+export function isUrlSuffixMatching(
+  baseURL: string,
+  url: string,
+  suffix: string
+) {
   let strippedUrl = url.substring(baseURL.length);
   if (strippedUrl.startsWith("/")) {
     strippedUrl = strippedUrl.substring(1);
@@ -34,10 +39,6 @@ export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string
 
 class PullRequestInformation extends React.Component<Props> {
 
-  constructor(props: Props) {
-    super(props);
-  }
-
   navigationClass(suffix: string) {
     const { baseURL, location } = this.props;
     if (isUrlSuffixMatching(baseURL, location.pathname, suffix)) {
@@ -47,7 +48,56 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest, repository, source, target, baseURL } = this.props;
+    const { pullRequest, repository, baseURL, status, target, source } = this.props;
+
+    let changesetTab = null;
+    let diffTab = null;
+    let routes = null;
+
+    if (status && status === "OPEN") {
+      changesetTab = (
+        <li className={this.navigationClass("changesets")}>
+          <Link to={`${baseURL}/changesets/`}>Commits</Link>
+        </li>
+      );
+      diffTab = (
+        <li className={this.navigationClass("diff")}>
+          <Link to={`${baseURL}/diff/`}>Diff</Link>
+        </li>
+      );
+      routes = (
+        <>
+          <Route
+            path={`${baseURL}/changesets`}
+            render={() => (
+              <Changesets
+                repository={repository}
+                source={source}
+                target={target}
+              />
+            )}
+            exact
+          />
+          <Route
+            path={`${baseURL}/changesets/:page`}
+            render={() => (
+              <Changesets
+                repository={repository}
+                source={source}
+                target={target}
+              />
+            )}
+            exact
+          />
+          <Route
+            path={`${baseURL}/diff`}
+            render={() => (
+              <Diff repository={repository} source={source} target={target} />
+            )}
+          />
+        </>
+      );
+    }
 
     let commentTab = pullRequest? (
       <li className={ this.navigationClass("comments") }>
@@ -55,43 +105,20 @@ class PullRequestInformation extends React.Component<Props> {
       </li>
     ) : "";
 
-
     return (
       <>
         <div className="tabs">
           <ul>
-
             {commentTab}
-
-            <li className={ this.navigationClass("changesets") }>
-              <Link to={`${baseURL}/changesets/`}>Commits</Link>
-            </li>
-
-            <li className={ this.navigationClass("diff") }>
-              <Link to={`${baseURL}/diff/`}>Diff</Link>
-            </li>
-
+            {changesetTab}
+            {diffTab}
           </ul>
         </div>
-
+        {routes}
         <Route
           path={`${baseURL}/comments`}
           render={() => <PullRequestComments pullRequest={pullRequest}/>}
           exact
-        />
-        <Route
-          path={`${baseURL}/changesets`}
-          render={() => <Changesets repository={repository} source={source} target={target} />}
-          exact
-        />
-        <Route
-          path={`${baseURL}/changesets/:page`}
-          render={() => <Changesets repository={repository} source={source} target={target} />}
-          exact
-        />
-        <Route
-          path={`${baseURL}/diff`}
-          render={() => <Diff repository={repository} source={source} target={target} />}
         />
       </>
     );

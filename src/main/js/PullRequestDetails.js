@@ -4,7 +4,8 @@ import {
   DateFromNow,
   Loading,
   Notification,
-  Title
+  Title,
+  ErrorNotification
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
@@ -16,7 +17,6 @@ import MergeButton from "./MergeButton";
 import type { History } from "history";
 import injectSheet from "react-jss";
 import classNames from "classnames";
-import ErrorNotification from "@scm-manager/ui-components/src/ErrorNotification";
 import RejectButton from "./RejectButton";
 
 const styles = {
@@ -256,6 +256,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     return (
       <div className="columns">
         <div className="column is-clipped">
+
           {editButton}
 
           <div className="level-left">
@@ -304,6 +305,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             repository={repository}
             source={pullRequest.source}
             target={pullRequest.target}
+            status={pullRequest.status}
           />
         </div>
       </div>

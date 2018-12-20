@@ -8,13 +8,13 @@ import {deletePullRequestComment, updatePullRequestComment} from "../pullRequest
 type Props = {
   comment: Comment,
   refresh: () => void,
-  handleError : (error: Error) => void;
+  handleError: (error: Error) => void;
   t: string => string
 };
 
 type State = {
   edit: boolean,
-  updatedComment : string,
+  updatedComment: string,
   loading: boolean
 };
 
@@ -174,7 +174,7 @@ class PullRequestComment extends React.Component<Props, State> {
           <SubmitButton
             label={t("scm-review-plugin.comment.save")}
             action={this.update}
-            disabled={updatedComment.trim() == ""}
+            disabled={updatedComment.trim() === ""}
           />
         </div>
         <div className="level-item">
