@@ -4,6 +4,8 @@ import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
@@ -12,6 +14,7 @@ import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.repository.spi.MergeCommand;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -21,6 +24,8 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
 @EagerSingleton @Extension
 public class MergeCheckHook {
+
+  private static final Logger LOG = LoggerFactory.getLogger(MergeCommand.class);
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
@@ -35,6 +40,7 @@ public class MergeCheckHook {
   public void checkForMerges(PostReceiveRepositoryHookEvent event) {
     try (RepositoryService repositoryService = serviceFactory.create(event.getRepository())) {
       if (!repositoryService.isSupported(Command.MERGE)) {
+        LOG.trace("ignoring post receive event for repository {}", event.getRepository().getNamespaceAndName());
         return;
       }
       List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
