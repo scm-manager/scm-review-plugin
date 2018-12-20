@@ -9,6 +9,7 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
@@ -32,8 +33,11 @@ public class MergeCheckHook {
 
   @Subscribe(async = false)
   public void checkForMerges(PostReceiveRepositoryHookEvent event) {
-    List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
     try (RepositoryService repositoryService = serviceFactory.create(event.getRepository())) {
+      if (!repositoryService.isSupported(Command.MERGE)) {
+        return;
+      }
+      List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
       new Worker(repositoryService, event).process(pullRequests);
     }
   }

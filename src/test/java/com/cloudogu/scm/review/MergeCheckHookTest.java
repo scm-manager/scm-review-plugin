@@ -16,6 +16,7 @@ import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
@@ -54,6 +55,7 @@ class MergeCheckHookTest {
   void initRepositoryServiceFactory() {
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
+    when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
   }
 
   @BeforeEach
@@ -91,6 +93,18 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(logCommandBuilder, never()).getChangesets();
+    verify(service, never()).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
+  }
+
+  @Test
+  void shouldNotProcessEventsForRepositoriesWithoutMergeCapability() throws IOException {
+    when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
+    PullRequest pullRequest = rejectedPullRequest();
+
+    hook.checkForMerges(event);
+
+    verify(logCommandBuilder, never()).getChangesets();
+    verify(service, never()).getAll(NAMESPACE, NAME);
     verify(service, never()).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
   }
 
