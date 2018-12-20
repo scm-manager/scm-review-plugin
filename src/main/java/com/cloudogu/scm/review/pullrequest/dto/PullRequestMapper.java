@@ -44,9 +44,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     if (RepositoryPermissions.read(repository).isPermitted()) {
       linksBuilder.single(link("createComment", pullRequestResourceLinks.pullRequestComments().create(repository.getNamespace(), repository.getName(), target.getId())));
       linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments().all(repository.getNamespace(), repository.getName(), target.getId())));
-      if (target.getStatus() == PullRequestStatus.OPEN) {
-        linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
-      }
+    }
+    if (RepositoryPermissions.push(repository).isPermitted() && target.getStatus() == PullRequestStatus.OPEN) {
+      linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
     }
     target.add(linksBuilder.build());
   }
