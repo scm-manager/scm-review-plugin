@@ -41,7 +41,7 @@ public class RepositoryLinkEnricher extends AbstractRepositoryJsonEnricher {
 
   private boolean repositorySupportsReviews(String namespace, String name) {
     try (RepositoryService service = serviceFactory.create(new NamespaceAndName(namespace, name))) {
-      return service.isSupported(Command.BRANCHES);
+      return service.isSupported(Command.MERGE);
     }
   }
 }

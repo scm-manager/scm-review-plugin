@@ -50,7 +50,7 @@ class RepositoryLinkEnricherTest {
     pathInfoStore.set(() -> URI.create("/"));
     Provider<ScmPathInfoStore> pathInfoStoreProvider = Providers.of(pathInfoStore);
     when(serviceFactory.create(new NamespaceAndName("scmadmin", "web-resources"))).thenReturn(repositoryService);
-    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(false);
+    when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
 
     linkEnricher = new RepositoryLinkEnricher(pathInfoStoreProvider, objectMapper, serviceFactory);
 
@@ -73,7 +73,7 @@ class RepositoryLinkEnricherTest {
         rootNode
       );
 
-      when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
+      when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
       linkEnricher.enrich(context);
 
       String newPrLink = context.getResponseEntity()
@@ -93,7 +93,7 @@ class RepositoryLinkEnricherTest {
         rootNode
       );
 
-      when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(false);
+      when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
       linkEnricher.enrich(context);
 
       JsonNode newPrLink = context.getResponseEntity()
@@ -139,7 +139,7 @@ class RepositoryLinkEnricherTest {
         MediaType.valueOf(VndMediaType.REPOSITORY_COLLECTION),
         rootNode
       );
-      when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
+      when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
 
       linkEnricher.enrich(context);
 
