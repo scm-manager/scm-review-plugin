@@ -1,7 +1,6 @@
 // @flow
 import React from "react";
 import { binder } from "@scm-manager/ui-extensions";
-import { NavLink } from "@scm-manager/ui-components";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
 import PullRequestList from "./PullRequestList";
