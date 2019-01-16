@@ -21,6 +21,7 @@ const styles = {
 class PullRequestTable extends React.Component<Props> {
   render() {
     const { pullRequests, t, classes } = this.props;
+
     return (
       <table
         className={classNames(

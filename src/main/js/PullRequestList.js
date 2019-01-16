@@ -1,10 +1,6 @@
 // @flow
 import React from "react";
-import {
-  Loading,
-  ErrorPage,
-  CreateButton
-} from "@scm-manager/ui-components";
+import { Loading, ErrorPage, CreateButton } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequestCollection } from "./types/PullRequest";
 import { translate } from "react-i18next";
@@ -60,13 +56,41 @@ class PullRequestList extends React.Component<Props, State> {
     this.setState({
       status: status
     });
-    const url = `${this.props.repository._links.pullRequest.href}?status=${status}`;
+    const url = `${
+      this.props.repository._links.pullRequest.href
+    }?status=${status}`;
     this.updatePullRequests(url);
   };
 
+  renderPullRequestTable = () => {
+    const { t } = this.props;
+    const { pullRequests, status } = this.state;
+
+    const availablePullRequests = pullRequests._embedded.pullRequests;
+    if (availablePullRequests && availablePullRequests.length > 0) {
+      return (
+        <>
+          <div className="is-pulled-right">
+            <StatusSelector
+              handleTypeChange={this.handleStatusChange}
+              status={status ? status : "ALL"}
+            />
+          </div>
+          <PullRequestTable pullRequests={availablePullRequests} />
+        </>
+      );
+    }
+
+    return (
+      <div className="notification is-warning">
+        {t("scm-review-plugin.no-requests")}
+      </div>
+    );
+  };
+
   render() {
-    const {t} = this.props;
-    const { loading, error, pullRequests, status } = this.state;
+    const { t } = this.props;
+    const { loading, error, pullRequests } = this.state;
 
     if (error) {
       return (
@@ -84,13 +108,16 @@ class PullRequestList extends React.Component<Props, State> {
 
     const to = "pull-requests/add/changesets/";
 
-    const createButton = pullRequests._links.create ? (<CreateButton label={t("scm-review-plugin.pull-requests.createButton")} link={to} />) : null;
+    const createButton = pullRequests._links.create ? (
+      <CreateButton
+        label={t("scm-review-plugin.pull-requests.createButton")}
+        link={to}
+      />
+    ) : null;
+
     return (
       <>
-        <div className="is-pulled-right">
-          <StatusSelector handleTypeChange={this.handleStatusChange} status={status ? status : "ALL"}/>
-        </div>
-        <PullRequestTable pullRequests={pullRequests._embedded.pullRequests}/>
+        {this.renderPullRequestTable()}
         {createButton}
       </>
     );
