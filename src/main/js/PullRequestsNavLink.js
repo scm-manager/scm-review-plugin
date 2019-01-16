@@ -16,7 +16,6 @@ class PullRequestsNavLink extends React.Component<Props> {
     return (
       <NavLink
         to={`${url}/pull-requests`}
-        icon="fas fa-code-branch"
         label={t("scm-review-plugin.navLink")}
         activeWhenMatch={activeWhenMatch}
       />

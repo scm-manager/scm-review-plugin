@@ -82,7 +82,7 @@ class PullRequestList extends React.Component<Props, State> {
     }
 
     return (
-      <div className="notification is-warning">
+      <div className="notification is-info">
         {t("scm-review-plugin.no-requests")}
       </div>
     );
