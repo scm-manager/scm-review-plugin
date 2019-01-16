@@ -28,6 +28,9 @@ const styles = {
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
     maxWidth: "25em"
+  },
+  fullWidth: {
+    width: "100%"
   }
 };
 
@@ -256,11 +259,10 @@ class PullRequestDetails extends React.Component<Props, State> {
     return (
       <div className="columns">
         <div className="column is-clipped">
-
           {editButton}
 
           <div className="level-left">
-            <div className="level-item">
+            <div className={classNames("level-item", classes.fullWidth)}>
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
             </div>
           </div>
@@ -270,13 +272,19 @@ class PullRequestDetails extends React.Component<Props, State> {
           <div className="media">
             <div className="media-content">
               <div>
-                <span className="tag is-light is-medium">
+                <span
+                  className="tag is-light is-medium"
+                  title={pullRequest.source}
+                >
                   <span className={classes.tagShorter}>
                     {pullRequest.source}
                   </span>
                 </span>{" "}
                 <i className="fas fa-long-arrow-alt-right" />{" "}
-                <span className="tag is-light is-medium">
+                <span
+                  className="tag is-light is-medium"
+                  title={pullRequest.target}
+                >
                   <span className={classes.tagShorter}>
                     {pullRequest.target}
                   </span>
