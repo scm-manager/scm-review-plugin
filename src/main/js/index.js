@@ -6,6 +6,7 @@ import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
 import PullRequestList from "./PullRequestList";
 import { Route } from "react-router-dom";
+import PullRequestsNavLink from "./PullRequestsNavLink";
 
 const reviewSupportedPredicate = (props: Object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -41,17 +42,14 @@ binder.bind("repository.route", ShowPullRequestRoute);
 
 function matches(route: any) {
   const regex = new RegExp(".*(/pull-request)/.*");
-  return route.location.pathname.match(regex) || route.location.pathname.match(".*(pull-requests)/.*");
+  return (
+    route.location.pathname.match(regex) ||
+    route.location.pathname.match(".*(pull-requests)/.*")
+  );
 }
 
 const PullRequestNavLink = ({ url }) => {
-  return (
-    <NavLink
-      to={`${url}/pull-requests`}
-      label="Pull Requests"
-      activeWhenMatch={matches}
-    />
-  );
+  return <PullRequestsNavLink url={url} activeWhenMatch={matches} />;
 };
 
 binder.bind(
