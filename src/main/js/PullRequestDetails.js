@@ -243,7 +243,6 @@ class PullRequestDetails extends React.Component<Props, State> {
         "/edit";
       editButton = (
         <div className="level-right">
-          <div className="level-item">
             <a className="level-item">
               <span className="icon is-small">
                 <Link to={toEdit}>
@@ -251,7 +250,6 @@ class PullRequestDetails extends React.Component<Props, State> {
                 </Link>
               </span>
             </a>
-          </div>
         </div>
       );
     }
@@ -262,9 +260,14 @@ class PullRequestDetails extends React.Component<Props, State> {
           {editButton}
 
           <div className="level-left">
-            <div className={classNames("level-item", classes.fullWidth)}>
-              <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
+            <div className="columns">
+              <div className="column is-full">
+                <div className={classNames("level-item", classes.fullWidth)}>
+                  <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
+                </div>
+              </div>
             </div>
+
           </div>
 
           {mergeNotification}
