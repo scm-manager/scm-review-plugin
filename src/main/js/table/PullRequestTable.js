@@ -19,16 +19,11 @@ const styles = {
 };
 
 class PullRequestTable extends React.Component<Props> {
-  render() {
-    const { pullRequests, t, classes } = this.props;
+  renderTable() {
+    const { pullRequests, t } = this.props;
 
     return (
-      <table
-        className={classNames(
-          "table is-hoverable is-fullwidth",
-          classes.tableScrolling
-        )}
-      >
+      <>
         <thead>
           <tr>
             <th className="is-hidden-mobile">
@@ -50,6 +45,28 @@ class PullRequestTable extends React.Component<Props> {
             return <PullRequestRow key={index} pullRequest={pullRequest} />;
           })}
         </tbody>
+      </>
+    );
+  }
+
+  render() {
+    const { pullRequests, t, classes } = this.props;
+
+    const info = !(pullRequests && pullRequests.length > 0) ? (
+      <div className="notification is-info">
+        {t("scm-review-plugin.no-requests")}
+      </div>
+    ) : (
+      this.renderTable()
+    );
+    return (
+      <table
+        className={classNames(
+          "table is-hoverable is-fullwidth",
+          classes.tableScrolling
+        )}
+      >
+        {info}
       </table>
     );
   }
