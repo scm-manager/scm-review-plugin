@@ -29,8 +29,8 @@ const styles = {
     whiteSpace: "nowrap",
     maxWidth: "25em"
   },
-  fullWidth: {
-    width: "100%"
+  borderTop: {
+    borderTop: "none !important"
   }
 };
 
@@ -242,37 +242,29 @@ class PullRequestDetails extends React.Component<Props, State> {
         pullRequest.id +
         "/edit";
       editButton = (
-        <div className="level-right">
-            <a className="level-item">
-              <span className="icon is-small">
-                <Link to={toEdit}>
-                  <i className="fas fa-edit" />
-                </Link>
-              </span>
-            </a>
-        </div>
+        <a className="media-right">
+          <span className="icon is-small">
+            <Link to={toEdit}>
+              <i className="fas fa-edit" />
+            </Link>
+          </span>
+        </a>
       );
     }
 
     return (
       <div className="columns">
         <div className="column is-clipped">
-          {editButton}
-
-          <div className="level-left">
-            <div className="columns">
-              <div className="column is-full">
-                <div className={classNames("level-item", classes.fullWidth)}>
-                  <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
-                </div>
-              </div>
+          <div className="media">
+            <div className="media-content">
+              <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
             </div>
-
+            {editButton}
           </div>
 
           {mergeNotification}
 
-          <div className="media">
+          <div className={classNames(classes.borderTop, "media")}>
             <div className="media-content">
               <div>
                 <span
