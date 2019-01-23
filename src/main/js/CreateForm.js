@@ -74,6 +74,10 @@ class CreateForm extends React.Component<Props, State> {
     this.props.onChange(pullRequest);
   };
 
+  handleSubmit = (event: Event) => {
+    event.preventDefault();
+  }
+
   render() {
     const { t } = this.props;
     const { loading, error } = this.state;
@@ -87,7 +91,7 @@ class CreateForm extends React.Component<Props, State> {
     }
 
     return (
-      <form>
+      <form onSubmit={this.handleSubmit}>
         <div className="columns">
           <div className="column is-clipped">
             <Select
