@@ -63,28 +63,20 @@ class PullRequestList extends React.Component<Props, State> {
   };
 
   renderPullRequestTable = () => {
-    const { t } = this.props;
     const { pullRequests, status } = this.state;
 
     const availablePullRequests = pullRequests._embedded.pullRequests;
-    if (availablePullRequests && availablePullRequests.length > 0) {
-      return (
-        <>
-          <div className="is-pulled-right">
-            <StatusSelector
-              handleTypeChange={this.handleStatusChange}
-              status={status ? status : "ALL"}
-            />
-          </div>
-          <PullRequestTable pullRequests={availablePullRequests} />
-        </>
-      );
-    }
 
     return (
-      <div className="notification is-info">
-        {t("scm-review-plugin.no-requests")}
-      </div>
+      <>
+        <div className="is-pulled-right">
+          <StatusSelector
+            handleTypeChange={this.handleStatusChange}
+            status={status ? status : "ALL"}
+          />
+        </div>
+        <PullRequestTable pullRequests={availablePullRequests} />
+      </>
     );
   };
 
