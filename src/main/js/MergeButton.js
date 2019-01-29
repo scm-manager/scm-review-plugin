@@ -66,13 +66,7 @@ class MergeButton extends React.Component<Props, State> {
   };
 
   render() {
-    const {
-      t,
-      loading,
-      mergePossible,
-      repository,
-      pullRequest
-    } = this.props;
+    const { t, loading, mergePossible, repository, pullRequest } = this.props;
     const { mergeInformation } = this.state;
     const action = mergePossible ? this.confirmMerge : this.showInformation;
     const color = mergePossible ? "primary" : "warning";
