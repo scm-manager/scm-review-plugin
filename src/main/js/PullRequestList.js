@@ -1,6 +1,10 @@
 // @flow
 import React from "react";
-import { Loading, ErrorPage, CreateButton } from "@scm-manager/ui-components";
+import {
+  Loading,
+  ErrorPage,
+  CreateButton
+} from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequestCollection } from "./types/PullRequest";
 import { translate } from "react-i18next";
@@ -69,13 +73,13 @@ class PullRequestList extends React.Component<Props, State> {
 
     return (
       <>
-        <div className="is-pulled-right">
+        <div className="has-border-around is-round">
           <StatusSelector
             handleTypeChange={this.handleStatusChange}
             status={status ? status : "ALL"}
           />
+          <PullRequestTable pullRequests={availablePullRequests} />
         </div>
-        <PullRequestTable pullRequests={availablePullRequests} />
       </>
     );
   };
