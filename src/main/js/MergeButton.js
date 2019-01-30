@@ -5,6 +5,7 @@ import { Button, confirmAlert } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
 import type { PullRequest } from "./types/PullRequest";
 import type { Repository } from "@scm-manager/ui-types";
+import injectSheet from "react-jss";
 
 type Props = {
   merge: () => void,
@@ -17,6 +18,12 @@ type Props = {
 
 type State = {
   mergeInformation: boolean
+};
+
+const styles = {
+  buttonSpace: {
+    marginBottom: "1em"
+  }
 };
 
 class MergeButton extends React.Component<Props, State> {
@@ -67,8 +74,9 @@ class MergeButton extends React.Component<Props, State> {
 
   render() {
     const {
-      t,
       loading,
+      t,
+      classes,
       mergePossible,
       repository,
       pullRequest
@@ -85,6 +93,7 @@ class MergeButton extends React.Component<Props, State> {
           loading={loading}
           action={action}
           color={color}
+          className={classes.buttonSpace}
         />
         <ManualMergeInformation
           showMergeInformation={mergeInformation}
@@ -97,4 +106,4 @@ class MergeButton extends React.Component<Props, State> {
   }
 }
 
-export default translate("plugins")(MergeButton);
+export default injectSheet(styles)(translate("plugins")(MergeButton));
