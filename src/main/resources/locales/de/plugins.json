@@ -1,0 +1,78 @@
+{
+  "scm-review-plugin": {
+    "navLink": "Pull Requests",
+    "create": {
+      "title": "Pull Request",
+      "subtitle": "Erstellt einen neuen Pull Request für {{repositoryName}}",
+      "submitButton": "Speichern"
+    },
+    "edit": {
+      "title": "Pull Request",
+      "subtitle": "Pull Request ändern für {{repositoryName}}",
+      "submitButton": "Speichern"
+    },
+    "diff": {
+      "not-supported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt."
+    },
+    "no-requests": "Keine Pull Requests mit diesen Kriterien gefunden.",
+    "pull-request": {
+      "sourceBranch": "Source Branch",
+      "targetBranch": "Target Branch",
+      "title": "Titel",
+      "description": "Beschreibung",
+      "status": "Status",
+      "id": "ID",
+      "author": "Autor",
+      "date": "Datum"
+    },
+    "show-pull-request": {
+      "error-title": "Fehler",
+      "error-subtitle": "Unbekannter Pull Request Fehler",
+      "mergeButton": {
+        "button-title": "Merge Pull Request",
+        "confirm-alert": {
+          "title": "Merge Pull Request",
+          "message": "Soll der Pull Request wirklich gemerged werden?",
+          "submit": "Ja",
+          "cancel": "Nein"
+        },
+        "merge-information": "Der Pull Request kann nicht automatisch gemerged werden."
+      },
+      "rejectButton": {
+        "button-title": "Pull Request ablehnen",
+        "confirm-alert": {
+          "title": "Pull Request ablehnen",
+          "message": "Soll der Pull Request wirklich abgelehnt werden?",
+          "submit": "Ja",
+          "cancel": "Nein"
+        }
+      },
+      "notification": "Pull Request erfolgreich gemerged!"
+    },
+    "pull-requests": {
+      "error-title": "Fehler",
+      "error-subtitle": "Unbekannter Pull Request Fehler",
+      "description": "Beschreibung",
+      "createButton": "Neuer Pull Request"
+    },
+    "comment": {
+      "add": "Kommentar hinzufügen",
+      "delete": "Löschen",
+      "update": "Aktualisieren",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "confirm-alert": {
+        "title": "Kommentar löschen",
+        "message": "Soll der Kommentar wirklich gelöscht werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      },
+      "confirm-cancel-update-alert": {
+        "title": "Aktualisierung abbrechen",
+        "message": "Sollen die Änderungen an dem Kommentar wirklich verworfen werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      }
+    }
+  }
+}

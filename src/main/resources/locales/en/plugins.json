@@ -29,9 +29,9 @@
       "error-title": "Error",
       "error-subtitle": "Unknown pull request error",
       "mergeButton": {
-        "button-title": "Merge pull request",
+        "button-title": "Merge Pull Request",
         "confirm-alert": {
-          "title": "Merge pull request",
+          "title": "Merge Pull Request",
           "message": "Do you really want to merge?",
           "submit": "Yes",
           "cancel": "No"
@@ -39,9 +39,9 @@
         "merge-information": "Cannot be merged automatically"
       },
       "rejectButton": {
-        "button-title": "Reject pull request",
+        "button-title": "Reject Pull Request",
         "confirm-alert": {
-          "title": "Reject pull request",
+          "title": "Reject Pull Request",
           "message": "Do you really want to reject this pull request?",
           "submit": "Yes",
           "cancel": "No"
@@ -51,7 +51,7 @@
     },
     "pull-requests": {
       "error-title": "Error",
-      "error-subtitle": "Unknown pull-request error",
+      "error-subtitle": "Unknown pull request error",
       "description": "Description",
       "createButton": "New pull request"
     },
