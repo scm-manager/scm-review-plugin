@@ -53,7 +53,7 @@
       "error-title": "Fehler",
       "error-subtitle": "Unbekannter Pull Request Fehler",
       "description": "Beschreibung",
-      "createButton": "Neuer Pull Request"
+      "createButton": "Pull Request erstellen"
     },
     "comment": {
       "add": "Kommentar hinzufügen",
