@@ -31,14 +31,6 @@ class ManualMergeInformation extends React.Component<Props> {
       return null;
     }
 
-    const closeButton=(
-      <button
-        className="delete"
-        aria-label="close"
-        onClick={() => onClose()}
-      />
-    );
-
     const body = (
       <div className="content">
         <ExtensionPoint
@@ -49,11 +41,10 @@ class ManualMergeInformation extends React.Component<Props> {
       </div>
     );
 
-
     return (
       <Modal title={t(
         "scm-review-plugin.show-pull-request.mergeButton.merge-information"
-      )} closeButton={closeButton} body={body} active={true}/>
+      )} closeFunction={() => onClose()} body={body} active={true}/>
     );
   }
 }
