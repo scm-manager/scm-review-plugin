@@ -1,10 +1,6 @@
 // @flow
 import React from "react";
-import {
-  Loading,
-  ErrorPage,
-  CreateButton
-} from "@scm-manager/ui-components";
+import { Loading, ErrorPage, CreateButton } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequestCollection } from "./types/PullRequest";
 import { translate } from "react-i18next";
@@ -12,10 +8,13 @@ import { withRouter } from "react-router-dom";
 import { getPullRequests } from "./pullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
+import injectSheet from "react-jss";
+import classNames from "classnames";
 
 type Props = {
   repository: Repository,
-  t: string => string
+  t: string => string,
+  classes: any
 };
 
 type State = {
@@ -23,6 +22,12 @@ type State = {
   error?: Error,
   loading: boolean,
   status: string
+};
+
+const styles = {
+  tableScrolling: {
+    overflowX: "auto"
+  }
 };
 
 class PullRequestList extends React.Component<Props, State> {
@@ -67,20 +72,24 @@ class PullRequestList extends React.Component<Props, State> {
   };
 
   renderPullRequestTable = () => {
+    const { classes } = this.props;
     const { pullRequests, status } = this.state;
 
     const availablePullRequests = pullRequests._embedded.pullRequests;
 
     return (
-      <>
-        <div className="has-border-around is-round">
+      <nav className="panel">
+        <article className="panel-heading">
           <StatusSelector
             handleTypeChange={this.handleStatusChange}
             status={status ? status : "ALL"}
           />
+        </article>
+
+        <div className={classNames("panel-block", classes.tableScrolling)}>
           <PullRequestTable pullRequests={availablePullRequests} />
         </div>
-      </>
+      </nav>
     );
   };
 
@@ -120,4 +129,6 @@ class PullRequestList extends React.Component<Props, State> {
   }
 }
 
-export default withRouter(translate("plugins")(PullRequestList));
+export default withRouter(
+  injectSheet(styles)(translate("plugins")(PullRequestList))
+);

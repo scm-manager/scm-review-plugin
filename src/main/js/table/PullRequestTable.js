@@ -3,19 +3,10 @@ import React from "react";
 import { translate } from "react-i18next";
 import PullRequestRow from "./PullRequestRow";
 import type { PullRequest } from "./../types/PullRequest";
-import injectSheet from "react-jss";
-import classNames from "classnames";
 
 type Props = {
   t: string => string,
   pullRequests: PullRequest[]
-};
-
-const styles = {
-  tableScrolling: {
-    display: "block",
-    overflowX: "auto"
-  }
 };
 
 class PullRequestTable extends React.Component<Props> {
@@ -50,7 +41,7 @@ class PullRequestTable extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequests, t, classes } = this.props;
+    const { pullRequests, t } = this.props;
 
     const info = !(pullRequests && pullRequests.length > 0) ? (
       <div className="notification is-info">
@@ -59,17 +50,8 @@ class PullRequestTable extends React.Component<Props> {
     ) : (
       this.renderTable()
     );
-    return (
-      <table
-        className={classNames(
-          "table is-hoverable is-fullwidth",
-          classes.tableScrolling
-        )}
-      >
-        {info}
-      </table>
-    );
+    return <table className="table is-hoverable is-fullwidth">{info}</table>;
   }
 }
 
-export default injectSheet(styles)(translate("plugins")(PullRequestTable));
+export default translate("plugins")(PullRequestTable);
