@@ -1,6 +1,7 @@
 //@flow
 import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
+import { Modal } from "@scm-manager/ui-components";
 import { translate } from "react-i18next";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import type { PullRequest } from "./types/PullRequest";
@@ -29,31 +30,30 @@ class ManualMergeInformation extends React.Component<Props> {
     if (!showMergeInformation) {
       return null;
     }
-    return (
-      <div className="modal is-active">
-        <div className="modal-background" />
-        <div className="modal-card">
-          <header className="modal-card-head">
-            <p className="modal-card-title">{t(
-              "scm-review-plugin.show-pull-request.mergeButton.merge-information"
-            )}</p>
-            <button
-              className="delete"
-              aria-label="close"
-              onClick={() => onClose()}
-            />
-          </header>
-          <section className="modal-card-body">
-            <div className="content">
-              <ExtensionPoint
-                name="repos.repository-merge.information"
-                renderAll={true}
-                props={{ repository, source, target }}
-              />
-            </div>
-          </section>
-        </div>
+
+    const closeButton=(
+      <button
+        className="delete"
+        aria-label="close"
+        onClick={() => onClose()}
+      />
+    );
+
+    const body = (
+      <div className="content">
+        <ExtensionPoint
+          name="repos.repository-merge.information"
+          renderAll={true}
+          props={{ repository, source, target }}
+        />
       </div>
+    );
+
+
+    return (
+      <Modal title={t(
+        "scm-review-plugin.show-pull-request.mergeButton.merge-information"
+      )} closeButton={closeButton} body={body} active={true}/>
     );
   }
 }
