@@ -2,6 +2,7 @@
 import React from "react";
 import { translate } from "react-i18next";
 import { Button, confirmAlert } from "@scm-manager/ui-components";
+import injectSheet from "react-jss";
 
 type Props = {
   reject: () => void,
@@ -9,8 +10,14 @@ type Props = {
   t: string => string
 };
 
-class RejectButton extends React.Component<Props> {
+const styles = {
+  buttonSpace: {
+    marginBottom: "1em",
+    marginRight: "0.75em"
+  }
+};
 
+class RejectButton extends React.Component<Props> {
   confirmReject = () => {
     const { t, reject } = this.props;
     confirmAlert({
@@ -38,7 +45,7 @@ class RejectButton extends React.Component<Props> {
   };
 
   render() {
-    const { t, loading } = this.props;
+    const { loading, t, classes } = this.props;
     const color = "warning";
     const action = this.confirmReject;
     return (
@@ -49,9 +56,10 @@ class RejectButton extends React.Component<Props> {
         action={action}
         loading={loading}
         color={color}
+        className={classes.buttonSpace}
       />
     );
   }
 }
 
-export default translate("plugins")(RejectButton);
+export default injectSheet(styles)(translate("plugins")(RejectButton));
