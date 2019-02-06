@@ -78,18 +78,18 @@ class PullRequestList extends React.Component<Props, State> {
     const availablePullRequests = pullRequests._embedded.pullRequests;
 
     return (
-      <nav className="panel">
-        <article className="panel-heading">
+      <div className="panel">
+        <div className="panel-heading">
           <StatusSelector
             handleTypeChange={this.handleStatusChange}
             status={status ? status : "ALL"}
           />
-        </article>
+        </div>
 
         <div className={classNames("panel-block", classes.tableScrolling)}>
           <PullRequestTable pullRequests={availablePullRequests} />
         </div>
-      </nav>
+      </div>
     );
   };
 

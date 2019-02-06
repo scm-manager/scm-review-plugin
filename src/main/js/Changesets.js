@@ -107,7 +107,7 @@ class Changesets extends React.Component<Props, State> {
       return <Loading />;
     } else {
       return (
-        <nav className="panel">
+        <div className="panel">
           <div className="panel-block">
             <ChangesetList
               repository={repository}
@@ -117,7 +117,7 @@ class Changesets extends React.Component<Props, State> {
           <div className="panel-footer">
             <LinkPaginator collection={changesets} page={page} />
           </div>
-        </nav>
+        </div>
       );
     }
   }
