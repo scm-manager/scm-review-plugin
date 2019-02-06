@@ -1,8 +1,13 @@
 //@flow
 import React from "react";
-import type {PagedCollection, Repository} from "@scm-manager/ui-types";
-import {createChangesetUrl, getChangesets} from "./pullRequest";
-import {ErrorNotification, ChangesetList, LinkPaginator, Loading} from "@scm-manager/ui-components";
+import type { PagedCollection, Repository } from "@scm-manager/ui-types";
+import { createChangesetUrl, getChangesets } from "./pullRequest";
+import {
+  ErrorNotification,
+  ChangesetList,
+  LinkPaginator,
+  Loading
+} from "@scm-manager/ui-components";
 import { withRouter } from "react-router-dom";
 
 type Props = {
@@ -16,7 +21,7 @@ type ChangesetCollection = PagedCollection & {
   _embedded: {
     changesets: Changeset[]
   }
-}
+};
 
 type State = {
   changesets: ChangesetCollection,
@@ -26,7 +31,6 @@ type State = {
 };
 
 class Changesets extends React.Component<Props, State> {
-
   constructor(props: Props) {
     super(props);
 
@@ -50,23 +54,25 @@ class Changesets extends React.Component<Props, State> {
 
   fetchChangesets = (url: string) => {
     const page = this.getCurrentPage();
-    getChangesets(`${url}?page=${page - 1}`).then(changesets => {
-      this.setState({
-        changesets,
-        error: undefined,
-        loading: false
+    getChangesets(`${url}?page=${page - 1}`)
+      .then(changesets => {
+        this.setState({
+          changesets,
+          error: undefined,
+          loading: false
+        });
+      })
+      .catch(error => {
+        this.setState({
+          error,
+          loading: false
+        });
       });
-    }).catch(error => {
-      this.setState({
-        error,
-        loading: false
-      });
-    });
   };
 
   loadChangesets = () => {
     const url = this.createChangesetLink();
-    if (! url) {
+    if (!url) {
       this.setState({
         loading: false,
         error: new Error("incoming changesets are not supported")
@@ -81,7 +87,11 @@ class Changesets extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (prevProps.source !== this.props.source || prevProps.target !== this.props.target || prevProps.match.params.page !== this.props.match.params.page) {
+    if (
+      prevProps.source !== this.props.source ||
+      prevProps.target !== this.props.target ||
+      prevProps.match.params.page !== this.props.match.params.page
+    ) {
       this.loadChangesets();
     }
   }
@@ -92,19 +102,25 @@ class Changesets extends React.Component<Props, State> {
     const page = this.getCurrentPage();
 
     if (error) {
-      return <ErrorNotification error={ error } />;
+      return <ErrorNotification error={error} />;
     } else if (loading) {
       return <Loading />;
     } else {
       return (
-        <>
-          <ChangesetList repository={repository} changesets={changesets._embedded.changesets} />
-          <LinkPaginator collection={changesets} page={page} />
-        </>
+        <div className="panel">
+          <div className="panel-block">
+            <ChangesetList
+              repository={repository}
+              changesets={changesets._embedded.changesets}
+            />
+          </div>
+          <div className="panel-footer">
+            <LinkPaginator collection={changesets} page={page} />
+          </div>
+        </div>
       );
     }
   }
-
 }
 
 export default withRouter(Changesets);

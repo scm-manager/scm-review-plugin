@@ -74,8 +74,8 @@ class MergeButton extends React.Component<Props, State> {
 
   render() {
     const {
-      loading,
       t,
+      loading,
       classes,
       mergePossible,
       repository,
