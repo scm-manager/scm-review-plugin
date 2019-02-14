@@ -12,8 +12,7 @@ type Props = {
 
 const styles = {
   buttonSpace: {
-    marginBottom: "1em",
-    marginRight: "0.75em"
+    marginBottom: "1em"
   }
 };
 
@@ -49,15 +48,17 @@ class RejectButton extends React.Component<Props> {
     const color = "warning";
     const action = this.confirmReject;
     return (
-      <Button
-        label={t(
-          "scm-review-plugin.show-pull-request.rejectButton.button-title"
-        )}
-        action={action}
-        loading={loading}
-        color={color}
-        className={classes.buttonSpace}
-      />
+      <p className="control">
+        <Button
+          label={t(
+            "scm-review-plugin.show-pull-request.rejectButton.button-title"
+          )}
+          action={action}
+          loading={loading}
+          color={color}
+          className={classes.buttonSpace}
+        />
+      </p>
     );
   }
 }

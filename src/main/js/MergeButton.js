@@ -85,7 +85,7 @@ class MergeButton extends React.Component<Props, State> {
     const action = mergePossible ? this.confirmMerge : this.showInformation;
     const color = mergePossible ? "primary" : "warning";
     return (
-      <>
+      <p className="control">
         <Button
           label={t(
             "scm-review-plugin.show-pull-request.mergeButton.button-title"
@@ -101,7 +101,7 @@ class MergeButton extends React.Component<Props, State> {
           pullRequest={pullRequest}
           onClose={() => this.closeInformation()}
         />
-      </>
+      </p>
     );
   }
 }

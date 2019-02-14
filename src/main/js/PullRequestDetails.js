@@ -298,9 +298,10 @@ class PullRequestDetails extends React.Component<Props, State> {
             </div>
           </div>
 
-          {rejectButton}
-
-          {mergeButton}
+          <div className="field is-grouped">
+            {rejectButton}
+            {mergeButton}
+          </div>
 
           <PullRequestInformation
             pullRequest={pullRequest}
