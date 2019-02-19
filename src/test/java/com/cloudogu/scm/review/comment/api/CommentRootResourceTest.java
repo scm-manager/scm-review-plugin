@@ -34,6 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.time.Instant;
 
@@ -110,7 +111,7 @@ public class CommentRootResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnCreatePRComment() throws URISyntaxException {
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnCreatePRComment() throws URISyntaxException, UnsupportedEncodingException {
     byte[] pullRequestCommentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
     MockHttpRequest request =
       MockHttpRequest
@@ -118,7 +119,7 @@ public class CommentRootResourceTest {
         .content(pullRequestCommentJson)
         .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:commentPullRequest:repo_ID\\]");
   }
 
 
@@ -164,7 +165,7 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:readPullRequest:repo_ID\\]");
   }
 
   @Test

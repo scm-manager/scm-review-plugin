@@ -36,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -115,18 +116,18 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException {
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:readPullRequest:repo_ID\\]");
   }
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException {
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "");
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:readPullRequest:repo_ID\\]");
   }
 
   @Test
@@ -137,7 +138,7 @@ public class PullRequestRootResourceTest {
       .content(pullRequestJson)
       .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:push:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:createPullRequest:repo_ID\\]");
   }
 
   @Test
@@ -232,7 +233,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
-  public void shouldGetPullRequest() throws URISyntaxException {
+  public void shouldGetPullRequest() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     PullRequest pullRequest = createPullRequest();
     when(store.get("123")).thenReturn(pullRequest);
@@ -285,7 +286,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
-  public void shouldGetAllPullRequests() throws URISyntaxException {
+  public void shouldGetAllPullRequests() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     String id_1 = "id_1";
     String id_2 = "ABC ID 2";
@@ -413,7 +414,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
-  public void shouldFailOnUpdatingNonExistingPullRequest() throws URISyntaxException {
+  public void shouldFailOnUpdatingNonExistingPullRequest() throws URISyntaxException, UnsupportedEncodingException {
     initRepoWithPRs("ns", "repo");
     when(store.get("opened_1")).thenThrow(new NotFoundException("x", "y"));
     MockHttpRequest request = MockHttpRequest
@@ -431,7 +432,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
-  public void shouldFailUpdatingOnMissingPushPermission() throws URISyntaxException {
+  public void shouldFailUpdatingOnMissingModifyPushPermission() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
@@ -441,7 +442,7 @@ public class PullRequestRootResourceTest {
 
     assertExceptionFrom(response)
       .isOffClass(UnauthorizedException.class)
-      .hasMessageMatching("Subject does not have permission \\[repository:push:repo_ID\\]");
+      .hasMessageMatching("Subject does not have permission \\[repository:modifyPullRequest:repo_ID\\]");
     verify(store, never()).update(any());
   }
 

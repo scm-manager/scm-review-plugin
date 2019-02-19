@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
@@ -8,7 +9,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -63,7 +63,7 @@ public class PullRequestRootResource {
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
 
     Repository repository = service.getRepository(namespace, name);
-    RepositoryPermissions.push(repository).check();
+    PermissionCheck.checkCreate(repository);
     pullRequestDto.setStatus(PullRequestStatus.OPEN);
     service.get(repository, pullRequestDto.getSource(), pullRequestDto.getTarget(), pullRequestDto.getStatus())
       .ifPresent(pullRequest -> {
@@ -88,7 +88,7 @@ public class PullRequestRootResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("ALL") PullRequestStatusDto pullRequestStatusDto) {
     Repository repository = service.getRepository(namespace, name);
-    RepositoryPermissions.read(repository).check();
+    PermissionCheck.checkRead(repository);
     List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)
       .stream()
       .filter(pullRequest -> pullRequestStatusDto == PullRequestStatusDto.ALL || pullRequest.getStatus().equals(PullRequestStatus.valueOf(pullRequestStatusDto.name())))
@@ -96,7 +96,7 @@ public class PullRequestRootResource {
       .sorted(Comparator.comparing(PullRequestDto::getLastModified).reversed())
       .collect(Collectors.toList());
 
-    boolean permission = RepositoryPermissions.push(repository).isPermitted();
+    boolean permission = PermissionCheck.mayCreate(repository);
     return Response.ok(createCollection(uriInfo, permission, pullRequestDtos, "pullRequests")).build();
   }
 

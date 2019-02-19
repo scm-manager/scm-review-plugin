@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
@@ -9,7 +10,6 @@ import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import com.webcohesion.enunciate.metadata.rs.TypeHint;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -48,7 +48,7 @@ public class PullRequestResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response get(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
-    RepositoryPermissions.read(repository).check();
+    PermissionCheck.checkRead(repository);
     return Response.ok(mapper.using(uriInfo).map(service.get(namespace, name, pullRequestId), repository)).build();
   }
 
@@ -70,7 +70,7 @@ public class PullRequestResource {
                          @PathParam("pullRequestId") String pullRequestId,
                          PullRequestDto pullRequestDto) {
     Repository repository = service.getRepository(namespace, name);
-    RepositoryPermissions.push(repository).check();
+    PermissionCheck.checkModify(repository);
     service.update(namespace, name, pullRequestId, pullRequestDto.getTitle(), pullRequestDto.getDescription());
     return Response.noContent().build();
   }

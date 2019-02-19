@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.comment.api;
 
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
@@ -9,7 +10,6 @@ import com.google.common.collect.Maps;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -63,7 +63,7 @@ public class CommentRootResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
                          @NotNull PullRequestCommentDto pullRequestCommentDto) {
-    RepositoryPermissions.read(repositoryResolver.resolve(new NamespaceAndName(namespace, name))).check();
+    PermissionCheck.checkComment(repositoryResolver.resolve(new NamespaceAndName(namespace, name)));
     pullRequestCommentDto.setDate(Instant.now());
     pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
 
@@ -81,7 +81,7 @@ public class CommentRootResource {
                          @PathParam("pullRequestId") String pullRequestId) {
 
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    RepositoryPermissions.read(repository).check();
+    PermissionCheck.checkRead(repository);
     List<PullRequestComment> list = service.getAll(namespace, name, pullRequestId);
     List<PullRequestCommentDto> dtoList = list
       .stream()
@@ -96,7 +96,7 @@ public class CommentRootResource {
         return mapper.map(pr, uriMap);
       })
       .collect(Collectors.toList());
-    boolean permission = RepositoryPermissions.read(repository).isPermitted();
+    boolean permission = PermissionCheck.mayComment(repository);
     return Response.ok(createCollection(uriInfo, permission, dtoList, "pullRequestComments")).build();
   }
 
