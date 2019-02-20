@@ -74,5 +74,29 @@
         "cancel": "Nein"
       }
     }
+  },
+  "verbs": {
+    "repository": {
+      "createPullRequest": {
+        "displayName": "Pull-Request erstellen",
+        "description": "Darf neue Pull-Requests erstellen"
+      },
+      "readPullRequest": {
+        "displayName": "Pull-Requests lesen",
+        "description": "Darf Pull-Requests lesen"
+      },
+      "commentPullRequest": {
+        "displayName": "Pull-Requests kommentieren",
+        "description": "Darf Pull-Requests kommentieren"
+      },
+      "modifyPullRequest": {
+        "displayName": "Pull-Requests bearbeiten",
+        "description": "Darf Kommentare von anderen Benutzern in Pull-Requests bearbeiten"
+      },
+      "mergePullRequest": {
+        "displayName": "Pull-Requests mergen/ablehnen",
+        "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen"
+      }
+    }
   }
 }

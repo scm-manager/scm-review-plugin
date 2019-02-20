@@ -74,5 +74,29 @@
         "cancel": "No"
       }
     }
+  },
+  "verbs": {
+    "repository": {
+      "createPullRequest": {
+        "displayName": "create pull request",
+        "description": "May create new pull requests"
+      },
+      "readPullRequest": {
+        "displayName": "read pull requests",
+        "description": "May read all pull requests"
+      },
+      "commentPullRequest": {
+        "displayName": "comment pull request",
+        "description": "May add comments to pull requests"
+      },
+      "modifyPullRequest": {
+        "displayName": "modify pull request",
+        "description": "May modify/delete comments from other users in pull requests"
+      },
+      "mergePullRequest": {
+        "displayName": "merge/reject pull requests",
+        "description": "May merge or reject pull requests"
+      }
+    }
   }
 }

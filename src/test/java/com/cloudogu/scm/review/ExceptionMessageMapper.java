@@ -6,6 +6,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import java.io.UnsupportedEncodingException;
+
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +18,7 @@ public class ExceptionMessageMapper implements ExceptionMapper<Exception> {
     return Response.status(SC_BAD_REQUEST).entity(exception.getClass().getName() + "\n" + exception.getMessage()).build();
   }
 
-  public static ExceptionAssert assertExceptionFrom(MockHttpResponse response) {
+  public static ExceptionAssert assertExceptionFrom(MockHttpResponse response) throws UnsupportedEncodingException {
     return new ExceptionAssert(response);
   }
 
@@ -24,7 +26,7 @@ public class ExceptionMessageMapper implements ExceptionMapper<Exception> {
     private final String actualExceptionClass;
     private final String actualMessage;
 
-    private ExceptionAssert(MockHttpResponse response) {
+    private ExceptionAssert(MockHttpResponse response) throws UnsupportedEncodingException {
       assertThat(response.getStatus()).isEqualTo(SC_BAD_REQUEST);
       String contentAsString = response.getContentAsString();
       actualExceptionClass = contentAsString.substring(0, contentAsString.indexOf('\n'));

@@ -1,0 +1,25 @@
+<repository-permissions>
+  <verbs>
+    <verb>createPullRequest</verb>
+    <verb>readPullRequest</verb>
+    <verb>commentPullRequest</verb>
+    <verb>mergePullRequest</verb>
+  </verbs>
+  <roles>
+    <role>
+      <name>READ</name>
+      <verbs>
+        <verb>readPullRequest</verb>
+      </verbs>
+    </role>
+    <role>
+      <name>WRITE</name>
+      <verbs>
+        <verb>createPullRequest</verb>
+        <verb>readPullRequest</verb>
+        <verb>commentPullRequest</verb>
+        <verb>mergePullRequest</verb>
+      </verbs>
+    </role>
+  </roles>
+</repository-permissions>

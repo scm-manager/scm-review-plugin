@@ -29,10 +29,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.time.Instant;
 
-import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -118,7 +118,7 @@ public class CommentResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnDeletePRComment() throws URISyntaxException{
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnDeletePRComment() throws URISyntaxException, UnsupportedEncodingException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", Instant.now());
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
     doNothing().when(service).delete("space", "name", "1", "1");
@@ -128,7 +128,7 @@ public class CommentResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
 
@@ -224,7 +224,7 @@ public class CommentResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnUpdatePRComment() throws URISyntaxException {
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnUpdatePRComment() throws URISyntaxException, UnsupportedEncodingException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
     doNothing().when(service).delete("space", "name", "1", "1");
@@ -242,7 +242,7 @@ public class CommentResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:read:repo_ID\\]");
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
 
