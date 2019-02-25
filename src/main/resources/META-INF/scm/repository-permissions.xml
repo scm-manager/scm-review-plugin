@@ -3,6 +3,7 @@
     <verb>createPullRequest</verb>
     <verb>readPullRequest</verb>
     <verb>commentPullRequest</verb>
+    <verb>modifyPullRequest</verb>
     <verb>mergePullRequest</verb>
   </verbs>
   <roles>

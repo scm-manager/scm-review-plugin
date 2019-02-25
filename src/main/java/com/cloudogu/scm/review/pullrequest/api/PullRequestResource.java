@@ -70,7 +70,9 @@ public class PullRequestResource {
                          @PathParam("pullRequestId") String pullRequestId,
                          PullRequestDto pullRequestDto) {
     Repository repository = service.getRepository(namespace, name);
-    PermissionCheck.checkModify(repository);
+    if (!PermissionCheck.mayModifyPullRequest(repository, service.get(namespace, name, pullRequestId))) {
+      return Response.status(Response.Status.FORBIDDEN).build();
+    }
     service.update(namespace, name, pullRequestId, pullRequestDto.getTitle(), pullRequestDto.getDescription());
     return Response.noContent().build();
   }

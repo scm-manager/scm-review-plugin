@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.comment.api;
 
 
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
 import com.cloudogu.scm.review.comment.service.CommentService;
@@ -53,7 +54,7 @@ public class CommentResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     RepositoryPermissions.read(repository).check();
     try {
-      if (!service.modificationsAllowed(pullRequestId, commentId, repository)) {
+      if (!PermissionCheck.mayModifyComment(repository, service.get(repository.getNamespace(), repository.getName(), pullRequestId, commentId))) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
       service.delete(namespace, name, pullRequestId, commentId);
@@ -84,7 +85,7 @@ public class CommentResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     RepositoryPermissions.read(repository).check();
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
-    if (!service.modificationsAllowed(repository, comment)) {
+    if (!PermissionCheck.mayModifyComment(repository, comment)) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
     service.update(namespace, name, pullRequestId, commentId, pullRequestCommentDto.getComment());
