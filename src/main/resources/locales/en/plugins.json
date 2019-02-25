@@ -91,7 +91,7 @@
       },
       "modifyPullRequest": {
         "displayName": "modify pull request texts",
-        "description": "May modify/delete comments from other users in pull requests and the title/description of the pull request itself"
+        "description": "May modify the title and the description of the pull request itself and modify/delete comments from other users"
       },
       "mergePullRequest": {
         "displayName": "merge/reject pull requests",
