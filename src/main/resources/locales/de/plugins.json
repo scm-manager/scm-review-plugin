@@ -90,8 +90,8 @@
         "description": "Darf Pull-Requests kommentieren"
       },
       "modifyPullRequest": {
-        "displayName": "Pull-Requests bearbeiten",
-        "description": "Darf Kommentare von anderen Benutzern in Pull-Requests bearbeiten"
+        "displayName": "Pull-Request Texte bearbeiten",
+        "description": "Darf Kommentare von anderen Benutzern in Pull-Requests sowie den Titel sowie die Beschreibung des Pull Requests an sich bearbeiten"
       },
       "mergePullRequest": {
         "displayName": "Pull-Requests mergen/ablehnen",

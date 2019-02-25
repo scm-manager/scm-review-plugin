@@ -89,7 +89,7 @@ public class CommentRootResource {
         URI uri = uriInfo.getAbsolutePathBuilder().path(String.valueOf(pr.getId())).build();
         Map<String, URI> uriMap = Maps.newHashMap();
         uriMap.put("self",uri);
-        if (service.modificationsAllowed(pullRequestId,pr.getId(),repository)){
+        if (PermissionCheck.mayModifyComment(repository, service.get(namespace, name, pullRequestId, pr.getId()))) {
           uriMap.put("update",uri);
           uriMap.put("delete",uri);
         }

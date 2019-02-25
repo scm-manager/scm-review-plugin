@@ -90,8 +90,8 @@
         "description": "May add comments to pull requests"
       },
       "modifyPullRequest": {
-        "displayName": "modify pull request",
-        "description": "May modify/delete comments from other users in pull requests"
+        "displayName": "modify pull request texts",
+        "description": "May modify/delete comments from other users in pull requests and the title/description of the pull request itself"
       },
       "mergePullRequest": {
         "displayName": "merge/reject pull requests",

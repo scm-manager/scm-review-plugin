@@ -28,25 +28,6 @@ public class CommentService {
   }
 
   /**
-   * A User can modify a comment if he is the author or he has a push permission
-   *
-   * @param pullRequestId
-   * @param commentId
-   * @param repository
-   * @return true if the user can update/delete a comment
-   */
-  public boolean modificationsAllowed(String pullRequestId, String commentId, Repository repository) {
-    return modificationsAllowed(repository, this.get(repository.getNamespace(), repository.getName(), pullRequestId, commentId));
-  }
-
-  public boolean modificationsAllowed(Repository repository, PullRequestComment requestComment ) {
-    String currentUser = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
-
-    return currentUser.equals(requestComment.getAuthor())
-      || PermissionCheck.mayModify(repository);
-  }
-
-  /**
    * Add a Comment to the PullRequest with id <code>pullRequestId</code>
    *
    * @param namespace
