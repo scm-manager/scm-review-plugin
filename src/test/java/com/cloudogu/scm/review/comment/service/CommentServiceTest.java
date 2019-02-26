@@ -60,41 +60,6 @@ class CommentServiceTest {
   }
 
   @Test
-  void shouldAllowModificationsForAuthor() {
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    String currentUser = "author";
-    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
-    User user1 = new User();
-    user1.setAdmin(false);
-    List<Object> userList = Lists.newArrayList("user", user1);
-    when(principals.asList()).thenReturn(userList);
-
-    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
-    boolean modificationsAllowed = commentService.modificationsAllowed(new Repository(), comment);
-
-    assertTrue(modificationsAllowed);
-  }
-
-  @Test
-  void shouldAllowModificationsForPushPermission() {
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(anyString())).thenReturn(true);
-    String currentUser = "author_1";
-    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
-    User user1 = new User();
-    user1.setAdmin(false);
-    List<Object> userList = Lists.newArrayList("user", user1);
-    when(principals.asList()).thenReturn(userList);
-
-    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
-    boolean modificationsAllowed = commentService.modificationsAllowed(new Repository("", "", "", ""), comment);
-
-    assertTrue(modificationsAllowed);
-  }
-
-  @Test
   void shouldAddComment() {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
     String pullRequestId = "pr_id";

@@ -55,9 +55,9 @@ public class CommentResourceTest {
 
   private final MockHttpResponse response = new MockHttpResponse();
 
-  private static final String REPOSITORY_NAME = "repo";
+  private static final String REPOSITORY_NAME = "name";
   private static final String REPOSITORY_ID = "repo_ID";
-  private static final String REPOSITORY_NAMESPACE = "ns";
+  private static final String REPOSITORY_NAMESPACE = "space";
 
   @Mock
   private RepositoryResolver repositoryResolver;
@@ -87,7 +87,6 @@ public class CommentResourceTest {
   public void shouldDeleteCommentÍfTheAuthorIsTheCurrentUser() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", Instant.now());
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    when(service.modificationsAllowed(eq("1"), eq("1"), any())).thenReturn(true);
     doNothing().when(service).delete("space", "name", "1", "1");
     MockHttpRequest request =
       MockHttpRequest
@@ -104,7 +103,6 @@ public class CommentResourceTest {
   public void shouldDeleteCommentÍfTheCurrentUserIsDifferentWithAuthorButHasPushPermission() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    when(service.modificationsAllowed( eq("1"), eq("1"), any())).thenReturn(true);
     doNothing().when(service).delete("space", "name", "1", "1");
     MockHttpRequest request =
       MockHttpRequest
@@ -153,7 +151,6 @@ public class CommentResourceTest {
   public void shouldUpdateCommentÍfTheAuthorIsTheCurrentUser() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", Instant.now());
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    when(service.modificationsAllowed(any(), any())).thenReturn(true);
     doNothing().when(service).delete("space", "name", "1", "1");
     String newComment = "haha ";
     when(service.add(eq("space"), eq("name"), eq("1"),
@@ -178,7 +175,6 @@ public class CommentResourceTest {
   public void shouldUpdateCommentIfTheCurrentUserIsDifferentWithAuthorButHasPushPermission() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    when(service.modificationsAllowed(any(), any())).thenReturn(true);
     doNothing().when(service).delete("space", "name", "1", "1");
     String newComment = "haha ";
     when(service.add(eq("space"), eq("name"), eq("1"),

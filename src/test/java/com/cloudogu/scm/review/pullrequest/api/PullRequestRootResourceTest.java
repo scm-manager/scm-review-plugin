@@ -437,12 +437,13 @@ public class PullRequestRootResourceTest {
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
       .contentType(MediaType.APPLICATION_JSON);
+    PullRequest pullRequest = createPullRequest();
+    when(store.get("1")).thenReturn(pullRequest);
 
     dispatcher.invoke(request, response);
 
-    assertExceptionFrom(response)
-      .isOffClass(UnauthorizedException.class)
-      .hasMessageMatching("Subject does not have permission \\[repository:modifyPullRequest:repo_ID\\]");
+    assertEquals(403, response.getStatus());
+
     verify(store, never()).update(any());
   }
 
