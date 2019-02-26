@@ -1,13 +1,10 @@
 package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.Lists;
-import org.apache.shiro.SecurityUtils;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import java.util.List;
