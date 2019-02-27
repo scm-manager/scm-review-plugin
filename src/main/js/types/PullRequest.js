@@ -26,6 +26,10 @@ export type Comment = BasicComment & {
   _links: Links
 };
 
+export type LineComment = Comment & {
+  line: number
+}
+
 export type PullRequestCollection = Collection & {
   _embedded: {
     pullRequests: PullRequest[]
