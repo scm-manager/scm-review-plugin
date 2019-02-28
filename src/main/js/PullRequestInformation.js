@@ -92,7 +92,7 @@ class PullRequestInformation extends React.Component<Props> {
           <Route
             path={`${baseURL}/diff`}
             render={() => (
-              <Diff repository={repository} source={source} target={target} />
+              <Diff repository={repository} pullRequest={pullRequest} source={source} target={target} />
             )}
           />
         </>

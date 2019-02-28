@@ -23,12 +23,10 @@ export type BasicComment = {
 export type Comment = BasicComment & {
   author: string,
   date: string,
+  file?: string,
+  lineId?: string,
   _links: Links
 };
-
-export type LineComment = Comment & {
-  line: number
-}
 
 export type PullRequestCollection = Collection & {
   _embedded: {
