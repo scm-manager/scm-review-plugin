@@ -25,7 +25,7 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 @EagerSingleton @Extension
 public class MergeCheckHook {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MergeCommand.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MergeCheckHook.class);
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
