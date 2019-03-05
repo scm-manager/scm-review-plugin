@@ -1,15 +1,18 @@
 // @flow
 import React from "react";
 import {Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
-import type {BasicComment} from "../types/PullRequest";
+import type {BasicComment, Location} from "../types/PullRequest";
 import {translate} from "react-i18next";
 import {createPullRequestComment} from "../pullRequest";
 
 type Props = {
   url: string,
-  t: string => string,
+  location?: Location,
   refresh: () => void,
-  handleError: (error: Error) => void
+  handleError: (error: Error) => void,
+
+  // context props
+  t: string => string,
 };
 
 type State = {
@@ -42,10 +45,10 @@ class CreateComment extends React.Component<Props, State> {
       return;
     }
 
-    const {url, refresh, handleError} = this.props;
+    const {url, location, refresh, handleError} = this.props;
     this.setState({loading: true});
 
-    createPullRequestComment(url, newComment).then(
+    createPullRequestComment(url, {...newComment, location}).then(
       result => {
         if (result.error) {
           this.setState({loading: false});
@@ -92,6 +95,7 @@ class CreateComment extends React.Component<Props, State> {
                     action={this.submit}
                     disabled={this.isValid()}
                     loading={loading}
+                    scrollToTop={false}
                   />
                 </p>
               </div>

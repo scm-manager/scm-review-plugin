@@ -16,8 +16,15 @@ export type PullRequest = BasicPullRequest & {
   _links: Links
 };
 
+export type Location = {
+  file: string,
+  hunk: string,
+  changeId: string
+};
+
 export type BasicComment = {
   comment: string,
+  location?: Location
 };
 
 export type Comment = BasicComment & {

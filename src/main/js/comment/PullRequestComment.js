@@ -175,6 +175,7 @@ class PullRequestComment extends React.Component<Props, State> {
             label={t("scm-review-plugin.comment.save")}
             action={this.update}
             disabled={updatedComment.trim() === ""}
+            scrollToTop={false}
           />
         </div>
         <div className="level-item">

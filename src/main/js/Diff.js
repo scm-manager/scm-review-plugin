@@ -1,21 +1,24 @@
 //@flow
 import React from "react";
-import type { Change, DiffEventContext } from "@scm-manager/ui-components";
+import type {BaseContext, DiffEventContext} from "@scm-manager/ui-components";
 import {
   AnnotationFactoryContext,
-  diffs,
   LoadingDiff,
   Notification
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
-import { createDiffUrl } from "./pullRequest";
+import {createDiffUrl, getPullRequestComments} from "./pullRequest";
 import { translate } from "react-i18next";
-import type { Comments, PullRequest } from "./types/PullRequest";
-import PullRequestComment from "./comment/PullRequestComment";
+import type { Comment, PullRequest, Location } from "./types/PullRequest";
 import CreateComment from "./comment/CreateComment";
+import CreateCommentInlineWrapper from "./comment/CreateCommentInlineWrapper";
+import {getPath} from "@scm-manager/ui-components/src/repos/diffs";
+import PullRequestComment from "./comment/PullRequestComment";
+import InlineComments from "./comment/InlineComments";
 
 type Props = {
   repository: Repository,
+  pullRequest: PullRequest,
   source: string,
   target: string,
 
@@ -24,9 +27,9 @@ type Props = {
 };
 
 type State = {
-  lineComments: {
+  commentLines: {
     [string]: {
-      [string]: Comments
+      [string]: Comment[]
     }
   },
   editorLines: {
@@ -36,70 +39,49 @@ type State = {
   }
 };
 
-const comments = {
-  _links: {
-    self: {
-      href:
-        "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/bat/1/comments/"
-    },
-    create: {
-      href:
-        "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/bat/1/comments/"
-    }
-  },
-  _embedded: {
-    pullRequestComments: [
-      {
-        comment: "Neuer Kommentar",
-        author: "scmadmin",
-        date: "2019-02-27T18:04:21.100Z",
-        _links: {
-          self: {
-            href:
-              "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/bat/1/comments/3GRJInWMa1"
-          },
-          update: {
-            href:
-              "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/bat/1/comments/3GRJInWMa1"
-          },
-          delete: {
-            href:
-              "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/bat/1/comments/3GRJInWMa1"
-          }
-        }
-      },
-      {
-        comment: "Noch ein Kommentar, dieses Mal aber von Tricia",
-        author: "tricia",
-        date: "2019-02-27T20:05:21.100Z",
-        _links: {
-          self: {
-            href:
-              "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/bat/1/comments/3GRJInWMa1"
-          },
-          update: {
-            href:
-              "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/bat/1/comments/3GRJInWMa1"
-          },
-          delete: {
-            href:
-              "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/bat/1/comments/3GRJInWMa1"
-          }
-        }
-      }
-    ]
-  }
-};
+
 class Diff extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      lineComments: {
-        "modify_src/app.rs_@@ -100,7 +100,9 @@": { N100: comments }
-      },
+      commentLines: {},
       editorLines: {}
     };
   }
+
+  componentDidMount() {
+    this.fetchComments();
+  }
+
+  fetchComments = () => {
+    const { pullRequest } = this.props;
+    if (pullRequest._links.comments) {
+      getPullRequestComments(pullRequest._links.comments.href)
+        .then(comments => comments._embedded.pullRequestComments.filter((comment) => !!comment.location))
+        .then(comments => {
+          const commentLines = {};
+
+          comments.forEach((comment) => {
+
+            const hunkId = this.createHunkIdFromLocation(comment.location);
+            const commentsByChangeId = commentLines[hunkId] || {};
+
+            const commentsForChangeId = commentsByChangeId[comment.location.changeId] || [];
+            commentsForChangeId.push( comment );
+            commentsByChangeId[comment.location.changeId] = commentsForChangeId;
+
+            commentLines[hunkId] = commentsByChangeId;
+          });
+
+          this.setState({
+            commentLines
+          })
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  };
 
   render() {
     const { repository, source, target, t } = this.props;
@@ -123,64 +105,104 @@ class Diff extends React.Component<Props, State> {
   }
 
   annotationFactory = (context: AnnotationFactoryContext) => {
-    const createHunkId = diffs.createHunkIdentifierFromContext(context);
-    return context.hunk.changes.reduce((widgets, change) => {
-      const changeId = this.createChangeId(change);
-      const comments = this.getComments(createHunkId, changeId);
+    const annotations = {};
 
-      if (comments) {
-        const rawComments = comments._embedded.pullRequestComments;
-        return {
-          ...widgets,
-          [changeId]: (
-            <>
-              {rawComments.map(comment => {
-                return <PullRequestComment comment={comment} />;
-              })}
-              {this.renderNewCommentEditor()}
-            </>
-          )
-        };
-      } else if (this.lineEditorOpen(createHunkId, changeId)) {
-        return { ...widgets, [changeId]: this.renderNewCommentEditor() };
-      }
-      return widgets;
-    }, {});
-  };
+    const hunkId = this.createHunkId(context);
 
-  renderNewCommentEditor = () => { // TODO: Incorporate File/Line
-    return (
-      <CreateComment url={"foo"} refresh={() => {}} handleError={() => {}} />
-    );
-  };
 
-  getComments = (hunkId: string, changeId: string) => {
-    if (this.state.lineComments[hunkId]) {
-      return this.state.lineComments[hunkId][changeId];
+    const commentLines = this.state.commentLines[hunkId];
+    if (commentLines) {
+      Object.keys(commentLines).forEach((changeId: string) => {
+        const comment = commentLines[changeId];
+        if (comment) {
+          annotations[changeId] = this.createComments(comment);
+        }
+      });
     }
+
+    const editorLines = this.state.editorLines[hunkId];
+    if (editorLines) {
+      Object.keys(editorLines).forEach((changeId: string) => {
+        if (editorLines[changeId]) {
+          const location = this.createLocation(context, changeId);
+
+          if (annotations[changeId]) {
+            annotations[changeId] = [
+              annotations[changeId],
+              this.createNewCommentEditor(location)
+            ];
+          } else {
+            annotations[changeId] = this.createNewCommentEditor(location);
+          }
+        }
+      });
+    }
+
+    const wrappedAnnotations = {};
+    Object.keys(annotations).forEach((changeId: string) => {
+      wrappedAnnotations[ changeId ] = (<InlineComments>{annotations[changeId]}</InlineComments>);
+    });
+    return wrappedAnnotations;
   };
 
-  lineEditorOpen = (hunkId: string, changeId: string) => {
-    if (this.state.editorLines[hunkId]) {
-      return this.state.editorLines[hunkId][changeId];
-    }
-  };
+  createComments = (comments: Comment[]) => (
+    <>
+      {comments.map((comment) => (
+        <CreateCommentInlineWrapper>
+          <PullRequestComment comment={comment} refresh={this.fetchComments} handleError={console.log} />
+        </CreateCommentInlineWrapper>)
+      )}
+    </>
+  );
 
-  createChangeId = (change: Change) => {
-    switch (change.type) {
-      case "delete":
-        return "D" + change.lineNumber;
-      case "insert":
-        return "I" + change.lineNumber;
-      case "normal":
-        return "N" + change.oldLineNumber;
-      default:
-        return "";
+  createHunkId(context: BaseContext): string {
+    return getPath(context.file) + "_" + context.hunk.content;
+  }
+
+  createHunkIdFromLocation(location: Location): string {
+    return location.file + "_" + location.hunk;
+  }
+
+  createLocation(context: BaseContext, changeId: string): Location {
+    return {
+      file: getPath(context.file),
+      hunk: context.hunk.content,
+      changeId
+    };
+  }
+
+  createNewCommentEditor = (location: Location) => {
+    const { pullRequest } = this.props;
+    if (pullRequest._links.createComment){
+
+
+      const onSubmit = () => {
+        const hunkId = this.createHunkIdFromLocation(location);
+
+        this.setState((state) => {
+          return {
+            editorLines: {
+              ...state.editorLines,
+              [hunkId]: {
+                ...state.editorLines[hunkId],
+                [location.changeId]: false
+              }
+            }
+          }
+        }, this.fetchComments);
+      };
+
+      return (
+        <CreateCommentInlineWrapper>
+          <CreateComment url={pullRequest._links.createComment.href} location={location} refresh={onSubmit} handleError={console.log} />
+        </CreateCommentInlineWrapper>
+      );
     }
+    return null;
   };
 
   diffEventHandler = (context: DiffEventContext) => {
-    const hunkId = diffs.createHunkIdentifierFromContext(context);
+    const hunkId = this.createHunkId(context);
 
     this.setState(state => {
       const hunkState = state.editorLines[hunkId] || {};
@@ -188,7 +210,6 @@ class Diff extends React.Component<Props, State> {
       const currentValue = hunkState[context.changeId];
       let newValue = false;
       if (!currentValue) {
-        // newValue = this.createAnnotation(context);
         newValue = true;
       }
       return {
