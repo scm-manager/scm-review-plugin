@@ -2,13 +2,15 @@
 import React from "react";
 import type { DiffEventContext } from "@scm-manager/ui-components";
 import {
-  AnnotationFactoryContext, ErrorNotification, Loading,
+  AnnotationFactoryContext,
+  ErrorNotification,
+  Loading,
   LoadingDiff,
   Notification
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import { createDiffUrl } from "../pullRequest";
-import { translate } from "react-i18next";
+import { translate, type TFunction } from "react-i18next";
 import type { Comment, PullRequest, Location } from "../types/PullRequest";
 import CreateComment from "../comment/CreateComment";
 import CreateCommentInlineWrapper from "./CreateCommentInlineWrapper";
@@ -29,7 +31,7 @@ type Props = {
   target: string,
 
   //context props
-  t: string => string
+  t: TFunction
 };
 
 type State = {
@@ -162,7 +164,7 @@ class Diff extends React.Component<Props, State> {
           <PullRequestComment
             comment={comment}
             refresh={this.fetchComments}
-            onReply={index === (comments.length - 1) ? this.reply : undefined}
+            onReply={index === comments.length - 1 ? this.reply : undefined}
             handleError={console.log}
           />
         </CreateCommentInlineWrapper>
@@ -234,7 +236,7 @@ class Diff extends React.Component<Props, State> {
         }
       };
     });
-  }
+  };
 }
 
 export default translate("plugins")(Diff);
