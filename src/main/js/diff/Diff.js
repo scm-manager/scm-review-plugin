@@ -2,11 +2,10 @@
 import React from "react";
 import type { DiffEventContext } from "@scm-manager/ui-components";
 import {
-  AnnotationFactoryContext,
-  ErrorNotification,
-  Loading,
+  AnnotationFactoryContext, ErrorNotification, Loading,
   LoadingDiff,
-  Notification
+  Notification,
+  diffs
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import { createDiffUrl } from "../pullRequest";
@@ -23,6 +22,8 @@ import {
   createLocation
 } from "./locations";
 import { fetchComments } from "./fetchComments";
+import AddCommentButton from './AddCommentButton';
+import FileComments from './FileComments';
 
 type Props = {
   repository: Repository,
@@ -37,10 +38,16 @@ type Props = {
 type State = {
   loading: boolean,
   error?: Error,
+  commentFile: {
+    [string]: Comment[]
+  },
   commentLines: {
     [string]: {
       [string]: Comment[]
     }
+  },
+  editorFile: {
+    [string]: boolean
   },
   editorLines: {
     [string]: {
@@ -54,7 +61,9 @@ class Diff extends React.Component<Props, State> {
     super(props);
     this.state = {
       loading: true,
+      commentFile: {},
       commentLines: {},
+      editorFile: {},
       editorLines: {}
     };
   }
@@ -71,11 +80,12 @@ class Diff extends React.Component<Props, State> {
       });
 
       fetchComments(pullRequest._links.comments.href)
-        .then(commentLines =>
+        .then(fetchedComments =>
           this.setState({
             loading: false,
             error: undefined,
-            commentLines
+            commentLines: fetchedComments.commentLines,
+            commentFile: fetchedComments.commentFile
           })
         )
         .catch(error =>
@@ -85,6 +95,44 @@ class Diff extends React.Component<Props, State> {
           })
         );
     }
+  };
+
+  createFileControls = (file: File) => {
+    const openFileEditor = () => {
+      const path = diffs.getPath(file);
+      this.setState(state => {
+        return {
+          editorFile: {
+            ...state.editorFile,
+            [path]: true
+          }
+        };
+
+      });
+    };
+    return <AddCommentButton action={openFileEditor} />;
+  };
+
+  fileAnnotationFactory = (file: File) => {
+    const path = diffs.getPath(file);
+
+    const annotations = [];
+
+    const fileComments = this.state.commentFile[path];
+    if (fileComments) {
+      annotations.push(this.createComments(fileComments));
+    }
+
+    if (this.state.editorFile[path]) {
+      annotations.push(this.createNewCommentEditor({
+        file: path
+      }));
+    }
+
+    if (annotations.length > 0) {
+      return <FileComments>{ annotations }</FileComments>;
+    }
+    return [];
   };
 
   render() {
@@ -109,6 +157,8 @@ class Diff extends React.Component<Props, State> {
             url={url}
             annotationFactory={this.annotationFactory}
             onClick={this.onGutterClick}
+            fileControlFactory={this.createFileControls}
+            fileAnnotationFactory={this.fileAnnotationFactory}
           />
         </StyledDiffWrapper>
       );
@@ -175,24 +225,35 @@ class Diff extends React.Component<Props, State> {
   reply = (comment: Comment) => {
     const location = comment.location;
     if (location) {
-      const hunkId = createHunkIdFromLocation(location);
-      this.openEditor(hunkId, location.changeId);
+      this.openEditor(location);
     }
   };
 
   closeEditor = (location: Location, callback?: () => void) => {
-    const hunkId = createHunkIdFromLocation(location);
-    this.setState(state => {
-      return {
-        editorLines: {
-          ...state.editorLines,
-          [hunkId]: {
-            ...state.editorLines[hunkId],
-            [location.changeId]: false
+    if (location.hunk && location.changeId) {
+      const hunkId = createHunkIdFromLocation(location);
+      this.setState(state => {
+        return {
+          editorLines: {
+            ...state.editorLines,
+            [hunkId]: {
+              ...state.editorLines[hunkId],
+              [location.changeId]: false
+            }
           }
-        }
-      };
-    }, callback);
+        };
+      }, callback);
+    } else {
+      this.setState(state => {
+        return {
+          editorFile: {
+            ...state.editorFile,
+            [location.file]: false
+          }
+        };
+      }, callback);
+    }
+
   };
 
   createNewCommentEditor = (location: Location) => {
@@ -214,28 +275,41 @@ class Diff extends React.Component<Props, State> {
   };
 
   onGutterClick = (context: DiffEventContext) => {
-    const hunkId = createHunkId(context);
-    this.openEditor(hunkId, context.changeId);
+    const location = createLocation(context, context.changeId);
+    this.openEditor(location);
   };
 
-  openEditor = (hunkId: string, changeId: string) => {
-    this.setState(state => {
-      const hunkState = state.editorLines[hunkId] || {};
+  openEditor = (location: Location) => {
+    const changeId = location.changeId;
+    if (location.hunk && changeId) {
+      const hunkId = createHunkIdFromLocation(location);
+      this.setState(state => {
+        const hunkState = state.editorLines[hunkId] || {};
 
-      const currentValue = hunkState[changeId];
-      let newValue = false;
-      if (!currentValue) {
-        newValue = true;
-      }
-      return {
-        editorLines: {
-          [hunkId]: {
-            ...state.editorLines[hunkId],
-            [changeId]: newValue
-          }
+        const currentValue = hunkState[changeId];
+        let newValue = false;
+        if (!currentValue) {
+          newValue = true;
         }
-      };
-    });
+        return {
+          editorLines: {
+            [hunkId]: {
+              ...state.editorLines[hunkId],
+              [changeId]: newValue
+            }
+          }
+        };
+      });
+    } else {
+      this.setState(state => {
+        return {
+          editorFile: {
+            ...state.editorFile,
+            [location.file]: true
+          }
+        };
+      });
+    }
   };
 }
 

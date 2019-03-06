@@ -9,6 +9,9 @@ export function createHunkId(context: BaseContext): string {
 }
 
 export function createHunkIdFromLocation(location: Location): string {
+  if (!location.hunk) {
+    throw new Error("only locations with a hunk could be used");
+  }
   return location.file + "_" + location.hunk;
 }
 

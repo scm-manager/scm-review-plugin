@@ -16,11 +16,9 @@ public class LocationDto {
   @Size(min = 1)
   private String file;
 
-  @NonNull
   @Size(min = 1)
   private String hunk;
 
-  @NonNull
   @Size(min = 1)
   private String changeId;
 
