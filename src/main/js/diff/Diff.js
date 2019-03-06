@@ -46,10 +46,10 @@ type State = {
       [string]: Comment[]
     }
   },
-  editorFile: {
+  fileCommentEditors: {
     [string]: boolean
   },
-  editorLines: {
+  lineCommentEditors: {
     [string]: {
       [string]: boolean
     }
@@ -63,8 +63,8 @@ class Diff extends React.Component<Props, State> {
       loading: true,
       fileComments: {},
       lineComments: {},
-      editorFile: {},
-      editorLines: {}
+      fileCommentEditors: {},
+      lineCommentEditors: {}
     };
   }
 
@@ -105,8 +105,8 @@ class Diff extends React.Component<Props, State> {
       const path = diffs.getPath(file);
       this.setState(state => {
         return {
-          editorFile: {
-            ...state.editorFile,
+          fileCommentEditors: {
+            ...state.fileCommentEditors,
             [path]: true
           }
         };
@@ -126,7 +126,7 @@ class Diff extends React.Component<Props, State> {
       annotations.push(this.createComments(fileComments));
     }
 
-    if (this.state.editorFile[path]) {
+    if (this.state.fileCommentEditors[path]) {
       annotations.push(this.createNewCommentEditor({
         file: path
       }));
@@ -183,7 +183,7 @@ class Diff extends React.Component<Props, State> {
       });
     }
 
-    const editorLines = this.state.editorLines[hunkId];
+    const editorLines = this.state.lineCommentEditors[hunkId];
     if (editorLines) {
       Object.keys(editorLines).forEach((changeId: string) => {
         if (editorLines[changeId]) {
@@ -237,10 +237,10 @@ class Diff extends React.Component<Props, State> {
       const hunkId = createHunkIdFromLocation(location);
       this.setState(state => {
         return {
-          editorLines: {
-            ...state.editorLines,
+          lineCommentEditors: {
+            ...state.lineCommentEditors,
             [hunkId]: {
-              ...state.editorLines[hunkId],
+              ...state.lineCommentEditors[hunkId],
               [location.changeId]: false
             }
           }
@@ -249,8 +249,8 @@ class Diff extends React.Component<Props, State> {
     } else {
       this.setState(state => {
         return {
-          editorFile: {
-            ...state.editorFile,
+          fileCommentEditors: {
+            ...state.fileCommentEditors,
             [location.file]: false
           }
         };
@@ -287,7 +287,7 @@ class Diff extends React.Component<Props, State> {
     if (location.hunk && changeId) {
       const hunkId = createHunkIdFromLocation(location);
       this.setState(state => {
-        const hunkState = state.editorLines[hunkId] || {};
+        const hunkState = state.lineCommentEditors[hunkId] || {};
 
         const currentValue = hunkState[changeId];
         let newValue = false;
@@ -295,9 +295,9 @@ class Diff extends React.Component<Props, State> {
           newValue = true;
         }
         return {
-          editorLines: {
+          lineCommentEditors: {
             [hunkId]: {
-              ...state.editorLines[hunkId],
+              ...state.lineCommentEditors[hunkId],
               [changeId]: newValue
             }
           }
@@ -306,8 +306,8 @@ class Diff extends React.Component<Props, State> {
     } else {
       this.setState(state => {
         return {
-          editorFile: {
-            ...state.editorFile,
+          fileCommentEditors: {
+            ...state.fileCommentEditors,
             [location.file]: true
           }
         };
