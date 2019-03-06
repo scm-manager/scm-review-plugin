@@ -41,7 +41,7 @@ type State = {
   fileComments: {
     [string]: Comment[]
   },
-  commentLines: {
+  lineComments: {
     [string]: {
       [string]: Comment[]
     }
@@ -62,7 +62,7 @@ class Diff extends React.Component<Props, State> {
     this.state = {
       loading: true,
       fileComments: {},
-      commentLines: {},
+      lineComments: {},
       editorFile: {},
       editorLines: {}
     };
@@ -80,12 +80,11 @@ class Diff extends React.Component<Props, State> {
       });
 
       fetchComments(pullRequest._links.comments.href)
-        .then(fetchedComments =>
+        .then(comments =>
           this.setState({
             loading: false,
             error: undefined,
-            commentLines: fetchedComments.commentLines,
-            fileComments: fetchedComments.fileComments
+            ...comments
           })
         )
         .catch(error =>
@@ -174,7 +173,7 @@ class Diff extends React.Component<Props, State> {
 
     const hunkId = createHunkId(context);
 
-    const commentLines = this.state.commentLines[hunkId];
+    const commentLines = this.state.lineComments[hunkId];
     if (commentLines) {
       Object.keys(commentLines).forEach((changeId: string) => {
         const comment = commentLines[changeId];
