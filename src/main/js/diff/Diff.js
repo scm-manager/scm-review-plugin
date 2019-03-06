@@ -74,7 +74,7 @@ class Diff extends React.Component<Props, State> {
 
   fetchComments = () => {
     const { pullRequest } = this.props;
-    if (pullRequest._links.comments) {
+    if (pullRequest && pullRequest._links && pullRequest._links.comments) {
       this.setState({
         loading: true
       });
@@ -94,6 +94,10 @@ class Diff extends React.Component<Props, State> {
             error
           })
         );
+    } else {
+      this.setState({
+        loading: false
+      })
     }
   };
 
