@@ -1,6 +1,6 @@
 // @flow
 import React from "react";
-import {confirmAlert, DateFromNow, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
+import {Button, confirmAlert, DateFromNow, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
 import type {Comment} from "../types/PullRequest";
 import {translate} from "react-i18next";
 import {deletePullRequestComment, updatePullRequestComment} from "../pullRequest";
@@ -179,8 +179,9 @@ class PullRequestComment extends React.Component<Props, State> {
           />
         </div>
         <div className="level-item">
-          <SubmitButton
+          <Button
             label={t("scm-review-plugin.comment.cancel")}
+            color="warning"
             action={this.confirmCancelUpdate}
           />
         </div>

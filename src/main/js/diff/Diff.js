@@ -169,9 +169,8 @@ class Diff extends React.Component<Props, State> {
     </>
   );
 
-  closeEditor = (location: Location, callback: () => void) => {
+  closeEditor = (location: Location, callback?: () => void) => {
     const hunkId = createHunkIdFromLocation(location);
-
     this.setState(state => {
       return {
         editorLines: {
@@ -188,16 +187,13 @@ class Diff extends React.Component<Props, State> {
   createNewCommentEditor = (location: Location) => {
     const { pullRequest } = this.props;
     if (pullRequest._links.createComment) {
-      const onSubmit = () => {
-        this.closeEditor(location, this.fetchComments);
-      };
-
       return (
         <CreateCommentInlineWrapper>
           <CreateComment
             url={pullRequest._links.createComment.href}
             location={location}
-            refresh={onSubmit}
+            refresh={() => this.closeEditor(location, this.fetchComments)}
+            onCancel={() => this.closeEditor(location)}
             handleError={console.log}
           />
         </CreateCommentInlineWrapper>

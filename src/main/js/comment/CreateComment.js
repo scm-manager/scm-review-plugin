@@ -1,6 +1,6 @@
 // @flow
 import React from "react";
-import {Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
+import {Button, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
 import type {BasicComment, Location} from "../types/PullRequest";
 import {translate} from "react-i18next";
 import {createPullRequestComment} from "../pullRequest";
@@ -8,6 +8,7 @@ import {createPullRequestComment} from "../pullRequest";
 type Props = {
   url: string,
   location?: Location,
+  onCancel?: () => void,
   refresh: () => void,
   handleError: (error: Error) => void,
 
@@ -68,12 +69,18 @@ class CreateComment extends React.Component<Props, State> {
   }
 
   render() {
-    const {t, url} = this.props;
+    const {onCancel, t, url} = this.props;
     const { loading } = this.state;
 
     if (loading) {
       return <Loading/>;
     }
+
+    let cancelButton = null;
+    if (onCancel) {
+      cancelButton = <Button label={t("scm-review-plugin.comment.cancel")} color="warning" action={onCancel} />
+    }
+
     return (
       <>
         {url? (
@@ -89,15 +96,20 @@ class CreateComment extends React.Component<Props, State> {
                 </p>
               </div>
               <div className="field">
-                <p className="control">
-                  <SubmitButton
-                    label={t("scm-review-plugin.comment.add")}
-                    action={this.submit}
-                    disabled={this.isValid()}
-                    loading={loading}
-                    scrollToTop={false}
-                  />
-                </p>
+                <div className="level-left">
+                  <div className="level-item">
+                    <SubmitButton
+                      label={t("scm-review-plugin.comment.add")}
+                      action={this.submit}
+                      disabled={this.isValid()}
+                      loading={loading}
+                      scrollToTop={false}
+                    />
+                  </div>
+                  <div className="level-item">
+                    { cancelButton }
+                  </div>
+                </div>
               </div>
             </div>
           </article>
