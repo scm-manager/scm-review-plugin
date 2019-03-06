@@ -1,6 +1,19 @@
 // @flow
 import {getPullRequestComments} from '../pullRequest';
 import {createHunkIdFromLocation} from './locations';
+import type {Comment} from '../types/PullRequest';
+
+type FileComments = { [string]: Comment[] };
+
+function addFileComments(fileComments: FileComments, comment: Comment) {
+  // $FlowFixMe file is not undefined
+  const file = comment.location.file;
+
+  const comments = fileComments[file] || [];
+  comments.push( comment );
+
+  fileComments[file] = comments;
+}
 
 export function fetchComments(url: string) {
   return getPullRequestComments(url)
@@ -10,7 +23,7 @@ export function fetchComments(url: string) {
         commentLines: {
 
         },
-        commentFile: {
+        fileComments: {
 
         }
       };
@@ -31,12 +44,7 @@ export function fetchComments(url: string) {
 
           commentLines[hunkId] = commentsByChangeId;
         } else {
-          const commentFiles = fetchedComments.commentFile;
-
-          const fileComments = commentFiles[comment.location.file] || [];
-          fileComments.push( comment );
-
-          commentFiles[comment.location.file] = fileComments;
+          addFileComments(fetchedComments.fileComments, comment);
         }
       });
 

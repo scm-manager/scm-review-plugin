@@ -38,7 +38,7 @@ type Props = {
 type State = {
   loading: boolean,
   error?: Error,
-  commentFile: {
+  fileComments: {
     [string]: Comment[]
   },
   commentLines: {
@@ -61,7 +61,7 @@ class Diff extends React.Component<Props, State> {
     super(props);
     this.state = {
       loading: true,
-      commentFile: {},
+      fileComments: {},
       commentLines: {},
       editorFile: {},
       editorLines: {}
@@ -85,7 +85,7 @@ class Diff extends React.Component<Props, State> {
             loading: false,
             error: undefined,
             commentLines: fetchedComments.commentLines,
-            commentFile: fetchedComments.commentFile
+            fileComments: fetchedComments.fileComments
           })
         )
         .catch(error =>
@@ -122,7 +122,7 @@ class Diff extends React.Component<Props, State> {
 
     const annotations = [];
 
-    const fileComments = this.state.commentFile[path];
+    const fileComments = this.state.fileComments[path];
     if (fileComments) {
       annotations.push(this.createComments(fileComments));
     }
