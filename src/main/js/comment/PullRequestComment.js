@@ -2,14 +2,17 @@
 import React from "react";
 import {Button, confirmAlert, DateFromNow, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
 import type {Comment} from "../types/PullRequest";
-import {translate} from "react-i18next";
+import {translate, type TFunction} from "react-i18next";
 import {deletePullRequestComment, updatePullRequestComment} from "../pullRequest";
 
 type Props = {
   comment: Comment,
   refresh: () => void,
-  handleError: (error: Error) => void;
-  t: string => string
+  onReply?: Comment => void,
+  handleError: (error: Error) => void,
+
+  // context props
+  t: TFunction
 };
 
 type State = {
@@ -133,7 +136,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createEditIcons = () => {
-    const { comment } = this.props;
+    const { comment, onReply } = this.props;
     const deleteIcon = comment._links.delete ? (
       <a className="level-item"
          onClick={this.confirmDelete}
@@ -154,11 +157,21 @@ class PullRequestComment extends React.Component<Props, State> {
       </a>
     ) : "";
 
+    const replyIcon = onReply ? (
+      <a className="level-item" onClick={() => onReply(comment)}>
+        <span className="icon is-small">
+          <i className="fas fa-reply">
+          </i>
+        </span>
+      </a>
+    ) : "";
+
     return (
       <div className="media-right">
         <div className="level-right">
           {deleteIcon}
           {editIcon}
+          {replyIcon}
         </div>
       </div>
     );

@@ -106,7 +106,7 @@ class Diff extends React.Component<Props, State> {
           <LoadingDiff
             url={url}
             annotationFactory={this.annotationFactory}
-            onClick={this.openEditor}
+            onClick={this.onGutterClick}
           />
         </StyledDiffWrapper>
       );
@@ -157,17 +157,26 @@ class Diff extends React.Component<Props, State> {
 
   createComments = (comments: Comment[]) => (
     <>
-      {comments.map(comment => (
+      {comments.map((comment, index) => (
         <CreateCommentInlineWrapper>
           <PullRequestComment
             comment={comment}
             refresh={this.fetchComments}
+            onReply={index === (comments.length - 1) ? this.reply : undefined}
             handleError={console.log}
           />
         </CreateCommentInlineWrapper>
       ))}
     </>
   );
+
+  reply = (comment: Comment) => {
+    const location = comment.location;
+    if (location) {
+      const hunkId = createHunkIdFromLocation(location);
+      this.openEditor(hunkId, location.changeId);
+    }
+  };
 
   closeEditor = (location: Location, callback?: () => void) => {
     const hunkId = createHunkIdFromLocation(location);
@@ -202,13 +211,16 @@ class Diff extends React.Component<Props, State> {
     return null;
   };
 
-  openEditor = (context: DiffEventContext) => {
+  onGutterClick = (context: DiffEventContext) => {
     const hunkId = createHunkId(context);
+    this.openEditor(hunkId, context.changeId);
+  };
 
+  openEditor = (hunkId: string, changeId: string) => {
     this.setState(state => {
       const hunkState = state.editorLines[hunkId] || {};
 
-      const currentValue = hunkState[context.changeId];
+      const currentValue = hunkState[changeId];
       let newValue = false;
       if (!currentValue) {
         newValue = true;
@@ -217,12 +229,12 @@ class Diff extends React.Component<Props, State> {
         editorLines: {
           [hunkId]: {
             ...state.editorLines[hunkId],
-            [context.changeId]: newValue
+            [changeId]: newValue
           }
         }
       };
     });
-  };
+  }
 }
 
 export default translate("plugins")(Diff);
