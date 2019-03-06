@@ -126,7 +126,7 @@ class Diff extends React.Component<Props, State> {
     const annotations = [];
 
     const fileState = this.state.files[path] || [];
-    if ( fileState.comments ) {
+    if ( fileState.comments && fileState.comments.length > 0 ) {
       annotations.push(this.createComments(fileState.comments));
     }
 
@@ -183,7 +183,7 @@ class Diff extends React.Component<Props, State> {
 
         if (lineState) {
           const lineAnnotations = [];
-          if (lineState.comments) {
+          if (lineState.comments && lineState.comments.length > 0) {
             lineAnnotations.push(this.createComments(lineState.comments));
           }
           if (lineState.editor) {
