@@ -1,9 +1,19 @@
 // @flow
 import React from "react";
-import {Button, confirmAlert, DateFromNow, Loading, SubmitButton, Textarea} from "@scm-manager/ui-components";
-import type {Comment} from "../types/PullRequest";
-import {translate, type TFunction} from "react-i18next";
-import {deletePullRequestComment, updatePullRequestComment} from "../pullRequest";
+import {
+  Button,
+  confirmAlert,
+  DateFromNow,
+  Loading,
+  SubmitButton,
+  Textarea
+} from "@scm-manager/ui-components";
+import type { Comment } from "../types/PullRequest";
+import { translate, type TFunction } from "react-i18next";
+import {
+  deletePullRequestComment,
+  updatePullRequestComment
+} from "../pullRequest";
 
 type Props = {
   comment: Comment,
@@ -42,39 +52,41 @@ class PullRequestComment extends React.Component<Props, State> {
     this.setState({
       loading: false,
       edit: false,
-      updatedComment : this.props.comment.comment
+      updatedComment: this.props.comment.comment
     });
   };
 
   update = () => {
-    const {comment, handleError} = this.props;
+    const { comment, handleError } = this.props;
     comment.comment = this.state.updatedComment;
     this.setState({
       loading: true
     });
-    updatePullRequestComment(comment._links.update.href, comment).then(response => {
-      if (response.error) {
-        this.setState({
-          loading: false,
-          edit: false
-        });
-        handleError(response.error);
-      } else {
-        this.setState({
-          loading: false,
-          edit: false
-        });
+    updatePullRequestComment(comment._links.update.href, comment).then(
+      response => {
+        if (response.error) {
+          this.setState({
+            loading: false,
+            edit: false
+          });
+          handleError(response.error);
+        } else {
+          this.setState({
+            loading: false,
+            edit: false
+          });
+        }
       }
-    });
+    );
   };
 
   delete = () => {
-    const {comment} = this.props;
+    const { comment } = this.props;
     this.deletePullRequestComment(comment._links.delete.href);
   };
 
   confirmDelete = () => {
-    const {t} = this.props;
+    const { t } = this.props;
     confirmAlert({
       title: t("scm-review-plugin.comment.confirm-alert.title"),
       message: t("scm-review-plugin.comment.confirm-alert.message"),
@@ -92,17 +104,23 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   confirmCancelUpdate = () => {
-    const {t} = this.props;
+    const { t } = this.props;
     confirmAlert({
       title: t("scm-review-plugin.comment.confirm-cancel-update-alert.title"),
-      message: t("scm-review-plugin.comment.confirm-cancel-update-alert.message"),
+      message: t(
+        "scm-review-plugin.comment.confirm-cancel-update-alert.message"
+      ),
       buttons: [
         {
-          label: t("scm-review-plugin.comment.confirm-cancel-update-alert.submit"),
+          label: t(
+            "scm-review-plugin.comment.confirm-cancel-update-alert.submit"
+          ),
           onClick: () => this.cancelUpdate()
         },
         {
-          label: t("scm-review-plugin.comment.confirm-cancel-update-alert.cancel"),
+          label: t(
+            "scm-review-plugin.comment.confirm-cancel-update-alert.cancel"
+          ),
           onClick: () => null
         }
       ]
@@ -110,7 +128,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   deletePullRequestComment = (url: string) => {
-    const {refresh, handleError} = this.props;
+    const { refresh, handleError } = this.props;
     this.setState({
       loading: true
     });
@@ -138,33 +156,34 @@ class PullRequestComment extends React.Component<Props, State> {
   createEditIcons = () => {
     const { comment, onReply } = this.props;
     const deleteIcon = comment._links.delete ? (
-      <a className="level-item"
-         onClick={this.confirmDelete}
-      >
+      <a className="level-item" onClick={this.confirmDelete}>
         <span className="icon is-small">
-          <i className="fas fa-trash">
-          </i>
+          <i className="fas fa-trash" />
         </span>
       </a>
-    ) : "";
+    ) : (
+      ""
+    );
 
     const editIcon = comment._links.update ? (
       <a className="level-item" onClick={this.startUpdate}>
         <span className="icon is-small">
-          <i className="fas fa-edit">
-          </i>
+          <i className="fas fa-edit" />
         </span>
       </a>
-    ) : "";
+    ) : (
+      ""
+    );
 
     const replyIcon = onReply ? (
       <a className="level-item" onClick={() => onReply(comment)}>
         <span className="icon is-small">
-          <i className="fas fa-reply">
-          </i>
+          <i className="fas fa-reply" />
         </span>
       </a>
-    ) : "";
+    ) : (
+      ""
+    );
 
     return (
       <div className="media-right">
@@ -204,8 +223,13 @@ class PullRequestComment extends React.Component<Props, State> {
 
   createDisplayMessage = () => {
     const { comment } = this.props;
-    return comment.comment.split("\n").map((line) => {
-      return <span>{line}<br/></span>;
+    return comment.comment.split("\n").map(line => {
+      return (
+        <span>
+          {line}
+          <br />
+        </span>
+      );
     });
   };
 
@@ -221,11 +245,11 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   render() {
-    const {comment} = this.props;
-    const {loading, edit} = this.state;
+    const { comment } = this.props;
+    const { loading, edit } = this.state;
 
-    if (loading ) {
-      return <Loading/>;
+    if (loading) {
+      return <Loading />;
     }
 
     let icons = null;
@@ -246,8 +270,8 @@ class PullRequestComment extends React.Component<Props, State> {
             <div className="content">
               <p>
                 <strong>{comment.author} </strong>
-                <DateFromNow date={comment.date}/>
-                <br/>
+                <DateFromNow date={comment.date} />
+                <br />
                 {message}
               </p>
               {editButtons}
@@ -257,7 +281,6 @@ class PullRequestComment extends React.Component<Props, State> {
         </article>
       </>
     );
-
   }
 }
 
