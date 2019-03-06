@@ -11,9 +11,9 @@ import { createDiffUrl } from "../pullRequest";
 import { translate } from "react-i18next";
 import type { Comment, PullRequest, Location } from "../types/PullRequest";
 import CreateComment from "../comment/CreateComment";
-import CreateCommentInlineWrapper from "../comment/CreateCommentInlineWrapper";
+import CreateCommentInlineWrapper from "./CreateCommentInlineWrapper";
 import PullRequestComment from "../comment/PullRequestComment";
-import InlineComments from "../comment/InlineComments";
+import InlineComments from "./InlineComments";
 import StyledDiffWrapper from "./StyledDiffWrapper";
 import {
   createHunkId,
