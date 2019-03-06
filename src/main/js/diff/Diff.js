@@ -38,20 +38,20 @@ type Props = {
 type State = {
   loading: boolean,
   error?: Error,
-  fileComments: {
-    [string]: Comment[]
-  },
   lineComments: {
     [string]: {
       [string]: Comment[]
     }
   },
-  fileCommentEditors: {
-    [string]: boolean
-  },
   lineCommentEditors: {
     [string]: {
       [string]: boolean
+    }
+  },
+  files: {
+    [string]: {
+      editor: boolean,
+      comments: Comment[]
     }
   }
 };
@@ -61,9 +61,8 @@ class Diff extends React.Component<Props, State> {
     super(props);
     this.state = {
       loading: true,
-      fileComments: {},
+      files: {},
       lineComments: {},
-      fileCommentEditors: {},
       lineCommentEditors: {}
     };
   }
@@ -84,6 +83,7 @@ class Diff extends React.Component<Props, State> {
           this.setState({
             loading: false,
             error: undefined,
+            // TODO do we need to keep editor state?
             ...comments
           })
         )
@@ -100,18 +100,25 @@ class Diff extends React.Component<Props, State> {
     }
   };
 
+  setFileEditor = (path: string, showEditor: boolean, callback?: () => void) => {
+    this.setState(state => {
+      const current = state.files[path] || {};
+      return {
+        files: {
+          ...state.files,
+          [path]: {
+            editor: showEditor,
+            comments: current.comments || []
+          }
+        }
+      };
+    }, callback);
+  };
+
   createFileControls = (file: File) => {
     const openFileEditor = () => {
       const path = diffs.getPath(file);
-      this.setState(state => {
-        return {
-          fileCommentEditors: {
-            ...state.fileCommentEditors,
-            [path]: true
-          }
-        };
-
-      });
+      this.setFileEditor(path, true);
     };
     return <AddCommentButton action={openFileEditor} />;
   };
@@ -121,12 +128,12 @@ class Diff extends React.Component<Props, State> {
 
     const annotations = [];
 
-    const fileComments = this.state.fileComments[path];
-    if (fileComments) {
-      annotations.push(this.createComments(fileComments));
+    const fileState = this.state.files[path] || [];
+    if ( fileState.comments ) {
+      annotations.push(this.createComments(fileState.comments));
     }
 
-    if (this.state.fileCommentEditors[path]) {
+    if (fileState.editor) {
       annotations.push(this.createNewCommentEditor({
         file: path
       }));
@@ -247,16 +254,8 @@ class Diff extends React.Component<Props, State> {
         };
       }, callback);
     } else {
-      this.setState(state => {
-        return {
-          fileCommentEditors: {
-            ...state.fileCommentEditors,
-            [location.file]: false
-          }
-        };
-      }, callback);
+      this.setFileEditor(location.file, false, callback);
     }
-
   };
 
   createNewCommentEditor = (location: Location) => {
@@ -304,14 +303,7 @@ class Diff extends React.Component<Props, State> {
         };
       });
     } else {
-      this.setState(state => {
-        return {
-          fileCommentEditors: {
-            ...state.fileCommentEditors,
-            [location.file]: true
-          }
-        };
-      });
+      this.setFileEditor(location.file, true);
     }
   };
 }

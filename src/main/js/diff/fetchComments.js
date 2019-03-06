@@ -1,9 +1,13 @@
 // @flow
-import {getPullRequestComments} from '../pullRequest';
-import {createHunkIdFromLocation} from './locations';
-import type {Comment} from '../types/PullRequest';
+import { getPullRequestComments } from "../pullRequest";
+import { createHunkIdFromLocation } from "./locations";
+import type { Comment } from "../types/PullRequest";
 
-type FileComments = { [string]: Comment[] };
+type FileComments = {
+  [string]: {
+    comments: Comment[]
+  }
+};
 type LineComments = { [string]: { [string]: Comment[] } };
 
 function addFileComments(fileComments: FileComments, comment: Comment) {
@@ -14,11 +18,12 @@ function addFileComments(fileComments: FileComments, comment: Comment) {
   }
 
   const file = location.file;
+  const fileState = fileComments[file] || {
+    comments: []
+  };
+  fileState.comments.push(comment);
 
-  const comments = fileComments[file] || [];
-  comments.push( comment );
-
-  fileComments[file] = comments;
+  fileComments[file] = fileState;
 }
 
 function addLineComments(lineComments: LineComments, comment: Comment) {
@@ -38,7 +43,7 @@ function addLineComments(lineComments: LineComments, comment: Comment) {
   const hunkComments = lineComments[hunkId] || {};
 
   const changeComments = hunkComments[changeId] || [];
-  changeComments.push( comment );
+  changeComments.push(comment);
   hunkComments[changeId] = changeComments;
 
   lineComments[hunkId] = hunkComments;
@@ -46,22 +51,26 @@ function addLineComments(lineComments: LineComments, comment: Comment) {
 
 export function fetchComments(url: string) {
   return getPullRequestComments(url)
-    .then(comments => comments._embedded.pullRequestComments.filter((comment) => !!comment.location))
+    .then(comments =>
+      comments._embedded.pullRequestComments.filter(
+        comment => !!comment.location
+      )
+    )
     .then(comments => {
       const lineComments = {};
-      const fileComments = {};
+      const files = {};
 
-      comments.forEach((comment) => {
+      comments.forEach(comment => {
         if (comment.location.hunk && comment.location.changeId) {
           addLineComments(lineComments, comment);
         } else {
-          addFileComments(fileComments, comment);
+          addFileComments(files, comment);
         }
       });
 
       return {
         lineComments,
-        fileComments
+        files
       };
-    })
+    });
 }
