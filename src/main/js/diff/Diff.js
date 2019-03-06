@@ -1,21 +1,26 @@
 //@flow
 import React from "react";
-import type {BaseContext, DiffEventContext} from "@scm-manager/ui-components";
+import type { DiffEventContext } from "@scm-manager/ui-components";
 import {
-  AnnotationFactoryContext,
+  AnnotationFactoryContext, ErrorNotification, Loading,
   LoadingDiff,
   Notification
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
-import {createDiffUrl, getPullRequestComments} from "./pullRequest";
+import { createDiffUrl } from "../pullRequest";
 import { translate } from "react-i18next";
-import type { Comment, PullRequest, Location } from "./types/PullRequest";
-import CreateComment from "./comment/CreateComment";
-import CreateCommentInlineWrapper from "./comment/CreateCommentInlineWrapper";
-import {getPath} from "@scm-manager/ui-components/src/repos/diffs";
-import PullRequestComment from "./comment/PullRequestComment";
-import InlineComments from "./comment/InlineComments";
-import StyledDiffWrapper from './StyledDiffWrapper';
+import type { Comment, PullRequest, Location } from "../types/PullRequest";
+import CreateComment from "../comment/CreateComment";
+import CreateCommentInlineWrapper from "../comment/CreateCommentInlineWrapper";
+import PullRequestComment from "../comment/PullRequestComment";
+import InlineComments from "../comment/InlineComments";
+import StyledDiffWrapper from "./StyledDiffWrapper";
+import {
+  createHunkId,
+  createHunkIdFromLocation,
+  createLocation
+} from "./locations";
+import { fetchComments } from "./fetchComments";
 
 type Props = {
   repository: Repository,
@@ -28,6 +33,8 @@ type Props = {
 };
 
 type State = {
+  loading: boolean,
+  error?: Error,
   commentLines: {
     [string]: {
       [string]: Comment[]
@@ -40,11 +47,11 @@ type State = {
   }
 };
 
-
 class Diff extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      loading: true,
       commentLines: {},
       editorLines: {}
     };
@@ -57,35 +64,30 @@ class Diff extends React.Component<Props, State> {
   fetchComments = () => {
     const { pullRequest } = this.props;
     if (pullRequest._links.comments) {
-      getPullRequestComments(pullRequest._links.comments.href)
-        .then(comments => comments._embedded.pullRequestComments.filter((comment) => !!comment.location))
-        .then(comments => {
-          const commentLines = {};
+      this.setState({
+        loading: true
+      });
 
-          comments.forEach((comment) => {
-
-            const hunkId = this.createHunkIdFromLocation(comment.location);
-            const commentsByChangeId = commentLines[hunkId] || {};
-
-            const commentsForChangeId = commentsByChangeId[comment.location.changeId] || [];
-            commentsForChangeId.push( comment );
-            commentsByChangeId[comment.location.changeId] = commentsForChangeId;
-
-            commentLines[hunkId] = commentsByChangeId;
-          });
-
+      fetchComments(pullRequest._links.comments.href)
+        .then(commentLines =>
           this.setState({
+            loading: false,
+            error: undefined,
             commentLines
           })
-        })
-        .catch(err => {
-          console.log(err);
-        });
+        )
+        .catch(error =>
+          this.setState({
+            loading: false,
+            error
+          })
+        );
     }
   };
 
   render() {
     const { repository, source, target, t } = this.props;
+    const { loading, error } = this.state;
     const url = createDiffUrl(repository, source, target);
 
     if (!url) {
@@ -94,6 +96,10 @@ class Diff extends React.Component<Props, State> {
           {t("scm-review-plugin.diff.not-supported")}
         </Notification>
       );
+    } else if (loading) {
+      return <Loading />;
+    } else if (error) {
+      return <ErrorNotification error={error} />;
     } else {
       return (
         <StyledDiffWrapper>
@@ -110,8 +116,7 @@ class Diff extends React.Component<Props, State> {
   annotationFactory = (context: AnnotationFactoryContext) => {
     const annotations = {};
 
-    const hunkId = this.createHunkId(context);
-
+    const hunkId = createHunkId(context);
 
     const commentLines = this.state.commentLines[hunkId];
     if (commentLines) {
@@ -127,7 +132,7 @@ class Diff extends React.Component<Props, State> {
     if (editorLines) {
       Object.keys(editorLines).forEach((changeId: string) => {
         if (editorLines[changeId]) {
-          const location = this.createLocation(context, changeId);
+          const location = createLocation(context, changeId);
 
           if (annotations[changeId]) {
             annotations[changeId] = [
@@ -143,41 +148,31 @@ class Diff extends React.Component<Props, State> {
 
     const wrappedAnnotations = {};
     Object.keys(annotations).forEach((changeId: string) => {
-      wrappedAnnotations[ changeId ] = (<InlineComments>{annotations[changeId]}</InlineComments>);
+      wrappedAnnotations[changeId] = (
+        <InlineComments>{annotations[changeId]}</InlineComments>
+      );
     });
     return wrappedAnnotations;
   };
 
   createComments = (comments: Comment[]) => (
     <>
-      {comments.map((comment) => (
+      {comments.map(comment => (
         <CreateCommentInlineWrapper>
-          <PullRequestComment comment={comment} refresh={this.fetchComments} handleError={console.log} />
-        </CreateCommentInlineWrapper>)
-      )}
+          <PullRequestComment
+            comment={comment}
+            refresh={this.fetchComments}
+            handleError={console.log}
+          />
+        </CreateCommentInlineWrapper>
+      ))}
     </>
   );
 
-  createHunkId(context: BaseContext): string {
-    return getPath(context.file) + "_" + context.hunk.content;
-  }
-
-  createHunkIdFromLocation(location: Location): string {
-    return location.file + "_" + location.hunk;
-  }
-
-  createLocation(context: BaseContext, changeId: string): Location {
-    return {
-      file: getPath(context.file),
-      hunk: context.hunk.content,
-      changeId
-    };
-  }
-
   closeEditor = (location: Location, callback: () => void) => {
-    const hunkId = this.createHunkIdFromLocation(location);
+    const hunkId = createHunkIdFromLocation(location);
 
-    this.setState((state) => {
+    this.setState(state => {
       return {
         editorLines: {
           ...state.editorLines,
@@ -186,22 +181,25 @@ class Diff extends React.Component<Props, State> {
             [location.changeId]: false
           }
         }
-      }
+      };
     }, callback);
   };
 
   createNewCommentEditor = (location: Location) => {
     const { pullRequest } = this.props;
-    if (pullRequest._links.createComment){
-
-
+    if (pullRequest._links.createComment) {
       const onSubmit = () => {
         this.closeEditor(location, this.fetchComments);
       };
 
       return (
         <CreateCommentInlineWrapper>
-          <CreateComment url={pullRequest._links.createComment.href} location={location} refresh={onSubmit} handleError={console.log} />
+          <CreateComment
+            url={pullRequest._links.createComment.href}
+            location={location}
+            refresh={onSubmit}
+            handleError={console.log}
+          />
         </CreateCommentInlineWrapper>
       );
     }
@@ -209,7 +207,7 @@ class Diff extends React.Component<Props, State> {
   };
 
   openEditor = (context: DiffEventContext) => {
-    const hunkId = this.createHunkId(context);
+    const hunkId = createHunkId(context);
 
     this.setState(state => {
       const hunkState = state.editorLines[hunkId] || {};
