@@ -15,6 +15,7 @@ import CreateCommentInlineWrapper from "./comment/CreateCommentInlineWrapper";
 import {getPath} from "@scm-manager/ui-components/src/repos/diffs";
 import PullRequestComment from "./comment/PullRequestComment";
 import InlineComments from "./comment/InlineComments";
+import StyledDiffWrapper from './StyledDiffWrapper';
 
 type Props = {
   repository: Repository,
@@ -95,11 +96,13 @@ class Diff extends React.Component<Props, State> {
       );
     } else {
       return (
-        <LoadingDiff
-          url={url}
-          annotationFactory={this.annotationFactory}
-          onClick={this.diffEventHandler}
-        />
+        <StyledDiffWrapper>
+          <LoadingDiff
+            url={url}
+            annotationFactory={this.annotationFactory}
+            onClick={this.openEditor}
+          />
+        </StyledDiffWrapper>
       );
     }
   }
@@ -171,25 +174,29 @@ class Diff extends React.Component<Props, State> {
     };
   }
 
+  closeEditor = (location: Location, callback: () => void) => {
+    const hunkId = this.createHunkIdFromLocation(location);
+
+    this.setState((state) => {
+      return {
+        editorLines: {
+          ...state.editorLines,
+          [hunkId]: {
+            ...state.editorLines[hunkId],
+            [location.changeId]: false
+          }
+        }
+      }
+    }, callback);
+  };
+
   createNewCommentEditor = (location: Location) => {
     const { pullRequest } = this.props;
     if (pullRequest._links.createComment){
 
 
       const onSubmit = () => {
-        const hunkId = this.createHunkIdFromLocation(location);
-
-        this.setState((state) => {
-          return {
-            editorLines: {
-              ...state.editorLines,
-              [hunkId]: {
-                ...state.editorLines[hunkId],
-                [location.changeId]: false
-              }
-            }
-          }
-        }, this.fetchComments);
+        this.closeEditor(location, this.fetchComments);
       };
 
       return (
@@ -201,7 +208,7 @@ class Diff extends React.Component<Props, State> {
     return null;
   };
 
-  diffEventHandler = (context: DiffEventContext) => {
+  openEditor = (context: DiffEventContext) => {
     const hunkId = this.createHunkId(context);
 
     this.setState(state => {
