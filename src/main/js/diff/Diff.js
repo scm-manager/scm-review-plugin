@@ -38,14 +38,12 @@ type Props = {
 type State = {
   loading: boolean,
   error?: Error,
-  lineComments: {
+  lines: {
     [string]: {
-      [string]: Comment[]
-    }
-  },
-  lineCommentEditors: {
-    [string]: {
-      [string]: boolean
+      [string]: {
+        editor: boolean,
+        comments: Comment[]
+      }
     }
   },
   files: {
@@ -62,8 +60,7 @@ class Diff extends React.Component<Props, State> {
     this.state = {
       loading: true,
       files: {},
-      lineComments: {},
-      lineCommentEditors: {}
+      lines: {}
     };
   }
 
@@ -179,42 +176,33 @@ class Diff extends React.Component<Props, State> {
     const annotations = {};
 
     const hunkId = createHunkId(context);
+    const hunkState = this.state.lines[hunkId];
+    if (hunkState) {
+      Object.keys(hunkState).forEach((changeId: string) => {
+        const lineState = hunkState[changeId];
 
-    const commentLines = this.state.lineComments[hunkId];
-    if (commentLines) {
-      Object.keys(commentLines).forEach((changeId: string) => {
-        const comment = commentLines[changeId];
-        if (comment) {
-          annotations[changeId] = this.createComments(comment);
-        }
-      });
-    }
+        if (lineState) {
+          const lineAnnotations = [];
+          if (lineState.comments) {
+            lineAnnotations.push(this.createComments(lineState.comments));
+          }
+          if (lineState.editor) {
+            const location = createLocation(context, changeId);
+            lineAnnotations.push(this.createNewCommentEditor(location));
+          }
 
-    const editorLines = this.state.lineCommentEditors[hunkId];
-    if (editorLines) {
-      Object.keys(editorLines).forEach((changeId: string) => {
-        if (editorLines[changeId]) {
-          const location = createLocation(context, changeId);
-
-          if (annotations[changeId]) {
-            annotations[changeId] = [
-              annotations[changeId],
-              this.createNewCommentEditor(location)
-            ];
-          } else {
-            annotations[changeId] = this.createNewCommentEditor(location);
+          if (lineAnnotations.length > 0) {
+            annotations[changeId] = (
+              <InlineComments>{lineAnnotations}</InlineComments>
+            );
           }
         }
+
       });
+
     }
 
-    const wrappedAnnotations = {};
-    Object.keys(annotations).forEach((changeId: string) => {
-      wrappedAnnotations[changeId] = (
-        <InlineComments>{annotations[changeId]}</InlineComments>
-      );
-    });
-    return wrappedAnnotations;
+    return annotations;
   };
 
   createComments = (comments: Comment[]) => (
@@ -239,20 +227,34 @@ class Diff extends React.Component<Props, State> {
     }
   };
 
-  closeEditor = (location: Location, callback?: () => void) => {
-    if (location.hunk && location.changeId) {
-      const hunkId = createHunkIdFromLocation(location);
-      this.setState(state => {
-        return {
-          lineCommentEditors: {
-            ...state.lineCommentEditors,
-            [hunkId]: {
-              ...state.lineCommentEditors[hunkId],
-              [location.changeId]: false
+  setLineEditor = (location: Location, showEditor: boolean, callback?: () => void) => {
+    const hunkId = createHunkIdFromLocation(location);
+    const changeId = location.changeId;
+    if (!changeId) {
+      throw new Error("invalid state change id is required");
+    }
+
+    this.setState(state => {
+      const currentHunk = state.lines[hunkId] || {};
+      const currentLine = currentHunk[changeId] || {};
+      return {
+        lines: {
+          ...state.lines,
+          [hunkId]: {
+            ...currentHunk,
+            [changeId]: {
+              editor: showEditor,
+              comments: currentLine.comments || [],
             }
           }
-        };
-      }, callback);
+        }
+      };
+    }, callback);
+  };
+
+  closeEditor = (location: Location, callback?: () => void) => {
+    if (location.hunk && location.changeId) {
+      this.setLineEditor(location, false, callback);
     } else {
       this.setFileEditor(location.file, false, callback);
     }
@@ -284,24 +286,7 @@ class Diff extends React.Component<Props, State> {
   openEditor = (location: Location) => {
     const changeId = location.changeId;
     if (location.hunk && changeId) {
-      const hunkId = createHunkIdFromLocation(location);
-      this.setState(state => {
-        const hunkState = state.lineCommentEditors[hunkId] || {};
-
-        const currentValue = hunkState[changeId];
-        let newValue = false;
-        if (!currentValue) {
-          newValue = true;
-        }
-        return {
-          lineCommentEditors: {
-            [hunkId]: {
-              ...state.lineCommentEditors[hunkId],
-              [changeId]: newValue
-            }
-          }
-        };
-      });
+      this.setLineEditor(location, true);
     } else {
       this.setFileEditor(location.file, true);
     }

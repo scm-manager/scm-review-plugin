@@ -4,11 +4,17 @@ import { createHunkIdFromLocation } from "./locations";
 import type { Comment } from "../types/PullRequest";
 
 type FileComments = {
-  [string]: {
+  [string]: { // path
     comments: Comment[]
   }
 };
-type LineComments = { [string]: { [string]: Comment[] } };
+type LineComments = {
+  [string]: { // hunkid
+    [string]: { // changeid
+      comments: Comment[]
+    }
+  }
+};
 
 function addFileComments(fileComments: FileComments, comment: Comment) {
   const location = comment.location;
@@ -42,8 +48,10 @@ function addLineComments(lineComments: LineComments, comment: Comment) {
   const hunkId = createHunkIdFromLocation(location);
   const hunkComments = lineComments[hunkId] || {};
 
-  const changeComments = hunkComments[changeId] || [];
-  changeComments.push(comment);
+  const changeComments = hunkComments[changeId] || {
+    comments: []
+  };
+  changeComments.comments.push(comment);
   hunkComments[changeId] = changeComments;
 
   lineComments[hunkId] = hunkComments;
@@ -57,19 +65,19 @@ export function fetchComments(url: string) {
       )
     )
     .then(comments => {
-      const lineComments = {};
+      const lines = {};
       const files = {};
 
       comments.forEach(comment => {
         if (comment.location.hunk && comment.location.changeId) {
-          addLineComments(lineComments, comment);
+          addLineComments(lines, comment);
         } else {
           addFileComments(files, comment);
         }
       });
 
       return {
-        lineComments,
+        lines,
         files
       };
     });
