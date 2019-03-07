@@ -10,14 +10,11 @@ import sonia.scm.EagerSingleton;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
-import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
-import sonia.scm.repository.api.HookMessageProvider;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
-import java.util.Arrays;
 import java.util.List;
 
 @EagerSingleton @Extension
@@ -58,9 +55,8 @@ public class PullRequestInformationHook {
   }
 
   private void sendCreateMessages(PostReceiveRepositoryHookEvent event, String branch) {
-    sendMessages(event,
-      String.format("Create new pull request for branch %s:", branch),
-      createCreateLink(event.getRepository(), branch));
+    new MessageSender(configuration, event)
+      .sendCreatePullRequestMessage(branch, String.format("Create new pull request for branch %s:", branch));
   }
 
   private List<String> readEffectedBranches(PostReceiveRepositoryHookEvent event) {
@@ -94,37 +90,14 @@ public class PullRequestInformationHook {
     }
 
     private void sendExistingMessages(PullRequest pullRequest) {
-      sendMessages(event,
-        String.format("Check existing pull request for branch %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()),
-        createPullRequestLink(pullRequest));
+      new MessageSender(configuration, event)
+        .sendMessageForPullRequest(pullRequest,
+        String.format("Check existing pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()));
     }
 
     private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
       return pullRequest.getStatus() == PullRequestStatus.OPEN;
     }
 
-    private String createPullRequestLink(PullRequest pullRequest) {
-      Repository repository = event.getRepository();
-      return String.format(
-        "%s/repo/%s/%s/pull-requests/%s/",
-        configuration.getBaseUrl(),
-        repository.getNamespace(),
-        repository.getName(),
-        pullRequest.getId());
-    }
-  }
-
-  private String createCreateLink(Repository repository, String source) {
-    return String.format(
-      "%s/repo/%s/%s/pull-requests/add/changesets/?source=%s",
-      configuration.getBaseUrl(),
-      repository.getNamespace(),
-      repository.getName(),
-      source);
-  }
-
-  private void sendMessages(PostReceiveRepositoryHookEvent event, String... messages) {
-    HookMessageProvider messageProvider = event.getContext().getMessageProvider();
-    Arrays.stream(messages).forEach(messageProvider::sendMessage);
   }
 }
