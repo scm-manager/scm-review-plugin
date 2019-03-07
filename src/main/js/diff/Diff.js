@@ -97,28 +97,35 @@ class Diff extends React.Component<Props, State> {
     }
   };
 
-  setFileEditor = (path: string, showEditor: boolean, callback?: () => void) => {
-    this.setState(state => {
-      const current = state.files[path] || {};
-      return {
-        files: {
-          ...state.files,
-          [path]: {
-            editor: showEditor,
-            comments: current.comments || []
-          }
-        }
-      };
-    }, callback);
-  };
+  render() {
+    const { repository, source, target, t } = this.props;
+    const { loading, error } = this.state;
+    const url = createDiffUrl(repository, source, target);
 
-  createFileControls = (file: File) => {
-    const openFileEditor = () => {
-      const path = diffs.getPath(file);
-      this.setFileEditor(path, true);
-    };
-    return <AddCommentButton action={openFileEditor} />;
-  };
+    if (!url) {
+      return (
+        <Notification type="danger">
+          {t("scm-review-plugin.diff.not-supported")}
+        </Notification>
+      );
+    } else if (loading) {
+      return <Loading />;
+    } else if (error) {
+      return <ErrorNotification error={error} />;
+    } else {
+      return (
+        <StyledDiffWrapper>
+          <LoadingDiff
+            url={url}
+            fileControlFactory={this.createFileControls}
+            fileAnnotationFactory={this.fileAnnotationFactory}
+            annotationFactory={this.annotationFactory}
+            onClick={this.onGutterClick}
+          />
+        </StyledDiffWrapper>
+      );
+    }
+  }
 
   fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
@@ -141,36 +148,6 @@ class Diff extends React.Component<Props, State> {
     }
     return [];
   };
-
-  render() {
-    const { repository, source, target, t } = this.props;
-    const { loading, error } = this.state;
-    const url = createDiffUrl(repository, source, target);
-
-    if (!url) {
-      return (
-        <Notification type="danger">
-          {t("scm-review-plugin.diff.not-supported")}
-        </Notification>
-      );
-    } else if (loading) {
-      return <Loading />;
-    } else if (error) {
-      return <ErrorNotification error={error} />;
-    } else {
-      return (
-        <StyledDiffWrapper>
-          <LoadingDiff
-            url={url}
-            annotationFactory={this.annotationFactory}
-            onClick={this.onGutterClick}
-            fileControlFactory={this.createFileControls}
-            fileAnnotationFactory={this.fileAnnotationFactory}
-          />
-        </StyledDiffWrapper>
-      );
-    }
-  }
 
   annotationFactory = (context: AnnotationFactoryContext) => {
     const annotations = {};
@@ -205,26 +182,56 @@ class Diff extends React.Component<Props, State> {
     return annotations;
   };
 
-  createComments = (comments: Comment[]) => (
-    <>
-      {comments.map((comment, index) => (
-        <CreateCommentInlineWrapper>
-          <PullRequestComment
-            comment={comment}
-            refresh={this.fetchComments}
-            onReply={index === comments.length - 1 ? this.reply : undefined}
-            handleError={console.log}
-          />
-        </CreateCommentInlineWrapper>
-      ))}
-    </>
-  );
+  createFileControls = (file: File) => {
+    const openFileEditor = () => {
+      const path = diffs.getPath(file);
+      this.setFileEditor(path, true);
+    };
+    return <AddCommentButton action={openFileEditor} />;
+  };
+
+  onGutterClick = (context: DiffEventContext) => {
+    const location = createLocation(context, context.changeId);
+    this.openEditor(location);
+  };
 
   reply = (comment: Comment) => {
     const location = comment.location;
     if (location) {
       this.openEditor(location);
     }
+  };
+
+  openEditor = (location: Location) => {
+    const changeId = location.changeId;
+    if (location.hunk && changeId) {
+      this.setLineEditor(location, true);
+    } else {
+      this.setFileEditor(location.file, true);
+    }
+  };
+
+  closeEditor = (location: Location, callback?: () => void) => {
+    if (location.hunk && location.changeId) {
+      this.setLineEditor(location, false, callback);
+    } else {
+      this.setFileEditor(location.file, false, callback);
+    }
+  };
+
+  setFileEditor = (path: string, showEditor: boolean, callback?: () => void) => {
+    this.setState(state => {
+      const current = state.files[path] || {};
+      return {
+        files: {
+          ...state.files,
+          [path]: {
+            editor: showEditor,
+            comments: current.comments || []
+          }
+        }
+      };
+    }, callback);
   };
 
   setLineEditor = (location: Location, showEditor: boolean, callback?: () => void) => {
@@ -252,13 +259,20 @@ class Diff extends React.Component<Props, State> {
     }, callback);
   };
 
-  closeEditor = (location: Location, callback?: () => void) => {
-    if (location.hunk && location.changeId) {
-      this.setLineEditor(location, false, callback);
-    } else {
-      this.setFileEditor(location.file, false, callback);
-    }
-  };
+  createComments = (comments: Comment[]) => (
+    <>
+      {comments.map((comment, index) => (
+        <CreateCommentInlineWrapper>
+          <PullRequestComment
+            comment={comment}
+            refresh={this.fetchComments}
+            onReply={index === comments.length - 1 ? this.reply : undefined}
+            handleError={console.log}
+          />
+        </CreateCommentInlineWrapper>
+      ))}
+    </>
+  );
 
   createNewCommentEditor = (location: Location) => {
     const { pullRequest } = this.props;
@@ -276,20 +290,6 @@ class Diff extends React.Component<Props, State> {
       );
     }
     return null;
-  };
-
-  onGutterClick = (context: DiffEventContext) => {
-    const location = createLocation(context, context.changeId);
-    this.openEditor(location);
-  };
-
-  openEditor = (location: Location) => {
-    const changeId = location.changeId;
-    if (location.hunk && changeId) {
-      this.setLineEditor(location, true);
-    } else {
-      this.setFileEditor(location.file, true);
-    }
   };
 }
 
