@@ -14,7 +14,6 @@ import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.repository.spi.MergeCommand;
 
 import javax.inject.Inject;
 import java.io.IOException;
