@@ -17,6 +17,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.List;
 
 @EagerSingleton @Extension
@@ -43,22 +44,30 @@ public class PullRequestInformationHook {
           LOG.trace("ignoring post receive event for repository {}", event.getRepository().getNamespaceAndName());
           return;
         }
-        List<String> effectedBranches =
-          event
-            .getContext()
-            .getBranchProvider()
-            .getCreatedOrModified();
-        effectedBranches.forEach(branch -> {
-          List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
-          boolean prFound = new Worker(event).process(pullRequests, branch);
-          if (!prFound && PermissionCheck.mayCreate(event.getRepository())) {
-            HookMessageProvider messageProvider = event.getContext().getMessageProvider();
-            messageProvider.sendMessage(String.format("Create new pull request for branch %s:", branch));
-            messageProvider.sendMessage(createCreateLink(event.getRepository(), branch));
-          }
-        });
+        readEffectedBranches(event).forEach(branch -> processBranch(event, branch));
       }
     }
+  }
+
+  private void processBranch(PostReceiveRepositoryHookEvent event, String branch) {
+    List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
+    boolean prFound = new Worker(event).process(pullRequests, branch);
+    if (!prFound && PermissionCheck.mayCreate(event.getRepository())) {
+      sendCreateMessages(event, branch);
+    }
+  }
+
+  private void sendCreateMessages(PostReceiveRepositoryHookEvent event, String branch) {
+    sendMessages(event,
+      String.format("Create new pull request for branch %s:", branch),
+      createCreateLink(event.getRepository(), branch));
+  }
+
+  private List<String> readEffectedBranches(PostReceiveRepositoryHookEvent event) {
+    return event
+      .getContext()
+      .getBranchProvider()
+      .getCreatedOrModified();
   }
 
   private class Worker {
@@ -81,9 +90,13 @@ public class PullRequestInformationHook {
 
     private void messageForExistingPullRequest(PullRequest pullRequest) {
       this.prFound = true;
-      HookMessageProvider messageProvider = event.getContext().getMessageProvider();
-      messageProvider.sendMessage(String.format("Check existing pull request for branch %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()));
-      messageProvider.sendMessage(createPullRequestLink(pullRequest));
+      sendExistingMessages(pullRequest);
+    }
+
+    private void sendExistingMessages(PullRequest pullRequest) {
+      sendMessages(event,
+        String.format("Check existing pull request for branch %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()),
+        createPullRequestLink(pullRequest));
     }
 
     private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
@@ -108,5 +121,10 @@ public class PullRequestInformationHook {
       repository.getNamespace(),
       repository.getName(),
       source);
+  }
+
+  private void sendMessages(PostReceiveRepositoryHookEvent event, String... messages) {
+    HookMessageProvider messageProvider = event.getContext().getMessageProvider();
+    Arrays.stream(messages).forEach(messageProvider::sendMessage);
   }
 }
