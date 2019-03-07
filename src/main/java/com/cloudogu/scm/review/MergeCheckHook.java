@@ -7,6 +7,7 @@ import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
@@ -14,7 +15,6 @@ import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.repository.spi.MergeCommand;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -29,11 +29,13 @@ public class MergeCheckHook {
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
+  private final ScmConfiguration configuration;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, ScmConfiguration configuration) {
     this.service = service;
     this.serviceFactory = serviceFactory;
+    this.configuration = configuration;
   }
 
   @Subscribe(async = false)
@@ -84,6 +86,8 @@ public class MergeCheckHook {
     }
 
     private void setPullRequestMerged(PullRequest pullRequest) {
+      new MessageSender(configuration, event)
+        .sendMessageForPullRequest(pullRequest, String.format("Merged pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()));
       service.setStatus(event.getRepository(), pullRequest, PullRequestStatus.MERGED);
     }
   }
