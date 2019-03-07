@@ -37,7 +37,7 @@ class CreateForm extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const { repository } = this.props;
+    const { repository, source, target } = this.props;
 
     this.setState({ ...this.state, loading: true });
     getBranches(repository._links.branches.href).then(result => {
@@ -47,12 +47,14 @@ class CreateForm extends React.Component<Props, State> {
           error: result.error
         });
       } else {
+        const initialSource = source ? source : result[0];
+        const initialTarget = target ? target : result[0];
         this.setState({
           branches: result,
           loading: false,
           pullRequest: {
-            source: result[0], //set first entry, otherwise nothing is select in state even if one branch is shown in Select component at beginning
-            target: result[0]
+            source: initialSource,
+            target: initialTarget
           }
         });
       }
@@ -60,6 +62,7 @@ class CreateForm extends React.Component<Props, State> {
   }
 
   handleFormChange = (value: string, name: string) => {
+    console.log("change:", name, ":", value);
     this.setState(
       {
         pullRequest: {
@@ -81,8 +84,8 @@ class CreateForm extends React.Component<Props, State> {
   };
 
   render() {
-    const { t, source, target } = this.props;
-    const { loading, error } = this.state;
+    const { t } = this.props;
+    const { loading, error, pullRequest } = this.state;
     const options = this.state.branches.map(branch => ({
       label: branch,
       value: branch
@@ -102,7 +105,7 @@ class CreateForm extends React.Component<Props, State> {
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
-              value={source}
+              value={pullRequest? pullRequest.source: undefined}
             />
           </div>
           <div className="column is-clipped">
@@ -112,7 +115,7 @@ class CreateForm extends React.Component<Props, State> {
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
-              value={target}
+              value={pullRequest? pullRequest.target: undefined}
             />
           </div>
         </div>
