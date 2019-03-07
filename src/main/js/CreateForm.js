@@ -13,6 +13,8 @@ import EditForm from "./EditForm";
 type Props = {
   repository: Repository,
   onChange: (pr: BasicPullRequest) => void,
+  source?: string,
+  target?: string,
 
   // Context props
   t: string => string
@@ -76,10 +78,10 @@ class CreateForm extends React.Component<Props, State> {
 
   handleSubmit = (event: Event) => {
     event.preventDefault();
-  }
+  };
 
   render() {
-    const { t } = this.props;
+    const { t, source, target } = this.props;
     const { loading, error } = this.state;
     const options = this.state.branches.map(branch => ({
       label: branch,
@@ -100,6 +102,7 @@ class CreateForm extends React.Component<Props, State> {
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
+              value={source}
             />
           </div>
           <div className="column is-clipped">
@@ -109,6 +112,7 @@ class CreateForm extends React.Component<Props, State> {
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
+              value={target}
             />
           </div>
         </div>

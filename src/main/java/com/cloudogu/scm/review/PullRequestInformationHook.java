@@ -2,6 +2,7 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class PullRequestInformationHook {
 
   private static final Logger LOG = LoggerFactory.getLogger(PullRequestInformationHook.class);
 
-  private final DefaultPullRequestService service;
+  private final PullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
   private final ScmConfiguration configuration;
 
@@ -46,22 +47,19 @@ public class PullRequestInformationHook {
         return;
       }
       List<String> effectedBranches =
-        ofNullable(
-          event
-            .getContext()
-            .getChangesetProvider()
-            .getChangesets()
-            .iterator()
-            .next()
-        ).map(Changeset::getBranches)
-          .orElse(Collections.emptyList());
-      List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
-      boolean prFound = new Worker(event).process(pullRequests, effectedBranches);
-      if (!prFound) {
-        event.getContext()
-          .getMessageProvider()
-          .sendMessage("Create a new pull request here: " + createCreateLink(event.getRepository()));
-      }
+        event
+          .getContext()
+          .getBranchProvider()
+          .getCreatedOrModified();
+      effectedBranches.forEach(branch -> {
+        List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
+        boolean prFound = new Worker(event).process(pullRequests, branch);
+        if (!prFound) {
+          event.getContext()
+            .getMessageProvider()
+            .sendMessage("Create new pull request here: " + createCreateLink(event.getRepository(), branch));
+        }
+      });
     }
   }
 
@@ -74,11 +72,11 @@ public class PullRequestInformationHook {
       this.event = event;
     }
 
-    private boolean process(List<PullRequest> pullRequests, List<String> effectedBranches) {
+    private boolean process(List<PullRequest> pullRequests, String branch) {
       pullRequests
         .stream()
         .filter(this::pullRequestHasStatusOpen)
-        .filter(pr -> effectedBranches.contains(pr.getSource()))
+        .filter(pr -> branch.equals(pr.getSource()))
         .forEach(this::messageForExistingPullRequest);
       return prFound;
     }
@@ -87,7 +85,7 @@ public class PullRequestInformationHook {
       this.prFound = true;
       event.getContext()
         .getMessageProvider()
-        .sendMessage("Find your pull request here: " + createPullRequestLink(pullRequest));
+        .sendMessage("Check pull request here: " + createPullRequestLink(pullRequest));
     }
 
     private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
@@ -105,11 +103,12 @@ public class PullRequestInformationHook {
     }
   }
 
-  private String createCreateLink(Repository repository) {
+  private String createCreateLink(Repository repository, String source) {
     return String.format(
-      "%s/repo/%s/%s/pull-requests/add/changesets/",
+      "%s/repo/%s/%s/pull-requests/add/changesets/?source=%s",
       configuration.getBaseUrl(),
       repository.getNamespace(),
-      repository.getName());
+      repository.getName(),
+      source);
   }
 }
