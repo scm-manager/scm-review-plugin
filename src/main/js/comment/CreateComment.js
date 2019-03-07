@@ -66,10 +66,7 @@ class CreateComment extends React.Component<Props, State> {
 
   isValid() {
     const { newComment } = this.state;
-    return (
-      !newComment ||
-      (newComment && newComment.comment && newComment.comment.trim() === "")
-    );
+    return newComment && newComment.comment && newComment.comment.trim() !== "";
   }
 
   render() {
@@ -111,7 +108,7 @@ class CreateComment extends React.Component<Props, State> {
                     <SubmitButton
                       label={t("scm-review-plugin.comment.add")}
                       action={this.submit}
-                      disabled={this.isValid()}
+                      disabled={!this.isValid()}
                       loading={loading}
                       scrollToTop={false}
                     />
