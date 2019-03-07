@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review;
 
-import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -30,7 +29,7 @@ public class PullRequestInformationHook {
   private final ScmConfiguration configuration;
 
   @Inject
-  public PullRequestInformationHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, ScmConfiguration configuration) {
+  public PullRequestInformationHook(PullRequestService service, RepositoryServiceFactory serviceFactory, ScmConfiguration configuration) {
     this.service = service;
     this.serviceFactory = serviceFactory;
     this.configuration = configuration;
@@ -38,25 +37,27 @@ public class PullRequestInformationHook {
 
   @Subscribe(async = false)
   public void checkForInformation(PostReceiveRepositoryHookEvent event) {
-    try (RepositoryService repositoryService = serviceFactory.create(event.getRepository())) {
-      if (!repositoryService.isSupported(Command.MERGE)) {
-        LOG.trace("ignoring post receive event for repository {}", event.getRepository().getNamespaceAndName());
-        return;
-      }
-      List<String> effectedBranches =
-        event
-          .getContext()
-          .getBranchProvider()
-          .getCreatedOrModified();
-      effectedBranches.forEach(branch -> {
-        List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
-        boolean prFound = new Worker(event).process(pullRequests, branch);
-        if (!prFound) {
-          HookMessageProvider messageProvider = event.getContext().getMessageProvider();
-          messageProvider.sendMessage(String.format("Create new pull for branch %s:", branch));
-          messageProvider.sendMessage(createCreateLink(event.getRepository(), branch));
+    if (PermissionCheck.mayRead(event.getRepository())) {
+      try (RepositoryService repositoryService = serviceFactory.create(event.getRepository())) {
+        if (!repositoryService.isSupported(Command.MERGE)) {
+          LOG.trace("ignoring post receive event for repository {}", event.getRepository().getNamespaceAndName());
+          return;
         }
-      });
+        List<String> effectedBranches =
+          event
+            .getContext()
+            .getBranchProvider()
+            .getCreatedOrModified();
+        effectedBranches.forEach(branch -> {
+          List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
+          boolean prFound = new Worker(event).process(pullRequests, branch);
+          if (!prFound && PermissionCheck.mayCreate(event.getRepository())) {
+            HookMessageProvider messageProvider = event.getContext().getMessageProvider();
+            messageProvider.sendMessage(String.format("Create new pull request for branch %s:", branch));
+            messageProvider.sendMessage(createCreateLink(event.getRepository(), branch));
+          }
+        });
+      }
     }
   }
 
@@ -81,7 +82,7 @@ public class PullRequestInformationHook {
     private void messageForExistingPullRequest(PullRequest pullRequest) {
       this.prFound = true;
       HookMessageProvider messageProvider = event.getContext().getMessageProvider();
-      messageProvider.sendMessage(String.format("Check pull request for branch %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()));
+      messageProvider.sendMessage(String.format("Check existing pull request for branch %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()));
       messageProvider.sendMessage(createPullRequestLink(pullRequest));
     }
 
