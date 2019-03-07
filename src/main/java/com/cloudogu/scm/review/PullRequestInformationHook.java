@@ -10,18 +10,15 @@ import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.plugin.Extension;
-import sonia.scm.repository.Changeset;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
+import sonia.scm.repository.api.HookMessageProvider;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
-import java.util.Collections;
 import java.util.List;
-
-import static java.util.Optional.ofNullable;
 
 @EagerSingleton @Extension
 public class PullRequestInformationHook {
@@ -55,9 +52,9 @@ public class PullRequestInformationHook {
         List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
         boolean prFound = new Worker(event).process(pullRequests, branch);
         if (!prFound) {
-          event.getContext()
-            .getMessageProvider()
-            .sendMessage("Create new pull request here: " + createCreateLink(event.getRepository(), branch));
+          HookMessageProvider messageProvider = event.getContext().getMessageProvider();
+          messageProvider.sendMessage(String.format("Create new pull for branch %s:", branch));
+          messageProvider.sendMessage(createCreateLink(event.getRepository(), branch));
         }
       });
     }
@@ -83,9 +80,9 @@ public class PullRequestInformationHook {
 
     private void messageForExistingPullRequest(PullRequest pullRequest) {
       this.prFound = true;
-      event.getContext()
-        .getMessageProvider()
-        .sendMessage("Check pull request here: " + createPullRequestLink(pullRequest));
+      HookMessageProvider messageProvider = event.getContext().getMessageProvider();
+      messageProvider.sendMessage(String.format("Check pull request for branch %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()));
+      messageProvider.sendMessage(createPullRequestLink(pullRequest));
     }
 
     private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
