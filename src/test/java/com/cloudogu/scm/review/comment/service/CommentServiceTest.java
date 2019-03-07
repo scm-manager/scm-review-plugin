@@ -2,8 +2,6 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.google.common.collect.Lists;
-import lombok.val;
-import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
@@ -17,17 +15,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.NotFoundException;
-import sonia.scm.repository.Repository;
-import sonia.scm.user.User;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,7 +56,7 @@ class CommentServiceTest {
 
   @Test
   void shouldAddComment() {
-    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location() , Instant.now());
     String pullRequestId = "pr_id";
     commentService.add("ns", "name", pullRequestId, comment);
     verify(store).add(pullRequestId, comment);
@@ -78,12 +73,12 @@ class CommentServiceTest {
 
   @Test
   void shouldGetAllComments() {
-    val list = Lists.newArrayList(
-      new PullRequestComment("1", "1. comment", "author", Instant.now()),
-      new PullRequestComment("2", "2. comment", "author", Instant.now()),
-      new PullRequestComment("3", "3. comment", "author", Instant.now()));
+    ArrayList<PullRequestComment> list = Lists.newArrayList(
+      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now()),
+      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now()),
+      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now()));
 
-    val pullRequestId = "id";
+    String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
     pullRequestComments.setComments(list);
     when(store.get(pullRequestId)).thenReturn(pullRequestComments);
@@ -96,12 +91,12 @@ class CommentServiceTest {
 
   @Test
   void shouldGetComment() {
-    val list = Lists.newArrayList(
-      new PullRequestComment("1", "1. comment", "author", Instant.now()),
-      new PullRequestComment("2", "2. comment", "author", Instant.now()),
-      new PullRequestComment("3", "3. comment", "author", Instant.now()));
+    ArrayList<PullRequestComment> list = Lists.newArrayList(
+      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now()),
+      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now()),
+      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now()));
 
-    val pullRequestId = "id";
+    String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
     pullRequestComments.setComments(list);
     when(store.get(pullRequestId)).thenReturn(pullRequestComments);
@@ -117,7 +112,7 @@ class CommentServiceTest {
 
   @Test
   void shouldThrowNotFoundOnGettingMissedPR() {
-    val pullRequestId = "id";
+    String pullRequestId = "id";
     when(store.get(pullRequestId)).thenThrow(NotFoundException.class);
 
     assertThrows(NotFoundException.class, () -> commentService.get("ns", "name", pullRequestId, "1"));
@@ -125,11 +120,11 @@ class CommentServiceTest {
 
   @Test
   void shouldThrowNotFoundOnGettingMissedComment() {
-    val list = Lists.newArrayList(
-      new PullRequestComment("1", "1. comment", "author", Instant.now()),
-      new PullRequestComment("2", "2. comment", "author", Instant.now()),
-      new PullRequestComment("3", "3. comment", "author", Instant.now()));
-    val pullRequestId = "id";
+    ArrayList<PullRequestComment> list = Lists.newArrayList(
+      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now()),
+      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now()),
+      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now()));
+    String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
     pullRequestComments.setComments(list);
     when(store.get(pullRequestId)).thenReturn(pullRequestComments);
