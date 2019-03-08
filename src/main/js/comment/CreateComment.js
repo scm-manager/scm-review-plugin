@@ -15,6 +15,7 @@ type Props = {
   location?: Location,
   onCancel?: () => void,
   refresh: () => void,
+  autofocus?: boolean,
   handleError: (error: Error) => void,
 
   // context props
@@ -27,6 +28,7 @@ type State = {
 };
 
 class CreateComment extends React.Component<Props, State> {
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -70,7 +72,7 @@ class CreateComment extends React.Component<Props, State> {
   }
 
   render() {
-    const { onCancel, t, url } = this.props;
+    const { autofocus, onCancel, t, url } = this.props;
     const { loading } = this.state;
 
     if (loading) {
@@ -97,6 +99,7 @@ class CreateComment extends React.Component<Props, State> {
                 <p className="control">
                   <Textarea
                     name="comment"
+                    autofocus={autofocus}
                     placeholder={t("scm-review-plugin.comment.add")}
                     onChange={this.handleChanges}
                   />

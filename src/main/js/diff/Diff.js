@@ -302,6 +302,7 @@ class Diff extends React.Component<Props, State> {
             location={location}
             refresh={() => this.closeEditor(location, this.fetchComments)}
             onCancel={() => this.closeEditor(location)}
+            autofocus={true}
             handleError={console.log}
           />
         </CreateCommentInlineWrapper>
