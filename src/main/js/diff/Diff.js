@@ -284,7 +284,7 @@ class Diff extends React.Component<Props, State> {
             comment={comment}
             refresh={this.fetchComments}
             onReply={onReply(index)}
-            handleError={console.log}
+            handleError={this.onError}
           />
         </CreateCommentInlineWrapper>
       ))}
@@ -303,12 +303,18 @@ class Diff extends React.Component<Props, State> {
             refresh={() => this.closeEditor(location, this.fetchComments)}
             onCancel={() => this.closeEditor(location)}
             autofocus={true}
-            handleError={console.log}
+            handleError={this.onError}
           />
         </CreateCommentInlineWrapper>
       );
     }
     return null;
+  };
+
+  onError = (error: Error) => {
+    this.setState({
+      error
+    });
   };
 }
 
