@@ -1,14 +1,12 @@
 package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
-import com.github.sdorra.shiro.ShiroRule;
-import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.Lists;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
@@ -41,7 +39,7 @@ public class PermissionCheckTest {
     List<Object> userList = Lists.newArrayList("user", user1);
     when(principals.asList()).thenReturn(userList);
 
-    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now());
     boolean modificationsAllowed = PermissionCheck.mayModifyComment(new Repository(), comment);
 
     assertTrue(modificationsAllowed);
@@ -59,7 +57,7 @@ public class PermissionCheckTest {
     List<Object> userList = Lists.newArrayList("user", user1);
     when(principals.asList()).thenReturn(userList);
 
-    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", Instant.now());
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now());
     boolean modificationsAllowed = PermissionCheck.mayModifyComment(new Repository("", "", "", ""), comment);
 
     assertTrue(modificationsAllowed);
