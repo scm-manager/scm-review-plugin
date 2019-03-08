@@ -4,14 +4,16 @@ import "./StyledDiffWrapper.css";
 
 type Props = {
   children: React.Node,
+  commentable: boolean
 };
 
 class StyledDiffWrapper extends React.Component<Props> {
 
   render() {
-    const { children } = this.props;
+    const { children, commentable } = this.props;
+    const classname = commentable ? "commentable" : "";
     return (
-      <div className="commentable">
+      <div className={classname}>
         { children }
       </div>
     );

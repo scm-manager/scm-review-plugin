@@ -114,7 +114,7 @@ class Diff extends React.Component<Props, State> {
       return <ErrorNotification error={error} />;
     } else {
       return (
-        <StyledDiffWrapper>
+        <StyledDiffWrapper commentable={this.isPermittedToComment()}>
           <LoadingDiff
             url={url}
             fileControlFactory={this.createFileControls}
@@ -183,16 +183,20 @@ class Diff extends React.Component<Props, State> {
   };
 
   createFileControls = (file: File) => {
-    const openFileEditor = () => {
-      const path = diffs.getPath(file);
-      this.setFileEditor(path, true);
-    };
-    return <AddCommentButton action={openFileEditor} />;
+    if (this.isPermittedToComment()) {
+      const openFileEditor = () => {
+        const path = diffs.getPath(file);
+        this.setFileEditor(path, true);
+      };
+      return <AddCommentButton action={openFileEditor} />;
+    }
   };
 
   onGutterClick = (context: DiffEventContext) => {
-    const location = createLocation(context, context.changeId);
-    this.openEditor(location);
+    if (this.isPermittedToComment()) {
+      const location = createLocation(context, context.changeId);
+      this.openEditor(location);
+    }
   };
 
   reply = (comment: Comment) => {
@@ -234,6 +238,11 @@ class Diff extends React.Component<Props, State> {
     }, callback);
   };
 
+  isPermittedToComment = () => {
+    const { pullRequest } = this.props;
+    return !! pullRequest._links.createComment;
+  };
+
   setLineEditor = (location: Location, showEditor: boolean, callback?: () => void) => {
     const hunkId = createHunkIdFromLocation(location);
     const changeId = location.changeId;
@@ -259,20 +268,28 @@ class Diff extends React.Component<Props, State> {
     }, callback);
   };
 
-  createComments = (comments: Comment[]) => (
-    <>
+  createComments = (comments: Comment[]) => {
+    const onReply = (index: number) => {
+      if (index === comments.length - 1 && this.isPermittedToComment()) {
+        return this.reply
+      }
+    };
+
+    return (
+      <>
       {comments.map((comment, index) => (
         <CreateCommentInlineWrapper>
           <PullRequestComment
             comment={comment}
             refresh={this.fetchComments}
-            onReply={index === comments.length - 1 ? this.reply : undefined}
+            onReply={onReply(index)}
             handleError={console.log}
           />
         </CreateCommentInlineWrapper>
       ))}
     </>
-  );
+    );
+  };
 
   createNewCommentEditor = (location: Location) => {
     const { pullRequest } = this.props;
