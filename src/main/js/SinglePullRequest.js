@@ -16,7 +16,7 @@ type Props = {
 };
 
 type State = {
-  pullRequest: PullRequest,
+  pullRequest?: PullRequest,
   error?: Error,
   loading: boolean
 };
@@ -25,7 +25,6 @@ class SinglePullRequest extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      pullRequest: null,
       loading: false
     };
   }

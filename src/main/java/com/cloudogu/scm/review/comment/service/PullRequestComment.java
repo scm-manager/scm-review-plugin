@@ -23,6 +23,7 @@ public class PullRequestComment {
   private String id;
   private String comment;
   private String author;
+  private Location location;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant date;
 }
