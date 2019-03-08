@@ -240,7 +240,7 @@ class Diff extends React.Component<Props, State> {
 
   isPermittedToComment = () => {
     const { pullRequest } = this.props;
-    return !! pullRequest._links.createComment;
+    return pullRequest && pullRequest._links && !! pullRequest._links.createComment;
   };
 
   setLineEditor = (location: Location, showEditor: boolean, callback?: () => void) => {
