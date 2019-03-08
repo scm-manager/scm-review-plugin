@@ -7,7 +7,6 @@ import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
-import sonia.scm.config.ScmConfiguration;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
@@ -20,6 +19,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 
+import static java.lang.String.format;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
 @EagerSingleton @Extension
@@ -29,13 +29,13 @@ public class MergeCheckHook {
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
-  private final ScmConfiguration configuration;
+  private final MessageSender messageSender;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, ScmConfiguration configuration) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSender messageSender) {
     this.service = service;
     this.serviceFactory = serviceFactory;
-    this.configuration = configuration;
+    this.messageSender = messageSender;
   }
 
   @Subscribe(async = false)
@@ -86,8 +86,8 @@ public class MergeCheckHook {
     }
 
     private void setPullRequestMerged(PullRequest pullRequest) {
-      new MessageSender(configuration, event)
-        .sendMessageForPullRequest(pullRequest, String.format("Merged pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()));
+      String message = format("Merged pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget());
+      messageSender.sendMessageForPullRequest(event, pullRequest, message);
       service.setStatus(event.getRepository(), pullRequest, PullRequestStatus.MERGED);
     }
   }

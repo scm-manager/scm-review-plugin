@@ -6,24 +6,24 @@ import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.HookMessageProvider;
 
+import javax.inject.Inject;
 import java.util.Arrays;
 
 public class MessageSender {
 
   private final ScmConfiguration configuration;
-  private final PostReceiveRepositoryHookEvent event;
 
-  public MessageSender(ScmConfiguration configuration, PostReceiveRepositoryHookEvent event) {
+  @Inject
+  public MessageSender(ScmConfiguration configuration) {
     this.configuration = configuration;
-    this.event = event;
   }
 
-  public void sendMessageForPullRequest(PullRequest pullRequest, String message) {
-    sendMessages(message, createPullRequestLink(pullRequest));
+  public void sendMessageForPullRequest(PostReceiveRepositoryHookEvent event, PullRequest pullRequest, String message) {
+    sendMessages(event, message, createPullRequestLink(event, pullRequest));
   }
 
-  public void sendCreatePullRequestMessage(String branch, String message) {
-    sendMessages(message, createCreateLink(event.getRepository(), branch));
+  public void sendCreatePullRequestMessage(PostReceiveRepositoryHookEvent event, String branch, String message) {
+    sendMessages(event, message, createCreateLink(event.getRepository(), branch));
   }
 
   private String createCreateLink(Repository repository, String source) {
@@ -35,7 +35,7 @@ public class MessageSender {
       source);
   }
 
-  private String createPullRequestLink(PullRequest pullRequest) {
+  private String createPullRequestLink(PostReceiveRepositoryHookEvent event, PullRequest pullRequest) {
     Repository repository = event.getRepository();
     return String.format(
       "%s/repo/%s/%s/pull-requests/%s/",
@@ -45,7 +45,7 @@ public class MessageSender {
       pullRequest.getId());
   }
 
-  private void sendMessages(String... messages) {
+  private void sendMessages(PostReceiveRepositoryHookEvent event, String... messages) {
     HookMessageProvider messageProvider = event.getContext().getMessageProvider();
     Arrays.stream(messages).forEach(messageProvider::sendMessage);
   }

@@ -56,6 +56,8 @@ class MergeCheckHookTest {
   @Mock
   private ScmConfiguration configuration;
   @InjectMocks
+  private MessageSender messageSender;
+
   private MergeCheckHook hook;
 
   @Mock
@@ -69,6 +71,7 @@ class MergeCheckHookTest {
 
   @BeforeEach
   void initRepositoryServiceFactory() {
+    hook = new MergeCheckHook(service, repositoryServiceFactory, messageSender);
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);

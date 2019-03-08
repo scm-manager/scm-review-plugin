@@ -7,7 +7,6 @@ import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
-import sonia.scm.config.ScmConfiguration;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.api.Command;
@@ -17,6 +16,8 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import javax.inject.Inject;
 import java.util.List;
 
+import static java.lang.String.format;
+
 @EagerSingleton @Extension
 public class PullRequestInformationHook {
 
@@ -24,13 +25,13 @@ public class PullRequestInformationHook {
 
   private final PullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
-  private final ScmConfiguration configuration;
+  private final MessageSender messageSender;
 
   @Inject
-  public PullRequestInformationHook(PullRequestService service, RepositoryServiceFactory serviceFactory, ScmConfiguration configuration) {
+  public PullRequestInformationHook(PullRequestService service, RepositoryServiceFactory serviceFactory, MessageSender messageSender) {
     this.service = service;
     this.serviceFactory = serviceFactory;
-    this.configuration = configuration;
+    this.messageSender = messageSender;
   }
 
   @Subscribe(async = false)
@@ -55,8 +56,8 @@ public class PullRequestInformationHook {
   }
 
   private void sendCreateMessages(PostReceiveRepositoryHookEvent event, String branch) {
-    new MessageSender(configuration, event)
-      .sendCreatePullRequestMessage(branch, String.format("Create new pull request for branch %s:", branch));
+    String message = format("Create new pull request for branch %s:", branch);
+    messageSender.sendCreatePullRequestMessage(event, branch, message);
   }
 
   private List<String> readEffectedBranches(PostReceiveRepositoryHookEvent event) {
@@ -90,9 +91,8 @@ public class PullRequestInformationHook {
     }
 
     private void sendExistingMessages(PullRequest pullRequest) {
-      new MessageSender(configuration, event)
-        .sendMessageForPullRequest(pullRequest,
-        String.format("Check existing pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget()));
+      String message = format("Check existing pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget());
+      messageSender.sendMessageForPullRequest(event, pullRequest, message);
     }
 
     private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
