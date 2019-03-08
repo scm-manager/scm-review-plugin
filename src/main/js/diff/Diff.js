@@ -182,10 +182,11 @@ class Diff extends React.Component<Props, State> {
     return annotations;
   };
 
-  createFileControls = (file: File) => {
+  createFileControls = (file: File, setCollapse: (boolean) => void) => {
     if (this.isPermittedToComment()) {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
+        setCollapse(false);
         this.setFileEditor(path, true);
       };
       return <AddCommentButton action={openFileEditor} />;
