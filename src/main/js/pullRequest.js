@@ -1,6 +1,6 @@
 //@flow
 import type {BasicComment, BasicPullRequest, PullRequest} from "./types/PullRequest";
-import {apiClient, CONFLICT_ERROR} from "@scm-manager/ui-components";
+import {apiClient, ConflictError} from "@scm-manager/ui-components";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
@@ -11,7 +11,7 @@ export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
     .catch(err => {
       return { error: err };
     });
-};
+}
 
 export function updatePullRequest(url: string, pullRequest: PullRequest) {
   return apiClient
@@ -22,7 +22,7 @@ export function updatePullRequest(url: string, pullRequest: PullRequest) {
     .catch(err => {
       return { error: err };
     });
-};
+}
 
 export function createPullRequestComment(url: string, comment: BasicComment) {
   return apiClient
@@ -33,7 +33,7 @@ export function createPullRequestComment(url: string, comment: BasicComment) {
     .catch(err => {
       return { error: err };
     });
-};
+}
 
 export function updatePullRequestComment(url: string, comment: BasicComment) {
   return apiClient
@@ -60,7 +60,7 @@ export function getBranches(url: string) {
     .catch(err => {
       return { error: err };
     });
-};
+}
 
 export function getPullRequest(url: string){
   return apiClient
@@ -72,7 +72,7 @@ export function getPullRequest(url: string){
     .catch(err => {
       return {error: err};
     });
-};
+}
 
 export function getPullRequests(url: string){
   return apiClient
@@ -84,7 +84,7 @@ export function getPullRequests(url: string){
     .catch(err => {
       return {error: err};
     });
-};
+}
 
 export function merge(url: string, pullRequest: PullRequest){
   return apiClient
@@ -93,14 +93,13 @@ export function merge(url: string, pullRequest: PullRequest){
       targetRevision: pullRequest.target
     }, "application/vnd.scmm-mergeCommand+json")
     .catch(err => {
-      if(err === CONFLICT_ERROR){
+      if(err instanceof ConflictError) {
         return {conflict: err};
-      }
-      else {
+      } else {
         return {error: err};
       }
     });
-};
+}
 
 export function getChangesets(url: string) {
   return apiClient
@@ -109,7 +108,7 @@ export function getChangesets(url: string) {
     .catch(err => {
       return {error: err};
     });
-};
+}
 
 export function getPullRequestComments(url: string){
   return apiClient
@@ -121,7 +120,7 @@ export function getPullRequestComments(url: string){
     .catch(err => {
       return {error: err};
     });
-};
+}
 
 export function deletePullRequestComment(url: string){
   return apiClient
@@ -132,7 +131,7 @@ export function deletePullRequestComment(url: string){
     .catch(err => {
       return {error: err};
     });
-};
+}
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {
   return createIncomingUrl(repository, "incomingChangesets", source, target);
