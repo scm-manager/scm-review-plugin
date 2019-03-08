@@ -1,11 +1,11 @@
 // @flow
 
 import type {BaseContext} from '@scm-manager/ui-components';
-import {getPath} from '@scm-manager/ui-components/src/repos/diffs';
+import {diffs} from '@scm-manager/ui-components';
 import type {Location} from '../types/PullRequest';
 
 export function createHunkId(context: BaseContext): string {
-  return getPath(context.file) + "_" + context.hunk.content;
+  return diffs.getPath(context.file) + "_" + context.hunk.content;
 }
 
 export function createHunkIdFromLocation(location: Location): string {
@@ -17,7 +17,7 @@ export function createHunkIdFromLocation(location: Location): string {
 
 export function createLocation(context: BaseContext, changeId: string): Location {
   return {
-    file: getPath(context.file),
+    file: diffs.getPath(context.file),
     hunk: context.hunk.content,
     changeId
   };
