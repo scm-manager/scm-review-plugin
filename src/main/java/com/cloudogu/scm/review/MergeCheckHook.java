@@ -86,7 +86,7 @@ public class MergeCheckHook {
     }
 
     private void setPullRequestMerged(PullRequest pullRequest) {
-      String message = format("Merged pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget());
+      String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repositoryService.getRepository(), pullRequest, PullRequestStatus.MERGED);
     }

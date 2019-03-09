@@ -92,7 +92,7 @@ public class PullRequestInformationHook {
     }
 
     private void sendExistingMessages(PullRequest pullRequest) {
-      String message = format("Check existing pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget());
+      String message = format("Check existing pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
     }
 
