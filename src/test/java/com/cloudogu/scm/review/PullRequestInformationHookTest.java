@@ -71,13 +71,13 @@ public class PullRequestInformationHookTest {
   private ArgumentCaptor<String> messageCaptor;
 
   @InjectMocks
-  private MessageSender messageSender;
+  private MessageSenderFactory messageSenderFactory;
 
   private PullRequestInformationHook hook;
 
   @Before
   public void init() {
-    hook = new PullRequestInformationHook(pullRequestService, serviceFactory, messageSender);
+    hook = new PullRequestInformationHook(pullRequestService, serviceFactory, messageSenderFactory);
     when(event.getContext()).thenReturn(context);
     when(event.getRepository()).thenReturn(REPOSITORY);
     when(context.getBranchProvider()).thenReturn(branchProvider);

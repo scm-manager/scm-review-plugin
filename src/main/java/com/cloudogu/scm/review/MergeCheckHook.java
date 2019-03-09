@@ -29,13 +29,13 @@ public class MergeCheckHook {
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
-  private final MessageSender messageSender;
+  private final MessageSenderFactory messageSenderFactory;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSender messageSender) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory) {
     this.service = service;
     this.serviceFactory = serviceFactory;
-    this.messageSender = messageSender;
+    this.messageSenderFactory = messageSenderFactory;
   }
 
   @Subscribe(async = false)
@@ -52,11 +52,11 @@ public class MergeCheckHook {
 
   private class Worker {
     private final RepositoryService repositoryService;
-    private final PostReceiveRepositoryHookEvent event;
+    private final MessageSender messageSender;
 
     private Worker(RepositoryService repositoryService, PostReceiveRepositoryHookEvent event) {
       this.repositoryService = repositoryService;
-      this.event = event;
+      this.messageSender = messageSenderFactory.create(event);
     }
 
     private void process(List<PullRequest> pullRequests) {
@@ -87,8 +87,8 @@ public class MergeCheckHook {
 
     private void setPullRequestMerged(PullRequest pullRequest) {
       String message = format("Merged pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget());
-      messageSender.sendMessageForPullRequest(event, pullRequest, message);
-      service.setStatus(event.getRepository(), pullRequest, PullRequestStatus.MERGED);
+      messageSender.sendMessageForPullRequest(pullRequest, message);
+      service.setStatus(repositoryService.getRepository(), pullRequest, PullRequestStatus.MERGED);
     }
   }
 }

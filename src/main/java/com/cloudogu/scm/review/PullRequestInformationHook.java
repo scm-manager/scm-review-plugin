@@ -25,13 +25,13 @@ public class PullRequestInformationHook {
 
   private final PullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
-  private final MessageSender messageSender;
+  private final MessageSenderFactory messageSenderFactory;
 
   @Inject
-  public PullRequestInformationHook(PullRequestService service, RepositoryServiceFactory serviceFactory, MessageSender messageSender) {
+  public PullRequestInformationHook(PullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory) {
     this.service = service;
     this.serviceFactory = serviceFactory;
-    this.messageSender = messageSender;
+    this.messageSenderFactory = messageSenderFactory;
   }
 
   @Subscribe(async = false)
@@ -57,7 +57,8 @@ public class PullRequestInformationHook {
 
   private void sendCreateMessages(PostReceiveRepositoryHookEvent event, String branch) {
     String message = format("Create new pull request for branch %s:", branch);
-    messageSender.sendCreatePullRequestMessage(event, branch, message);
+    messageSenderFactory.create(event)
+      .sendCreatePullRequestMessage(branch, message);
   }
 
   private List<String> readEffectedBranches(PostReceiveRepositoryHookEvent event) {
@@ -68,12 +69,12 @@ public class PullRequestInformationHook {
   }
 
   private class Worker {
-    private final PostReceiveRepositoryHookEvent event;
+    private final MessageSender messageSender;
 
     private boolean prFound = false;
 
     private Worker(PostReceiveRepositoryHookEvent event) {
-      this.event = event;
+      this.messageSender = messageSenderFactory.create(event);
     }
 
     private boolean process(List<PullRequest> pullRequests, String branch) {
@@ -92,7 +93,7 @@ public class PullRequestInformationHook {
 
     private void sendExistingMessages(PullRequest pullRequest) {
       String message = format("Check existing pull request %s -> %s:", pullRequest.getSource(), pullRequest.getTarget());
-      messageSender.sendMessageForPullRequest(event, pullRequest, message);
+      messageSender.sendMessageForPullRequest(pullRequest, message);
     }
 
     private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
