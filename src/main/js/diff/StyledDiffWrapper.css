@@ -1,0 +1,5 @@
+div.commentable .diff-gutter:empty:hover::after {
+  font-family: "Font Awesome 5 Free";
+  content: " \f075";
+  color: #33b2e8;
+}

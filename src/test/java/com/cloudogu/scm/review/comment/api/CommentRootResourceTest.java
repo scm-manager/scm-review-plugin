@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
@@ -14,7 +15,6 @@ import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.Lists;
 import com.google.inject.util.Providers;
-import lombok.val;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.mock.MockDispatcherFactory;
 import org.jboss.resteasy.mock.MockHttpRequest;
@@ -37,12 +37,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.ArrayList;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -87,7 +87,7 @@ public class CommentRootResourceTest {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
-    val pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource))));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
@@ -126,10 +126,10 @@ public class CommentRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetAllPullRequestComments() throws URISyntaxException, IOException {
-    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", Instant.now());
-    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", Instant.now());
-    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", Instant.now());
-    val list = Lists.newArrayList(comment1, comment2, comment3);
+    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now());
+    ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);
     when(service.get("space", "name", "1", "2")).thenReturn(comment2);
@@ -157,10 +157,10 @@ public class CommentRootResourceTest {
   @Test
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPRComment() throws URISyntaxException, IOException {
-    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", Instant.now());
-    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", Instant.now());
-    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", Instant.now());
-    val list = Lists.newArrayList(comment1, comment2, comment3);
+    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now());
+    ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);
     when(service.get("space", "name", "1", "2")).thenReturn(comment2);
@@ -177,10 +177,10 @@ public class CommentRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetAllLinksÍfTheAuthorIsTheCurrentUser() throws URISyntaxException, IOException {
-    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", Instant.now());
-    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", Instant.now());
-    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", Instant.now());
-    val list = Lists.newArrayList(comment1, comment2, comment3);
+    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now());
+    ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);
     when(service.get("space", "name", "1", "2")).thenReturn(comment2);
@@ -216,10 +216,10 @@ public class CommentRootResourceTest {
   @Test
   @SubjectAware(username = "other", password = "secret")
   public void shouldGetOnlyTheSelfLinkÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
-    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", Instant.now());
-    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", Instant.now());
-    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", Instant.now());
-    val list = Lists.newArrayList(comment1, comment2, comment3);
+    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now());
+    ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);
     when(service.get("space", "name", "1", "2")).thenReturn(comment2);

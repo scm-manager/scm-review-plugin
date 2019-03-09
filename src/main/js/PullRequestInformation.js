@@ -1,10 +1,11 @@
 // @flow
 import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
+import {urls} from "@scm-manager/ui-components";
 import { translate } from "react-i18next";
 import Changesets from "./Changesets";
-import { Route, Link, withRouter } from "react-router-dom";
-import Diff from "./Diff";
+import { Link, Redirect, Route, Switch, withRouter } from "react-router-dom";
+import Diff from "./diff/Diff";
 import PullRequestComments from "./comment/PullRequestComments";
 import type {PullRequest} from "./types/PullRequest";
 
@@ -66,7 +67,12 @@ class PullRequestInformation extends React.Component<Props> {
         </li>
       );
       routes = (
-        <>
+        <Switch>
+          <Redirect
+            from={baseURL}
+            to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")}
+            exact
+          />
           <Route
             path={`${baseURL}/changesets`}
             render={() => (
@@ -92,10 +98,15 @@ class PullRequestInformation extends React.Component<Props> {
           <Route
             path={`${baseURL}/diff`}
             render={() => (
-              <Diff repository={repository} source={source} target={target} />
+              <Diff repository={repository} pullRequest={pullRequest} source={source} target={target} />
             )}
           />
-        </>
+          <Route
+            path={`${baseURL}/comments`}
+            render={() => <PullRequestComments pullRequest={pullRequest}/>}
+            exact
+          />
+        </Switch>
       );
     }
 
@@ -115,11 +126,6 @@ class PullRequestInformation extends React.Component<Props> {
           </ul>
         </div>
         {routes}
-        <Route
-          path={`${baseURL}/comments`}
-          render={() => <PullRequestComments pullRequest={pullRequest}/>}
-          exact
-        />
       </>
     );
   }
