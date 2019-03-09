@@ -118,6 +118,7 @@ public class PullRequestInformationHookTest {
 
     List<String> sentMessages = messageCaptor.getAllValues();
     assertThat(sentMessages)
+      .filteredOn(s -> s.length() > 0)
       .hasSize(4)
       .anyMatch(s -> s.matches(".*new pull request.*branch_1.*"))
       .anyMatch(s -> s.matches(".*new pull request.*branch_2.*"))
@@ -145,6 +146,7 @@ public class PullRequestInformationHookTest {
 
     List<String> sentMessages = messageCaptor.getAllValues();
     assertThat(sentMessages)
+      .filteredOn(s -> s.length() > 0)
       .hasSize(2)
       .anyMatch(s -> s.matches(".*pull request.*branch_X.*target.*"))
       .anyMatch(s -> s.matches("http://example.com/.*pr_id.*"));

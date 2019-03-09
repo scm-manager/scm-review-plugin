@@ -49,6 +49,8 @@ public class MessageSender {
 
   private void sendMessages(String... messages) {
     HookMessageProvider messageProvider = event.getContext().getMessageProvider();
+    messageProvider.sendMessage("");
     Arrays.stream(messages).forEach(messageProvider::sendMessage);
+    messageProvider.sendMessage("");
   }
 }
