@@ -40,7 +40,7 @@ public class MessageSender {
   private String createPullRequestLink(PullRequest pullRequest) {
     Repository repository = event.getRepository();
     return String.format(
-      "%s/repo/%s/%s/pull-requests/%s/",
+      "%s/repo/%s/%s/pull-request/%s/",
       configuration.getBaseUrl(),
       repository.getNamespace(),
       repository.getName(),
