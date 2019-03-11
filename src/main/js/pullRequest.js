@@ -1,6 +1,6 @@
 //@flow
 import type {BasicComment, BasicPullRequest, PullRequest} from "./types/PullRequest";
-import {apiClient, ConflictError} from "@scm-manager/ui-components";
+import {apiClient, ConflictError, NotFoundError} from "@scm-manager/ui-components";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
@@ -93,8 +93,10 @@ export function merge(url: string, pullRequest: PullRequest){
       targetRevision: pullRequest.target
     }, "application/vnd.scmm-mergeCommand+json")
     .catch(err => {
-      if(err instanceof ConflictError) {
+      if (err instanceof ConflictError) {
         return {conflict: err};
+      } else if (err instanceof NotFoundError) {
+        return {notFound: err};
       } else {
         return {error: err};
       }

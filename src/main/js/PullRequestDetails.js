@@ -84,7 +84,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     const { repository } = this.props;
     if (repository._links.mergeDryRun && repository._links.mergeDryRun.href) {
       merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
-        if (response.conflict) {
+        if (response.conflict || response.notFound) {
           this.setState({
             mergeButtonLoading: false,
             loading: false,
