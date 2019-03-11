@@ -116,6 +116,8 @@ public class MergeCheckHook {
 
     private void setPullRequestRejected(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
+      String message = format("Rejected pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
+      messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
     }
   }
