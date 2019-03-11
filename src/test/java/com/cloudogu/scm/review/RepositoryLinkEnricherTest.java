@@ -1,159 +1,96 @@
 package com.cloudogu.scm.review;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Resources;
+import com.github.sdorra.shiro.ShiroRule;
+import com.github.sdorra.shiro.SubjectAware;
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.mockito.junit.MockitoJUnitRunner;
+import sonia.scm.api.v2.resources.HalAppender;
+import sonia.scm.api.v2.resources.HalEnricherContext;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
-import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.web.JsonEnricherContext;
-import sonia.scm.web.VndMediaType;
 
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-class RepositoryLinkEnricherTest {
+@RunWith(MockitoJUnitRunner.class)
+@SubjectAware(configuration = "classpath:com/cloudogu/scm/review/shiro.ini")
+public class RepositoryLinkEnricherTest {
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
-  private RepositoryLinkEnricher linkEnricher;
+  private Provider<ScmPathInfoStore> scmPathInfoStoreProvider;
+
+  @Rule
+  public ShiroRule shiro = new ShiroRule();
 
   @Mock
-  private RepositoryService repositoryService;
-
+  RepositoryServiceFactory serviceFactory;
   @Mock
-  private RepositoryServiceFactory serviceFactory;
+  private HalAppender appender;
+  private RepositoryLinkEnricher enricher;
+  private RepositoryService service;
 
-  private JsonNode rootNode;
-
-  @BeforeEach
-  void setUp() {
-    ScmPathInfoStore pathInfoStore = new ScmPathInfoStore();
-    pathInfoStore.set(() -> URI.create("/"));
-    Provider<ScmPathInfoStore> pathInfoStoreProvider = Providers.of(pathInfoStore);
-    when(serviceFactory.create(new NamespaceAndName("scmadmin", "web-resources"))).thenReturn(repositoryService);
-    when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
-
-    linkEnricher = new RepositoryLinkEnricher(pathInfoStoreProvider, objectMapper, serviceFactory);
-
+  public RepositoryLinkEnricherTest() {
+    // cleanup state that might have been left by other tests
+    ThreadContext.unbindSecurityManager();
+    ThreadContext.unbindSubject();
+    ThreadContext.remove();
   }
 
-  @Nested
-  class Repository {
-
-    @BeforeEach
-    void setUpRootNode() throws IOException {
-      URL resource = Resources.getResource("com/cloudogu/scm/review/repository-001.json");
-      rootNode = objectMapper.readTree(resource);
-    }
-
-    @Test
-    void shouldEnrichRepositoriesWithBranchSupport() {
-      JsonEnricherContext context = new JsonEnricherContext(
-        URI.create("/"),
-        MediaType.valueOf(VndMediaType.REPOSITORY),
-        rootNode
-      );
-
-      when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
-      linkEnricher.enrich(context);
-
-      String newPrLink = context.getResponseEntity()
-        .get("_links")
-        .get("pullRequest")
-        .get("href")
-        .asText();
-
-      assertThat(newPrLink).isEqualTo("/v2/pull-requests/scmadmin/web-resources");
-    }
-
-    @Test
-    void shouldNotEnrichRepositoriesWithoutBranchSupport() {
-      JsonEnricherContext context = new JsonEnricherContext(
-        URI.create("/"),
-        MediaType.valueOf(VndMediaType.REPOSITORY),
-        rootNode
-      );
-
-      when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
-      linkEnricher.enrich(context);
-
-      JsonNode newPrLink = context.getResponseEntity()
-        .get("_links")
-        .get("pullRequest");
-
-      assertThat(newPrLink).isNull();
-    }
-
-    @Test
-    void shouldNotModifyObjectsWithUnsupportedMediaType() {
-      JsonEnricherContext context = new JsonEnricherContext(
-        URI.create("/"),
-        MediaType.valueOf(VndMediaType.USER),
-        rootNode
-      );
-
-      linkEnricher.enrich(context);
-
-      boolean hasNewPullRequestLink = context.getResponseEntity()
-        .get("_links")
-        .has("pullRequest");
-
-      assertThat(hasNewPullRequestLink).isFalse();
-    }
-
-
+  @Before
+  public void setUp() {
+    ScmPathInfoStore scmPathInfoStore = new ScmPathInfoStore();
+    service = mock(RepositoryService.class);
+    when(serviceFactory.create(any(Repository.class))).thenReturn(service);
+    scmPathInfoStore.set(() -> URI.create("https://scm-manager.org/scm/api/"));
+    scmPathInfoStoreProvider = Providers.of(scmPathInfoStore);
   }
 
-  @Nested
-  class RepositoryCollection {
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldEnrichRepositoriesWithBranchSupport() {
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory);
 
-    @BeforeEach
-    void setUpRootNode() throws IOException {
-      URL resource = Resources.getResource("com/cloudogu/scm/review/repository-collection-001.json");
-      rootNode = objectMapper.readTree(resource);
-    }
+    when(service.isSupported(Command.MERGE)).thenReturn(true);
+    Repository repo = new Repository("id", "type", "space", "name");
+    HalEnricherContext context = HalEnricherContext.of(repo);
+    enricher.enrich(context, appender);
+    verify(appender).appendLink(any(), any());
+  }
 
-    @Test
-    void shouldEnrichRepositoryCollection() {
-      JsonEnricherContext context = new JsonEnricherContext(
-        URI.create("/"),
-        MediaType.valueOf(VndMediaType.REPOSITORY_COLLECTION),
-        rootNode
-      );
-      when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldNotEnrichRepositoriesWithoutBranchSupport() {
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory);
 
-      linkEnricher.enrich(context);
+    when(service.isSupported(Command.MERGE)).thenReturn(false);
+    Repository repo = new Repository("id", "type", "space", "name");
+    HalEnricherContext context = HalEnricherContext.of(repo);
+    enricher.enrich(context, appender);
+    verify(appender, never()).appendLink(any(), any());
+  }
 
-      boolean hasPullRequestLink = context.getResponseEntity()
-        .get("_embedded")
-        .get("repositories")
-        .get(0)
-        .get("_links")
-        .has("pullRequest");
-
-      assertThat(hasPullRequestLink).isTrue();
-    }
-
-
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldNotEnrichBecauseOfMissingPermission() {
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory);
+    Repository repo = new Repository("id", "type", "space", "name");
+    HalEnricherContext context = HalEnricherContext.of(repo);
+    enricher.enrich(context, appender);
+    verify(appender, never()).appendLink(any(), any());
   }
 
 
