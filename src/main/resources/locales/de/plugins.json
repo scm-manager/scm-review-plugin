@@ -73,7 +73,8 @@
         "message": "Sollen die Änderungen an dem Kommentar wirklich verworfen werden?",
         "submit": "Ja",
         "cancel": "Nein"
-      }
+      },
+      "inlineTag":"inline"
     }
   },
   "verbs": {

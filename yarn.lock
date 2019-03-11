@@ -713,7 +713,7 @@
     vinyl-source-stream "^2.0.0"
     watchify "^3.11.0"
 
-"@scm-manager/ui-components@^2.0.0-20190208-134554":
+"@scm-manager/ui-components@latest":
   version "2.0.0-20190208-134554"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-2.0.0-20190208-134554.tgz#e0593945b39c4777f73b1d1cf5e8303ae52f6ea6"
   dependencies:
@@ -743,7 +743,7 @@
     react "^16.4.2"
     react-dom "^16.4.2"
 
-"@scm-manager/ui-types@2.0.0-20190208-134554", "@scm-manager/ui-types@^2.0.0-20190208-134554":
+"@scm-manager/ui-types@2.0.0-20190208-134554", "@scm-manager/ui-types@latest":
   version "2.0.0-20190208-134554"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-2.0.0-20190208-134554.tgz#ba46b003294bf37bfea6aae966ebb67e52a64235"
 
