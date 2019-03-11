@@ -36,7 +36,7 @@ class PullRequestList extends React.Component<Props, State> {
     this.state = {
       pullRequests: null,
       loading: true,
-      status: "ALL"
+      status: "OPEN"
     };
   }
 
@@ -82,7 +82,7 @@ class PullRequestList extends React.Component<Props, State> {
         <div className="panel-heading">
           <StatusSelector
             handleTypeChange={this.handleStatusChange}
-            status={status ? status : "ALL"}
+            status={status ? status : "OPEN"}
           />
         </div>
 

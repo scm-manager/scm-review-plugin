@@ -86,7 +86,7 @@ public class PullRequestRootResource {
   @GET
   @Path("{namespace}/{name}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("ALL") PullRequestStatusDto pullRequestStatusDto) {
+  public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("OPEN") PullRequestStatusDto pullRequestStatusDto) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)

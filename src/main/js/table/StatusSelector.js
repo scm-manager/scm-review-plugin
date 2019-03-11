@@ -20,7 +20,7 @@ class StatusSelector extends React.Component<Props> {
     return (
       <Select
         onChange={handleTypeChange}
-        value={status ? status : "ALL"}
+        value={status ? status : "OPEN"}
         options={this.createSelectOptions(types)}
         loading={loading}
         label={label}
