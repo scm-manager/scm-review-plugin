@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
-import lombok.extern.slf4j.Slf4j;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
