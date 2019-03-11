@@ -72,7 +72,8 @@
         "message": "Do you really want to reject the modifications on the comment?",
         "submit": "Yes",
         "cancel": "No"
-      }
+      },
+      "inlineTag":"inline"
     }
   },
   "verbs": {
