@@ -47,7 +47,8 @@
           "cancel": "Nein"
         }
       },
-      "notification": "Pull Request erfolgreich gemerged!"
+      "notification": "Pull Request erfolgreich gemerged!",
+      "targetDeleted": "Der Target Branch wurde gelösch!"
     },
     "pull-requests": {
       "error-title": "Fehler",

@@ -17,6 +17,8 @@ import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
+import sonia.scm.repository.api.HookBranchProvider;
+import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
@@ -50,12 +52,23 @@ class MergeCheckHookTest {
 
   @Mock
   private PostReceiveRepositoryHookEvent event;
+  @Mock
+  private HookContext hookContext;
+  @Mock
+  private HookBranchProvider branchProvider;
 
   @BeforeEach
   void initRepositoryServiceFactory() {
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
+  }
+
+  @BeforeEach
+  void initEvent() {
+    when(event.getContext()).thenReturn(hookContext);
+    when(hookContext.getBranchProvider()).thenReturn(branchProvider);
+    when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("source"));
   }
 
   @BeforeEach
@@ -108,9 +121,35 @@ class MergeCheckHookTest {
     verify(service, never()).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
   }
 
+  @Test
+  void shouldNotCheckNotEffectedPullRequests() throws IOException {
+    PullRequest pullRequest = openPullRequest();
+    pullRequest.setSource("other");
+    when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
+
+    hook.checkForMerges(event);
+
+    verify(logCommandBuilder, never()).getChangesets();
+  }
+
+  @Test
+  void shouldSetPullRequestsWithDeletedSourceToRejected() throws IOException {
+    PullRequest pullRequest = openPullRequest();
+    when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
+
+    when(branchProvider.getCreatedOrModified()).thenReturn(emptyList());
+    when(branchProvider.getDeletedOrClosed()).thenReturn(singletonList("source"));
+
+    hook.checkForMerges(event);
+
+    verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.REJECTED);
+  }
+
   private PullRequest openPullRequest() {
     PullRequest pullRequest = new PullRequest();
     pullRequest.setStatus(PullRequestStatus.OPEN);
+    pullRequest.setSource("source");
+    pullRequest.setTarget("target");
     return pullRequest;
   }
 
