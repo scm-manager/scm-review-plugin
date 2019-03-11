@@ -96,7 +96,7 @@
       },
       "mergePullRequest": {
         "displayName": "Pull-Requests mergen/ablehnen",
-        "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen"
+        "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
       }
     }
   }

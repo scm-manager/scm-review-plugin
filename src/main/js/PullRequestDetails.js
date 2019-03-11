@@ -230,15 +230,17 @@ class PullRequestDetails extends React.Component<Props, State> {
           loading={rejectButtonLoading}
         />
       );
-      mergeButton = targetBranchDeleted? null: (
-        <MergeButton
-          merge={() => this.performMerge()}
-          mergeHasNoConflict={mergeHasNoConflict}
-          loading={mergeButtonLoading}
-          repository={repository}
-          pullRequest={pullRequest}
-        />
-      );
+      if (!!repository._links.merge) {
+        mergeButton = targetBranchDeleted? null: (
+          <MergeButton
+            merge={() => this.performMerge()}
+            mergeHasNoConflict={mergeHasNoConflict}
+            loading={mergeButtonLoading}
+            repository={repository}
+            pullRequest={pullRequest}
+          />
+        );
+      }
     }
 
     let editButton = null;

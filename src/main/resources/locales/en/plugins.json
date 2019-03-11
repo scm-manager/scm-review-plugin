@@ -96,7 +96,7 @@
       },
       "mergePullRequest": {
         "displayName": "merge/reject pull requests",
-        "description": "May merge or reject pull requests"
+        "description": "May merge or reject pull requests (merge needs additional permission to push the repository)"
       }
     }
   }
