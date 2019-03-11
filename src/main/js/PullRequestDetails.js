@@ -6,7 +6,8 @@ import {
   Notification,
   Title,
   ErrorNotification,
-  Tooltip
+  Tooltip,
+  MarkdownView
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
@@ -199,10 +200,9 @@ class PullRequestDetails extends React.Component<Props, State> {
           <div className="media-content">
             {pullRequest.description.split("\n").map(line => {
               return (
-                <span className="is-word-break">
-                  {line}
-                  <br />
-                </span>
+                <>
+                  <MarkdownView content={line} />
+                </>
               );
             })}
           </div>
@@ -231,7 +231,7 @@ class PullRequestDetails extends React.Component<Props, State> {
         />
       );
       if (!!repository._links.merge) {
-        mergeButton = targetBranchDeleted? null: (
+        mergeButton = targetBranchDeleted ? null : (
           <MergeButton
             merge={() => this.performMerge()}
             mergeHasNoConflict={mergeHasNoConflict}
@@ -264,13 +264,16 @@ class PullRequestDetails extends React.Component<Props, State> {
       );
     }
 
-    const targetBranchDeletedWarning = targetBranchDeleted ?
+    const targetBranchDeletedWarning = targetBranchDeleted ? (
       <span className="icon has-text-warning">
-        <Tooltip className={classes.tooltip} message={t("scm-review-plugin.show-pull-request.targetDeleted")}>
-          <i className="fas fa-exclamation-triangle"></i>
+        <Tooltip
+          className={classes.tooltip}
+          message={t("scm-review-plugin.show-pull-request.targetDeleted")}
+        >
+          <i className="fas fa-exclamation-triangle" />
         </Tooltip>
-      </span> :
-      null;
+      </span>
+    ) : null;
 
     return (
       <div className="columns">
@@ -304,7 +307,7 @@ class PullRequestDetails extends React.Component<Props, State> {
                     {pullRequest.target}
                   </span>
                 </span>
-                  {targetBranchDeletedWarning}
+                {targetBranchDeletedWarning}
               </div>
             </div>
             <div className="media-right">{pullRequest.status}</div>

@@ -4,7 +4,7 @@ import {
   Button,
   confirmAlert,
   DateFromNow,
-  Loading,
+  Loading, MarkdownView,
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
@@ -225,10 +225,9 @@ class PullRequestComment extends React.Component<Props, State> {
     const { comment } = this.props;
     return comment.comment.split("\n").map(line => {
       return (
-        <span>
-          {line}
-          <br />
-        </span>
+        <>
+          <MarkdownView content={line} />
+        </>
       );
     });
   };
