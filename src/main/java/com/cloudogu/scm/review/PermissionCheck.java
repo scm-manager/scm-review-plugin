@@ -3,6 +3,7 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.UnauthorizedException;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 
@@ -19,11 +20,16 @@ public final class PermissionCheck {
   }
 
   public static boolean mayRead(Repository repository) {
-    return RepositoryPermissions.custom("readPullRequest", repository).isPermitted();
+    return RepositoryPermissions.custom("readPullRequest", repository).isPermitted() ||
+      RepositoryPermissions.custom("createPullRequest", repository).isPermitted() ||
+      RepositoryPermissions.custom("modifyPullRequest", repository).isPermitted();
   }
 
   public static void checkRead(Repository repository) {
-    RepositoryPermissions.custom("readPullRequest", repository).check();
+    if (!mayRead(repository)) {
+      String msg = "User is not permitted to read pull requests";
+      throw new UnauthorizedException(msg);
+    }
   }
 
   public static boolean mayComment(Repository repository) {
