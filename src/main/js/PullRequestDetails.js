@@ -5,7 +5,8 @@ import {
   Loading,
   Notification,
   Title,
-  ErrorNotification
+  ErrorNotification,
+  Tooltip
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
@@ -47,7 +48,8 @@ type State = {
   pullRequest: PullRequest,
   error?: Error,
   loading: boolean,
-  mergePossible?: boolean,
+  mergeHasNoConflict?: boolean,
+  targetBranchDeleted?: boolean,
   mergeButtonLoading: boolean,
   rejectButtonLoading: boolean,
   showNotification: boolean
@@ -88,7 +90,13 @@ class PullRequestDetails extends React.Component<Props, State> {
           this.setState({
             mergeButtonLoading: false,
             loading: false,
-            mergePossible: false
+            mergeHasNoConflict: false
+          });
+        } else if (response.notFound) {
+          this.setState({
+            mergeButtonLoading: false,
+            loading: false,
+            targetBranchDeleted: true
           });
         } else if (response.error) {
           this.setState({
@@ -98,7 +106,8 @@ class PullRequestDetails extends React.Component<Props, State> {
           });
         } else {
           this.setState({
-            mergePossible: true,
+            mergeHasNoConflict: true,
+            targetBranchDeleted: false,
             loading: false,
             mergeButtonLoading: false
           });
@@ -118,7 +127,7 @@ class PullRequestDetails extends React.Component<Props, State> {
         this.setState({ error: response.error, mergeButtonLoading: false });
       } else if (response.conflict) {
         this.setState({
-          mergePossible: true,
+          mergeHasNoConflict: true,
           mergeButtonLoading: false
         });
       } else {
@@ -169,7 +178,8 @@ class PullRequestDetails extends React.Component<Props, State> {
       error,
       loading,
       mergeButtonLoading,
-      mergePossible,
+      mergeHasNoConflict,
+      targetBranchDeleted,
       rejectButtonLoading,
       showNotification
     } = this.state;
@@ -220,15 +230,17 @@ class PullRequestDetails extends React.Component<Props, State> {
           loading={rejectButtonLoading}
         />
       );
-      mergeButton = (
-        <MergeButton
-          merge={() => this.performMerge()}
-          mergePossible={mergePossible}
-          loading={mergeButtonLoading}
-          repository={repository}
-          pullRequest={pullRequest}
-        />
-      );
+      if (!!repository._links.merge) {
+        mergeButton = targetBranchDeleted? null: (
+          <MergeButton
+            merge={() => this.performMerge()}
+            mergeHasNoConflict={mergeHasNoConflict}
+            loading={mergeButtonLoading}
+            repository={repository}
+            pullRequest={pullRequest}
+          />
+        );
+      }
     }
 
     let editButton = null;
@@ -251,6 +263,14 @@ class PullRequestDetails extends React.Component<Props, State> {
         </a>
       );
     }
+
+    const targetBranchDeletedWarning = targetBranchDeleted ?
+      <span className="icon has-text-warning">
+        <Tooltip className={classes.tooltip} message={t("scm-review-plugin.show-pull-request.targetDeleted")}>
+          <i className="fas fa-exclamation-triangle"></i>
+        </Tooltip>
+      </span> :
+      null;
 
     return (
       <div className="columns">
@@ -284,6 +304,7 @@ class PullRequestDetails extends React.Component<Props, State> {
                     {pullRequest.target}
                   </span>
                 </span>
+                  {targetBranchDeletedWarning}
               </div>
             </div>
             <div className="media-right">{pullRequest.status}</div>

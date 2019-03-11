@@ -47,7 +47,8 @@
           "cancel": "No"
         }
       },
-      "notification": "Pull request merged successfully!"
+      "notification": "Pull request merged successfully!",
+      "targetDeleted": "The target branch has been deleted!"
     },
     "pull-requests": {
       "error-title": "Error",
@@ -72,7 +73,8 @@
         "message": "Do you really want to reject the modifications on the comment?",
         "submit": "Yes",
         "cancel": "No"
-      }
+      },
+      "inlineTag":"inline"
     }
   },
   "verbs": {
@@ -95,7 +97,7 @@
       },
       "mergePullRequest": {
         "displayName": "merge/reject pull requests",
-        "description": "May merge or reject pull requests"
+        "description": "May merge or reject pull requests (merge needs additional permission to push the repository)"
       }
     }
   }

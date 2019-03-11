@@ -11,7 +11,9 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
+import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
+import sonia.scm.repository.api.HookBranchProvider;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
@@ -53,22 +55,38 @@ public class MergeCheckHook {
   private class Worker {
     private final RepositoryService repositoryService;
     private final MessageSender messageSender;
+    private final Repository repository;
+    private final HookBranchProvider branchProvider;
 
     private Worker(RepositoryService repositoryService, PostReceiveRepositoryHookEvent event) {
       this.repositoryService = repositoryService;
       this.messageSender = messageSenderFactory.create(event);
+      this.repository = event.getRepository();
+      this.branchProvider = event.getContext().getBranchProvider();
     }
 
     private void process(List<PullRequest> pullRequests) {
       pullRequests
         .stream()
         .filter(this::pullRequestHasStatusOpen)
+        .filter(this::pullRequestBranchesAreModified)
         .filter(this::pullRequestIsMerged)
         .forEach(this::setPullRequestMerged);
+      pullRequests
+        .stream()
+        .filter(this::pullRequestHasStatusOpen)
+        .filter(this::pullRequestSourceBranchIsDeleted)
+        .forEach(this::setPullRequestRejected);
     }
 
     private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
       return pullRequest.getStatus() == PullRequestStatus.OPEN;
+    }
+
+    private boolean pullRequestBranchesAreModified(PullRequest pullRequest) {
+      return
+        branchProvider.getCreatedOrModified().contains(pullRequest.getSource()) ||
+          branchProvider.getCreatedOrModified().contains(pullRequest.getTarget());
     }
 
     private boolean pullRequestIsMerged(PullRequest pullRequest) {
@@ -86,9 +104,19 @@ public class MergeCheckHook {
     }
 
     private void setPullRequestMerged(PullRequest pullRequest) {
+      LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
       String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
-      service.setStatus(repositoryService.getRepository(), pullRequest, PullRequestStatus.MERGED);
+      service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
+    }
+
+    private boolean pullRequestSourceBranchIsDeleted(PullRequest pullRequest) {
+      return branchProvider.getDeletedOrClosed().contains(pullRequest.getSource());
+    }
+
+    private void setPullRequestRejected(PullRequest pullRequest) {
+      LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
+      service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
     }
   }
 }

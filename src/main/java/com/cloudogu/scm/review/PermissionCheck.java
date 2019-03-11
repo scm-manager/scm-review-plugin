@@ -3,27 +3,38 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.UnauthorizedException;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 
 public final class PermissionCheck {
+
+  public static final String CREATE_PULL_REQUEST = "createPullRequest";
+  public static final String MODIFY_PULL_REQUEST = "modifyPullRequest";
+  public static final String READ_PULL_REQUEST = "readPullRequest";
+
   private PermissionCheck() {
   }
 
   public static boolean mayCreate(Repository repository) {
-    return RepositoryPermissions.custom("createPullRequest", repository).isPermitted();
+    return RepositoryPermissions.custom(CREATE_PULL_REQUEST, repository).isPermitted();
   }
 
   public static void checkCreate(Repository repository) {
-    RepositoryPermissions.custom("createPullRequest", repository).check();
+    RepositoryPermissions.custom(CREATE_PULL_REQUEST, repository).check();
   }
 
   public static boolean mayRead(Repository repository) {
-    return RepositoryPermissions.custom("readPullRequest", repository).isPermitted();
+    return RepositoryPermissions.custom(READ_PULL_REQUEST, repository).isPermitted() ||
+      RepositoryPermissions.custom(CREATE_PULL_REQUEST, repository).isPermitted() ||
+      RepositoryPermissions.custom(MODIFY_PULL_REQUEST, repository).isPermitted();
   }
 
   public static void checkRead(Repository repository) {
-    RepositoryPermissions.custom("readPullRequest", repository).check();
+    if (!mayRead(repository)) {
+      String msg = "User is not permitted to read pull requests";
+      throw new UnauthorizedException(msg);
+    }
   }
 
   public static boolean mayComment(Repository repository) {
@@ -65,6 +76,6 @@ public final class PermissionCheck {
   }
 
   private static boolean mayModify(Repository repository) {
-    return RepositoryPermissions.custom("modifyPullRequest", repository).isPermitted();
+    return RepositoryPermissions.custom(MODIFY_PULL_REQUEST, repository).isPermitted();
   }
 }

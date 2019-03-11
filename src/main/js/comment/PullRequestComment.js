@@ -245,7 +245,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   render() {
-    const { comment } = this.props;
+    const { comment, t } = this.props;
     const { loading, edit } = this.state;
 
     if (loading) {
@@ -255,6 +255,12 @@ class PullRequestComment extends React.Component<Props, State> {
     let icons = null;
     let editButtons = null;
     let message = null;
+    let inlineTag = comment.location?
+      <span className="tag is-rounded is-info ">
+        <span className="fas fa-code " >&nbsp;</span>
+        {t("scm-review-plugin.comment.inlineTag")}
+      </span>
+      : "" ;
     if (edit) {
       message = this.createMessageEditor();
       editButtons = this.createEditButtons();
@@ -271,6 +277,7 @@ class PullRequestComment extends React.Component<Props, State> {
               <p>
                 <strong>{comment.author} </strong>
                 <DateFromNow date={comment.date} />
+                &nbsp; {inlineTag}
                 <br />
                 {message}
               </p>

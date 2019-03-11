@@ -171,7 +171,7 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:readPullRequest:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
   }
 
   @Test

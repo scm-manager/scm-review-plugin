@@ -47,7 +47,8 @@
           "cancel": "Nein"
         }
       },
-      "notification": "Pull Request erfolgreich gemerged!"
+      "notification": "Pull Request erfolgreich gemerged!",
+      "targetDeleted": "Der Target Branch wurde gelösch!"
     },
     "pull-requests": {
       "error-title": "Fehler",
@@ -72,7 +73,8 @@
         "message": "Sollen die Änderungen an dem Kommentar wirklich verworfen werden?",
         "submit": "Ja",
         "cancel": "Nein"
-      }
+      },
+      "inlineTag":"inline"
     }
   },
   "verbs": {
@@ -95,7 +97,7 @@
       },
       "mergePullRequest": {
         "displayName": "Pull-Requests mergen/ablehnen",
-        "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen"
+        "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
       }
     }
   }

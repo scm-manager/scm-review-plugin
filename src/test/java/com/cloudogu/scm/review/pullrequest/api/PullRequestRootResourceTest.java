@@ -119,7 +119,7 @@ public class PullRequestRootResourceTest {
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:readPullRequest:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
   }
 
   @Test
@@ -127,7 +127,7 @@ public class PullRequestRootResourceTest {
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "");
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:readPullRequest:repo_ID\\]");
+    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
   }
 
   @Test
