@@ -47,7 +47,8 @@
           "cancel": "No"
         }
       },
-      "notification": "Pull request merged successfully!"
+      "notification": "Pull request merged successfully!",
+      "targetDeleted": "The target branch has been deleted!"
     },
     "pull-requests": {
       "error-title": "Error",

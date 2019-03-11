@@ -10,7 +10,7 @@ import injectSheet from "react-jss";
 type Props = {
   merge: () => void,
   repository: Repository,
-  mergePossible: boolean,
+  mergeHasNoConflict: boolean,
   loading: boolean,
   pullRequest: PullRequest,
   t: string => string
@@ -77,13 +77,13 @@ class MergeButton extends React.Component<Props, State> {
       t,
       loading,
       classes,
-      mergePossible,
+      mergeHasNoConflict,
       repository,
       pullRequest
     } = this.props;
     const { mergeInformation } = this.state;
-    const action = mergePossible ? this.confirmMerge : this.showInformation;
-    const color = mergePossible ? "primary" : "warning";
+    const action = mergeHasNoConflict ? this.confirmMerge : this.showInformation;
+    const color = mergeHasNoConflict ? "primary" : "warning";
     return (
       <p className="control">
         <Button
