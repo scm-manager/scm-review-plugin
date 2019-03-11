@@ -256,7 +256,10 @@ class PullRequestComment extends React.Component<Props, State> {
     let editButtons = null;
     let message = null;
     let inlineTag = comment.location?
-       <span className="tag is-rounded is-info fas fa-code"> &nbsp; {t("scm-review-plugin.comment.inlineTag")}</span>
+      <span className="tag is-rounded is-info ">
+        <span className="fas fa-code " >&nbsp;</span>
+        {t("scm-review-plugin.comment.inlineTag")}
+      </span>
       : "" ;
     if (edit) {
       message = this.createMessageEditor();
