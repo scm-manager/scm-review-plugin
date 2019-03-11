@@ -3,7 +3,6 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,7 +63,7 @@ class MergeCheckHookTest {
   @Mock
   private PostReceiveRepositoryHookEvent event;
   @Mock
-  private HookContext context;
+  private HookContext hookContext;
   @Mock
   private HookMessageProvider messageProvider;
   @Mock
@@ -80,15 +79,15 @@ class MergeCheckHookTest {
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
     when(configuration.getBaseUrl()).thenReturn("http://example.com/");
-    when(event.getContext()).thenReturn(context);
-    when(context.getMessageProvider()).thenReturn(messageProvider);
+    when(event.getContext()).thenReturn(hookContext);
+    when(hookContext.getMessageProvider()).thenReturn(messageProvider);
     doNothing().when(messageProvider).sendMessage(messageCaptor.capture());
   }
 
   @BeforeEach
   void initEvent() {
-    when(event.getContext()).thenReturn(context);
-    when(context.getBranchProvider()).thenReturn(branchProvider);
+    when(event.getContext()).thenReturn(hookContext);
+    when(hookContext.getBranchProvider()).thenReturn(branchProvider);
     when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("source"));
   }
 
