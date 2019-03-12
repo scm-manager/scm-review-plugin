@@ -39,7 +39,6 @@ export function isUrlSuffixMatching(
 }
 
 class PullRequestInformation extends React.Component<Props> {
-
   navigationClass(suffix: string) {
     const { baseURL, location } = this.props;
     if (isUrlSuffixMatching(baseURL, location.pathname, suffix)) {
@@ -60,7 +59,7 @@ class PullRequestInformation extends React.Component<Props> {
 
     let changesetTab = null;
     let diffTab = null;
-    let routes ;
+    let routes;
     let routeChangeset = null;
     let routeChangesetPagination = null;
     let routeDiff = null;
@@ -72,30 +71,30 @@ class PullRequestInformation extends React.Component<Props> {
         </li>
       );
       routeChangeset = (
-          <Route
-            path={`${baseURL}/changesets`}
-            render={() => (
-              <Changesets
-                repository={repository}
-                source={source}
-                target={target}
-              />
-            )}
-            exact
-          />
+        <Route
+          path={`${baseURL}/changesets`}
+          render={() => (
+            <Changesets
+              repository={repository}
+              source={source}
+              target={target}
+            />
+          )}
+          exact
+        />
       );
       routeChangesetPagination = (
-          <Route
-            path={`${baseURL}/changesets/:page`}
-            render={() => (
-              <Changesets
-                repository={repository}
-                source={source}
-                target={target}
-              />
-            )}
-            exact
-          />
+        <Route
+          path={`${baseURL}/changesets/:page`}
+          render={() => (
+            <Changesets
+              repository={repository}
+              source={source}
+              target={target}
+            />
+          )}
+          exact
+        />
       );
       routeDiff = (
         <Route
