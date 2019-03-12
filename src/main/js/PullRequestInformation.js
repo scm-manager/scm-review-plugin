@@ -60,8 +60,9 @@ class PullRequestInformation extends React.Component<Props> {
 
     let changesetTab = null;
     let diffTab = null;
-    let routes = null;
+    let routes ;
     let routeChangeset = null;
+    let routeChangesetPagination = null;
     let routeDiff = null;
 
     if (status && status === "OPEN") {
@@ -71,7 +72,6 @@ class PullRequestInformation extends React.Component<Props> {
         </li>
       );
       routeChangeset = (
-        <>
           <Route
             path={`${baseURL}/changesets`}
             render={() => (
@@ -83,6 +83,8 @@ class PullRequestInformation extends React.Component<Props> {
             )}
             exact
           />
+      );
+      routeChangesetPagination = (
           <Route
             path={`${baseURL}/changesets/:page`}
             render={() => (
@@ -94,7 +96,6 @@ class PullRequestInformation extends React.Component<Props> {
             )}
             exact
           />
-        </>
       );
       routeDiff = (
         <Route
@@ -107,6 +108,7 @@ class PullRequestInformation extends React.Component<Props> {
               target={target}
             />
           )}
+          exact
         />
       );
       diffTab = (
@@ -122,13 +124,14 @@ class PullRequestInformation extends React.Component<Props> {
           to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")}
           exact
         />
-        {routeChangeset}
-        {routeDiff}
         <Route
           path={`${baseURL}/comments`}
           render={() => <PullRequestComments pullRequest={pullRequest} />}
           exact
         />
+        {routeChangeset}
+        {routeChangesetPagination}
+        {routeDiff}
       </Switch>
     );
 
