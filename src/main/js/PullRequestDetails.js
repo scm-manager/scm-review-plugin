@@ -84,7 +84,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
   getMergeDryRun(pullRequest: PullRequest) {
     const { repository } = this.props;
-    if (repository._links.mergeDryRun && repository._links.mergeDryRun.href) {
+    if (repository._links.mergeDryRun && repository._links.mergeDryRun.href && pullRequest.status === "OPEN") {
       merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
         if (response.conflict) {
           this.setState({
@@ -113,9 +113,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           });
         }
       });
-    } else {
-      // TODO: what to do if the link does not exists?
-    }
+    } 
   }
 
   performMerge = () => {
