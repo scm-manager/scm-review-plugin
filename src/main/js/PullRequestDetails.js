@@ -198,13 +198,10 @@ class PullRequestDetails extends React.Component<Props, State> {
       description = (
         <div className="media">
           <div className="media-content">
-            {pullRequest.description.split("\n").map(line => {
-              return (
-                <>
-                  <MarkdownView content={line} />
-                </>
-              );
-            })}
+            <MarkdownView
+              className="content"
+              content={pullRequest.description}
+            />
           </div>
         </div>
       );

@@ -223,13 +223,14 @@ class PullRequestComment extends React.Component<Props, State> {
 
   createDisplayMessage = () => {
     const { comment } = this.props;
-    return comment.comment.split("\n").map(line => {
-      return (
-        <>
-          <MarkdownView content={line} />
-        </>
-      );
-    });
+
+    return (
+      <MarkdownView
+        className="content"
+        content={comment.comment}
+      />
+    );
+
   };
 
   createMessageEditor = () => {
