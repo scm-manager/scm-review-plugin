@@ -4,7 +4,7 @@ import {
   Button,
   confirmAlert,
   DateFromNow,
-  Loading,
+  Loading, MarkdownView,
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
@@ -223,14 +223,13 @@ class PullRequestComment extends React.Component<Props, State> {
 
   createDisplayMessage = () => {
     const { comment } = this.props;
-    return comment.comment.split("\n").map(line => {
-      return (
-        <span>
-          {line}
-          <br />
-        </span>
-      );
-    });
+
+    return (
+      <MarkdownView
+        content={comment.comment}
+      />
+    );
+
   };
 
   createMessageEditor = () => {
@@ -272,17 +271,15 @@ class PullRequestComment extends React.Component<Props, State> {
     return (
       <>
         <article className="media">
-          <div className="media-content">
-            <div className="content">
-              <p>
-                <strong>{comment.author} </strong>
-                <DateFromNow date={comment.date} />
-                &nbsp; {inlineTag}
-                <br />
-                {message}
-              </p>
-              {editButtons}
-            </div>
+          <div className="media-content is-clipped content">
+            <p>
+              <strong>{comment.author} </strong>
+              <DateFromNow date={comment.date} />
+              &nbsp; {inlineTag}
+              <br />
+              {message}
+            </p>
+            {editButtons}
           </div>
           {icons}
         </article>
