@@ -226,7 +226,6 @@ class PullRequestComment extends React.Component<Props, State> {
 
     return (
       <MarkdownView
-        className="content"
         content={comment.comment}
       />
     );
@@ -272,17 +271,15 @@ class PullRequestComment extends React.Component<Props, State> {
     return (
       <>
         <article className="media">
-          <div className="media-content">
-            <div className="content">
-              <p>
-                <strong>{comment.author} </strong>
-                <DateFromNow date={comment.date} />
-                &nbsp; {inlineTag}
-                <br />
-                {message}
-              </p>
-              {editButtons}
-            </div>
+          <div className="media-content is-clipped content">
+            <p>
+              <strong>{comment.author} </strong>
+              <DateFromNow date={comment.date} />
+              &nbsp; {inlineTag}
+              <br />
+              {message}
+            </p>
+            {editButtons}
           </div>
           {icons}
         </article>
