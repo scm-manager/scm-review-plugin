@@ -75,6 +75,9 @@ public class CommentRootResourceTest {
   @Mock
   private Provider<CommentResource> commentResourceProvider;
 
+  @Mock
+  private CommentService commentService;
+
 
   @Before
   public void init() {
@@ -88,7 +91,7 @@ public class CommentRootResourceTest {
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource))));
+      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), commentService)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
 

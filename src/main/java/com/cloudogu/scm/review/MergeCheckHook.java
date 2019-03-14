@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -30,11 +31,13 @@ public class MergeCheckHook {
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
+  private final CommentService commentService;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, CommentService commentService) {
     this.service = service;
     this.serviceFactory = serviceFactory;
+    this.commentService = commentService;
   }
 
   @Subscribe(async = false)
@@ -101,6 +104,7 @@ public class MergeCheckHook {
     private void setPullRequestMerged(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
+      commentService.addStatusChangedComment(repository, pullRequest.getId(), PullRequestStatus.MERGED);
     }
 
     private boolean pullRequestSourceBranchIsDeleted(PullRequest pullRequest) {
@@ -110,6 +114,7 @@ public class MergeCheckHook {
     private void setPullRequestRejected(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
+      commentService.addStatusChangedComment(repository, pullRequest.getId(), PullRequestStatus.REJECTED);
     }
   }
 }

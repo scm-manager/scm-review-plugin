@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
@@ -17,7 +18,6 @@ import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.io.Resources;
 import com.google.inject.util.Providers;
-import org.apache.shiro.authz.UnauthorizedException;
 import org.assertj.core.util.Lists;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.mock.MockDispatcherFactory;
@@ -78,6 +78,8 @@ public class PullRequestRootResourceTest {
   private static final String REPOSITORY_NAMESPACE = "ns";
   private PullRequestMapper mapper = new PullRequestMapperImpl();
 
+  private CommentService commentService = mock(CommentService.class);
+
   @Before
   public void init() {
     when(repository.getId()).thenReturn(REPOSITORY_ID);
@@ -86,7 +88,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory);
-    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null)));
+    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, commentService)));
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
@@ -119,7 +121,7 @@ public class PullRequestRootResourceTest {
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
+    assertExceptionFrom(response).hasMessageMatching("User is not permitted to read pull requests");
   }
 
   @Test
@@ -127,7 +129,7 @@ public class PullRequestRootResourceTest {
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "");
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
+    assertExceptionFrom(response).hasMessageMatching("User is not permitted to read pull requests");
   }
 
   @Test
