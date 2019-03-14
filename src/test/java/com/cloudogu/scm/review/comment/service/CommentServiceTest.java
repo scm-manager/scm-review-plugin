@@ -1,7 +1,9 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.collect.Lists;
+import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.NotFoundException;
+import sonia.scm.repository.Repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -23,6 +26,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -51,6 +56,7 @@ class CommentServiceTest {
   void init() {
     subjectThreadState.bind();
     ThreadContext.bind(subject);
+
     when(storeFactory.create(any())).thenReturn(store);
   }
 
@@ -60,6 +66,21 @@ class CommentServiceTest {
     String pullRequestId = "pr_id";
     commentService.add("ns", "name", pullRequestId, comment);
     verify(store).add(pullRequestId, comment);
+  }
+
+ @Test
+  void shouldAddChangedStatusComment() {
+   PrincipalCollection p = mock(PrincipalCollection.class);
+   when(subject.getPrincipals()).thenReturn(p);
+   when(p.getPrimaryPrincipal()).thenReturn("scm user");
+    commentService.addStatusChangedComment(new Repository("1","git", "ns", "n"), "pr_1", PullRequestStatus.MERGED);
+    verify(store).add(eq("pr_1"), argThat(t -> {
+      assertThat(t.getComment())
+        .contains("MERGED")
+        .contains("scm user")
+      ;
+      return true;
+    }));
   }
 
 

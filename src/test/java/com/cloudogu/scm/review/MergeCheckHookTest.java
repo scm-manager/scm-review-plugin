@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -41,8 +42,13 @@ class MergeCheckHookTest {
 
   @Mock
   private DefaultPullRequestService service;
+
+  @Mock
+  private CommentService commentService;
+
   @Mock
   private RepositoryServiceFactory repositoryServiceFactory;
+
   @Mock
   private RepositoryService repositoryService;
   @Mock(answer = Answers.RETURNS_SELF)
@@ -85,6 +91,7 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
+    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), PullRequestStatus.MERGED);
   }
 
   @Test
@@ -143,6 +150,7 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.REJECTED);
+    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), PullRequestStatus.REJECTED);
   }
 
   private PullRequest openPullRequest() {
