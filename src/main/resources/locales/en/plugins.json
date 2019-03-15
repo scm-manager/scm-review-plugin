@@ -74,7 +74,13 @@
         "submit": "Yes",
         "cancel": "No"
       },
-      "inlineTag":"inline"
+      "systemMessage": {
+        "modifiedStatus" : "The pull request status is changed."
+      },
+      "tag": {
+        "inline" : "inline",
+        "system" : "system"
+      }
     }
   },
   "verbs": {

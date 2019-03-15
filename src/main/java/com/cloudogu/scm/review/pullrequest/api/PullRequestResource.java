@@ -88,7 +88,7 @@ public class PullRequestResource {
     PullRequest pullRequest = service.get(namespace, name, pullRequestId);
     Repository repository = service.getRepository(namespace, name);
     service.reject(repository, pullRequest);
-    commentService.addStatusChangedComment(repository, pullRequestId, PullRequestStatus.REJECTED);
+    commentService.addStatusChangedComment(repository, pullRequestId);
     return Response.noContent().build();
   }
 }

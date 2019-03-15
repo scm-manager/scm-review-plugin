@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.RepositoryResolver;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.collect.Lists;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -23,6 +22,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.cloudogu.scm.review.comment.service.CommentService.CHANGED_PULL_REQUEST_STATUS_I18N_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,7 +62,7 @@ class CommentServiceTest {
 
   @Test
   void shouldAddComment() {
-    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location() , Instant.now());
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     String pullRequestId = "pr_id";
     commentService.add("ns", "name", pullRequestId, comment);
     verify(store).add(pullRequestId, comment);
@@ -73,12 +73,10 @@ class CommentServiceTest {
    PrincipalCollection p = mock(PrincipalCollection.class);
    when(subject.getPrincipals()).thenReturn(p);
    when(p.getPrimaryPrincipal()).thenReturn("scm user");
-    commentService.addStatusChangedComment(new Repository("1","git", "ns", "n"), "pr_1", PullRequestStatus.MERGED);
+    commentService.addStatusChangedComment(new Repository("1","git", "ns", "n"), "pr_1");
     verify(store).add(eq("pr_1"), argThat(t -> {
-      assertThat(t.getComment())
-        .contains("MERGED")
-        .contains("scm user")
-      ;
+      assertThat(t.getComment()).isEqualTo(CHANGED_PULL_REQUEST_STATUS_I18N_KEY);
+      assertThat(t.isSystemComment()).isTrue();
       return true;
     }));
   }
@@ -95,9 +93,9 @@ class CommentServiceTest {
   @Test
   void shouldGetAllComments() {
     ArrayList<PullRequestComment> list = Lists.newArrayList(
-      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now()),
-      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now()),
-      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now()));
+      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false),
+      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false),
+      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
 
     String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
@@ -113,9 +111,9 @@ class CommentServiceTest {
   @Test
   void shouldGetComment() {
     ArrayList<PullRequestComment> list = Lists.newArrayList(
-      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now()),
-      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now()),
-      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now()));
+      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false),
+      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false),
+      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
 
     String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
@@ -142,9 +140,9 @@ class CommentServiceTest {
   @Test
   void shouldThrowNotFoundOnGettingMissedComment() {
     ArrayList<PullRequestComment> list = Lists.newArrayList(
-      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now()),
-      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now()),
-      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now()));
+      new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false),
+      new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false),
+      new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
     String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
     pullRequestComments.setComments(list);

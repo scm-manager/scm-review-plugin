@@ -39,7 +39,7 @@ public class PermissionCheckTest {
     List<Object> userList = Lists.newArrayList("user", user1);
     when(principals.asList()).thenReturn(userList);
 
-    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now());
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     boolean modificationsAllowed = PermissionCheck.mayModifyComment(new Repository(), comment);
 
     assertTrue(modificationsAllowed);
@@ -57,7 +57,7 @@ public class PermissionCheckTest {
     List<Object> userList = Lists.newArrayList("user", user1);
     when(principals.asList()).thenReturn(userList);
 
-    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now());
+    PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     boolean modificationsAllowed = PermissionCheck.mayModifyComment(new Repository("", "", "", ""), comment);
 
     assertTrue(modificationsAllowed);

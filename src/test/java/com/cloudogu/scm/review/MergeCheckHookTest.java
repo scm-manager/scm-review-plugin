@@ -91,7 +91,7 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
-    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), PullRequestStatus.MERGED);
+    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId());
   }
 
   @Test
@@ -140,7 +140,7 @@ class MergeCheckHookTest {
   }
 
   @Test
-  void shouldSetPullRequestsWithDeletedSourceToRejected() throws IOException {
+  void shouldSetPullRequestsWithDeletedSourceToRejected()  {
     PullRequest pullRequest = openPullRequest();
     when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
 
@@ -150,7 +150,7 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.REJECTED);
-    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), PullRequestStatus.REJECTED);
+    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId());
   }
 
   private PullRequest openPullRequest() {

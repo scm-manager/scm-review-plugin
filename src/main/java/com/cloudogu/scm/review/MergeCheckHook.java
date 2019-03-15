@@ -104,7 +104,7 @@ public class MergeCheckHook {
     private void setPullRequestMerged(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
-      commentService.addStatusChangedComment(repository, pullRequest.getId(), PullRequestStatus.MERGED);
+      commentService.addStatusChangedComment(repository, pullRequest.getId());
     }
 
     private boolean pullRequestSourceBranchIsDeleted(PullRequest pullRequest) {
@@ -114,7 +114,7 @@ public class MergeCheckHook {
     private void setPullRequestRejected(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
-      commentService.addStatusChangedComment(repository, pullRequest.getId(), PullRequestStatus.REJECTED);
+      commentService.addStatusChangedComment(repository, pullRequest.getId());
     }
   }
 }

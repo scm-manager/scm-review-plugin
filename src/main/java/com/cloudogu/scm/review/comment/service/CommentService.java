@@ -2,7 +2,6 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.collect.Lists;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.NotFoundException;
@@ -10,7 +9,6 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
-import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +18,7 @@ import static sonia.scm.NotFoundException.notFound;
 
 public class CommentService {
 
-  public static final String CHANGED_PULL_REQUEST_STATUS = "The Pull Request is {0} from {1}.";
+  public static final String CHANGED_PULL_REQUEST_STATUS_I18N_KEY = "modifiedStatus";
   private final RepositoryResolver repositoryResolver;
   private final CommentStoreFactory storeFactory;
 
@@ -89,18 +87,18 @@ public class CommentService {
   }
 
   /**
-   * Add a comment containing the information about the status Change of the pull request
+   * Add a system comment about the status Change of the pull request
    *
    * @param repository the repository
    * @param pullRequestId the pull request id
-   * @param status the new status
    */
-  public void addStatusChangedComment(Repository repository, String pullRequestId, PullRequestStatus status) {
+  public void addStatusChangedComment(Repository repository, String pullRequestId) {
     String user = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     PullRequestComment comment = new PullRequestComment();
     comment.setDate(Instant.now());
     comment.setAuthor(user);
-    comment.setComment(MessageFormat.format(CHANGED_PULL_REQUEST_STATUS, status, user));
+    comment.setSystemComment(true);
+    comment.setComment(CHANGED_PULL_REQUEST_STATUS_I18N_KEY);
     add(repository ,pullRequestId,comment);
   }
 

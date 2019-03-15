@@ -9,6 +9,7 @@ import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import com.webcohesion.enunciate.metadata.rs.TypeHint;
+import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -82,6 +83,9 @@ public class CommentResource {
                          @PathParam("pullRequestId") String pullRequestId,
                          @PathParam("commentId") String commentId,
                          PullRequestCommentDto pullRequestCommentDto) {
+    if (pullRequestCommentDto.isSystemComment()){
+      throw new AuthorizationException("Is is Forbidden to update a system comment.");
+    }
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     RepositoryPermissions.read(repository).check();
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);

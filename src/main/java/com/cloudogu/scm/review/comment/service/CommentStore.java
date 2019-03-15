@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.util.concurrent.Striped;
+import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.NotFoundException;
 import sonia.scm.security.KeyGenerator;
 import sonia.scm.store.DataStore;
@@ -56,7 +57,13 @@ public class CommentStore {
   public void delete(String pullRequestId, String commentId) {
     withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
-      applyChange(commentId, pullRequestComments, comment -> pullRequestComments.getComments().remove(comment));
+      applyChange(commentId, pullRequestComments, comment -> {
+        if (!comment.isSystemComment()) {
+          pullRequestComments.getComments().remove(comment);
+        } else {
+          throw new AuthorizationException("Is is Forbidden to delete a system comment.");
+        }
+      });
       store.put(pullRequestId, pullRequestComments);
       return null;
     });
