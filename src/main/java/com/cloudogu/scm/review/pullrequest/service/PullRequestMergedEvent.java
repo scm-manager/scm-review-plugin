@@ -4,26 +4,9 @@ import sonia.scm.event.Event;
 import sonia.scm.repository.Repository;
 
 @Event
-public class PullRequestMergedEvent {
+public class PullRequestMergedEvent extends BasicPullRequestEvent {
 
-  final private PullRequest pullRequest;
-
-  public PullRequestMergedEvent(PullRequest pullRequest, Repository repository) {
-    this.pullRequest = pullRequest;
-    this.repository = repository;
+  public PullRequestMergedEvent(Repository repository, PullRequest pullRequest) {
+    super(repository, pullRequest);
   }
-
-  public PullRequest getPullRequest() {
-    return pullRequest;
-  }
-
-  public Repository getRepository() {
-    return repository;
-  }
-
-  final private Repository repository;
-
-
-
-
 }

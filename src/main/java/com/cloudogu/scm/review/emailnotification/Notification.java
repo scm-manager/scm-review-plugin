@@ -1,0 +1,12 @@
+package com.cloudogu.scm.review.emailnotification;
+
+public enum Notification {
+  MODIFIED_PULL_REQUEST,
+  DELETED_PULL_REQUEST,
+  DELETED_COMMENT,
+  CREATED_COMMENT,
+  MODIFIED_COMMENT,
+  MERGED_PULL_REQUEST,
+  REJECTED_PULL_REQUEST,
+  CREATED_PULL_REQUEST
+}

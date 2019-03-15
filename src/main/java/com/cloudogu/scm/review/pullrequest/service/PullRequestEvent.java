@@ -6,33 +6,15 @@ import sonia.scm.event.HandlerEvent;
 import sonia.scm.repository.Repository;
 
 @Event
-public class PullRequestEvent implements HandlerEvent<PullRequest> {
+public class PullRequestEvent extends BasicPullRequestEvent implements HandlerEvent<PullRequest> {
 
-  final private PullRequest pullRequest;
   final private PullRequest oldPullRequest;
+  private HandlerEventType type;
 
-  final private Repository repository;
-
-  final private HandlerEventType type;
-
-  public PullRequestEvent(PullRequest pullRequest, PullRequest oldPullRequest, Repository repository, HandlerEventType type) {
-    this.pullRequest = pullRequest;
+  public PullRequestEvent(Repository repository, PullRequest pullRequest, PullRequest oldPullRequest, HandlerEventType type) {
+    super(repository, pullRequest);
     this.oldPullRequest = oldPullRequest;
-    this.repository = repository;
     this.type = type;
-  }
-
-  public PullRequest getPullRequest() {
-    return pullRequest;
-  }
-
-  public Repository getRepository() {
-    return repository;
-  }
-
-  @Override
-  public HandlerEventType getEventType() {
-    return type;
   }
 
   @Override
@@ -43,5 +25,10 @@ public class PullRequestEvent implements HandlerEvent<PullRequest> {
   @Override
   public PullRequest getOldItem() {
     return oldPullRequest;
+  }
+
+  @Override
+  public HandlerEventType getEventType() {
+    return type;
   }
 }
