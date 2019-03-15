@@ -9,11 +9,9 @@ import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import com.webcohesion.enunciate.metadata.rs.TypeHint;
-import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -53,11 +51,8 @@ public class CommentResource {
                          @PathParam("pullRequestId") String pullRequestId,
                          @PathParam("commentId") String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    RepositoryPermissions.read(repository).check();
     try {
-      if (!PermissionCheck.mayModifyComment(repository, service.get(repository.getNamespace(), repository.getName(), pullRequestId, commentId))) {
-        return Response.status(Response.Status.FORBIDDEN).build();
-      }
+      PermissionCheck.checkModifyComment(repository, service.get(repository.getNamespace(), repository.getName(), pullRequestId, commentId));
       service.delete(namespace, name, pullRequestId, commentId);
       return Response.noContent().build();
     } catch (NotFoundException e) {
@@ -83,15 +78,9 @@ public class CommentResource {
                          @PathParam("pullRequestId") String pullRequestId,
                          @PathParam("commentId") String commentId,
                          PullRequestCommentDto pullRequestCommentDto) {
-    if (pullRequestCommentDto.isSystemComment()){
-      throw new AuthorizationException("Is is Forbidden to update a system comment.");
-    }
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    RepositoryPermissions.read(repository).check();
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
-    if (!PermissionCheck.mayModifyComment(repository, comment)) {
-      return Response.status(Response.Status.FORBIDDEN).build();
-    }
+    PermissionCheck.checkModifyComment(repository, comment);
     service.update(namespace, name, pullRequestId, commentId, pullRequestCommentDto.getComment());
     return Response.noContent().build();
   }

@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -91,7 +92,7 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
-    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId());
+    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), SystemCommentType.MERGED);
   }
 
   @Test
@@ -150,7 +151,7 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.REJECTED);
-    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId());
+    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), SystemCommentType.SOURCE_DELETED);
   }
 
   private PullRequest openPullRequest() {

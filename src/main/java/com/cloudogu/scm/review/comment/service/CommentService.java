@@ -18,7 +18,6 @@ import static sonia.scm.NotFoundException.notFound;
 
 public class CommentService {
 
-  public static final String CHANGED_PULL_REQUEST_STATUS_I18N_KEY = "modifiedStatus";
   private final RepositoryResolver repositoryResolver;
   private final CommentStoreFactory storeFactory;
 
@@ -31,10 +30,6 @@ public class CommentService {
   /**
    * Add a Comment to the PullRequest with id <code>pullRequestId</code>
    *
-   * @param namespace
-   * @param name
-   * @param pullRequestId
-   * @param pullRequestComment
    * @return the id of the created pullRequestComment
    */
   public String add(String namespace, String name, String pullRequestId, PullRequestComment pullRequestComment) {
@@ -92,13 +87,13 @@ public class CommentService {
    * @param repository the repository
    * @param pullRequestId the pull request id
    */
-  public void addStatusChangedComment(Repository repository, String pullRequestId) {
+  public void addStatusChangedComment(Repository repository, String pullRequestId, SystemCommentType commentType) {
     String user = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
     PullRequestComment comment = new PullRequestComment();
     comment.setDate(Instant.now());
     comment.setAuthor(user);
     comment.setSystemComment(true);
-    comment.setComment(CHANGED_PULL_REQUEST_STATUS_I18N_KEY);
+    comment.setComment(commentType.getKey());
     add(repository ,pullRequestId,comment);
   }
 

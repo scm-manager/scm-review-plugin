@@ -57,16 +57,18 @@ public class CommentStore {
   public void delete(String pullRequestId, String commentId) {
     withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
-      applyChange(commentId, pullRequestComments, comment -> {
-        if (!comment.isSystemComment()) {
-          pullRequestComments.getComments().remove(comment);
-        } else {
-          throw new AuthorizationException("Is is Forbidden to delete a system comment.");
-        }
-      });
+      applyChange(commentId, pullRequestComments, comment -> pullRequestComments.getComments().remove(comment));
       store.put(pullRequestId, pullRequestComments);
       return null;
     });
+  }
+
+  private PullRequestComment checkNoSystemComment(PullRequestComment comment) {
+    if (comment.isSystemComment()) {
+      throw new AuthorizationException("It is forbidden to delete a system comment.");
+    } else {
+      return comment;
+    }
   }
 
   private <T> T withLockDo(String pullRequestId, Supplier<T> worker) {
@@ -79,11 +81,12 @@ public class CommentStore {
     }
   }
 
-  public void applyChange(String commentId, PullRequestComments pullRequestComments, Consumer<PullRequestComment> commentConsumer) {
+  private void applyChange(String commentId, PullRequestComments pullRequestComments, Consumer<PullRequestComment> commentConsumer) {
     pullRequestComments.getComments()
       .stream()
       .filter(c -> c.getId().equals(commentId))
       .findFirst()
+      .map(this::checkNoSystemComment)
       .ifPresent(commentConsumer);
   }
 }

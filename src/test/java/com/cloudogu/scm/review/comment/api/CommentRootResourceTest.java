@@ -39,7 +39,6 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.ArrayList;
 
-import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -122,7 +121,8 @@ public class CommentRootResourceTest {
         .content(pullRequestCommentJson)
         .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:commentPullRequest:repo_ID\\]");
+
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
 
@@ -174,7 +174,8 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
+
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
   @Test

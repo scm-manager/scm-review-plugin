@@ -22,7 +22,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.cloudogu.scm.review.comment.service.CommentService.CHANGED_PULL_REQUEST_STATUS_I18N_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,9 +72,11 @@ class CommentServiceTest {
    PrincipalCollection p = mock(PrincipalCollection.class);
    when(subject.getPrincipals()).thenReturn(p);
    when(p.getPrimaryPrincipal()).thenReturn("scm user");
-    commentService.addStatusChangedComment(new Repository("1","git", "ns", "n"), "pr_1");
+    commentService.addStatusChangedComment(new Repository("1","git", "ns", "n"), "pr_1", SystemCommentType.MERGED);
     verify(store).add(eq("pr_1"), argThat(t -> {
-      assertThat(t.getComment()).isEqualTo(CHANGED_PULL_REQUEST_STATUS_I18N_KEY);
+      assertThat(t.getComment()).isEqualTo("merged");
+      assertThat(t.getAuthor()).isEqualTo("scm user");
+      assertThat(t.getDate()).isNotNull();
       assertThat(t.isSystemComment()).isTrue();
       return true;
     }));

@@ -75,7 +75,9 @@
         "cancel": "No"
       },
       "systemMessage": {
-        "modifiedStatus" : "The pull request status is changed."
+        "merged" : "The pull request has been merged.",
+        "rejected" : "The pull request has been rejected.",
+        "sourceDeleted" : "The source branch of the pull request has been deleted."
       },
       "tag": {
         "inline" : "inline",

@@ -75,7 +75,9 @@
         "cancel": "Nein"
       },
       "systemMessage": {
-        "modifiedStatus" : "Der Pull Request Status wurde geändert."
+        "merged" : "Der Pull-Request wurde gemerged.",
+        "rejected" : "Der Pull-Request wurde abgelehnt.",
+        "sourceDeleted" : "Der Quell-Branch des Pull-Requests wurde gelöscht."
       },
       "tag": {
         "inline" : "inline",
