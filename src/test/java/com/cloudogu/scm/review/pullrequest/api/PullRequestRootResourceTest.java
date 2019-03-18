@@ -17,7 +17,6 @@ import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.io.Resources;
 import com.google.inject.util.Providers;
-import org.apache.shiro.authz.UnauthorizedException;
 import org.assertj.core.util.Lists;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.mock.MockDispatcherFactory;

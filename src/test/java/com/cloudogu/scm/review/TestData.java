@@ -33,6 +33,6 @@ public class TestData {
   }
 
   public static PullRequestComment createComment() {
-    return new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now());
+    return new PullRequestComment("1", "this is my comment", "author", new Location(), Instant.now());
   }
 }

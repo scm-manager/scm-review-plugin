@@ -30,5 +30,5 @@ public class PullRequest {
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
   private PullRequestStatus status;
-  private List<String> subscriber;
+  private List<Recipient> subscriber;
 }

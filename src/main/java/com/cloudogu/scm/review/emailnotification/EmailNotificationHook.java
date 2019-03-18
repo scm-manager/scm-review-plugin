@@ -41,17 +41,9 @@ public class EmailNotificationHook {
 
     emailContext.setRepository(event.getRepository());
 
-    if (event.getEventType() == HandlerEventType.CREATE && pullRequest != null) {
-      emailContext.setReceivers(pullRequest.getSubscriber());
-      service.sendEmail(emailContext, Notification.CREATED_PULL_REQUEST);
-
-    } else if (event.getEventType() == HandlerEventType.MODIFY && pullRequest != null && oldPullRequest != null) {
-      emailContext.setReceivers(pullRequest.getSubscriber());
+    if (event.getEventType() == HandlerEventType.MODIFY && pullRequest != null && oldPullRequest != null) {
+      emailContext.setRecipients(pullRequest.getSubscriber());
       service.sendEmail(emailContext, Notification.MODIFIED_PULL_REQUEST);
-
-    } else if (event.getEventType() == HandlerEventType.DELETE && oldPullRequest != null) {
-      emailContext.setReceivers(oldPullRequest.getSubscriber());
-      service.sendEmail(emailContext, Notification.DELETED_PULL_REQUEST);
     }
   }
 
@@ -106,7 +98,7 @@ public class EmailNotificationHook {
     EmailContext emailContext = new EmailContext();
     emailContext.setRepository(repository);
     emailContext.setPullRequest(pullRequest);
-    emailContext.setReceivers(pullRequest.getSubscriber());
+    emailContext.setRecipients(pullRequest.getSubscriber());
     return emailContext;
   }
 }
