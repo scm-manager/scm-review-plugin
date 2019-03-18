@@ -111,17 +111,19 @@ the feature.
 Therefore we will concentrate on the result, only (one could say we have to take into
 account the diff of the diffs before and after the change).
 
-### Added file
+### Added or newly changed file
 
-A new file may effect the semantics of global comments for a pull request, but it is
-nearly impossible to determine whether this is the case or not (for example a comment like
-"_You forgot to checkin the translation file_" may be obsolete when this file is checked
-in by a new commit, but this cannot be detected by a non general AI system).
+A new file or the change of a file not changed before may effect the semantics of global
+comments for a pull request, but it is nearly impossible to determine whether this is the
+case or not (for example a comment like "_You forgot to checkin the translation file_" may
+be obsolete when this file is checked in by a new commit, but this cannot be detected by a
+non general AI system).
 
-### Deleted file
+### Reverted file
 
-The deletion of a file can have more severe impacts. All file or inline comments made for
-this file cannot be displayed in the current diff any more.
+The reversion of a file can have more severe impacts. All file or inline comments made for
+this file cannot be displayed in the current diff any more, because the file does not
+differ from the original version any more and therefore is no part of the diff any more.
 
 ### Renamed file
 
@@ -138,7 +140,7 @@ handle renamed files in a specific way, one has to take the following into accou
   in the same way as it would be done in a single commit. So it may be confusing, when
   these changes are handled differently.
 
-### Changed file
+### Further changes of a file
 
 When new lines are deleted, added or modified in a file, this effects all inline comments
 at or following these lines. If you want to show these comments in their correct context,
@@ -157,9 +159,10 @@ may no longer make any sense for the changed version.
 
 ## Metadata
 
-Before we draw conclusions of what should be, one should take a look at the available
-information we have for comments. At the time of writing a comment, we have (at least
-for Git repositories; this may be different for Mercurial):
+Before we draw conclusions of what should be, one should take a look at the (at least
+theoretically) available information we have for comments. At the time of writing a
+comment, we have (at least for Git repositories; this may be different for Mercurial or
+other systems):
 
 - For global comments
   - the current revision of the source branch,
@@ -178,3 +181,24 @@ for Git repositories; this may be different for Mercurial):
   - the context of the line (preceding and following content),
   - the "hunk" notation for the block of the change (eg. `@@ -1,6 +1,8 @@`).
 
+## Target Vision
+
+This is what we want to achieve:
+
+- In the "Comments" view, inline comments shall be displayed with a partial context, that
+  is they shall be displayed with a number of preceding and following lines from the diff
+  at the time of creation. When the current revision of the file does not match the
+  revision of the file at creation time, the comment shall be marked as outdated.
+- Global comments shall be marked as "outdated", when they were written for a release
+  that is no longer the head of the source branch.
+- File comments shall be marked as "outdated", when the current file revision does not
+  match the revision of the file at the time comment was created.
+- Outdated file comments shall still be shown in the diff view, provided that the file
+  is still part of the diff. When the file was renamed, the comment shall only be shown
+  in the comment overview.
+- File or inline comments for reverted files (that is, the file is no longer part of the
+  diff) shall be marked as outdated and only be visible in the comment overview.
+- Inline comments for files that have another revision than at the time of the creation
+  of the comment shall not be displayed inline in the diff, but the file shall have a mark
+  that there are outdated inline comments present. These comments shall be shown in a
+  popup when the mark is clicked, each with its original context.
