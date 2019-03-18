@@ -4,7 +4,8 @@ import {
   Button,
   confirmAlert,
   DateFromNow,
-  Loading, MarkdownView,
+  Loading,
+  MarkdownView,
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
@@ -222,14 +223,12 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createDisplayMessage = () => {
-    const { comment } = this.props;
+    const { comment, t } = this.props;
 
-    return (
-      <MarkdownView
-        content={comment.comment}
-      />
-    );
-
+    let message = comment.systemComment
+      ? t("scm-review-plugin.comment.systemMessage."+comment.comment)
+      : comment.comment;
+    return <MarkdownView content={message} />;
   };
 
   createMessageEditor = () => {
@@ -254,12 +253,22 @@ class PullRequestComment extends React.Component<Props, State> {
     let icons = null;
     let editButtons = null;
     let message = null;
-    let inlineTag = comment.location?
+    let tag = comment.location ? (
       <span className="tag is-rounded is-info ">
-        <span className="fas fa-code " >&nbsp;</span>
-        {t("scm-review-plugin.comment.inlineTag")}
+        <span className="fas fa-code ">&nbsp;</span>
+        {t("scm-review-plugin.comment.tag.inline")}
       </span>
-      : "" ;
+    ) : (
+      ""
+    );
+    tag = comment.systemComment ? (
+      <span className="tag is-rounded is-info ">
+        <span className="fas fa-bolt ">&nbsp;</span>
+        {t("scm-review-plugin.comment.tag.system")}
+      </span>
+    ) : (
+      tag
+    );
     if (edit) {
       message = this.createMessageEditor();
       editButtons = this.createEditButtons();
@@ -275,7 +284,7 @@ class PullRequestComment extends React.Component<Props, State> {
             <p>
               <strong>{comment.author} </strong>
               <DateFromNow date={comment.date} />
-              &nbsp; {inlineTag}
+              &nbsp; {tag}
               <br />
               {message}
             </p>

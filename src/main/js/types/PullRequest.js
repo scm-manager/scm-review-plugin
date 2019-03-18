@@ -30,6 +30,7 @@ export type BasicComment = {
 export type Comment = BasicComment & {
   author: string,
   date: string,
+  systemComment: boolean,
   file?: string,
   lineId?: string,
   _links: Links

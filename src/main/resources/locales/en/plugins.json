@@ -74,7 +74,15 @@
         "submit": "Yes",
         "cancel": "No"
       },
-      "inlineTag":"inline"
+      "systemMessage": {
+        "merged" : "The pull request has been merged.",
+        "rejected" : "The pull request has been rejected.",
+        "sourceDeleted" : "The source branch of the pull request has been deleted."
+      },
+      "tag": {
+        "inline" : "inline",
+        "system" : "system"
+      }
     }
   },
   "verbs": {

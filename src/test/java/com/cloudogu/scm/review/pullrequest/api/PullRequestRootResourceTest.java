@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
@@ -17,7 +18,6 @@ import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.io.Resources;
 import com.google.inject.util.Providers;
-import org.apache.shiro.authz.UnauthorizedException;
 import org.assertj.core.util.Lists;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.mock.MockDispatcherFactory;
@@ -45,6 +45,7 @@ import java.util.List;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -78,6 +79,8 @@ public class PullRequestRootResourceTest {
   private static final String REPOSITORY_NAMESPACE = "ns";
   private PullRequestMapper mapper = new PullRequestMapperImpl();
 
+  private CommentService commentService = mock(CommentService.class);
+
   @Before
   public void init() {
     when(repository.getId()).thenReturn(REPOSITORY_ID);
@@ -86,7 +89,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory);
-    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null)));
+    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, commentService)));
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
@@ -119,7 +122,8 @@ public class PullRequestRootResourceTest {
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
+
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
   @Test
@@ -127,7 +131,8 @@ public class PullRequestRootResourceTest {
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException, UnsupportedEncodingException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "");
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
+
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
   @Test
@@ -138,7 +143,8 @@ public class PullRequestRootResourceTest {
       .content(pullRequestJson)
       .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:createPullRequest:repo_ID\\]");
+
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
   @Test
@@ -179,7 +185,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "slarti", password = "secret")
   public void shouldRejectSameBranches() throws URISyntaxException, IOException {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest_sameBranches.json");
     MockHttpRequest request =
@@ -398,12 +404,16 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldUpdatePullRequestSuccessfully() throws URISyntaxException {
-    when(store.get("1")).thenReturn(new PullRequest());
+    PullRequest existingPullRequest = new PullRequest();
+    existingPullRequest.setAuthor("somebody");
+    when(store.get("1")).thenReturn(existingPullRequest);
+
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
       .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
+
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_NO_CONTENT);
     verify(store).update(argThat(pullRequest -> {
       assertThat(pullRequest.getTitle()).isEqualTo("new Title");
@@ -466,8 +476,8 @@ public class PullRequestRootResourceTest {
     PullRequest openedPR2 = createPullRequest("opened_2", PullRequestStatus.OPEN);
     PullRequest mergedPR1 = createPullRequest("merged_1", PullRequestStatus.MERGED);
     PullRequest mergedPR2 = createPullRequest("merged_2", PullRequestStatus.MERGED);
-    PullRequest rejectedPR1 = createPullRequest("rejected_1", PullRequestStatus.REJECTED);
-    PullRequest rejectedPR2 = createPullRequest("rejected_2", PullRequestStatus.REJECTED);
+    PullRequest rejectedPR1 = createPullRequest("rejected_1", REJECTED);
+    PullRequest rejectedPR2 = createPullRequest("rejected_2", REJECTED);
     when(store.getAll()).thenReturn(Lists.newArrayList(openedPR1, openedPR2, rejectedPR1, rejectedPR2, mergedPR1, mergedPR2));
   }
 
@@ -504,5 +514,30 @@ public class PullRequestRootResourceTest {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
     return jsonNode.get("_links");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldSetPullRequestToStatusRejected() throws URISyntaxException {
+    when(store.get("1")).thenReturn(createPullRequest("opened_1", PullRequestStatus.OPEN));
+    MockHttpRequest request = MockHttpRequest
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/reject");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_NO_CONTENT);
+    verify(store).update(argThat(pullRequest -> {
+      assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
+      return true;
+    }));
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldRejectChangingStatusOfMergedPullRequest() throws URISyntaxException {
+    when(store.get("1")).thenReturn(createPullRequest("opened_1", PullRequestStatus.MERGED));
+    MockHttpRequest request = MockHttpRequest
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/reject");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
+    verify(store, never()).update(any());
   }
 }

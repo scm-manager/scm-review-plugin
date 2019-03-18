@@ -2,6 +2,8 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -30,12 +32,14 @@ public class PullRequestResource {
   private final PullRequestMapper mapper;
   private final PullRequestService service;
   private final Provider<CommentRootResource> commentResourceProvider;
+  private final CommentService commentService;
 
   @Inject
-  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider) {
+  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, CommentService commentService) {
     this.mapper = mapper;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
+    this.commentService = commentService;
   }
 
   @Path("comments/")
@@ -82,7 +86,9 @@ public class PullRequestResource {
   @Path("reject")
   public Response reject(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     PullRequest pullRequest = service.get(namespace, name, pullRequestId);
-    service.reject(service.getRepository(namespace, name), pullRequest);
+    Repository repository = service.getRepository(namespace, name);
+    service.reject(repository, pullRequest);
+    commentService.addStatusChangedComment(repository, pullRequestId, SystemCommentType.REJECTED);
     return Response.noContent().build();
   }
 }
