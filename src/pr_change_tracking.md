@@ -185,20 +185,57 @@ other systems):
 
 This is what we want to achieve:
 
-- In the "Comments" view, inline comments shall be displayed with a partial context, that
-  is they shall be displayed with a number of preceding and following lines from the diff
-  at the time of creation. When the current revision of the file does not match the
+- In the "Comments" view, __inline comments__ shall be displayed with a partial context,
+  that is they shall be displayed with a number of preceding and following lines from the
+  diff at the time of creation. When the current revision of the file does not match the
   revision of the file at creation time, the comment shall be marked as outdated.
-- Global comments shall be marked as "outdated", when they were written for a release
+- __Global comments__ shall be marked as "outdated", when they were written for a release
   that is no longer the head of the source branch.
-- File comments shall be marked as "outdated", when the current file revision does not
+- __Global comments__ shall _not_ be marked as "outdated", when the merge base changes.
+- __File comments__ shall be marked as "outdated", when the current file revision does not
   match the revision of the file at the time comment was created.
-- Outdated file comments shall still be shown in the diff view, provided that the file
+- __File comments__ shall _not_ be marked as "outdated", when the merge base file revision
+  does not match the base revision of the file at the time comment was created.
+- Outdated __file comments__ shall still be shown in the diff view, provided that the file
   is still part of the diff. When the file was renamed, the comment shall only be shown
   in the comment overview.
-- File or inline comments for reverted files (that is, the file is no longer part of the
-  diff) shall be marked as outdated and only be visible in the comment overview.
-- Inline comments for files that have another revision than at the time of the creation
-  of the comment shall not be displayed inline in the diff, but the file shall have a mark
-  that there are outdated inline comments present. These comments shall be shown in a
-  popup when the mark is clicked, each with its original context.
+- __File or inline comments__ for reverted files (that is, the file is no longer part of
+  the diff) shall be marked as outdated and only be visible in the comment overview.
+- __Inline comments__ for files that have another source _or_ target revision than at the
+  time of the creation of the comment shall not be displayed inline in the diff, but the
+  file shall have a mark that there are outdated inline comments present. These comments
+  shall be shown in a popup when the mark is clicked, each with its original context.
+
+## Possible solution
+
+To achieve this vision, we have to keep different metadata.
+
+### Global comments
+
+The only demand for global commands is that they will be marked as outdated as soon as
+the head revision of the source branch is different from the revision at the time of the
+comment creation. To achieve this, we only have to store the current source revision
+alongside with the comment.
+
+### File comments
+
+For file comments it is necessary to store the old and the new revisions of the file
+and the current name alongside the comment. The revisions of the source or the base
+branch are of no interest for file comments.
+
+### Inline comments
+
+Like for file comments, we have to store the old and the new revisions of the file and
+its current name. Additionally we have keep the line number of either the old or the new
+version.
+
+To be able to show the comment in its original context there are two possible solutions:
+
+1. We can store a part of the diff.
+2. We can compute the diff between the two versions "on the fly" each time it is needed.
+
+Both solutions have their own pros and cons: The first solution limits the context to the
+part that was stored. The second solution needs additional computation each time we want
+to display the context. Furthermore one has to take into account, that after some time
+the file revisions can be garbage collected, when they are no longer part of an active
+branch (this can be the case when feature branches are squashed after the review process).
