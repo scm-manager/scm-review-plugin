@@ -39,7 +39,6 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.ArrayList;
 
-import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,6 +74,9 @@ public class CommentRootResourceTest {
   @Mock
   private Provider<CommentResource> commentResourceProvider;
 
+  @Mock
+  private CommentService commentService;
+
 
   @Before
   public void init() {
@@ -88,7 +90,7 @@ public class CommentRootResourceTest {
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource))));
+      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), commentService)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
 
@@ -119,16 +121,17 @@ public class CommentRootResourceTest {
         .content(pullRequestCommentJson)
         .contentType(MediaType.APPLICATION_JSON);
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("Subject does not have permission \\[repository:commentPullRequest:repo_ID\\]");
+
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetAllPullRequestComments() throws URISyntaxException, IOException {
-    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now());
-    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now());
-    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now(), false);
     ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);
@@ -157,9 +160,9 @@ public class CommentRootResourceTest {
   @Test
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPRComment() throws URISyntaxException, IOException {
-    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now());
-    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now());
-    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now(), false);
     ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);
@@ -171,15 +174,16 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching( "User is not permitted to read pull requests");
+
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetAllLinksÍfTheAuthorIsTheCurrentUser() throws URISyntaxException, IOException {
-    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now());
-    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now());
-    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now(), false);
     ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);
@@ -216,9 +220,9 @@ public class CommentRootResourceTest {
   @Test
   @SubjectAware(username = "other", password = "secret")
   public void shouldGetOnlyTheSelfLinkÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
-    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now());
-    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now());
-    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now());
+    PullRequestComment comment1 = new PullRequestComment("1", "1. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment2 = new PullRequestComment("2", "2. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment3 = new PullRequestComment("3", "3. comment", "author", new Location("","",""), Instant.now(), false);
     ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);

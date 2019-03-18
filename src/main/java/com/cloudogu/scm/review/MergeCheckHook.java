@@ -1,5 +1,7 @@
 package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -31,12 +33,14 @@ public class MergeCheckHook {
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
+  private final CommentService commentService;
   private final MessageSenderFactory messageSenderFactory;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory, CommentService commentService) {
     this.service = service;
     this.serviceFactory = serviceFactory;
+    this.commentService = commentService;
     this.messageSenderFactory = messageSenderFactory;
   }
 
@@ -108,6 +112,7 @@ public class MergeCheckHook {
       String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
+      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
     }
 
     private boolean pullRequestSourceBranchIsDeleted(PullRequest pullRequest) {
@@ -119,6 +124,7 @@ public class MergeCheckHook {
       String message = format("Rejected pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
+      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.SOURCE_DELETED);
     }
   }
 }

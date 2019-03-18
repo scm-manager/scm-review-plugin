@@ -1,8 +1,8 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.google.common.collect.Maps;
+import org.apache.shiro.authz.AuthorizationException;
 import org.assertj.core.util.Lists;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
@@ -53,7 +54,7 @@ class CommentStoreTest {
   void shouldAddTheFirstComment() {
     String pullRequestId = "1";
     when(dataStore.get(pullRequestId)).thenReturn(null);
-    PullRequestComment pullRequestComment = new PullRequestComment("1", "my Comment", "author", new Location(), Instant.now());
+    PullRequestComment pullRequestComment = new PullRequestComment("1", "my Comment", "author", new Location(), Instant.now(), false);
     store.add(pullRequestId, pullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
@@ -64,9 +65,9 @@ class CommentStoreTest {
   @Test
   void shouldAddCommentToExistingCommentList() {
     String pullRequestId = "1";
-    PullRequestComment oldPRComment = new PullRequestComment("1", "my comment", "author", new Location(), Instant.now());
+    PullRequestComment oldPRComment = new PullRequestComment("1", "my comment", "author", new Location(), Instant.now(), false);
     PullRequestComments pullRequestComments = new PullRequestComments();
-    PullRequestComment newPullRequestComment = new PullRequestComment("2", "my new comment", "author", new Location(), Instant.now());
+    PullRequestComment newPullRequestComment = new PullRequestComment("2", "my new comment", "author", new Location(), Instant.now(), false);
     pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
 
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
@@ -83,9 +84,9 @@ class CommentStoreTest {
   @Test
   void shouldDeleteAnExistingComment() {
     PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now()));
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
@@ -107,11 +108,37 @@ class CommentStoreTest {
   }
 
   @Test
+  void shouldUpdateAnExistingComment() {
+    PullRequestComments pullRequestComments = new PullRequestComments();
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
+    String pullRequestId = "id";
+    when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
+
+    store.update(pullRequestId, "2", "new text");
+
+    PullRequestComments comments = store.get(pullRequestId);
+    assertThat(comments.getComments().stream().filter(c -> "2".equals(c.getId())))
+      .extracting("comment")
+      .containsExactly("new text");
+
+    // delete a removed comment has no effect
+    store.delete(pullRequestId, "2");
+
+    comments = store.get(pullRequestId);
+    assertThat(comments.getComments())
+      .extracting("id")
+      .containsExactly("1", "3");
+
+  }
+
+  @Test
   void shouldGetPullRequestComments() {
     PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now()));
-    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now()));
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
@@ -123,7 +150,30 @@ class CommentStoreTest {
 
   @Test
   void shouldThrowNotFoundException() {
-    Assertions.assertThrows(NotFoundException.class, () -> store.get("iDontExist"));
+    assertThrows(NotFoundException.class, () -> store.get("iDontExist"));
   }
 
+  @Test
+  void shouldThrowExceptionWhenDeletingSystemComment() {
+    PullRequestComments pullRequestComments = new PullRequestComments();
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), true));
+
+    String pullRequestId = "id";
+    when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
+
+    assertThrows(AuthorizationException.class,
+      () -> store.delete(pullRequestId, "1"));
+  }
+
+  @Test
+  void shouldThrowExceptionWhenUpdatingSystemComment() {
+    PullRequestComments pullRequestComments = new PullRequestComments();
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), true));
+
+    String pullRequestId = "id";
+    when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
+
+    assertThrows(AuthorizationException.class,
+      () -> store.delete(pullRequestId, "1"));
+  }
 }

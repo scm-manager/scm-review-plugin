@@ -36,7 +36,7 @@
           "submit": "Ja",
           "cancel": "Nein"
         },
-        "merge-information": "Der Pull Request kann nicht automatisch gemerged werden."
+        "merge-information": "Automatischer Merge nicht möglich."
       },
       "rejectButton": {
         "button-title": "Pull Request ablehnen",
@@ -74,7 +74,15 @@
         "submit": "Ja",
         "cancel": "Nein"
       },
-      "inlineTag":"inline"
+      "systemMessage": {
+        "merged" : "Der Pull-Request wurde gemerged.",
+        "rejected" : "Der Pull-Request wurde abgelehnt.",
+        "sourceDeleted" : "Der Quell-Branch des Pull-Requests wurde gelöscht."
+      },
+      "tag": {
+        "inline" : "inline",
+        "system" : "system"
+      }
     }
   },
   "verbs": {

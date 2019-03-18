@@ -8,6 +8,7 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.google.common.collect.Maps;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
@@ -63,6 +64,9 @@ public class CommentRootResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
                          @NotNull PullRequestCommentDto pullRequestCommentDto) {
+    if (pullRequestCommentDto.isSystemComment()){
+      throw new AuthorizationException("Is is Forbidden to create a system comment.");
+    }
     PermissionCheck.checkComment(repositoryResolver.resolve(new NamespaceAndName(namespace, name)));
     pullRequestCommentDto.setDate(Instant.now());
     pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
@@ -79,21 +83,20 @@ public class CommentRootResource {
                          @PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId) {
-
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkRead(repository);
     List<PullRequestComment> list = service.getAll(namespace, name, pullRequestId);
     List<PullRequestCommentDto> dtoList = list
       .stream()
-      .map(pr -> {
-        URI uri = uriInfo.getAbsolutePathBuilder().path(String.valueOf(pr.getId())).build();
+      .map(comment -> {
+        URI uri = uriInfo.getAbsolutePathBuilder().path(String.valueOf(comment.getId())).build();
         Map<String, URI> uriMap = Maps.newHashMap();
         uriMap.put("self",uri);
-        if (PermissionCheck.mayModifyComment(repository, service.get(namespace, name, pullRequestId, pr.getId()))) {
+        if (!comment.isSystemComment() && PermissionCheck.mayModifyComment(repository, service.get(namespace, name, pullRequestId, comment.getId()))) {
           uriMap.put("update",uri);
           uriMap.put("delete",uri);
         }
-        return mapper.map(pr, uriMap);
+        return mapper.map(comment, uriMap);
       })
       .collect(Collectors.toList());
     boolean permission = PermissionCheck.mayComment(repository);

@@ -5,6 +5,7 @@ import {
   confirmAlert,
   DateFromNow,
   Loading,
+  MarkdownView,
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
@@ -222,15 +223,12 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createDisplayMessage = () => {
-    const { comment } = this.props;
-    return comment.comment.split("\n").map(line => {
-      return (
-        <span>
-          {line}
-          <br />
-        </span>
-      );
-    });
+    const { comment, t } = this.props;
+
+    let message = comment.systemComment
+      ? t("scm-review-plugin.comment.systemMessage."+comment.comment)
+      : comment.comment;
+    return <MarkdownView content={message} />;
   };
 
   createMessageEditor = () => {
@@ -255,12 +253,22 @@ class PullRequestComment extends React.Component<Props, State> {
     let icons = null;
     let editButtons = null;
     let message = null;
-    let inlineTag = comment.location?
+    let tag = comment.location ? (
       <span className="tag is-rounded is-info ">
-        <span className="fas fa-code " >&nbsp;</span>
-        {t("scm-review-plugin.comment.inlineTag")}
+        <span className="fas fa-code ">&nbsp;</span>
+        {t("scm-review-plugin.comment.tag.inline")}
       </span>
-      : "" ;
+    ) : (
+      ""
+    );
+    tag = comment.systemComment ? (
+      <span className="tag is-rounded is-info ">
+        <span className="fas fa-bolt ">&nbsp;</span>
+        {t("scm-review-plugin.comment.tag.system")}
+      </span>
+    ) : (
+      tag
+    );
     if (edit) {
       message = this.createMessageEditor();
       editButtons = this.createEditButtons();
@@ -272,17 +280,15 @@ class PullRequestComment extends React.Component<Props, State> {
     return (
       <>
         <article className="media">
-          <div className="media-content">
-            <div className="content">
-              <p>
-                <strong>{comment.author} </strong>
-                <DateFromNow date={comment.date} />
-                &nbsp; {inlineTag}
-                <br />
-                {message}
-              </p>
-              {editButtons}
-            </div>
+          <div className="media-content is-clipped content">
+            <p>
+              <strong>{comment.author} </strong>
+              <DateFromNow date={comment.date} />
+              &nbsp; {tag}
+              <br />
+              {message}
+            </p>
+            {editButtons}
           </div>
           {icons}
         </article>
