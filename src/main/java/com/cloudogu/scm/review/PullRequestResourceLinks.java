@@ -45,6 +45,20 @@ public class PullRequestResourceLinks {
         .href();
     }
 
+    public String subscribe(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("subscribe").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
+    public String unsubscribe(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("unsubscribe").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
     public String update(String namespace, String name, String pullRequestId) {
       return pullRequestLinkBuilder
         .method("getPullRequestResource").parameters()
@@ -56,6 +70,13 @@ public class PullRequestResourceLinks {
       return pullRequestLinkBuilder
         .method("getPullRequestResource").parameters()
         .method("reject").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
+    public String subscription(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("getSubscription").parameters(namespace, name, pullRequestId)
         .href();
     }
   }

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import sonia.scm.repository.Repository;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,6 +18,5 @@ public class EmailContext {
   private PullRequest oldPullRequest;
   private PullRequestComment comment;
   private PullRequestComment oldComment;
-  private List<Recipient> recipients;
-
+  private Set<Recipient> recipients;
 }

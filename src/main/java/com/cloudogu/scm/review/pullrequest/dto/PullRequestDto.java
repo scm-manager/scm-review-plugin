@@ -10,7 +10,6 @@ import lombok.Setter;
 
 import javax.validation.constraints.Size;
 import java.time.Instant;
-import java.util.List;
 
 @Getter
 @Setter
@@ -19,17 +18,19 @@ import java.util.List;
 public class PullRequestDto extends HalRepresentation {
   private String id;
   private String author;
-  @NonNull @Size(min = 1)
+  @NonNull
+  @Size(min = 1)
   private String source;
-  @NonNull @Size(min = 1)
+  @NonNull
+  @Size(min = 1)
   private String target;
-  @NonNull @Size(min = 1)
+  @NonNull
+  @Size(min = 1)
   private String title;
   private String description;
   private Instant creationDate;
   private Instant lastModified;
   private PullRequestStatus status;
-  private List<RecipientDto> subscriber;
 
   @Override
   @SuppressWarnings("squid:S1185") // We want to have this method available in this package

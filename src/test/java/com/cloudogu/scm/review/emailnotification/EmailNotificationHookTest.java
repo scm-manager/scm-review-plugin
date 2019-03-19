@@ -9,6 +9,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.google.common.collect.Lists;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
 
-import java.util.ArrayList;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -36,7 +37,7 @@ class EmailNotificationHookTest {
   @InjectMocks
   EmailNotificationHook emailNotificationHook;
   private PullRequest pullRequest;
-  private ArrayList<Recipient> subscriber;
+  private Set<Recipient> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
   private PullRequestComment comment;
@@ -45,7 +46,10 @@ class EmailNotificationHookTest {
   @BeforeEach
   void setUp() {
     pullRequest = TestData.createPullRequest();
-    subscriber = Lists.newArrayList(new Recipient("user1", "email1@d.de"), new Recipient("user2", "email1@d.de"));
+
+    Recipient recipient1 = new Recipient("user1", "email1@d.de");
+    Recipient recipient2 = new Recipient("user2", "email1@d.de");
+    subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
     pullRequest.setSubscriber(subscriber);
     repository = createHeartOfGold();
     oldPullRequest = TestData.createPullRequest();

@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import sonia.scm.repository.Repository;
+import sonia.scm.user.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,11 @@ public interface PullRequestService {
    *
    * @return the pull request of the given repository and with the given id
    */
-  PullRequest get(String namespace, String name, String pullRequestId);
+  default PullRequest get(String namespace, String name, String pullRequestId){
+    return get(getRepository(namespace, name), pullRequestId);
+  }
+
+  PullRequest get(Repository repository, String pullRequestId);
 
   /**
    * Return the pull request with the given repository, source, target and status
@@ -59,9 +64,32 @@ public interface PullRequestService {
   /**
    * Update the title and the description of the pull request with id <code>pullRequestId</code>
    * the modified Date will be set to now.
-   *
    */
-  void update(String namespace, String name, String pullRequestId, String title, String description);
+  default void update(String namespace, String name, String pullRequestId, String title, String description){
+    update(getRepository(namespace, name),pullRequestId, title, description);
+  }
+
+  void update(Repository repository, String pullRequestId, String title, String description);
 
   void reject(Repository repository, PullRequest pullRequest);
+
+  boolean isUserSubscribed(Repository repository, String pullRequestId, User user);
+
+  default boolean isUserSubscribed(Repository repository, String pullRequestId) {
+    return isUserSubscribed(repository, pullRequestId, getCurrentUser());
+  }
+
+  void subscribe(Repository repository, String pullRequestId, User user);
+
+  default void subscribe(Repository repository, String pullRequestId) {
+    subscribe(repository, pullRequestId, getCurrentUser());
+  }
+
+  void unsubscribe(Repository repository, String pullRequestId, User user);
+
+  default void unsubscribe(Repository repository, String pullRequestId) {
+    unsubscribe(repository, pullRequestId, getCurrentUser());
+  }
+
+  User getCurrentUser();
 }

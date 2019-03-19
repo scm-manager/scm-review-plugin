@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
+import org.assertj.core.util.Sets;
 import org.codemonkey.simplejavamail.Email;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
@@ -31,8 +32,8 @@ import sonia.scm.user.User;
 
 import java.io.Reader;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,7 +60,7 @@ class EmailNotificationServiceTest {
   EmailNotificationService service;
 
   private PullRequest pullRequest;
-  private ArrayList<Recipient> subscriber;
+  private Set<Recipient> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
   private PullRequestComment comment;
@@ -89,7 +90,7 @@ class EmailNotificationServiceTest {
     pullRequest = TestData.createPullRequest();
     recipient1 = new Recipient("user1", "email1@d.de");
     recipient2 = new Recipient("user2", "email1@d.de");
-    subscriber = Lists.newArrayList(recipient1, recipient2);
+    subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
     pullRequest.setSubscriber(subscriber);
     repository = createHeartOfGold();
     oldPullRequest = TestData.createPullRequest();
@@ -168,10 +169,22 @@ class EmailNotificationServiceTest {
   }
 
   private void assertSentEmails(ArgumentCaptor<Email> emailCaptor, Notification notification) {
-
     List<Email> capturedEmails = emailCaptor.getAllValues();
-    Email email1 = capturedEmails.get(0);
-    Email email2 = capturedEmails.get(1);
+    Email email1 = capturedEmails
+      .stream()
+      .filter(email -> email.getRecipients()
+        .stream()
+        .anyMatch(recipient -> recipient.getName().equals(recipient1.getName()))).
+        findFirst().orElse(null);
+    Email email2 = capturedEmails
+      .stream()
+      .filter(email -> email.getRecipients()
+        .stream()
+        .anyMatch(recipient -> recipient.getName().equals(recipient2.getName()))).
+        findFirst().orElse(null);
+
+    assertThat(email1).isNotNull();
+    assertThat(email2).isNotNull();
     assertThat(email1.getSubject())
       .contains(pullRequest.getId(), pullRequest.getTitle(), repository.getNamespace(), repository.getName());
     assertThat(email1.getRecipients()).hasSize(1);
@@ -190,7 +203,7 @@ class EmailNotificationServiceTest {
       assertThat(email1.getTextHTML()).contains(oldComment.getComment());
       assertThat(email1.getTextHTML()).contains(comment.getComment());
     }
-     if (notification == Notification.CREATED_COMMENT) {
+    if (notification == Notification.CREATED_COMMENT) {
       assertThat(email1.getTextHTML()).contains(comment.getComment());
     }
     if (notification == Notification.MODIFIED_PULL_REQUEST) {

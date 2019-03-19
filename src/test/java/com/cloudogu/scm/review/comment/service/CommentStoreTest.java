@@ -1,5 +1,8 @@
 package com.cloudogu.scm.review.comment.service;
 
+import com.cloudogu.scm.review.TestData;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import com.google.common.collect.Maps;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
@@ -11,6 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.NotFoundException;
+import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 import sonia.scm.security.UUIDKeyGenerator;
 import sonia.scm.store.DataStore;
@@ -22,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,10 +40,21 @@ class CommentStoreTest {
 
   private CommentStore store;
   private KeyGenerator keyGenerator = new UUIDKeyGenerator();
+  @Mock
+  private PullRequestStoreFactory pullRequestStoreFactory;
+
+  @Mock
+  private ScmEventBus eventBus;
+
+  @Mock
+  private Repository repository;
 
   @BeforeEach
   void init() {
-    store = new CommentStore(dataStore, keyGenerator);
+    PullRequestStore prStore = mock(PullRequestStore.class);
+    when(prStore.get(any())).thenReturn(TestData.createPullRequest());
+    when(pullRequestStoreFactory.create(repository)).thenReturn(prStore);
+    store = new CommentStore(dataStore, pullRequestStoreFactory, eventBus, keyGenerator);
     // delegate store methods to backing map
     when(dataStore.getAll()).thenReturn(backingMap);
 
@@ -54,7 +71,7 @@ class CommentStoreTest {
     String pullRequestId = "1";
     when(dataStore.get(pullRequestId)).thenReturn(null);
     PullRequestComment pullRequestComment = new PullRequestComment("1", "my Comment", "author", new Location(), Instant.now());
-    store.add(pullRequestId, pullRequestComment);
+    store.add(repository, pullRequestId, pullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
       .hasSize(1)
@@ -70,7 +87,7 @@ class CommentStoreTest {
     pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
 
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
-    store.add(pullRequestId, newPullRequestComment);
+    store.add(repository, pullRequestId, newPullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
       .hasSize(1)
@@ -89,7 +106,7 @@ class CommentStoreTest {
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
-    store.delete(pullRequestId, "2");
+    store.delete(repository, pullRequestId, "2");
 
     PullRequestComments comments = store.get(pullRequestId);
     assertThat(comments.getComments())
@@ -97,7 +114,7 @@ class CommentStoreTest {
       .containsExactly("1", "3");
 
     // delete a removed comment has no effect
-    store.delete(pullRequestId, "2");
+    store.delete(repository, pullRequestId, "2");
 
     comments = store.get(pullRequestId);
     assertThat(comments.getComments())

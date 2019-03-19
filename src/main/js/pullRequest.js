@@ -86,6 +86,23 @@ export function getPullRequests(url: string){
     });
 }
 
+export function getSubscription(url: string){
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .catch(err => {
+      return {error: err};
+    });
+}
+
+export function handleSubscription(url: string){
+  return apiClient
+    .post(url)
+    .catch(err => {
+      return {error: err};
+    });
+}
+
 export function merge(url: string, pullRequest: PullRequest){
   return apiClient
     .post(url, {

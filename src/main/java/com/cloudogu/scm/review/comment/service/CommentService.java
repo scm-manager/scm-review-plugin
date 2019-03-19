@@ -5,6 +5,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.Lists;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -27,14 +28,21 @@ public class CommentService {
   /**
    * Add a Comment to the PullRequest with id <code>pullRequestId</code>
    *
-   * @param namespace
-   * @param name
+   * @param repository         needed in the event
    * @param pullRequestId
    * @param pullRequestComment
    * @return the id of the created pullRequestComment
    */
-  public String add(String namespace, String name, String pullRequestId, PullRequestComment pullRequestComment) {
-    return getCommentStore(namespace, name).add(pullRequestId, pullRequestComment);
+  public String add(Repository repository, String pullRequestId, PullRequestComment pullRequestComment) {
+    return getCommentStore(repository).add(repository, pullRequestId, pullRequestComment);
+  }
+
+  public void delete(Repository repository, String pullRequestId, String commentId) {
+    getCommentStore(repository).delete(repository, pullRequestId, commentId);
+  }
+
+  public void update(Repository repository, String pullRequestId, String commentId, String newComment) {
+    getCommentStore(repository).update(repository, pullRequestId, commentId, newComment);
   }
 
   public List<PullRequestComment> getAll(String namespace, String name, String pullRequestId) {
@@ -61,17 +69,12 @@ public class CommentService {
   }
 
 
-  public void delete(String namespace, String name, String pullRequestId, String commentId) {
-    getCommentStore(namespace, name).delete(pullRequestId, commentId);
-  }
-
-  public void update(String namespace, String name, String pullRequestId, String commentId, String newComment) {
-    getCommentStore(namespace, name).update(pullRequestId, commentId, newComment);
-
-  }
-
   private CommentStore getCommentStore(String namespace, String name) {
     return storeFactory.create(repositoryResolver.resolve(new NamespaceAndName(namespace, name)));
+  }
+
+  private CommentStore getCommentStore(Repository repository) {
+    return storeFactory.create(repository);
   }
 
 }

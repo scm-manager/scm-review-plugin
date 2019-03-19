@@ -6,12 +6,11 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.PrincipalCollection;
 import org.codemonkey.simplejavamail.Email;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.mail.api.MailService;
 import sonia.scm.repository.Repository;
-import sonia.scm.security.Role;
 import sonia.scm.template.Template;
 import sonia.scm.template.TemplateEngine;
 import sonia.scm.template.TemplateEngineFactory;
@@ -53,13 +52,13 @@ public class EmailNotificationService {
       pullRequest = emailContext.getPullRequest();
     } else if (emailContext.getOldPullRequest() != null) {
       pullRequest = emailContext.getPullRequest();
-    }else{
+    } else {
       log.error("Cannot send Email! Pull Request no is found");
       return false;
     }
     String emailSubject = getEmailSubject(repository, pullRequest);
     String displayName = getCurrentUserDisplayName();
-    String pullRequestLink = getPullRequestLink(repository,  pullRequest);
+    String pullRequestLink = getPullRequestLink(repository, pullRequest);
 
     env.put("title", emailSubject);
     env.put("displayName", displayName);
@@ -111,10 +110,10 @@ public class EmailNotificationService {
   }
 
   private String getCurrentUserDisplayName() {
-    Subject subjectPrincipals = SecurityUtils.getSubject();
-    String displayName = subjectPrincipals.getPrincipals().getPrimaryPrincipal().toString();
-    if (subjectPrincipals.isPermitted(Role.USER)) {
-      User user = subjectPrincipals.getPrincipals().oneByType(User.class);
+    PrincipalCollection principals = SecurityUtils.getSubject().getPrincipals();
+    String displayName = principals.getPrimaryPrincipal().toString();
+    User user = principals.oneByType(User.class);
+    if (user != null) {
       displayName = user.getDisplayName();
       if (Strings.isNullOrEmpty(displayName)) {
         displayName = user.getName();

@@ -2,11 +2,14 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
@@ -30,11 +33,14 @@ public class MergeCheckHook {
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
+  private final ScmEventBus eventBus;
+
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, ScmEventBus eventBus) {
     this.service = service;
     this.serviceFactory = serviceFactory;
+    this.eventBus = eventBus;
   }
 
   @Subscribe(async = false)
@@ -101,6 +107,7 @@ public class MergeCheckHook {
     private void setPullRequestMerged(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
+      eventBus.post(new PullRequestMergedEvent(repository,pullRequest));
     }
 
     private boolean pullRequestSourceBranchIsDeleted(PullRequest pullRequest) {
@@ -110,6 +117,7 @@ public class MergeCheckHook {
     private void setPullRequestRejected(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
+      eventBus.post(new PullRequestRejectedEvent(repository,pullRequest));
     }
   }
 }

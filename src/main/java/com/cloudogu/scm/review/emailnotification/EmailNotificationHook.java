@@ -9,12 +9,16 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
+import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
+import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 
 @Slf4j
+@EagerSingleton
+@Extension
 public class EmailNotificationHook {
 
   private final EmailNotificationService service;

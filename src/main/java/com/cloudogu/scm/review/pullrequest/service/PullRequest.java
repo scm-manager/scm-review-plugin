@@ -1,6 +1,8 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.XmlInstantAdapter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,13 +12,16 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @XmlRootElement(name = "pull-request")
 @XmlAccessorType(XmlAccessType.FIELD)
+@Builder(toBuilder = true)
 public class PullRequest {
 
   private String id;
@@ -30,5 +35,6 @@ public class PullRequest {
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
   private PullRequestStatus status;
-  private List<Recipient> subscriber;
+  private Set<Recipient> subscriber = new HashSet<>();
+
 }

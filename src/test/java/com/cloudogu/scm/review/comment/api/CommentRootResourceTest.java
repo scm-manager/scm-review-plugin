@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
@@ -75,6 +76,9 @@ public class CommentRootResourceTest {
   @Mock
   private Provider<CommentResource> commentResourceProvider;
 
+  @Mock
+  private ScmEventBus eventBus;
+
 
   @Before
   public void init() {
@@ -88,14 +92,14 @@ public class CommentRootResourceTest {
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource))));
+      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), eventBus)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldCreateNewPullRequestComment() throws URISyntaxException {
-    when(service.add(eq("space"), eq("name"), eq("1"), argThat(t -> t.getAuthor().equals("slarti") && t.getDate() != null))).thenReturn("1");
+    when(service.add(eq(repository), eq("1"), argThat(t -> t.getAuthor().equals("slarti") && t.getDate() != null))).thenReturn("1");
     byte[] pullRequestCommentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
     MockHttpRequest request =
       MockHttpRequest

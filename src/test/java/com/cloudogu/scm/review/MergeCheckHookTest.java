@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
@@ -47,6 +48,10 @@ class MergeCheckHookTest {
   private RepositoryService repositoryService;
   @Mock(answer = Answers.RETURNS_SELF)
   private LogCommandBuilder logCommandBuilder;
+
+  @Mock
+  private ScmEventBus eventBus;
+
   @InjectMocks
   private MergeCheckHook hook;
 

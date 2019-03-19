@@ -57,7 +57,7 @@ public class CommentResource {
       if (!PermissionCheck.mayModifyComment(repository, service.get(repository.getNamespace(), repository.getName(), pullRequestId, commentId))) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
-      service.delete(namespace, name, pullRequestId, commentId);
+      service.delete(repository, pullRequestId, commentId);
       return Response.noContent().build();
     } catch (NotFoundException e) {
       return Response.noContent().build();
@@ -88,7 +88,7 @@ public class CommentResource {
     if (!PermissionCheck.mayModifyComment(repository, comment)) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
-    service.update(namespace, name, pullRequestId, commentId, pullRequestCommentDto.getComment());
+    service.update(repository, pullRequestId, commentId, pullRequestCommentDto.getComment());
     return Response.noContent().build();
   }
 }
