@@ -18,7 +18,7 @@ This will in general change the diff, comments were based upon.
 This document aims to discuss the kinds of changes that may occur and how they can be
 tracked in a transparent way.
 
-## Computation of Diffs
+## Computation of diffs
 
 Before we dig deep into the ways changes to the repository can affect a diff for a pull
 request, we have to take a moment to explain how a diff for a pull request is computed:
@@ -81,7 +81,7 @@ Having this history, we have to admit that parts of the feature are already incl
 the base branch and therefore are no longer taken into account. Here the only commit
 of interest is commit `Z`.
 
-## Kinds of Changes
+## Kinds of changes
 
 As we have shown in the previous chapter, the diff of a feature branch can not only change
 by changing the feature branch itself, but also by changing the base branch (eg. by merging
@@ -164,47 +164,53 @@ theoretically) available information we have for comments. At the time of writin
 comment, we have (at least for Git repositories; this may be different for Mercurial or
 other systems):
 
-- For global comments
-  - the current revision of the source branch,
-  - the current revision of the target branch,
-  - the current revision of the merge base.
-- For file comments additionally
-  - the revision of the old file (may be not set or artificial like `0000000` for added files),
-  - the revision of the new file (may be not set or artificial like `0000000` for deleted files),
-  - the name of the old file (may be not set or artificial like `/dev/null` for added files),
-  - the name of the new file (may be not set or artificial like `/dev/null` for deleted files).
-- For inline comments additionally
-  - the line number in the new version for added lines,
-  - the line number in the old version for deleted lines,
-  - the line numbers for both the old and the new version for changed lines,
-  - the content of the line,
-  - the context of the line (preceding and following content),
-  - the "hunk" notation for the block of the change (eg. `@@ -1,6 +1,8 @@`).
+1. For global comments
+   1. the current revision of the source branch,
+   1. the current revision of the target branch,
+   1. the current revision of the merge base.
+1. For file comments additionally
+   1. (depending on the scm provider) a index hash of the old file (may be not set or
+      artificial like `0000000` for added files),
+   1. (depending on the scm provider) a index hash of the new file (may be not set or
+      artificial like `0000000` for deleted files),
+   1. the name of the old file (may be not set or artificial like `/dev/null` for added
+      files),
+   1. the name of the new file (may be not set or artificial like `/dev/null` for deleted
+      files).
+1. For inline comments additionally
+   1. the line number in the new version for added lines,
+   1. the line number in the old version for deleted lines,
+   1. the line numbers for both the old and the new version for changed lines,
+   1. the content of the line,
+   1. the context of the line (preceding and following content),
+   1. the "hunk" notation for the block of the change (eg. `@@ -1,6 +1,8 @@`).
 
-## Target Vision
+_Mind that the index hash seems not to be supported by Mercurial._
+
+## Target vision
 
 This is what we want to achieve:
 
-- In the "Comments" view, __inline comments__ shall be displayed with a partial context,
-  that is they shall be displayed with a number of preceding and following lines from the
-  diff at the time of creation. When the current revision of the file does not match the
-  revision of the file at creation time, the comment shall be marked as outdated.
-- __Global comments__ shall be marked as "outdated", when they were written for a release
-  that is no longer the head of the source branch.
-- __Global comments__ shall _not_ be marked as "outdated", when the merge base changes.
-- __File comments__ shall be marked as "outdated", when the current file revision does not
-  match the revision of the file at the time comment was created.
-- __File comments__ shall _not_ be marked as "outdated", when the merge base file revision
-  does not match the base revision of the file at the time comment was created.
-- Outdated __file comments__ shall still be shown in the diff view, provided that the file
-  is still part of the diff. When the file was renamed, the comment shall only be shown
-  in the comment overview.
-- __File or inline comments__ for reverted files (that is, the file is no longer part of
-  the diff) shall be marked as outdated and only be visible in the comment overview.
-- __Inline comments__ for files that have another source _or_ target revision than at the
-  time of the creation of the comment shall not be displayed inline in the diff, but the
-  file shall have a mark that there are outdated inline comments present. These comments
-  shall be shown in a popup when the mark is clicked, each with its original context.
+1. In the "Comments" view, __inline comments__ shall be displayed with a partial context,
+   that is they shall be displayed with a number of preceding and following lines from the
+   diff at the time of creation. When the current revision of the file does not match the
+   revision of the file at creation time, the comment shall be marked as outdated.
+1. __Global comments__ shall be marked as "outdated", when they were written for a release
+   that is no longer the head of the source branch.
+1. __Global comments__ shall _not_ be marked as "outdated", when the merge base changes.
+1. __File comments__ shall be marked as "outdated", when the current file version does not
+   match the version of the file at the time comment was created.
+1. __File comments__ shall _not_ be marked as "outdated", when the merge base file version
+   does not match the base version of the file at the time comment was created.
+1. Outdated __file comments__ shall still be shown in the diff view, provided that the file
+   is still part of the diff. When the file was renamed, the comment shall only be shown
+   in the comment overview.
+1. __File or inline comments__ for reverted files (that is, the file is no longer part of
+   the diff) shall be marked as outdated and only be visible in the comment overview.
+1. __Inline comments__ for files that have another source _or_ target revision than at the
+   time of the creation of the comment shall not be displayed inline in the diff, but the
+   file shall have a mark that there are outdated inline comments present. These comments
+   shall be shown in a popup when the mark is clicked, each with its original context.
 
 ## Possible solution
 
@@ -219,13 +225,14 @@ alongside with the comment.
 
 ### File comments
 
-For file comments it is necessary to store the old and the new revisions of the file
+For file comments it is necessary to store the old and the new index hash of the file
 and the current name alongside the comment. The revisions of the source or the base
-branch are of no interest for file comments.
+branch are of no interest for file comments, because for instance a new commit does not
+necessarily imply that a specific file was changed.
 
 ### Inline comments
 
-Like for file comments, we have to store the old and the new revisions of the file and
+Like for file comments, we have to store the old and the new index hash of the file and
 its current name. Additionally we have keep the line number of either the old or the new
 version.
 
@@ -239,3 +246,41 @@ part that was stored. The second solution needs additional computation each time
 to display the context. Furthermore one has to take into account, that after some time
 the file revisions can be garbage collected, when they are no longer part of an active
 branch (this can be the case when feature branches are squashed after the review process).
+
+## Implementation
+
+### First version
+
+At the time of writing, diffs are parsed only on the frontend side. That is, the diff itself
+is calculated in the backend (directly using the scm implementation), but the frontend
+interprets this diff. This has a few implications:
+
+1. The backend cannot determine, whether or not a comment is outdated.
+1. The information about the state of comments has no representation in the REST layer. 
+1. The frontend needs the diff to compute the state of comments even when the diff itself
+   does not have to be rendered.
+1. We only do have the diff itself for computations. If this diff does not support specific
+   parts (like the index hash, that is missing in Mercurials diff), there is no other way
+   to draw conclusions.
+1. There is no way to cache computations (though this is no problem for the server, because
+   all computation is done on the client).
+1. The server has to rely solely on client requests without the possibility to check input
+   (eg. the server cannot check whether the location of a comment is a valid location).
+
+### Preferable changes
+
+1. **Compute outdated comments on the server side.**
+   
+   This would have the following advantages:
+   - The REST layer would be "complete"
+   - The client would not have to fetch the diff only because it would like to compute the
+     status of some comments
+   - It is easier to create a provider agnostic abstraction (saying we could not only
+     support Git, but also Mercurial without having to meddle with its diff implementation)
+   
+   The disadvantage is simple: Implementation cost.
+1. **Mark file and inline comments only as outdated, when the files have changed.**
+   
+   That is, not just because the revision of either the source or the target branch has
+   changed.
+1. **Support Mercurial, not only Git.**
