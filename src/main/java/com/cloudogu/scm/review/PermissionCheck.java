@@ -12,6 +12,8 @@ public final class PermissionCheck {
   public static final String CREATE_PULL_REQUEST = "createPullRequest";
   public static final String MODIFY_PULL_REQUEST = "modifyPullRequest";
   public static final String READ_PULL_REQUEST = "readPullRequest";
+  public static final String COMMENT_PULL_REQUEST = "commentPullRequest";
+  public static final String MERGE_PULL_REQUEST = "mergePullRequest";
 
   private PermissionCheck() {
   }
@@ -38,19 +40,19 @@ public final class PermissionCheck {
   }
 
   public static boolean mayComment(Repository repository) {
-    return RepositoryPermissions.custom("commentPullRequest", repository).isPermitted();
+    return RepositoryPermissions.custom(COMMENT_PULL_REQUEST, repository).isPermitted();
   }
 
   public static void checkComment(Repository repository) {
-    RepositoryPermissions.custom("commentPullRequest", repository).check();
+    RepositoryPermissions.custom(COMMENT_PULL_REQUEST, repository).check();
   }
 
   public static boolean mayMerge(Repository repository) {
-    return RepositoryPermissions.custom("mergePullRequest", repository).isPermitted();
+    return RepositoryPermissions.custom(MERGE_PULL_REQUEST, repository).isPermitted();
   }
 
   public static void checkMerge(Repository repository) {
-    RepositoryPermissions.custom("mergePullRequest", repository).check();
+    RepositoryPermissions.custom(MERGE_PULL_REQUEST, repository).check();
   }
 
   /**
@@ -59,9 +61,14 @@ public final class PermissionCheck {
    *  @return true if the user can update/delete a comment
    */
   public static boolean mayModifyComment(Repository repository, PullRequestComment requestComment ) {
-    String currentUser = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
+    return currentUserIsAuthor(requestComment.getAuthor()) || mayModify(repository);
+  }
 
-    return currentUser.equals(requestComment.getAuthor()) || mayModify(repository);
+  public static void checkModifyComment(Repository repository, PullRequestComment requestComment ) {
+    if (currentUserIsAuthor(requestComment.getAuthor())) {
+      return;
+    }
+    checkModify(repository);
   }
 
   /**
@@ -70,12 +77,20 @@ public final class PermissionCheck {
    *  @return true if the user can update/delete a comment
    */
   public static boolean mayModifyPullRequest(Repository repository, PullRequest request) {
-    String currentUser = SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
 
-    return currentUser.equals(request.getAuthor()) || mayModify(repository);
+    return currentUserIsAuthor(request.getAuthor()) || mayModify(repository);
+  }
+
+  private static boolean currentUserIsAuthor(String author) {
+    return author.equals(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
   }
 
   private static boolean mayModify(Repository repository) {
     return RepositoryPermissions.custom(MODIFY_PULL_REQUEST, repository).isPermitted();
   }
+
+  private static void checkModify(Repository repository) {
+    RepositoryPermissions.custom(MODIFY_PULL_REQUEST, repository).check();
+  }
+
 }

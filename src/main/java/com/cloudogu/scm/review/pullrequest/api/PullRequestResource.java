@@ -3,6 +3,8 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -38,14 +40,16 @@ public class PullRequestResource {
   private final PullRequestMapper mapper;
   private final PullRequestService service;
   private final Provider<CommentRootResource> commentResourceProvider;
+  private final CommentService commentService;
   private final ScmEventBus eventBus;
 
 
   @Inject
-  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, ScmEventBus eventBus) {
+  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, CommentService commentService, ScmEventBus eventBus) {
     this.mapper = mapper;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
+    this.commentService = commentService;
     this.eventBus = eventBus;
   }
 
@@ -161,6 +165,7 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     PullRequest pullRequest = service.get(repository, pullRequestId);
     service.reject(repository, pullRequest);
+    commentService.addStatusChangedComment(repository, pullRequestId, SystemCommentType.REJECTED);
     eventBus.post(new PullRequestRejectedEvent(repository, pullRequest));
     return Response.noContent().build();
   }

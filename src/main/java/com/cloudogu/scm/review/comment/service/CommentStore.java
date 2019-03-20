@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import com.google.common.util.concurrent.Striped;
 import sonia.scm.HandlerEventType;
+import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
@@ -83,6 +84,14 @@ public class CommentStore {
     });
   }
 
+  private PullRequestComment checkNoSystemComment(PullRequestComment comment) {
+    if (comment.isSystemComment()) {
+      throw new AuthorizationException("It is forbidden to delete a system comment.");
+    } else {
+      return comment;
+    }
+  }
+
   private <T> T withLockDo(String pullRequestId, Supplier<T> worker) {
     Lock lock = LOCKS.get(pullRequestId);
     lock.lock();
@@ -93,11 +102,12 @@ public class CommentStore {
     }
   }
 
-  public void applyChange(String commentId, PullRequestComments pullRequestComments, Consumer<PullRequestComment> commentConsumer) {
+  private void applyChange(String commentId, PullRequestComments pullRequestComments, Consumer<PullRequestComment> commentConsumer) {
     pullRequestComments.getComments()
       .stream()
       .filter(c -> c.getId().equals(commentId))
       .findFirst()
+      .map(this::checkNoSystemComment)
       .ifPresent(commentConsumer);
   }
 }

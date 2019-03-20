@@ -28,4 +28,5 @@ public class PullRequestComment {
   private Location location;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant date;
+  private boolean systemComment;
 }

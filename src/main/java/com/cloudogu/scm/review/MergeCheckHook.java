@@ -1,5 +1,7 @@
 package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
@@ -35,11 +37,13 @@ public class MergeCheckHook {
   private final RepositoryServiceFactory serviceFactory;
   private final ScmEventBus eventBus;
 
+  private final CommentService commentService;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, ScmEventBus eventBus) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, CommentService commentService, ScmEventBus eventBus) {
     this.service = service;
     this.serviceFactory = serviceFactory;
+    this.commentService = commentService;
     this.eventBus = eventBus;
   }
 
@@ -107,6 +111,7 @@ public class MergeCheckHook {
     private void setPullRequestMerged(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
+      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
       eventBus.post(new PullRequestMergedEvent(repository,pullRequest));
     }
 
@@ -117,6 +122,7 @@ public class MergeCheckHook {
     private void setPullRequestRejected(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
+      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.SOURCE_DELETED);
       eventBus.post(new PullRequestRejectedEvent(repository,pullRequest));
     }
   }
