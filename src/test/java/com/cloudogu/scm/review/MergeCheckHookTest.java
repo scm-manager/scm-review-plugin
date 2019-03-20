@@ -9,11 +9,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
@@ -21,6 +24,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.HookBranchProvider;
 import sonia.scm.repository.api.HookContext;
+import sonia.scm.repository.api.HookMessageProvider;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
@@ -29,6 +33,8 @@ import java.io.IOException;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,7 +60,11 @@ class MergeCheckHookTest {
   private RepositoryService repositoryService;
   @Mock(answer = Answers.RETURNS_SELF)
   private LogCommandBuilder logCommandBuilder;
+  @Mock
+  private ScmConfiguration configuration;
   @InjectMocks
+  private MessageSenderFactory messageSenderFactory;
+
   private MergeCheckHook hook;
 
   @Mock
@@ -62,13 +72,23 @@ class MergeCheckHookTest {
   @Mock
   private HookContext hookContext;
   @Mock
+  private HookMessageProvider messageProvider;
+  @Mock
   private HookBranchProvider branchProvider;
+  @Captor
+  private ArgumentCaptor<String> messageCaptor;
 
   @BeforeEach
   void initRepositoryServiceFactory() {
+    hook = new MergeCheckHook(service, repositoryServiceFactory, messageSenderFactory, commentService);
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
+    when(repositoryService.getRepository()).thenReturn(REPOSITORY);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
+    when(configuration.getBaseUrl()).thenReturn("http://example.com/");
+    when(event.getContext()).thenReturn(hookContext);
+    when(hookContext.getMessageProvider()).thenReturn(messageProvider);
+    doNothing().when(messageProvider).sendMessage(messageCaptor.capture());
   }
 
   @BeforeEach
@@ -92,6 +112,7 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
+    assertThat(messageCaptor.getAllValues()).isNotEmpty();
     verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), SystemCommentType.MERGED);
   }
 

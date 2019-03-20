@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 
+import static java.lang.String.format;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
 @EagerSingleton @Extension
@@ -33,12 +34,14 @@ public class MergeCheckHook {
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
   private final CommentService commentService;
+  private final MessageSenderFactory messageSenderFactory;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, CommentService commentService) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory, CommentService commentService) {
     this.service = service;
     this.serviceFactory = serviceFactory;
     this.commentService = commentService;
+    this.messageSenderFactory = messageSenderFactory;
   }
 
   @Subscribe(async = false)
@@ -55,11 +58,13 @@ public class MergeCheckHook {
 
   private class Worker {
     private final RepositoryService repositoryService;
+    private final MessageSender messageSender;
     private final Repository repository;
     private final HookBranchProvider branchProvider;
 
     private Worker(RepositoryService repositoryService, PostReceiveRepositoryHookEvent event) {
       this.repositoryService = repositoryService;
+      this.messageSender = messageSenderFactory.create(event);
       this.repository = event.getRepository();
       this.branchProvider = event.getContext().getBranchProvider();
     }
@@ -104,6 +109,8 @@ public class MergeCheckHook {
 
     private void setPullRequestMerged(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
+      String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
+      messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
       commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
     }
@@ -114,6 +121,8 @@ public class MergeCheckHook {
 
     private void setPullRequestRejected(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
+      String message = format("Rejected pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
+      messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
       commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.SOURCE_DELETED);
     }
