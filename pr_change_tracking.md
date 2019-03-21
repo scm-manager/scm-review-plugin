@@ -284,3 +284,26 @@ interprets this diff. This has a few implications:
    That is, not just because the revision of either the source or the target branch has
    changed.
 1. **Support Mercurial, not only Git.**
+1. **Store at least some of the original context with inline comments.**
+
+#### Estimated tasks
+
+What would have to be done to achieve this?
+
+When we move functionality from the frontend to the backend, we have to
+
+1. identify hunks in diffs, for both
+   1. Git, and
+   1. Mercurial
+1. detect, whether a comment for a file or an inline comment is still valid for the
+   current diff. Because in Mercurial we have no native support for file versions in the
+   diff, we could instead compare the existence of the hunk and the line content for the
+   comment.
+1. compute the context for inline comments (alternatively the context can be sent along with
+   the comment by the frontend; but this would make the API a little bit clumsy and one may
+   ask why the frontend should be responsible for this)
+1. validate comment positions (due to the statelessness of the server, we have to take into
+   account that diffs can change during a review and that therefore it may happen that a
+   comment just written cannot be stored correctly)
+1. react to changes in the repository, that may change the state of comments
+1. mark comments when their original context has changed
