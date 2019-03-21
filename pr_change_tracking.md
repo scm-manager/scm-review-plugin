@@ -165,25 +165,25 @@ comment, we have (at least for Git repositories; this may be different for Mercu
 other systems):
 
 1. For global comments
-   1. the current revision of the source branch,
-   1. the current revision of the target branch,
-   1. the current revision of the merge base.
+    1. the current revision of the source branch,
+    1. the current revision of the target branch,
+    1. the current revision of the merge base.
 1. For file comments additionally
-   1. (depending on the scm provider) a index hash of the old file (may be not set or
-      artificial like `0000000` for added files),
-   1. (depending on the scm provider) a index hash of the new file (may be not set or
-      artificial like `0000000` for deleted files),
-   1. the name of the old file (may be not set or artificial like `/dev/null` for added
-      files),
-   1. the name of the new file (may be not set or artificial like `/dev/null` for deleted
-      files).
+    1. (depending on the scm provider) a index hash of the old file (may be not set or
+        artificial like `0000000` for added files),
+    1. (depending on the scm provider) a index hash of the new file (may be not set or
+        artificial like `0000000` for deleted files),
+    1. the name of the old file (may be not set or artificial like `/dev/null` for added
+        files),
+    1. the name of the new file (may be not set or artificial like `/dev/null` for deleted
+        files).
 1. For inline comments additionally
-   1. the line number in the new version for added lines,
-   1. the line number in the old version for deleted lines,
-   1. the line numbers for both the old and the new version for changed lines,
-   1. the content of the line,
-   1. the context of the line (preceding and following content),
-   1. the "hunk" notation for the block of the change (eg. `@@ -1,6 +1,8 @@`).
+    1. the line number in the new version for added lines,
+    1. the line number in the old version for deleted lines,
+    1. the line numbers for both the old and the new version for changed lines,
+    1. the content of the line,
+    1. the context of the line (preceding and following content),
+    1. the "hunk" notation for the block of the change (eg. `@@ -1,6 +1,8 @@`).
 
 _Mind that the index hash seems not to be supported by Mercurial._
 
@@ -270,19 +270,22 @@ interprets this diff. This has a few implications:
 ### Preferable changes
 
 1. **Compute outdated comments on the server side.**
-   
-   This would have the following advantages:
-   - The REST layer would be "complete"
-   - The client would not have to fetch the diff only because it would like to compute the
-     status of some comments
-   - It is easier to create a provider agnostic abstraction (saying we could not only
-     support Git, but also Mercurial without having to meddle with its diff implementation)
-   
-   The disadvantage is simple: Implementation cost.
+    
+    This would have the following advantages:
+    
+    - The REST layer would be "complete"
+    - The client would not have to fetch the diff only because it would like to compute the
+      status of some comments
+    - It is easier to create a provider agnostic abstraction (saying we could not only
+      support Git, but also Mercurial without having to meddle with its diff implementation)
+    
+    The disadvantage is simple: Implementation cost.
+    
 1. **Mark file and inline comments only as outdated, when the files have changed.**
-   
-   That is, not just because the revision of either the source or the target branch has
-   changed.
+    
+    That is, not just because the revision of either the source or the target branch has
+    changed.
+    
 1. **Support Mercurial, not only Git.**
 1. **Store at least some of the original context with inline comments.**
 
@@ -293,17 +296,17 @@ What would have to be done to achieve this?
 When we move functionality from the frontend to the backend, we have to
 
 1. identify hunks in diffs, for both
-   1. Git, and
-   1. Mercurial
+    1. Git, and
+    1. Mercurial
 1. detect, whether a comment for a file or an inline comment is still valid for the
-   current diff. Because in Mercurial we have no native support for file versions in the
-   diff, we could instead compare the existence of the hunk and the line content for the
-   comment.
+    current diff. Because in Mercurial we have no native support for file versions in the
+    diff, we could instead compare the existence of the hunk and the line content for the
+    comment.
 1. compute the context for inline comments (alternatively the context can be sent along with
-   the comment by the frontend; but this would make the API a little bit clumsy and one may
-   ask why the frontend should be responsible for this)
+    the comment by the frontend; but this would make the API a little bit clumsy and one may
+    ask why the frontend should be responsible for this)
 1. validate comment positions (due to the statelessness of the server, we have to take into
-   account that diffs can change during a review and that therefore it may happen that a
-   comment just written cannot be stored correctly)
+    account that diffs can change during a review and that therefore it may happen that a
+    comment just written cannot be stored correctly)
 1. react to changes in the repository, that may change the state of comments
 1. mark comments when their original context has changed
