@@ -107,12 +107,6 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public User getCurrentUser() {
-    Subject subjectPrincipals = SecurityUtils.getSubject();
-    return subjectPrincipals.getPrincipals().oneByType(User.class);
-  }
-
-  @Override
   public void unsubscribe(Repository repository, String pullRequestId, User user) {
     PullRequestStore store = getStore(repository);
     PullRequest pullRequest = store.get(pullRequestId);

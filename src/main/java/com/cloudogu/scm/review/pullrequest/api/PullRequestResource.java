@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
@@ -10,6 +11,7 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.google.common.base.Strings;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import com.webcohesion.enunciate.metadata.rs.TypeHint;
@@ -81,6 +83,9 @@ public class PullRequestResource {
   public Response getSubscription(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
+    if (CurrentUserResolver.getCurrentUser() != null && Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
+      return Response.ok().build();
+    }
     if (service.isUserSubscribed(repository, pullRequestId)) {
       PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
 

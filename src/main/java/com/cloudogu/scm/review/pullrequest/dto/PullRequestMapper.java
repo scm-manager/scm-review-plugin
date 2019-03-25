@@ -1,9 +1,11 @@
 package com.cloudogu.scm.review.pullrequest.dto;
 
+import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.google.common.base.Strings;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -39,7 +41,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   protected void appendLinks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
     Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest().self(repository.getNamespace(), repository.getName(), target.getId()));
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments().all(repository.getNamespace(), repository.getName(), target.getId())));
-    linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest().subscription(repository.getNamespace(), repository.getName(), target.getId())));
+    if (CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())){
+      linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest().subscription(repository.getNamespace(), repository.getName(), target.getId())));
+    }
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest().update(repository.getNamespace(), repository.getName(), target.getId())));
     }

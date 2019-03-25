@@ -83,7 +83,13 @@ class PullRequestDetails extends React.Component<Props, State> {
   componentDidMount(): void {
     const { pullRequest } = this.props;
     this.getMergeDryRun(pullRequest);
-    this.getSubscription(pullRequest);
+    if (
+      pullRequest &&
+      pullRequest._links.subscription &&
+      pullRequest._links.subscription.href
+    ) {
+      this.getSubscription(pullRequest);
+    }
   }
 
   updatePullRequest = () => {
@@ -245,6 +251,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       rejectButtonLoading,
       showNotification,
       subscriptionLabel,
+      subscriptionLink,
       subscriptionColor,
       loadingSubscription
     } = this.state;
@@ -325,6 +332,21 @@ class PullRequestDetails extends React.Component<Props, State> {
       );
     }
 
+    const subscription = subscriptionLink ? (
+      <div className="level-right">
+        <div className="level-item">
+          <Button
+            label={t("scm-review-plugin.edit." + subscriptionLabel)}
+            action={this.handleSubscription}
+            loading={loadingSubscription}
+            color={subscriptionColor}
+          />
+        </div>
+      </div>
+    ) : (
+      ""
+    );
+
     const targetBranchDeletedWarning = targetBranchDeleted ? (
       <span className="icon has-text-warning">
         <Tooltip
@@ -388,16 +410,7 @@ class PullRequestDetails extends React.Component<Props, State> {
               <div className="level-item">{rejectButton}</div>
               <div className="level-item">{mergeButton}</div>
             </div>
-            <div className="level-right">
-              <div className="level-item">
-                <Button
-                  label={t("scm-review-plugin.edit." + subscriptionLabel)}
-                  action={this.handleSubscription}
-                  loading={loadingSubscription}
-                  color={subscriptionColor}
-                />
-              </div>
-            </div>
+            { subscription }
           </div>
 
           <PullRequestInformation

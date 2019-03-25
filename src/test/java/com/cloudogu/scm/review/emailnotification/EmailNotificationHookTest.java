@@ -11,19 +11,25 @@ import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.google.common.collect.Lists;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
+import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.repository.Repository;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 
@@ -62,107 +68,53 @@ class EmailNotificationHookTest {
   }
 
 
-  @Test
-  void shouldSendEmailsAfterModifyingPullRequest() {
-    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+  @TestFactory
+  Stream<DynamicTest> sendingCommentEmailTestFactory() {
+    ArrayList<CommentEvent> events = Lists.newArrayList(
+      new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE),
+      new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY),
+      new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.DELETE)
+    );
+    return events.stream().map(event ->
+      DynamicTest.dynamicTest(event.toString(), () -> {
+        emailNotificationHook.handleCommentEvents(event);
 
-    emailNotificationHook.handlePullRequestEvents(event);
+        verify(service).sendEmail(isA(CommentEventEmailRenderer.class), eq(pullRequest.getSubscriber()));
+        reset(service);
+      })
+    );
+  }
 
-    verify(service).sendEmail(argThat(emailContext -> {
-      assertThat(emailContext.getRecipients())
-        .hasSize(2)
-        .containsExactlyInAnyOrder(subscriber.toArray(new Recipient[2]));
-      assertThat(emailContext.getPullRequest()).isEqualToComparingFieldByFieldRecursively(pullRequest);
-      assertThat(emailContext.getOldPullRequest()).isEqualToComparingFieldByFieldRecursively(oldPullRequest);
-      assertThat(emailContext.getRepository()).isEqualToComparingFieldByFieldRecursively(repository);
-      return true;
-    }), eq(Notification.MODIFIED_PULL_REQUEST));
+  @TestFactory
+  Stream<DynamicTest> sendingPREmailTestFactory() {
+    ArrayList<PullRequestEvent> events = Lists.newArrayList(
+      new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE),
+      new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY)
+    );
+    return events.stream().map(event ->
+      DynamicTest.dynamicTest(event.toString(), () -> {
+        emailNotificationHook.handlePullRequestEvents(event);
+
+        verify(service).sendEmail(isA(PullRequestEventEmailRenderer.class), eq(pullRequest.getSubscriber()));
+        reset(service);
+      })
+    );
   }
 
   @Test
-  void shouldSendEmailsAfterCreatingComment() {
-    CommentEvent event = new CommentEvent(repository, pullRequest, comment, null, HandlerEventType.CREATE);
-
-    emailNotificationHook.handleCommentEvents(event);
-
-    verify(service).sendEmail(argThat(emailContext -> {
-      assertThat(emailContext.getRecipients())
-        .hasSize(2)
-        .containsExactlyInAnyOrder(subscriber.toArray(new Recipient[2]));
-      assertThat(emailContext.getRepository()).isEqualToComparingFieldByFieldRecursively(repository);
-      assertThat(emailContext.getComment()).isEqualToComparingFieldByFieldRecursively(comment);
-      assertThat(emailContext.getPullRequest()).isEqualToComparingFieldByFieldRecursively(pullRequest);
-      assertThat(emailContext.getOldComment()).isNull();
-      return true;
-    }), eq(Notification.CREATED_COMMENT));
-  }
-
-  @Test
-  void shouldSendEmailsAfterModifyingComment() {
-    CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY);
-
-    emailNotificationHook.handleCommentEvents(event);
-
-    verify(service).sendEmail(argThat(emailContext -> {
-      assertThat(emailContext.getRecipients())
-        .hasSize(2)
-        .containsExactlyInAnyOrder(subscriber.toArray(new Recipient[2]));
-      assertThat(emailContext.getRepository()).isEqualToComparingFieldByFieldRecursively(repository);
-      assertThat(emailContext.getComment()).isEqualToComparingFieldByFieldRecursively(comment);
-      assertThat(emailContext.getPullRequest()).isEqualToComparingFieldByFieldRecursively(pullRequest);
-      assertThat(emailContext.getOldComment()).isEqualToComparingFieldByFieldRecursively(oldComment);
-      return true;
-    }), eq(Notification.MODIFIED_COMMENT));
-  }
-
-  @Test
-  void shouldSendEmailsAfterDeletingComment() {
-    CommentEvent event = new CommentEvent(repository, pullRequest, null, oldComment, HandlerEventType.DELETE);
-
-    emailNotificationHook.handleCommentEvents(event);
-
-    verify(service).sendEmail(argThat(emailContext -> {
-      assertThat(emailContext.getRecipients())
-        .hasSize(2)
-        .containsExactlyInAnyOrder(subscriber.toArray(new Recipient[2]));
-      assertThat(emailContext.getRepository()).isEqualToComparingFieldByFieldRecursively(repository);
-      assertThat(emailContext.getComment()).isNull();
-      assertThat(emailContext.getPullRequest()).isEqualToComparingFieldByFieldRecursively(pullRequest);
-      assertThat(emailContext.getOldComment()).isEqualToComparingFieldByFieldRecursively(oldComment);
-      return true;
-    }), eq(Notification.DELETED_COMMENT));
-  }
-
-  @Test
-  void shouldSendEmailsAfterMergingPullRequest() {
+  void shouldSendEmailsAfterMergingPullRequest() throws IOException, MailSendBatchException {
     PullRequestMergedEvent event = new PullRequestMergedEvent(repository, pullRequest);
-
     emailNotificationHook.handleMergedPullRequest(event);
 
-    verify(service).sendEmail(argThat(emailContext -> {
-      assertThat(emailContext.getRecipients())
-        .hasSize(2)
-        .containsExactlyInAnyOrder(subscriber.toArray(new Recipient[2]));
-      assertThat(emailContext.getRepository()).isEqualToComparingFieldByFieldRecursively(repository);
-      assertThat(emailContext.getPullRequest()).isEqualToComparingFieldByFieldRecursively(pullRequest);
-      return true;
-    }), eq(Notification.MERGED_PULL_REQUEST));
+    verify(service).sendEmail(isA(PullRequestMergedEmailRenderer.class), eq(pullRequest.getSubscriber()));
   }
 
   @Test
-  void shouldSendEmailsAfterRejectingPullRequest() {
+  void shouldSendEmailsAfterRejectingPullRequest() throws IOException, MailSendBatchException {
     PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
-
     emailNotificationHook.handleRejectedPullRequest(event);
 
-    verify(service).sendEmail(argThat(emailContext -> {
-      assertThat(emailContext.getRecipients())
-        .hasSize(2)
-        .containsExactlyInAnyOrder(subscriber.toArray(new Recipient[2]));
-      assertThat(emailContext.getRepository()).isEqualToComparingFieldByFieldRecursively(repository);
-      assertThat(emailContext.getPullRequest()).isEqualToComparingFieldByFieldRecursively(pullRequest);
-      return true;
-    }), eq(Notification.REJECTED_PULL_REQUEST));
+    verify(service).sendEmail(isA(PullRequestRejectedEmailRenderer.class), eq(pullRequest.getSubscriber()));
   }
 
 }

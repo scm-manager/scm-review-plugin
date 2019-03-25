@@ -483,6 +483,36 @@ public class PullRequestRootResourceTest {
     PullRequest pullRequest = createPullRequest();
 
     when(store.get("1")).thenReturn(pullRequest);
+//    Subject subject = mock(Subject.class);
+    ThreadContext.bind(subject);
+
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    when(subject.isPermitted(any(String.class))).thenReturn(true);
+    String currentUser = "username";
+    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
+    User user1 = new User();
+    user1.setName("user1");
+    user1.setMail("user1@mail.de");
+    user1.setDisplayName("User 1");
+    when(principals.oneByType(User.class)).thenReturn(user1);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/subscription");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    assertThat(jsonNode.path("_links").get("subscribe")).isNotNull();
+    assertThat(jsonNode.path("_links").get("unsubscribe")).isNull();
+  }
+
+  @Test
+  public void shouldNotReturnAnySubscriptionLinkOnMissingUserMail() throws URISyntaxException, IOException {
+    // the PR has no subscriber
+    PullRequest pullRequest = createPullRequest();
+
+    when(store.get("1")).thenReturn(pullRequest);
     Subject subject = mock(Subject.class);
     ThreadContext.bind(subject);
 
@@ -500,10 +530,7 @@ public class PullRequestRootResourceTest {
       .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/subscription");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    assertThat(jsonNode.path("_links").get("subscribe")).isNotNull();
-    assertThat(jsonNode.path("_links").get("unsubscribe")).isNull();
+    assertThat(response.getContentAsString()).isNullOrEmpty();
   }
 
   @Test

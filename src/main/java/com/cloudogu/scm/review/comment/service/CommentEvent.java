@@ -10,9 +10,9 @@ import sonia.scm.repository.Repository;
 @Event
 public class CommentEvent extends BasicPullRequestEvent implements HandlerEvent<PullRequestComment> {
 
-  final private PullRequestComment comment;
-  final private PullRequestComment oldComment;
-  private HandlerEventType type;
+  private final PullRequestComment comment;
+  private final PullRequestComment oldComment;
+  private final HandlerEventType type;
 
   public CommentEvent(Repository repository, PullRequest pullRequest, PullRequestComment comment, PullRequestComment oldComment, HandlerEventType type) {
     super(repository, pullRequest);

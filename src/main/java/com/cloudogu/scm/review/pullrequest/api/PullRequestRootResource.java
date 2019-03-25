@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
@@ -74,7 +75,7 @@ public class PullRequestRootResource {
     service.checkBranch(repository, pullRequestDto.getSource());
     service.checkBranch(repository, pullRequestDto.getTarget());
 
-    User user = service.getCurrentUser();
+    User user = CurrentUserResolver.getCurrentUser();
     verifyBranchesDiffer(pullRequestDto.getSource(), pullRequestDto.getTarget());
     pullRequestDto.setAuthor(user.getId());
     Instant now = Instant.now();

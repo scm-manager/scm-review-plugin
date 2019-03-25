@@ -6,6 +6,8 @@ import sonia.scm.user.User;
 import java.util.List;
 import java.util.Optional;
 
+import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
+
 
 /**
  * The Pull Request Service manage the stored pull requests
@@ -29,7 +31,7 @@ public interface PullRequestService {
    *
    * @return the pull request of the given repository and with the given id
    */
-  default PullRequest get(String namespace, String name, String pullRequestId){
+  default PullRequest get(String namespace, String name, String pullRequestId) {
     return get(getRepository(namespace, name), pullRequestId);
   }
 
@@ -65,8 +67,8 @@ public interface PullRequestService {
    * Update the title and the description of the pull request with id <code>pullRequestId</code>
    * the modified Date will be set to now.
    */
-  default void update(String namespace, String name, String pullRequestId, String title, String description){
-    update(getRepository(namespace, name),pullRequestId, title, description);
+  default void update(String namespace, String name, String pullRequestId, String title, String description) {
+    update(getRepository(namespace, name), pullRequestId, title, description);
   }
 
   void update(Repository repository, String pullRequestId, String title, String description);
@@ -90,6 +92,4 @@ public interface PullRequestService {
   default void unsubscribe(Repository repository, String pullRequestId) {
     unsubscribe(repository, pullRequestId, getCurrentUser());
   }
-
-  User getCurrentUser();
 }
