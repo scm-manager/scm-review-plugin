@@ -12,7 +12,8 @@
   "dependencies": {
     "@scm-manager/ui-components": "latest",
     "@scm-manager/ui-extensions": "^0.1.1",
-    "@scm-manager/ui-types": "latest"
+    "@scm-manager/ui-types": "latest",
+    "query-string": "5"
   },
   "devDependencies": {
     "@scm-manager/ui-bundler": "^0.0.25",

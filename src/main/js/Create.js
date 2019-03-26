@@ -15,6 +15,7 @@ import { Trans, translate } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
 import type { History } from "history";
 import { withRouter } from "react-router-dom";
+import queryString from 'query-string';
 
 const styles = {
   controlButtons: {
@@ -90,6 +91,9 @@ class Create extends React.Component<Props, State> {
     const { repository, classes, match, t } = this.props;
     const { pullRequest, loading, error, disabled } = this.state;
 
+    const url = this.props.location.search;
+    const params = queryString.parse(url);
+
     let notification = null;
     if (error) {
       notification = <ErrorNotification error={error} />;
@@ -125,6 +129,8 @@ class Create extends React.Component<Props, State> {
           <CreateForm
             repository={repository}
             onChange={this.handleFormChange}
+            source={params.source}
+            target={params.target}
           />
 
           {information}
