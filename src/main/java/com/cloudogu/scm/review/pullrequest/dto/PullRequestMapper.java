@@ -5,6 +5,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
@@ -15,8 +16,11 @@ import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.Repository;
 
+import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
+import java.util.HashSet;
+import java.util.Set;
 
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
@@ -28,9 +32,25 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
+  @Mapping(target = "reviewer" , source = "reviewer",  qualifiedByName = "mapReviewer")
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
+  @Mapping(target = "reviewer" , source = "reviewer",  qualifiedByName = "mapReviewerFromDto")
   public abstract PullRequest map(PullRequestDto dto);
+
+  @Named("mapReviewerFromDto")
+  Set<Recipient> mapReviewerFromDto(Set<String> reviewer){
+    Set<Recipient> result = new HashSet<>();
+    return result;
+
+  }
+
+  @Named("mapReviewer")
+  Set<String> mapReviewer(Set<Recipient> reviewer){
+    Set<String> result = new HashSet<>();
+    return result;
+
+  }
 
   public PullRequestMapper using(UriInfo uriInfo) {
     pullRequestResourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
