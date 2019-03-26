@@ -5,8 +5,6 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.google.inject.Inject;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
 import sonia.scm.HandlerEventType;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;

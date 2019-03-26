@@ -62,8 +62,8 @@ public class CommentEventEmailRenderer extends BasicPREmailRenderer<CommentEvent
   private enum CommentEventType {
 
     DELETE("deleted_comment.mustache", "Comment deleted", HandlerEventType.DELETE),
-    CREATE("created_comment.mustache", "Comment created", HandlerEventType.CREATE),
-    MODIFY("modified_comment.mustache", "Comment modified", HandlerEventType.MODIFY);
+    CREATE("created_comment.mustache", "Comment added", HandlerEventType.CREATE),
+    MODIFY("modified_comment.mustache", "Comment changed", HandlerEventType.MODIFY);
 
     protected static final String PATH_BASE = "com/cloudogu/scm/email/template/";
 

@@ -11,7 +11,7 @@ import java.io.IOException;
 @Slf4j
 public class PullRequestRejectedEmailRenderer extends BasicPREmailRenderer<PullRequestRejectedEvent> implements EmailRenderer {
 
-  public static final String EVENT_DISPLAY_NAME = "Pull request rejected";
+  public static final String EVENT_DISPLAY_NAME = "PR rejected";
   private final PullRequestRejectedEvent pullRequestRejectedEvent;
   protected static final String TEMPLATE_PATH = "com/cloudogu/scm/email/template/rejected_pull_request.mustache";
 

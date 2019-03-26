@@ -52,8 +52,8 @@ public class PullRequestEventEmailRenderer extends BasicPREmailRenderer<PullRequ
 
   private enum PullRequestEventType {
 
-    CREATE("created_pull_request.mustache", "Pull request created", HandlerEventType.CREATE),
-    MODIFY("modified_pull_request.mustache", "Pull request modified", HandlerEventType.MODIFY);
+    CREATE("created_pull_request.mustache", "PR created", HandlerEventType.CREATE),
+    MODIFY("modified_pull_request.mustache", "PR modified", HandlerEventType.MODIFY);
 
     protected static final String PATH_BASE = "com/cloudogu/scm/email/template/";
 

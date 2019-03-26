@@ -11,7 +11,7 @@ import java.io.IOException;
 @Slf4j
 public class PullRequestMergedEmailRenderer extends BasicPREmailRenderer<PullRequestMergedEvent> implements EmailRenderer {
 
-  public static final String EVENT_DISPLAY_NAME = "Pull request merged";
+  public static final String EVENT_DISPLAY_NAME = "PR merged";
   private final PullRequestMergedEvent pullRequestMergedEvent;
   protected static final String TEMPLATE_PATH = "com/cloudogu/scm/email/template/merged_pull_request.mustache";
 

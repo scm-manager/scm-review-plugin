@@ -14,14 +14,14 @@ import java.util.Map;
 
 public abstract class BasicPREmailRenderer<E extends BasicPullRequestEvent> implements EmailRenderer {
 
-  private static final String SUBJECT_PATTERN = "Re: [SCM-Manager] [{4}] Pull request #{0}: {1} ({2}/{3})";
+  private static final String SUBJECT_PATTERN = "{0}/{1} {2} (#{3} {4})";
   private static final String SCM_PULL_REQUEST_URL_PATTERN = "{0}/repo/{1}/{2}/pull-request/{3}";
 
 
   protected String getMailSubject(E event, String displayEventName) {
     Repository repository = event.getRepository();
     PullRequest pullRequest = event.getPullRequest();
-    return MessageFormat.format(SUBJECT_PATTERN, pullRequest.getId(), pullRequest.getTitle(), repository.getNamespace(), repository.getName(), displayEventName);
+    return MessageFormat.format(SUBJECT_PATTERN, repository.getNamespace(), repository.getName(), displayEventName,  pullRequest.getId(), pullRequest.getTitle());
   }
 
   protected String getMailContent(String basePath, E event, Template template) throws IOException {

@@ -118,7 +118,7 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     service.subscribe(repository, pullRequestId);
-    return Response.accepted().build();
+    return Response.noContent().build();
   }
 
   @POST
@@ -136,7 +136,7 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     service.unsubscribe(repository, pullRequestId);
-    return Response.accepted().build();
+    return Response.noContent().build();
   }
 
   @PUT

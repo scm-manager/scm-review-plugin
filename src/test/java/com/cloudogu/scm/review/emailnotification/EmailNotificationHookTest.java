@@ -27,8 +27,10 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
@@ -83,6 +85,16 @@ class EmailNotificationHookTest {
         reset(service);
       })
     );
+  }
+
+  @Test
+  void shouldNotSendSystemEmails() throws IOException, MailSendBatchException {
+    comment.setSystemComment(true);
+    CommentEvent commentEvent = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
+    emailNotificationHook.handleCommentEvents(commentEvent);
+
+    verify(service, never()).sendEmail(any(), any());
+    reset(service);
   }
 
   @TestFactory

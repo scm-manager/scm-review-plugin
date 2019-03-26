@@ -141,8 +141,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.setState({ loadingSubscription: true });
     handleSubscription(subscriptionLink).then(response => {
       this.setState({
-        error: response.error,
-        loadingSubscription: false
+        error: response.error
       });
       this.getSubscription(pullRequest);
     });

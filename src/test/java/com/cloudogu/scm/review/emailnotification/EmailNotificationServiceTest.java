@@ -14,6 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.config.ScmConfiguration;
+import sonia.scm.mail.api.MailConfiguration;
+import sonia.scm.mail.api.MailContext;
 import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.mail.api.MailService;
 import sonia.scm.template.TemplateEngineFactory;
@@ -37,6 +39,9 @@ class EmailNotificationServiceTest {
 
   @Mock
   private MailService mailService;
+
+  @Mock
+  private MailContext mailContext;
 
   @Mock
   private ScmConfiguration configuration;
@@ -65,6 +70,9 @@ class EmailNotificationServiceTest {
     String path = "http://www.scm-manager.com";
     when(configuration.getBaseUrl()).thenReturn(path);
 
+    MailConfiguration mailConfiguration = mock(MailConfiguration.class);
+    when(mailConfiguration.getFrom()).thenReturn("no-replay@scm-manager.com");
+    when(mailContext.getConfiguration()).thenReturn(mailConfiguration);
     Recipient recipient1 = new Recipient("user1", "email1@d.de");
     Recipient recipient2 = new Recipient("user2", "email1@d.de");
 
