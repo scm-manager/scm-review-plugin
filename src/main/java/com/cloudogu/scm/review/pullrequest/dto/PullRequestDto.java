@@ -10,6 +10,8 @@ import lombok.Setter;
 
 import javax.validation.constraints.Size;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -31,6 +33,9 @@ public class PullRequestDto extends HalRepresentation {
   private Instant creationDate;
   private Instant lastModified;
   private PullRequestStatus status;
+  // Set of the user ids
+  private Set<String> reviewer = new HashSet<>();
+
 
   @Override
   @SuppressWarnings("squid:S1185") // We want to have this method available in this package

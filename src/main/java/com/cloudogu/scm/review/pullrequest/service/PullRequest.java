@@ -36,5 +36,6 @@ public class PullRequest {
   private Instant lastModified;
   private PullRequestStatus status;
   private Set<Recipient> subscriber = new HashSet<>();
+  private Set<Recipient> reviewer = new HashSet<>();
 
 }
