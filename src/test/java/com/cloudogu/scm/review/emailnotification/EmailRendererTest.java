@@ -111,7 +111,7 @@ class EmailRendererTest {
 
     PullRequestEventEmailRenderer renderer = new PullRequestEventEmailRenderer(event);
 
-    assertEmail(renderer, "modified");
+    assertEmail(renderer, "changed");
   }
 
   @Test
@@ -129,7 +129,7 @@ class EmailRendererTest {
 
     CommentEventEmailRenderer renderer = new CommentEventEmailRenderer(event);
 
-    assertEmail(renderer, "created");
+    assertEmail(renderer, "added");
   }
 
   @Test
@@ -138,7 +138,7 @@ class EmailRendererTest {
 
     CommentEventEmailRenderer renderer = new CommentEventEmailRenderer(event);
 
-    assertEmail(renderer, "modified");
+    assertEmail(renderer, "changed");
   }
 
   @Test
