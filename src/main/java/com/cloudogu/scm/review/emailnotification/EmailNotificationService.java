@@ -34,6 +34,10 @@ public class EmailNotificationService {
   }
 
   public void sendEmail(EmailRenderer emailRenderer, Set<Recipient> recipients) throws IOException, MailSendBatchException {
+    if (!mailService.isConfigured()){
+      log.warn("cannot send Email because the mail server is not configured");
+      return ;
+    }
     String emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory);
     String emailSubject = emailRenderer.getMailSubject();
     String displayName = getCurrentUserDisplayName();
