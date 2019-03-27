@@ -9,7 +9,9 @@
     "edit": {
       "title": "Pull Request",
       "subtitle": "Pull Request ändern für {{repositoryName}}",
-      "submitButton": "Speichern"
+      "submitButton": "Speichern",
+      "subscribe" : "Subscribe",
+      "unsubscribe" : "Unsubscribe"
     },
     "diff": {
       "not-supported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt."

@@ -30,23 +30,21 @@ public class CommentService {
   /**
    * Add a Comment to the PullRequest with id <code>pullRequestId</code>
    *
+   * @param repository         needed in the event
+   * @param pullRequestId
+   * @param pullRequestComment
    * @return the id of the created pullRequestComment
    */
-  public String add(String namespace, String name, String pullRequestId, PullRequestComment pullRequestComment) {
-    return getCommentStore(namespace, name).add(pullRequestId, pullRequestComment);
-  }
-
   public String add(Repository repository, String pullRequestId, PullRequestComment pullRequestComment) {
-    return getCommentStore(repository).add(pullRequestId, pullRequestComment);
+    return getCommentStore(repository).add(repository, pullRequestId, pullRequestComment);
   }
 
-  private CommentStore getCommentStore(Repository repository) {
-    return storeFactory.create(repository);
+  public void delete(Repository repository, String pullRequestId, String commentId) {
+    getCommentStore(repository).delete(repository, pullRequestId, commentId);
   }
 
-  private CommentStore getCommentStore(String namespace, String name) {
-    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    return getCommentStore(repository);
+  public void update(Repository repository, String pullRequestId, String commentId, String newComment) {
+    getCommentStore(repository).update(repository, pullRequestId, commentId, newComment);
   }
 
   public List<PullRequestComment> getAll(String namespace, String name, String pullRequestId) {
@@ -72,15 +70,6 @@ public class CommentService {
         .in(new NamespaceAndName(namespace, name))));
   }
 
-
-  public void delete(String namespace, String name, String pullRequestId, String commentId) {
-    getCommentStore(namespace, name).delete(pullRequestId, commentId);
-  }
-
-  public void update(String namespace, String name, String pullRequestId, String commentId, String newComment) {
-    getCommentStore(namespace, name).update(pullRequestId, commentId, newComment);
-  }
-
   /**
    * Add a system comment about the status Change of the pull request
    *
@@ -95,6 +84,15 @@ public class CommentService {
     comment.setSystemComment(true);
     comment.setComment(commentType.getKey());
     add(repository ,pullRequestId,comment);
+  }
+
+  private CommentStore getCommentStore(Repository repository) {
+    return storeFactory.create(repository);
+  }
+
+  private CommentStore getCommentStore(String namespace, String name) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    return getCommentStore(repository);
   }
 
 }

@@ -53,7 +53,7 @@ public class CommentResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     try {
       PermissionCheck.checkModifyComment(repository, service.get(repository.getNamespace(), repository.getName(), pullRequestId, commentId));
-      service.delete(namespace, name, pullRequestId, commentId);
+      service.delete(repository, pullRequestId, commentId);
       return Response.noContent().build();
     } catch (NotFoundException e) {
       return Response.noContent().build();
@@ -81,7 +81,7 @@ public class CommentResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
     PermissionCheck.checkModifyComment(repository, comment);
-    service.update(namespace, name, pullRequestId, commentId, pullRequestCommentDto.getComment());
+    service.update(repository, pullRequestId, commentId, pullRequestCommentDto.getComment());
     return Response.noContent().build();
   }
 }

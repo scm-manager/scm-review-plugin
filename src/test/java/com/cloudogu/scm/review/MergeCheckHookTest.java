@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
@@ -60,6 +61,10 @@ class MergeCheckHookTest {
   private RepositoryService repositoryService;
   @Mock(answer = Answers.RETURNS_SELF)
   private LogCommandBuilder logCommandBuilder;
+
+  @Mock
+  private ScmEventBus eventBus;
+
   @Mock
   private ScmConfiguration configuration;
   @InjectMocks
@@ -80,7 +85,7 @@ class MergeCheckHookTest {
 
   @BeforeEach
   void initRepositoryServiceFactory() {
-    hook = new MergeCheckHook(service, repositoryServiceFactory, messageSenderFactory, commentService);
+    hook = new MergeCheckHook(service, repositoryServiceFactory, messageSenderFactory, commentService, eventBus);
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getRepository()).thenReturn(REPOSITORY);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);

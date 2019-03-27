@@ -1,9 +1,13 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import com.google.common.util.concurrent.Striped;
+import sonia.scm.HandlerEventType;
 import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.NotFoundException;
+import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 import sonia.scm.store.DataStore;
 
@@ -17,20 +21,27 @@ public class CommentStore {
   private static final Striped<Lock> LOCKS = Striped.lock(10);
 
   private final DataStore<PullRequestComments> store;
+  private final PullRequestStoreFactory pullRequestStoreFactory;
+  private final ScmEventBus eventBus;
   private KeyGenerator keyGenerator;
 
-  CommentStore(DataStore<PullRequestComments> store, KeyGenerator keyGenerator) {
+  CommentStore(DataStore<PullRequestComments> store, PullRequestStoreFactory pullRequestStoreFactory, ScmEventBus eventBus, KeyGenerator keyGenerator) {
     this.store = store;
+    this.pullRequestStoreFactory = pullRequestStoreFactory;
+    this.eventBus = eventBus;
     this.keyGenerator = keyGenerator;
   }
 
-  public String add(String pullRequestId, PullRequestComment pullRequestComment) {
+  public String add(Repository repository, String pullRequestId, PullRequestComment pullRequestComment) {
+
+    PullRequest pullRequest = pullRequestStoreFactory.create(repository).get(pullRequestId);
     return withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
       String commentId = keyGenerator.createKey();
       pullRequestComment.setId(commentId);
       pullRequestComments.getComments().add(pullRequestComment);
       store.put(pullRequestId, pullRequestComments);
+      eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
       return commentId;
     });
   }
@@ -45,19 +56,29 @@ public class CommentStore {
     });
   }
 
-  public void update(String pullRequestId, String commentId, String newComment) {
+  public void update(Repository repository, String pullRequestId, String commentId, String newComment) {
+    PullRequest pullRequest = pullRequestStoreFactory.create(repository).get(pullRequestId);
     withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = this.get(pullRequestId);
-      applyChange(commentId, pullRequestComments, comment -> comment.setComment(newComment));
+      applyChange(commentId, pullRequestComments, comment -> {
+        PullRequestComment oldComment = comment.toBuilder().build();
+        comment.setComment(newComment);
+        eventBus.post(new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY));
+      });
       store.put(pullRequestId, pullRequestComments);
       return null;
     });
   }
 
-  public void delete(String pullRequestId, String commentId) {
+  public void delete(Repository repository, String pullRequestId, String commentId) {
+    PullRequest pullRequest = pullRequestStoreFactory.create(repository).get(pullRequestId);
     withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
-      applyChange(commentId, pullRequestComments, comment -> pullRequestComments.getComments().remove(comment));
+      applyChange(commentId, pullRequestComments, comment -> {
+        PullRequestComment oldComment = comment.toBuilder().build();
+        pullRequestComments.getComments().remove(comment);
+        eventBus.post(new CommentEvent(repository, pullRequest, null, oldComment, HandlerEventType.DELETE));
+      });
       store.put(pullRequestId, pullRequestComments);
       return null;
     });

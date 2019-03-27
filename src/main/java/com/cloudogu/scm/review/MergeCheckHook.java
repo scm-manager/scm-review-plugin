@@ -4,11 +4,14 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
@@ -33,15 +36,18 @@ public class MergeCheckHook {
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
+  private final ScmEventBus eventBus;
+
   private final CommentService commentService;
   private final MessageSenderFactory messageSenderFactory;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory, CommentService commentService) {
+  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory, CommentService commentService, ScmEventBus eventBus) {
     this.service = service;
     this.serviceFactory = serviceFactory;
     this.commentService = commentService;
     this.messageSenderFactory = messageSenderFactory;
+    this.eventBus = eventBus;
   }
 
   @Subscribe(async = false)
@@ -113,6 +119,7 @@ public class MergeCheckHook {
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
       commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
+      eventBus.post(new PullRequestMergedEvent(repository,pullRequest));
     }
 
     private boolean pullRequestSourceBranchIsDeleted(PullRequest pullRequest) {
@@ -125,6 +132,7 @@ public class MergeCheckHook {
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
       commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.SOURCE_DELETED);
+      eventBus.post(new PullRequestRejectedEvent(repository,pullRequest));
     }
   }
 }

@@ -12,12 +12,16 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
+import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.io.Resources;
 import com.google.inject.util.Providers;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.assertj.core.util.Lists;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.mock.MockDispatcherFactory;
@@ -28,8 +32,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import sonia.scm.NotFoundException;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.User;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
@@ -72,12 +78,14 @@ public class PullRequestRootResourceTest {
   private Dispatcher dispatcher;
 
   private final MockHttpResponse response = new MockHttpResponse();
+  private final Subject subject = mock(Subject.class);
 
   private PullRequestRootResource pullRequestRootResource;
   private static final String REPOSITORY_NAME = "repo";
   private static final String REPOSITORY_ID = "repo_ID";
   private static final String REPOSITORY_NAMESPACE = "ns";
   private PullRequestMapper mapper = new PullRequestMapperImpl();
+  private ScmEventBus eventBus = mock(ScmEventBus.class) ;
 
   private CommentService commentService = mock(CommentService.class);
 
@@ -88,8 +96,8 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory);
-    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, commentService)));
+    DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus);
+    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, commentService, eventBus)));
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
@@ -102,6 +110,17 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldCreateNewValidPullRequest() throws URISyntaxException, IOException {
+    ThreadContext.bind(subject);
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    when(subject.isPermitted(any(String.class))).thenReturn(true);
+    String currentUser = "username";
+    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
+    User user1 = new User();
+    user1.setName("user1");
+    user1.setDisplayName("User 1");
+    when(principals.oneByType(User.class)).thenReturn(user1);
+
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request =
       MockHttpRequest
@@ -114,7 +133,7 @@ public class PullRequestRootResourceTest {
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
     assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1");
     PullRequest pullRequest = pullRequestStoreCaptor.getValue();
-    assertThat(pullRequest.getAuthor()).isEqualTo("slarti");
+    assertThat(pullRequest.getAuthor()).isEqualTo("user1");
   }
 
   @Test
@@ -455,6 +474,96 @@ public class PullRequestRootResourceTest {
     assertEquals(403, response.getStatus());
 
     verify(store, never()).update(any());
+  }
+
+
+  @Test
+  public void shouldGetTheSubscriptionLink() throws URISyntaxException, IOException {
+    // the PR has no subscriber
+    PullRequest pullRequest = createPullRequest();
+
+    when(store.get("1")).thenReturn(pullRequest);
+//    Subject subject = mock(Subject.class);
+    ThreadContext.bind(subject);
+
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    when(subject.isPermitted(any(String.class))).thenReturn(true);
+    String currentUser = "username";
+    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
+    User user1 = new User();
+    user1.setName("user1");
+    user1.setMail("user1@mail.de");
+    user1.setDisplayName("User 1");
+    when(principals.oneByType(User.class)).thenReturn(user1);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/subscription");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    assertThat(jsonNode.path("_links").get("subscribe")).isNotNull();
+    assertThat(jsonNode.path("_links").get("unsubscribe")).isNull();
+  }
+
+  @Test
+  public void shouldNotReturnAnySubscriptionLinkOnMissingUserMail() throws URISyntaxException, IOException {
+    // the PR has no subscriber
+    PullRequest pullRequest = createPullRequest();
+
+    when(store.get("1")).thenReturn(pullRequest);
+    Subject subject = mock(Subject.class);
+    ThreadContext.bind(subject);
+
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    when(subject.isPermitted(any(String.class))).thenReturn(true);
+    String currentUser = "username";
+    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
+    User user1 = new User();
+    user1.setName("user1");
+    user1.setDisplayName("User 1");
+    when(principals.oneByType(User.class)).thenReturn(user1);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/subscription");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).isNullOrEmpty();
+  }
+
+  @Test
+  public void shouldGetTheUnsubscribeLink() throws URISyntaxException, IOException {
+    // the PR has no subscriber
+    PullRequest pullRequest = createPullRequest();
+    pullRequest.getSubscriber().add(new Recipient("user1", "email@d.de"));
+
+    when(store.get("1")).thenReturn(pullRequest);
+    Subject subject = mock(Subject.class);
+    ThreadContext.bind(subject);
+
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    when(subject.isPermitted(any(String.class))).thenReturn(true);
+    String currentUser = "username";
+    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
+    User user1 = new User();
+    user1.setName("user1");
+    user1.setMail("email@d.de");
+    user1.setDisplayName("User 1");
+    when(principals.oneByType(User.class)).thenReturn(user1);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/subscription");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    assertThat(jsonNode.path("_links").get("subscribe"))
+      .isNull();
+    assertThat(jsonNode.path("_links").get("unsubscribe"))
+      .isNotNull();
   }
 
   private void verifyFilteredPullRequests(String status) throws URISyntaxException, IOException {

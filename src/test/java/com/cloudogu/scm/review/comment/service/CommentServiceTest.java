@@ -1,6 +1,8 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import com.google.common.collect.Lists;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -38,8 +40,12 @@ class CommentServiceTest {
 
   @Mock
   private RepositoryResolver repositoryResolver;
+
   @Mock
   private CommentStoreFactory storeFactory;
+
+  @Mock
+  private PullRequestStoreFactory pullRequestStoreFactory;
 
   @InjectMocks
   private CommentService commentService;
@@ -47,6 +53,11 @@ class CommentServiceTest {
   @Mock
   private CommentStore store;
 
+  @Mock
+  private PullRequestStore prStore;
+
+  @Mock
+  private Repository repository;
 
   private final Subject subject = mock(Subject.class);
   private final ThreadState subjectThreadState = new SubjectThreadState(subject);
@@ -55,7 +66,7 @@ class CommentServiceTest {
   void init() {
     subjectThreadState.bind();
     ThreadContext.bind(subject);
-
+    when(pullRequestStoreFactory.create(any())).thenReturn(prStore);
     when(storeFactory.create(any())).thenReturn(store);
   }
 
@@ -63,8 +74,8 @@ class CommentServiceTest {
   void shouldAddComment() {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     String pullRequestId = "pr_id";
-    commentService.add("ns", "name", pullRequestId, comment);
-    verify(store).add(pullRequestId, comment);
+    commentService.add(repository, pullRequestId, comment);
+    verify(store).add(repository, pullRequestId, comment);
   }
 
  @Test
@@ -72,8 +83,8 @@ class CommentServiceTest {
    PrincipalCollection p = mock(PrincipalCollection.class);
    when(subject.getPrincipals()).thenReturn(p);
    when(p.getPrimaryPrincipal()).thenReturn("scm user");
-    commentService.addStatusChangedComment(new Repository("1","git", "ns", "n"), "pr_1", SystemCommentType.MERGED);
-    verify(store).add(eq("pr_1"), argThat(t -> {
+    commentService.addStatusChangedComment(repository, "pr_1", SystemCommentType.MERGED);
+    verify(store).add(eq(repository),eq("pr_1"), argThat(t -> {
       assertThat(t.getComment()).isEqualTo("merged");
       assertThat(t.getAuthor()).isEqualTo("scm user");
       assertThat(t.getDate()).isNotNull();
@@ -87,8 +98,8 @@ class CommentServiceTest {
   void shouldDeleteComment() {
     String pullRequestId = "pr_id";
     String commentId = "1";
-    commentService.delete("ns", "name", pullRequestId, commentId);
-    verify(store).delete(pullRequestId, commentId);
+    commentService.delete(repository, pullRequestId, commentId);
+    verify(store).delete(repository, pullRequestId, commentId);
   }
 
   @Test

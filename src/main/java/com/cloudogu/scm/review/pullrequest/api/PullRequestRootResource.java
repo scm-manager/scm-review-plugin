@@ -1,14 +1,17 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
-import org.apache.shiro.SecurityUtils;
+import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.User;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -72,12 +75,15 @@ public class PullRequestRootResource {
     service.checkBranch(repository, pullRequestDto.getSource());
     service.checkBranch(repository, pullRequestDto.getTarget());
 
+    User user = CurrentUserResolver.getCurrentUser();
     verifyBranchesDiffer(pullRequestDto.getSource(), pullRequestDto.getTarget());
-    pullRequestDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
+    pullRequestDto.setAuthor(user.getId());
     Instant now = Instant.now();
     pullRequestDto.setCreationDate(now);
     pullRequestDto.setLastModified(now);
-    String id = service.add(repository, mapper.using(uriInfo).map(pullRequestDto));
+    PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
+    pullRequest.getSubscriber().add(new Recipient(user.getId(), user.getMail()));
+    String id = service.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
   }

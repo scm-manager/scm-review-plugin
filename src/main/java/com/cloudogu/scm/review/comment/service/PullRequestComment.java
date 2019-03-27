@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.XmlInstantAdapter;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,6 +19,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
+@Builder(toBuilder = true)
 public class PullRequestComment {
 
   private String id;

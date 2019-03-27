@@ -9,7 +9,9 @@
     "edit": {
       "title": "Pull Request",
       "subtitle": "Edit pull request for {{repositoryName}}",
-      "submitButton": "Save"
+      "submitButton": "Save",
+      "subscribe" : "Subscribe",
+      "unsubscribe" : "Unsubscribe"
     },
     "diff": {
       "not-supported": "Diffs for pull request are not supported by the type of repository"

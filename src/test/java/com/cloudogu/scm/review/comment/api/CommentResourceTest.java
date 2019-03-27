@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
@@ -65,6 +66,8 @@ public class CommentResourceTest {
   @Mock
   private CommentService service;
   @Mock
+  private ScmEventBus eventBus;
+  @Mock
   private CommentService commentService;
 
   @Before
@@ -80,7 +83,7 @@ public class CommentResourceTest {
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
-        Providers.of(new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, Providers.of(resource))), commentService)));
+        Providers.of(new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, Providers.of(resource))), commentService,  eventBus)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
 
@@ -89,7 +92,7 @@ public class CommentResourceTest {
   public void shouldDeleteCommentÍfTheAuthorIsTheCurrentUser() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", new Location(), Instant.now(), false);
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", "1");
+    doNothing().when(service).delete(repository, "1", "1");
     MockHttpRequest request =
       MockHttpRequest
         .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
@@ -105,7 +108,7 @@ public class CommentResourceTest {
   public void shouldDeleteCommentÍfTheCurrentUserIsDifferentWithAuthorButHasPushPermission() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", "1");
+    doNothing().when(service).delete(repository, "1", "1");
     MockHttpRequest request =
       MockHttpRequest
         .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
@@ -121,7 +124,7 @@ public class CommentResourceTest {
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnDeletePRComment() throws URISyntaxException, UnsupportedEncodingException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", new Location(), Instant.now(), false);
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", "1");
+    doNothing().when(service).delete(repository, "1", "1");
     MockHttpRequest request =
       MockHttpRequest
         .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
@@ -137,7 +140,7 @@ public class CommentResourceTest {
   public void shouldForbiddenDeleteÍfTheAuthorIsNotTheCurrentUserAndThePushPermissionIsMissed() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", "1");
+    doNothing().when(service).delete(repository, "1", "1");
     MockHttpRequest request =
       MockHttpRequest
         .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1")
@@ -153,9 +156,9 @@ public class CommentResourceTest {
   public void shouldUpdateCommentÍfTheAuthorIsTheCurrentUser() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "slarti", new Location(), Instant.now(), false);
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", "1");
+    doNothing().when(service).delete(repository, "1", "1");
     String newComment = "haha ";
-    when(service.add(eq("space"), eq("name"), eq("1"),
+    when(service.add(eq(repository), eq("1"),
       argThat(t -> t.getAuthor().equals("slarti")
         && t.getDate() != null
         && t.getComment().equals(newComment)
@@ -177,9 +180,9 @@ public class CommentResourceTest {
   public void shouldUpdateCommentIfTheCurrentUserIsDifferentWithAuthorButHasPushPermission() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", "1");
+    doNothing().when(service).delete(repository, "1", "1");
     String newComment = "haha ";
-    when(service.add(eq("space"), eq("name"), eq("1"),
+    when(service.add(eq(repository), eq("1"),
       argThat(t -> t.getAuthor().equals("slarti")
         && t.getDate() != null
         && t.getComment().equals(newComment)
@@ -201,9 +204,9 @@ public class CommentResourceTest {
   public void shouldForbiddenUpdateIfTheAuthorIsNotTheCurrentUserAndThePushPermissionIsMissed() throws URISyntaxException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", "1");
+    doNothing().when(service).delete(repository, "1", "1");
     String newComment = "haha ";
-    when(service.add(eq("space"), eq("name"), eq("1"),
+    when(service.add(eq(repository), eq("1"),
       argThat(t -> t.getAuthor().equals("author")
         && t.getDate() != null
         && t.getComment().equals(newComment)
@@ -225,9 +228,9 @@ public class CommentResourceTest {
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnUpdatePRComment() throws URISyntaxException, UnsupportedEncodingException {
     PullRequestComment comment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false);
     when(service.get("space", "name", "1", "1")).thenReturn(comment);
-    doNothing().when(service).delete("space", "name", "1", "1");
+    doNothing().when(service).delete(repository, "1", "1");
     String newComment = "haha ";
-    when(service.add(eq("space"), eq("name"), eq("1"),
+    when(service.add(eq(repository), eq("1"),
       argThat(t -> t.getAuthor().equals("author")
         && t.getDate() != null
         && t.getComment().equals(newComment)

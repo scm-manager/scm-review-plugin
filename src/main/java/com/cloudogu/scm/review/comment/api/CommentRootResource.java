@@ -68,10 +68,12 @@ public class CommentRootResource {
       throw new AuthorizationException("Is is Forbidden to create a system comment.");
     }
     PermissionCheck.checkComment(repositoryResolver.resolve(new NamespaceAndName(namespace, name)));
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    PermissionCheck.checkComment(repository);
     pullRequestCommentDto.setDate(Instant.now());
     pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
 
-    String id = service.add(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
+    String id = service.add(repository,  pullRequestId, mapper.map(pullRequestCommentDto));
     URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(id)).build();
     return Response.created(location).build();
   }
