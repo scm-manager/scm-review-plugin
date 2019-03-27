@@ -100,7 +100,7 @@ class EmailNotificationServiceTest {
     HashSet<Recipient> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
     EmailRenderer emailRenderer = mock(EmailRenderer.class);
 
-    service.sendEmail(emailRenderer, subscriber);
+    service.sendEmails(emailRenderer, subscriber, null);
 
     verify(mailService, never()).send(any());
     reset(mailService);
