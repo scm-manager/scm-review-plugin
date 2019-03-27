@@ -423,7 +423,7 @@ class PullRequestDetails extends React.Component<Props, State> {
               return (
                 <div className="control">
                   <div className="tags">
-                    <span className="tag is-info">{reviewer}</span>
+                    <span className="tag is-info">{reviewer.displayName}</span>
                   </div>
                 </div>
               );

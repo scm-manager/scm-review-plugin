@@ -43,19 +43,22 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   public abstract PullRequest map(PullRequestDto dto);
 
   @Named("mapReviewerFromDto")
-  Set<Recipient> mapReviewerFromDto(Set<String> reviewer) {
+  Set<Recipient> mapReviewerFromDto(Set<DisplayedUser> reviewer) {
     return reviewer
       .stream()
+      .map(DisplayedUser::getId)
       .map(userManager::get)
       .map(user -> new Recipient(user.getId(), user.getMail()))
       .collect(Collectors.toSet());
   }
 
   @Named("mapReviewer")
-  Set<String> mapReviewer(Set<Recipient> reviewer) {
+  Set<DisplayedUser> mapReviewer(Set<Recipient> reviewer) {
     return reviewer
       .stream()
       .map(Recipient::getName)
+      .map(userManager::get)
+      .map(user -> new DisplayedUser(user.getId(), user.getDisplayName()))
       .collect(Collectors.toSet());
   }
 

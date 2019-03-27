@@ -33,8 +33,7 @@ public class PullRequestDto extends HalRepresentation {
   private Instant creationDate;
   private Instant lastModified;
   private PullRequestStatus status;
-  // Set of the user ids
-  private Set<String> reviewer = new HashSet<>();
+  private Set<DisplayedUser> reviewer = new HashSet<>();
 
 
   @Override

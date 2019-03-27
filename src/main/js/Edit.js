@@ -18,6 +18,7 @@ import EditForm from "./EditForm";
 type Props = {
   repository: Repository,
   pullRequest: PullRequest,
+  userAutocompleteLink: string,
   t: string => string,
   match: any,
   history: History
@@ -78,7 +79,7 @@ class Edit extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, t, pullRequest } = this.props;
+    const { repository, t, pullRequest , userAutocompleteLink} = this.props;
     const { loading, error } = this.state;
 
     let notification = null;
@@ -108,6 +109,7 @@ class Edit extends React.Component<Props, State> {
             description={pullRequest.description ? pullRequest.description : ""}
             title={pullRequest.title}
             reviewer={pullRequest.reviewer}
+            userAutocompleteLink={userAutocompleteLink}
             handleFormChange={this.handleFormChange}
           />
           <div>
