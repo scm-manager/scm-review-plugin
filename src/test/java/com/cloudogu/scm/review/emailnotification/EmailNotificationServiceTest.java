@@ -26,6 +26,7 @@ import java.util.HashSet;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -66,12 +67,12 @@ class EmailNotificationServiceTest {
     user1.setDisplayName("User 1");
     when(principals.oneByType(User.class)).thenReturn(user1);
 
-
     String path = "http://www.scm-manager.com";
     when(configuration.getBaseUrl()).thenReturn(path);
 
     MailConfiguration mailConfiguration = mock(MailConfiguration.class);
     when(mailConfiguration.getFrom()).thenReturn("no-replay@scm-manager.com");
+    when(mailService.isConfigured()).thenReturn(true);
     when(mailContext.getConfiguration()).thenReturn(mailConfiguration);
     Recipient recipient1 = new Recipient("user1", "email1@d.de");
     Recipient recipient2 = new Recipient("user2", "email1@d.de");
@@ -81,11 +82,26 @@ class EmailNotificationServiceTest {
     EmailRenderer emailRenderer = mock(EmailRenderer.class);
     when(emailRenderer.getMailContent(path, templateEngineFactory)).thenReturn("mail content");
     when(emailRenderer.getMailSubject()).thenReturn("subject");
+
     service.sendEmail(emailRenderer, subscriber);
+
     ArgumentCaptor<Email> emailCaptor = ArgumentCaptor.forClass(Email.class);
     verify(mailService, times(2)).send(emailCaptor.capture());
     reset(mailService);
+  }
 
+  @Test
+  void shouldNotSendEmailForNotConfiguredMailServer() throws IOException, MailSendBatchException {
+    when(mailService.isConfigured()).thenReturn(false);
+    Recipient recipient1 = new Recipient("user1", "email1@d.de");
+    Recipient recipient2 = new Recipient("user2", "email1@d.de");
+    HashSet<Recipient> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
+    EmailRenderer emailRenderer = mock(EmailRenderer.class);
+
+    service.sendEmail(emailRenderer, subscriber);
+
+    verify(mailService, never()).send(any());
+    reset(mailService);
   }
 
 
