@@ -15,12 +15,14 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.UserManager;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
@@ -29,27 +31,32 @@ import static de.otto.edison.hal.Links.linkingTo;
 public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequestDto> {
 
 
+  @Inject
+  private UserManager userManager;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  @Mapping(target = "reviewer" , source = "reviewer",  qualifiedByName = "mapReviewer")
+  @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
-  @Mapping(target = "reviewer" , source = "reviewer",  qualifiedByName = "mapReviewerFromDto")
+  @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewerFromDto")
   public abstract PullRequest map(PullRequestDto dto);
 
   @Named("mapReviewerFromDto")
-  Set<Recipient> mapReviewerFromDto(Set<String> reviewer){
-    Set<Recipient> result = new HashSet<>();
-    return result;
-
+  Set<Recipient> mapReviewerFromDto(Set<String> reviewer) {
+    return reviewer
+      .stream()
+      .map(userManager::get)
+      .map(user -> new Recipient(user.getId(), user.getMail()))
+      .collect(Collectors.toSet());
   }
 
   @Named("mapReviewer")
-  Set<String> mapReviewer(Set<Recipient> reviewer){
-    Set<String> result = new HashSet<>();
-    return result;
-
+  Set<String> mapReviewer(Set<Recipient> reviewer) {
+    return reviewer
+      .stream()
+      .map(Recipient::getName)
+      .collect(Collectors.toSet());
   }
 
   public PullRequestMapper using(UriInfo uriInfo) {
@@ -61,7 +68,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   protected void appendLinks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
     Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest().self(repository.getNamespace(), repository.getName(), target.getId()));
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments().all(repository.getNamespace(), repository.getName(), target.getId())));
-    if (CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())){
+    if (CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
       linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest().subscription(repository.getNamespace(), repository.getName(), target.getId())));
     }
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {

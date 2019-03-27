@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.io.Resources;
+import com.google.inject.Inject;
 import com.google.inject.util.Providers;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -30,12 +31,17 @@ import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
+import sonia.scm.user.UserManager;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
@@ -61,11 +67,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SubjectAware(configuration = "classpath:com/cloudogu/scm/review/shiro.ini")
+@SubjectAware(
+  configuration = "classpath:com/cloudogu/scm/review/shiro.ini",
+  password = "secret"
+)
+@RunWith(MockitoJUnitRunner.class)
 public class PullRequestRootResourceTest {
 
   @Rule
-  public final ShiroRule shiroRule = new ShiroRule();
+  public ShiroRule shiroRule = new ShiroRule();
 
   private final RepositoryResolver repositoryResolver = mock(RepositoryResolver.class);
   private final BranchResolver branchResolver = mock(BranchResolver.class);
@@ -84,7 +94,13 @@ public class PullRequestRootResourceTest {
   private static final String REPOSITORY_NAME = "repo";
   private static final String REPOSITORY_ID = "repo_ID";
   private static final String REPOSITORY_NAMESPACE = "ns";
-  private PullRequestMapper mapper = new PullRequestMapperImpl();
+
+  @Mock
+  private UserManager userManager;
+
+  @InjectMocks
+  private PullRequestMapperImpl mapper ;
+
   private ScmEventBus eventBus = mock(ScmEventBus.class) ;
 
   private CommentService commentService = mock(CommentService.class);
@@ -98,7 +114,6 @@ public class PullRequestRootResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus);
     pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, commentService, eventBus)));
-    when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -114,8 +129,6 @@ public class PullRequestRootResourceTest {
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
-    String currentUser = "username";
-    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
     User user1 = new User();
     user1.setName("user1");
     user1.setDisplayName("User 1");

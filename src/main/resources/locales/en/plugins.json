@@ -25,7 +25,8 @@
       "status": "Status",
       "id": "ID",
       "author": "Author",
-      "date": "Date"
+      "date": "Date",
+      "reviewer" : "Reviewer"
     },
     "show-pull-request": {
       "error-title": "Error",

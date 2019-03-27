@@ -12,6 +12,7 @@ export type PullRequest = BasicPullRequest & {
   author: string,
   id: string,
   creationDate: string,
+  reviewer: string [],
   status: string,
   _links: Links
 };

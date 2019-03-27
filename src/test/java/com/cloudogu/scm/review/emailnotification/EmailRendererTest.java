@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
+import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,6 +125,26 @@ class EmailRendererTest {
   }
 
   @Test
+  void shouldRenderReviewerEmailOnCreatedPullRequest() throws IOException {
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
+
+    PullRequestEventEmailRenderer renderer = new PullRequestEventEmailRenderer(event);
+
+    assertEmail(renderer, "created", true)
+    .contains("You are chosen as reviewer for this pull request.");
+  }
+
+  @Test
+  void shouldNotRenderReviewerEmailOnCreatedPullRequest() throws IOException {
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
+
+    PullRequestEventEmailRenderer renderer = new PullRequestEventEmailRenderer(event);
+
+    assertEmail(renderer, "created", false)
+    .doesNotContain("You are chosen as reviewer for this pull request.");
+  }
+
+  @Test
   void shouldRenderEmailOnCreatedComment() throws IOException {
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
 
@@ -169,15 +190,18 @@ class EmailRendererTest {
   }
 
   private void assertEmail(EmailRenderer renderer, String event) throws IOException {
+    assertEmail(renderer, event, false);
+  }
+
+  private AbstractCharSequenceAssert<?, String> assertEmail(EmailRenderer renderer, String event, boolean isReviewer) throws IOException {
     String mailSubject = renderer.getMailSubject();
     TemplateEngineFactory templateFactory = mock(TemplateEngineFactory.class);
     when(templateFactory.getEngineByExtension(any())).thenReturn(createEngine());
-    String mailContent = renderer.getMailContent("http://scm-manager.com/scm", templateFactory);
+    String mailContent = renderer.getMailContent("http://scm-manager.com/scm", templateFactory, isReviewer);
 
     assertThat(mailSubject).isNotEmpty()
       .contains(repository.getName(), repository.getNamespace(), pullRequest.getId(), pullRequest.getTitle(), event);
-
-    assertThat(mailContent).isNotEmpty()
+    return assertThat(mailContent).isNotEmpty()
       .contains(repository.getName(), repository.getNamespace(), pullRequest.getId(), pullRequest.getTitle(), event);
   }
 }

@@ -37,12 +37,10 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public void update(Repository repository, String pullRequestId, String title, String description) {
+  public void update(Repository repository, String pullRequestId, PullRequest pullRequest) {
     PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
-    PullRequest oldPullRequest = pullRequest.toBuilder().build();
-    pullRequest.setTitle(title);
-    pullRequest.setDescription(description);
+    PullRequest oldPullRequest = store.get(pullRequestId);
+    pullRequest.setSubscriber(oldPullRequest.getSubscriber());
     eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
     store.update(pullRequest);
   }

@@ -21,12 +21,16 @@ public abstract class BasicPREmailRenderer<E extends BasicPullRequestEvent> impl
   protected String getMailSubject(E event, String displayEventName) {
     Repository repository = event.getRepository();
     PullRequest pullRequest = event.getPullRequest();
-    return MessageFormat.format(SUBJECT_PATTERN, repository.getNamespace(), repository.getName(), displayEventName,  pullRequest.getId(), pullRequest.getTitle());
+    return MessageFormat.format(SUBJECT_PATTERN, repository.getNamespace(), repository.getName(), displayEventName, pullRequest.getId(), pullRequest.getTitle());
   }
 
   protected String getMailContent(String basePath, E event, Template template) throws IOException {
+    return getMailContent(basePath, event, template, false);
+  }
+
+  protected String getMailContent(String basePath, E event, Template template, boolean isReviewer) throws IOException {
     StringWriter writer = new StringWriter();
-    template.execute(writer, getTemplateModel(basePath, event));
+    template.execute(writer, getTemplateModel(basePath, event, isReviewer));
     return writer.toString();
   }
 
@@ -39,17 +43,19 @@ public abstract class BasicPREmailRenderer<E extends BasicPullRequestEvent> impl
   /**
    * The basic environment used by all templates
    *
-   * @param basePath the path url of the ui
-   * @param event    the fired event
+   * @param basePath   the path url of the ui
+   * @param event      the fired event
+   * @param isReviewer true if the recipient is a reviewer
    * @return basic environment used by all templates
    */
-  protected Map<String, Object> getTemplateModel(String basePath, E event) {
+  protected Map<String, Object> getTemplateModel(String basePath, E event, boolean isReviewer) {
     Map<String, Object> result = Maps.newHashMap();
     result.put("title", getMailSubject());
     result.put("displayName", CurrentUserResolver.getCurrentUserDisplayName());
     result.put("link", getPullRequestLink(basePath, event));
     result.put("repository", event.getRepository());
     result.put("pullRequest", event.getPullRequest());
+    result.put("isReviewer", isReviewer);
     return result;
   }
 

@@ -32,18 +32,18 @@ public class PullRequestEventEmailRenderer extends BasicPREmailRenderer<PullRequ
   }
 
   @Override
-  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory) throws IOException {
+  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory, boolean isReviewer) throws IOException {
     String path = pullRequestEventType.getTemplatePath();
     TemplateEngine templateEngine = templateEngineFactory.getEngineByExtension(path);
     Template template = templateEngine.getTemplate(path);
 
-    return getMailContent(basePath, pullRequestEvent, template);
+    return getMailContent(basePath, pullRequestEvent, template, isReviewer);
   }
 
 
   @Override
-  public Map<String, Object> getTemplateModel(String basePath, PullRequestEvent event) {
-    Map<String, Object> model = super.getTemplateModel(basePath, event);
+  public Map<String, Object> getTemplateModel(String basePath, PullRequestEvent event, boolean isReviewer) {
+    Map<String, Object> model = super.getTemplateModel(basePath, event, isReviewer);
     if (pullRequestEventType == PullRequestEventType.MODIFY) {
       model.put("oldPullRequest", event.getOldItem());
     }

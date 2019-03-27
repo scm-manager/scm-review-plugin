@@ -32,7 +32,7 @@ public class CommentEventEmailRenderer extends BasicPREmailRenderer<CommentEvent
   }
 
   @Override
-  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory) throws IOException {
+  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory, boolean isReviewer) throws IOException {
     String path = commentEventType.getTemplatePath();
     TemplateEngine templateEngine = templateEngineFactory.getEngineByExtension(path);
     Template template = templateEngine.getTemplate(path);
@@ -42,8 +42,8 @@ public class CommentEventEmailRenderer extends BasicPREmailRenderer<CommentEvent
 
 
   @Override
-  public Map<String, Object> getTemplateModel(String basePath, CommentEvent event) {
-    Map<String, Object> model = super.getTemplateModel(basePath, event);
+  public Map<String, Object> getTemplateModel(String basePath, CommentEvent event, boolean isReviewer) {
+    Map<String, Object> model = super.getTemplateModel(basePath, event, isReviewer);
     switch (commentEventType) {
       case DELETE:
         model.put("oldComment", event.getOldItem());

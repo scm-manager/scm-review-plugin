@@ -33,15 +33,24 @@ public class EmailNotificationService {
     this.mailContext = mailContext;
   }
 
-  public void sendEmail(EmailRenderer emailRenderer, Set<Recipient> recipients) throws IOException, MailSendBatchException {
-    String emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory);
+  public void sendEmails(EmailRenderer emailRenderer, Set<Recipient> recipients, Set<Recipient> reviewer) throws IOException, MailSendBatchException {
+    String emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, false);
     String emailSubject = emailRenderer.getMailSubject();
     String displayName = getCurrentUserDisplayName();
 
-    for (Recipient emailAddress : recipients) {
-      if (!emailAddress.getAddress().equals(getCurrentUser().getMail())) {
+    sendEmails(recipients, emailContent, emailSubject, displayName);
+
+    if (!reviewer.isEmpty()){
+      emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, true);
+      sendEmails(reviewer, emailContent, emailSubject, displayName);
+    }
+  }
+
+  private void sendEmails(Set<Recipient> recipients, String emailContent, String emailSubject, String displayName) throws MailSendBatchException {
+    for (Recipient recipient : recipients) {
+      if (!recipient.getAddress().equals(getCurrentUser().getMail())) {
         Email email = createEmail(emailContent, emailSubject, displayName);
-        email.addRecipient(emailAddress.getName(), emailAddress.getAddress(), Message.RecipientType.TO);
+        email.addRecipient(recipient.getName(), recipient.getAddress(), Message.RecipientType.TO);
         mailService.send(email);
       }
     }

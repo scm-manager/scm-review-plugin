@@ -74,16 +74,20 @@ class EmailNotificationServiceTest {
     when(mailConfiguration.getFrom()).thenReturn("no-replay@scm-manager.com");
     when(mailContext.getConfiguration()).thenReturn(mailConfiguration);
     Recipient recipient1 = new Recipient("user1", "email1@d.de");
-    Recipient recipient2 = new Recipient("user2", "email1@d.de");
+    Recipient recipient2 = new Recipient("user2", "email11@d.de");
+
+    Recipient reviewer1 = new Recipient("reviewer1", "email2@d.de");
+    Recipient reviewer2 = new Recipient("reviewer2", "email3@d.de");
 
     HashSet<Recipient> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
+    HashSet<Recipient> reviewer = Sets.newHashSet(Lists.newArrayList(reviewer1, reviewer2));
 
     EmailRenderer emailRenderer = mock(EmailRenderer.class);
-    when(emailRenderer.getMailContent(path, templateEngineFactory)).thenReturn("mail content");
+    when(emailRenderer.getMailContent(path, templateEngineFactory, false)).thenReturn("mail content");
     when(emailRenderer.getMailSubject()).thenReturn("subject");
-    service.sendEmail(emailRenderer, subscriber);
+    service.sendEmails(emailRenderer, subscriber, reviewer);
     ArgumentCaptor<Email> emailCaptor = ArgumentCaptor.forClass(Email.class);
-    verify(mailService, times(2)).send(emailCaptor.capture());
+    verify(mailService, times(4)).send(emailCaptor.capture());
     reset(mailService);
 
   }

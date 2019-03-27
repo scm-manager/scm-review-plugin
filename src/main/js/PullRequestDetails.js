@@ -409,7 +409,25 @@ class PullRequestDetails extends React.Component<Props, State> {
               <div className="level-item">{rejectButton}</div>
               <div className="level-item">{mergeButton}</div>
             </div>
-            { subscription }
+            {subscription}
+          </div>
+          <div className="field is-grouped is-grouped-multiline">
+            {pullRequest.reviewer ? (
+              <div className="control">
+                {t("scm-review-plugin.pull-request.reviewer")} :
+              </div>
+            ) : (
+              ""
+            )}
+            {pullRequest.reviewer.map(reviewer => {
+              return (
+                <div className="control">
+                  <div className="tags">
+                    <span className="tag is-info">{reviewer}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <PullRequestInformation
