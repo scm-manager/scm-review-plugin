@@ -8,8 +8,8 @@ import sonia.scm.repository.Repository;
 @Event
 public class PullRequestEvent extends BasicPullRequestEvent implements HandlerEvent<PullRequest> {
 
-  final private PullRequest oldPullRequest;
-  private HandlerEventType type;
+  private final PullRequest oldPullRequest;
+  private final HandlerEventType type;
 
   public PullRequestEvent(Repository repository, PullRequest pullRequest, PullRequest oldPullRequest, HandlerEventType type) {
     super(repository, pullRequest);

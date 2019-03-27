@@ -33,7 +33,11 @@ public class EmailNotificationService {
     this.mailContext = mailContext;
   }
 
-  public void sendEmails(EmailRenderer emailRenderer, Set<Recipient> recipients, Set<Recipient> reviewer) throws IOException, MailSendBatchException {
+  public void sendEmail(EmailRenderer emailRenderer, Set<Recipient> recipients, Set<Recipient> reviewer) throws IOException, MailSendBatchException {
+    if (!mailService.isConfigured()){
+      log.warn("cannot send Email because the mail server is not configured");
+      return ;
+    }
     String emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, false);
     String emailSubject = emailRenderer.getMailSubject();
     String displayName = getCurrentUserDisplayName();
