@@ -13,11 +13,11 @@ const reviewSupportedPredicate = (props: Object) => {
 
 // new
 
-const NewPullRequestRoute = ({ url, repository }) => {
+const NewPullRequestRoute = (props) => {
   return (
     <Route
-      path={`${url}/pull-requests/add`}
-      render={() => <Create repository={repository} />}
+      path={`${props.url}/pull-requests/add`}
+      render={() => <Create repository={props.repository} userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)} />}
     />
   );
 };

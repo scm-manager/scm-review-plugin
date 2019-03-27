@@ -69,7 +69,7 @@ class Edit extends React.Component<Props, State> {
     });
   };
 
-  handleFormChange = (values, name: string) => {
+  handleFormChange = (value, name: string) => {
     this.setState({
       modifiedPullRequest: {
         ...this.state.modifiedPullRequest,

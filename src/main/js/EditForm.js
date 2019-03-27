@@ -6,7 +6,7 @@ import type { DisplayedUser } from "./types/PullRequest";
 import type { SelectValue } from "@scm-manager/ui-types";
 
 type Props = {
-  handleFormChange: (value: string, name: string) => void,
+  handleFormChange: (value, name: string) => void,
   title: string,
   description: string,
   reviewer: DisplayedUser[],
@@ -32,7 +32,8 @@ class EditForm extends React.Component<Props, State> {
     };
   }
 
-  onChange = (value: string, name: string) => {
+  onChange = (value, name: string) => {
+    console.log("on change :", value, " name : ", name);
     this.setState({ [name]: value });
     this.props.handleFormChange(value, name);
   };
@@ -58,22 +59,22 @@ class EditForm extends React.Component<Props, State> {
       });
   };
 
-  selectName = (selection: SelectValue) => {
-    let reviewer = this.state.reviewer;
-    reviewer.push({
-      id: selection.value.id,
-      displayName: selection.value.displayName
-    });
-    this.setState({
-      ...this.state,
-      reviewer,
-      selectedValue: selection
-    });
+  removeReviewer = reviewer => {
+    this.onChange(
+      this.state.reviewer.filter(value => value !== reviewer),
+      "reviewer"
+    );
   };
 
-  removeReviewer(reviewer) {
-    console.log("reviewer: ", reviewer);
-  }
+  selectName = (selection: SelectValue) => {
+    if (this.state.reviewer && ( this.state.reviewer.length === 0  || this.state.reviewer.filter(value => value.id === selection.value.id).length === 0)){
+      this.state.reviewer.push({
+        id: selection.value.id,
+        displayName: selection.value.displayName
+      });
+      this.props.handleFormChange(this.state.reviewer, "reviewer");
+    }
+  };
 
   render() {
     const { t } = this.props;
@@ -100,12 +101,17 @@ class EditForm extends React.Component<Props, State> {
           ) : (
             ""
           )}
-          {reviewer.map(reviewer => {
+          {reviewer.map(reviewerItem => {
             return (
               <div className="control">
                 <div className="tags has-addons">
-                  <span className="tag is-info">{reviewer.displayName}</span>
-                  <a className="tag is-delete" onClick={this.removeReviewer(reviewer)} />
+                  <span className="tag is-info">
+                    {reviewerItem.displayName}
+                  </span>
+                  <a
+                    className="tag is-delete"
+                    onClick={() => this.removeReviewer(reviewerItem)}
+                  />
                 </div>
               </div>
             );
@@ -122,7 +128,7 @@ class EditForm extends React.Component<Props, State> {
           </div>
         </div>
       </>
-     );
+    );
   }
 }
 export default translate("plugins")(EditForm);

@@ -13,6 +13,7 @@ import EditForm from "./EditForm";
 type Props = {
   repository: Repository,
   onChange: (pr: BasicPullRequest) => void,
+  userAutocompleteLink: string,
   source?: string,
   target?: string,
 
@@ -61,7 +62,7 @@ class CreateForm extends React.Component<Props, State> {
     });
   }
 
-  handleFormChange = (value: string, name: string) => {
+  handleFormChange = (value, name: string) => {
     console.log("change:", name, ":", value);
     this.setState(
       {
@@ -120,7 +121,7 @@ class CreateForm extends React.Component<Props, State> {
           </div>
         </div>
 
-        <EditForm description={""} title={""} handleFormChange={this.handleFormChange} />
+        <EditForm description={""} title={""} reviewer={[]} userAutocompleteLink={this.props.userAutocompleteLink} handleFormChange={this.handleFormChange} />
 
       </form>
     );
