@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import javax.mail.Message;
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
 import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUserDisplayName;
@@ -42,7 +43,11 @@ public class EmailNotificationService {
     String emailSubject = emailRenderer.getMailSubject();
     String displayName = getCurrentUserDisplayName();
 
-    sendEmails(recipients, emailContent, emailSubject, displayName);
+    Set<Recipient> subscriberWithoutReviewers = recipients.stream()
+      .filter(recipient -> !reviewer.contains(recipient))
+      .collect(Collectors.toSet());
+
+    sendEmails(subscriberWithoutReviewers, emailContent, emailSubject, displayName);
 
     if (!reviewer.isEmpty()){
       emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, true);
