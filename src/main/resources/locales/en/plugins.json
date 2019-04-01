@@ -104,8 +104,8 @@
         "description": "May add comments to pull requests"
       },
       "modifyPullRequest": {
-        "displayName": "modify pull request texts",
-        "description": "May modify the title and the description of the pull request itself and modify/delete comments from other users"
+        "displayName": "modify pull request",
+        "description": "May modify the title, the description and the reviewers of the pull request itself and modify/delete comments from other users"
       },
       "mergePullRequest": {
         "displayName": "merge/reject pull requests",
