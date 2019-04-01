@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 class BranchResolverTest {
 
   private static final Repository REPOSITORY = new Repository("id", "git", "Space", "X");
-  private static final Branch EXISTING_BRANCH = new Branch("branch", "1");
+  private static final Branch EXISTING_BRANCH = Branch.normalBranch("branch", "1");
 
   @Mock
   private RepositoryServiceFactory repositoryServiceFactory;
@@ -41,7 +41,7 @@ class BranchResolverTest {
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getBranchesCommand()).thenReturn(branchesCommandBuilder);
     when(branchesCommandBuilder.getBranches()).thenReturn(branches);
-    when(branches.getBranches()).thenReturn(singletonList(new Branch("branch", "1")));
+    when(branches.getBranches()).thenReturn(singletonList(Branch.normalBranch("branch", "1")));
 
     branchResolver = new BranchResolver(repositoryServiceFactory);
   }
