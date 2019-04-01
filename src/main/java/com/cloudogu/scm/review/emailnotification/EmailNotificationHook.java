@@ -35,7 +35,7 @@ public class EmailNotificationHook {
   @Subscribe
   public void handleCommentEvents(CommentEvent event) {
     PullRequestComment comment = event.getItem();
-    if (!comment.isSystemComment()) {
+    if (comment == null || !comment.isSystemComment()) {
       handleEvent(event, new CommentEventEmailRenderer(event));
     }
   }
