@@ -15,12 +15,13 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.Repository;
-import sonia.scm.user.UserManager;
+import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
 
   @Inject
-  private UserManager userManager;
+  private UserDisplayManager userDisplayManager;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
@@ -47,7 +48,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     return reviewer
       .stream()
       .map(DisplayedUser::getId)
-      .map(userManager::get)
+      .map(userDisplayManager::get)
+      .filter(Optional::isPresent)
+      .map(Optional::get)
       .map(user -> new Recipient(user.getId(), user.getMail()))
       .collect(Collectors.toSet());
   }
@@ -57,7 +60,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     return reviewer
       .stream()
       .map(Recipient::getName)
-      .map(userManager::get)
+      .map(userDisplayManager::get)
+      .filter(Optional::isPresent)
+      .map(Optional::get)
       .map(user -> new DisplayedUser(user.getId(), user.getDisplayName()))
       .collect(Collectors.toSet());
   }
