@@ -33,7 +33,6 @@ class EditForm extends React.Component<Props, State> {
   }
 
   onChange = (value, name: string) => {
-    console.log("on change :", value, " name : ", name);
     this.setState({ [name]: value });
     this.props.handleFormChange(value, name);
   };
