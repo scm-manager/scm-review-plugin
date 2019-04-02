@@ -1,17 +1,21 @@
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.pullrequest.service.Recipient;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.codemonkey.simplejavamail.Email;
 import sonia.scm.config.ScmConfiguration;
+import sonia.scm.mail.api.MailContentRenderer;
 import sonia.scm.mail.api.MailContext;
-import sonia.scm.mail.api.MailSendBatchException;
+import sonia.scm.mail.api.MailSendParams;
 import sonia.scm.mail.api.MailService;
+import sonia.scm.mail.spi.DefaultMailContentRenderer;
+import sonia.scm.plugin.PluginLoader;
 import sonia.scm.template.TemplateEngineFactory;
 
 import javax.inject.Inject;
 import javax.mail.Message;
-import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,51 +29,62 @@ public class EmailNotificationService {
   private final TemplateEngineFactory templateEngineFactory;
   private final ScmConfiguration configuration;
   private final MailContext mailContext;
+  private PluginLoader pluginLoader;
 
   @Inject
-  public EmailNotificationService(MailService mailService, TemplateEngineFactory templateEngineFactory, ScmConfiguration configuration, MailContext mailContext) {
+  public EmailNotificationService(MailService mailService, TemplateEngineFactory templateEngineFactory, ScmConfiguration configuration, MailContext mailContext, PluginLoader pluginLoader) {
     this.mailService = mailService;
     this.templateEngineFactory = templateEngineFactory;
     this.configuration = configuration;
     this.mailContext = mailContext;
+    this.pluginLoader = pluginLoader;
   }
 
-  public void sendEmails(EmailRenderer emailRenderer, Set<Recipient> recipients, Set<Recipient> reviewer) throws IOException, MailSendBatchException {
-    if (!mailService.isConfigured()){
+  public void sendEmails(MailTextResolver mailTextResolver, Set<Recipient> recipients, Set<Recipient> reviewer) throws Exception {
+    if (!mailService.isConfigured()) {
       log.warn("cannot send Email because the mail server is not configured");
-      return ;
+      return;
     }
-    String emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, false);
-    String emailSubject = emailRenderer.getMailSubject();
+    String emailSubject = mailTextResolver.getMailSubject();
     String displayName = getCurrentUserDisplayName();
 
     Set<Recipient> subscriberWithoutReviewers = recipients.stream()
       .filter(recipient -> !reviewer.contains(recipient))
       .collect(Collectors.toSet());
 
-    sendEmails(subscriberWithoutReviewers, emailContent, emailSubject, displayName);
 
-    if (!reviewer.isEmpty()){
-      emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, true);
-      sendEmails(reviewer, emailContent, emailSubject, displayName);
+    Map<String, Object> templateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), false);
+    String path = mailTextResolver.getContentTemplatePath();
+    MailContentRenderer renderer = new DefaultMailContentRenderer(templateEngineFactory, path, templateModel, mailContext.getConfiguration(), pluginLoader);
+    sendEmails(subscriberWithoutReviewers, emailSubject, displayName, renderer);
+
+    if (!reviewer.isEmpty()) {
+      templateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), true);
+      renderer = new DefaultMailContentRenderer(templateEngineFactory, path, templateModel, mailContext.getConfiguration(), pluginLoader);
+      sendEmails(reviewer, emailSubject, displayName, renderer);
     }
   }
 
-  private void sendEmails(Set<Recipient> recipients, String emailContent, String emailSubject, String displayName) throws MailSendBatchException {
+
+  private void sendEmails(Set<Recipient> recipients,  String emailSubject, String displayName, MailContentRenderer renderer) throws Exception {
     for (Recipient recipient : recipients) {
       if (!recipient.getAddress().equals(getCurrentUser().getMail())) {
-        Email email = createEmail(emailContent, emailSubject, displayName);
+        Email email = createEmail( emailSubject, displayName);
         email.addRecipient(recipient.getName(), recipient.getAddress(), Message.RecipientType.TO);
-        mailService.send(email);
+        MailSendParams mailSendParams = MailSendParams.builder()
+          .mailContentRenderer(renderer)
+          .emails(Lists.newArrayList(email))
+          .userId(recipient.getName())
+          .build();
+        mailService.send(mailSendParams);
       }
     }
   }
 
-  private Email createEmail(String content, String emailSubject, String fromName) {
+  private Email createEmail(String emailSubject, String fromName) {
     Email email = new Email();
     email.setFromAddress(fromName, mailContext.getConfiguration().getFrom());
     email.setSubject(emailSubject);
-    email.setTextHTML(content);
     return email;
   }
 }

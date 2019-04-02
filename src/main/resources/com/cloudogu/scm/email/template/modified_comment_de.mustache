@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional //EN">
+<html>
+{{> head}}
+<body>
+
+<div>
+  {{displayName}} hat einen Kommentar der Pull Request #{{pullRequest.id}} geändert<a href="{{link}}" >{{pullRequest.title}}</a>
+</div>
+
+<h2>Der Kommentar</h2>
+<div>
+  {{oldComment.comment}}
+</div>
+
+<h2>wurde geändert zu:</h2>
+<div>
+  {{comment.comment}}
+</div>
+
+</body>
+</html>

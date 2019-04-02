@@ -3,20 +3,16 @@ package com.cloudogu.scm.review.emailnotification;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.HandlerEventType;
-import sonia.scm.template.Template;
-import sonia.scm.template.TemplateEngine;
-import sonia.scm.template.TemplateEngineFactory;
 
-import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
-public class PullRequestEventEmailRenderer extends BasicPREmailRenderer<PullRequestEvent> implements EmailRenderer {
+public class PullRequestEventMailTextResolver extends BasicPRMailTextResolver<PullRequestEvent> implements MailTextResolver {
 
   private final PullRequestEvent pullRequestEvent;
   private PullRequestEventType pullRequestEventType;
 
-  public PullRequestEventEmailRenderer(PullRequestEvent pullRequestEvent) {
+  public PullRequestEventMailTextResolver(PullRequestEvent pullRequestEvent) {
     this.pullRequestEvent = pullRequestEvent;
     try {
       pullRequestEventType = PullRequestEventType.valueOf(pullRequestEvent.getEventType().name());
@@ -25,27 +21,21 @@ public class PullRequestEventEmailRenderer extends BasicPREmailRenderer<PullRequ
     }
   }
 
-
   @Override
   public String getMailSubject() {
     return getMailSubject(pullRequestEvent, pullRequestEventType.getDisplayEventName());
   }
 
   @Override
-  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory, boolean isReviewer) throws IOException {
-    String path = pullRequestEventType.getTemplatePath();
-    TemplateEngine templateEngine = templateEngineFactory.getEngineByExtension(path);
-    Template template = templateEngine.getTemplate(path);
-
-    return getMailContent(basePath, pullRequestEvent, template, isReviewer);
+  public String getContentTemplatePath() {
+    return pullRequestEventType.getTemplatePath();
   }
 
-
   @Override
-  public Map<String, Object> getTemplateModel(String basePath, PullRequestEvent event, boolean isReviewer) {
-    Map<String, Object> model = super.getTemplateModel(basePath, event, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
+    Map<String, Object> model = super.getTemplateModel(basePath, pullRequestEvent, isReviewer);
     if (pullRequestEventType == PullRequestEventType.MODIFY) {
-      model.put("oldPullRequest", event.getOldItem());
+      model.put("oldPullRequest", pullRequestEvent.getOldItem());
     }
     return model;
   }

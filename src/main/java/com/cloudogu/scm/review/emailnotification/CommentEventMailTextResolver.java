@@ -3,20 +3,16 @@ package com.cloudogu.scm.review.emailnotification;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.HandlerEventType;
-import sonia.scm.template.Template;
-import sonia.scm.template.TemplateEngine;
-import sonia.scm.template.TemplateEngineFactory;
 
-import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
-public class CommentEventEmailRenderer extends BasicPREmailRenderer<CommentEvent> implements EmailRenderer {
+public class CommentEventMailTextResolver extends BasicPRMailTextResolver<CommentEvent> implements MailTextResolver {
 
   private final CommentEvent commentEvent;
   private CommentEventType commentEventType;
 
-  public CommentEventEmailRenderer(CommentEvent commentEvent) {
+  public CommentEventMailTextResolver(CommentEvent commentEvent) {
     this.commentEvent = commentEvent;
     try {
       commentEventType = CommentEventType.valueOf(commentEvent.getEventType().name());
@@ -25,35 +21,29 @@ public class CommentEventEmailRenderer extends BasicPREmailRenderer<CommentEvent
     }
   }
 
-
   @Override
   public String getMailSubject() {
     return getMailSubject(commentEvent, commentEventType.getDisplayEventName());
   }
 
   @Override
-  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory, boolean isReviewer) throws IOException {
-    String path = commentEventType.getTemplatePath();
-    TemplateEngine templateEngine = templateEngineFactory.getEngineByExtension(path);
-    Template template = templateEngine.getTemplate(path);
-
-    return getMailContent(basePath, commentEvent, template);
+  public String getContentTemplatePath() {
+    return commentEventType.getTemplatePath();
   }
 
-
   @Override
-  public Map<String, Object> getTemplateModel(String basePath, CommentEvent event, boolean isReviewer) {
-    Map<String, Object> model = super.getTemplateModel(basePath, event, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
+    Map<String, Object> model = super.getTemplateModel(basePath, commentEvent, isReviewer);
     switch (commentEventType) {
       case DELETE:
-        model.put("oldComment", event.getOldItem());
+        model.put("oldComment", commentEvent.getOldItem());
         break;
       case CREATE:
-        model.put("comment", event.getItem());
+        model.put("comment", commentEvent.getItem());
         break;
       case MODIFY:
-        model.put("oldComment", event.getOldItem());
-        model.put("comment", event.getItem());
+        model.put("oldComment", commentEvent.getOldItem());
+        model.put("comment", commentEvent.getItem());
         break;
     }
     return model;

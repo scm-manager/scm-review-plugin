@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 
 @ExtendWith(MockitoExtension.class)
-class EmailRendererTest {
+class MailTextResolverTest {
 
 
   private PullRequest pullRequest;
@@ -58,12 +58,6 @@ class EmailRendererTest {
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
-    String currentUser = "username";
-    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
-    User user1 = new User();
-    user1.setName("user1");
-    user1.setDisplayName("User 1");
-    when(principals.oneByType(User.class)).thenReturn(user1);
 
     pullRequest = TestData.createPullRequest();
     Recipient recipient1 = new Recipient("user1", "email1@d.de");
@@ -110,7 +104,7 @@ class EmailRendererTest {
   void shouldRenderEmailOnModifiedPullRequest() throws IOException {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
 
-    PullRequestEventEmailRenderer renderer = new PullRequestEventEmailRenderer(event);
+    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
 
     assertEmail(renderer, "changed");
   }
@@ -119,26 +113,16 @@ class EmailRendererTest {
   void shouldRenderEmailOnCreatedPullRequest() throws IOException {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
 
-    PullRequestEventEmailRenderer renderer = new PullRequestEventEmailRenderer(event);
+    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
 
     assertEmail(renderer, "created");
-  }
-
-  @Test
-  void shouldRenderReviewerEmailOnCreatedPullRequest() throws IOException {
-    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
-
-    PullRequestEventEmailRenderer renderer = new PullRequestEventEmailRenderer(event);
-
-    assertEmail(renderer, "created", true)
-    .contains("You are chosen as reviewer for this pull request.");
   }
 
   @Test
   void shouldNotRenderReviewerEmailOnCreatedPullRequest() throws IOException {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
 
-    PullRequestEventEmailRenderer renderer = new PullRequestEventEmailRenderer(event);
+    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
 
     assertEmail(renderer, "created", false)
     .doesNotContain("You are chosen as reviewer for this pull request.");
@@ -148,7 +132,7 @@ class EmailRendererTest {
   void shouldRenderEmailOnCreatedComment() throws IOException {
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
 
-    CommentEventEmailRenderer renderer = new CommentEventEmailRenderer(event);
+    CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);
 
     assertEmail(renderer, "added");
   }
@@ -157,7 +141,7 @@ class EmailRendererTest {
   void shouldRenderEmailOnModifiedComment() throws IOException {
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY);
 
-    CommentEventEmailRenderer renderer = new CommentEventEmailRenderer(event);
+    CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);
 
     assertEmail(renderer, "changed");
   }
@@ -166,7 +150,7 @@ class EmailRendererTest {
   void shouldRenderEmailOnDeletedComment() throws IOException {
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.DELETE);
 
-    CommentEventEmailRenderer renderer = new CommentEventEmailRenderer(event);
+    CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);
 
     assertEmail(renderer, "deleted");
   }
@@ -175,7 +159,7 @@ class EmailRendererTest {
   void shouldRenderEmailOnMergedPullRequest() throws IOException {
     PullRequestMergedEvent event = new PullRequestMergedEvent(repository, pullRequest);
 
-    PullRequestMergedEmailRenderer renderer = new PullRequestMergedEmailRenderer(event);
+    PullRequestMergedMailTextResolver renderer = new PullRequestMergedMailTextResolver(event);
 
     assertEmail(renderer, "merged");
   }
@@ -184,24 +168,18 @@ class EmailRendererTest {
   void shouldRenderEmailOnRejectedPullRequest() throws IOException {
     PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
 
-    PullRequestRejectedEmailRenderer renderer = new PullRequestRejectedEmailRenderer(event);
+    PullRequestRejectedMailTextResolver renderer = new PullRequestRejectedMailTextResolver(event);
 
     assertEmail(renderer, "rejected");
   }
 
-  private void assertEmail(EmailRenderer renderer, String event) throws IOException {
+  private void assertEmail(MailTextResolver renderer, String event) throws IOException {
     assertEmail(renderer, event, false);
   }
 
-  private AbstractCharSequenceAssert<?, String> assertEmail(EmailRenderer renderer, String event, boolean isReviewer) throws IOException {
+  private AbstractCharSequenceAssert<?, String> assertEmail(MailTextResolver renderer, String event, boolean isReviewer) throws IOException {
     String mailSubject = renderer.getMailSubject();
-    TemplateEngineFactory templateFactory = mock(TemplateEngineFactory.class);
-    when(templateFactory.getEngineByExtension(any())).thenReturn(createEngine());
-    String mailContent = renderer.getMailContent("http://scm-manager.com/scm", templateFactory, isReviewer);
-
-    assertThat(mailSubject).isNotEmpty()
-      .contains(repository.getName(), repository.getNamespace(), pullRequest.getId(), pullRequest.getTitle(), event);
-    return assertThat(mailContent).isNotEmpty()
+    return assertThat(mailSubject).isNotEmpty()
       .contains(repository.getName(), repository.getNamespace(), pullRequest.getId(), pullRequest.getTitle(), event);
   }
 }

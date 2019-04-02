@@ -16,12 +16,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.mail.api.MailConfiguration;
 import sonia.scm.mail.api.MailContext;
-import sonia.scm.mail.api.MailSendBatchException;
+import sonia.scm.mail.api.MailSendParams;
 import sonia.scm.mail.api.MailService;
 import sonia.scm.template.TemplateEngineFactory;
 import sonia.scm.user.User;
 
-import java.io.IOException;
 import java.util.HashSet;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -53,7 +52,7 @@ class EmailNotificationServiceTest {
   private final Subject subject = mock(Subject.class);
 
   @Test
-  void shouldSendEmail() throws IOException, MailSendBatchException {
+  void shouldSendEmail() throws Exception {
 
     ThreadContext.bind(subject);
 
@@ -83,26 +82,25 @@ class EmailNotificationServiceTest {
     HashSet<Recipient> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
     HashSet<Recipient> reviewer = Sets.newHashSet(Lists.newArrayList(reviewer1, reviewer2));
 
-    EmailRenderer emailRenderer = mock(EmailRenderer.class);
-    when(emailRenderer.getMailContent(path, templateEngineFactory, false)).thenReturn("mail content");
-    when(emailRenderer.getMailSubject()).thenReturn("subject");
-    service.sendEmails(emailRenderer, subscriber, reviewer);
+    MailTextResolver mailTextResolver = mock(MailTextResolver.class);
+    when(mailTextResolver.getMailSubject()).thenReturn("subject");
+    service.sendEmails(mailTextResolver, subscriber, reviewer);
     ArgumentCaptor<Email> emailCaptor = ArgumentCaptor.forClass(Email.class);
-    verify(mailService, times(4)).send(emailCaptor.capture());
+    verify(mailService, times(4)).send(any(MailSendParams.class));
     reset(mailService);
   }
 
   @Test
-  void shouldNotSendEmailForNotConfiguredMailServer() throws IOException, MailSendBatchException {
+  void shouldNotSendEmailForNotConfiguredMailServer() throws Exception {
     when(mailService.isConfigured()).thenReturn(false);
     Recipient recipient1 = new Recipient("user1", "email1@d.de");
     Recipient recipient2 = new Recipient("user2", "email1@d.de");
     HashSet<Recipient> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
-    EmailRenderer emailRenderer = mock(EmailRenderer.class);
+    MailTextResolver mailTextResolver = mock(MailTextResolver.class);
 
-    service.sendEmails(emailRenderer, subscriber, null);
+    service.sendEmails(mailTextResolver, subscriber, null);
 
-    verify(mailService, never()).send(any());
+    verify(mailService, never()).send(any(MailSendParams.class));
     reset(mailService);
   }
 

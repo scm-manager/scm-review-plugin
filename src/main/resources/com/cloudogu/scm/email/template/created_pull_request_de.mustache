@@ -1,0 +1,18 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional //EN">
+<html>
+{{> head}}
+<body>
+
+{{displayName}} hat einen Pull Request #{{pullRequest.id}} hinzugefügt <a href="{{link}}" >{{pullRequest.title}}</a>
+
+{{#isReviewer}}
+  <h3>Sie sind als Reviewer für diesen Pull Request ausgewählt worden.</h3>
+{{/isReviewer}}
+
+<h2>Der Pull Request:</h2>
+<div>
+  {{oldPullRequest.title}} {{oldPullRequest.description}}
+</div>
+
+</body>
+</html>
