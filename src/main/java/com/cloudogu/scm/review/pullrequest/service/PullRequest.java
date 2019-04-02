@@ -12,8 +12,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.util.Collections.unmodifiableSet;
 
 @Getter
 @Setter
@@ -38,4 +41,11 @@ public class PullRequest {
   private Set<Recipient> subscriber = new HashSet<>();
   private Set<Recipient> reviewer = new HashSet<>();
 
+  public Set<Recipient> getSubscriber() {
+    return unmodifiableSet(subscriber);
+  }
+
+  public Set<Recipient> getReviewer() {
+    return unmodifiableSet(reviewer);
+  }
 }

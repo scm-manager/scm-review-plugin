@@ -39,19 +39,22 @@ public class EmailNotificationService {
       log.warn("cannot send Email because the mail server is not configured");
       return ;
     }
-    String emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, false);
-    String emailSubject = emailRenderer.getMailSubject();
-    String displayName = getCurrentUserDisplayName();
+    final String emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, false);
+    final String emailSubject = emailRenderer.getMailSubject();
+    final String displayName = getCurrentUserDisplayName();
 
     Set<Recipient> subscriberWithoutReviewers = recipients.stream()
       .filter(recipient -> !reviewer.contains(recipient))
       .collect(Collectors.toSet());
+    Set<Recipient> subscribingReviewers = recipients.stream()
+      .filter(reviewer::contains)
+      .collect(Collectors.toSet());
 
     sendEmails(subscriberWithoutReviewers, emailContent, emailSubject, displayName);
 
-    if (!reviewer.isEmpty()){
-      emailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, true);
-      sendEmails(reviewer, emailContent, emailSubject, displayName);
+    if (!subscribingReviewers.isEmpty()){
+      String reviewerEmailContent = emailRenderer.getMailContent(configuration.getBaseUrl(), templateEngineFactory, true);
+      sendEmails(subscribingReviewers, reviewerEmailContent, emailSubject, displayName);
     }
   }
 

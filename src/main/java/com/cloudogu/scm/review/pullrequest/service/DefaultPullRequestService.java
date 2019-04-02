@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.BranchResolver;
+import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
@@ -11,9 +12,12 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
 
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DefaultPullRequestService implements PullRequestService {
 
@@ -32,17 +36,37 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public String add(Repository repository, PullRequest pullRequest) {
+    pullRequest.setCreationDate(Instant.now());
+    pullRequest.setLastModified(null);
+    computeSubscriberForNewPullRequest(pullRequest);
     eventBus.post(new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE));
     return getStore(repository).add(pullRequest);
+  }
+
+  private void computeSubscriberForNewPullRequest(PullRequest pullRequest) {
+    User user = CurrentUserResolver.getCurrentUser();
+    Set<Recipient> subscriber = new HashSet<>(pullRequest.getSubscriber());
+    subscriber.addAll(pullRequest.getReviewer());
+    subscriber.add(new Recipient(user.getId(), user.getMail()));
+    pullRequest.setSubscriber(subscriber);
   }
 
   @Override
   public void update(Repository repository, String pullRequestId, PullRequest pullRequest) {
     PullRequestStore store = getStore(repository);
     PullRequest oldPullRequest = store.get(pullRequestId);
-    pullRequest.setSubscriber(oldPullRequest.getSubscriber());
+    pullRequest.setCreationDate(oldPullRequest.getCreationDate());
+    pullRequest.setLastModified(Instant.now());
+    computeSubscriberForChangedPullRequest(oldPullRequest, pullRequest);
     eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
     store.update(pullRequest);
+  }
+
+  private void computeSubscriberForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
+    Set<Recipient> newSubscriber = new HashSet<>(oldPullRequest.getSubscriber());
+    Set<Recipient> addedReviewers = changedPullRequest.getReviewer().stream().filter(r -> !oldPullRequest.getReviewer().contains(r)).collect(Collectors.toSet());
+    newSubscriber.addAll(addedReviewers);
+    changedPullRequest.setSubscriber(newSubscriber);
   }
 
   @Override

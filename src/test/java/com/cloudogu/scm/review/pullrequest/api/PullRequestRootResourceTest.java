@@ -49,11 +49,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -541,7 +543,7 @@ public class PullRequestRootResourceTest {
   public void shouldGetTheUnsubscribeLink() throws URISyntaxException, IOException {
     // the PR has no subscriber
     PullRequest pullRequest = createPullRequest();
-    pullRequest.getSubscriber().add(new Recipient("user1", "email@d.de"));
+    pullRequest.setSubscriber(singleton(new Recipient("user1", "email@d.de")));
 
     when(store.get("1")).thenReturn(pullRequest);
     Subject subject = mock(Subject.class);
@@ -550,7 +552,6 @@ public class PullRequestRootResourceTest {
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
-    String currentUser = "username";
     User user1 = new User();
     user1.setName("user1");
     user1.setMail("email@d.de");
