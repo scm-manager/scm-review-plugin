@@ -59,9 +59,9 @@ public class EmailNotificationService {
     sendEmails(subscriberWithoutReviewers, emailSubject, displayName, renderer);
 
     if (!reviewer.isEmpty()) {
-      templateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), true);
-      renderer = new DefaultMailContentRenderer(templateEngineFactory, path, templateModel, mailContext.getConfiguration(), pluginLoader);
-      sendEmails(reviewer, emailSubject, displayName, renderer);
+      Map<String, Object> reviewerTemplateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), true);
+      MailContentRenderer reviewerRenderer = new DefaultMailContentRenderer(templateEngineFactory, path, reviewerTemplateModel, mailContext.getConfiguration(), pluginLoader);
+      sendEmails(reviewer, emailSubject, displayName, reviewerRenderer);
     }
   }
 
