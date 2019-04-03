@@ -21,6 +21,7 @@ import sonia.scm.mail.api.MailConfiguration;
 import sonia.scm.mail.api.MailContext;
 import sonia.scm.mail.api.MailSendParams;
 import sonia.scm.mail.api.MailService;
+import sonia.scm.mail.spi.MailContentRendererFactory;
 import sonia.scm.template.TemplateEngineFactory;
 import sonia.scm.user.User;
 
@@ -42,7 +43,10 @@ import static org.mockito.Mockito.when;
 class EmailNotificationServiceTest {
 
   @Mock
-  TemplateEngineFactory templateEngineFactory;
+  private TemplateEngineFactory templateEngineFactory;
+
+  @Mock
+  private MailContentRendererFactory rendererFactory;
 
   @Mock
   private MailService mailService;
