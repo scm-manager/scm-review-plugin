@@ -10,7 +10,6 @@ import sonia.scm.mail.api.MailContext;
 import sonia.scm.mail.api.MailSendParams;
 import sonia.scm.mail.api.MailService;
 import sonia.scm.mail.spi.DefaultMailContentRenderer;
-import sonia.scm.plugin.PluginLoader;
 import sonia.scm.template.TemplateEngineFactory;
 
 import javax.inject.Inject;
@@ -29,15 +28,13 @@ public class EmailNotificationService {
   private final TemplateEngineFactory templateEngineFactory;
   private final ScmConfiguration configuration;
   private final MailContext mailContext;
-  private PluginLoader pluginLoader;
 
   @Inject
-  public EmailNotificationService(MailService mailService, TemplateEngineFactory templateEngineFactory, ScmConfiguration configuration, MailContext mailContext, PluginLoader pluginLoader) {
+  public EmailNotificationService(MailService mailService, TemplateEngineFactory templateEngineFactory, ScmConfiguration configuration, MailContext mailContext) {
     this.mailService = mailService;
     this.templateEngineFactory = templateEngineFactory;
     this.configuration = configuration;
     this.mailContext = mailContext;
-    this.pluginLoader = pluginLoader;
   }
 
   public void sendEmails(MailTextResolver mailTextResolver, Set<Recipient> recipients, Set<Recipient> reviewer) throws Exception {
@@ -59,13 +56,13 @@ public class EmailNotificationService {
     String path = mailTextResolver.getContentTemplatePath();
     if (!subscriberWithoutReviewers.isEmpty()) {
       Map<String, Object> templateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), false);
-      MailContentRenderer renderer = new DefaultMailContentRenderer(templateEngineFactory, path, templateModel, mailContext.getConfiguration(), mailContext.getUserLanguageConfiguration(), pluginLoader);
+      MailContentRenderer renderer = new DefaultMailContentRenderer(templateEngineFactory, path, templateModel, mailContext.getConfiguration(), mailContext.getUserLanguageConfiguration());
       sendEmails(subscriberWithoutReviewers, emailSubject, displayName, renderer);
     }
 
     if (!subscribingReviewers.isEmpty()){
       Map<String, Object> reviewerTemplateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), true);
-      MailContentRenderer reviewerRenderer = new DefaultMailContentRenderer(templateEngineFactory, path, reviewerTemplateModel, mailContext.getConfiguration(), mailContext.getUserLanguageConfiguration(), pluginLoader);
+      MailContentRenderer reviewerRenderer = new DefaultMailContentRenderer(templateEngineFactory, path, reviewerTemplateModel, mailContext.getConfiguration(), mailContext.getUserLanguageConfiguration());
       sendEmails(subscribingReviewers, emailSubject, displayName, reviewerRenderer);
     }
   }
