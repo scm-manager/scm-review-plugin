@@ -51,17 +51,22 @@ public class EmailNotificationService {
     Set<Recipient> subscriberWithoutReviewers = recipients.stream()
       .filter(recipient -> !reviewer.contains(recipient))
       .collect(Collectors.toSet());
+    Set<Recipient> subscribingReviewers = recipients.stream()
+      .filter(reviewer::contains)
+      .collect(Collectors.toSet());
 
 
-    Map<String, Object> templateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), false);
     String path = mailTextResolver.getContentTemplatePath();
-    MailContentRenderer renderer = new DefaultMailContentRenderer(templateEngineFactory, path, templateModel, mailContext.getConfiguration(), pluginLoader);
-    sendEmails(subscriberWithoutReviewers, emailSubject, displayName, renderer);
+    if (!subscriberWithoutReviewers.isEmpty()) {
+      Map<String, Object> templateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), false);
+      MailContentRenderer renderer = new DefaultMailContentRenderer(templateEngineFactory, path, templateModel, mailContext.getConfiguration(), mailContext.getUserLanguageConfiguration(), pluginLoader);
+      sendEmails(subscriberWithoutReviewers, emailSubject, displayName, renderer);
+    }
 
-    if (!reviewer.isEmpty()) {
+    if (!subscribingReviewers.isEmpty()){
       Map<String, Object> reviewerTemplateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), true);
-      MailContentRenderer reviewerRenderer = new DefaultMailContentRenderer(templateEngineFactory, path, reviewerTemplateModel, mailContext.getConfiguration(), pluginLoader);
-      sendEmails(reviewer, emailSubject, displayName, reviewerRenderer);
+      MailContentRenderer reviewerRenderer = new DefaultMailContentRenderer(templateEngineFactory, path, reviewerTemplateModel, mailContext.getConfiguration(), mailContext.getUserLanguageConfiguration(), pluginLoader);
+      sendEmails(subscribingReviewers, emailSubject, displayName, reviewerRenderer);
     }
   }
 

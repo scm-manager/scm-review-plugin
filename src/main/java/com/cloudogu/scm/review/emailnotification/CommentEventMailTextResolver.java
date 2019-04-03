@@ -57,9 +57,9 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<Commen
 
     protected static final String PATH_BASE = "com/cloudogu/scm/email/template/";
 
-    private String template;
-    private String displayEventName;
-    private HandlerEventType type;
+    private final String template;
+    private final String displayEventName;
+    private final HandlerEventType type;
 
 
     CommentEventType(String template, String displayEventName, HandlerEventType type) {

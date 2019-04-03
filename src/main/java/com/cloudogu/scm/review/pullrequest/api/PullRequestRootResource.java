@@ -8,7 +8,6 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
-import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
@@ -36,6 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.HalRepresentations.createCollection;
+import static java.util.Optional.ofNullable;
 import static sonia.scm.AlreadyExistsException.alreadyExists;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
@@ -78,11 +78,7 @@ public class PullRequestRootResource {
     User user = CurrentUserResolver.getCurrentUser();
     verifyBranchesDiffer(pullRequestDto.getSource(), pullRequestDto.getTarget());
     pullRequestDto.setAuthor(user.getId());
-    Instant now = Instant.now();
-    pullRequestDto.setCreationDate(now);
-    pullRequestDto.setLastModified(now);
     PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
-    pullRequest.getSubscriber().add(new Recipient(user.getId(), user.getMail()));
     String id = service.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
@@ -99,11 +95,15 @@ public class PullRequestRootResource {
       .stream()
       .filter(pullRequest -> pullRequestStatusDto == PullRequestStatusDto.ALL || pullRequest.getStatus().equals(PullRequestStatus.valueOf(pullRequestStatusDto.name())))
       .map(pr -> mapper.using(uriInfo).map(pr, repository))
-      .sorted(Comparator.comparing(PullRequestDto::getLastModified).reversed())
+      .sorted(Comparator.comparing(this::getLastModification).reversed())
       .collect(Collectors.toList());
 
     boolean permission = PermissionCheck.mayCreate(repository);
     return Response.ok(createCollection(uriInfo, permission, pullRequestDtos, "pullRequests")).build();
+  }
+
+  private Instant getLastModification(PullRequestDto pr) {
+    return ofNullable(pr.getLastModified()).orElse(pr.getCreationDate());
   }
 
   private void verifyBranchesDiffer(String source, String target) {

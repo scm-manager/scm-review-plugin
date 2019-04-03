@@ -4,7 +4,6 @@ import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -18,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.io.Resources;
-import com.google.inject.Inject;
 import com.google.inject.util.Providers;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -41,23 +39,23 @@ import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
-import sonia.scm.user.UserManager;
+import sonia.scm.user.UserDisplayManager;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -82,7 +80,6 @@ public class PullRequestRootResourceTest {
   private final PullRequestStoreFactory storeFactory = mock(PullRequestStoreFactory.class);
   private final PullRequestStore store = mock(PullRequestStore.class);
   private final Repository repository = mock(Repository.class);
-  private final UriInfo uriInfo = mock(UriInfo.class);
   private final ArgumentCaptor<PullRequest> pullRequestStoreCaptor = ArgumentCaptor.forClass(PullRequest.class);
 
   private Dispatcher dispatcher;
@@ -96,7 +93,7 @@ public class PullRequestRootResourceTest {
   private static final String REPOSITORY_NAMESPACE = "ns";
 
   @Mock
-  private UserManager userManager;
+  private UserDisplayManager userDisplayManager;
 
   @InjectMocks
   private PullRequestMapperImpl mapper ;
@@ -128,7 +125,6 @@ public class PullRequestRootResourceTest {
     ThreadContext.bind(subject);
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(any(String.class))).thenReturn(true);
     User user1 = new User();
     user1.setName("user1");
     user1.setDisplayName("User 1");
@@ -503,7 +499,6 @@ public class PullRequestRootResourceTest {
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
     String currentUser = "username";
-    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
     User user1 = new User();
     user1.setName("user1");
     user1.setMail("user1@mail.de");
@@ -525,7 +520,6 @@ public class PullRequestRootResourceTest {
     // the PR has no subscriber
     PullRequest pullRequest = createPullRequest();
 
-    when(store.get("1")).thenReturn(pullRequest);
     Subject subject = mock(Subject.class);
     ThreadContext.bind(subject);
 
@@ -533,7 +527,6 @@ public class PullRequestRootResourceTest {
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
     String currentUser = "username";
-    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
     User user1 = new User();
     user1.setName("user1");
     user1.setDisplayName("User 1");
@@ -550,7 +543,7 @@ public class PullRequestRootResourceTest {
   public void shouldGetTheUnsubscribeLink() throws URISyntaxException, IOException {
     // the PR has no subscriber
     PullRequest pullRequest = createPullRequest();
-    pullRequest.getSubscriber().add(new Recipient("user1", "email@d.de"));
+    pullRequest.setSubscriber(singleton(new Recipient("user1", "email@d.de")));
 
     when(store.get("1")).thenReturn(pullRequest);
     Subject subject = mock(Subject.class);
@@ -559,8 +552,6 @@ public class PullRequestRootResourceTest {
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
-    String currentUser = "username";
-    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
     User user1 = new User();
     user1.setName("user1");
     user1.setMail("email@d.de");
@@ -593,7 +584,6 @@ public class PullRequestRootResourceTest {
   private void initRepoWithPRs(String namespace, String name) {
     when(repository.getNamespace()).thenReturn(namespace);
     when(repository.getName()).thenReturn(name);
-    when(repositoryResolver.resolve(new NamespaceAndName("foo", "bar"))).thenReturn(repository);
     PullRequest openedPR1 = createPullRequest("opened_1", PullRequestStatus.OPEN);
     PullRequest openedPR2 = createPullRequest("opened_2", PullRequestStatus.OPEN);
     PullRequest mergedPR1 = createPullRequest("merged_1", PullRequestStatus.MERGED);
