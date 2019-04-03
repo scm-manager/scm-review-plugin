@@ -5,9 +5,7 @@ import com.google.common.collect.Lists;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Sets;
-import org.codemonkey.simplejavamail.Email;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -34,7 +32,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -103,7 +100,7 @@ class EmailNotificationServiceTest {
     service.sendEmails(mailTextResolver, subscriber, reviewer);
     assertThat(emailCaptor.getAllValues())
       .hasSize(2)
-      .flatExtracting("emails");
+      .flatExtracting("userEmails");
     // TODO:
 //      .extracting("textHTML")
 //      .containsExactlyInAnyOrder("normal content", "reviewer content");
