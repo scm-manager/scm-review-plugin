@@ -4,7 +4,7 @@
 <body>
 
 
-{{displayName}} created the pull request #{{pullRequest.id}} <a href="{{link}}" >{{pullRequest.title}}</a>
+{{displayName}} created the pull request #{{pullRequest.id}} <a href="{{link}}" >{{pullRequest.title}}</a>.
 
 {{#isReviewer}}
 <h3>You are chosen as reviewer for this pull request.</h3>
@@ -12,7 +12,10 @@
 
 <h2>The pull request:</h2>
 <div>
-  {{pullRequest.title}} {{pullRequest.description}}
+  {{pullRequest.title}}
+  <p>
+    {{pullRequest.description}}
+  </p>
 </div>
 
 

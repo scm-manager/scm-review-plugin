@@ -4,7 +4,7 @@
 <body>
 
 
-{{displayName}} modified the pull request #{{pullRequest.id}} <a href="{{link}}" >{{pullRequest.title}}</a>
+{{displayName}} modified the pull request #{{pullRequest.id}} <a href="{{link}}" >{{pullRequest.title}}</a>:
 
 {{#isReviewer}}
 <h3>You are chosen as reviewer for this pull request.</h3>
@@ -12,12 +12,14 @@
 
 <h2>The pull request:</h2>
 <div>
-  {{oldPullRequest.title}} {{oldPullRequest.description}}
+  {{oldPullRequest.title}}
+  <p>{{oldPullRequest.description}}</p>
 </div>
 
-<h2>is modified to :</h2>
+<h2>is modified to:</h2>
 <div>
-  {{pullRequest.title}} {{pullRequest.description}}
+  {{pullRequest.title}}
+  <p>{{pullRequest.description}}</p>
 </div>
 
 

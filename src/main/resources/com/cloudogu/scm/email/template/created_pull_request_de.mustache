@@ -3,15 +3,18 @@
 {{> head}}
 <body>
 
-{{displayName}} hat einen Pull Request #{{pullRequest.id}} hinzugefügt <a href="{{link}}" >{{pullRequest.title}}</a>
+{{displayName}} hat den Pull Request #{{pullRequest.id}} <a href="{{link}}" >{{pullRequest.title}}</a> erstellt.
 
 {{#isReviewer}}
-  <h3>Sie sind als Reviewer für diesen Pull Request ausgewählt worden.</h3>
+  <h3>Sie sind als Reviewer für diesen Pull Request ausgewählt.</h3>
 {{/isReviewer}}
 
 <h2>Der Pull Request:</h2>
 <div>
-  {{oldPullRequest.title}} {{oldPullRequest.description}}
+  {{oldPullRequest.title}}
+  <p>
+  {{oldPullRequest.description}}
+  </p>
 </div>
 
 </body>
