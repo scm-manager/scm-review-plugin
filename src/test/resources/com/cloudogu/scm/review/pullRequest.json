@@ -2,5 +2,6 @@
   "source": "sourceBranch",
   "target": "targetBranch",
   "title": "pull request",
-  "description": "description"
+  "description": "description",
+  "reviewer" : []
 }

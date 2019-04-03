@@ -13,11 +13,11 @@ const reviewSupportedPredicate = (props: Object) => {
 
 // new
 
-const NewPullRequestRoute = ({ url, repository }) => {
+const NewPullRequestRoute = (props) => {
   return (
     <Route
-      path={`${url}/pull-requests/add`}
-      render={() => <Create repository={repository} />}
+      path={`${props.url}/pull-requests/add`}
+      render={() => <Create repository={props.repository} userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)} />}
     />
   );
 };
@@ -26,11 +26,23 @@ binder.bind("repository.route", NewPullRequestRoute);
 
 //  show single pullRequest
 
-const ShowPullRequestRoute = ({ url, repository }) => {
+function getUserAutoCompleteLink(indexLinks) {
+  if (indexLinks && indexLinks.autocomplete) {
+    const link = indexLinks.autocomplete.find(
+      i => i.name === "users"
+    );
+    if (link) {
+      return link.href;
+    }
+  }
+  return "";
+};
+
+const ShowPullRequestRoute = (props ) => {
   return (
     <Route
-      path={`${url}/pull-request/:pullRequestNumber`}
-      render={() => <SinglePullRequest repository={repository} />}
+      path={`${props.url}/pull-request/:pullRequestNumber`}
+      render={() => <SinglePullRequest repository={props.repository} userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)} />}
     />
   );
 };

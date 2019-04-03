@@ -26,11 +26,11 @@ public class PullRequestRejectedEmailRenderer extends BasicPREmailRenderer<PullR
   }
 
   @Override
-  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory) throws IOException {
+  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory, boolean isReviewer) throws IOException {
     TemplateEngine templateEngine = templateEngineFactory.getEngineByExtension(TEMPLATE_PATH);
     Template template = templateEngine.getTemplate(TEMPLATE_PATH);
 
-    return getMailContent(basePath, pullRequestRejectedEvent, template);
+    return getMailContent(basePath, pullRequestRejectedEvent, template, isReviewer);
   }
 
 }

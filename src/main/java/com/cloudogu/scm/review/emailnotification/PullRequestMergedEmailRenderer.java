@@ -26,11 +26,11 @@ public class PullRequestMergedEmailRenderer extends BasicPREmailRenderer<PullReq
   }
 
   @Override
-  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory) throws IOException {
+  public String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory, boolean isReviewer) throws IOException {
     TemplateEngine templateEngine = templateEngineFactory.getEngineByExtension(TEMPLATE_PATH);
     Template template = templateEngine.getTemplate(TEMPLATE_PATH);
 
-    return getMailContent(basePath, pullRequestMergedEvent, template);
+    return getMailContent(basePath, pullRequestMergedEvent, template, isReviewer);
   }
 
 }

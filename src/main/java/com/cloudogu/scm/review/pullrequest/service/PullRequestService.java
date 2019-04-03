@@ -67,11 +67,11 @@ public interface PullRequestService {
    * Update the title and the description of the pull request with id <code>pullRequestId</code>
    * the modified Date will be set to now.
    */
-  default void update(String namespace, String name, String pullRequestId, String title, String description) {
-    update(getRepository(namespace, name), pullRequestId, title, description);
+  default void update(String namespace, String name, String pullRequestId, PullRequest pullRequest) {
+    update(getRepository(namespace, name), pullRequestId, pullRequest);
   }
 
-  void update(Repository repository, String pullRequestId, String title, String description);
+  void update(Repository repository, String pullRequestId, PullRequest pullRequest);
 
   void reject(Repository repository, PullRequest pullRequest);
 

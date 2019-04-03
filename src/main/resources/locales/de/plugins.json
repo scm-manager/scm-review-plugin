@@ -25,7 +25,9 @@
       "status": "Status",
       "id": "ID",
       "author": "Autor",
-      "date": "Datum"
+      "date": "Datum",
+      "reviewer" : "Reviewers",
+      "addReviewer" : "Reviewer hinzufügen"
     },
     "show-pull-request": {
       "error-title": "Fehler",
@@ -102,8 +104,8 @@
         "description": "Darf Pull-Requests kommentieren"
       },
       "modifyPullRequest": {
-        "displayName": "Pull-Request Texte bearbeiten",
-        "description": "Darf den Titel sowie die Beschreibung des Pull Requests an sich sowie Kommentare von anderen Benutzern bearbeiten"
+        "displayName": "Pull-Request bearbeiten",
+        "description": "Darf den Titel, die Beschreibung und die Reviewer des Pull Requests an sich sowie Kommentare von anderen Benutzern bearbeiten"
       },
       "mergePullRequest": {
         "displayName": "Pull-Requests mergen/ablehnen",

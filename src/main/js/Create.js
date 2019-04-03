@@ -25,6 +25,7 @@ const styles = {
 
 type Props = {
   repository: Repository,
+  userAutocompleteLink: string,
   classes: any,
   match: any,
   t: string => string,
@@ -128,6 +129,7 @@ class Create extends React.Component<Props, State> {
 
           <CreateForm
             repository={repository}
+            userAutocompleteLink={this.props.userAutocompleteLink}
             onChange={this.handleFormChange}
             source={params.source}
             target={params.target}

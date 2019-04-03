@@ -24,6 +24,7 @@ import sonia.scm.repository.Repository;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -50,6 +51,7 @@ class EmailNotificationHookTest {
   private PullRequest oldPullRequest;
   private PullRequestComment comment;
   private PullRequestComment oldComment;
+  private HashSet<Recipient> reviewers;
 
   @BeforeEach
   void setUp() {
@@ -59,6 +61,10 @@ class EmailNotificationHookTest {
     Recipient recipient2 = new Recipient("user2", "email1@d.de");
     subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
     pullRequest.setSubscriber(subscriber);
+    Recipient recipient3 = new Recipient("user3", "email1@d.de");
+    Recipient recipient4 = new Recipient("user4", "email1@d.de");
+    reviewers = Sets.newHashSet(Lists.newArrayList(recipient3, recipient4));
+    pullRequest.setReviewer(reviewers);
     repository = createHeartOfGold();
     oldPullRequest = TestData.createPullRequest();
     oldPullRequest.setTitle("old Title");
@@ -81,7 +87,7 @@ class EmailNotificationHookTest {
       DynamicTest.dynamicTest(event.toString(), () -> {
         emailNotificationHook.handleCommentEvents(event);
 
-        verify(service).sendEmail(isA(CommentEventEmailRenderer.class), eq(pullRequest.getSubscriber()));
+        verify(service).sendEmails(isA(CommentEventEmailRenderer.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
         reset(service);
       })
     );
@@ -93,7 +99,7 @@ class EmailNotificationHookTest {
     CommentEvent commentEvent = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleCommentEvents(commentEvent);
 
-    verify(service, never()).sendEmail(any(), any());
+    verify(service, never()).sendEmails(any(), any(), any());
     reset(service);
   }
 
@@ -107,7 +113,7 @@ class EmailNotificationHookTest {
       DynamicTest.dynamicTest(event.toString(), () -> {
         emailNotificationHook.handlePullRequestEvents(event);
 
-        verify(service).sendEmail(isA(PullRequestEventEmailRenderer.class), eq(pullRequest.getSubscriber()));
+        verify(service).sendEmails(isA(PullRequestEventEmailRenderer.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
         reset(service);
       })
     );
@@ -118,7 +124,7 @@ class EmailNotificationHookTest {
     PullRequestMergedEvent event = new PullRequestMergedEvent(repository, pullRequest);
     emailNotificationHook.handleMergedPullRequest(event);
 
-    verify(service).sendEmail(isA(PullRequestMergedEmailRenderer.class), eq(pullRequest.getSubscriber()));
+    verify(service).sendEmails(isA(PullRequestMergedEmailRenderer.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
   }
 
   @Test
@@ -126,7 +132,7 @@ class EmailNotificationHookTest {
     PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
     emailNotificationHook.handleRejectedPullRequest(event);
 
-    verify(service).sendEmail(isA(PullRequestRejectedEmailRenderer.class), eq(pullRequest.getSubscriber()));
+    verify(service).sendEmails(isA(PullRequestRejectedEmailRenderer.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
   }
 
 }

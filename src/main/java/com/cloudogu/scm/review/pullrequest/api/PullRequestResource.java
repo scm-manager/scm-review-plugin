@@ -160,7 +160,8 @@ public class PullRequestResource {
     if (!PermissionCheck.mayModifyPullRequest(repository, service.get(namespace, name, pullRequestId))) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
-    service.update(repository, pullRequestId, pullRequestDto.getTitle(), pullRequestDto.getDescription());
+    PullRequest pullRequest = mapper.map(pullRequestDto);
+    service.update(repository, pullRequestId, pullRequest);
     return Response.noContent().build();
   }
 

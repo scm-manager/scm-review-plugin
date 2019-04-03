@@ -8,5 +8,6 @@ public interface EmailRenderer {
 
   String getMailSubject();
 
-  String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory) throws IOException;
+  String getMailContent(String basePath, TemplateEngineFactory templateEngineFactory, boolean isReviewer) throws IOException;
+
 }

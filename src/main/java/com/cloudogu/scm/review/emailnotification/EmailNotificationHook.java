@@ -35,7 +35,7 @@ public class EmailNotificationHook {
   @Subscribe
   public void handleCommentEvents(CommentEvent event) {
     PullRequestComment comment = event.getItem();
-    if (!comment.isSystemComment()) {
+    if (comment == null || !comment.isSystemComment()) {
       handleEvent(event, new CommentEventEmailRenderer(event));
     }
   }
@@ -58,7 +58,7 @@ public class EmailNotificationHook {
       return;
     }
     try {
-      service.sendEmail(emailRenderer, pullRequest.getSubscriber());
+      service.sendEmails(emailRenderer, pullRequest.getSubscriber(), pullRequest.getReviewer());
     } catch (Exception e) {
       log.warn("Error on sending Email", e);
     }

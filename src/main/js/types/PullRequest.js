@@ -12,6 +12,7 @@ export type PullRequest = BasicPullRequest & {
   author: string,
   id: string,
   creationDate: string,
+  reviewer: DisplayedUser[],
   status: string,
   _links: Links
 };
@@ -20,6 +21,11 @@ export type Location = {
   file: string,
   hunk?: string,
   changeId?: string
+};
+
+export type DisplayedUser = {
+  id: string,
+  displayName: string
 };
 
 export type BasicComment = {
