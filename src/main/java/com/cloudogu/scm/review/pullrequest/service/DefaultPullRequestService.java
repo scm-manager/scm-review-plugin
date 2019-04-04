@@ -121,7 +121,7 @@ public class DefaultPullRequestService implements PullRequestService {
   public void subscribe(Repository repository, String pullRequestId, User user) {
     PullRequestStore store = getStore(repository);
     PullRequest pullRequest = store.get(pullRequestId);
-    pullRequest.getSubscriber().add(new Recipient(user.getId(), user.getMail()));
+    pullRequest.addSubscriber(new Recipient(user.getId(), user.getMail()));
     store.update(pullRequest);
 
   }
@@ -134,7 +134,7 @@ public class DefaultPullRequestService implements PullRequestService {
     subscriber.stream()
       .filter(recipient -> user.getId().equals(recipient.getName()))
       .findFirst()
-      .ifPresent(subscriber::remove);
+      .ifPresent(s -> pullRequest.removeSubscriber(s));
     store.update(pullRequest);
   }
 

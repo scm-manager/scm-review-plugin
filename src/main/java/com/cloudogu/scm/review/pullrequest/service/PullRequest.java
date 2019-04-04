@@ -48,4 +48,12 @@ public class PullRequest {
   public Set<Recipient> getReviewer() {
     return unmodifiableSet(reviewer);
   }
+
+  public void addSubscriber(Recipient recipient) {
+    this.subscriber.add(recipient);
+  }
+
+  public void removeSubscriber(Recipient recipient) {
+    this.subscriber.remove(recipient);
+  }
 }
