@@ -11,7 +11,7 @@ import Edit from "./Edit";
 
 type Props = {
   repository: Repository,
-  userAutocompleteLink : string,
+  userAutocompleteLink: string,
   match: any,
   history: History
 };
@@ -87,7 +87,11 @@ class SinglePullRequest extends React.Component<Props, State> {
       <Switch>
         <Route
           component={() => (
-            <Edit repository={repository} pullRequest={pullRequest} userAutocompleteLink={userAutocompleteLink}/>
+            <Edit
+              repository={repository}
+              pullRequest={pullRequest}
+              userAutocompleteLink={userAutocompleteLink}
+            />
           )}
           path={`${match.url}/edit`}
           exact

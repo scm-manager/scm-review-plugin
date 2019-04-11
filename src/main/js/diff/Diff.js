@@ -2,7 +2,9 @@
 import React from "react";
 import type { DiffEventContext } from "@scm-manager/ui-components";
 import {
-  AnnotationFactoryContext, ErrorNotification, Loading,
+  AnnotationFactoryContext,
+  ErrorNotification,
+  Loading,
   LoadingDiff,
   Notification,
   diffs
@@ -22,8 +24,8 @@ import {
   createLocation
 } from "./locations";
 import { fetchComments } from "./fetchComments";
-import AddCommentButton from './AddCommentButton';
-import FileComments from './FileComments';
+import AddCommentButton from "./AddCommentButton";
+import FileComments from "./FileComments";
 
 type Props = {
   repository: Repository,
@@ -93,7 +95,7 @@ class Diff extends React.Component<Props, State> {
     } else {
       this.setState({
         loading: false
-      })
+      });
     }
   };
 
@@ -133,18 +135,20 @@ class Diff extends React.Component<Props, State> {
     const annotations = [];
 
     const fileState = this.state.files[path] || [];
-    if ( fileState.comments && fileState.comments.length > 0 ) {
+    if (fileState.comments && fileState.comments.length > 0) {
       annotations.push(this.createComments(fileState.comments));
     }
 
     if (fileState.editor) {
-      annotations.push(this.createNewCommentEditor({
-        file: path
-      }));
+      annotations.push(
+        this.createNewCommentEditor({
+          file: path
+        })
+      );
     }
 
     if (annotations.length > 0) {
-      return <FileComments>{ annotations }</FileComments>;
+      return <FileComments>{annotations}</FileComments>;
     }
     return [];
   };
@@ -174,15 +178,13 @@ class Diff extends React.Component<Props, State> {
             );
           }
         }
-
       });
-
     }
 
     return annotations;
   };
 
-  createFileControls = (file: File, setCollapse: (boolean) => void) => {
+  createFileControls = (file: File, setCollapse: boolean => void) => {
     if (this.isPermittedToComment()) {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
@@ -224,7 +226,11 @@ class Diff extends React.Component<Props, State> {
     }
   };
 
-  setFileEditor = (path: string, showEditor: boolean, callback?: () => void) => {
+  setFileEditor = (
+    path: string,
+    showEditor: boolean,
+    callback?: () => void
+  ) => {
     this.setState(state => {
       const current = state.files[path] || {};
       return {
@@ -241,10 +247,16 @@ class Diff extends React.Component<Props, State> {
 
   isPermittedToComment = () => {
     const { pullRequest } = this.props;
-    return pullRequest && pullRequest._links && !! pullRequest._links.createComment;
+    return (
+      pullRequest && pullRequest._links && !!pullRequest._links.createComment
+    );
   };
 
-  setLineEditor = (location: Location, showEditor: boolean, callback?: () => void) => {
+  setLineEditor = (
+    location: Location,
+    showEditor: boolean,
+    callback?: () => void
+  ) => {
     const hunkId = createHunkIdFromLocation(location);
     const changeId = location.changeId;
     if (!changeId) {
@@ -261,7 +273,7 @@ class Diff extends React.Component<Props, State> {
             ...currentHunk,
             [changeId]: {
               editor: showEditor,
-              comments: currentLine.comments || [],
+              comments: currentLine.comments || []
             }
           }
         }
@@ -272,23 +284,23 @@ class Diff extends React.Component<Props, State> {
   createComments = (comments: Comment[]) => {
     const onReply = (index: number) => {
       if (index === comments.length - 1 && this.isPermittedToComment()) {
-        return this.reply
+        return this.reply;
       }
     };
 
     return (
       <>
-      {comments.map((comment, index) => (
-        <CreateCommentInlineWrapper>
-          <PullRequestComment
-            comment={comment}
-            refresh={this.fetchComments}
-            onReply={onReply(index)}
-            handleError={this.onError}
-          />
-        </CreateCommentInlineWrapper>
-      ))}
-    </>
+        {comments.map((comment, index) => (
+          <CreateCommentInlineWrapper>
+            <PullRequestComment
+              comment={comment}
+              refresh={this.fetchComments}
+              onReply={onReply(index)}
+              handleError={this.onError}
+            />
+          </CreateCommentInlineWrapper>
+        ))}
+      </>
     );
   };
 

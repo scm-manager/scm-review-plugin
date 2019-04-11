@@ -15,16 +15,10 @@ type Props = {
 };
 
 class FileComments extends React.Component<Props> {
-
   render() {
     const { children, classes } = this.props;
-    return (
-      <div className={classes.wrapper}>
-        { children }
-      </div>
-    );
+    return <div className={classes.wrapper}>{children}</div>;
   }
-
 }
 
 export default injectSheet(styles)(FileComments);

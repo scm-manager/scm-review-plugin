@@ -1,6 +1,14 @@
 //@flow
-import type {BasicComment, BasicPullRequest, PullRequest} from "./types/PullRequest";
-import {apiClient, ConflictError, NotFoundError} from "@scm-manager/ui-components";
+import type {
+  BasicComment,
+  BasicPullRequest,
+  PullRequest
+} from "./types/PullRequest";
+import {
+  apiClient,
+  ConflictError,
+  NotFoundError
+} from "@scm-manager/ui-components";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
@@ -64,7 +72,7 @@ export function getBranches(url: string) {
     });
 }
 
-export function getPullRequest(url: string){
+export function getPullRequest(url: string) {
   return apiClient
     .get(url)
     .then(response => response.json())
@@ -72,11 +80,11 @@ export function getPullRequest(url: string){
       return pullRequest;
     })
     .catch(err => {
-      return {error: err};
+      return { error: err };
     });
 }
 
-export function getPullRequests(url: string){
+export function getPullRequests(url: string) {
   return apiClient
     .get(url)
     .then(response => response.json())
@@ -84,40 +92,42 @@ export function getPullRequests(url: string){
       return pullRequests;
     })
     .catch(err => {
-      return {error: err};
+      return { error: err };
     });
 }
 
-export function getSubscription(url: string){
+export function getSubscription(url: string) {
   return apiClient
     .get(url)
     .then(response => response.json())
     .catch(err => {
-      return {error: err};
+      return { error: err };
     });
 }
 
-export function handleSubscription(url: string){
-  return apiClient
-    .post(url)
-    .catch(err => {
-      return {error: err};
-    });
+export function handleSubscription(url: string) {
+  return apiClient.post(url).catch(err => {
+    return { error: err };
+  });
 }
 
-export function merge(url: string, pullRequest: PullRequest){
+export function merge(url: string, pullRequest: PullRequest) {
   return apiClient
-    .post(url, {
-      sourceRevision: pullRequest.source,
-      targetRevision: pullRequest.target
-    }, "application/vnd.scmm-mergeCommand+json")
+    .post(
+      url,
+      {
+        sourceRevision: pullRequest.source,
+        targetRevision: pullRequest.target
+      },
+      "application/vnd.scmm-mergeCommand+json"
+    )
     .catch(err => {
       if (err instanceof ConflictError) {
-        return {conflict: err};
+        return { conflict: err };
       } else if (err instanceof NotFoundError) {
-        return {notFound: err};
+        return { notFound: err };
       } else {
-        return {error: err};
+        return { error: err };
       }
     });
 }
@@ -127,11 +137,11 @@ export function getChangesets(url: string) {
     .get(url)
     .then(response => response.json())
     .catch(err => {
-      return {error: err};
+      return { error: err };
     });
 }
 
-export function getPullRequestComments(url: string){
+export function getPullRequestComments(url: string) {
   return apiClient
     .get(url)
     .then(response => response.json())
@@ -139,37 +149,51 @@ export function getPullRequestComments(url: string){
       return pullRequestComments;
     })
     .catch(err => {
-      return {error: err};
+      return { error: err };
     });
 }
 
-export function deletePullRequestComment(url: string){
+export function deletePullRequestComment(url: string) {
   return apiClient
     .delete(url)
     .then(response => {
       return response;
     })
     .catch(err => {
-      return {error: err};
+      return { error: err };
     });
 }
 
-export function createChangesetUrl(repository: Repository, source: string, target: string) {
+export function createChangesetUrl(
+  repository: Repository,
+  source: string,
+  target: string
+) {
   return createIncomingUrl(repository, "incomingChangesets", source, target);
 }
 
-export function createDiffUrl(repository: Repository, source: string, target: string) {
+export function createDiffUrl(
+  repository: Repository,
+  source: string,
+  target: string
+) {
   return createIncomingUrl(repository, "incomingDiff", source, target);
 }
 
-function createIncomingUrl(repository: Repository, linkName: string, source: string, target: string) {
+function createIncomingUrl(
+  repository: Repository,
+  linkName: string,
+  source: string,
+  target: string
+) {
   const link = repository._links[linkName];
   if (link && link.templated) {
-    return link.href.replace("{source}", encodeURIComponent(source)).replace("{target}", encodeURIComponent(target));
+    return link.href
+      .replace("{source}", encodeURIComponent(source))
+      .replace("{target}", encodeURIComponent(target));
   }
 }
 
-export function reject(pullRequest: PullRequest){
-  return apiClient
-    .post(pullRequest._links.reject.href);
+export function reject(pullRequest: PullRequest) {
+  return apiClient.post(pullRequest._links.reject.href);
 }

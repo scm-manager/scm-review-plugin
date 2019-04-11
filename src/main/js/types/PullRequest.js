@@ -7,6 +7,11 @@ export type BasicPullRequest = {
   title: string
 };
 
+export type DisplayedUser = {
+  id: string,
+  displayName: string
+};
+
 export type PullRequest = BasicPullRequest & {
   description?: string,
   author: string,
@@ -21,11 +26,6 @@ export type Location = {
   file: string,
   hunk?: string,
   changeId?: string
-};
-
-export type DisplayedUser = {
-  id: string,
-  displayName: string
 };
 
 export type BasicComment = {

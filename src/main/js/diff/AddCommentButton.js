@@ -1,7 +1,7 @@
 //@flow
 import React from "react";
 import { translate, type TFunction } from "react-i18next";
-import {Button} from '@scm-manager/ui-components';
+import { Button } from "@scm-manager/ui-components";
 
 type Props = {
   action: () => void,
@@ -10,7 +10,6 @@ type Props = {
 };
 
 class AddCommentButton extends React.Component<Props> {
-
   render() {
     const { action, t } = this.props;
     return (
@@ -24,7 +23,6 @@ class AddCommentButton extends React.Component<Props> {
       </Button>
     );
   }
-
 }
 
 export default translate("plugins")(AddCommentButton);

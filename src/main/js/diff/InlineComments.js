@@ -13,19 +13,13 @@ type Props = {
   children: React.Node,
   // context props
   classes: any
-}
+};
 
 class InlineComments extends React.Component<Props> {
-
   render() {
     const { children, classes } = this.props;
-    return (
-      <div className={classes.comments}>
-        {children}
-      </div>
-    );
+    return <div className={classes.comments}>{children}</div>;
   }
-
 }
 
 export default injectSheet(styles)(InlineComments);

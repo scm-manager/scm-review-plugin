@@ -1,8 +1,8 @@
 // @flow
 import React from "react";
-import {ErrorNotification, Loading} from "@scm-manager/ui-components";
-import type { Comments, PullRequest} from "../types/PullRequest";
-import {getPullRequestComments} from "../pullRequest";
+import { ErrorNotification, Loading } from "@scm-manager/ui-components";
+import type { Comments, PullRequest } from "../types/PullRequest";
+import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
 
@@ -25,10 +25,10 @@ class PullRequestComments extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    const {pullRequest} = this.props;
+    const { pullRequest } = this.props;
     if (pullRequest && pullRequest._links && pullRequest._links.comments) {
       this.updatePullRequestComments();
-    }else{
+    } else {
       this.setState({
         loading: false
       });
@@ -38,7 +38,7 @@ class PullRequestComments extends React.Component<Props, State> {
   handleError = (error: Error) => {
     this.setState({
       loading: false,
-      error : error
+      error: error
     });
   };
 
@@ -63,35 +63,52 @@ class PullRequestComments extends React.Component<Props, State> {
   };
 
   render() {
-    const {loading, error, pullRequestComments} = this.state;
+    const { loading, error, pullRequestComments } = this.state;
 
     if (error) {
       return <ErrorNotification error={error} />;
     }
 
     if (loading) {
-      return <Loading/>;
+      return <Loading />;
     }
     if (!pullRequestComments) {
-      return <div/>;
+      return <div />;
     }
 
-    if (pullRequestComments && pullRequestComments._embedded && pullRequestComments._embedded.pullRequestComments) {
+    if (
+      pullRequestComments &&
+      pullRequestComments._embedded &&
+      pullRequestComments._embedded.pullRequestComments
+    ) {
       const comments = pullRequestComments._embedded.pullRequestComments;
-      const createLink = pullRequestComments._links.create? pullRequestComments._links.create.href: null;
+      const createLink = pullRequestComments._links.create
+        ? pullRequestComments._links.create.href
+        : null;
       return (
         <>
-          {comments.map((comment) => {
-            return (<PullRequestComment comment={comment} refresh={this.updatePullRequestComments} handleError={this.handleError} />);
+          {comments.map(comment => {
+            return (
+              <PullRequestComment
+                comment={comment}
+                refresh={this.updatePullRequestComments}
+                handleError={this.handleError}
+              />
+            );
           })}
-          {createLink?
-            (<CreateComment url={createLink} refresh={this.updatePullRequestComments} handleError={this.handleError} />)
-            :""}
+          {createLink ? (
+            <CreateComment
+              url={createLink}
+              refresh={this.updatePullRequestComments}
+              handleError={this.handleError}
+            />
+          ) : (
+            ""
+          )}
         </>
       );
     }
   }
-
 }
 
 export default PullRequestComments;
