@@ -79,7 +79,7 @@ class Edit extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, t, pullRequest , userAutocompleteLink} = this.props;
+    const { repository, t, pullRequest, userAutocompleteLink } = this.props;
     const { loading, error } = this.state;
 
     let notification = null;

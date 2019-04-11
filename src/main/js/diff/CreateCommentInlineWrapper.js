@@ -17,19 +17,13 @@ type Props = {
   children: React.Node,
   // context props
   classes: any
-}
+};
 
 class CreateCommentInlineWrapper extends React.Component<Props> {
-
   render() {
     const { classes, children } = this.props;
-    return (
-      <div className={classes.wrapper}>
-        { children }
-      </div>
-    );
+    return <div className={classes.wrapper}>{children}</div>;
   }
-
 }
 
 export default injectSheet(styles)(CreateCommentInlineWrapper);

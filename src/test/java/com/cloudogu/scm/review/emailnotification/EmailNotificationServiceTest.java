@@ -114,7 +114,7 @@ class EmailNotificationServiceTest {
 
     service.sendEmails(emailRenderer, subscriber, null);
 
-    verify(mailService, never()).send(any());
+    verify(mailService, never()).send(any(Email.class));
     reset(mailService);
   }
 

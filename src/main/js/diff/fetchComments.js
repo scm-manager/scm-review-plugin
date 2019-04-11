@@ -4,13 +4,16 @@ import { createHunkIdFromLocation } from "./locations";
 import type { Comment } from "../types/PullRequest";
 
 type FileComments = {
-  [string]: { // path
+  [string]: {
+    // path
     comments: Comment[]
   }
 };
 type LineComments = {
-  [string]: { // hunkid
-    [string]: { // changeid
+  [string]: {
+    // hunkid
+    [string]: {
+      // changeid
       comments: Comment[]
     }
   }

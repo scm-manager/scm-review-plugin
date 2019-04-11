@@ -66,7 +66,12 @@ class EditForm extends React.Component<Props, State> {
   };
 
   selectName = (selection: SelectValue) => {
-    if (this.state.reviewer && ( this.state.reviewer.length === 0  || this.state.reviewer.filter(value => value.id === selection.value.id).length === 0)){
+    if (
+      this.state.reviewer &&
+      (this.state.reviewer.length === 0 ||
+        this.state.reviewer.filter(value => value.id === selection.value.id)
+          .length === 0)
+    ) {
       this.state.reviewer.push({
         id: selection.value.id,
         displayName: selection.value.displayName
