@@ -48,10 +48,12 @@ class CreateForm extends React.Component<Props, State> {
           error: result.error
         });
       } else {
+        console.log("Branches:", result);
         const initialSource = source ? source : result[0];
-        const initialTarget = target ? target : result[0];
+        const initialTarget = target ? target : (result.defaultBranch? result.defaultBranch.name: result[0]);
+        console.log("target", initialTarget);
         this.setState({
-          branches: result,
+          branches: result.branchNames,
           loading: false,
           pullRequest: {
             source: initialSource,

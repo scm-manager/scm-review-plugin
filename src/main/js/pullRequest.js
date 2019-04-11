@@ -55,7 +55,9 @@ export function getBranches(url: string) {
     .then(response => response.json())
     .then(collection => collection._embedded.branches)
     .then(branches => {
-      return branches.map(b => b.name);
+      const branchNames = branches.map(b => b.name);
+      const defaultBranch = branches.find(b => b.defaultBranch);
+      return { branchNames, defaultBranch };
     })
     .catch(err => {
       return { error: err };

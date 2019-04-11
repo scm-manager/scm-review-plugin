@@ -29,10 +29,12 @@ describe("API create pull request", () => {
     _embedded: {
       branches: [
         {
-          name: "branchA"
+          name: "branchA",
+          defaultBranch: false
         },
         {
-          name: "branchB"
+          name: "branchB",
+          defaultBranch: true
         }
       ]
     }
@@ -70,7 +72,7 @@ describe("API create pull request", () => {
     fetchMock.getOnce("/api/v2" + BRANCH_URL, branchRequest);
 
     getBranches(BRANCH_URL).then(response => {
-      expect(response).toEqual(["branchA", "branchB"]);
+      expect(response).toEqual({branchNames: ["branchA", "branchB"], defaultBranch: {name:"branchB", defaultBranch:true}});
       expect(response.error).toBeUndefined();
       done();
     });
