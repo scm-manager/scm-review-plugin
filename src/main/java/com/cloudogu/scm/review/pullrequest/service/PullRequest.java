@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,22 +37,22 @@ public class PullRequest {
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
   private PullRequestStatus status;
-  private Set<Recipient> subscriber = new HashSet<>();
-  private Set<Recipient> reviewer = new HashSet<>();
+  private Set<String> subscriber = new HashSet<>();
+  private Set<String> reviewer = new HashSet<>();
 
-  public Set<Recipient> getSubscriber() {
+  public Set<String> getSubscriber() {
     return unmodifiableSet(subscriber);
   }
 
-  public Set<Recipient> getReviewer() {
+  public Set<String> getReviewer() {
     return unmodifiableSet(reviewer);
   }
 
-  public void addSubscriber(Recipient recipient) {
+  public void addSubscriber(String recipient) {
     this.subscriber.add(recipient);
   }
 
-  public void removeSubscriber(Recipient recipient) {
+  public void removeSubscriber(String recipient) {
     this.subscriber.remove(recipient);
   }
 }

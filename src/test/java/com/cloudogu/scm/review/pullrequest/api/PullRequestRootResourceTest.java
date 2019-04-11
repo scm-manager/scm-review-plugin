@@ -11,7 +11,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
-import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
@@ -49,7 +48,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
@@ -543,7 +541,7 @@ public class PullRequestRootResourceTest {
   public void shouldGetTheUnsubscribeLink() throws URISyntaxException, IOException {
     // the PR has no subscriber
     PullRequest pullRequest = createPullRequest();
-    pullRequest.setSubscriber(singleton(new Recipient("user1", "email@d.de")));
+    pullRequest.setSubscriber(singleton("user1"));
 
     when(store.get("1")).thenReturn(pullRequest);
     Subject subject = mock(Subject.class);

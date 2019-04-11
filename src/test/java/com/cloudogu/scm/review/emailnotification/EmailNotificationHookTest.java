@@ -7,7 +7,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
-import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.google.common.collect.Lists;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,23 +45,23 @@ class EmailNotificationHookTest {
   @InjectMocks
   EmailNotificationHook emailNotificationHook;
   private PullRequest pullRequest;
-  private Set<Recipient> subscriber;
+  private Set<String> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
   private PullRequestComment comment;
   private PullRequestComment oldComment;
-  private HashSet<Recipient> reviewers;
+  private HashSet<String> reviewers;
 
   @BeforeEach
   void setUp() {
     pullRequest = TestData.createPullRequest();
 
-    Recipient recipient1 = new Recipient("user1", "email1@d.de");
-    Recipient recipient2 = new Recipient("user2", "email1@d.de");
+    String recipient1 = "user1";
+    String recipient2 = "user2";
     subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
     pullRequest.setSubscriber(subscriber);
-    Recipient recipient3 = new Recipient("user3", "email1@d.de");
-    Recipient recipient4 = new Recipient("user4", "email1@d.de");
+    String recipient3 = "user3";
+    String recipient4 = "user4";
     reviewers = Sets.newHashSet(Lists.newArrayList(recipient3, recipient4));
     pullRequest.setReviewer(reviewers);
     repository = createHeartOfGold();
