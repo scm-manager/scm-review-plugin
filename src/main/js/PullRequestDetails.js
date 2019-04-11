@@ -321,13 +321,16 @@ class PullRequestDetails extends React.Component<Props, State> {
         pullRequest.id +
         "/edit";
       editButton = (
-        <a className="media-right">
-          <span className="icon is-small">
-            <Link to={toEdit}>
+        <div className="media-right">
+          <Button link={toEdit} color="primary">
+            <span className="icon is-small">
               <i className="fas fa-edit" />
-            </Link>
-          </span>
-        </a>
+            </span>
+            <span className="is-hidden-mobile">
+              {t("scm-review-plugin.edit.button")}
+            </span>
+          </Button>
+        </div>
       );
     }
 
@@ -392,7 +395,20 @@ class PullRequestDetails extends React.Component<Props, State> {
                 {targetBranchDeletedWarning}
               </div>
             </div>
-            <div className="media-right">{pullRequest.status}</div>
+            <div className="media-right">
+              <span
+                className={classNames(
+                  "tag is-medium",
+                  pullRequest.status === "MERGED"
+                    ? "is-success"
+                    : pullRequest.status === "REJECTED"
+                    ? "is-danger"
+                    : "is-medium"
+                )}
+              >
+                {pullRequest.status}
+              </span>
+            </div>
           </div>
 
           {description}

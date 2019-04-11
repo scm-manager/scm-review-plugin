@@ -7,6 +7,7 @@
       "submitButton": "Submit"
     },
     "edit": {
+      "button": "Edit pull request",
       "title": "Pull Request",
       "subtitle": "Edit pull request for {{repositoryName}}",
       "submitButton": "Save",

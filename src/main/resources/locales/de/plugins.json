@@ -7,6 +7,7 @@
       "submitButton": "Speichern"
     },
     "edit": {
+      "button": "Pull Request bearbeiten",
       "title": "Pull Request",
       "subtitle": "Pull Request ändern für {{repositoryName}}",
       "submitButton": "Speichern",
