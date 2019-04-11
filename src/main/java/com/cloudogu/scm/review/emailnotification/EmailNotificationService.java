@@ -4,11 +4,9 @@ import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import lombok.extern.slf4j.Slf4j;
 import org.codemonkey.simplejavamail.Email;
 import sonia.scm.config.ScmConfiguration;
-import sonia.scm.mail.api.MailContentRenderer;
 import sonia.scm.mail.api.MailContext;
 import sonia.scm.mail.api.MailSendParams;
 import sonia.scm.mail.api.MailService;
-import sonia.scm.mail.spi.MailContentRendererFactory;
 
 import javax.inject.Inject;
 import javax.mail.Message;
@@ -25,14 +23,12 @@ public class EmailNotificationService {
   private final MailService mailService;
   private final ScmConfiguration configuration;
   private final MailContext mailContext;
-  private final MailContentRendererFactory rendererFactory;
 
   @Inject
-  public EmailNotificationService(MailService mailService, ScmConfiguration configuration, MailContext mailContext, MailContentRendererFactory rendererFactory) {
+  public EmailNotificationService(MailService mailService, ScmConfiguration configuration, MailContext mailContext) {
     this.mailService = mailService;
     this.configuration = configuration;
     this.mailContext = mailContext;
-    this.rendererFactory = rendererFactory;
   }
 
   public void sendEmails(MailTextResolver mailTextResolver, Set<Recipient> recipients, Set<Recipient> reviewer) throws Exception {
@@ -50,27 +46,23 @@ public class EmailNotificationService {
       .filter(reviewer::contains)
       .collect(Collectors.toSet());
 
-
     String path = mailTextResolver.getContentTemplatePath();
     if (!subscriberWithoutReviewers.isEmpty()) {
       Map<String, Object> templateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), false);
-      MailContentRenderer renderer = rendererFactory.createFor(path, templateModel);
-      sendEmails(subscriberWithoutReviewers, emailSubject, displayName, renderer);
+      sendEmails(subscriberWithoutReviewers, emailSubject, displayName, path, templateModel);
     }
 
     if (!subscribingReviewers.isEmpty()){
       Map<String, Object> reviewerTemplateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), true);
-      MailContentRenderer reviewerRenderer = rendererFactory.createFor(path, reviewerTemplateModel);
-      sendEmails(subscribingReviewers, emailSubject, displayName, reviewerRenderer);
+      sendEmails(subscribingReviewers, emailSubject, displayName, path, reviewerTemplateModel);
     }
   }
 
-
-  private void sendEmails(Set<Recipient> recipients,  String emailSubject, String displayName, MailContentRenderer renderer) throws Exception {
-    MailSendParams mailSendParams = new MailSendParams(renderer);
+  private void sendEmails(Set<Recipient> recipients, String emailSubject, String displayName, String path, Map<String, Object> templateModel) throws Exception {
+    MailSendParams mailSendParams = mailContext.withTemplate(path).andModel(templateModel);
     for (Recipient recipient : recipients) {
       if (!recipient.getAddress().equals(getCurrentUser().getMail())) {
-        Email email = createEmail( emailSubject, displayName);
+        Email email = createEmail(emailSubject, displayName);
         email.addRecipient(recipient.getName(), recipient.getAddress(), Message.RecipientType.TO);
         mailSendParams
           .forUserId(recipient.getName())
