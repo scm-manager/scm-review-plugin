@@ -7,7 +7,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
-import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.google.common.collect.Lists;
@@ -42,9 +41,8 @@ import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 @ExtendWith(MockitoExtension.class)
 class EmailRendererTest {
 
-
   private PullRequest pullRequest;
-  private Set<Recipient> subscriber;
+  private Set<String> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
   private PullRequestComment comment;
@@ -66,8 +64,8 @@ class EmailRendererTest {
     when(principals.oneByType(User.class)).thenReturn(user1);
 
     pullRequest = TestData.createPullRequest();
-    Recipient recipient1 = new Recipient("user1", "email1@d.de");
-    Recipient recipient2 = new Recipient("user2", "email1@d.de");
+    String recipient1 = "user1";
+    String recipient2 = "user2";
     subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
     pullRequest.setSubscriber(subscriber);
     repository = createHeartOfGold();

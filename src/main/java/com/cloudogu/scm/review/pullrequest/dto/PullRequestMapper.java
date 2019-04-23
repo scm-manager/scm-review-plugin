@@ -5,7 +5,6 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
-import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
@@ -44,22 +43,21 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   public abstract PullRequest map(PullRequestDto dto);
 
   @Named("mapReviewerFromDto")
-  Set<Recipient> mapReviewerFromDto(Set<DisplayedUser> reviewer) {
+  Set<String> mapReviewerFromDto(Set<DisplayedUser> reviewer) {
     return reviewer
       .stream()
       .map(DisplayedUser::getId)
       .map(userDisplayManager::get)
       .filter(Optional::isPresent)
       .map(Optional::get)
-      .map(user -> new Recipient(user.getId(), user.getMail()))
+      .map(user -> user.getId())
       .collect(Collectors.toSet());
   }
 
   @Named("mapReviewer")
-  Set<DisplayedUser> mapReviewer(Set<Recipient> reviewer) {
+  Set<DisplayedUser> mapReviewer(Set<String> reviewer) {
     return reviewer
       .stream()
-      .map(Recipient::getName)
       .map(userDisplayManager::get)
       .filter(Optional::isPresent)
       .map(Optional::get)

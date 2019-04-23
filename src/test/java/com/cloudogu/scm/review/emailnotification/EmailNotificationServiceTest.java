@@ -1,11 +1,9 @@
 package com.cloudogu.scm.review.emailnotification;
 
-import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import com.google.common.collect.Lists;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Sets;
 import org.codemonkey.simplejavamail.Email;
 import org.junit.jupiter.api.Test;
@@ -22,18 +20,21 @@ import sonia.scm.mail.api.MailContext;
 import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.mail.api.MailService;
 import sonia.scm.template.TemplateEngineFactory;
+import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
+import sonia.scm.user.UserDisplayManager;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Set;
 
+import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mapstruct.ap.internal.util.Collections.asSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +54,9 @@ class EmailNotificationServiceTest {
   @Mock
   private ScmConfiguration configuration;
 
+  @Mock
+  private UserDisplayManager userDisplayManager;
+
   @InjectMocks
   EmailNotificationService service;
 
@@ -63,14 +67,19 @@ class EmailNotificationServiceTest {
 
     ThreadContext.bind(subject);
 
+    when(userDisplayManager.get(any())).thenAnswer(invocation -> {
+      String id = invocation.getArgument(0).toString();
+      return of(DisplayUser.from(new User(id, id, id + "@example.com")));
+    });
+
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
     String currentUser = "username";
     when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
     User user1 = new User();
-    user1.setName("user1");
-    user1.setDisplayName("User 1");
+    user1.setName("owner");
+    user1.setDisplayName("Owner");
     when(principals.oneByType(User.class)).thenReturn(user1);
 
     String path = "http://www.scm-manager.com";
@@ -83,14 +92,14 @@ class EmailNotificationServiceTest {
     when(mailConfiguration.getFrom()).thenReturn("no-replay@scm-manager.com");
     when(mailService.isConfigured()).thenReturn(true);
     when(mailContext.getConfiguration()).thenReturn(mailConfiguration);
-    Recipient recipient1 = new Recipient("user1", "email1@d.de");
+    String recipient1 = "user1";
 
-    Recipient reviewer1 = new Recipient("reviewer1", "email2@d.de");
+    String reviewer1 = "reviewer1";
 
-    Recipient reviewer2 = new Recipient("reviewer2", "email3@d.de");
+    String reviewer2 = "reviewer2";
 
-    HashSet<Recipient> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, reviewer1));
-    HashSet<Recipient> reviewer = Sets.newHashSet(Lists.newArrayList(reviewer1, reviewer2));
+    Set<String> subscriber = asSet(recipient1, reviewer1);
+    Set<String> reviewer = asSet(reviewer1, reviewer2);
 
     EmailRenderer emailRenderer = mock(EmailRenderer.class);
     when(emailRenderer.getMailContent(path, templateEngineFactory, false)).thenReturn("normal content");
@@ -107,9 +116,9 @@ class EmailNotificationServiceTest {
   @Test
   void shouldNotSendEmailForNotConfiguredMailServer() throws IOException, MailSendBatchException {
     when(mailService.isConfigured()).thenReturn(false);
-    Recipient recipient1 = new Recipient("user1", "email1@d.de");
-    Recipient recipient2 = new Recipient("user2", "email1@d.de");
-    HashSet<Recipient> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
+    String recipient1 = "user1";
+    String recipient2 = "user2";
+    Set<String> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
     EmailRenderer emailRenderer = mock(EmailRenderer.class);
 
     service.sendEmails(emailRenderer, subscriber, null);

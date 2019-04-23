@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.emailnotification;
 
-import com.cloudogu.scm.review.pullrequest.service.Recipient;
 import lombok.extern.slf4j.Slf4j;
 import org.codemonkey.simplejavamail.Email;
 import sonia.scm.config.ScmConfiguration;
@@ -8,10 +7,13 @@ import sonia.scm.mail.api.MailContext;
 import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.mail.api.MailService;
 import sonia.scm.template.TemplateEngineFactory;
+import sonia.scm.user.DisplayUser;
+import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import javax.mail.Message;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,16 +27,18 @@ public class EmailNotificationService {
   private final TemplateEngineFactory templateEngineFactory;
   private final ScmConfiguration configuration;
   private final MailContext mailContext;
+  private final UserDisplayManager userDisplayManager;
 
   @Inject
-  public EmailNotificationService(MailService mailService, TemplateEngineFactory templateEngineFactory, ScmConfiguration configuration, MailContext mailContext) {
+  public EmailNotificationService(MailService mailService, TemplateEngineFactory templateEngineFactory, ScmConfiguration configuration, MailContext mailContext, UserDisplayManager userDisplayManager) {
     this.mailService = mailService;
     this.templateEngineFactory = templateEngineFactory;
     this.configuration = configuration;
     this.mailContext = mailContext;
+    this.userDisplayManager = userDisplayManager;
   }
 
-  public void sendEmails(EmailRenderer emailRenderer, Set<Recipient> recipients, Set<Recipient> reviewer) throws IOException, MailSendBatchException {
+  public void sendEmails(EmailRenderer emailRenderer, Set<String> recipients, Set<String> reviewer) throws IOException, MailSendBatchException {
     if (!mailService.isConfigured()){
       log.warn("cannot send Email because the mail server is not configured");
       return ;
@@ -43,10 +47,10 @@ public class EmailNotificationService {
     final String emailSubject = emailRenderer.getMailSubject();
     final String displayName = getCurrentUserDisplayName();
 
-    Set<Recipient> subscriberWithoutReviewers = recipients.stream()
+    Set<String> subscriberWithoutReviewers = recipients.stream()
       .filter(recipient -> !reviewer.contains(recipient))
       .collect(Collectors.toSet());
-    Set<Recipient> subscribingReviewers = recipients.stream()
+    Set<String> subscribingReviewers = recipients.stream()
       .filter(reviewer::contains)
       .collect(Collectors.toSet());
 
@@ -58,12 +62,15 @@ public class EmailNotificationService {
     }
   }
 
-  private void sendEmails(Set<Recipient> recipients, String emailContent, String emailSubject, String displayName) throws MailSendBatchException {
-    for (Recipient recipient : recipients) {
-      if (!recipient.getAddress().equals(getCurrentUser().getMail())) {
-        Email email = createEmail(emailContent, emailSubject, displayName);
-        email.addRecipient(recipient.getName(), recipient.getAddress(), Message.RecipientType.TO);
-        mailService.send(email);
+  private void sendEmails(Set<String> recipients, String emailContent, String emailSubject, String displayName) throws MailSendBatchException {
+    for (String recipient : recipients) {
+      if (!recipient.equals(getCurrentUser().getId())) {
+        Optional<DisplayUser> displayUser = userDisplayManager.get(recipient);
+        if (displayUser.isPresent()) {
+          Email email = createEmail(emailContent, emailSubject, displayName);
+          email.addRecipient(displayUser.get().getDisplayName(), displayUser.get().getMail(), Message.RecipientType.TO);
+          mailService.send(email);
+        }
       }
     }
   }
