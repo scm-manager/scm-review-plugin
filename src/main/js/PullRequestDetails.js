@@ -322,13 +322,11 @@ class PullRequestDetails extends React.Component<Props, State> {
         "/edit";
       editButton = (
         <div className="media-right">
-          <Button link={toEdit} color="primary">
+          <Button link={toEdit} color="primary" className="reduced-mobile">
             <span className="icon is-small">
               <i className="fas fa-edit" />
             </span>
-            <span className="is-hidden-mobile">
-              {t("scm-review-plugin.edit.button")}
-            </span>
+            <span>{t("scm-review-plugin.edit.button")}</span>
           </Button>
         </div>
       );

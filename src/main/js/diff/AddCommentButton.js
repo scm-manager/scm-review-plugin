@@ -13,13 +13,11 @@ class AddCommentButton extends React.Component<Props> {
   render() {
     const { action, t } = this.props;
     return (
-      <Button action={action}>
+      <Button action={action} className="reduced-mobile">
         <span className="icon">
           <i className="fas fa-comment" />
         </span>
-        <span className="is-hidden-mobile">
-          {t("scm-review-plugin.comment.add")}
-        </span>
+        <span>{t("scm-review-plugin.comment.add")}</span>
       </Button>
     );
   }
