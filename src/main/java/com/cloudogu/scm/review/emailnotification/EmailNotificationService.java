@@ -9,7 +9,6 @@ import sonia.scm.mail.api.MailService;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,7 +31,6 @@ public class EmailNotificationService {
       return;
     }
 
-    String emailSubject = mailTextResolver.getMailSubject();
     Object principal = SecurityUtils.getSubject().getPrincipal();
 
     Set<String> subscriberWithoutReviewers = subscriber.stream()
@@ -45,25 +43,23 @@ public class EmailNotificationService {
       .filter(recipient -> !recipient.equals(principal))
       .collect(Collectors.toSet());
 
-    String path = mailTextResolver.getContentTemplatePath();
+
     if (!subscriberWithoutReviewers.isEmpty()) {
-      Map<String, Object> templateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), false);
-      sendEmails(subscriberWithoutReviewers, emailSubject, path, templateModel);
+      sendEmails(mailTextResolver, subscriberWithoutReviewers, false);
     }
 
     if (!subscribingReviewers.isEmpty()){
-      Map<String, Object> reviewerTemplateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), true);
-      sendEmails(subscribingReviewers, emailSubject, path, reviewerTemplateModel);
+      sendEmails(mailTextResolver, subscribingReviewers, true);
     }
   }
 
-  private void sendEmails(Set<String> recipients, String emailSubject, String templatePath, Map<String, Object> templateModel) throws IOException, MailSendBatchException {
+  private void sendEmails(MailTextResolver mailTextResolver, Set<String> recipients, boolean reviewer) throws IOException, MailSendBatchException {
     MailService.EnvelopeBuilder envelopeBuilder = mailService.emailTemplateBuilder()
       .fromCurrentUser();
     recipients.forEach(envelopeBuilder::toUser);
-    envelopeBuilder.withSubject(emailSubject)
-      .withTemplate(templatePath)
-      .andModel(templateModel)
+    envelopeBuilder.withSubject(mailTextResolver.getMailSubject())
+      .withTemplate(mailTextResolver.getContentTemplatePath())
+      .andModel(mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), reviewer))
       .send();
   }
 
