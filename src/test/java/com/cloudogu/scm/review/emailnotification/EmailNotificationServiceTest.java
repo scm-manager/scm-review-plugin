@@ -1,130 +1,167 @@
 package com.cloudogu.scm.review.emailnotification;
 
-import com.google.common.collect.Lists;
-import org.apache.shiro.subject.PrincipalCollection;
+import com.google.common.collect.Sets;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
-import org.assertj.core.util.Sets;
-import org.codemonkey.simplejavamail.Email;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import sonia.scm.config.ScmConfiguration;
-import sonia.scm.mail.api.MailConfiguration;
-import sonia.scm.mail.api.MailContext;
 import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.mail.api.MailService;
-import sonia.scm.template.TemplateEngineFactory;
-import sonia.scm.user.DisplayUser;
-import sonia.scm.user.User;
-import sonia.scm.user.UserDisplayManager;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
-import static java.util.Optional.of;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mapstruct.ap.internal.util.Collections.asSet;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class EmailNotificationServiceTest {
-
-  @Mock
-  TemplateEngineFactory templateEngineFactory;
 
   @Mock
   private MailService mailService;
 
-  @Mock
-  private MailContext mailContext;
+  @Mock(answer = Answers.RETURNS_SELF)
+  private MailService.EnvelopeBuilder envelopeBuilder;
+
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private MailService.SubjectBuilder subjectBuilder;
 
   @Mock
   private ScmConfiguration configuration;
 
-  @Mock
-  private UserDisplayManager userDisplayManager;
-
   @InjectMocks
-  EmailNotificationService service;
+  private EmailNotificationService service;
 
-  private final Subject subject = mock(Subject.class);
+  @Mock
+  private MailTextResolver mailTextResolver;
+
 
   @Test
-  void shouldSendEmailForSubsciberOnly() throws IOException, MailSendBatchException {
+  void shouldNotSendEmailForNotConfiguredMailServer() throws Exception {
+    when(mailService.isConfigured()).thenReturn(false);
 
-    ThreadContext.bind(subject);
+    service.sendEmails(mailTextResolver, Collections.singleton("trillian"), Collections.emptySet());
 
-    when(userDisplayManager.get(any())).thenAnswer(invocation -> {
-      String id = invocation.getArgument(0).toString();
-      return of(DisplayUser.from(new User(id, id, id + "@example.com")));
-    });
-
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(any(String.class))).thenReturn(true);
-    String currentUser = "username";
-    when(principals.getPrimaryPrincipal()).thenReturn(currentUser);
-    User user1 = new User();
-    user1.setName("owner");
-    user1.setDisplayName("Owner");
-    when(principals.oneByType(User.class)).thenReturn(user1);
-
-    String path = "http://www.scm-manager.com";
-    when(configuration.getBaseUrl()).thenReturn(path);
-
-    ArgumentCaptor<Email> emailCaptor = ArgumentCaptor.forClass(Email.class);
-    doNothing().when(mailService).send(emailCaptor.capture());
-
-    MailConfiguration mailConfiguration = mock(MailConfiguration.class);
-    when(mailConfiguration.getFrom()).thenReturn("no-replay@scm-manager.com");
-    when(mailService.isConfigured()).thenReturn(true);
-    when(mailContext.getConfiguration()).thenReturn(mailConfiguration);
-    String recipient1 = "user1";
-
-    String reviewer1 = "reviewer1";
-
-    String reviewer2 = "reviewer2";
-
-    Set<String> subscriber = asSet(recipient1, reviewer1);
-    Set<String> reviewer = asSet(reviewer1, reviewer2);
-
-    EmailRenderer emailRenderer = mock(EmailRenderer.class);
-    when(emailRenderer.getMailContent(path, templateEngineFactory, false)).thenReturn("normal content");
-    when(emailRenderer.getMailContent(path, templateEngineFactory, true)).thenReturn("reviewer content");
-    when(emailRenderer.getMailSubject()).thenReturn("subject");
-    service.sendEmails(emailRenderer, subscriber, reviewer);
-    assertThat(emailCaptor.getAllValues())
-      .hasSize(2)
-      .extracting("textHTML")
-      .containsExactlyInAnyOrder("normal content", "reviewer content");
-    reset(mailService);
+    verifyNoMoreInteractions(mailService);
   }
 
-  @Test
-  void shouldNotSendEmailForNotConfiguredMailServer() throws IOException, MailSendBatchException {
-    when(mailService.isConfigured()).thenReturn(false);
-    String recipient1 = "user1";
-    String recipient2 = "user2";
-    Set<String> subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
-    EmailRenderer emailRenderer = mock(EmailRenderer.class);
+  @Nested
+  class WithPrincipal {
 
-    service.sendEmails(emailRenderer, subscriber, null);
+    @Mock
+    private Subject subject;
 
-    verify(mailService, never()).send(any(Email.class));
-    reset(mailService);
+    private Map<String,Object> subscriberModel = Collections.singletonMap("subscriber", true);
+
+    private Map<String,Object> reviewerModel = Collections.singletonMap("reviewer", true);
+
+    @BeforeEach
+    void setUpSubject() {
+      ThreadContext.bind(subject);
+    }
+
+    @AfterEach
+    void tearDownSubject() {
+      ThreadContext.unbindSubject();
+    }
+
+    @Test
+    void shouldSendEmailForSubscriberOnly() throws IOException, MailSendBatchException {
+      mockDependencies("slarti");
+
+      service.sendEmails(mailTextResolver, Sets.newHashSet("dent", "trillian"), Collections.singleton("marvin"));
+
+      verifier().send("dent", "trillian").notSend("marvin");
+    }
+
+    @Test
+    void shouldNotSendEmailToPrincipal() throws IOException, MailSendBatchException {
+      mockDependencies("dent");
+
+      service.sendEmails(mailTextResolver, Sets.newHashSet("dent", "trillian"), Collections.emptySet());
+
+      verifier().send("trillian").notSend("dent");
+    }
+
+    @Test
+    void shouldSendEmailForReviewers() throws IOException, MailSendBatchException {
+      mockDependencies("marvin");
+
+      service.sendEmails(mailTextResolver, Collections.singleton("dent"), Collections.singleton("dent"));
+
+      verifier().send("dent").reviewer();
+    }
+
+    @Test
+    void shouldSendEmailForSubscriber() throws IOException, MailSendBatchException {
+      mockDependencies("marvin");
+
+      service.sendEmails(mailTextResolver, Collections.singleton("dent"), Collections.emptySet());
+
+      verifier().send("dent").subscriber();
+    }
+
+    private Verifier verifier() {
+      verify(envelopeBuilder).fromCurrentUser();
+      return new Verifier();
+    }
+
+    private void mockDependencies(String principal) {
+      when(mailService.isConfigured()).thenReturn(true);
+      when(configuration.getBaseUrl()).thenReturn("https://scm.hitchhiker.com");
+
+      when(mailTextResolver.getMailSubject()).thenReturn("Awesome Subject");
+      when(mailTextResolver.getContentTemplatePath()).thenReturn("/path/to/template");
+      when(mailTextResolver.getContentTemplateModel(anyString(), anyBoolean())).then(ic -> {
+        boolean reviewer = ic.getArgument(1);
+        return reviewer ? reviewerModel : subscriberModel;
+      });
+
+      when(subject.getPrincipal()).thenReturn(principal);
+
+      when(envelopeBuilder.withSubject("Awesome Subject")).thenReturn(subjectBuilder);
+      when(mailService.emailTemplateBuilder()).thenReturn(envelopeBuilder);
+    }
+
+
+
+    class Verifier {
+
+      Verifier send(String... users) {
+        for (String user : users) {
+          verify(envelopeBuilder).toUser(user);
+        }
+        return this;
+      }
+
+      Verifier notSend(String... users) {
+        for (String user : users) {
+          verify(envelopeBuilder, never()).toUser(user);
+        }
+        return this;
+      }
+
+      Verifier reviewer() {
+        verify(subjectBuilder.withTemplate("/path/to/template")).andModel(reviewerModel);
+        return this;
+      }
+
+      Verifier subscriber() {
+        verify(subjectBuilder.withTemplate("/path/to/template")).andModel(subscriberModel);
+        return this;
+      }
+    }
+
   }
 
 

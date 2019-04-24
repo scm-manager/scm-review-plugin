@@ -4,19 +4,19 @@
 <body>
 
 
-{{displayName}} modified the pull request #{{pullRequest.id}} <a href="{{link}}" >{{pullRequest.title}}</a>:
+{{displayName}} hat den Pull Request #{{pullRequest.id}} <a href="{{link}}" >{{pullRequest.title}}</a> geändert:
 
 {{#isReviewer}}
-<h3>You are chosen as reviewer for this pull request.</h3>
+<h3>Sie sind als Reviewer für diesen Pull Request ausgewählt worden.</h3>
 {{/isReviewer}}
 
-<h2>The pull request:</h2>
+<h2>Der Pull Request:</h2>
 <div>
   {{oldPullRequest.title}}
   <p>{{oldPullRequest.description}}</p>
 </div>
 
-<h2>is modified to:</h2>
+<h2>wurde geändert zu:</h2>
 <div>
   {{pullRequest.title}}
   <p>{{pullRequest.description}}</p>

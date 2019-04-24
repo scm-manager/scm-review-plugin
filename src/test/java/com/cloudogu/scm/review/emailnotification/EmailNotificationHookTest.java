@@ -86,14 +86,14 @@ class EmailNotificationHookTest {
       DynamicTest.dynamicTest(event.toString(), () -> {
         emailNotificationHook.handleCommentEvents(event);
 
-        verify(service).sendEmails(isA(CommentEventEmailRenderer.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
+        verify(service).sendEmails(isA(CommentEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
         reset(service);
       })
     );
   }
 
   @Test
-  void shouldNotSendSystemEmails() throws IOException, MailSendBatchException {
+  void shouldNotSendSystemEmails() throws Exception {
     comment.setSystemComment(true);
     CommentEvent commentEvent = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleCommentEvents(commentEvent);
@@ -112,26 +112,26 @@ class EmailNotificationHookTest {
       DynamicTest.dynamicTest(event.toString(), () -> {
         emailNotificationHook.handlePullRequestEvents(event);
 
-        verify(service).sendEmails(isA(PullRequestEventEmailRenderer.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
+        verify(service).sendEmails(isA(PullRequestEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
         reset(service);
       })
     );
   }
 
   @Test
-  void shouldSendEmailsAfterMergingPullRequest() throws IOException, MailSendBatchException {
+  void shouldSendEmailsAfterMergingPullRequest() throws Exception {
     PullRequestMergedEvent event = new PullRequestMergedEvent(repository, pullRequest);
     emailNotificationHook.handleMergedPullRequest(event);
 
-    verify(service).sendEmails(isA(PullRequestMergedEmailRenderer.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
+    verify(service).sendEmails(isA(PullRequestMergedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
   }
 
   @Test
-  void shouldSendEmailsAfterRejectingPullRequest() throws IOException, MailSendBatchException {
+  void shouldSendEmailsAfterRejectingPullRequest() throws Exception {
     PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
     emailNotificationHook.handleRejectedPullRequest(event);
 
-    verify(service).sendEmails(isA(PullRequestRejectedEmailRenderer.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
+    verify(service).sendEmails(isA(PullRequestRejectedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
   }
 
 }

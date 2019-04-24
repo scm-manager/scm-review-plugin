@@ -10,6 +10,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.EagerSingleton;
+import sonia.scm.HandlerEventType;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
@@ -29,28 +30,31 @@ public class EmailNotificationHook {
 
   @Subscribe
   public void handlePullRequestEvents(PullRequestEvent event) {
-    handleEvent(event, new PullRequestEventEmailRenderer(event));
+    handleEvent(event, new PullRequestEventMailTextResolver(event));
   }
 
   @Subscribe
   public void handleCommentEvents(CommentEvent event) {
     PullRequestComment comment = event.getItem();
-    if (comment == null || !comment.isSystemComment()) {
-      handleEvent(event, new CommentEventEmailRenderer(event));
+    if (event.getEventType() == HandlerEventType.DELETE){
+      comment = event.getOldItem();
+    }
+    if (!comment.isSystemComment()) {
+      handleEvent(event, new CommentEventMailTextResolver(event));
     }
   }
 
   @Subscribe
   public void handleMergedPullRequest(PullRequestMergedEvent event) {
-    handleEvent(event, new PullRequestMergedEmailRenderer(event));
+    handleEvent(event, new PullRequestMergedMailTextResolver(event));
   }
 
   @Subscribe
   public void handleRejectedPullRequest(PullRequestRejectedEvent event) {
-    handleEvent(event, new PullRequestRejectedEmailRenderer(event));
+    handleEvent(event, new PullRequestRejectedMailTextResolver(event));
   }
 
-  private void handleEvent(BasicPullRequestEvent event, EmailRenderer emailRenderer) {
+  private void handleEvent(BasicPullRequestEvent event, MailTextResolver mailTextResolver) {
     PullRequest pullRequest = event.getPullRequest();
     Repository repository = event.getRepository();
     if (pullRequest == null || repository == null) {
@@ -58,7 +62,7 @@ public class EmailNotificationHook {
       return;
     }
     try {
-      service.sendEmails(emailRenderer, pullRequest.getSubscriber(), pullRequest.getReviewer());
+      service.sendEmails(mailTextResolver, pullRequest.getSubscriber(), pullRequest.getReviewer());
     } catch (Exception e) {
       log.warn("Error on sending Email", e);
     }
