@@ -16,7 +16,7 @@
     "query-string": "5"
   },
   "devDependencies": {
-    "@scm-manager/ui-bundler": "^0.0.25",
+    "@scm-manager/ui-bundler": "^0.0.27",
     "fetch-mock": "^6.5.0",
     "jest": "^23.6.0",
     "node-fetch": "^2.3.0",

@@ -8,17 +8,11 @@ type Props = {
 };
 
 class StyledDiffWrapper extends React.Component<Props> {
-
   render() {
     const { children, commentable } = this.props;
     const classname = commentable ? "commentable" : "";
-    return (
-      <div className={classname}>
-        { children }
-      </div>
-    );
+    return <div className={classname}>{children}</div>;
   }
-
 }
 
 export default StyledDiffWrapper;

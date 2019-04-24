@@ -226,7 +226,7 @@ class PullRequestComment extends React.Component<Props, State> {
     const { comment, t } = this.props;
 
     let message = comment.systemComment
-      ? t("scm-review-plugin.comment.systemMessage."+comment.comment)
+      ? t("scm-review-plugin.comment.systemMessage." + comment.comment)
       : comment.comment;
     return <MarkdownView content={message} />;
   };

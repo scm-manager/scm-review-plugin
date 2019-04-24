@@ -15,7 +15,7 @@ import { Trans, translate } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
 import type { History } from "history";
 import { withRouter } from "react-router-dom";
-import queryString from 'query-string';
+import queryString from "query-string";
 
 const styles = {
   controlButtons: {

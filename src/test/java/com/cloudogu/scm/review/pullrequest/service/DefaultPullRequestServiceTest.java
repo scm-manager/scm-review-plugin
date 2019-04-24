@@ -109,19 +109,19 @@ class DefaultPullRequestServiceTest {
 
       assertThat(pullRequest.getSubscriber())
         .hasSize(1)
-        .allMatch(r -> r.getName().equals(LOGGED_IN_USER.getId()));
+        .allMatch(r -> r.equals(LOGGED_IN_USER.getId()));
     }
 
     @Test
     void shouldStoreReviewerAsSubscriber() {
       PullRequest pullRequest = createPullRequest(null, null, null);
-      pullRequest.setReviewer(singleton(new Recipient("reviewer", "reviewer@example.com")));
+      pullRequest.setReviewer(singleton("reviewer"));
 
       service.add(REPOSITORY, pullRequest);
 
       assertThat(pullRequest.getSubscriber())
         .hasSize(2)
-        .anyMatch(r -> r.getName().equals("reviewer"));
+        .anyMatch(r -> r.equals("reviewer"));
     }
 
     @Test
@@ -145,8 +145,8 @@ class DefaultPullRequestServiceTest {
     @BeforeEach
     void mockOldPullRequest() {
       oldPullRequest = createPullRequest("changed", Instant.ofEpochSecond(1_000_000), null);
-      oldPullRequest.setSubscriber(singleton(new Recipient("subscriber", "reviewer@example.com")));
-      oldPullRequest.setReviewer(singleton(new Recipient("reviewer", "reviewer@example.com")));
+      oldPullRequest.setSubscriber(singleton("subscriber"));
+      oldPullRequest.setReviewer(singleton("reviewer"));
       when(store.get("changed")).thenReturn(oldPullRequest);
     }
 
@@ -178,20 +178,20 @@ class DefaultPullRequestServiceTest {
 
       assertThat(pullRequest.getSubscriber())
         .hasSize(1)
-        .allMatch(r -> r.getName().equals("subscriber"));
+        .allMatch(r -> r.equals("subscriber"));
 
     }
 
     @Test
     void shouldAddNewReviewerAsSubscriber() {
       PullRequest pullRequest = createPullRequest("changed", null, null);
-      pullRequest.setReviewer(singleton(new Recipient("new_reviewer", "reviewer@example.com")));
+      pullRequest.setReviewer(singleton("new_reviewer"));
 
       service.update(REPOSITORY, "changed", pullRequest);
 
       assertThat(pullRequest.getSubscriber())
         .hasSize(2)
-        .anyMatch(r -> r.getName().equals("new_reviewer"));
+        .anyMatch(r -> r.equals("new_reviewer"));
     }
 
     @Test

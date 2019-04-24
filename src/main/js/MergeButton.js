@@ -74,7 +74,9 @@ class MergeButton extends React.Component<Props, State> {
       pullRequest
     } = this.props;
     const { mergeInformation } = this.state;
-    const action = mergeHasNoConflict ? this.confirmMerge : this.showInformation;
+    const action = mergeHasNoConflict
+      ? this.confirmMerge
+      : this.showInformation;
     const color = mergeHasNoConflict ? "primary" : "warning";
     return (
       <p className="control">

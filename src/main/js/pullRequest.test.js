@@ -7,12 +7,17 @@ import {
   getPullRequest,
   getPullRequests,
   createPullRequestComment,
-  merge, updatePullRequestComment
+  merge,
+  updatePullRequestComment
 } from "./pullRequest";
-import type {BasicComment, BasicPullRequest, PullRequest} from "./types/PullRequest";
-import type {Repository} from "@scm-manager/ui-types";
-import type {Comment} from "./types/PullRequest";
-import type {Comments} from "./types/PullRequest";
+import type {
+  BasicComment,
+  BasicPullRequest,
+  PullRequest
+} from "./types/PullRequest";
+import type { Repository } from "@scm-manager/ui-types";
+import type { Comment } from "./types/PullRequest";
+import type { Comments } from "./types/PullRequest";
 
 describe("API create pull request", () => {
   const PULLREQUEST_URL = "/repositories/scmadmin/TestRepo/newPullRequest";
@@ -29,10 +34,12 @@ describe("API create pull request", () => {
     _embedded: {
       branches: [
         {
-          name: "branchA"
+          name: "branchA",
+          defaultBranch: false
         },
         {
-          name: "branchB"
+          name: "branchB",
+          defaultBranch: true
         }
       ]
     }
@@ -70,7 +77,10 @@ describe("API create pull request", () => {
     fetchMock.getOnce("/api/v2" + BRANCH_URL, branchRequest);
 
     getBranches(BRANCH_URL).then(response => {
-      expect(response).toEqual(["branchA", "branchB"]);
+      expect(response).toEqual({
+        branchNames: ["branchA", "branchB"],
+        defaultBranch: { name: "branchB", defaultBranch: true }
+      });
       expect(response.error).toBeUndefined();
       done();
     });
@@ -86,9 +96,7 @@ describe("API create pull request", () => {
       done();
     });
   });
-
 });
-
 
 describe("API update pull request", () => {
   const PULLREQUEST_URL = "/repositories/scmadmin/TestRepo/newPullRequest";
@@ -132,11 +140,11 @@ describe("API update pull request", () => {
       done();
     });
   });
-
 });
 
 describe("API create comment", () => {
-  const COMMENTS_URL = "/repositories/scmadmin/TestRepo/newPullRequest/comments";
+  const COMMENTS_URL =
+    "/repositories/scmadmin/TestRepo/newPullRequest/comments";
 
   const comment: BasicComment = {
     comment: "My Comment"
@@ -169,12 +177,11 @@ describe("API create comment", () => {
       done();
     });
   });
-
-
 });
 
 describe("API update comment", () => {
-  const COMMENTS_URL = "/repositories/scmadmin/TestRepo/newPullRequest/comments/1";
+  const COMMENTS_URL =
+    "/repositories/scmadmin/TestRepo/newPullRequest/comments/1";
 
   const comment: BasicComment = {
     comment: "My Comment"
@@ -207,12 +214,9 @@ describe("API update comment", () => {
       done();
     });
   });
-
-
 });
 
 describe("API get pull request", () => {
-
   const PULLREQUEST_URL = "/pull-request/scmadmin/TestRepo/1";
 
   const pullRequest: PullRequest = {
@@ -232,32 +236,27 @@ describe("API get pull request", () => {
   });
 
   it("should fetch pull request successfully", done => {
-    fetchMock.getOnce("/api/v2" + PULLREQUEST_URL,
-      pullRequest);
+    fetchMock.getOnce("/api/v2" + PULLREQUEST_URL, pullRequest);
 
-    getPullRequest(PULLREQUEST_URL)
-      .then(response => {
-        expect(response).toEqual(pullRequest);
-        done();
-      });
+    getPullRequest(PULLREQUEST_URL).then(response => {
+      expect(response).toEqual(pullRequest);
+      done();
+    });
   });
 
   it("should fail on fetching pull request", done => {
-
     fetchMock.getOnce("/api/v2" + PULLREQUEST_URL, {
       status: 500
     });
 
-    getPullRequest(PULLREQUEST_URL)
-      .then(response => {
-        expect(response.error).toBeDefined();
-        done();
-      });
+    getPullRequest(PULLREQUEST_URL).then(response => {
+      expect(response.error).toBeDefined();
+      done();
+    });
   });
 });
 
 describe("API get pull requests", () => {
-
   const PULLREQUEST_URL = "/pull-requests/scmadmin/TestRepo";
 
   const pullRequestA: PullRequest = {
@@ -282,10 +281,7 @@ describe("API get pull requests", () => {
     _links: {}
   };
 
-  const pullRequests: PullRequest[] = [
-    pullRequestA,
-    pullRequestB
-  ];
+  const pullRequests: PullRequest[] = [pullRequestA, pullRequestB];
 
   afterEach(() => {
     fetchMock.reset();
@@ -293,73 +289,71 @@ describe("API get pull requests", () => {
   });
 
   it("should fetch pull requests successfully", done => {
-    fetchMock.getOnce("/api/v2" + PULLREQUEST_URL,
-      pullRequests);
+    fetchMock.getOnce("/api/v2" + PULLREQUEST_URL, pullRequests);
 
-    getPullRequests(PULLREQUEST_URL)
-      .then(response => {
-        expect(response).toEqual(pullRequests);
-        done();
-      });
+    getPullRequests(PULLREQUEST_URL).then(response => {
+      expect(response).toEqual(pullRequests);
+      done();
+    });
   });
 
   it("should fail on fetching pull requests", done => {
-
     fetchMock.getOnce("/api/v2" + PULLREQUEST_URL, {
       status: 500
     });
 
-    getPullRequests(PULLREQUEST_URL)
-      .then(response => {
-        expect(response.error).toBeDefined();
-        done();
-      });
+    getPullRequests(PULLREQUEST_URL).then(response => {
+      expect(response.error).toBeDefined();
+      done();
+    });
   });
 });
 
 describe("API get comments", () => {
-
   const COMMENTS_URL = "/pull-requests/scmadmin/TestRepo/1/comments";
 
   const comment_1: Comment = {
-    comment : "my 1. comment",
+    comment: "my 1. comment",
     author: "author",
     date: "2018-12-11T13:55:43.126Z",
     _links: {
       self: {
-        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+        href:
+          "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
       },
       update: {
-        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+        href:
+          "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
       },
       delete: {
-        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+        href:
+          "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
       }
     }
   };
   const comment_2: Comment = {
-    comment : "my 2. comment",
+    comment: "my 2. comment",
     author: "author",
     date: "2018-12-11T13:55:43.126Z",
     _links: {
       self: {
-        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+        href:
+          "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
       },
       update: {
-        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+        href:
+          "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
       },
       delete: {
-        href: "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
+        href:
+          "http://localhost:8081/scm/api/v2/pull-requests/scmadmin/HeartOfGold-git/1/comments/1"
       }
     }
   };
 
-  const comments: Comments ={
+  const comments: Comments = {
     _embedded: {
-      pullRequestComments: [
-        comment_1,
-        comment_2
-      ]
+      pullRequestComments: [comment_1, comment_2]
     }
   };
 
@@ -369,32 +363,27 @@ describe("API get comments", () => {
   });
 
   it("should fetch comments successfully", done => {
-    fetchMock.getOnce("/api/v2" + COMMENTS_URL,
-      comments);
+    fetchMock.getOnce("/api/v2" + COMMENTS_URL, comments);
 
-    getPullRequests(COMMENTS_URL)
-      .then(response => {
-        expect(response).toEqual(comments);
-        done();
-      });
+    getPullRequests(COMMENTS_URL).then(response => {
+      expect(response).toEqual(comments);
+      done();
+    });
   });
 
   it("should fail on fetching comments", done => {
-
     fetchMock.getOnce("/api/v2" + COMMENTS_URL, {
       status: 500
     });
 
-    getPullRequests(COMMENTS_URL)
-      .then(response => {
-        expect(response.error).toBeDefined();
-        done();
-      });
+    getPullRequests(COMMENTS_URL).then(response => {
+      expect(response.error).toBeDefined();
+      done();
+    });
   });
 });
 
 describe("API merge pull request", () => {
-
   const PULLREQUEST_URL = "/repository/scmadmin/TestRepo/merge";
 
   const pullRequest: PullRequest = {
@@ -414,51 +403,43 @@ describe("API merge pull request", () => {
   });
 
   it("should merge pull request successfully", done => {
-    fetchMock.postOnce("/api/v2" + PULLREQUEST_URL,
-      {
-        sourceRevision: pullRequest.source,
-        targetRevision: pullRequest.target
-      }
-      );
+    fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
+      sourceRevision: pullRequest.source,
+      targetRevision: pullRequest.target
+    });
 
-    merge(PULLREQUEST_URL, pullRequest)
-      .then(response => {
-        expect(response.error).toBeUndefined();
-        done();
-      });
+    merge(PULLREQUEST_URL, pullRequest).then(response => {
+      expect(response.error).toBeUndefined();
+      done();
+    });
   });
 
   it("should fail on fetching pull requests", done => {
-
     fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
       status: 500
     });
 
-    merge(PULLREQUEST_URL, pullRequest)
-      .then(response => {
-        expect(response.error).toBeDefined();
-        done();
-      });
+    merge(PULLREQUEST_URL, pullRequest).then(response => {
+      expect(response.error).toBeDefined();
+      done();
+    });
   });
 
   //TODO: test this test again when jenkins uses current version of scmm2
   xit("should return conflict on fetching pull requests", done => {
-
     fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
       status: 409
     });
 
-    merge(PULLREQUEST_URL, pullRequest)
-      .then(response => {
-        expect(response.conflict).toBeDefined();
-        expect(response.error).toBeUndefined();
-        done();
-      });
+    merge(PULLREQUEST_URL, pullRequest).then(response => {
+      expect(response.conflict).toBeDefined();
+      expect(response.error).toBeUndefined();
+      done();
+    });
   });
 });
 
 describe("createChangesetLink tests", () => {
-
   const baseRepository: Repository = {
     namespace: "hitchhiker",
     name: "deep-thought",
@@ -504,8 +485,13 @@ describe("createChangesetLink tests", () => {
   it("should encode the branch names", () => {
     const repo = createRepository("/in/{source}/{target}/changesets", true);
 
-    const link = createChangesetUrl(repo, "feature/fjords-of-african", "release/earth-2.0");
-    expect(link).toBe("/in/feature%2Ffjords-of-african/release%2Fearth-2.0/changesets");
+    const link = createChangesetUrl(
+      repo,
+      "feature/fjords-of-african",
+      "release/earth-2.0"
+    );
+    expect(link).toBe(
+      "/in/feature%2Ffjords-of-african/release%2Fearth-2.0/changesets"
+    );
   });
-
 });

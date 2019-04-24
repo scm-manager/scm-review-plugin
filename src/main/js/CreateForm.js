@@ -1,10 +1,7 @@
 //@flow
 import React from "react";
 import type { Repository } from "@scm-manager/ui-types";
-import {
-  Select,
-  ErrorNotification
-} from "@scm-manager/ui-components";
+import { Select, ErrorNotification } from "@scm-manager/ui-components";
 import type { BasicPullRequest } from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { translate } from "react-i18next";
@@ -49,9 +46,13 @@ class CreateForm extends React.Component<Props, State> {
         });
       } else {
         const initialSource = source ? source : result[0];
-        const initialTarget = target ? target : result[0];
+        const initialTarget = target
+          ? target
+          : result.defaultBranch
+          ? result.defaultBranch.name
+          : result[0];
         this.setState({
-          branches: result,
+          branches: result.branchNames,
           loading: false,
           pullRequest: {
             source: initialSource,
@@ -63,7 +64,6 @@ class CreateForm extends React.Component<Props, State> {
   }
 
   handleFormChange = (value, name: string) => {
-    console.log("change:", name, ":", value);
     this.setState(
       {
         pullRequest: {
@@ -106,7 +106,7 @@ class CreateForm extends React.Component<Props, State> {
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
-              value={pullRequest? pullRequest.source: undefined}
+              value={pullRequest ? pullRequest.source : undefined}
             />
           </div>
           <div className="column is-clipped">
@@ -116,13 +116,18 @@ class CreateForm extends React.Component<Props, State> {
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
-              value={pullRequest? pullRequest.target: undefined}
+              value={pullRequest ? pullRequest.target : undefined}
             />
           </div>
         </div>
 
-        <EditForm description={""} title={""} reviewer={[]} userAutocompleteLink={this.props.userAutocompleteLink} handleFormChange={this.handleFormChange} />
-
+        <EditForm
+          description={""}
+          title={""}
+          reviewer={[]}
+          userAutocompleteLink={this.props.userAutocompleteLink}
+          handleFormChange={this.handleFormChange}
+        />
       </form>
     );
   }
