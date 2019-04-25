@@ -11,6 +11,7 @@ import type { PullRequest } from "./types/PullRequest";
 
 type Props = {
   repository: Repository,
+  onChange: (hasChangesets: boolean) => void,
   pullRequest: PullRequest,
   baseURL: string,
   source: string,
@@ -54,7 +55,8 @@ class PullRequestInformation extends React.Component<Props> {
       baseURL,
       status,
       target,
-      source
+      source,
+      t
     } = this.props;
 
     let changesetTab = null;
@@ -67,7 +69,9 @@ class PullRequestInformation extends React.Component<Props> {
     if (status && status === "OPEN") {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
-          <Link to={`${baseURL}/changesets/`}>Commits</Link>
+          <Link to={`${baseURL}/changesets/`}>
+            {t("scm-review-plugin.pull-request.tabs.commits")}
+          </Link>
         </li>
       );
       routeChangeset = (
@@ -78,6 +82,9 @@ class PullRequestInformation extends React.Component<Props> {
               repository={repository}
               source={source}
               target={target}
+              onChange={hasChangesets => {
+                this.props.onChange(hasChangesets);
+              }}
             />
           )}
           exact
@@ -91,6 +98,9 @@ class PullRequestInformation extends React.Component<Props> {
               repository={repository}
               source={source}
               target={target}
+              onChange={hasChangesets => {
+                this.props.onChange(hasChangesets);
+              }}
             />
           )}
           exact
@@ -112,7 +122,9 @@ class PullRequestInformation extends React.Component<Props> {
       );
       diffTab = (
         <li className={this.navigationClass("diff")}>
-          <Link to={`${baseURL}/diff/`}>Diff</Link>
+          <Link to={`${baseURL}/diff/`}>
+            {t("scm-review-plugin.pull-request.tabs.diff")}
+          </Link>
         </li>
       );
     }
@@ -136,7 +148,9 @@ class PullRequestInformation extends React.Component<Props> {
 
     let commentTab = pullRequest ? (
       <li className={this.navigationClass("comments")}>
-        <Link to={`${baseURL}/comments/`}>Comments</Link>
+        <Link to={`${baseURL}/comments/`}>
+          {t("scm-review-plugin.pull-request.tabs.comments")}
+        </Link>
       </li>
     ) : (
       ""

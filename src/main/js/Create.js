@@ -34,6 +34,7 @@ type Props = {
 
 type State = {
   pullRequest?: BasicPullRequest,
+  hasChangesets?: boolean,
   loading: boolean,
   error?: Error,
   disabled: boolean
@@ -90,7 +91,7 @@ class Create extends React.Component<Props, State> {
 
   render() {
     const { repository, classes, match, t } = this.props;
-    const { pullRequest, loading, error, disabled } = this.state;
+    const { pullRequest, loading, error, disabled, hasChangesets } = this.state;
 
     const url = this.props.location.search;
     const params = queryString.parse(url);
@@ -109,6 +110,11 @@ class Create extends React.Component<Props, State> {
           target={pullRequest.target}
           status={"OPEN"}
           baseURL={match.url}
+          onChange={hasChangesets => {
+            this.setState({
+              hasChangesets
+            });
+          }}
         />
       );
     }
@@ -142,7 +148,7 @@ class Create extends React.Component<Props, State> {
               label={t("scm-review-plugin.create.submitButton")}
               action={this.submit}
               loading={loading}
-              disabled={disabled}
+              disabled={disabled || !hasChangesets}
             />
           </div>
         </div>

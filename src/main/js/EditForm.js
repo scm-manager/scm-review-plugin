@@ -100,7 +100,7 @@ class EditForm extends React.Component<Props, State> {
         <div className="field is-grouped is-grouped-multiline">
           {reviewer ? (
             <div className="control">
-              {t("scm-review-plugin.pull-request.reviewer")} :
+              {t("scm-review-plugin.pull-request.reviewer")}:
             </div>
           ) : (
             ""

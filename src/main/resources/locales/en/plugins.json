@@ -11,8 +11,8 @@
       "title": "Pull Request",
       "subtitle": "Edit pull request for {{repositoryName}}",
       "submitButton": "Save",
-      "subscribe" : "Subscribe",
-      "unsubscribe" : "Unsubscribe"
+      "subscribe": "Subscribe",
+      "unsubscribe": "Unsubscribe"
     },
     "diff": {
       "not-supported": "Diffs for pull request are not supported by the type of repository"
@@ -27,8 +27,14 @@
       "id": "ID",
       "author": "Author",
       "date": "Date",
-      "reviewer" : "Reviewers",
-      "addReviewer" : "Add Reviewer"
+      "reviewer": "Reviewers",
+      "addReviewer": "Add Reviewer",
+      "tabs": {
+        "commits": "Commits",
+        "diff": "Diff",
+        "comments": "Comments"
+      },
+      "noChangesets": "No changesets found."
     },
     "show-pull-request": {
       "error-title": "Error",
@@ -80,13 +86,13 @@
         "cancel": "No"
       },
       "systemMessage": {
-        "merged" : "The pull request has been merged.",
-        "rejected" : "The pull request has been rejected.",
-        "sourceDeleted" : "The source branch of the pull request has been deleted."
+        "merged": "The pull request has been merged.",
+        "rejected": "The pull request has been rejected.",
+        "sourceDeleted": "The source branch of the pull request has been deleted."
       },
       "tag": {
-        "inline" : "inline",
-        "system" : "system"
+        "inline": "inline",
+        "system": "system"
       }
     }
   },
