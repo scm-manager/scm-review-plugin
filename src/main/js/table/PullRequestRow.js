@@ -37,7 +37,7 @@ class PullRequestRow extends React.Component<Props> {
           {pullRequest.target}
         </td>
         <td className="is-hidden-mobile">
-          {pullRequest.author ? pullRequest.author : ""}
+          {pullRequest.author ? pullRequest.author.displayName : ""}
         </td>
         <td className="is-hidden-mobile">
           {pullRequest.creationDate ? (

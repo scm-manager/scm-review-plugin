@@ -412,7 +412,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           {description}
 
           <div className={classNames("media", classes.bottomSpace)}>
-            <div className="media-content">{pullRequest.author}</div>
+            <div className="media-content">{pullRequest.author.displayName}</div>
             <div className="media-right">
               <DateFromNow date={pullRequest.creationDate} />
             </div>

@@ -14,7 +14,7 @@ export type DisplayedUser = {
 
 export type PullRequest = BasicPullRequest & {
   description?: string,
-  author: string,
+  author: DisplayedUser,
   id: string,
   creationDate: string,
   reviewer: DisplayedUser[],
@@ -34,7 +34,7 @@ export type BasicComment = {
 };
 
 export type Comment = BasicComment & {
-  author: string,
+  author: DisplayedUser,
   date: string,
   systemComment: boolean,
   file?: string,

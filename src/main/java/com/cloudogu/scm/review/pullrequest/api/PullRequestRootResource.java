@@ -77,8 +77,8 @@ public class PullRequestRootResource {
 
     User user = CurrentUserResolver.getCurrentUser();
     verifyBranchesDiffer(pullRequestDto.getSource(), pullRequestDto.getTarget());
-    pullRequestDto.setAuthor(user.getId());
     PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
+    pullRequest.setAuthor(user.getId());
     String id = service.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();

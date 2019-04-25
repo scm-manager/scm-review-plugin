@@ -14,6 +14,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
@@ -37,16 +38,17 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")
+  @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewerFromDto")
   public abstract PullRequest map(PullRequestDto dto);
 
   @Named("mapReviewerFromDto")
-  Set<String> mapReviewerFromDto(Set<DisplayedUser> reviewer) {
+  Set<String> mapReviewerFromDto(Set<DisplayedUserDto> reviewer) {
     return reviewer
       .stream()
-      .map(DisplayedUser::getId)
+      .map(DisplayedUserDto::getId)
       .map(userDisplayManager::get)
       .filter(Optional::isPresent)
       .map(Optional::get)
@@ -55,14 +57,23 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   }
 
   @Named("mapReviewer")
-  Set<DisplayedUser> mapReviewer(Set<String> reviewer) {
+  Set<DisplayedUserDto> mapReviewer(Set<String> reviewer) {
     return reviewer
       .stream()
       .map(userDisplayManager::get)
       .filter(Optional::isPresent)
       .map(Optional::get)
-      .map(user -> new DisplayedUser(user.getId(), user.getDisplayName()))
+      .map(this::createDisplayedUserDto)
       .collect(Collectors.toSet());
+  }
+
+  @Named("mapAuthor")
+  DisplayedUserDto mapAuthor(String authorId) {
+    return userDisplayManager.get(authorId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(authorId, authorId));
+  }
+
+  String mapAuthor(DisplayedUserDto author) {
+    return author.getId();
   }
 
   public PullRequestMapper using(UriInfo uriInfo) {
@@ -87,5 +98,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
     }
     target.add(linksBuilder.build());
+  }
+
+  private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
+    return new DisplayedUserDto(user.getId(), user.getDisplayName());
   }
 }
