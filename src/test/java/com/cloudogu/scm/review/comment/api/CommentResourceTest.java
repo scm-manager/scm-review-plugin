@@ -82,7 +82,7 @@ public class CommentResourceTest {
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
+      null, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
         Providers.of(new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, Providers.of(resource))), commentService,  eventBus)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }

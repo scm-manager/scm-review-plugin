@@ -9,7 +9,9 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import sonia.scm.ScmConstraintViolationException;
+import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
 
 import javax.inject.Inject;
@@ -28,6 +30,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Comparator;
@@ -46,12 +49,14 @@ public class PullRequestRootResource {
 
   private final PullRequestMapper mapper;
   private final PullRequestService service;
+  private final RepositoryServiceFactory repositoryService;
   private final Provider<PullRequestResource> pullRequestResourceProvider;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, Provider<PullRequestResource> pullRequestResourceProvider) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, RepositoryServiceFactory repositoryService, Provider<PullRequestResource> pullRequestResourceProvider) {
     this.mapper = mapper;
     this.service = service;
+    this.repositoryService = repositoryService;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
   }
 
@@ -63,27 +68,32 @@ public class PullRequestRootResource {
   @POST
   @Path("{namespace}/{name}")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
+  public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) throws IOException {
 
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
     pullRequestDto.setStatus(PullRequestStatus.OPEN);
-    service.get(repository, pullRequestDto.getSource(), pullRequestDto.getTarget(), pullRequestDto.getStatus())
+
+    String source = pullRequestDto.getSource();
+    String target = pullRequestDto.getTarget();
+
+    service.get(repository, source, target, pullRequestDto.getStatus())
       .ifPresent(pullRequest -> {
         throw alreadyExists(entity("pull request", pullRequest.getId()).in(repository));
       });
-    service.checkBranch(repository, pullRequestDto.getSource());
-    service.checkBranch(repository, pullRequestDto.getTarget());
+    service.checkBranch(repository, source);
+    service.checkBranch(repository, source);
+
+    verifyBranchesDiffer(source, target);
+    verifyNewChangesetsOnSource(repository, source, target);
 
     User user = CurrentUserResolver.getCurrentUser();
-    verifyBranchesDiffer(pullRequestDto.getSource(), pullRequestDto.getTarget());
     PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
     pullRequest.setAuthor(user.getId());
     String id = service.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
   }
-
 
   @GET
   @Path("{namespace}/{name}")
@@ -100,6 +110,21 @@ public class PullRequestRootResource {
 
     boolean permission = PermissionCheck.mayCreate(repository);
     return Response.ok(createCollection(uriInfo, permission, pullRequestDtos, "pullRequests")).build();
+  }
+
+  private void verifyNewChangesetsOnSource(Repository repository, String source, String target) throws IOException {
+    ChangesetPagingResult changesets = repositoryService.create(repository).getLogCommand()
+      .setPagingStart(0)
+      .setPagingLimit(1)
+      .setStartChangeset(source)
+      .setAncestorChangeset(target)
+      .getChangesets();
+
+    ScmConstraintViolationException.Builder
+      .doThrow()
+      .violation("there have to be new changesets on the source branch", "pullRequest", "source")
+      .violation("there have to be new changesets on the source branch", "pullRequest", "target")
+      .when(changesets.getChangesets().isEmpty());
   }
 
   private Instant getLastModification(PullRequestDto pr) {
