@@ -13,20 +13,32 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import sonia.scm.HandlerEventType;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.Changeset;
+import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.LogCommandBuilder;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
 
+import java.io.IOException;
 import java.time.Instant;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,6 +60,8 @@ class DefaultPullRequestServiceTest {
   ScmEventBus eventBus;
   @Mock
   Subject subject;
+  @Mock
+  RepositoryServiceFactory repositoryService;
 
   @Captor
   ArgumentCaptor<Object> eventCaptor;
@@ -81,8 +95,13 @@ class DefaultPullRequestServiceTest {
       when(store.add(any())).thenReturn("new_id");
     }
 
+    @BeforeEach
+    void mockExistingDiff() throws IOException {
+      mockChangesets(new Changeset());
+    }
+
     @Test
-    void shouldStoreNewPullRequest() {
+    void shouldStoreNewPullRequest() throws NoDifferenceException {
       PullRequest pullRequest = createPullRequest(null, null, null);
 
       String newId = service.add(REPOSITORY, pullRequest);
@@ -92,7 +111,7 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
-    void shouldSetCreationDate() {
+    void shouldSetCreationDate() throws NoDifferenceException {
       PullRequest pullRequest = createPullRequest(null, null, null);
 
       service.add(REPOSITORY, pullRequest);
@@ -102,7 +121,7 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
-    void shouldStoreAuthorAsSubscriber() {
+    void shouldStoreAuthorAsSubscriber() throws NoDifferenceException {
       PullRequest pullRequest = createPullRequest(null, null, null);
 
       service.add(REPOSITORY, pullRequest);
@@ -113,7 +132,7 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
-    void shouldStoreReviewerAsSubscriber() {
+    void shouldStoreReviewerAsSubscriber() throws NoDifferenceException {
       PullRequest pullRequest = createPullRequest(null, null, null);
       pullRequest.setReviewer(singleton("reviewer"));
 
@@ -125,7 +144,7 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
-    void shouldSendEvent() {
+    void shouldSendEvent() throws NoDifferenceException {
       PullRequest pullRequest = createPullRequest(null, null, null);
 
       service.add(REPOSITORY, pullRequest);
@@ -135,6 +154,33 @@ class DefaultPullRequestServiceTest {
         .extracting("item", "oldItem", "eventType")
         .containsExactly(pullRequest, null, HandlerEventType.CREATE);
     }
+  }
+
+  @Nested
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  class ForNewPullRequestsWithoutDiff {
+
+    @BeforeEach
+    void mockMissingDiff() throws IOException {
+      mockChangesets();
+    }
+
+    @Test
+    void shouldFail() {
+      PullRequest pullRequest = createPullRequest(null, null, null);
+
+      assertThrows(NoDifferenceException.class, () -> service.add(REPOSITORY, pullRequest));
+
+      verify(store, never()).add(pullRequest);
+    }
+  }
+
+  private void mockChangesets(Changeset... changesets) throws IOException {
+    RepositoryService service = mock(RepositoryService.class);
+    when(repositoryService.create(any(Repository.class))).thenReturn(service);
+    LogCommandBuilder logCommandBuilder = mock(LogCommandBuilder.class, Mockito.RETURNS_SELF);
+    when(service.getLogCommand()).thenReturn(logCommandBuilder);
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(changesets.length, asList(changesets)));
   }
 
   @Nested

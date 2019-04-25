@@ -32,11 +32,17 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.Changeset;
+import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.LogCommandBuilder;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
@@ -53,6 +59,7 @@ import java.util.List;
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -93,6 +100,9 @@ public class PullRequestRootResourceTest {
   @Mock
   private UserDisplayManager userDisplayManager;
 
+  @Mock
+  private RepositoryServiceFactory repositoryService;
+
   @InjectMocks
   private PullRequestMapperImpl mapper ;
 
@@ -107,7 +117,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus);
+    DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryService);
     pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, commentService, eventBus)));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
@@ -120,13 +130,8 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldCreateNewValidPullRequest() throws URISyntaxException, IOException {
-    ThreadContext.bind(subject);
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    User user1 = new User();
-    user1.setName("user1");
-    user1.setDisplayName("User 1");
-    when(principals.oneByType(User.class)).thenReturn(user1);
+    mockPrincipal();
+    mockChangesets(new Changeset());
 
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request =
@@ -214,6 +219,25 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldRejectSameBranches() throws URISyntaxException, IOException {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest_sameBranches.json");
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
+        .content(pullRequestJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    verify(store, never()).add(any());
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldRejectWithoutDiff() throws URISyntaxException, IOException {
+    mockPrincipal();
+    mockChangesets();
+
+    byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request =
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
@@ -649,5 +673,23 @@ public class PullRequestRootResourceTest {
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
     verify(store, never()).update(any());
+  }
+
+  private void mockPrincipal() {
+    ThreadContext.bind(subject);
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    User user1 = new User();
+    user1.setName("user1");
+    user1.setDisplayName("User 1");
+    when(principals.oneByType(User.class)).thenReturn(user1);
+  }
+
+  private void mockChangesets(Changeset... changesets) throws IOException {
+    RepositoryService service = mock(RepositoryService.class);
+    when(repositoryService.create(any(Repository.class))).thenReturn(service);
+    LogCommandBuilder logCommandBuilder = mock(LogCommandBuilder.class, Mockito.RETURNS_SELF);
+    when(service.getLogCommand()).thenReturn(logCommandBuilder);
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(changesets.length, asList(changesets)));
   }
 }
