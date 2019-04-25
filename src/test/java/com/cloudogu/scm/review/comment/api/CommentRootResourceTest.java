@@ -23,11 +23,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletResponse;
@@ -81,6 +83,11 @@ public class CommentRootResourceTest {
   @Mock
   private CommentService commentService;
 
+  @Mock
+  private UserDisplayManager userDisplayManager;
+
+  @InjectMocks
+  private PullRequestCommentMapperImpl pullRequestCommentMapper;
 
   @Before
   public void init() {
@@ -89,7 +96,7 @@ public class CommentRootResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentRootResource resource = new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, commentResourceProvider);
+    CommentRootResource resource = new CommentRootResource(pullRequestCommentMapper, repositoryResolver, service, commentResourceProvider);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());

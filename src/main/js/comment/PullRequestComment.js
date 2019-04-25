@@ -282,7 +282,7 @@ class PullRequestComment extends React.Component<Props, State> {
         <article className="media">
           <div className="media-content is-clipped content">
             <p>
-              <strong>{comment.author} </strong>
+              <strong>{comment.author.displayName} </strong>
               <DateFromNow date={comment.date} />
               &nbsp; {tag}
               <br />
