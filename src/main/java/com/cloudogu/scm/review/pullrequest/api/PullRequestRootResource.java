@@ -5,6 +5,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
+import com.cloudogu.scm.review.pullrequest.service.NoDifferenceException;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -50,14 +51,12 @@ public class PullRequestRootResource {
 
   private final PullRequestMapper mapper;
   private final PullRequestService service;
-  private final RepositoryServiceFactory repositoryServiceFactory;
   private final Provider<PullRequestResource> pullRequestResourceProvider;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, RepositoryServiceFactory repositoryServiceFactory, Provider<PullRequestResource> pullRequestResourceProvider) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, Provider<PullRequestResource> pullRequestResourceProvider) {
     this.mapper = mapper;
     this.service = service;
-    this.repositoryServiceFactory = repositoryServiceFactory;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
   }
 
@@ -86,12 +85,21 @@ public class PullRequestRootResource {
     service.checkBranch(repository, source);
 
     verifyBranchesDiffer(source, target);
-    verifyNewChangesetsOnSource(repository, source, target);
 
     User user = CurrentUserResolver.getCurrentUser();
     PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
     pullRequest.setAuthor(user.getId());
-    String id = service.add(repository, pullRequest);
+
+    String id = null;
+    try {
+      id = service.add(repository, pullRequest);
+    } catch (NoDifferenceException e) {
+      ScmConstraintViolationException.Builder
+        .doThrow()
+        .violation("there have to be new changesets on the source branch", "pullRequest", "source")
+        .violation("there have to be new changesets on the source branch", "pullRequest", "target")
+        .when(true);
+    }
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
   }
@@ -111,23 +119,6 @@ public class PullRequestRootResource {
 
     boolean permission = PermissionCheck.mayCreate(repository);
     return Response.ok(createCollection(uriInfo, permission, pullRequestDtos, "pullRequests")).build();
-  }
-
-  private void verifyNewChangesetsOnSource(Repository repository, String source, String target) throws IOException {
-    try (RepositoryService repositoryService = this.repositoryServiceFactory.create(repository)) {
-      ChangesetPagingResult changesets = repositoryService.getLogCommand()
-        .setPagingStart(0)
-        .setPagingLimit(1)
-        .setStartChangeset(source)
-        .setAncestorChangeset(target)
-        .getChangesets();
-
-      ScmConstraintViolationException.Builder
-        .doThrow()
-        .violation("there have to be new changesets on the source branch", "pullRequest", "source")
-        .violation("there have to be new changesets on the source branch", "pullRequest", "target")
-        .when(changesets.getChangesets().isEmpty());
-    }
   }
 
   private Instant getLastModification(PullRequestDto pr) {

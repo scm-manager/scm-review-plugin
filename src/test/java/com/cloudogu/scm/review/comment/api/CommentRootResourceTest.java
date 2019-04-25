@@ -101,7 +101,7 @@ public class CommentRootResourceTest {
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-      null, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), commentService, eventBus)));
+      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), commentService, eventBus)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
 
