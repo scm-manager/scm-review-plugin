@@ -73,7 +73,11 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   }
 
   String mapAuthor(DisplayedUserDto author) {
-    return author.getId();
+    if (author == null) {
+      return null;
+    } else {
+      return author.getId();
+    }
   }
 
   public PullRequestMapper using(UriInfo uriInfo) {

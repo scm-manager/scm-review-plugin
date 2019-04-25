@@ -37,7 +37,11 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestCom
   }
 
   String mapAuthor(DisplayedUserDto author) {
-    return author.getId();
+    if (author == null) {
+      return null;
+    } else {
+      return author.getId();
+    }
   }
 
   @AfterMapping
