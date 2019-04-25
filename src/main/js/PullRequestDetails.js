@@ -428,7 +428,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           <div className="field is-grouped is-grouped-multiline">
             {pullRequest.reviewer.length > 0 ? (
               <div className="control">
-                {t("scm-review-plugin.pull-request.reviewer")} :
+                {t("scm-review-plugin.pull-request.reviewer")}:
               </div>
             ) : (
               ""
