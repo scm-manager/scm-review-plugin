@@ -11,6 +11,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
 
@@ -49,14 +50,14 @@ public class PullRequestRootResource {
 
   private final PullRequestMapper mapper;
   private final PullRequestService service;
-  private final RepositoryServiceFactory repositoryService;
+  private final RepositoryServiceFactory repositoryServiceFactory;
   private final Provider<PullRequestResource> pullRequestResourceProvider;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, RepositoryServiceFactory repositoryService, Provider<PullRequestResource> pullRequestResourceProvider) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, RepositoryServiceFactory repositoryServiceFactory, Provider<PullRequestResource> pullRequestResourceProvider) {
     this.mapper = mapper;
     this.service = service;
-    this.repositoryService = repositoryService;
+    this.repositoryServiceFactory = repositoryServiceFactory;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
   }
 
@@ -113,18 +114,20 @@ public class PullRequestRootResource {
   }
 
   private void verifyNewChangesetsOnSource(Repository repository, String source, String target) throws IOException {
-    ChangesetPagingResult changesets = repositoryService.create(repository).getLogCommand()
-      .setPagingStart(0)
-      .setPagingLimit(1)
-      .setStartChangeset(source)
-      .setAncestorChangeset(target)
-      .getChangesets();
+    try (RepositoryService repositoryService = this.repositoryServiceFactory.create(repository)) {
+      ChangesetPagingResult changesets = repositoryService.getLogCommand()
+        .setPagingStart(0)
+        .setPagingLimit(1)
+        .setStartChangeset(source)
+        .setAncestorChangeset(target)
+        .getChangesets();
 
-    ScmConstraintViolationException.Builder
-      .doThrow()
-      .violation("there have to be new changesets on the source branch", "pullRequest", "source")
-      .violation("there have to be new changesets on the source branch", "pullRequest", "target")
-      .when(changesets.getChangesets().isEmpty());
+      ScmConstraintViolationException.Builder
+        .doThrow()
+        .violation("there have to be new changesets on the source branch", "pullRequest", "source")
+        .violation("there have to be new changesets on the source branch", "pullRequest", "target")
+        .when(changesets.getChangesets().isEmpty());
+    }
   }
 
   private Instant getLastModification(PullRequestDto pr) {
