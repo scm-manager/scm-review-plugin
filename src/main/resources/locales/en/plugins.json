@@ -33,7 +33,8 @@
         "commits": "Commits",
         "diff": "Diff",
         "comments": "Comments"
-      }
+      },
+      "noChangesets": "No changesets found."
     },
     "show-pull-request": {
       "error-title": "Error",
