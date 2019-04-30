@@ -11,8 +11,8 @@
       "title": "Pull Request",
       "subtitle": "Pull Request ändern für {{repositoryName}}",
       "submitButton": "Speichern",
-      "subscribe" : "Subscribe",
-      "unsubscribe" : "Unsubscribe"
+      "subscribe": "Subscribe",
+      "unsubscribe": "Unsubscribe"
     },
     "diff": {
       "not-supported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt."
@@ -27,8 +27,13 @@
       "id": "ID",
       "author": "Autor",
       "date": "Datum",
-      "reviewer" : "Reviewers",
-      "addReviewer" : "Reviewer hinzufügen"
+      "reviewer": "Reviewers",
+      "addReviewer": "Reviewer hinzufügen",
+      "tabs": {
+        "commits": "Commits",
+        "diff": "Diff",
+        "comments": "Comments"
+      }
     },
     "show-pull-request": {
       "error-title": "Fehler",
@@ -80,13 +85,13 @@
         "cancel": "Nein"
       },
       "systemMessage": {
-        "merged" : "Der Pull-Request wurde gemerged.",
-        "rejected" : "Der Pull-Request wurde abgelehnt.",
-        "sourceDeleted" : "Der Quell-Branch des Pull-Requests wurde gelöscht."
+        "merged": "Der Pull-Request wurde gemerged.",
+        "rejected": "Der Pull-Request wurde abgelehnt.",
+        "sourceDeleted": "Der Quell-Branch des Pull-Requests wurde gelöscht."
       },
       "tag": {
-        "inline" : "inline",
-        "system" : "system"
+        "inline": "inline",
+        "system": "system"
       }
     }
   },
