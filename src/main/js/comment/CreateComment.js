@@ -95,14 +95,14 @@ class CreateComment extends React.Component<Props, State> {
           <article className="media">
             <div className="media-content">
               <div className="field">
-                <p className="control">
+                <div className="control">
                   <Textarea
                     name="comment"
                     autofocus={autofocus}
                     placeholder={t("scm-review-plugin.comment.add")}
                     onChange={this.handleChanges}
                   />
-                </p>
+                </div>
               </div>
               <div className="field">
                 <div className="level-left">
