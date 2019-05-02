@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-public class DisplayedUser {
+public class DisplayedUserDto {
 
   private String id;
   private String displayName;

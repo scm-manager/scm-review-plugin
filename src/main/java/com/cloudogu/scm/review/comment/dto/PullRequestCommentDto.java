@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.comment.dto;
 
+import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.EqualsAndHashCode;
@@ -22,7 +23,7 @@ public class PullRequestCommentDto extends HalRepresentation {
   @Size(min = 1)
   private String comment;
 
-  private String author;
+  private DisplayedUserDto author;
 
   private Instant date;
 

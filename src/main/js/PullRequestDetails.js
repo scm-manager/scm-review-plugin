@@ -330,13 +330,11 @@ class PullRequestDetails extends React.Component<Props, State> {
         "/edit";
       editButton = (
         <div className="media-right">
-          <Button link={toEdit} color="primary">
+          <Button link={toEdit} color="primary" className="reduced-mobile">
             <span className="icon is-small">
               <i className="fas fa-edit" />
             </span>
-            <span className="is-hidden-mobile">
-              {t("scm-review-plugin.edit.button")}
-            </span>
+            <span>{t("scm-review-plugin.edit.button")}</span>
           </Button>
         </div>
       );
@@ -421,57 +419,12 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           {description}
 
-          <div className={classNames(classes.userListMargin, "media")}>
+          <div className={classNames("media", classes.bottomSpace)}>
             <div className="media-content">
-              <div className="field is-horizontal">
-                <div
-                  className={classNames(
-                    classes.userLabelAlignment,
-                    "field-label is-inline-flex"
-                  )}
-                >
-                  {t("scm-review-plugin.pull-request.author")}:
-                </div>
-                <div
-                  className={classNames(
-                    classes.userFieldFlex,
-                    "field-body is-inline-flex"
-                  )}
-                >
-                  <ul className="is-separated">
-                    <li>{pullRequest.author}</li>
-                    <li className="is-info">
-                      <DateFromNow date={pullRequest.creationDate} />
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              {pullRequest.reviewer.length > 0 ? (
-                <div className="field is-horizontal">
-                  <div
-                    className={classNames(
-                      classes.userLabelAlignment,
-                      "field-label is-inline-flex"
-                    )}
-                  >
-                    {t("scm-review-plugin.pull-request.reviewer")}:
-                  </div>
-                  <div
-                    className={classNames(
-                      classes.userFieldFlex,
-                      "field-body is-inline-flex"
-                    )}
-                  >
-                    <ul className="is-separated">
-                      {pullRequest.reviewer.map(reviewer => {
-                        return <li>{reviewer.displayName}</li>;
-                      })}
-                    </ul>
-                  </div>
-                </div>
-              ) : (
-                ""
-              )}
+              {pullRequest.author.displayName}
+            </div>
+            <div className="media-right">
+              <DateFromNow date={pullRequest.creationDate} />
             </div>
           </div>
 

@@ -19,7 +19,7 @@ import java.util.Set;
 @SuppressWarnings("squid:S2160")
 public class PullRequestDto extends HalRepresentation {
   private String id;
-  private String author;
+  private DisplayedUserDto author;
   @NonNull
   @Size(min = 1)
   private String source;
@@ -33,7 +33,7 @@ public class PullRequestDto extends HalRepresentation {
   private Instant creationDate;
   private Instant lastModified;
   private PullRequestStatus status;
-  private Set<DisplayedUser> reviewer = new HashSet<>();
+  private Set<DisplayedUserDto> reviewer = new HashSet<>();
 
 
   @Override

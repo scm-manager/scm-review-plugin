@@ -8,10 +8,15 @@ import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.google.inject.Inject;
 import sonia.scm.HandlerEventType;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.ChangesetPagingResult;
+import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -25,22 +30,42 @@ public class DefaultPullRequestService implements PullRequestService {
   private final RepositoryResolver repositoryResolver;
   private final PullRequestStoreFactory storeFactory;
   private final ScmEventBus eventBus;
+  private final RepositoryServiceFactory repositoryServiceFactory;
 
   @Inject
-  public DefaultPullRequestService(RepositoryResolver repositoryResolver, BranchResolver branchResolver, PullRequestStoreFactory storeFactory, ScmEventBus eventBus) {
+  public DefaultPullRequestService(RepositoryResolver repositoryResolver, BranchResolver branchResolver, PullRequestStoreFactory storeFactory, ScmEventBus eventBus, RepositoryServiceFactory repositoryServiceFactory) {
     this.repositoryResolver = repositoryResolver;
     this.branchResolver = branchResolver;
     this.storeFactory = storeFactory;
     this.eventBus = eventBus;
+    this.repositoryServiceFactory = repositoryServiceFactory;
   }
 
   @Override
-  public String add(Repository repository, PullRequest pullRequest) {
+  public String add(Repository repository, PullRequest pullRequest) throws NoDifferenceException {
+    verifyNewChangesetsOnSource(repository, pullRequest.getSource(), pullRequest.getTarget());
     pullRequest.setCreationDate(Instant.now());
     pullRequest.setLastModified(null);
     computeSubscriberForNewPullRequest(pullRequest);
     eventBus.post(new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE));
     return getStore(repository).add(pullRequest);
+  }
+
+  private void verifyNewChangesetsOnSource(Repository repository, String source, String target) throws NoDifferenceException {
+    try (RepositoryService repositoryService = this.repositoryServiceFactory.create(repository)) {
+      ChangesetPagingResult changesets = repositoryService.getLogCommand()
+        .setPagingStart(0)
+        .setPagingLimit(1)
+        .setStartChangeset(source)
+        .setAncestorChangeset(target)
+        .getChangesets();
+
+      if (changesets.getChangesets().isEmpty()) {
+        throw new NoDifferenceException();
+      }
+    } catch (IOException e) {
+      throw new InternalRepositoryException(repository, "error checking for diffs between branches", e);
+    }
   }
 
   private void computeSubscriberForNewPullRequest(PullRequest pullRequest) {

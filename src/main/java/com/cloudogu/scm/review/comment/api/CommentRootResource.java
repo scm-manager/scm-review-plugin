@@ -70,10 +70,11 @@ public class CommentRootResource {
     PermissionCheck.checkComment(repositoryResolver.resolve(new NamespaceAndName(namespace, name)));
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkComment(repository);
-    pullRequestCommentDto.setDate(Instant.now());
-    pullRequestCommentDto.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
 
-    String id = service.add(repository,  pullRequestId, mapper.map(pullRequestCommentDto));
+    PullRequestComment comment = mapper.map(pullRequestCommentDto);
+    comment.setDate(Instant.now());
+    comment.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
+    String id = service.add(repository,  pullRequestId, comment);
     URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(id)).build();
     return Response.created(location).build();
   }

@@ -23,7 +23,7 @@ public interface PullRequestService {
    *
    * @return the id of the created pull request
    */
-  String add(Repository repository, PullRequest pullRequest);
+  String add(Repository repository, PullRequest pullRequest) throws NoDifferenceException;
 
 
   /**
