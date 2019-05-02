@@ -13,7 +13,7 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { translate } from "react-i18next";
-import { Link, withRouter } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import {
   getSubscription,
   handleSubscription,
@@ -28,8 +28,16 @@ import classNames from "classnames";
 import RejectButton from "./RejectButton";
 
 const styles = {
-  bottomSpace: {
+  userListMargin: {
     marginBottom: "1.5em"
+  },
+  userLabelAlignment: {
+    textAlign: "left",
+    marginRight: 0,
+    minWidth: "5.5em"
+  },
+  userFieldFlex: {
+    flexGrow: 6
   },
   tagShorter: {
     overflow: "hidden",
@@ -413,10 +421,57 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           {description}
 
-          <div className={classNames("media", classes.bottomSpace)}>
-            <div className="media-content">{pullRequest.author}</div>
-            <div className="media-right">
-              <DateFromNow date={pullRequest.creationDate} />
+          <div className={classNames(classes.userListMargin, "media")}>
+            <div className="media-content">
+              <div className="field is-horizontal">
+                <div
+                  className={classNames(
+                    classes.userLabelAlignment,
+                    "field-label is-inline-flex"
+                  )}
+                >
+                  {t("scm-review-plugin.pull-request.author")}:
+                </div>
+                <div
+                  className={classNames(
+                    classes.userFieldFlex,
+                    "field-body is-inline-flex"
+                  )}
+                >
+                  <ul className="is-separated">
+                    <li>{pullRequest.author}</li>
+                    <li className="is-info">
+                      <DateFromNow date={pullRequest.creationDate} />
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              {pullRequest.reviewer.length > 0 ? (
+                <div className="field is-horizontal">
+                  <div
+                    className={classNames(
+                      classes.userLabelAlignment,
+                      "field-label is-inline-flex"
+                    )}
+                  >
+                    {t("scm-review-plugin.pull-request.reviewer")}:
+                  </div>
+                  <div
+                    className={classNames(
+                      classes.userFieldFlex,
+                      "field-body is-inline-flex"
+                    )}
+                  >
+                    <ul className="is-separated">
+                      {pullRequest.reviewer.map(reviewer => {
+                        return <li>{reviewer.displayName}</li>;
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           </div>
 
@@ -426,24 +481,6 @@ class PullRequestDetails extends React.Component<Props, State> {
               <div className="level-item">{mergeButton}</div>
             </div>
             {subscription}
-          </div>
-          <div className="field is-grouped is-grouped-multiline">
-            {pullRequest.reviewer.length > 0 ? (
-              <div className="control">
-                {t("scm-review-plugin.pull-request.reviewer")} :
-              </div>
-            ) : (
-              ""
-            )}
-            {pullRequest.reviewer.map(reviewer => {
-              return (
-                <div className="control">
-                  <div className="tags">
-                    <span className="tag is-info">{reviewer.displayName}</span>
-                  </div>
-                </div>
-              );
-            })}
           </div>
 
           <PullRequestInformation
