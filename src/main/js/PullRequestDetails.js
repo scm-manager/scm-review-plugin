@@ -366,6 +366,61 @@ class PullRequestDetails extends React.Component<Props, State> {
       </span>
     ) : null;
 
+    const author = (
+      <div className="field is-horizontal">
+        <div
+          className={classNames(
+            classes.userLabelAlignment,
+            "field-label is-inline-flex"
+          )}
+        >
+          {t("scm-review-plugin.pull-request.author")}:
+        </div>
+        <div
+          className={classNames(
+            classes.userFieldFlex,
+            "field-body is-inline-flex"
+          )}
+        >
+          <ul className="is-separated">
+            <li>{pullRequest.author.displayName}</li>
+            <li className="is-info">
+              <DateFromNow date={pullRequest.creationDate} />
+            </li>
+          </ul>
+        </div>
+      </div>
+    );
+    const reviewerList = (
+      <>
+        {pullRequest.reviewer.length > 0 ? (
+          <div className="field is-horizontal">
+            <div
+              className={classNames(
+                classes.userLabelAlignment,
+                "field-label is-inline-flex"
+              )}
+            >
+              {t("scm-review-plugin.pull-request.reviewer")}:
+            </div>
+            <div
+              className={classNames(
+                classes.userFieldFlex,
+                "field-body is-inline-flex"
+              )}
+            >
+              <ul className="is-separated">
+                {pullRequest.reviewer.map(reviewer => {
+                  return <li key={reviewer.id}>{reviewer.displayName}</li>;
+                })}
+              </ul>
+            </div>
+          </div>
+        ) : (
+          ""
+        )}
+      </>
+    );
     return (
       <div className="columns">
         <div className="column is-clipped">
@@ -421,57 +476,8 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           <div className={classNames(classes.userListMargin, "media")}>
             <div className="media-content">
-              <div className="field is-horizontal">
-                <div
-                  className={classNames(
-                    classes.userLabelAlignment,
-                    "field-label is-inline-flex"
-                  )}
-                >
-                  {t("scm-review-plugin.pull-request.author")}:
-                </div>
-                <div
-                  className={classNames(
-                    classes.userFieldFlex,
-                    "field-body is-inline-flex"
-                  )}
-                >
-                  <ul className="is-separated">
-                    <li>{pullRequest.author.displayName}</li>
-                    <li className="is-info">
-                      <DateFromNow date={pullRequest.creationDate} />
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              {pullRequest.reviewer.length > 0 ? (
-                <div className="field is-horizontal">
-                  <div
-                    className={classNames(
-                      classes.userLabelAlignment,
-                      "field-label is-inline-flex"
-                    )}
-                  >
-                    {t("scm-review-plugin.pull-request.reviewer")}:
-                  </div>
-                  <div
-                    className={classNames(
-                      classes.userFieldFlex,
-                      "field-body is-inline-flex"
-                    )}
-                  >
-                    <ul className="is-separated">
-                      {pullRequest.reviewer.map(reviewer => {
-                        return (
-                          <li key={reviewer.id}>{reviewer.displayName}</li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                </div>
-              ) : (
-                ""
-              )}
+              {author}
+              {reviewerList}
             </div>
           </div>
 
