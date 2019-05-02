@@ -462,7 +462,9 @@ class PullRequestDetails extends React.Component<Props, State> {
                   >
                     <ul className="is-separated">
                       {pullRequest.reviewer.map(reviewer => {
-                        return <li>{reviewer.displayName}</li>;
+                        return (
+                          <li key={reviewer.id}>{reviewer.displayName}</li>
+                        );
                       })}
                     </ul>
                   </div>
