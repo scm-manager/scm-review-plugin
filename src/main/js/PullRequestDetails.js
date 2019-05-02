@@ -464,7 +464,7 @@ class PullRequestDetails extends React.Component<Props, State> {
                     ? "is-success"
                     : pullRequest.status === "REJECTED"
                     ? "is-danger"
-                    : "is-medium"
+                    : ""
                 )}
               >
                 {pullRequest.status}

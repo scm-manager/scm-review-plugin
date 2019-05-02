@@ -47,7 +47,18 @@ class PullRequestRow extends React.Component<Props> {
           )}
         </td>
         <td className="is-hidden-mobile">
-          {pullRequest.status ? pullRequest.status : ""}
+          <span
+            className={classNames(
+              "tag is-medium",
+              pullRequest.status === "MERGED"
+                ? "is-success"
+                : pullRequest.status === "REJECTED"
+                ? "is-danger"
+                : ""
+            )}
+          >
+            {pullRequest.status}
+          </span>
         </td>
       </tr>
     );
