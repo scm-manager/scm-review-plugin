@@ -37,7 +37,7 @@ const styles = {
     minWidth: "5.5em"
   },
   userFieldFlex: {
-    flexGrow: 6
+    flexGrow: 8
   },
   tagShorter: {
     overflow: "hidden",
@@ -419,12 +419,57 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           {description}
 
-          <div className={classNames("media", classes.bottomSpace)}>
+          <div className={classNames(classes.userListMargin, "media")}>
             <div className="media-content">
-              {pullRequest.author.displayName}
-            </div>
-            <div className="media-right">
-              <DateFromNow date={pullRequest.creationDate} />
+              <div className="field is-horizontal">
+                <div
+                  className={classNames(
+                    classes.userLabelAlignment,
+                    "field-label is-inline-flex"
+                  )}
+                >
+                  {t("scm-review-plugin.pull-request.author")}:
+                </div>
+                <div
+                  className={classNames(
+                    classes.userFieldFlex,
+                    "field-body is-inline-flex"
+                  )}
+                >
+                  <ul className="is-separated">
+                    <li>{pullRequest.author.displayName}</li>
+                    <li className="is-info">
+                      <DateFromNow date={pullRequest.creationDate} />
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              {pullRequest.reviewer.length > 0 ? (
+                <div className="field is-horizontal">
+                  <div
+                    className={classNames(
+                      classes.userLabelAlignment,
+                      "field-label is-inline-flex"
+                    )}
+                  >
+                    {t("scm-review-plugin.pull-request.reviewer")}:
+                  </div>
+                  <div
+                    className={classNames(
+                      classes.userFieldFlex,
+                      "field-body is-inline-flex"
+                    )}
+                  >
+                    <ul className="is-separated">
+                      {pullRequest.reviewer.map(reviewer => {
+                        return <li>{reviewer.displayName}</li>;
+                      })}
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                ""
+              )}
             </div>
           </div>
 
