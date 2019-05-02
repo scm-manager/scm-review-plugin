@@ -401,7 +401,7 @@ class PullRequestDetails extends React.Component<Props, State> {
                     ? "is-success"
                     : pullRequest.status === "REJECTED"
                     ? "is-danger"
-                    : "is-medium"
+                    : ""
                 )}
               >
                 {pullRequest.status}
@@ -412,7 +412,9 @@ class PullRequestDetails extends React.Component<Props, State> {
           {description}
 
           <div className={classNames("media", classes.bottomSpace)}>
-            <div className="media-content">{pullRequest.author.displayName}</div>
+            <div className="media-content">
+              {pullRequest.author.displayName}
+            </div>
             <div className="media-right">
               <DateFromNow date={pullRequest.creationDate} />
             </div>
@@ -428,7 +430,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           <div className="field is-grouped is-grouped-multiline">
             {pullRequest.reviewer.length > 0 ? (
               <div className="control">
-                {t("scm-review-plugin.pull-request.reviewer")} :
+                {t("scm-review-plugin.pull-request.reviewer")}:
               </div>
             ) : (
               ""

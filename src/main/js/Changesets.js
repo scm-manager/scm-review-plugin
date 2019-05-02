@@ -1,20 +1,25 @@
 //@flow
 import React from "react";
+import { withRouter } from "react-router-dom";
+import { translate } from "react-i18next";
 import type { PagedCollection, Repository } from "@scm-manager/ui-types";
 import { createChangesetUrl, getChangesets } from "./pullRequest";
 import {
   ErrorNotification,
+  Notification,
   ChangesetList,
   LinkPaginator,
   Loading
 } from "@scm-manager/ui-components";
-import { withRouter } from "react-router-dom";
 
 type Props = {
   repository: Repository,
   source: string,
   target: string,
-  match: any
+  match: any,
+
+  // context props
+  t: string => string
 };
 
 type ChangesetCollection = PagedCollection & {
@@ -96,31 +101,47 @@ class Changesets extends React.Component<Props, State> {
     }
   }
 
-  render() {
-    const { repository } = this.props;
-    const { changesets, error, loading } = this.state;
+  renderPaginator = () => {
+    const { changesets } = this.state;
     const page = this.getCurrentPage();
+
+    if (changesets && changesets.pageTotal > 1) {
+      return (
+        <div className="panel-footer">
+          <LinkPaginator collection={changesets} page={page} />
+        </div>
+      );
+    }
+    return null;
+  };
+
+  render() {
+    const { repository, t } = this.props;
+    const { changesets, error, loading } = this.state;
 
     if (error) {
       return <ErrorNotification error={error} />;
     } else if (loading) {
       return <Loading />;
-    } else {
+    } else if (changesets && changesets._embedded.changesets.length === 0) {
       return (
-        <div className="panel">
-          <div className="panel-block">
-            <ChangesetList
-              repository={repository}
-              changesets={changesets._embedded.changesets}
-            />
-          </div>
-          <div className="panel-footer">
-            <LinkPaginator collection={changesets} page={page} />
-          </div>
-        </div>
+        <Notification type="info">
+          {t("scm-review-plugin.pull-request.noChangesets")}
+        </Notification>
       );
     }
+    return (
+      <div className="panel">
+        <div className="panel-block">
+          <ChangesetList
+            repository={repository}
+            changesets={changesets._embedded.changesets}
+          />
+        </div>
+        {this.renderPaginator()}
+      </div>
+    );
   }
 }
 
-export default withRouter(Changesets);
+export default withRouter(translate("plugins")(Changesets));

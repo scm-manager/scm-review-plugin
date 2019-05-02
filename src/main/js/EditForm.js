@@ -83,6 +83,7 @@ class EditForm extends React.Component<Props, State> {
   render() {
     const { t } = this.props;
     const { title, description, reviewer } = this.state;
+    const listSymbol = reviewer.length > 0 ? ":" : "";
     return (
       <>
         <InputField
@@ -100,7 +101,10 @@ class EditForm extends React.Component<Props, State> {
         <div className="field is-grouped is-grouped-multiline">
           {reviewer ? (
             <div className="control">
-              {t("scm-review-plugin.pull-request.reviewer")} :
+              <strong>
+                {t("scm-review-plugin.pull-request.reviewer")}
+                {listSymbol}
+              </strong>
             </div>
           ) : (
             ""
