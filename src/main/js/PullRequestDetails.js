@@ -382,12 +382,11 @@ class PullRequestDetails extends React.Component<Props, State> {
             "field-body is-inline-flex"
           )}
         >
-          <ul className="is-separated">
-            <li>{pullRequest.author.displayName}</li>
-            <li className="is-info">
-              <DateFromNow date={pullRequest.creationDate} />
-            </li>
-          </ul>
+          <div className={"user"}>
+            {pullRequest.author.displayName}
+          </div>
+          &nbsp;
+          <DateFromNow date={pullRequest.creationDate} />
         </div>
       </div>
     );
@@ -411,7 +410,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             >
               <ul className="is-separated">
                 {pullRequest.reviewer.map(reviewer => {
-                  return <li key={reviewer.id}>{reviewer.displayName}</li>;
+                  return <li className={"user"} key={reviewer.id}>{reviewer.displayName}</li>;
                 })}
               </ul>
             </div>
