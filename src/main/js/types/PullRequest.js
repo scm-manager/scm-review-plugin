@@ -30,6 +30,8 @@ export type Location = {
 
 export type BasicComment = {
   comment: string,
+  parentId?: string,
+  id: string,
   location?: Location
 };
 

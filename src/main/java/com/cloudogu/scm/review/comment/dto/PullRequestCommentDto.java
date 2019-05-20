@@ -23,6 +23,10 @@ public class PullRequestCommentDto extends HalRepresentation {
   @Size(min = 1)
   private String comment;
 
+  private String id;
+
+  private String parentId;
+
   private DisplayedUserDto author;
 
   private Instant date;

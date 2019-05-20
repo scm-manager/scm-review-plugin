@@ -22,6 +22,7 @@ import java.time.Instant;
 @Builder(toBuilder = true)
 public class PullRequestComment {
 
+  private String parentId;
   private String id;
   private String comment;
   private String author;
