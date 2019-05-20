@@ -256,7 +256,7 @@ class PullRequestComment extends React.Component<Props, State> {
     let tag = comment.location ? (
       <span className="tag is-rounded is-info ">
         <span className="fas fa-code ">&nbsp;</span>
-        {t("scm-review-plugin.comment.tag.inline")}
+        {comment.location.file}
       </span>
     ) : (
       ""
