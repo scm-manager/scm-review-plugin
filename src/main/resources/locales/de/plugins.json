@@ -75,13 +75,19 @@
       "done": "Als erledigt markieren",
       "save": "Speichern",
       "cancel": "Abbrechen",
-      "confirm-alert": {
+      "confirmDeleteAlert": {
         "title": "Kommentar löschen",
         "message": "Soll der Kommentar wirklich gelöscht werden?",
         "submit": "Ja",
         "cancel": "Nein"
       },
-      "confirm-cancel-update-alert": {
+      "confirmDoneAlert": {
+        "title": "Kommentar als erledigt markieren",
+        "message": "Soll der Kommentar wirklich als erledigt markiert werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      },
+      "confirmCancelUpdateAlert": {
         "title": "Aktualisierung abbrechen",
         "message": "Sollen die Änderungen an dem Kommentar wirklich verworfen werden?",
         "submit": "Ja",
@@ -94,7 +100,8 @@
       },
       "tag": {
         "inline": "inline",
-        "system": "system"
+        "system": "system",
+        "done": "erledigt"
       }
     }
   },
