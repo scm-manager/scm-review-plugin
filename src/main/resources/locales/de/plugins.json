@@ -71,6 +71,8 @@
       "add": "Kommentar hinzufügen",
       "delete": "Löschen",
       "update": "Aktualisieren",
+      "reply": "Antworten",
+      "done": "Als erledigt markieren",
       "save": "Speichern",
       "cancel": "Abbrechen",
       "confirm-alert": {

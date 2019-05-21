@@ -71,6 +71,8 @@
       "add": "Add comment",
       "delete": "Delete",
       "update": "Update",
+      "reply": "Reply",
+      "done": "Mark as done",
       "save": "Save",
       "cancel": "Cancel",
       "confirm-alert": {
