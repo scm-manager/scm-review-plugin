@@ -267,5 +267,44 @@ public class CommentRootResourceTest {
     assertThat(comment_3.get("_links").get("delete")).isNull();
   }
 
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldNotGetDeleteLinkIfRootCommentHasChildComments() throws URISyntaxException, IOException {
+    PullRequestComment comment1 = new PullRequestComment(null,"1", "1. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment2 = new PullRequestComment("1","2", "2. comment", "author", new Location("","",""), Instant.now(), false);
+    PullRequestComment comment3 = new PullRequestComment("1","3", "3. comment", "author", new Location("","",""), Instant.now(), false);
+    ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
+    when(service.getAll("space", "name", "1")).thenReturn(list);
+    when(service.get("space", "name", "1", "1")).thenReturn(comment1);
+    when(service.get("space", "name", "1", "2")).thenReturn(comment2);
+    when(service.get("space", "name", "1", "3")).thenReturn(comment3);
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequestComments");
+    JsonNode comment_1 = prNode.path(0);
+    JsonNode comment_2 = prNode.path(1);
+    JsonNode comment_3 = prNode.path(2);
+
+    assertThat(comment_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+    assertThat(comment_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
+    assertThat(comment_3.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
+
+    assertThat(comment_1.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+    assertThat(comment_2.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
+    assertThat(comment_3.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
+
+    assertThat(!comment_1.get("_links").has("delete"));
+    assertThat(comment_2.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
+    assertThat(comment_3.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
+  }
+
 
 }
