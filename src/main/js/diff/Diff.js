@@ -322,8 +322,8 @@ class Diff extends React.Component<Props, State> {
 
     return (
       <div className="comment-wrapper">
-        {threads.map((comment) => (
-          comment.map((comment) =>
+        {threads.map((comments) => (
+          comments.map((comment) =>
           <>
             <CreateCommentInlineWrapper isChildComment={comment.parentId !== null}>
               <PullRequestComment

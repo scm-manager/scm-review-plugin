@@ -5,6 +5,7 @@ import type { Comments, PullRequest } from "../types/PullRequest";
 import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
+import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 
 type Props = {
   pullRequest: PullRequest
@@ -111,14 +112,17 @@ class PullRequestComments extends React.Component<Props, State> {
         : null;
       return (
         <>
-          {threads.map((comment) => (
-            comment.map((comment) => {
+          {console.log(threads)}
+          {threads.map((comments) => (
+            comments.map((comment) => {
                 return (
-                  <PullRequestComment
-                    comment={comment}
-                    refresh={this.updatePullRequestComments}
-                    handleError={this.handleError}
-                  />
+                  <CreateCommentInlineWrapper isChildComment={comment.parentId !== null}>
+                    <PullRequestComment
+                      comment={comment}
+                      refresh={this.updatePullRequestComments}
+                      handleError={this.handleError}
+                    />
+                  </CreateCommentInlineWrapper>
                 )}
             )))}
           {createLink ? (
