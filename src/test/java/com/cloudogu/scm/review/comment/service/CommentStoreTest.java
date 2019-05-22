@@ -71,7 +71,7 @@ class CommentStoreTest {
   void shouldAddTheFirstComment() {
     String pullRequestId = "1";
     when(dataStore.get(pullRequestId)).thenReturn(null);
-    PullRequestComment pullRequestComment = new PullRequestComment("1", "my Comment", "author", new Location(), Instant.now(), false);
+    PullRequestComment pullRequestComment = new PullRequestComment("1", "my Comment", "author", new Location(), Instant.now(), false, false);
     store.add(repository, pullRequestId, pullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
@@ -82,9 +82,9 @@ class CommentStoreTest {
   @Test
   void shouldAddCommentToExistingCommentList() {
     String pullRequestId = "1";
-    PullRequestComment oldPRComment = new PullRequestComment("1", "my comment", "author", new Location(), Instant.now(), false);
+    PullRequestComment oldPRComment = new PullRequestComment("1", "my comment", "author", new Location(), Instant.now(), false, false);
     PullRequestComments pullRequestComments = new PullRequestComments();
-    PullRequestComment newPullRequestComment = new PullRequestComment("2", "my new comment", "author", new Location(), Instant.now(), false);
+    PullRequestComment newPullRequestComment = new PullRequestComment("2", "my new comment", "author", new Location(), Instant.now(), false, false);
     pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
 
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
@@ -101,9 +101,9 @@ class CommentStoreTest {
   @Test
   void shouldDeleteAnExistingComment() {
     PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false));
-    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false));
-    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false, false));
+    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false, false));
+    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false, false));
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
@@ -127,9 +127,9 @@ class CommentStoreTest {
   @Test
   void shouldUpdateAnExistingComment() {
     PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false));
-    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false));
-    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false, false));
+    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false, false));
+    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false, false));
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
@@ -153,9 +153,9 @@ class CommentStoreTest {
   @Test
   void shouldGetPullRequestComments() {
     PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false));
-    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false));
-    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false));
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false, false));
+    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false, false));
+    pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false, false));
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
@@ -173,7 +173,7 @@ class CommentStoreTest {
   @Test
   void shouldThrowExceptionWhenDeletingSystemComment() {
     PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), true));
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), true, false));
 
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
@@ -185,7 +185,7 @@ class CommentStoreTest {
   @Test
   void shouldThrowExceptionWhenUpdatingSystemComment() {
     PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), true));
+    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), true, false));
 
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
