@@ -254,9 +254,9 @@ class PullRequestComment extends React.Component<Props, State> {
     let editButtons = null;
     let message = null;
     let tag = comment.location ? (
-      <span className="tag is-rounded is-info ">
+      <span className="tag is-rounded is-info" title={comment.location.file}>
         <span className="fas fa-code ">&nbsp;</span>
-        {t("scm-review-plugin.comment.tag.inline")}
+        {comment.location.file.replace(/^.+\//, "")}
       </span>
     ) : (
       ""

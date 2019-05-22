@@ -91,7 +91,6 @@
         "sourceDeleted": "Der Quell-Branch des Pull-Requests wurde gelöscht."
       },
       "tag": {
-        "inline": "inline",
         "system": "system"
       }
     }
