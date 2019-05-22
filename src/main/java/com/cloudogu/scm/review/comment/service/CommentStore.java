@@ -56,13 +56,14 @@ public class CommentStore {
     });
   }
 
-  public void update(Repository repository, String pullRequestId, String commentId, String newComment) {
+  public void update(Repository repository, String pullRequestId, String commentId, String newComment, boolean done) {
     PullRequest pullRequest = pullRequestStoreFactory.create(repository).get(pullRequestId);
     withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = this.get(pullRequestId);
       applyChange(commentId, pullRequestComments, comment -> {
         PullRequestComment oldComment = comment.toBuilder().build();
         comment.setComment(newComment);
+        comment.setDone(done);
         eventBus.post(new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY));
       });
       store.put(pullRequestId, pullRequestComments);

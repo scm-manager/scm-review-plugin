@@ -133,7 +133,7 @@ class CommentStoreTest {
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
-    store.update(repository ,pullRequestId, "2", "new text");
+    store.update(repository ,pullRequestId, "2", "new text", false);
 
     PullRequestComments comments = store.get(pullRequestId);
     assertThat(comments.getComments().stream().filter(c -> "2".equals(c.getId())))
@@ -191,6 +191,6 @@ class CommentStoreTest {
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
     assertThrows(AuthorizationException.class,
-      () -> store.update(repository, pullRequestId, "1", "new comment" ));
+      () -> store.update(repository, pullRequestId, "1", "new comment", false));
   }
 }

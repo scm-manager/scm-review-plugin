@@ -81,7 +81,7 @@ public class CommentResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
     PermissionCheck.checkModifyComment(repository, comment);
-    service.update(repository, pullRequestId, commentId, pullRequestCommentDto.getComment());
+    service.update(repository, pullRequestId, commentId, pullRequestCommentDto.getComment(), pullRequestCommentDto.isDone());
     return Response.noContent().build();
   }
 }
