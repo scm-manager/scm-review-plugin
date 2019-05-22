@@ -14,6 +14,7 @@ import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -63,7 +64,7 @@ public class CommentRootResource {
                          @PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
-                         @NotNull PullRequestCommentDto pullRequestCommentDto) {
+                         @Valid @NotNull PullRequestCommentDto pullRequestCommentDto) {
     if (pullRequestCommentDto.isSystemComment()){
       throw new AuthorizationException("Is is Forbidden to create a system comment.");
     }

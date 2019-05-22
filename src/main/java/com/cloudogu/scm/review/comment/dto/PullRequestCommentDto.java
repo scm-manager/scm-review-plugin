@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.time.Instant;
 
@@ -27,10 +28,12 @@ public class PullRequestCommentDto extends HalRepresentation {
 
   private String parentId;
 
+  @Valid
   private DisplayedUserDto author;
 
   private Instant date;
 
+  @Valid
   private LocationDto location;
 
   private boolean systemComment;
