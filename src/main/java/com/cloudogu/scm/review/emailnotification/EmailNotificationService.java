@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.mail.api.MailService;
+import sonia.scm.mail.api.MailTemplateType;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +25,7 @@ public class EmailNotificationService {
     this.configuration = configuration;
   }
 
-  public void sendEmails(MailTextResolver mailTextResolver, Set<String> subscriber, Set<String> reviewer) throws IOException, MailSendBatchException {
+  public void sendEmails(MailTextResolver mailTextResolver, Set<String> subscriber, Set<String> reviewer) throws MailSendBatchException {
     if (!mailService.isConfigured()) {
       LOG.warn("cannot send Email because the mail server is not configured");
       return;
@@ -53,12 +53,12 @@ public class EmailNotificationService {
     }
   }
 
-  private void sendEmails(MailTextResolver mailTextResolver, Set<String> recipients, boolean reviewer) throws IOException, MailSendBatchException {
+  private void sendEmails(MailTextResolver mailTextResolver, Set<String> recipients, boolean reviewer) throws MailSendBatchException {
     MailService.EnvelopeBuilder envelopeBuilder = mailService.emailTemplateBuilder()
       .fromCurrentUser();
     recipients.forEach(envelopeBuilder::toUser);
     envelopeBuilder.withSubject(mailTextResolver.getMailSubject())
-      .withTemplate(mailTextResolver.getContentTemplatePath())
+      .withTemplate(mailTextResolver.getContentTemplatePath(), MailTemplateType.MARKDOWN_HTML)
       .andModel(mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), reviewer))
       .send();
   }
