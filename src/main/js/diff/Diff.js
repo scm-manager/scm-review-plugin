@@ -132,11 +132,12 @@ class Diff extends React.Component<Props, State> {
 
   fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
+    const location = {file: file.newPath};
 
     const annotations = [];
     const fileState = this.state.files[path] || [];
     if (fileState.comments && fileState.comments.length > 0) {
-      annotations.push(this.createComments(fileState, path));
+      annotations.push(this.createComments(fileState, location));
     }
 
     if (fileState.editor && !fileState.parentId) {
@@ -161,14 +162,14 @@ class Diff extends React.Component<Props, State> {
     if (hunkState) {
       Object.keys(hunkState).forEach((changeId: string) => {
         const lineState = hunkState[changeId];
+        const location = createLocation(context, changeId);
 
         if (lineState) {
           const lineAnnotations = [];
           if (lineState.comments && lineState.comments.length > 0) {
-            lineAnnotations.push(this.createComments(lineState));
+            lineAnnotations.push(this.createComments(lineState, location));
           }
-          if (lineState.editor) {
-            const location = createLocation(context, changeId);
+          if (lineState.editor && !lineState.parentId) {
             lineAnnotations.push(this.createNewCommentEditor(location));
           }
 
@@ -213,7 +214,7 @@ class Diff extends React.Component<Props, State> {
   openEditor = (location: Location, parentId?: string) => {
     const changeId = location.changeId;
     if (location.hunk && changeId) {
-      this.setLineEditor(location, true);
+      this.setLineEditor(location, true, !!parentId && parentId);
     } else {
       this.setFileEditor(location.file, true, !!parentId && parentId);
     }
@@ -221,9 +222,9 @@ class Diff extends React.Component<Props, State> {
 
   closeEditor = (location: Location, callback?: () => void) => {
     if (location.hunk && location.changeId) {
-      this.setLineEditor(location, false, callback);
+      this.setLineEditor(location, false, null, callback);
     } else {
-      this.setFileEditor(location.file, false,null, callback);
+      this.setFileEditor(location.file, false, null, callback);
     }
   };
 
@@ -258,6 +259,7 @@ class Diff extends React.Component<Props, State> {
   setLineEditor = (
     location: Location,
     showEditor: boolean,
+    parentId: string,
     callback?: () => void
   ) => {
     const hunkId = createHunkIdFromLocation(location);
@@ -276,6 +278,7 @@ class Diff extends React.Component<Props, State> {
             ...currentHunk,
             [changeId]: {
               editor: showEditor,
+              parentId: parentId,
               comments: currentLine.comments || []
             }
           }
@@ -284,7 +287,7 @@ class Diff extends React.Component<Props, State> {
     }, callback);
   };
 
-  createComments = (fileState, path?) => {
+  createComments = (fileState, location) => {
     const comments = fileState.comments;
     const onReply = (isReplyable: boolean) => {
 
@@ -330,18 +333,16 @@ class Diff extends React.Component<Props, State> {
                 handleError={this.onError}
               />
             </CreateCommentInlineWrapper>
-            {this.createCommentEditorIfNeeded(fileState, path , comment.id)}
+            {this.createCommentEditorIfNeeded(fileState, location , comment.id)}
           </>
         )))}
       </>
     );
   };
 
-  createCommentEditorIfNeeded = (fileState, path, id) => {
+  createCommentEditorIfNeeded = (fileState, location, id) => {
     if (!!fileState.editor && fileState.parentId === id) {
-      return this.createNewCommentEditor({
-        file: path
-      }, id);
+      return this.createNewCommentEditor(location, id);
     }
   };
 
