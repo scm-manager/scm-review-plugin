@@ -75,7 +75,7 @@ public class PermissionCheckTest {
   }
 
   private PullRequestComment createComment(String author) {
-    return new PullRequestComment("123","1", "1. comment", author, new Location(), Instant.now(), false);
+    return new PullRequestComment("123", "1", "1. comment", author, new Location(), Instant.now(), false, false);
   }
 
   private Repository createRepository() {

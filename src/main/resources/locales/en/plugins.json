@@ -71,15 +71,25 @@
       "add": "Add comment",
       "delete": "Delete",
       "update": "Update",
+      "reply": "Reply",
+      "done": "Mark as done",
+      "collapse": "Collapse",
+      "expand": "Expand",
       "save": "Save",
       "cancel": "Cancel",
-      "confirm-alert": {
+      "confirmDeleteAlert": {
         "title": "Delete comment",
         "message": "Do you really want to delete the comment?",
         "submit": "Yes",
         "cancel": "No"
       },
-      "confirm-cancel-update-alert": {
+      "confirmDoneAlert": {
+        "title": "Mark as done comment",
+        "message": "Do you really want to mark as done the comment?",
+        "submit": "Yes",
+        "cancel": "No"
+      },
+      "confirmCancelUpdateAlert": {
         "title": "Cancel Update",
         "message": "Do you really want to reject the modifications on the comment?",
         "submit": "Yes",
@@ -91,7 +101,8 @@
         "sourceDeleted": "The source branch of the pull request has been deleted."
       },
       "tag": {
-        "system": "system"
+        "system": "system",
+        "done": "done"
       }
     }
   },

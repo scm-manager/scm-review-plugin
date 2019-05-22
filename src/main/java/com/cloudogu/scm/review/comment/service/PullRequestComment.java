@@ -20,7 +20,7 @@ import java.time.Instant;
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Builder(toBuilder = true)
-public class PullRequestComment {
+public class PullRequestComment implements Cloneable {
 
   private String parentId;
   private String id;
@@ -30,4 +30,14 @@ public class PullRequestComment {
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant date;
   private boolean systemComment;
+  private boolean done;
+
+  @Override
+  public PullRequestComment clone() {
+    try {
+      return (PullRequestComment) super.clone();
+    } catch (CloneNotSupportedException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
 }

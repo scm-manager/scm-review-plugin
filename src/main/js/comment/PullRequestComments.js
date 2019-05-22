@@ -106,13 +106,11 @@ class PullRequestComments extends React.Component<Props, State> {
         }
       });
 
-
       const createLink = pullRequestComments._links.create
         ? pullRequestComments._links.create.href
         : null;
       return (
         <>
-          {console.log(threads)}
           {threads.map((comments) => (
             comments.map((comment) => {
                 return (

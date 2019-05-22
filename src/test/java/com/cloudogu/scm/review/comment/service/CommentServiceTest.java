@@ -72,7 +72,7 @@ class CommentServiceTest {
 
   @Test
   void shouldAddComment() {
-    PullRequestComment comment = new PullRequestComment("123","1", "1. comment", "author", new Location(), Instant.now(), false);
+    PullRequestComment comment = new PullRequestComment("123", "1", "1. comment", "author", new Location(), Instant.now(), false, false);
     String pullRequestId = "pr_id";
     commentService.add(repository, pullRequestId, comment);
     verify(store).add(repository, pullRequestId, comment);
@@ -105,9 +105,9 @@ class CommentServiceTest {
   @Test
   void shouldGetAllComments() {
     ArrayList<PullRequestComment> list = Lists.newArrayList(
-      new PullRequestComment("123","1", "1. comment", "author", new Location(), Instant.now(), false),
-      new PullRequestComment("123","2", "2. comment", "author", new Location(), Instant.now(), false),
-      new PullRequestComment("123","3", "3. comment", "author", new Location(), Instant.now(), false));
+      new PullRequestComment("123", "1", "1. comment", "author", new Location(), Instant.now(), false, false),
+      new PullRequestComment("123", "2", "2. comment", "author", new Location(), Instant.now(), false, false),
+      new PullRequestComment("123", "3", "3. comment", "author", new Location(), Instant.now(), false, false));
 
     String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
@@ -123,9 +123,9 @@ class CommentServiceTest {
   @Test
   void shouldGetComment() {
     ArrayList<PullRequestComment> list = Lists.newArrayList(
-      new PullRequestComment("123","1", "1. comment", "author", new Location(), Instant.now(), false),
-      new PullRequestComment("123","2", "2. comment", "author", new Location(), Instant.now(), false),
-      new PullRequestComment("123","3", "3. comment", "author", new Location(), Instant.now(), false));
+      new PullRequestComment("123", "1", "1. comment", "author", new Location(), Instant.now(), false, false),
+      new PullRequestComment("123", "2", "2. comment", "author", new Location(), Instant.now(), false, false),
+      new PullRequestComment("123", "3", "3. comment", "author", new Location(), Instant.now(), false, false));
 
     String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
@@ -152,9 +152,9 @@ class CommentServiceTest {
   @Test
   void shouldThrowNotFoundOnGettingMissedComment() {
     ArrayList<PullRequestComment> list = Lists.newArrayList(
-      new PullRequestComment("123","1", "1. comment", "author", new Location(), Instant.now(), false),
-      new PullRequestComment("123","2", "2. comment", "author", new Location(), Instant.now(), false),
-      new PullRequestComment("123","3", "3. comment", "author", new Location(), Instant.now(), false));
+      new PullRequestComment("123", "1", "1. comment", "author", new Location(), Instant.now(), false, false),
+      new PullRequestComment("123", "2", "2. comment", "author", new Location(), Instant.now(), false, false),
+      new PullRequestComment("123", "3", "3. comment", "author", new Location(), Instant.now(), false, false));
     String pullRequestId = "id";
     PullRequestComments pullRequestComments = new PullRequestComments();
     pullRequestComments.setComments(list);
