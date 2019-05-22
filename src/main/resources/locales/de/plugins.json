@@ -73,6 +73,8 @@
       "update": "Aktualisieren",
       "reply": "Antworten",
       "done": "Als erledigt markieren",
+      "collapse": "Einklappen",
+      "expand": "Ausklappen",
       "save": "Speichern",
       "cancel": "Abbrechen",
       "confirmDeleteAlert": {

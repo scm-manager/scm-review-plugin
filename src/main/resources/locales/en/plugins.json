@@ -73,6 +73,8 @@
       "update": "Update",
       "reply": "Reply",
       "done": "Mark as done",
+      "collapse": "Collapse",
+      "expand": "Expand",
       "save": "Save",
       "cancel": "Cancel",
       "confirmDeleteAlert": {
