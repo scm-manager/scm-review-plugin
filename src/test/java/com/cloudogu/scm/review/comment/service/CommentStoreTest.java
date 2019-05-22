@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.io.DeepCopy;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 import sonia.scm.security.UUIDKeyGenerator;
@@ -128,12 +129,15 @@ class CommentStoreTest {
   void shouldUpdateAnExistingComment() {
     PullRequestComments pullRequestComments = new PullRequestComments();
     pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), false, false));
-    pullRequestComments.getComments().add(new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false, false));
+    PullRequestComment commentToChange = new PullRequestComment("2", "2. comment", "author", new Location(), Instant.now(), false, false);
+    pullRequestComments.getComments().add(commentToChange);
     pullRequestComments.getComments().add(new PullRequestComment("3", "3. comment", "author", new Location(), Instant.now(), false, false));
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
-    store.update(repository ,pullRequestId, "2", "new text", false);
+    PullRequestComment copy = commentToChange.clone();
+    copy.setComment("new text");
+    store.update(repository ,pullRequestId, copy);
 
     PullRequestComments comments = store.get(pullRequestId);
     assertThat(comments.getComments().stream().filter(c -> "2".equals(c.getId())))
@@ -185,12 +189,16 @@ class CommentStoreTest {
   @Test
   void shouldThrowExceptionWhenUpdatingSystemComment() {
     PullRequestComments pullRequestComments = new PullRequestComments();
-    pullRequestComments.getComments().add(new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), true, false));
+    PullRequestComment systemComment = new PullRequestComment("1", "1. comment", "author", new Location(), Instant.now(), true, false);
+    pullRequestComments.getComments().add(systemComment);
 
-    String pullRequestId = "id";
+    String pullRequestId = "1";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
+    PullRequestComment clone = systemComment.clone();
+    clone.setComment("new comment");
+
     assertThrows(AuthorizationException.class,
-      () -> store.update(repository, pullRequestId, "1", "new comment", false));
+      () -> store.update(repository, pullRequestId, clone));
   }
 }

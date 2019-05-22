@@ -43,8 +43,8 @@ public class CommentService {
     getCommentStore(repository).delete(repository, pullRequestId, commentId);
   }
 
-  public void update(Repository repository, String pullRequestId, String commentId, String newComment, boolean done) {
-    getCommentStore(repository).update(repository, pullRequestId, commentId, newComment, done);
+  public void update(Repository repository, String pullRequestId, PullRequestComment pullRequestComment) {
+    getCommentStore(repository).update(repository, pullRequestId, pullRequestComment);
   }
 
   public List<PullRequestComment> getAll(String namespace, String name, String pullRequestId) {

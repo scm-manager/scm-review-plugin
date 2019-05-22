@@ -4,6 +4,7 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
+import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
@@ -28,12 +29,14 @@ public class CommentResource {
 
   private final CommentService service;
   private RepositoryResolver repositoryResolver;
+  private final PullRequestCommentMapper mapper;
 
 
   @Inject
-  public CommentResource(CommentService service, RepositoryResolver repositoryResolver) {
+  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, PullRequestCommentMapper mapper) {
     this.repositoryResolver = repositoryResolver;
     this.service = service;
+    this.mapper = mapper;
   }
 
   @DELETE
@@ -81,7 +84,7 @@ public class CommentResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
     PermissionCheck.checkModifyComment(repository, comment);
-    service.update(repository, pullRequestId, commentId, pullRequestCommentDto.getComment(), pullRequestCommentDto.isDone());
+    service.update(repository, pullRequestId, mapper.map(pullRequestCommentDto));
     return Response.noContent().build();
   }
 }
