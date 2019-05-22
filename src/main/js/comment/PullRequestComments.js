@@ -82,20 +82,45 @@ class PullRequestComments extends React.Component<Props, State> {
       pullRequestComments._embedded.pullRequestComments
     ) {
       const comments = pullRequestComments._embedded.pullRequestComments;
+
+      const sortedComments =
+        comments.sort((a, b) => {
+          if (a.date < b.date) {
+            return -1;
+          }
+          if (a.date > b.date) {
+            return 1;
+          }
+          return 0;
+        });
+
+      // then spread comments by thread related to parentComment
+      let threads = [];
+      sortedComments.forEach(comment => {
+        if (comment.parentId === null) {
+          threads.push([comment]);
+        }
+        else {
+          threads.forEach(threadArray => threadArray[0].id === comment.parentId && threadArray.push(comment));
+        }
+      });
+
+
       const createLink = pullRequestComments._links.create
         ? pullRequestComments._links.create.href
         : null;
       return (
         <>
-          {comments.map(comment => {
-            return (
-              <PullRequestComment
-                comment={comment}
-                refresh={this.updatePullRequestComments}
-                handleError={this.handleError}
-              />
-            );
-          })}
+          {threads.map((comment) => (
+            comment.map((comment) => {
+                return (
+                  <PullRequestComment
+                    comment={comment}
+                    refresh={this.updatePullRequestComments}
+                    handleError={this.handleError}
+                  />
+                )}
+            )))}
           {createLink ? (
             <CreateComment
               url={createLink}
