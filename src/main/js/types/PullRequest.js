@@ -37,6 +37,7 @@ export type Comment = BasicComment & {
   author: DisplayedUser,
   date: string,
   systemComment: boolean,
+  done: boolean,
   file?: string,
   lineId?: string,
   _links: Links

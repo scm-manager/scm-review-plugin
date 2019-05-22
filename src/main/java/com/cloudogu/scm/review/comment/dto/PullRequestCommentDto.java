@@ -31,6 +31,8 @@ public class PullRequestCommentDto extends HalRepresentation {
 
   private boolean systemComment;
 
+  private boolean done;
+
   /**
    * suppress squid:S1185 (Overriding methods should do more than simply call the same method in the super class)
    * because we want to have this method available in this package

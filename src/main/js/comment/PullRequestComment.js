@@ -1,5 +1,7 @@
 // @flow
 import React from "react";
+import classNames from "classnames";
+import { translate, type TFunction } from "react-i18next";
 import {
   Button,
   confirmAlert,
@@ -10,7 +12,6 @@ import {
   Textarea
 } from "@scm-manager/ui-components";
 import type { Comment } from "../types/PullRequest";
-import { translate, type TFunction } from "react-i18next";
 import {
   deletePullRequestComment,
   updatePullRequestComment
@@ -27,6 +28,7 @@ type Props = {
 };
 
 type State = {
+  collapsed: boolean,
   edit: boolean,
   updatedComment: string,
   loading: boolean
@@ -38,6 +40,7 @@ class PullRequestComment extends React.Component<Props, State> {
     this.state = {
       loading: false,
       updatedComment: props.comment.comment,
+      collapsed: props.comment.done,
       edit: false
     };
   }
@@ -89,39 +92,80 @@ class PullRequestComment extends React.Component<Props, State> {
   confirmDelete = () => {
     const { t } = this.props;
     confirmAlert({
-      title: t("scm-review-plugin.comment.confirm-alert.title"),
-      message: t("scm-review-plugin.comment.confirm-alert.message"),
+      title: t("scm-review-plugin.comment.confirmDeleteAlert.title"),
+      message: t("scm-review-plugin.comment.confirmDeleteAlert.message"),
       buttons: [
         {
-          label: t("scm-review-plugin.comment.confirm-alert.submit"),
+          label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
           onClick: () => this.delete()
         },
         {
-          label: t("scm-review-plugin.comment.confirm-alert.cancel"),
+          label: t("scm-review-plugin.comment.confirmDeleteAlert.cancel"),
           onClick: () => null
         }
       ]
     });
   };
 
+  done = () => {
+    const { comment, handleError } = this.props;
+    comment.done = true;
+    this.setState({
+      loading: true
+    });
+    updatePullRequestComment(comment._links.update.href, comment).then(
+      response => {
+        if (response.error) {
+          this.setState({
+            loading: false
+          });
+          handleError(response.error);
+        } else {
+          this.setState({
+            loading: false,
+            collapsed: true
+          });
+        }
+      }
+    );
+  };
+
+  confirmDone = () => {
+    const { t } = this.props;
+    confirmAlert({
+      title: t("scm-review-plugin.comment.confirmDoneAlert.title"),
+      message: t("scm-review-plugin.comment.confirmDoneAlert.message"),
+      buttons: [
+        {
+          label: t("scm-review-plugin.comment.confirmDoneAlert.submit"),
+          onClick: () => this.done()
+        },
+        {
+          label: t("scm-review-plugin.comment.confirmDoneAlert.cancel"),
+          onClick: () => null
+        }
+      ]
+    });
+  };
+
+  toggleCollapse = () => {
+    this.setState(prevState => ({
+      collapsed: !prevState.collapsed
+    }));
+  };
+
   confirmCancelUpdate = () => {
     const { t } = this.props;
     confirmAlert({
-      title: t("scm-review-plugin.comment.confirm-cancel-update-alert.title"),
-      message: t(
-        "scm-review-plugin.comment.confirm-cancel-update-alert.message"
-      ),
+      title: t("scm-review-plugin.comment.confirmCancelUpdateAlert.title"),
+      message: t("scm-review-plugin.comment.confirmCancelUpdateAlert.message"),
       buttons: [
         {
-          label: t(
-            "scm-review-plugin.comment.confirm-cancel-update-alert.submit"
-          ),
+          label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.submit"),
           onClick: () => this.cancelUpdate()
         },
         {
-          label: t(
-            "scm-review-plugin.comment.confirm-cancel-update-alert.cancel"
-          ),
+          label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.cancel"),
           onClick: () => null
         }
       ]
@@ -155,35 +199,82 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createEditIcons = () => {
-    const { comment, onReply } = this.props;
-    const deleteIcon = comment._links.delete ? (
-      <a className="level-item" onClick={this.confirmDelete}>
-        <span className="icon is-small">
-          <i className="fas fa-trash" />
-        </span>
-      </a>
-    ) : (
-      ""
-    );
+    const { comment, t, onReply } = this.props;
+    const { collapsed } = this.state;
 
-    const editIcon = comment._links.update ? (
-      <a className="level-item" onClick={this.startUpdate}>
-        <span className="icon is-small">
-          <i className="fas fa-edit" />
-        </span>
-      </a>
-    ) : (
-      ""
-    );
+    const deleteIcon =
+      comment._links.delete && !collapsed ? (
+        <a
+          className="level-item"
+          onClick={this.confirmDelete}
+          title={t("scm-review-plugin.comment.delete")}
+        >
+          <span className="icon is-small">
+            <i className="fas fa-trash" />
+          </span>
+        </a>
+      ) : (
+        ""
+      );
 
-    const replyIcon = onReply ? (
-      <a className="level-item" onClick={() => onReply(comment)}>
+    const editIcon =
+      comment._links.update && !collapsed ? (
+        <a
+          className="level-item"
+          onClick={this.startUpdate}
+          title={t("scm-review-plugin.comment.update")}
+        >
+          <span className="icon is-small">
+            <i className="fas fa-edit" />
+          </span>
+        </a>
+      ) : (
+        ""
+      );
+
+    const replyIcon =
+      onReply && !collapsed ? (
+        <a
+          className="level-item"
+          onClick={() => onReply(comment)}
+          title={t("scm-review-plugin.comment.reply")}
+        >
+          <span className="icon is-small">
+            <i className="fas fa-reply" />
+          </span>
+        </a>
+      ) : (
+        ""
+      );
+
+    const collapseTitle = collapsed
+      ? t("scm-review-plugin.comment.expand")
+      : t("scm-review-plugin.comment.collapse");
+    const collapseIcon = collapsed ? "fa-angle-left" : "fa-angle-down";
+    const doneIcon = !comment.done ? (
+      comment._links.update ? (
+        <a
+          className="level-item"
+          onClick={this.confirmDone}
+          title={t("scm-review-plugin.comment.done")}
+        >
+          <span className="icon is-small">
+            <i className="fas fa-check-circle" />
+          </span>
+        </a>
+      ) : (
+        ""
+      )
+    ) : (
+      <a
+        className="level-item"
+        onClick={this.toggleCollapse}
+        title={collapseTitle}
+      >
         <span className="icon is-small">
-          <i className="fas fa-reply" />
+          <i className={classNames("fa", collapseIcon)} />
         </span>
       </a>
-    ) : (
-      ""
     );
 
     return (
@@ -192,6 +283,7 @@ class PullRequestComment extends React.Component<Props, State> {
           {deleteIcon}
           {editIcon}
           {replyIcon}
+          {doneIcon}
         </div>
       </div>
     );
@@ -244,7 +336,7 @@ class PullRequestComment extends React.Component<Props, State> {
 
   render() {
     const { comment, t } = this.props;
-    const { loading, edit } = this.state;
+    const { loading, collapsed, edit } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -255,7 +347,7 @@ class PullRequestComment extends React.Component<Props, State> {
     let message = null;
     let tag = comment.location ? (
       <span className="tag is-rounded is-info" title={comment.location.file}>
-        <span className="fas fa-code ">&nbsp;</span>
+        <span className="fas fa-code">&nbsp;</span>
         {comment.location.file.replace(/^.+\//, "")}
       </span>
     ) : (
@@ -263,17 +355,25 @@ class PullRequestComment extends React.Component<Props, State> {
     );
     tag = comment.systemComment ? (
       <span className="tag is-rounded is-info ">
-        <span className="fas fa-bolt ">&nbsp;</span>
+        <span className="fas fa-bolt">&nbsp;</span>
         {t("scm-review-plugin.comment.tag.system")}
       </span>
     ) : (
       tag
     );
+    let done = comment.done ? (
+      <span className="tag is-rounded is-info ">
+        <span className="fas fa-check-circle">&nbsp;</span>
+        {t("scm-review-plugin.comment.tag.done")}
+      </span>
+    ) : (
+      ""
+    );
     if (edit) {
       message = this.createMessageEditor();
       editButtons = this.createEditButtons();
     } else {
-      message = this.createDisplayMessage();
+      message = !collapsed ? this.createDisplayMessage() : "";
       icons = this.createEditIcons();
     }
 
@@ -284,7 +384,7 @@ class PullRequestComment extends React.Component<Props, State> {
             <p>
               <strong>{comment.author.displayName} </strong>
               <DateFromNow date={comment.date} />
-              &nbsp; {tag}
+              &nbsp; {tag} {done}
               <br />
               {message}
             </p>
