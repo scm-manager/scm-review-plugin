@@ -45,20 +45,23 @@ class CreateForm extends React.Component<Props, State> {
           error: result.error
         });
       } else {
-        const initialSource = source ? source : result[0];
+        const initialSource = source ? source : result.branchNames[0];
         const initialTarget = target
           ? target
           : result.defaultBranch
           ? result.defaultBranch.name
           : result[0];
-        this.setState({
-          branches: result.branchNames,
-          loading: false,
-          pullRequest: {
-            source: initialSource,
-            target: initialTarget
-          }
-        });
+        this.setState(
+          {
+            branches: result.branchNames,
+            loading: false,
+            pullRequest: {
+              source: initialSource,
+              target: initialTarget
+            }
+          },
+          this.notifyAboutChangedForm
+        );
       }
     });
   }

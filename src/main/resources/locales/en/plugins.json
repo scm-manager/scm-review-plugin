@@ -101,7 +101,6 @@
         "sourceDeleted": "The source branch of the pull request has been deleted."
       },
       "tag": {
-        "inline": "inline",
         "system": "system",
         "done": "done"
       }
