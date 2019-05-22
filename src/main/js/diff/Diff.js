@@ -321,11 +321,11 @@ class Diff extends React.Component<Props, State> {
 
 
     return (
-      <>
+      <div className="comment-wrapper">
         {threads.map((comment) => (
           comment.map((comment) =>
           <>
-            <CreateCommentInlineWrapper>
+            <CreateCommentInlineWrapper isChildComment={comment.parentId !== null}>
               <PullRequestComment
                 comment={comment}
                 refresh={this.fetchComments}
@@ -336,7 +336,7 @@ class Diff extends React.Component<Props, State> {
             {this.createCommentEditorIfNeeded(fileState, location , comment.id)}
           </>
         )))}
-      </>
+      </div>
     );
   };
 
