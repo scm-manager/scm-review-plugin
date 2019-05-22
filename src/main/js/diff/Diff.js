@@ -51,6 +51,7 @@ type State = {
   files: {
     [string]: {
       editor: boolean,
+      parentId: string,
       comments: Comment[]
     }
   }
@@ -133,13 +134,12 @@ class Diff extends React.Component<Props, State> {
     const path = diffs.getPath(file);
 
     const annotations = [];
-
     const fileState = this.state.files[path] || [];
     if (fileState.comments && fileState.comments.length > 0) {
-      annotations.push(this.createComments(fileState.comments));
+      annotations.push(this.createComments(fileState, path));
     }
 
-    if (fileState.editor) {
+    if (fileState.editor && !fileState.parentId) {
       annotations.push(
         this.createNewCommentEditor({
           file: path
@@ -165,7 +165,7 @@ class Diff extends React.Component<Props, State> {
         if (lineState) {
           const lineAnnotations = [];
           if (lineState.comments && lineState.comments.length > 0) {
-            lineAnnotations.push(this.createComments(lineState.comments));
+            lineAnnotations.push(this.createComments(lineState));
           }
           if (lineState.editor) {
             const location = createLocation(context, changeId);
@@ -189,7 +189,7 @@ class Diff extends React.Component<Props, State> {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         setCollapse(false);
-        this.setFileEditor(path, true);
+        this.setFileEditor(path, true, null);
       };
       return <AddCommentButton action={openFileEditor} />;
     }
@@ -204,17 +204,18 @@ class Diff extends React.Component<Props, State> {
 
   reply = (comment: Comment) => {
     const location = comment.location;
+    const parentId = comment.parentId === null ? comment.id : comment.parentId;
     if (location) {
-      this.openEditor(location);
+      this.openEditor(location, parentId);
     }
   };
 
-  openEditor = (location: Location) => {
+  openEditor = (location: Location, parentId?: string) => {
     const changeId = location.changeId;
     if (location.hunk && changeId) {
       this.setLineEditor(location, true);
     } else {
-      this.setFileEditor(location.file, true);
+      this.setFileEditor(location.file, true, !!parentId && parentId);
     }
   };
 
@@ -222,13 +223,14 @@ class Diff extends React.Component<Props, State> {
     if (location.hunk && location.changeId) {
       this.setLineEditor(location, false, callback);
     } else {
-      this.setFileEditor(location.file, false, callback);
+      this.setFileEditor(location.file, false,null, callback);
     }
   };
 
   setFileEditor = (
     path: string,
     showEditor: boolean,
+    parentId: string,
     callback?: () => void
   ) => {
     this.setState(state => {
@@ -238,7 +240,8 @@ class Diff extends React.Component<Props, State> {
           ...state.files,
           [path]: {
             editor: showEditor,
-            comments: current.comments || []
+            parentId: parentId,
+            comments: current.comments || [],
           }
         }
       };
@@ -281,36 +284,75 @@ class Diff extends React.Component<Props, State> {
     }, callback);
   };
 
-  createComments = (comments: Comment[]) => {
-    const onReply = (index: number) => {
-      if (index === comments.length - 1 && this.isPermittedToComment()) {
+  createComments = (fileState, path?) => {
+    const comments = fileState.comments;
+    const onReply = (isReplyable: boolean) => {
+
+      if (isReplyable && this.isPermittedToComment()) {
         return this.reply;
       }
     };
 
+    // first sort all comments by timestamp
+    const sortedComments =
+      comments.sort((a, b) => {
+        if (a.date < b.date) {
+          return -1;
+        }
+        if (a.date > b.date) {
+          return 1;
+        }
+        return 0;
+      });
+
+    // then spread comments by thread related to parentComment
+    let threads = [];
+    sortedComments.forEach(comment => {
+      if (comment.parentId === null) {
+        threads.push([comment]);
+      }
+      else {
+        threads.forEach(threadArray => threadArray[0].id === comment.parentId && threadArray.push(comment));
+      }
+    });
+
+
     return (
       <>
-        {comments.map((comment, index) => (
-          <CreateCommentInlineWrapper>
-            <PullRequestComment
-              comment={comment}
-              refresh={this.fetchComments}
-              onReply={onReply(index)}
-              handleError={this.onError}
-            />
-          </CreateCommentInlineWrapper>
-        ))}
+        {threads.map((comment) => (
+          comment.map((comment) =>
+          <>
+            <CreateCommentInlineWrapper>
+              <PullRequestComment
+                comment={comment}
+                refresh={this.fetchComments}
+                onReply={onReply(comment.parentId === null)}
+                handleError={this.onError}
+              />
+            </CreateCommentInlineWrapper>
+            {this.createCommentEditorIfNeeded(fileState, path , comment.id)}
+          </>
+        )))}
       </>
     );
   };
 
-  createNewCommentEditor = (location: Location) => {
+  createCommentEditorIfNeeded = (fileState, path, id) => {
+    if (!!fileState.editor && fileState.parentId === id) {
+      return this.createNewCommentEditor({
+        file: path
+      }, id);
+    }
+  };
+
+  createNewCommentEditor = (location: Location, id?: string) => {
     const { pullRequest } = this.props;
     if (pullRequest._links.createComment) {
       return (
         <CreateCommentInlineWrapper>
           <CreateComment
             url={pullRequest._links.createComment.href}
+            parentId={id}
             location={location}
             refresh={() => this.closeEditor(location, this.fetchComments)}
             onCancel={() => this.closeEditor(location)}
