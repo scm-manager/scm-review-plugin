@@ -30,6 +30,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.HalRepresentations.createCollection;
@@ -90,6 +91,11 @@ public class CommentRootResource {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkRead(repository);
     List<PullRequestComment> list = service.getAll(namespace, name, pullRequestId);
+    Set<String> parentsIds = list
+      .stream()
+      .filter(comment -> comment.getParentId() != null)
+      .map(PullRequestComment::getParentId)
+      .collect(Collectors.toSet());
     List<PullRequestCommentDto> dtoList = list
       .stream()
       .map(comment -> {
@@ -98,7 +104,9 @@ public class CommentRootResource {
         uriMap.put("self",uri);
         if (!comment.isSystemComment() && PermissionCheck.mayModifyComment(repository, service.get(namespace, name, pullRequestId, comment.getId()))) {
           uriMap.put("update",uri);
-          uriMap.put("delete",uri);
+          if (!parentsIds.contains(comment.getId())) {
+            uriMap.put("delete",uri);
+          }
         }
         return mapper.map(comment, uriMap);
       })

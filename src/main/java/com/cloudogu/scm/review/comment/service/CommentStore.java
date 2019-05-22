@@ -76,6 +76,11 @@ public class CommentStore {
       PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
       applyChange(commentId, pullRequestComments, comment -> {
         PullRequestComment oldComment = comment.toBuilder().build();
+        for (PullRequestComment c : pullRequestComments.getComments()) {
+          if (oldComment.getId().equals(c.getParentId())) {
+            throw new AuthorizationException("It is forbidden to delete a comment with children.");
+          }
+        }
         pullRequestComments.getComments().remove(comment);
         eventBus.post(new CommentEvent(repository, pullRequest, null, oldComment, HandlerEventType.DELETE));
       });
