@@ -1,21 +1,13 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional //EN">
-<html>
-{{> head}}
-<body>
+# {{title}}
 
-{{displayName}} hat den Pull Request #{{pullRequest.id}} <a href="{{link}}" >{{pullRequest.title}}</a> erstellt.
+{{displayName}} hat den Pull Request #{{pullRequest.id}} [{{pullRequest.title}}]({{link}}). erstellt.
 
 {{#isReviewer}}
-  <h3>Sie sind als Reviewer für diesen Pull Request ausgewählt.</h3>
+Sie sind als Reviewer für diesen Pull Request ausgewählt.
 {{/isReviewer}}
 
-<h2>Der Pull Request:</h2>
-<div>
-  {{oldPullRequest.title}}
-  <p>
-  {{oldPullRequest.description}}
-  </p>
-</div>
+## Der Pull Request:
 
-</body>
-</html>
+#### {{pullRequest.title}}
+
+{{{pullRequest.description}}}

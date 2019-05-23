@@ -15,12 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.mail.api.MailService;
+import sonia.scm.mail.api.MailTemplateType;
 
-import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
@@ -76,7 +74,7 @@ class EmailNotificationServiceTest {
     }
 
     @Test
-    void shouldSendEmailForSubscriberOnly() throws IOException, MailSendBatchException {
+    void shouldSendEmailForSubscriberOnly() throws MailSendBatchException {
       mockDependencies("slarti");
 
       service.sendEmails(mailTextResolver, Sets.newHashSet("dent", "trillian"), Collections.singleton("marvin"));
@@ -85,7 +83,7 @@ class EmailNotificationServiceTest {
     }
 
     @Test
-    void shouldNotSendEmailToPrincipal() throws IOException, MailSendBatchException {
+    void shouldNotSendEmailToPrincipal() throws MailSendBatchException {
       mockDependencies("dent");
 
       service.sendEmails(mailTextResolver, Sets.newHashSet("dent", "trillian"), Collections.emptySet());
@@ -94,7 +92,7 @@ class EmailNotificationServiceTest {
     }
 
     @Test
-    void shouldSendEmailForReviewers() throws IOException, MailSendBatchException {
+    void shouldSendEmailForReviewers() throws MailSendBatchException {
       mockDependencies("marvin");
 
       service.sendEmails(mailTextResolver, Collections.singleton("dent"), Collections.singleton("dent"));
@@ -103,7 +101,7 @@ class EmailNotificationServiceTest {
     }
 
     @Test
-    void shouldSendEmailForSubscriber() throws IOException, MailSendBatchException {
+    void shouldSendEmailForSubscriber() throws MailSendBatchException {
       mockDependencies("marvin");
 
       service.sendEmails(mailTextResolver, Collections.singleton("dent"), Collections.emptySet());
@@ -152,12 +150,12 @@ class EmailNotificationServiceTest {
       }
 
       Verifier reviewer() {
-        verify(subjectBuilder.withTemplate("/path/to/template")).andModel(reviewerModel);
+        verify(subjectBuilder.withTemplate("/path/to/template", MailTemplateType.MARKDOWN_HTML)).andModel(reviewerModel);
         return this;
       }
 
       Verifier subscriber() {
-        verify(subjectBuilder.withTemplate("/path/to/template")).andModel(subscriberModel);
+        verify(subjectBuilder.withTemplate("/path/to/template", MailTemplateType.MARKDOWN_HTML)).andModel(subscriberModel);
         return this;
       }
     }
