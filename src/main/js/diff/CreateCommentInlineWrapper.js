@@ -14,6 +14,12 @@ const styles = {
     padding: "1rem",
     marginLeft: "30px",
     borderTop: "1px solid #dbdbdb",
+  },
+
+  arrow: {
+    margin: "0px 30px -40px 30px",
+    fontSize: "16px",
+    color: "#e5e5e5"
   }
 };
 
@@ -28,9 +34,12 @@ class CreateCommentInlineWrapper extends React.Component<Props> {
   render() {
     const { classes, children, isChildComment } = this.props;
     return (
+      <>
+        {isChildComment && <div className={classes.arrow}> <i className="fas fa-chevron-right"></i> </div>}
         <div className={isChildComment ? classes.wrapperChild : classes.wrapperRoot}>
-            {children}
+          {children}
         </div>
+      </>
     );
   }
 }
