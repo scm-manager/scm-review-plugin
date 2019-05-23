@@ -3,12 +3,13 @@ package com.cloudogu.scm.review.emailnotification;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
 public class PullRequestMergedMailTextResolver extends BasicPRMailTextResolver<PullRequestMergedEvent> implements MailTextResolver {
 
-  public static final String EVENT_DISPLAY_NAME = "PR merged";
+  public static final String EVENT_DISPLAY_NAME = "prMerged";
   private final PullRequestMergedEvent pullRequestMergedEvent;
   protected static final String TEMPLATE_PATH = "com/cloudogu/scm/email/template/merged_pull_request.mustache";
 
@@ -17,8 +18,8 @@ public class PullRequestMergedMailTextResolver extends BasicPRMailTextResolver<P
   }
 
   @Override
-  public String getMailSubject() {
-    return getMailSubject(pullRequestMergedEvent, EVENT_DISPLAY_NAME);
+  public String getMailSubject(Locale locale) {
+    return getMailSubject(pullRequestMergedEvent, EVENT_DISPLAY_NAME, locale);
   }
 
   @Override

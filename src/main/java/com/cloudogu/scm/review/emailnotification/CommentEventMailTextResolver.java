@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.comment.service.CommentEvent;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.HandlerEventType;
 
+import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
@@ -22,8 +23,8 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<Commen
   }
 
   @Override
-  public String getMailSubject() {
-    return getMailSubject(commentEvent, commentEventType.getDisplayEventName());
+  public String getMailSubject(Locale locale) {
+    return getMailSubject(commentEvent, commentEventType.getDisplayEventName(),locale);
   }
 
   @Override
@@ -34,6 +35,7 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<Commen
   @Override
   public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
     Map<String, Object> model = super.getTemplateModel(basePath, commentEvent, isReviewer);
+
     switch (commentEventType) {
       case DELETE:
         model.put("oldComment", commentEvent.getOldItem());
@@ -50,10 +52,9 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<Commen
   }
 
   private enum CommentEventType {
-
-    DELETE("deleted_comment.mustache", "Comment deleted", HandlerEventType.DELETE),
-    CREATE("created_comment.mustache", "Comment added", HandlerEventType.CREATE),
-    MODIFY("modified_comment.mustache", "Comment changed", HandlerEventType.MODIFY);
+    DELETE("deleted_comment.mustache", "commentDeleted", HandlerEventType.DELETE),
+    CREATE("created_comment.mustache", "commentAdded", HandlerEventType.CREATE),
+    MODIFY("modified_comment.mustache", "commentChanged", HandlerEventType.MODIFY);
 
     protected static final String PATH_BASE = "com/cloudogu/scm/email/template/";
 

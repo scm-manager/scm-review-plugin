@@ -118,7 +118,7 @@ class EmailNotificationServiceTest {
       when(mailService.isConfigured()).thenReturn(true);
       when(configuration.getBaseUrl()).thenReturn("https://scm.hitchhiker.com");
 
-      when(mailTextResolver.getMailSubject()).thenReturn("Awesome Subject");
+      when(mailTextResolver.getMailSubject(any())).thenReturn("Awesome Subject");
       when(mailTextResolver.getContentTemplatePath()).thenReturn("/path/to/template");
       when(mailTextResolver.getContentTemplateModel(anyString(), anyBoolean())).then(ic -> {
         boolean reviewer = ic.getArgument(1);

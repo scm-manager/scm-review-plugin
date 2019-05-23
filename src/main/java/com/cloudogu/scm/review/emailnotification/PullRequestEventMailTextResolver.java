@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.HandlerEventType;
 
+import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
@@ -22,8 +23,9 @@ public class PullRequestEventMailTextResolver extends BasicPRMailTextResolver<Pu
   }
 
   @Override
-  public String getMailSubject() {
-    return getMailSubject(pullRequestEvent, pullRequestEventType.getDisplayEventName());
+  public String getMailSubject(Locale locale) {
+
+    return getMailSubject(pullRequestEvent, pullRequestEventType.getDisplayEventNameKey(), locale);
   }
 
   @Override
@@ -42,19 +44,19 @@ public class PullRequestEventMailTextResolver extends BasicPRMailTextResolver<Pu
 
   private enum PullRequestEventType {
 
-    CREATE("created_pull_request.mustache", "PR created", HandlerEventType.CREATE),
-    MODIFY("modified_pull_request.mustache", "PR changed", HandlerEventType.MODIFY);
+    CREATE("created_pull_request.mustache", "prCreated", HandlerEventType.CREATE),
+    MODIFY("modified_pull_request.mustache", "prChanged", HandlerEventType.MODIFY);
 
     protected static final String PATH_BASE = "com/cloudogu/scm/email/template/";
 
     private String template;
-    private String displayEventName;
+    private String displayEventNameKey;
     private HandlerEventType type;
 
 
-    PullRequestEventType(String template, String displayEventName, HandlerEventType type) {
+    PullRequestEventType(String template, String displayEventNameKey, HandlerEventType type) {
       this.template = template;
-      this.displayEventName = displayEventName;
+      this.displayEventNameKey = displayEventNameKey;
       this.type = type;
     }
 
@@ -62,8 +64,8 @@ public class PullRequestEventMailTextResolver extends BasicPRMailTextResolver<Pu
       return PATH_BASE + template;
     }
 
-    public String getDisplayEventName() {
-      return displayEventName;
+    public String getDisplayEventNameKey() {
+      return displayEventNameKey;
     }
 
     public HandlerEventType getType() {
