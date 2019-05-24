@@ -12,6 +12,8 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.mail.api.MailService;
@@ -20,10 +22,17 @@ import sonia.scm.mail.api.MailTemplateType;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Locale.ENGLISH;
 import static java.util.Locale.GERMAN;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class EmailNotificationServiceTest {
 
   @Mock
@@ -51,6 +60,7 @@ class EmailNotificationServiceTest {
 
     service.sendEmails(mailTextResolver, Collections.singleton("trillian"), Collections.emptySet());
 
+    verify(mailService).isConfigured();
     verifyNoMoreInteractions(mailService);
   }
 
@@ -119,7 +129,8 @@ class EmailNotificationServiceTest {
       when(mailService.isConfigured()).thenReturn(true);
       when(configuration.getBaseUrl()).thenReturn("https://scm.hitchhiker.com");
 
-      when(mailTextResolver.getMailSubject(any())).thenReturn("Awesome Subject");
+      when(mailTextResolver.getMailSubject(ENGLISH)).thenReturn("Awesome Subject");
+      when(mailTextResolver.getMailSubject(GERMAN)).thenReturn("Genialer Betreff");
       when(mailTextResolver.getContentTemplatePath()).thenReturn("/path/to/template");
       when(mailTextResolver.getContentTemplateModel(anyString(), anyBoolean())).then(ic -> {
         boolean reviewer = ic.getArgument(1);
@@ -129,12 +140,11 @@ class EmailNotificationServiceTest {
       when(subject.getPrincipal()).thenReturn(principal);
 
       when(envelopeBuilder
-        .withSubject("Awesome Subject")
+        .withSubject("Awesome Subject")).thenReturn(subjectBuilder);
+      when(subjectBuilder
         .withSubject(GERMAN, "Genialer Betreff")).thenReturn(subjectBuilder);
       when(mailService.emailTemplateBuilder()).thenReturn(envelopeBuilder);
     }
-
-
 
     class Verifier {
 

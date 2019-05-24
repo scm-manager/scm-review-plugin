@@ -7,7 +7,11 @@ import com.google.common.collect.Maps;
 import sonia.scm.repository.Repository;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import static java.util.Locale.ENGLISH;
 import static java.util.Locale.GERMAN;
