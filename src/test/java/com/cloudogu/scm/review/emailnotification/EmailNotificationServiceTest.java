@@ -20,6 +20,7 @@ import sonia.scm.mail.api.MailTemplateType;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Locale.GERMAN;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -127,7 +128,9 @@ class EmailNotificationServiceTest {
 
       when(subject.getPrincipal()).thenReturn(principal);
 
-      when(envelopeBuilder.withSubject("Awesome Subject")).thenReturn(subjectBuilder);
+      when(envelopeBuilder
+        .withSubject("Awesome Subject")
+        .withSubject(GERMAN, "Genialer Betreff")).thenReturn(subjectBuilder);
       when(mailService.emailTemplateBuilder()).thenReturn(envelopeBuilder);
     }
 
