@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ExceptionMessageMapper implements ExceptionMapper<Exception> {
   @Override
   public Response toResponse(Exception exception) {
+    exception.printStackTrace();
     return Response
       .status(exception instanceof UnauthorizedException? SC_FORBIDDEN: SC_BAD_REQUEST)
       .entity(exception.getClass().getName() + "\n" + exception.getMessage())

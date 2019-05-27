@@ -72,8 +72,7 @@ public class CommentResourceTest {
   private ScmEventBus eventBus;
   @Mock
   private CommentService commentService;
-  @Mock
-  private CommentPathBuilder commentPathBuilder;
+  private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock("https://scm-manager.org/scm/api/v2");
 
   @Before
   public void init() {
@@ -88,7 +87,7 @@ public class CommentResourceTest {
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
-        Providers.of(new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, Providers.of(resource))), commentService,  eventBus)));
+        Providers.of(new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder)), commentService,  eventBus)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
   }
 

@@ -26,4 +26,36 @@ public class CommentPathBuilder {
       .method("get").parameters()
       .href();
   }
+
+  public String createUpdateCommentUri(String namespace, String name, String pullRequestId, String commentId) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    return linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("update").parameters()
+      .href();
+  }
+
+  public String createDeleteCommentUri(String namespace, String name, String pullRequestId, String commentId) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    return linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("delete").parameters()
+      .href();
+
+  }
+
+  public String createReplyCommentUri(String namespace, String name, String pullRequestId, String commentId) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    return linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("reply").parameters()
+      .href();
+
+  }
 }

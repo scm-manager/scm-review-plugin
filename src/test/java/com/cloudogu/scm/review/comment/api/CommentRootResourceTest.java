@@ -86,17 +86,20 @@ public class CommentRootResourceTest {
   @Mock
   private UserDisplayManager userDisplayManager;
 
+  private CommentPathBuilder commentPathBuilder;
+
   @InjectMocks
   private PullRequestCommentMapperImpl pullRequestCommentMapper;
 
   @Before
   public void init() {
+    commentPathBuilder = CommentPathBuilderMock.createMock();
     when(repository.getId()).thenReturn(REPOSITORY_ID);
     when(repository.getName()).thenReturn(REPOSITORY_NAME);
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentRootResource resource = new CommentRootResource(pullRequestCommentMapper, repositoryResolver, service, commentResourceProvider);
+    CommentRootResource resource = new CommentRootResource(pullRequestCommentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());

@@ -42,14 +42,16 @@ public class CommentRootResource {
   private final RepositoryResolver repositoryResolver;
   private final CommentService service;
   private final Provider<CommentResource> commentResourceProvider;
+  private final CommentPathBuilder commentPathBuilder;
 
 
   @Inject
-  public CommentRootResource(PullRequestCommentMapper mapper, RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider) {
+  public CommentRootResource(PullRequestCommentMapper mapper, RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider, CommentPathBuilder commentPathBuilder) {
     this.mapper = mapper;
     this.repositoryResolver = repositoryResolver;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
+    this.commentPathBuilder = commentPathBuilder;
   }
 
 
@@ -61,8 +63,7 @@ public class CommentRootResource {
   @POST
   @Path("")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response create(@Context UriInfo uriInfo,
-                         @PathParam("namespace") String namespace,
+  public Response create(@PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
                          @Valid @NotNull PullRequestCommentDto pullRequestCommentDto) {
@@ -77,7 +78,7 @@ public class CommentRootResource {
     comment.setDate(Instant.now());
     comment.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
     String id = service.add(repository,  pullRequestId, comment);
-    URI location = uriInfo.getAbsolutePathBuilder().path(String.valueOf(id)).build();
+    URI location = URI.create(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, id));
     return Response.created(location).build();
   }
 
@@ -99,13 +100,18 @@ public class CommentRootResource {
     List<PullRequestCommentDto> dtoList = list
       .stream()
       .map(comment -> {
-        URI uri = uriInfo.getAbsolutePathBuilder().path(String.valueOf(comment.getId())).build();
+        URI self = URI.create(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, comment.getId()));
+        URI update = URI.create(commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, comment.getId()));
+        URI delete = URI.create(commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, comment.getId()));
+        URI reply = URI.create(commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, comment.getId()));
         Map<String, URI> uriMap = Maps.newHashMap();
-        uriMap.put("self",uri);
+        uriMap.put("self", self);
         if (!comment.isSystemComment() && PermissionCheck.mayModifyComment(repository, service.get(namespace, name, pullRequestId, comment.getId()))) {
-          uriMap.put("update",uri);
+          uriMap.put("update", update);
           if (!parentsIds.contains(comment.getId())) {
-            uriMap.put("delete",uri);
+            uriMap.put("delete", delete);
+          } else {
+            uriMap.put("reply", reply);
           }
         }
         return mapper.map(comment, uriMap);
