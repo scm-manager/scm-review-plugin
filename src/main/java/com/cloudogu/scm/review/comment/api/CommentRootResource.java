@@ -2,11 +2,8 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
-import com.google.common.collect.Maps;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.repository.NamespaceAndName;
@@ -29,7 +26,6 @@ import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -99,23 +95,7 @@ public class CommentRootResource {
       .collect(Collectors.toSet());
     List<PullRequestCommentDto> dtoList = list
       .stream()
-      .map(comment -> {
-        URI self = URI.create(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, comment.getId()));
-        URI update = URI.create(commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, comment.getId()));
-        URI delete = URI.create(commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, comment.getId()));
-        URI reply = URI.create(commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, comment.getId()));
-        Map<String, URI> uriMap = Maps.newHashMap();
-        uriMap.put("self", self);
-        if (!comment.isSystemComment() && PermissionCheck.mayModifyComment(repository, service.get(namespace, name, pullRequestId, comment.getId()))) {
-          uriMap.put("update", update);
-          if (!parentsIds.contains(comment.getId())) {
-            uriMap.put("delete", delete);
-          } else {
-            uriMap.put("reply", reply);
-          }
-        }
-        return mapper.map(comment, uriMap);
-      })
+      .map(comment -> mapper.map(comment, repository, pullRequestId))
       .collect(Collectors.toList());
     boolean permission = PermissionCheck.mayComment(repository);
     return Response.ok(createCollection(uriInfo, permission, dtoList, "pullRequestComments")).build();

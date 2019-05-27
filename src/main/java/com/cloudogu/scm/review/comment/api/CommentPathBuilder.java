@@ -8,12 +8,12 @@ import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-public class CommentPathBuilder {
+class CommentPathBuilder {
 
   private final Provider<ScmPathInfoStore> pathInfoStore;
 
   @Inject
-  public CommentPathBuilder(Provider<ScmPathInfoStore> pathInfoStore) {
+  CommentPathBuilder(Provider<ScmPathInfoStore> pathInfoStore) {
     this.pathInfoStore = pathInfoStore;
   }
 
@@ -27,7 +27,7 @@ public class CommentPathBuilder {
       .href();
   }
 
-  public String createUpdateCommentUri(String namespace, String name, String pullRequestId, String commentId) {
+  String createUpdateCommentUri(String namespace, String name, String pullRequestId, String commentId) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     return linkBuilder
       .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
@@ -37,7 +37,7 @@ public class CommentPathBuilder {
       .href();
   }
 
-  public String createDeleteCommentUri(String namespace, String name, String pullRequestId, String commentId) {
+  String createDeleteCommentUri(String namespace, String name, String pullRequestId, String commentId) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     return linkBuilder
       .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
@@ -48,7 +48,7 @@ public class CommentPathBuilder {
 
   }
 
-  public String createReplyCommentUri(String namespace, String name, String pullRequestId, String commentId) {
+  String createReplyCommentUri(String namespace, String name, String pullRequestId, String commentId) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     return linkBuilder
       .method("getPullRequestResource").parameters(namespace, name, pullRequestId)

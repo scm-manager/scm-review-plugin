@@ -2,7 +2,6 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapperImpl;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
@@ -86,14 +85,13 @@ public class CommentRootResourceTest {
   @Mock
   private UserDisplayManager userDisplayManager;
 
-  private CommentPathBuilder commentPathBuilder;
+  private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock();
 
   @InjectMocks
   private PullRequestCommentMapperImpl pullRequestCommentMapper;
 
   @Before
   public void init() {
-    commentPathBuilder = CommentPathBuilderMock.createMock();
     when(repository.getId()).thenReturn(REPOSITORY_ID);
     when(repository.getName()).thenReturn(REPOSITORY_NAME);
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);

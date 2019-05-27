@@ -3,8 +3,6 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentDto;
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
@@ -23,6 +21,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -37,7 +36,6 @@ public class CommentResource {
   private final PullRequestCommentMapper mapper;
   private final CommentPathBuilder commentPathBuilder;
 
-
   @Inject
   public CommentResource(CommentService service, RepositoryResolver repositoryResolver, PullRequestCommentMapper mapper, CommentPathBuilder commentPathBuilder) {
     this.repositoryResolver = repositoryResolver;
@@ -48,11 +46,14 @@ public class CommentResource {
 
   @GET
   @Path("")
+  @Produces(MediaType.APPLICATION_JSON)
   public Response get(@PathParam("namespace") String namespace,
                       @PathParam("name") String name,
                       @PathParam("pullRequestId") String pullRequestId,
                       @PathParam("commentId") String commentId) {
-    return Response.ok(service.get(namespace, name, pullRequestId, commentId)).build();
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
+    return Response.ok(mapper.map(comment, repository, pullRequestId)).build();
   }
 
   @DELETE

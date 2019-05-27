@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review.comment.dto;
+package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
