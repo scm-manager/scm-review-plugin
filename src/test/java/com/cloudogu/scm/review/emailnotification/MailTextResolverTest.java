@@ -23,13 +23,12 @@ import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
 import sonia.scm.template.Template;
 import sonia.scm.template.TemplateEngine;
-import sonia.scm.template.TemplateEngineFactory;
 import sonia.scm.template.TemplateType;
-import sonia.scm.user.User;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -176,7 +175,7 @@ class MailTextResolverTest {
   }
 
   private AbstractCharSequenceAssert<?, String> assertEmail(MailTextResolver renderer, String event, boolean isReviewer) throws IOException {
-    String mailSubject = renderer.getMailSubject();
+    String mailSubject = renderer.getMailSubject(Locale.ENGLISH);
     return assertThat(mailSubject).isNotEmpty()
       .contains(repository.getName(), repository.getNamespace(), pullRequest.getId(), pullRequest.getTitle(), event);
   }

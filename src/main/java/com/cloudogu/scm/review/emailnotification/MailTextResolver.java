@@ -1,10 +1,11 @@
 package com.cloudogu.scm.review.emailnotification;
 
+import java.util.Locale;
 import java.util.Map;
 
 public interface MailTextResolver {
 
-  String getMailSubject();
+  String getMailSubject(Locale locale);
 
   String getContentTemplatePath();
 

@@ -12,6 +12,9 @@ import javax.inject.Inject;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Locale.ENGLISH;
+import static java.util.Locale.GERMAN;
+
 public class EmailNotificationService {
 
   private static final Logger LOG = LoggerFactory.getLogger(EmailNotificationService.class);
@@ -57,7 +60,9 @@ public class EmailNotificationService {
     MailService.EnvelopeBuilder envelopeBuilder = mailService.emailTemplateBuilder()
       .fromCurrentUser();
     recipients.forEach(envelopeBuilder::toUser);
-    envelopeBuilder.withSubject(mailTextResolver.getMailSubject())
+    envelopeBuilder
+      .withSubject(mailTextResolver.getMailSubject(ENGLISH))
+      .withSubject(GERMAN, mailTextResolver.getMailSubject(GERMAN))
       .withTemplate(mailTextResolver.getContentTemplatePath(), MailTemplateType.MARKDOWN_HTML)
       .andModel(mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), reviewer))
       .send();
