@@ -15,8 +15,11 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,18 +28,31 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import static java.net.URI.create;
+
 public class CommentResource {
 
   private final CommentService service;
   private RepositoryResolver repositoryResolver;
   private final PullRequestCommentMapper mapper;
+  private final CommentPathBuilder commentPathBuilder;
 
 
   @Inject
-  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, PullRequestCommentMapper mapper) {
+  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, PullRequestCommentMapper mapper, CommentPathBuilder commentPathBuilder) {
     this.repositoryResolver = repositoryResolver;
     this.service = service;
     this.mapper = mapper;
+    this.commentPathBuilder = commentPathBuilder;
+  }
+
+  @GET
+  @Path("")
+  public Response get(@PathParam("namespace") String namespace,
+                      @PathParam("name") String name,
+                      @PathParam("pullRequestId") String pullRequestId,
+                      @PathParam("commentId") String commentId) {
+    return Response.ok(service.get(namespace, name, pullRequestId, commentId)).build();
   }
 
   @DELETE
@@ -80,11 +96,28 @@ public class CommentResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
                          @PathParam("commentId") String commentId,
-                         PullRequestCommentDto pullRequestCommentDto) {
+                         @Valid PullRequestCommentDto pullRequestCommentDto) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
     PermissionCheck.checkModifyComment(repository, comment);
     service.update(repository, pullRequestId, mapper.map(pullRequestCommentDto));
     return Response.noContent().build();
+  }
+
+  @POST
+  @Path("reply")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response reply(@Context UriInfo uriInfo,
+                        @PathParam("namespace") String namespace,
+                        @PathParam("name") String name,
+                        @PathParam("pullRequestId") String pullRequestId,
+                        @PathParam("commentId") String commentId,
+                        @Valid PullRequestCommentDto pullRequestCommentDto) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
+    PermissionCheck.checkComment(repository);
+    String newId = service.reply(repository, pullRequestId, comment, mapper.map(pullRequestCommentDto));
+    String newLocation = commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, newId);
+    return Response.created(create(newLocation)).build();
   }
 }

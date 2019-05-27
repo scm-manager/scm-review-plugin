@@ -95,4 +95,7 @@ public class CommentService {
     return getCommentStore(repository);
   }
 
+  public String reply(Repository repository, String pullRequestId, PullRequestComment comment, PullRequestComment response) {
+    return null;
+  }
 }

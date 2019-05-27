@@ -34,12 +34,15 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.time.Instant;
 
+import static java.net.URI.create;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SubjectAware(configuration = "classpath:com/cloudogu/scm/review/shiro.ini")
@@ -69,6 +72,8 @@ public class CommentResourceTest {
   private ScmEventBus eventBus;
   @Mock
   private CommentService commentService;
+  @Mock
+  private CommentPathBuilder commentPathBuilder;
 
   @Before
   public void init() {
@@ -77,7 +82,7 @@ public class CommentResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentResource resource = new CommentResource(service, repositoryResolver, new PullRequestCommentMapperImpl());
+    CommentResource resource = new CommentResource(service, repositoryResolver, new PullRequestCommentMapperImpl(), commentPathBuilder);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
@@ -246,5 +251,43 @@ public class CommentResourceTest {
     assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
   }
 
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldReply() throws URISyntaxException, UnsupportedEncodingException {
+    PullRequestComment comment = new PullRequestComment("123", "1", "1. comment", "slarti", new Location(), Instant.now(), false, false);
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    when(service.reply(eq(repository), eq("1"), eq(comment), any())).thenReturn("new");
+    String newComment = "haha ";
+    byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/reply")
+        .content(pullRequestCommentJson)
+        .contentType(MediaType.APPLICATION_JSON);
 
+    dispatcher.invoke(request, response);
+
+    verify(service).reply(eq(repository), eq("1"), any(), any());
+    assertEquals(create("https://scm-manager.org/scm/api/v2/pull-requests/space/name/1/comments/new"), response.getOutputHeaders().getFirst("Location"));
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnCreateComment() throws URISyntaxException, UnsupportedEncodingException {
+    PullRequestComment comment = new PullRequestComment("123", "1", "1. comment", "slarti", new Location(), Instant.now(), false, false);
+    when(service.get("space", "name", "1", "1")).thenReturn(comment);
+    String newComment = "haha ";
+    byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/reply")
+        .content(pullRequestCommentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    verify(service, never()).reply(any(), any(), any(), any());
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
+  }
 }
