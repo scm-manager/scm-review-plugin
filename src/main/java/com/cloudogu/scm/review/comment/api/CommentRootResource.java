@@ -3,8 +3,7 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
-import org.apache.shiro.SecurityUtils;
+import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -24,9 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.HalRepresentations.createCollection;
@@ -69,11 +66,8 @@ public class CommentRootResource {
     PermissionCheck.checkComment(repositoryResolver.resolve(new NamespaceAndName(namespace, name)));
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkComment(repository);
-
-    PullRequestComment comment = mapper.map(pullRequestCommentDto);
-    comment.setDate(Instant.now());
-    comment.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
-    String id = service.add(repository,  pullRequestId, comment);
+    PullRequestRootComment comment = mapper.map(pullRequestCommentDto);
+    String id = service.add(namespace, name,  pullRequestId, comment);
     URI location = URI.create(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, id));
     return Response.created(location).build();
   }
@@ -87,12 +81,7 @@ public class CommentRootResource {
                          @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkRead(repository);
-    List<PullRequestComment> list = service.getAll(namespace, name, pullRequestId);
-    Set<String> parentsIds = list
-      .stream()
-      .filter(comment -> comment.getParentId() != null)
-      .map(PullRequestComment::getParentId)
-      .collect(Collectors.toSet());
+    List<PullRequestRootComment> list = service.getAll(namespace, name, pullRequestId);
     List<PullRequestCommentDto> dtoList = list
       .stream()
       .map(comment -> mapper.map(comment, repository, pullRequestId))

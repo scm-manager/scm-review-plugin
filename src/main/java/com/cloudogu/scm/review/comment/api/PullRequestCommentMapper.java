@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
+import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
@@ -17,10 +18,13 @@ import sonia.scm.user.UserDisplayManager;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import java.util.stream.Collectors;
+
 import static de.otto.edison.hal.Link.link;
+import static java.util.stream.Collectors.toList;
 
 @Mapper
-public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestComment, PullRequestCommentDto> {
+public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRootComment, PullRequestCommentDto> {
 
   @Inject
   private UserDisplayManager userDisplayManager;
@@ -30,9 +34,13 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestCom
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
+  abstract PullRequestCommentDto map(PullRequestRootComment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
+
+  @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
+  @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
   abstract PullRequestCommentDto map(PullRequestComment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
 
-  abstract PullRequestComment map(PullRequestCommentDto pullRequestCommentDto);
+  abstract PullRequestRootComment map(PullRequestCommentDto pullRequestCommentDto);
 
   @Named("mapAuthor")
   DisplayedUserDto mapAuthor(String authorId) {
@@ -57,10 +65,30 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestCom
       linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId())));
       linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId())));
     }
+    target.add(linksBuilder.build());
+  }
+
+  @AfterMapping
+  void appendReplyLinks(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
+    String namespace = repository.getNamespace();
+    String name = repository.getName();
+    final Links.Builder linksBuilder = new Links.Builder();
     if (PermissionCheck.mayComment(repository)) {
       linksBuilder.single(link("reply", commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, target.getId())));
     }
     target.add(linksBuilder.build());
+  }
+
+  @AfterMapping
+  void appendResponses(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
+    target.withEmbedded(
+      "responses",
+      source
+        .getResponses()
+        .stream()
+        .map(response -> this.map(response, repository, pullRequestId))
+        .collect(toList())
+    );
   }
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {

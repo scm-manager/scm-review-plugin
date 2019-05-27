@@ -118,7 +118,7 @@ public class MergeCheckHook {
       String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
-      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
+//      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
       eventBus.post(new PullRequestMergedEvent(repository,pullRequest));
     }
 
@@ -131,7 +131,7 @@ public class MergeCheckHook {
       String message = format("Rejected pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
-      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.SOURCE_DELETED);
+//      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.SOURCE_DELETED);
       eventBus.post(new PullRequestRejectedEvent(repository,pullRequest));
     }
   }

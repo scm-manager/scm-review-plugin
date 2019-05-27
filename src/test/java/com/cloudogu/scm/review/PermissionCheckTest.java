@@ -2,6 +2,7 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
+import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -74,8 +75,8 @@ public class PermissionCheckTest {
     PermissionCheck.checkModifyComment(createRepository(), comment);
   }
 
-  private PullRequestComment createComment(String author) {
-    return new PullRequestComment("123", "1", "1. comment", author, new Location(), Instant.now(), false, false);
+  private PullRequestRootComment createComment(String author) {
+    return PullRequestRootComment.createComment( "1", "1. comment", author, new Location());
   }
 
   private Repository createRepository() {

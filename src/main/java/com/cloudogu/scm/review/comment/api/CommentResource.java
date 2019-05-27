@@ -5,10 +5,12 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
+import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import com.webcohesion.enunciate.metadata.rs.TypeHint;
 import sonia.scm.NotFoundException;
+import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
@@ -28,6 +30,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import static java.net.URI.create;
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 public class CommentResource {
 
@@ -52,7 +55,7 @@ public class CommentResource {
                       @PathParam("pullRequestId") String pullRequestId,
                       @PathParam("commentId") String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
+    PullRequestRootComment comment = service.get(namespace, name, pullRequestId, commentId);
     return Response.ok(mapper.map(comment, repository, pullRequestId)).build();
   }
 
@@ -98,10 +101,7 @@ public class CommentResource {
                          @PathParam("pullRequestId") String pullRequestId,
                          @PathParam("commentId") String commentId,
                          @Valid PullRequestCommentDto pullRequestCommentDto) {
-    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
-    PermissionCheck.checkModifyComment(repository, comment);
-    service.update(repository, pullRequestId, mapper.map(pullRequestCommentDto));
+    service.modify(namespace, name, pullRequestId, mapper.map(pullRequestCommentDto));
     return Response.noContent().build();
   }
 
@@ -114,10 +114,9 @@ public class CommentResource {
                         @PathParam("pullRequestId") String pullRequestId,
                         @PathParam("commentId") String commentId,
                         @Valid PullRequestCommentDto pullRequestCommentDto) {
-    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequestComment comment = service.get(namespace, name, pullRequestId, commentId);
-    PermissionCheck.checkComment(repository);
-    String newId = service.reply(repository, pullRequestId, comment, mapper.map(pullRequestCommentDto));
+    doThrow().violation("cannot reply to replies").when(!(comment instanceof PullRequestRootComment));
+    String newId = service.reply(namespace, name, pullRequestId, commentId, mapper.map(pullRequestCommentDto));
     String newLocation = commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, newId);
     return Response.created(create(newLocation)).build();
   }

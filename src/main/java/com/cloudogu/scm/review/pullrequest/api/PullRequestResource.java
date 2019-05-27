@@ -171,7 +171,7 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     PullRequest pullRequest = service.get(repository, pullRequestId);
     service.reject(repository, pullRequest);
-    commentService.addStatusChangedComment(repository, pullRequestId, SystemCommentType.REJECTED);
+//    commentService.addStatusChangedComment(repository, pullRequestId, SystemCommentType.REJECTED);
     eventBus.post(new PullRequestRejectedEvent(repository, pullRequest));
     return Response.noContent().build();
   }
