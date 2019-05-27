@@ -132,7 +132,7 @@ class Diff extends React.Component<Props, State> {
 
   fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
-    const location = {file: file.newPath};
+    const location = { file: file.newPath };
 
     const annotations = [];
     const fileState = this.state.files[path] || [];
@@ -140,7 +140,7 @@ class Diff extends React.Component<Props, State> {
       annotations.push(this.createComments(fileState, location));
     }
 
-    if (fileState.editor && !fileState.parentId) {
+    if (fileState.editor) {
       annotations.push(
         this.createNewCommentEditor({
           file: path
@@ -169,9 +169,6 @@ class Diff extends React.Component<Props, State> {
           if (lineState.comments && lineState.comments.length > 0) {
             lineAnnotations.push(this.createComments(lineState, location));
           }
-          if (lineState.editor && !lineState.parentId) {
-            lineAnnotations.push(this.createNewCommentEditor(location));
-          }
 
           if (lineAnnotations.length > 0) {
             annotations[changeId] = (
@@ -190,7 +187,7 @@ class Diff extends React.Component<Props, State> {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         setCollapse(false);
-        this.setFileEditor(path, true, null);
+        this.setFileEditor(path, true, null, null);
       };
       return <AddCommentButton action={openFileEditor} />;
     }
@@ -205,18 +202,17 @@ class Diff extends React.Component<Props, State> {
 
   reply = (comment: Comment) => {
     const location = comment.location;
-    const parentId = comment.parentId === null ? comment.id : comment.parentId;
     if (location) {
-      this.openEditor(location, parentId);
+      this.openEditor(location, comment.id);
     }
   };
 
   openEditor = (location: Location, parentId?: string) => {
     const changeId = location.changeId;
     if (location.hunk && changeId) {
-      this.setLineEditor(location, true, !!parentId && parentId);
+      this.setLineEditor(location, true, parentId, null);
     } else {
-      this.setFileEditor(location.file, true, !!parentId && parentId);
+      this.setFileEditor(location.file, true, parentId, null);
     }
   };
 
@@ -242,7 +238,7 @@ class Diff extends React.Component<Props, State> {
           [path]: {
             editor: showEditor,
             parentId: parentId,
-            comments: current.comments || [],
+            comments: current.comments || []
           }
         }
       };
@@ -290,70 +286,53 @@ class Diff extends React.Component<Props, State> {
   createComments = (fileState, location) => {
     const comments = fileState.comments;
     const onReply = (isReplyable: boolean) => {
-
       if (isReplyable && this.isPermittedToComment()) {
         return this.reply;
       }
     };
 
-    // first sort all comments by timestamp
-    const sortedComments =
-      comments.sort((a, b) => {
-        if (a.date < b.date) {
-          return -1;
-        }
-        if (a.date > b.date) {
-          return 1;
-        }
-        return 0;
-      });
-
-    // then spread comments by thread related to parentComment
-    let threads = [];
-    sortedComments.forEach(comment => {
-      if (comment.parentId === null) {
-        threads.push([comment]);
-      }
-      else {
-        threads.forEach(threadArray => threadArray[0].id === comment.parentId && threadArray.push(comment));
-      }
-    });
-
-
     return (
-      <div className="comment-wrapper">
-        {threads.map((comments) => (
-          comments.map((comment) =>
-          <>
-            <CreateCommentInlineWrapper isChildComment={comment.parentId !== null}>
+      <>
+        {comments.map
+        (rootComment => (
+          <div className="comment-wrapper">
+            <CreateCommentInlineWrapper>
               <PullRequestComment
-                comment={comment}
+                comment={rootComment}
                 refresh={this.fetchComments}
-                onReply={onReply(comment.parentId === null)}
+                onReply={onReply(!!rootComment._links.reply)}
                 handleError={this.onError}
               />
             </CreateCommentInlineWrapper>
-            {this.createCommentEditorIfNeeded(fileState, location , comment.id)}
-          </>
-        )))}
-      </div>
+            rootComment.replies.map(childComment => (
+            <CreateCommentInlineWrapper isChildComment={true}>
+              <PullRequestComment
+                comment={rootComment}
+                refresh={this.fetchComments}
+                onReply={onReply(rootComment.replies.length === index + 1)}
+                handleError={this.onError}
+              />
+            </CreateCommentInlineWrapper>
+            ){this.createReplyEditorIfNeeded(filestate, rootComment)}
+          </div>
+        ))}
+      </>
     );
   };
 
-  createCommentEditorIfNeeded = (fileState, location, id) => {
-    if (!!fileState.editor && fileState.parentId === id) {
-      return this.createNewCommentEditor(location, id);
+  createReplyEditorIfNeeded = (fileState, rootComment) => {
+    if (!!fileState.editor && fileState.parentId === rootComment.id) {
+      return this.createNewReplyEditor(rootComment);
     }
   };
 
-  createNewCommentEditor = (location: Location, id?: string) => {
+  createNewCommentEditor = (location: Location) => {
     const { pullRequest } = this.props;
     if (pullRequest._links.createComment) {
       return (
         <CreateCommentInlineWrapper>
           <CreateComment
             url={pullRequest._links.createComment.href}
-            parentId={id}
             location={location}
             refresh={() => this.closeEditor(location, this.fetchComments)}
             onCancel={() => this.closeEditor(location)}
@@ -371,6 +350,21 @@ class Diff extends React.Component<Props, State> {
       error
     });
   };
+
+  createNewReplyEditor(rootComment) {
+    return (
+      <CreateCommentInlineWrapper>
+        <CreateComment
+          url={rootComment._links.reply.href}
+          location={rootComment.location}
+          refresh={() => this.closeEditor(location, this.fetchComments)}
+          onCancel={() => this.closeEditor(location)}
+          autofocus={true}
+          handleError={this.onError}
+        />
+      </CreateCommentInlineWrapper>
+    );
+  }
 }
 
 export default translate("plugins")(Diff);

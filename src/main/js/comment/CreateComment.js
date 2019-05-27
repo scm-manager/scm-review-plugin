@@ -13,7 +13,6 @@ import { createPullRequestComment } from "../pullRequest";
 type Props = {
   url: string,
   location?: Location,
-  parentId?: string,
   onCancel?: () => void,
   refresh: () => void,
   autofocus?: boolean,
@@ -51,10 +50,10 @@ class CreateComment extends React.Component<Props, State> {
       return;
     }
 
-    const { url, location, refresh, handleError, parentId } = this.props;
+    const { url, location, refresh, handleError } = this.props;
     this.setState({ loading: true });
 
-    createPullRequestComment(url, { ...newComment, location, parentId }).then(result => {
+    createPullRequestComment(url, { ...newComment, location }).then(result => {
       if (result.error) {
         this.setState({ loading: false });
         handleError(result.error);
