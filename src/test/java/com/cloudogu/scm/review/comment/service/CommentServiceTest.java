@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.NotFoundException;
+import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.Repository;
 
 import java.time.Instant;
@@ -30,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -161,6 +163,25 @@ class CommentServiceTest {
     when(store.get(pullRequestId)).thenReturn(pullRequestComments);
 
     assertThrows(NotFoundException.class, () -> commentService.get("ns", "name", pullRequestId, "4"));
+  }
+
+  @Test
+  void shouldReply() {
+    PullRequestComment comment = new PullRequestComment(null, "1", "1. comment", "author", new Location(), Instant.now(), false, false);
+    PullRequestComment childComment = new PullRequestComment(null, "2", "2. comment", "author", new Location(), Instant.now(), false, false);
+    String pullRequestId = "pr_id";
+    commentService.reply(repository, pullRequestId, comment, childComment);
+    verify(store).add(repository, pullRequestId, childComment);
+    assertThat(childComment.getParentId()).isEqualTo(comment.getId());
+  }
+
+  @Test
+  void shouldNotReplyIfParentCommentHasAlreadyParentId() {
+    PullRequestComment comment = new PullRequestComment("55", "1", "1. comment", "author", new Location(), Instant.now(), false, false);
+    PullRequestComment childComment = new PullRequestComment(null, "2", "2. comment", "author", new Location(), Instant.now(), false, false);
+    String pullRequestId = "pr_id";
+    assertThrows(ScmConstraintViolationException.class, () -> commentService.reply(repository, pullRequestId, comment, childComment));
+    verify(store, never()).add(repository, pullRequestId, childComment);
   }
 
 }

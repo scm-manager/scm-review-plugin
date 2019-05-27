@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 public class CommentService {
 
@@ -96,6 +97,9 @@ public class CommentService {
   }
 
   public String reply(Repository repository, String pullRequestId, PullRequestComment comment, PullRequestComment response) {
-    return null;
+    doThrow().violation("Cannot reply to child comment").when(comment.getParentId() != null);
+    response.setParentId(comment.getId());
+    add(repository, pullRequestId, response);
+    return response.getId();
   }
 }
