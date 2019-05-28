@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -74,6 +75,11 @@ public class CommentService {
     return pullRequestComment.getId();
   }
 
+  private void initializeNewComment(PullRequestComment pullRequestComment) {
+    pullRequestComment.setDate(clock.instant());
+    pullRequestComment.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
+  }
+
   public void modify(String namespace, String name, String pullRequestId, PullRequestComment changedComment) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
@@ -90,13 +96,12 @@ public class CommentService {
         getCommentStore(repository).update(pullRequestId, rootComment);
         eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
       },
-      responseWithParent -> {
-        PullRequestComment response = responseWithParent.response;
+      (parent, response) -> {
         PermissionCheck.checkModifyComment(repository, response);
         PullRequestComment clone = response.clone();
         response.setComment(changedComment.getComment());
         response.setDone(changedComment.isDone());
-        getCommentStore(repository).update(pullRequestId, responseWithParent.parent);
+        getCommentStore(repository).update(pullRequestId, parent);
         eventBus.post(new CommentEvent(repository, pullRequest, response, clone, HandlerEventType.MODIFY));
       },
       () -> {
@@ -107,46 +112,9 @@ public class CommentService {
     );
   }
 
-  private void initializeNewComment(PullRequestComment pullRequestComment) {
-    pullRequestComment.setDate(clock.instant());
-    pullRequestComment.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
-  }
-
-  private void doWithEitherRootCommentOrResponse(
-    Repository repository,
-    String pullRequestId,
-    String commentId,
-    Consumer<PullRequestRootComment> rootCommentConsumer,
-    Consumer<ResponseWithParent> responseConsumer,
-    Runnable notFoundHandler
-  ) {
-    Optional<PullRequestRootComment> existingRootComment = findRootComment(repository, pullRequestId, commentId);
-    if (existingRootComment.isPresent()) {
-      rootCommentConsumer.accept(existingRootComment.get());
-    } else {
-      Optional<ResponseWithParent> existingResponse =
-        findResponseWithParent(repository, pullRequestId, commentId);
-      if (existingResponse.isPresent()) {
-        responseConsumer.accept(existingResponse.get());
-      } else {
-        notFoundHandler.run();
-      }
-    }
-  }
-
   public List<PullRequestRootComment> getAll(String namespace, String name, String pullRequestId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     return getCommentStore(repository).getAll(pullRequestId);
-  }
-
-  private static class ResponseWithParent {
-    private final PullRequestRootComment parent;
-    private final PullRequestComment response;
-
-    public ResponseWithParent(PullRequestRootComment parent, PullRequestComment response) {
-      this.parent = parent;
-      this.response = response;
-    }
   }
 
   public void delete(Repository repository, String pullRequestId, String commentId) {
@@ -161,11 +129,11 @@ public class CommentService {
         getCommentStore(repository).delete(pullRequestId, commentId);
         eventBus.post(new CommentEvent(repository, pullRequest, null, rootComment, HandlerEventType.DELETE));
       },
-      responseWithParent -> {
-        PermissionCheck.checkModifyComment(repository, responseWithParent.response);
-        responseWithParent.parent.removeResponse(responseWithParent.response);
-        getCommentStore(repository).update(pullRequestId, responseWithParent.parent);
-        eventBus.post(new CommentEvent(repository, pullRequest, null, responseWithParent.response, HandlerEventType.DELETE));
+      (parent, response) -> {
+        PermissionCheck.checkModifyComment(repository, response);
+        parent.removeResponse(response);
+        getCommentStore(repository).update(pullRequestId, parent);
+        eventBus.post(new CommentEvent(repository, pullRequest, null, response, HandlerEventType.DELETE));
       },
       () -> {}
     );
@@ -202,6 +170,28 @@ public class CommentService {
       .findFirst();
   }
 
+  private void doWithEitherRootCommentOrResponse(
+    Repository repository,
+    String pullRequestId,
+    String commentId,
+    Consumer<PullRequestRootComment> rootCommentConsumer,
+    BiConsumer<PullRequestRootComment, PullRequestComment> responseConsumer,
+    Runnable notFoundHandler
+  ) {
+    Optional<PullRequestRootComment> existingRootComment = findRootComment(repository, pullRequestId, commentId);
+    if (existingRootComment.isPresent()) {
+      rootCommentConsumer.accept(existingRootComment.get());
+    } else {
+      Optional<ResponseWithParent> existingResponse =
+        findResponseWithParent(repository, pullRequestId, commentId);
+      if (existingResponse.isPresent()) {
+        responseConsumer.accept(existingResponse.get().parent, existingResponse.get().response);
+      } else {
+        notFoundHandler.run();
+      }
+    }
+  }
+
   private Optional<ResponseWithParent> findResponseWithParent(Repository repository, String pullRequestId, String commentId) {
     return streamAllResponsesWithParents(repository, pullRequestId)
       .filter(responseWithParent -> responseWithParent.response.getId().equals(commentId))
@@ -215,5 +205,16 @@ public class CommentService {
       .flatMap(
         rootComment -> rootComment.getResponses().stream().map(response -> new ResponseWithParent(rootComment, response))
       );
+  }
+
+  private static class ResponseWithParent {
+
+    private final PullRequestRootComment parent;
+    private final PullRequestComment response;
+
+    public ResponseWithParent(PullRequestRootComment parent, PullRequestComment response) {
+      this.parent = parent;
+      this.response = response;
+    }
   }
 }
