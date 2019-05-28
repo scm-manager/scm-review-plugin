@@ -223,6 +223,19 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "dent")
+  public void shouldTriggerModifyEventForRootComment() {
+    doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
+    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    changedRootComment.setDone(true);
+
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedRootComment);
+
+    assertThat(eventCaptor.getAllValues()).hasSize(1);
+    assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.MODIFY);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
   public void shouldKeepAuthorAndDateWhenModifyingRootComment() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
@@ -316,6 +329,18 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "dent")
+  public void shouldTriggerModifyEventForResponses() {
+    PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
+    changedResponse.setComment("new comment");
+
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedResponse);
+
+    assertThat(eventCaptor.getAllValues()).hasSize(1);
+    assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.MODIFY);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
   public void shouldModifyResponseDoneFlag() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
     PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
@@ -394,6 +419,4 @@ public class CommentServiceTest {
 
     assertThat(all).containsExactly(EXISTING_ROOT_COMMENT);
   }
-
-  // TODO modify events
 }
