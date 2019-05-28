@@ -30,9 +30,7 @@ export type Location = {
 
 export type BasicComment = {
   comment: string,
-  parentId?: string,
-  id: string,
-  location?: Location
+  id: string
 };
 
 export type Comment = BasicComment & {
@@ -44,6 +42,11 @@ export type Comment = BasicComment & {
   lineId?: string,
   _links: Links
 };
+
+export type RootComment = Comment & {
+  responses: Comment[],
+  location?: Location
+}
 
 export type PullRequestCollection = Collection & {
   _embedded: {
