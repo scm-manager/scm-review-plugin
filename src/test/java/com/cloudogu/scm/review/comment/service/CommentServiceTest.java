@@ -410,7 +410,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian")
+  @SubjectAware(username = "rr")
   public void shouldGetAllComments() {
     Collection<PullRequestRootComment> all = commentService.getAll(REPOSITORY.getNamespace(), REPOSITORY.getName(), PULL_REQUEST_ID);
 
