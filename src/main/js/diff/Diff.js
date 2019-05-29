@@ -168,7 +168,10 @@ class Diff extends React.Component<Props, State> {
           if (lineState.comments && lineState.comments.length > 0) {
             lineAnnotations.push(this.createComments(lineState, location));
           }
-
+          if (lineState.editor) {
+            const location = createLocation(context, changeId);
+            lineAnnotations.push(this.createNewCommentEditor(location));
+          }
           if (lineAnnotations.length > 0) {
             annotations[changeId] = (
               <InlineComments>{lineAnnotations}</InlineComments>
@@ -202,7 +205,7 @@ class Diff extends React.Component<Props, State> {
   reply = (comment: Comment) => {
     console.log(comment);
 
-    this.openReplyEditor(comment)
+    this.openResponseEditor(comment);
   };
 
   openEditor = (location: Location) => {
@@ -322,7 +325,10 @@ class Diff extends React.Component<Props, State> {
 
   createResponseEditorIfNeeded = (id: string) => {
     const responseComment = this.state.responseEditor;
-    if (responseComment && (responseComment.id === id || responseComment.parentId === id)) {
+    if (
+      responseComment &&
+      (responseComment.id === id || responseComment.parentId === id)
+    ) {
       return this.createNewResponseEditor(responseComment);
     }
   };
@@ -357,8 +363,8 @@ class Diff extends React.Component<Props, State> {
       <CreateCommentInlineWrapper>
         <CreateComment
           url={responseComment._links.reply.href}
-          refresh={() => this.closeReplyEditor(this.fetchComments)}
-          onCancel={() => this.closeReplyEditor()}
+          refresh={() => this.closeResponseEditor(this.fetchComments)}
+          onCancel={() => this.closeResponseEditor()}
           autofocus={true}
           handleError={this.onError}
         />
@@ -366,12 +372,12 @@ class Diff extends React.Component<Props, State> {
     );
   }
 
-  openReplyEditor(comment: Comment) {
-    this.setState({responseEditor: comment})
+  openResponseEditor(comment: Comment) {
+    this.setState({ responseEditor: comment });
   }
 
-  closeReplyEditor(callback? : () => void) {
-    this.setState({responseEditor: null}, callback)
+  closeResponseEditor(callback?: () => void) {
+    this.setState({ responseEditor: null }, callback);
   }
 }
 
