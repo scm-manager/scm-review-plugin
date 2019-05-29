@@ -146,9 +146,7 @@ public class CommentRootResourceTest {
     JsonNode response_1 = responses.path(0);
     JsonNode response_2 = responses.path(1);
 
-    assertThat(response_1.get("parentId").asText()).isEqualTo("2");
     assertThat(response_1.get("comment").asText()).isEqualTo("1. response");
-    assertThat(response_2.get("parentId").asText()).isEqualTo("2");
     assertThat(response_2.get("comment").asText()).isEqualTo("2. response");
   }
 

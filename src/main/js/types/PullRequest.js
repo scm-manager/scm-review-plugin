@@ -35,7 +35,6 @@ export type BasicComment = {
 
 export type Comment = BasicComment & {
   author: DisplayedUser,
-  parentId?: string,
   location?: Location,
   date: string,
   systemComment: boolean,

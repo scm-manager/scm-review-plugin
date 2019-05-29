@@ -303,16 +303,19 @@ class Diff extends React.Component<Props, State> {
             </CreateCommentInlineWrapper>
             {!!rootComment._embedded.responses &&
               rootComment._embedded.responses.map((childComment, index) => (
-                <CreateCommentInlineWrapper isChildComment={true}>
-                  <PullRequestComment
-                    comment={childComment}
-                    refresh={this.fetchComments}
-                    onReply={onReply(
-                      rootComment._embedded.responses.length === index + 1
-                    )}
-                    handleError={this.onError}
-                  />
-                </CreateCommentInlineWrapper>
+                <>
+                  <CreateCommentInlineWrapper isChildComment={true}>
+                    <PullRequestComment
+                      comment={childComment}
+                      refresh={this.fetchComments}
+                      onReply={onReply(
+                        rootComment._embedded.responses.length === index + 1
+                      )}
+                      handleError={this.onError}
+                    />
+                  </CreateCommentInlineWrapper>
+                  {this.createResponseEditorIfNeeded(childComment.id)}
+                </>
               ))}
             {this.createResponseEditorIfNeeded(rootComment.id)}
           </div>
@@ -323,10 +326,7 @@ class Diff extends React.Component<Props, State> {
 
   createResponseEditorIfNeeded = (id: string) => {
     const responseComment = this.state.responseEditor;
-    if (
-      responseComment &&
-      (responseComment.id === id || responseComment.parentId === id)
-    ) {
+    if (responseComment && responseComment.id === id) {
       return this.createNewResponseEditor(responseComment);
     }
   };
