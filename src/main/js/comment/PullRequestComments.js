@@ -14,6 +14,7 @@ type Props = {
 type State = {
   pullRequestComments?: Comments,
   error?: Error,
+  responseEditor: Comment,
   loading: boolean
 };
 
@@ -94,19 +95,27 @@ class PullRequestComments extends React.Component<Props, State> {
               <CreateCommentInlineWrapper>
                 <PullRequestComment
                   comment={rootComment}
+                  onReply={!!rootComment._links.reply ? this.reply : null}
                   refresh={this.updatePullRequestComments}
                   handleError={this.onError}
                 />
               </CreateCommentInlineWrapper>
+              {this.createResponseEditorIfNeeded(rootComment.id)}
               {!!rootComment._embedded.responses &&
                 rootComment._embedded.responses.map(childComment => (
-                  <CreateCommentInlineWrapper isChildComment={true}>
-                    <PullRequestComment
-                      comment={childComment}
-                      refresh={this.updatePullRequestComments}
-                      handleError={this.onError}
-                    />
-                  </CreateCommentInlineWrapper>
+                  <>
+                    <CreateCommentInlineWrapper isChildComment={true}>
+                      <PullRequestComment
+                        comment={childComment}
+                        onReply={
+                          !!childComment._links.reply ? this.reply : null
+                        }
+                        refresh={this.updatePullRequestComments}
+                        handleError={this.onError}
+                      />
+                    </CreateCommentInlineWrapper>
+                    {this.createResponseEditorIfNeeded(childComment.id)}
+                  </>
                 ))}
             </div>
           ))}
@@ -122,6 +131,41 @@ class PullRequestComments extends React.Component<Props, State> {
         </>
       );
     }
+  }
+
+  createResponseEditorIfNeeded = (id: string) => {
+    const responseComment = this.state.responseEditor;
+    if (responseComment && responseComment.id === id) {
+      return this.createNewResponseEditor(responseComment);
+    }
+  };
+
+  createNewResponseEditor(responseComment: Comment) {
+    return (
+      <CreateCommentInlineWrapper>
+        <CreateComment
+          url={responseComment._links.reply.href}
+          refresh={() =>
+            this.closeResponseEditor(this.updatePullRequestComments)
+          }
+          onCancel={() => this.closeResponseEditor()}
+          autofocus={true}
+          handleError={this.onError}
+        />
+      </CreateCommentInlineWrapper>
+    );
+  }
+
+  reply = (comment: Comment) => {
+    this.openResponseEditor(comment);
+  };
+
+  openResponseEditor(comment: Comment) {
+    this.setState({ responseEditor: comment });
+  }
+
+  closeResponseEditor(callback?: () => void) {
+    this.setState({ responseEditor: null }, callback);
   }
 }
 
