@@ -130,6 +130,7 @@ public class DefaultPullRequestService implements PullRequestService {
     PermissionCheck.checkMerge(repository);
     if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
       this.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
+      eventBus.post(new PullRequestRejectedEvent(repository, pullRequest));
     } else {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
     }

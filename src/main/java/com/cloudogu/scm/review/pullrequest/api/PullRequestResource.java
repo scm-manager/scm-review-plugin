@@ -43,16 +43,14 @@ public class PullRequestResource {
   private final PullRequestService service;
   private final Provider<CommentRootResource> commentResourceProvider;
   private final CommentService commentService;
-  private final ScmEventBus eventBus;
 
 
   @Inject
-  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, CommentService commentService, ScmEventBus eventBus) {
+  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, CommentService commentService) {
     this.mapper = mapper;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
     this.commentService = commentService;
-    this.eventBus = eventBus;
   }
 
   @Path("comments/")
@@ -171,8 +169,7 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     PullRequest pullRequest = service.get(repository, pullRequestId);
     service.reject(repository, pullRequest);
-//    commentService.addStatusChangedComment(repository, pullRequestId, SystemCommentType.REJECTED);
-    eventBus.post(new PullRequestRejectedEvent(repository, pullRequest));
+    commentService.addStatusChangedComment(repository, pullRequestId, SystemCommentType.REJECTED);
     return Response.noContent().build();
   }
 }
