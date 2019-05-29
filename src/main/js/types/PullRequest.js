@@ -35,6 +35,8 @@ export type BasicComment = {
 
 export type Comment = BasicComment & {
   author: DisplayedUser,
+  parentId?: string,
+  location?: Location,
   date: string,
   systemComment: boolean,
   done: boolean,
@@ -44,8 +46,7 @@ export type Comment = BasicComment & {
 };
 
 export type RootComment = Comment & {
-  responses: Comment[],
-  location?: Location
+  responses: Comment[]
 }
 
 export type PullRequestCollection = Collection & {

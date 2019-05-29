@@ -12,7 +12,7 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import { createDiffUrl } from "../pullRequest";
 import { translate, type TFunction } from "react-i18next";
-import type { PullRequest, Location, RootComment} from "../types/PullRequest";
+import type { PullRequest, Location, RootComment } from "../types/PullRequest";
 import CreateComment from "../comment/CreateComment";
 import CreateCommentInlineWrapper from "./CreateCommentInlineWrapper";
 import PullRequestComment from "../comment/PullRequestComment";
@@ -51,7 +51,6 @@ type State = {
   files: {
     [string]: {
       editor: boolean,
-      parentId: string,
       comments: RootComment[]
     }
   }
@@ -140,7 +139,7 @@ class Diff extends React.Component<Props, State> {
       annotations.push(this.createComments(fileState, location));
     }
 
-    if (fileState.editor && fileState.parentId === null) {
+    if (fileState.editor) {
       annotations.push(
         this.createNewCommentEditor({
           file: path
@@ -200,34 +199,32 @@ class Diff extends React.Component<Props, State> {
     }
   };
 
-  reply = (rootComment: RootComment) => {
-    const location = rootComment.location;
-    if (location) {
-      this.openEditor(location, rootComment.id);
-    }
+  reply = (comment: Comment) => {
+    console.log(comment);
+
+    this.openReplyEditor(comment)
   };
 
-  openEditor = (location: Location, rootCommentId?: string) => {
+  openEditor = (location: Location) => {
     const changeId = location.changeId;
     if (location.hunk && changeId) {
-      this.setLineEditor(location, true, rootCommentId, null);
+      this.setLineEditor(location, true, null);
     } else {
-      this.setFileEditor(location.file, true, rootCommentId, null);
+      this.setFileEditor(location.file, true, null);
     }
   };
 
   closeEditor = (location: Location, callback?: () => void) => {
     if (location.hunk && location.changeId) {
-      this.setLineEditor(location, false, null, callback);
+      this.setLineEditor(location, false, callback);
     } else {
-      this.setFileEditor(location.file, false, null, callback);
+      this.setFileEditor(location.file, false, callback);
     }
   };
 
   setFileEditor = (
     path: string,
     showEditor: boolean,
-    parentId: string,
     callback?: () => void
   ) => {
     this.setState(state => {
@@ -237,7 +234,6 @@ class Diff extends React.Component<Props, State> {
           ...state.files,
           [path]: {
             editor: showEditor,
-            parentId: parentId,
             comments: current.comments || []
           }
         }
@@ -255,7 +251,6 @@ class Diff extends React.Component<Props, State> {
   setLineEditor = (
     location: Location,
     showEditor: boolean,
-    parentId: string,
     callback?: () => void
   ) => {
     const hunkId = createHunkIdFromLocation(location);
@@ -274,7 +269,6 @@ class Diff extends React.Component<Props, State> {
             ...currentHunk,
             [changeId]: {
               editor: showEditor,
-              parentId: parentId,
               comments: currentLine.comments || []
             }
           }
@@ -283,7 +277,7 @@ class Diff extends React.Component<Props, State> {
     }, callback);
   };
 
-  createComments = (fileState, location) => {
+  createComments = fileState => {
     const comments = fileState.comments;
     const onReply = (isReplyable: boolean) => {
       if (isReplyable && this.isPermittedToComment()) {
@@ -299,31 +293,37 @@ class Diff extends React.Component<Props, State> {
               <PullRequestComment
                 comment={rootComment}
                 refresh={this.fetchComments}
-                onReply={onReply(!!rootComment._links.reply && rootComment._embedded.responses.length === 0)}
+                onReply={onReply(
+                  !!rootComment._links.reply &&
+                    rootComment._embedded.responses.length === 0
+                )}
                 handleError={this.onError}
               />
             </CreateCommentInlineWrapper>
-            {!!rootComment._embedded && rootComment._embedded.responses.map((childComment, index) => (
-            <CreateCommentInlineWrapper isChildComment={true}>
-              {console.log(childComment)}
-              <PullRequestComment
-                comment={childComment}
-                refresh={this.fetchComments}
-                onReply={onReply(rootComment._embedded.responses.length === index + 1)}
-                handleError={this.onError}
-              />
-            </CreateCommentInlineWrapper>
-            ))}
-            {this.createReplyEditorIfNeeded(filestate, rootComment)}
+            {!!rootComment._embedded.responses &&
+              rootComment._embedded.responses.map((childComment, index) => (
+                <CreateCommentInlineWrapper isChildComment={true}>
+                  <PullRequestComment
+                    comment={childComment}
+                    refresh={this.fetchComments}
+                    onReply={onReply(
+                      rootComment._embedded.responses.length === index + 1
+                    )}
+                    handleError={this.onError}
+                  />
+                </CreateCommentInlineWrapper>
+              ))}
+            {this.createResponseEditorIfNeeded(rootComment.id)}
           </div>
         ))}
       </>
     );
   };
 
-  createReplyEditorIfNeeded = (fileState, rootComment) => {
-    if (!!fileState.editor && fileState.parentId === rootComment.id) {
-      return this.createNewReplyEditor(rootComment);
+  createResponseEditorIfNeeded = (id: string) => {
+    const responseComment = this.state.responseEditor;
+    if (responseComment && (responseComment.id === id || responseComment.parentId === id)) {
+      return this.createNewResponseEditor(responseComment);
     }
   };
 
@@ -352,18 +352,26 @@ class Diff extends React.Component<Props, State> {
     });
   };
 
-  createNewReplyEditor(rootComment) {
+  createNewResponseEditor(responseComment: Comment) {
     return (
       <CreateCommentInlineWrapper>
         <CreateComment
-          url={rootComment._links.reply.href}
-          refresh={() => this.closeEditor(location, this.fetchComments)}
-          onCancel={() => this.closeEditor(location)}
+          url={responseComment._links.reply.href}
+          refresh={() => this.closeReplyEditor(this.fetchComments)}
+          onCancel={() => this.closeReplyEditor()}
           autofocus={true}
           handleError={this.onError}
         />
       </CreateCommentInlineWrapper>
     );
+  }
+
+  openReplyEditor(comment: Comment) {
+    this.setState({responseEditor: comment})
+  }
+
+  closeReplyEditor(callback? : () => void) {
+    this.setState({responseEditor: null}, callback)
   }
 }
 
