@@ -281,7 +281,7 @@ class Diff extends React.Component<Props, State> {
   createComments = fileState => {
     const comments = fileState.comments;
     const onReply = (isReplyable: boolean) => {
-      if (isReplyable && this.isPermittedToComment()) {
+      if (isReplyable) {
         return this.reply;
       }
     };
@@ -294,10 +294,7 @@ class Diff extends React.Component<Props, State> {
               <PullRequestComment
                 comment={rootComment}
                 refresh={this.fetchComments}
-                onReply={onReply(
-                  !!rootComment._links.reply &&
-                    rootComment._embedded.responses.length === 0
-                )}
+                onReply={onReply(!!rootComment._links.reply)}
                 handleError={this.onError}
               />
             </CreateCommentInlineWrapper>
@@ -308,9 +305,7 @@ class Diff extends React.Component<Props, State> {
                     <PullRequestComment
                       comment={childComment}
                       refresh={this.fetchComments}
-                      onReply={onReply(
-                        rootComment._embedded.responses.length === index + 1
-                      )}
+                      onReply={onReply(!!childComment._links.reply)}
                       handleError={this.onError}
                     />
                   </CreateCommentInlineWrapper>
