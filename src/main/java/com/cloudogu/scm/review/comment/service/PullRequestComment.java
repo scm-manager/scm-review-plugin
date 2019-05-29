@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.XmlInstantAdapter;
-import org.apache.shiro.SecurityUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

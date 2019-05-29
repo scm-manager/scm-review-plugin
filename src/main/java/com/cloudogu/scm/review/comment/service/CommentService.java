@@ -80,14 +80,14 @@ public class CommentService {
     pullRequestComment.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
   }
 
-  public void modify(String namespace, String name, String pullRequestId, PullRequestComment changedComment) {
+  public void modify(String namespace, String name, String pullRequestId, String commentId, PullRequestComment changedComment) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
 
     doWithEitherRootCommentOrResponse(
       repository,
       pullRequestId,
-      changedComment.getId(),
+      commentId,
       rootComment -> {
         PermissionCheck.checkModifyComment(repository, rootComment);
         PullRequestRootComment clone = rootComment.clone();
@@ -117,7 +117,8 @@ public class CommentService {
     return getCommentStore(repository).getAll(pullRequestId);
   }
 
-  public void delete(Repository repository, String pullRequestId, String commentId) {
+  public void delete(String namespace, String name, String pullRequestId, String commentId) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
     doWithEitherRootCommentOrResponse(
       repository,

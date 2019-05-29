@@ -197,7 +197,7 @@ public class CommentServiceTest {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setComment("new comment");
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedRootComment);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -211,7 +211,7 @@ public class CommentServiceTest {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setDone(true);
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedRootComment);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -225,7 +225,7 @@ public class CommentServiceTest {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setDone(true);
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedRootComment);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.MODIFY);
@@ -239,7 +239,7 @@ public class CommentServiceTest {
     changedRootComment.setAuthor("new author");
     changedRootComment.setDate(ofEpochMilli(123));
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedRootComment);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -254,7 +254,7 @@ public class CommentServiceTest {
     EXISTING_ROOT_COMMENT.setAuthor("createCommentUser");
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedRootComment);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
   }
@@ -264,7 +264,7 @@ public class CommentServiceTest {
   public void shouldFailModifyingRootCommentWhenUserHasNoPermission() {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedRootComment);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
   }
 
   @Test
@@ -272,7 +272,7 @@ public class CommentServiceTest {
   public void shouldDeleteRootComment() {
     EXISTING_ROOT_COMMENT.setReplies(emptyList());
 
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
 
     verify(store).delete(PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
   }
@@ -282,7 +282,7 @@ public class CommentServiceTest {
   public void shouldTriggerDeleteEvent() {
     EXISTING_ROOT_COMMENT.setReplies(emptyList());
 
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.DELETE);
@@ -293,12 +293,12 @@ public class CommentServiceTest {
   public void shouldFailWhenDeletingRootCommentWithoutPermission() {
     EXISTING_ROOT_COMMENT.setReplies(emptyList());
 
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
   }
 
   @Test
   public void shouldNotFailWhenDeletingNotExistingRootComment() {
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, "no such id");
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, "no such id");
 
     verify(store, never()).delete(any(), any());
   }
@@ -306,7 +306,7 @@ public class CommentServiceTest {
   @Test(expected = ScmConstraintViolationException.class)
   @SubjectAware(username = "dent")
   public void shouldNotDeleteIfResponseExists() {
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
   }
 
   @Test
@@ -316,7 +316,7 @@ public class CommentServiceTest {
     PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
     changedResponse.setComment("new comment");
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedResponse);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId(), changedResponse);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -330,7 +330,7 @@ public class CommentServiceTest {
     PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
     changedResponse.setComment("new comment");
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedResponse);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId(), changedResponse);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.MODIFY);
@@ -343,7 +343,7 @@ public class CommentServiceTest {
     PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
     changedResponse.setDone(true);
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedResponse);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId(), changedResponse);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -357,7 +357,7 @@ public class CommentServiceTest {
     PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
     changedResponse.setDone(true);
 
-    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, changedResponse);
+    commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId(), changedResponse);
   }
 
   @Test
@@ -365,7 +365,7 @@ public class CommentServiceTest {
   public void shouldDeleteExistingResponse() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
 
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -375,7 +375,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldTriggerDeleteEventForResponse() {
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.DELETE);
@@ -384,7 +384,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldNotTriggerEventForDeletingNotExistingComment() {
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, "no such comment");
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, "no such comment");
 
     assertThat(eventCaptor.getAllValues()).isEmpty();
   }
@@ -392,7 +392,7 @@ public class CommentServiceTest {
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "trillian")
   public void shouldFailDeletingExistingResponseWithoutPermission() {
-    commentService.delete(REPOSITORY, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
+    commentService.delete(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
   }
 
   @Test

@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
+import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -17,8 +18,7 @@ import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import java.util.stream.Collectors;
+import java.util.List;
 
 import static de.otto.edison.hal.Link.link;
 import static java.util.stream.Collectors.toList;
@@ -69,17 +69,6 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
   }
 
   @AfterMapping
-  void appendReplyLinks(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
-    String namespace = repository.getNamespace();
-    String name = repository.getName();
-    final Links.Builder linksBuilder = new Links.Builder();
-    if (PermissionCheck.mayComment(repository)) {
-      linksBuilder.single(link("reply", commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, target.getId())));
-    }
-    target.add(linksBuilder.build());
-  }
-
-  @AfterMapping
   void appendResponses(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
     target.withEmbedded(
       "responses",
@@ -89,6 +78,22 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
         .map(response -> this.map(response, repository, pullRequestId))
         .collect(toList())
     );
+    List<HalRepresentation> responses = target.getEmbedded().getItemsBy("responses");
+    if (!responses.isEmpty()) {
+      appendReplyLink((PullRequestCommentDto) responses.get(responses.size() - 1), repository, pullRequestId);
+    } else {
+      appendReplyLink(target, repository, pullRequestId);
+    }
+  }
+
+  private void appendReplyLink(PullRequestCommentDto target, Repository repository, String pullRequestId) {
+    String namespace = repository.getNamespace();
+    String name = repository.getName();
+    final Links.Builder linksBuilder = new Links.Builder();
+    if (PermissionCheck.mayComment(repository)) {
+      linksBuilder.single(link("reply", commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, target.getId())));
+    }
+    target.add(linksBuilder.build());
   }
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
