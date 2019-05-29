@@ -4,17 +4,14 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import com.google.common.util.concurrent.Striped;
 import sonia.scm.HandlerEventType;
-import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 import sonia.scm.store.DataStore;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.locks.Lock;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static java.util.Optional.ofNullable;
@@ -52,17 +49,20 @@ public class CommentStore {
   public void update(String pullRequestId, PullRequestRootComment rootComment) {
     withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = this.get(pullRequestId);
-      applyChange(rootComment.getId(), pullRequestComments, comment -> {
-        pullRequestComments.getComments().remove(comment);
-      });
-      pullRequestComments.getComments().add(rootComment);
+      List<PullRequestRootComment> pullRequestCommentList = pullRequestComments.getComments();
+      for (int i = 0; i < pullRequestCommentList.size(); ++i) {
+        if (pullRequestCommentList.get(i).getId().equals(rootComment.getId())) {
+          pullRequestCommentList.set(i, rootComment);
+          break;
+        }
+      }
       store.put(pullRequestId, pullRequestComments);
       return null;
     });
   }
 
   public List<PullRequestRootComment> getAll(String pullRequestId) {
-    return ofNullable(get(pullRequestId).getComments()).orElse(new ArrayList<>());
+    return get(pullRequestId).getComments();
   }
 
   PullRequestComments get(String pullRequestId) {
@@ -75,6 +75,20 @@ public class CommentStore {
     });
   }
 
+  public void delete(String pullRequestId, String commentId) {
+    withLockDo(pullRequestId, () -> {
+      PullRequestComments pullRequestComments = get(pullRequestId);
+      for (Iterator<PullRequestRootComment> iter = pullRequestComments.getComments().iterator(); iter.hasNext(); ) {
+        if (iter.next().getId().equals(commentId)) {
+          iter.remove();
+          break;
+        }
+      }
+      store.put(pullRequestId, pullRequestComments);
+      return null;
+    });
+  }
+
   private <T> T withLockDo(String pullRequestId, Supplier<T> worker) {
     Lock lock = LOCKS.get(pullRequestId);
     lock.lock();
@@ -83,24 +97,5 @@ public class CommentStore {
     } finally {
       lock.unlock();
     }
-  }
-
-  private void applyChange(String commentId, PullRequestComments pullRequestComments, Consumer<PullRequestRootComment> commentConsumer) {
-    pullRequestComments.getComments()
-      .stream()
-      .filter(c -> c.getId().equals(commentId))
-      .findFirst()
-      .ifPresent(commentConsumer);
-  }
-
-  public void delete(String pullRequestId, String commentId) {
-    withLockDo(pullRequestId, () -> {
-      PullRequestComments pullRequestComments = Optional.ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
-      applyChange(commentId, pullRequestComments, comment -> {
-        pullRequestComments.getComments().remove(comment);
-      });
-      store.put(pullRequestId, pullRequestComments);
-      return null;
-    });
   }
 }
