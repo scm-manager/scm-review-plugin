@@ -9,6 +9,7 @@ import org.apache.shiro.authz.UnauthorizedException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -88,8 +89,6 @@ public class CommentServiceTest {
   private ArgumentCaptor<PullRequestRootComment> rootCommentCaptor;
   @Captor
   private ArgumentCaptor<CommentEvent> eventCaptor;
-  @Captor
-  private ArgumentCaptor<String> idCaptor;
 
   private CommentService commentService;
 
@@ -265,6 +264,17 @@ public class CommentServiceTest {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
 
     commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldFailModifyWhenCommentDoesNotExist() {
+    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    changedRootComment.setComment("new comment");
+
+    Assertions.assertThrows(NotFoundException.class, () -> commentService.modify(NAMESAPCE, NAME, PULL_REQUEST_ID, "no such id", changedRootComment));
+
+    verify(store, never()).update(any(), any());
   }
 
   @Test
