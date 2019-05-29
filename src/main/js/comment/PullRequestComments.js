@@ -94,7 +94,7 @@ class PullRequestComments extends React.Component<Props, State> {
               <CreateCommentInlineWrapper>
                 <PullRequestComment
                   comment={rootComment}
-                  refresh={this.fetchComments}
+                  refresh={this.updatePullRequestComments}
                   handleError={this.onError}
                 />
               </CreateCommentInlineWrapper>
@@ -103,7 +103,7 @@ class PullRequestComments extends React.Component<Props, State> {
                   <CreateCommentInlineWrapper isChildComment={true}>
                     <PullRequestComment
                       comment={childComment}
-                      refresh={this.fetchComments}
+                      refresh={this.updatePullRequestComments}
                       handleError={this.onError}
                     />
                   </CreateCommentInlineWrapper>

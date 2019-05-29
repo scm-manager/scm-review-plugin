@@ -203,8 +203,6 @@ class Diff extends React.Component<Props, State> {
   };
 
   reply = (comment: Comment) => {
-    console.log(comment);
-
     this.openResponseEditor(comment);
   };
 
