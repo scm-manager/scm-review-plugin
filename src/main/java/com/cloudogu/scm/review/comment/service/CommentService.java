@@ -158,9 +158,7 @@ public class CommentService {
   }
 
   public void addStatusChangedComment(Repository repository, String pullRequestId, SystemCommentType commentType) {
-    PullRequestRootComment comment = new PullRequestRootComment();
-    comment.setSystemComment(true);
-    comment.setComment(commentType.getKey());
+    PullRequestRootComment comment = PullRequestRootComment.createSystemComment(commentType.getKey());
     addWithoutPermissionCheck(repository, pullRequestId, comment);
   }
 
