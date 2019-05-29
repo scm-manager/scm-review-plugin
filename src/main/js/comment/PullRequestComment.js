@@ -16,12 +16,15 @@ import {
   deletePullRequestComment,
   updatePullRequestComment
 } from "../pullRequest";
+import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
+import CreateComment from "./CreateComment";
+import RecursivePullRequestComment from "./RecursivePullRequestComment";
 
 type Props = {
   comment: Comment,
   refresh: () => void,
-  onReply?: Comment => void,
   handleError: (error: Error) => void,
+  child: boolean,
 
   // context props
   t: TFunction
@@ -31,7 +34,8 @@ type State = {
   collapsed: boolean,
   edit: boolean,
   updatedComment: string,
-  loading: boolean
+  loading: boolean,
+  responseEditor: Comment
 };
 
 class PullRequestComment extends React.Component<Props, State> {
@@ -199,7 +203,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createEditIcons = () => {
-    const { comment, t, onReply } = this.props;
+    const { comment, t } = this.props;
     const { collapsed } = this.state;
 
     const deleteIcon =
@@ -233,10 +237,10 @@ class PullRequestComment extends React.Component<Props, State> {
       );
 
     const replyIcon =
-      onReply && !collapsed ? (
+      !!comment._links.reply && !collapsed ? (
         <a
           className="level-item"
-          onClick={() => onReply(comment)}
+          onClick={() => this.reply(comment)}
           title={t("scm-review-plugin.comment.reply")}
         >
           <span className="icon is-small">
@@ -335,7 +339,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   render() {
-    const { comment, t } = this.props;
+    const { comment, refresh, handleError, t } = this.props;
     const { loading, collapsed, edit } = this.state;
 
     if (loading) {
@@ -379,21 +383,68 @@ class PullRequestComment extends React.Component<Props, State> {
 
     return (
       <>
-        <article className="media">
-          <div className="media-content is-clipped content">
-            <p>
-              <strong>{comment.author.displayName} </strong>
-              <DateFromNow date={comment.date} />
-              &nbsp; {tag} {done}
-              <br />
-              {message}
-            </p>
-            {editButtons}
-          </div>
-          {icons}
-        </article>
+        <CreateCommentInlineWrapper isChildComment={this.props.child}>
+          <article className="media">
+            <div className="media-content is-clipped content">
+              <p>
+                <strong>{comment.author.displayName} </strong>
+                <DateFromNow date={comment.date} />
+                &nbsp; {tag} {done}
+                <br />
+                {message}
+              </p>
+              {editButtons}
+            </div>
+            {icons}
+          </article>
+        </CreateCommentInlineWrapper>
+        {!collapsed &&
+          !!comment._embedded &&
+          !!comment._embedded.responses &&
+          comment._embedded.responses.map(childComment => (
+            <RecursivePullRequestComment
+              child={true}
+              comment={childComment}
+              refresh={refresh}
+              handleError={handleError}
+            />
+          ))}
+        {this.createResponseEditorIfNeeded(comment.id)}
       </>
     );
+  }
+
+  reply = (comment: Comment) => {
+    this.openResponseEditor(comment);
+  };
+
+  createResponseEditorIfNeeded = (id: string) => {
+    const responseComment = this.state.responseEditor;
+    if (responseComment && responseComment.id === id) {
+      return this.createNewResponseEditor(responseComment);
+    }
+  };
+
+  createNewResponseEditor(responseComment: Comment) {
+    return (
+      <CreateCommentInlineWrapper>
+        <CreateComment
+          url={responseComment._links.reply.href}
+          refresh={() => this.closeResponseEditor()}
+          onCancel={() => this.closeResponseEditor()}
+          autofocus={true}
+          handleError={this.onError}
+        />
+      </CreateCommentInlineWrapper>
+    );
+  }
+
+  openResponseEditor(comment: Comment) {
+    this.setState({ responseEditor: comment });
+  }
+
+  closeResponseEditor() {
+    this.setState({ responseEditor: null }, this.props.refresh);
   }
 }
 

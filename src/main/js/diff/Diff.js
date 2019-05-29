@@ -202,10 +202,6 @@ class Diff extends React.Component<Props, State> {
     }
   };
 
-  reply = (comment: Comment) => {
-    this.openResponseEditor(comment);
-  };
-
   openEditor = (location: Location) => {
     const changeId = location.changeId;
     if (location.hunk && changeId) {
@@ -280,50 +276,20 @@ class Diff extends React.Component<Props, State> {
 
   createComments = fileState => {
     const comments = fileState.comments;
-    const onReply = (isReplyable: boolean) => {
-      if (isReplyable) {
-        return this.reply;
-      }
-    };
 
     return (
       <>
         {comments.map(rootComment => (
           <div className="comment-wrapper">
-            <CreateCommentInlineWrapper>
-              <PullRequestComment
-                comment={rootComment}
-                refresh={this.fetchComments}
-                onReply={onReply(!!rootComment._links.reply)}
-                handleError={this.onError}
-              />
-            </CreateCommentInlineWrapper>
-            {!!rootComment._embedded.responses &&
-              rootComment._embedded.responses.map((childComment, index) => (
-                <>
-                  <CreateCommentInlineWrapper isChildComment={true}>
-                    <PullRequestComment
-                      comment={childComment}
-                      refresh={this.fetchComments}
-                      onReply={onReply(!!childComment._links.reply)}
-                      handleError={this.onError}
-                    />
-                  </CreateCommentInlineWrapper>
-                  {this.createResponseEditorIfNeeded(childComment.id)}
-                </>
-              ))}
-            {this.createResponseEditorIfNeeded(rootComment.id)}
+            <PullRequestComment
+              comment={rootComment}
+              refresh={this.fetchComments}
+              handleError={this.onError}
+            />
           </div>
         ))}
       </>
     );
-  };
-
-  createResponseEditorIfNeeded = (id: string) => {
-    const responseComment = this.state.responseEditor;
-    if (responseComment && responseComment.id === id) {
-      return this.createNewResponseEditor(responseComment);
-    }
   };
 
   createNewCommentEditor = (location: Location) => {
@@ -350,28 +316,6 @@ class Diff extends React.Component<Props, State> {
       error
     });
   };
-
-  createNewResponseEditor(responseComment: Comment) {
-    return (
-      <CreateCommentInlineWrapper>
-        <CreateComment
-          url={responseComment._links.reply.href}
-          refresh={() => this.closeResponseEditor(this.fetchComments)}
-          onCancel={() => this.closeResponseEditor()}
-          autofocus={true}
-          handleError={this.onError}
-        />
-      </CreateCommentInlineWrapper>
-    );
-  }
-
-  openResponseEditor(comment: Comment) {
-    this.setState({ responseEditor: comment });
-  }
-
-  closeResponseEditor(callback?: () => void) {
-    this.setState({ responseEditor: null }, callback);
-  }
 }
 
 export default translate("plugins")(Diff);
