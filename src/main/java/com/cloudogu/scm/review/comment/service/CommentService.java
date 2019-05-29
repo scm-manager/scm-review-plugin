@@ -114,6 +114,7 @@ public class CommentService {
 
   public List<PullRequestRootComment> getAll(String namespace, String name, String pullRequestId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    PermissionCheck.checkRead(repository);
     return getCommentStore(repository).getAll(pullRequestId);
   }
 

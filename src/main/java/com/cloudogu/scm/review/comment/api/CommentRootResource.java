@@ -47,7 +47,6 @@ public class CommentRootResource {
     this.commentPathBuilder = commentPathBuilder;
   }
 
-
   @Path("{commentId}")
   public CommentResource getCommentResource() {
     return commentResourceProvider.get();
@@ -63,9 +62,6 @@ public class CommentRootResource {
     if (pullRequestCommentDto.isSystemComment()){
       throw new AuthorizationException("Is is Forbidden to create a system comment.");
     }
-    PermissionCheck.checkComment(repositoryResolver.resolve(new NamespaceAndName(namespace, name)));
-    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    PermissionCheck.checkComment(repository);
     PullRequestRootComment comment = mapper.map(pullRequestCommentDto);
     String id = service.add(namespace, name,  pullRequestId, comment);
     URI location = URI.create(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, id));
@@ -80,7 +76,6 @@ public class CommentRootResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    PermissionCheck.checkRead(repository);
     List<PullRequestRootComment> list = service.getAll(namespace, name, pullRequestId);
     List<PullRequestCommentDto> dtoList = list
       .stream()
@@ -89,5 +84,4 @@ public class CommentRootResource {
     boolean permission = PermissionCheck.mayComment(repository);
     return Response.ok(createCollection(uriInfo, permission, dtoList, "pullRequestComments")).build();
   }
-
 }

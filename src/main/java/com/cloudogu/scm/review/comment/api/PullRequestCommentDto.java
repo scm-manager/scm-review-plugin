@@ -41,6 +41,9 @@ public class PullRequestCommentDto extends HalRepresentation {
 
   private boolean done;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private String parentId;
+
   /**
    * suppress squid:S1185 (Overriding methods should do more than simply call the same method in the super class)
    * because we want to have this method available in this package

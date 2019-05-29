@@ -79,6 +79,7 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
         .collect(toList())
     );
     List<HalRepresentation> responses = target.getEmbedded().getItemsBy("responses");
+    responses.forEach(response -> ((PullRequestCommentDto) response).setParentId(source.getId()));
     if (!responses.isEmpty()) {
       appendReplyLink((PullRequestCommentDto) responses.get(responses.size() - 1), repository, pullRequestId);
     } else {

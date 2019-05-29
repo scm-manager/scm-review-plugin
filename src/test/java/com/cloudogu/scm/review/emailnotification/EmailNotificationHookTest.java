@@ -93,15 +93,15 @@ class EmailNotificationHookTest {
     );
   }
 
-  @Test
-  void shouldNotSendSystemEmails() throws Exception {
-    PullRequestRootComment.createSystemComment("1");
-    CommentEvent commentEvent = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
-    emailNotificationHook.handleCommentEvents(commentEvent);
-
-    verify(service, never()).sendEmails(any(), any(), any());
-    reset(service);
-  }
+//  @Test
+//  void shouldNotSendSystemEmails() throws Exception {
+//    PullRequestRootComment.createSystemComment("1");
+//    CommentEvent commentEvent = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
+//    emailNotificationHook.handleCommentEvents(commentEvent);
+//
+//    verify(service, never()).sendEmails(any(), any(), any());
+//    reset(service);
+//  }
 
   @TestFactory
   Stream<DynamicTest> sendingPREmailTestFactory() {
