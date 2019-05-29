@@ -84,45 +84,32 @@ class PullRequestComments extends React.Component<Props, State> {
     ) {
       const comments = pullRequestComments._embedded.pullRequestComments;
 
-      const sortedComments =
-        comments.sort((a, b) => {
-          if (a.date < b.date) {
-            return -1;
-          }
-          if (a.date > b.date) {
-            return 1;
-          }
-          return 0;
-        });
-
-      // then spread comments by thread related to parentComment
-      let threads = [];
-      sortedComments.forEach(comment => {
-        if (comment.parentId === null) {
-          threads.push([comment]);
-        }
-        else {
-          threads.forEach(threadArray => threadArray[0].id === comment.parentId && threadArray.push(comment));
-        }
-      });
-
       const createLink = pullRequestComments._links.create
         ? pullRequestComments._links.create.href
         : null;
       return (
         <>
-          {threads.map((comments) => (
-            comments.map((comment) => {
-                return (
-                  <CreateCommentInlineWrapper isChildComment={comment.parentId !== null}>
+          {comments.map(rootComment => (
+            <div className="comment-wrapper">
+              <CreateCommentInlineWrapper>
+                <PullRequestComment
+                  comment={rootComment}
+                  refresh={this.fetchComments}
+                  handleError={this.onError}
+                />
+              </CreateCommentInlineWrapper>
+              {!!rootComment._embedded.responses &&
+                rootComment._embedded.responses.map(childComment => (
+                  <CreateCommentInlineWrapper isChildComment={true}>
                     <PullRequestComment
-                      comment={comment}
-                      refresh={this.updatePullRequestComments}
-                      handleError={this.handleError}
+                      comment={childComment}
+                      refresh={this.fetchComments}
+                      handleError={this.onError}
                     />
                   </CreateCommentInlineWrapper>
-                )}
-            )))}
+                ))}
+            </div>
+          ))}
           {createLink ? (
             <CreateComment
               url={createLink}
