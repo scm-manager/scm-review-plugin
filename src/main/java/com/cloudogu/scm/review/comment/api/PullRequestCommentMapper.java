@@ -63,7 +63,9 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
     linksBuilder.self(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, target.getId()));
     if (!target.isSystemComment() && PermissionCheck.mayModifyComment(repository, source)) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId())));
-      linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId())));
+      if (!(source instanceof PullRequestRootComment) || ((PullRequestRootComment)source).getResponses().isEmpty()) {
+        linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId())));
+      }
     }
     target.add(linksBuilder.build());
   }
@@ -81,18 +83,18 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
     List<HalRepresentation> responses = target.getEmbedded().getItemsBy("responses");
     responses.forEach(response -> ((PullRequestCommentDto) response).setParentId(source.getId()));
     if (!responses.isEmpty()) {
-      appendReplyLink((PullRequestCommentDto) responses.get(responses.size() - 1), repository, pullRequestId);
+      appendReplyLink((PullRequestCommentDto) responses.get(responses.size() - 1), repository, pullRequestId, source.getId());
     } else {
-      appendReplyLink(target, repository, pullRequestId);
+      appendReplyLink(target, repository, pullRequestId, source.getId());
     }
   }
 
-  private void appendReplyLink(PullRequestCommentDto target, Repository repository, String pullRequestId) {
+  private void appendReplyLink(PullRequestCommentDto target, Repository repository, String pullRequestId, String commentId) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();
     if (PermissionCheck.mayComment(repository)) {
-      linksBuilder.single(link("reply", commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, target.getId())));
+      linksBuilder.single(link("reply", commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, commentId)));
     }
     target.add(linksBuilder.build());
   }

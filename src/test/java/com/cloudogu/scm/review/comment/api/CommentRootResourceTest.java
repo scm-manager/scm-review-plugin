@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
+import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
@@ -38,7 +39,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+import static com.cloudogu.scm.review.comment.service.PullRequestComment.createResponse;
 import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -121,14 +124,8 @@ public class CommentRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetAllPullRequestComments() throws URISyntaxException, IOException {
-    PullRequestRootComment comment1 = createComment("1", "1. comment", "author", new Location("", "", ""));
-    PullRequestRootComment comment2 = createComment("2", "2. comment", "author", new Location("", "", ""));
-    PullRequestRootComment comment3 = createComment("3", "3. comment", "author", new Location("", "", ""));
-    ArrayList<PullRequestRootComment> list = Lists.newArrayList(comment1, comment2, comment3);
-    when(service.getAll("space", "name", "1")).thenReturn(list);
-    when(service.get("space", "name", "1", "1")).thenReturn(comment1);
-    when(service.get("space", "name", "1", "2")).thenReturn(comment2);
-    when(service.get("space", "name", "1", "3")).thenReturn(comment3);
+    mockExistingComments();
+
     MockHttpRequest request =
       MockHttpRequest
         .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
@@ -142,129 +139,123 @@ public class CommentRootResourceTest {
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequestComments");
     JsonNode comment_1 = prNode.path(0);
     JsonNode comment_2 = prNode.path(1);
-    JsonNode comment_3 = prNode.path(2);
     assertThat(comment_1.get("comment").asText()).isEqualTo("1. comment");
     assertThat(comment_2.get("comment").asText()).isEqualTo("2. comment");
-    assertThat(comment_3.get("comment").asText()).isEqualTo("3. comment");
+
+    JsonNode responses = comment_2.get("_embedded").get("responses");
+    JsonNode response_1 = responses.path(0);
+    JsonNode response_2 = responses.path(1);
+
+    assertThat(response_1.get("comment").asText()).isEqualTo("1. response");
+    assertThat(response_2.get("comment").asText()).isEqualTo("2. response");
   }
 
-//
-//  @Test
-//  @SubjectAware(username = "slarti", password = "secret")
-//  public void shouldGetAllLinksÍfTheAuthorIsTheCurrentUser() throws URISyntaxException, IOException {
-//    PullRequestComment comment1 = createComment("1", "1. comment", "author", new Location("","",""));
-//    PullRequestComment comment2 = createComment("2", "2. comment", "author", new Location("","",""));
-//    PullRequestComment comment3 = createComment("3", "3. comment", "author", new Location("","",""));
-//    ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
-//    when(service.getAll("space", "name", "1")).thenReturn(list);
-//    when(service.get("space", "name", "1", "1")).thenReturn(comment1);
-//    when(service.get("space", "name", "1", "2")).thenReturn(comment2);
-//    when(service.get("space", "name", "1", "3")).thenReturn(comment3);
-//    MockHttpRequest request =
-//      MockHttpRequest
-//        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
-//        .contentType(MediaType.APPLICATION_JSON);
-//
-//    dispatcher.invoke(request, response);
-//
-//    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-//    ObjectMapper mapper = new ObjectMapper();
-//    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-//    JsonNode prNode = jsonNode.get("_embedded").get("pullRequestComments");
-//    JsonNode comment_1 = prNode.path(0);
-//    JsonNode comment_2 = prNode.path(1);
-//    JsonNode comment_3 = prNode.path(2);
-//
-//    assertThat(comment_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-//    assertThat(comment_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
-//    assertThat(comment_3.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
-//
-//    assertThat(comment_1.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-//    assertThat(comment_2.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
-//    assertThat(comment_3.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
-//
-//    assertThat(comment_1.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-//    assertThat(comment_2.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
-//    assertThat(comment_3.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
-//  }
-//
-//  @Test
-//  @SubjectAware(username = "createCommentUser", password = "secret")
-//  public void shouldGetOnlyTheSelfLinkÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
-//    PullRequestComment comment1 = createComment("1", "1. comment", "author", new Location("","",""));
-//    PullRequestComment comment2 = createComment("2", "2. comment", "author", new Location("","",""));
-//    PullRequestComment comment3 = createComment("3", "3. comment", "author", new Location("","",""));
-//    ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
-//    when(service.getAll("space", "name", "1")).thenReturn(list);
-//    when(service.get("space", "name", "1", "1")).thenReturn(comment1);
-//    when(service.get("space", "name", "1", "2")).thenReturn(comment2);
-//    when(service.get("space", "name", "1", "3")).thenReturn(comment3);
-//    MockHttpRequest request =
-//      MockHttpRequest
-//        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
-//        .contentType(MediaType.APPLICATION_JSON);
-//
-//    dispatcher.invoke(request, response);
-//
-//    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-//    ObjectMapper mapper = new ObjectMapper();
-//    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-//    JsonNode prNode = jsonNode.get("_embedded").get("pullRequestComments");
-//    JsonNode comment_1 = prNode.path(0);
-//    JsonNode comment_2 = prNode.path(1);
-//    JsonNode comment_3 = prNode.path(2);
-//
-//    assertThat(comment_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-//    assertThat(comment_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
-//    assertThat(comment_3.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
-//
-//    assertThat(comment_1.get("_links").get("update")).isNull();
-//    assertThat(comment_2.get("_links").get("update")).isNull();
-//    assertThat(comment_3.get("_links").get("update")).isNull();
-//
-//    assertThat(comment_1.get("_links").get("delete")).isNull();
-//    assertThat(comment_2.get("_links").get("delete")).isNull();
-//    assertThat(comment_3.get("_links").get("delete")).isNull();
-//  }
-//
-//  @Test
-//  @SubjectAware(username = "slarti", password = "secret")
-//  public void shouldNotGetDeleteLinkIfRootCommentHasChildComments() throws URISyntaxException, IOException {
-//    PullRequestComment comment1 = createComment("1", "1. comment", "author", new Location("","",""));
-//    PullRequestComment comment2 = createComment("2", "2. comment", "author", new Location("","",""));
-//    PullRequestComment comment3 = createComment("3", "3. comment", "author", new Location("","",""));
-//    ArrayList<PullRequestComment> list = Lists.newArrayList(comment1, comment2, comment3);
-//    when(service.getAll("space", "name", "1")).thenReturn(list);
-//    when(service.get("space", "name", "1", "1")).thenReturn(comment1);
-//    when(service.get("space", "name", "1", "2")).thenReturn(comment2);
-//    when(service.get("space", "name", "1", "3")).thenReturn(comment3);
-//    MockHttpRequest request =
-//      MockHttpRequest
-//        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
-//        .contentType(MediaType.APPLICATION_JSON);
-//
-//    dispatcher.invoke(request, response);
-//
-//    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-//    ObjectMapper mapper = new ObjectMapper();
-//    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-//    JsonNode prNode = jsonNode.get("_embedded").get("pullRequestComments");
-//    JsonNode comment_1 = prNode.path(0);
-//    JsonNode comment_2 = prNode.path(1);
-//    JsonNode comment_3 = prNode.path(2);
-//
-//    assertThat(comment_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-//    assertThat(comment_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
-//    assertThat(comment_3.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
-//
-//    assertThat(comment_1.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
-//    assertThat(comment_2.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
-//    assertThat(comment_3.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
-//
-//    assertThat(!comment_1.get("_links").has("delete"));
-//    assertThat(comment_2.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
-//    assertThat(comment_3.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/3");
-//  }
-//
-//
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldGetAllLinks() throws URISyntaxException, IOException {
+    mockExistingComments();
+
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequestComments");
+    JsonNode comment_1 = prNode.path(0);
+    JsonNode comment_2 = prNode.path(1);
+
+    assertThat(comment_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+    assertThat(comment_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
+
+    assertThat(comment_1.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+    assertThat(comment_2.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
+
+    assertThat(comment_1.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+    assertThat(comment_2.get("_links").get("delete")).isNull(); // must not delete comment with responses
+
+    assertThat(comment_1.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1/reply");
+    assertThat(comment_2.get("_links").get("reply")).isNull(); // respond only to latest response
+
+    JsonNode responses = comment_2.get("_embedded").get("responses");
+    JsonNode response_1 = responses.path(0);
+    JsonNode response_2 = responses.path(1);
+
+    assertThat(response_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
+    assertThat(response_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
+
+    assertThat(response_1.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
+    assertThat(response_2.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
+
+    assertThat(response_1.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
+    assertThat(response_2.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
+
+    assertThat(response_1.get("_links").get("reply")).isNull(); // respond only to latest response
+    assertThat(response_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
+  }
+
+  @Test
+  @SubjectAware(username = "createCommentUser", password = "secret")
+  public void shouldGetOnlyTheSelfLinkÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
+    mockExistingComments();
+
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequestComments");
+    JsonNode comment_1 = prNode.path(0);
+    JsonNode comment_2 = prNode.path(1);
+
+    assertThat(comment_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+    assertThat(comment_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2");
+
+    assertThat(comment_1.get("_links").get("update")).isNull();
+    assertThat(comment_2.get("_links").get("update")).isNull();
+
+    assertThat(comment_1.get("_links").get("delete")).isNull();
+    assertThat(comment_2.get("_links").get("delete")).isNull();
+
+    JsonNode responses = comment_2.get("_embedded").get("responses");
+    JsonNode response_1 = responses.path(0);
+    JsonNode response_2 = responses.path(1);
+
+    assertThat(response_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
+    assertThat(response_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
+
+    assertThat(response_1.get("_links").get("update")).isNull();
+    assertThat(response_2.get("_links").get("update")).isNull();
+
+    assertThat(response_1.get("_links").get("delete")).isNull();
+    assertThat(response_2.get("_links").get("delete")).isNull();
+
+    assertThat(response_1.get("_links").get("reply")).isNull();
+    assertThat(response_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
+  }
+
+  private void mockExistingComments() {
+    PullRequestRootComment comment1 = createComment("1", "1. comment", "author", new Location("", "", ""));
+    PullRequestRootComment comment2 = createComment("2", "2. comment", "author", new Location("", "", ""));
+
+    PullRequestComment response1 = createResponse("2_1", "1. response", "author");
+    PullRequestComment response2 = createResponse("2_2", "2. response", "author");
+
+    comment2.setReplies(asList(response1, response2));
+
+    ArrayList<PullRequestRootComment> list = Lists.newArrayList(comment1, comment2);
+    when(service.getAll("space", "name", "1")).thenReturn(list);
+    when(service.get("space", "name", "1", "1")).thenReturn(comment1);
+    when(service.get("space", "name", "1", "2")).thenReturn(comment2);
+  }
 }
