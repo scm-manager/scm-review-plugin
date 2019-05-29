@@ -69,7 +69,7 @@ public class CommentStore {
     return withLockDo(pullRequestId, () -> {
       PullRequestComments result = store.get(pullRequestId);
       if (result == null) {
-        throw new NotFoundException(PullRequest.class, pullRequestId);
+        return new PullRequestComments();
       }
       return result;
     });

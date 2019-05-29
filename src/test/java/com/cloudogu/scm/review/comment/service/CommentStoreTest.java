@@ -168,7 +168,10 @@ class CommentStoreTest {
   }
 
   @Test
-  void shouldThrowNotFoundException() {
-    assertThrows(NotFoundException.class, () -> store.get("iDontExist"));
+  void shouldCreateNewStoreIfStoreIsMissing() {
+    PullRequestComments newStore = store.get("iDontExist");
+
+    assertThat(newStore).isNotNull();
+    assertThat(newStore.getComments()).isEmpty();
   }
 }
