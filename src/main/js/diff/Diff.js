@@ -189,7 +189,7 @@ class Diff extends React.Component<Props, State> {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         setCollapse(false);
-        this.setFileEditor(path, true, null, null);
+        this.setFileEditor(path, true, null);
       };
       return <AddCommentButton action={openFileEditor} />;
     }
