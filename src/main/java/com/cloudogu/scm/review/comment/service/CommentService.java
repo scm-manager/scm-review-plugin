@@ -4,9 +4,9 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
-import com.github.legman.EventBus;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.HandlerEventType;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
@@ -29,15 +29,15 @@ public class CommentService {
   private final PullRequestService pullRequestService;
   private final CommentStoreFactory storeFactory;
   private final KeyGenerator keyGenerator;
-  private final EventBus eventBus;
+  private final ScmEventBus eventBus;
   private final Clock clock;
 
   @Inject
-  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, EventBus eventBus) {
+  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus) {
     this(repositoryResolver, pullRequestService, storeFactory, keyGenerator, eventBus, Clock.systemDefaultZone());
   }
 
-  CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, EventBus eventBus, Clock clock) {
+  CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, Clock clock) {
     this.repositoryResolver = repositoryResolver;
     this.pullRequestService = pullRequestService;
     this.storeFactory = storeFactory;
