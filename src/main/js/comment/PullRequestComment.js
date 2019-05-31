@@ -35,7 +35,7 @@ type State = {
   edit: boolean,
   updatedComment: string,
   loading: boolean,
-  responseEditor: Comment
+  replyEditor: Comment
 };
 
 class PullRequestComment extends React.Component<Props, State> {
@@ -400,8 +400,8 @@ class PullRequestComment extends React.Component<Props, State> {
         </CreateCommentInlineWrapper>
         {!collapsed &&
           !!comment._embedded &&
-          !!comment._embedded.responses &&
-          comment._embedded.responses.map(childComment => (
+          !!comment._embedded.replies &&
+          comment._embedded.replies.map(childComment => (
             <RecursivePullRequestComment
               child={true}
               comment={childComment}
@@ -409,29 +409,29 @@ class PullRequestComment extends React.Component<Props, State> {
               handleError={handleError}
             />
           ))}
-        {this.createResponseEditorIfNeeded(comment.id)}
+        {this.createReplyEditorIfNeeded(comment.id)}
       </>
     );
   }
 
   reply = (comment: Comment) => {
-    this.openResponseEditor(comment);
+    this.openReplyEditor(comment);
   };
 
-  createResponseEditorIfNeeded = (id: string) => {
-    const responseComment = this.state.responseEditor;
-    if (responseComment && responseComment.id === id) {
-      return this.createNewResponseEditor(responseComment);
+  createReplyEditorIfNeeded = (id: string) => {
+    const replyComment = this.state.replyEditor;
+    if (replyComment && replyComment.id === id) {
+      return this.createNewReplyEditor(replyComment);
     }
   };
 
-  createNewResponseEditor(responseComment: Comment) {
+  createNewReplyEditor(replyComment: Comment) {
     return (
       <CreateCommentInlineWrapper>
         <CreateComment
-          url={responseComment._links.reply.href}
-          refresh={() => this.closeResponseEditor()}
-          onCancel={() => this.closeResponseEditor()}
+          url={replyComment._links.reply.href}
+          refresh={() => this.closeReplyEditor()}
+          onCancel={() => this.closeReplyEditor()}
           autofocus={true}
           handleError={this.onError}
         />
@@ -439,12 +439,12 @@ class PullRequestComment extends React.Component<Props, State> {
     );
   }
 
-  openResponseEditor(comment: Comment) {
-    this.setState({ responseEditor: comment });
+  openReplyEditor(comment: Comment) {
+    this.setState({ replyEditor: comment });
   }
 
-  closeResponseEditor() {
-    this.setState({ responseEditor: null }, this.props.refresh);
+  closeReplyEditor() {
+    this.setState({ replyEditor: null }, this.props.refresh);
   }
 }
 

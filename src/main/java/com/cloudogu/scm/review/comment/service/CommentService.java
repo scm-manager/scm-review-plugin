@@ -84,7 +84,7 @@ public class CommentService {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
 
-    doWithEitherRootCommentOrResponse(
+    doWithEitherRootCommentOrReply(
       repository,
       pullRequestId,
       commentId,
@@ -96,13 +96,13 @@ public class CommentService {
         getCommentStore(repository).update(pullRequestId, rootComment);
         eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
       },
-      (parent, response) -> {
-        PermissionCheck.checkModifyComment(repository, response);
-        PullRequestComment clone = response.clone();
-        response.setComment(changedComment.getComment());
-        response.setDone(changedComment.isDone());
+      (parent, reply) -> {
+        PermissionCheck.checkModifyComment(repository, reply);
+        PullRequestComment clone = reply.clone();
+        reply.setComment(changedComment.getComment());
+        reply.setDone(changedComment.isDone());
         getCommentStore(repository).update(pullRequestId, parent);
-        eventBus.post(new CommentEvent(repository, pullRequest, response, clone, HandlerEventType.MODIFY));
+        eventBus.post(new CommentEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
       },
       () -> {
         throw notFound(entity(PullRequestComment.class, String.valueOf(changedComment.getId()))
@@ -121,22 +121,22 @@ public class CommentService {
   public void delete(String namespace, String name, String pullRequestId, String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
-    doWithEitherRootCommentOrResponse(
+    doWithEitherRootCommentOrReply(
       repository,
       pullRequestId,
       commentId,
       rootComment -> {
         PermissionCheck.checkModifyComment(repository, rootComment);
         doThrow().violation("Must not delete system comment").when(rootComment.isSystemComment());
-        doThrow().violation("Must not delete root comment with existing response").when(!rootComment.getResponses().isEmpty());
+        doThrow().violation("Must not delete root comment with existing replies").when(!rootComment.getReplies().isEmpty());
         getCommentStore(repository).delete(pullRequestId, commentId);
         eventBus.post(new CommentEvent(repository, pullRequest, null, rootComment, HandlerEventType.DELETE));
       },
-      (parent, response) -> {
-        PermissionCheck.checkModifyComment(repository, response);
-        parent.removeResponse(response);
+      (parent, reply) -> {
+        PermissionCheck.checkModifyComment(repository, reply);
+        parent.removeReply(reply);
         getCommentStore(repository).update(pullRequestId, parent);
-        eventBus.post(new CommentEvent(repository, pullRequest, null, response, HandlerEventType.DELETE));
+        eventBus.post(new CommentEvent(repository, pullRequest, null, reply, HandlerEventType.DELETE));
       },
       () -> {}
     );
@@ -171,51 +171,51 @@ public class CommentService {
       .findFirst();
   }
 
-  private void doWithEitherRootCommentOrResponse(
+  private void doWithEitherRootCommentOrReply(
     Repository repository,
     String pullRequestId,
     String commentId,
     Consumer<PullRequestRootComment> rootCommentConsumer,
-    BiConsumer<PullRequestRootComment, PullRequestComment> responseConsumer,
+    BiConsumer<PullRequestRootComment, PullRequestComment> replyConsumer,
     Runnable notFoundHandler
   ) {
     Optional<PullRequestRootComment> existingRootComment = findRootComment(repository, pullRequestId, commentId);
     if (existingRootComment.isPresent()) {
       rootCommentConsumer.accept(existingRootComment.get());
     } else {
-      Optional<ResponseWithParent> existingResponse =
-        findResponseWithParent(repository, pullRequestId, commentId);
-      if (existingResponse.isPresent()) {
-        responseConsumer.accept(existingResponse.get().parent, existingResponse.get().response);
+      Optional<ReplyWithParent> existingReply =
+        findReplyWithParent(repository, pullRequestId, commentId);
+      if (existingReply.isPresent()) {
+        replyConsumer.accept(existingReply.get().parent, existingReply.get().reply);
       } else {
         notFoundHandler.run();
       }
     }
   }
 
-  private Optional<ResponseWithParent> findResponseWithParent(Repository repository, String pullRequestId, String commentId) {
-    return streamAllResponsesWithParents(repository, pullRequestId)
-      .filter(responseWithParent -> responseWithParent.response.getId().equals(commentId))
+  private Optional<ReplyWithParent> findReplyWithParent(Repository repository, String pullRequestId, String commentId) {
+    return streamAllRepliesWithParents(repository, pullRequestId)
+      .filter(ReplyWithParent -> ReplyWithParent.reply.getId().equals(commentId))
       .findFirst();
   }
 
-  private Stream<ResponseWithParent> streamAllResponsesWithParents(Repository repository, String pullRequestId) {
+  private Stream<ReplyWithParent> streamAllRepliesWithParents(Repository repository, String pullRequestId) {
     return getCommentStore(repository)
       .getAll(pullRequestId)
       .stream()
       .flatMap(
-        rootComment -> rootComment.getResponses().stream().map(response -> new ResponseWithParent(rootComment, response))
+        rootComment -> rootComment.getReplies().stream().map(reply -> new ReplyWithParent(rootComment, reply))
       );
   }
 
-  private static class ResponseWithParent {
+  private static class ReplyWithParent {
 
     private final PullRequestRootComment parent;
-    private final PullRequestComment response;
+    private final PullRequestComment reply;
 
-    public ResponseWithParent(PullRequestRootComment parent, PullRequestComment response) {
+    public ReplyWithParent(PullRequestRootComment parent, PullRequestComment reply) {
       this.parent = parent;
-      this.response = response;
+      this.reply = reply;
     }
   }
 }

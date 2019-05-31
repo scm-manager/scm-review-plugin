@@ -26,7 +26,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 
-import static com.cloudogu.scm.review.comment.service.PullRequestComment.createResponse;
+import static com.cloudogu.scm.review.comment.service.PullRequestComment.createReply;
 import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
 import static java.time.Instant.now;
 import static java.time.Instant.ofEpochMilli;
@@ -55,10 +55,10 @@ public class CommentServiceTest {
   private final Instant NOW = now().truncatedTo(ChronoUnit.SECONDS);
   private final String COMMENT_ID = "1";
   private final PullRequestRootComment EXISTING_ROOT_COMMENT = createComment(COMMENT_ID, "1. comment", "author", new Location());
-  private final PullRequestComment EXISTING_RESPONSE = createResponse("resp_1", "1. response", "author");
+  private final PullRequestComment EXISTING_REPLY = createReply("resp_1", "1. reply", "author");
 
   {
-    EXISTING_ROOT_COMMENT.addReply(EXISTING_RESPONSE);
+    EXISTING_ROOT_COMMENT.addReply(EXISTING_REPLY);
   }
 
   @Rule
@@ -152,30 +152,30 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "createCommentUser")
-  public void shouldAddResponseToParentComment() {
+  public void shouldAddReplyToParentComment() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
 
-    PullRequestComment response = createResponse("new response", "1. comment", "author");
+    PullRequestComment reply = createReply("new reply", "1. comment", "author");
 
-    commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", response);
+    commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
-    assertThat(storedComment.getResponses()).hasSize(2);
-    assertThat(storedComment.getResponses()).contains(response);
-    assertThat(storedComment.getResponses().get(1).getAuthor()).isEqualTo("createCommentUser");
-    assertThat(storedComment.getResponses().get(1).getDate()).isEqualTo(NOW);
-    assertThat(storedComment.getResponses().get(1).getId()).isNotEqualTo("new response");
+    assertThat(storedComment.getReplies()).hasSize(2);
+    assertThat(storedComment.getReplies()).contains(reply);
+    assertThat(storedComment.getReplies().get(1).getAuthor()).isEqualTo("createCommentUser");
+    assertThat(storedComment.getReplies().get(1).getDate()).isEqualTo(NOW);
+    assertThat(storedComment.getReplies().get(1).getId()).isNotEqualTo("new reply");
   }
 
   @Test
   @SubjectAware(username = "createCommentUser")
-  public void shouldPostEventForNewResponse() {
+  public void shouldPostEventForNewReply() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
 
-    PullRequestComment response = createResponse("1", "1. comment", "author");
+    PullRequestComment reply = createReply("1", "1. comment", "author");
 
-    commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", response);
+    commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.CREATE);
@@ -183,10 +183,10 @@ public class CommentServiceTest {
 
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "trillian")
-  public void shouldFailIfUserHasNoPermissionToCreateResponse() {
-    PullRequestComment response = createResponse("1", "1. comment", "author");
+  public void shouldFailIfUserHasNoPermissionTocreateReply() {
+    PullRequestComment reply = createReply("1", "1. comment", "author");
 
-    commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", response);
+    commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
   }
 
   @Test
@@ -315,32 +315,32 @@ public class CommentServiceTest {
 
   @Test(expected = ScmConstraintViolationException.class)
   @SubjectAware(username = "dent")
-  public void shouldNotDeleteIfResponseExists() {
+  public void shouldNotDeleteIfReplyExists() {
     commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId());
   }
 
   @Test
   @SubjectAware(username = "dent")
-  public void shouldModifyResponseText() {
+  public void shouldModifyReplyText() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
-    changedResponse.setComment("new comment");
+    PullRequestComment changedReply = EXISTING_REPLY.clone();
+    changedReply.setComment("new comment");
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId(), changedResponse);
+    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
-    assertThat(storedComment.getResponses()).hasSize(1);
-    assertThat(storedComment.getResponses().get(0).getComment()).isEqualTo("new comment");
+    assertThat(storedComment.getReplies()).hasSize(1);
+    assertThat(storedComment.getReplies().get(0).getComment()).isEqualTo("new comment");
   }
 
   @Test
   @SubjectAware(username = "dent")
-  public void shouldTriggerModifyEventForResponses() {
-    PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
-    changedResponse.setComment("new comment");
+  public void shouldTriggerModifyEventForReplies() {
+    PullRequestComment changedReply = EXISTING_REPLY.clone();
+    changedReply.setComment("new comment");
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId(), changedResponse);
+    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.MODIFY);
@@ -348,38 +348,38 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "dent")
-  public void shouldModifyResponseDoneFlag() {
+  public void shouldModifyReplyDoneFlag() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
-    changedResponse.setDone(true);
+    PullRequestComment changedReply = EXISTING_REPLY.clone();
+    changedReply.setDone(true);
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId(), changedResponse);
+    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
-    assertThat(storedComment.getResponses()).hasSize(1);
-    assertThat(storedComment.getResponses().get(0).isDone()).isTrue();
+    assertThat(storedComment.getReplies()).hasSize(1);
+    assertThat(storedComment.getReplies().get(0).isDone()).isTrue();
   }
 
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "createCommentUser")
-  public void shouldFailModifyingResponseWhenUserHasNoPermission() {
-    PullRequestComment changedResponse = EXISTING_RESPONSE.clone();
-    changedResponse.setDone(true);
+  public void shouldFailModifyingReplyWhenUserHasNoPermission() {
+    PullRequestComment changedReply = EXISTING_REPLY.clone();
+    changedReply.setDone(true);
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId(), changedResponse);
+    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
   }
 
   @Test
   @SubjectAware(username = "dent")
-  public void shouldDeleteExistingResponse() {
+  public void shouldDeleteExistingReply() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
 
-    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
+    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId());
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
-    assertThat(storedComment.getResponses()).isEmpty();
+    assertThat(storedComment.getReplies()).isEmpty();
   }
 
   @Test(expected = ScmConstraintViolationException.class)
@@ -392,8 +392,8 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "dent")
-  public void shouldTriggerDeleteEventForResponse() {
-    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
+  public void shouldTriggerDeleteEventForReply() {
+    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId());
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.DELETE);
@@ -409,8 +409,8 @@ public class CommentServiceTest {
 
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "trillian")
-  public void shouldFailDeletingExistingResponseWithoutPermission() {
-    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_RESPONSE.getId());
+  public void shouldFailDeletingExistingReplyWithoutPermission() {
+    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId());
   }
 
   @Test

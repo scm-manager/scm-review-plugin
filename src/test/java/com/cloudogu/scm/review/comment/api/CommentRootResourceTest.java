@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-import static com.cloudogu.scm.review.comment.service.PullRequestComment.createResponse;
+import static com.cloudogu.scm.review.comment.service.PullRequestComment.createReply;
 import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -142,12 +142,12 @@ public class CommentRootResourceTest {
     assertThat(comment_1.get("comment").asText()).isEqualTo("1. comment");
     assertThat(comment_2.get("comment").asText()).isEqualTo("2. comment");
 
-    JsonNode responses = comment_2.get("_embedded").get("responses");
-    JsonNode response_1 = responses.path(0);
-    JsonNode response_2 = responses.path(1);
+    JsonNode replies = comment_2.get("_embedded").get("replies");
+    JsonNode reply_1 = replies.path(0);
+    JsonNode reply_2 = replies.path(1);
 
-    assertThat(response_1.get("comment").asText()).isEqualTo("1. response");
-    assertThat(response_2.get("comment").asText()).isEqualTo("2. response");
+    assertThat(reply_1.get("comment").asText()).isEqualTo("1. reply");
+    assertThat(reply_2.get("comment").asText()).isEqualTo("2. reply");
   }
 
   @Test
@@ -179,23 +179,23 @@ public class CommentRootResourceTest {
     assertThat(comment_2.get("_links").get("delete")).isNull(); // must not delete comment with responses
 
     assertThat(comment_1.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1/reply");
-    assertThat(comment_2.get("_links").get("reply")).isNull(); // respond only to latest response
+    assertThat(comment_2.get("_links").get("reply")).isNull(); // respond only to latest reply
 
-    JsonNode responses = comment_2.get("_embedded").get("responses");
-    JsonNode response_1 = responses.path(0);
-    JsonNode response_2 = responses.path(1);
+    JsonNode replies = comment_2.get("_embedded").get("replies");
+    JsonNode reply_1 = replies.path(0);
+    JsonNode reply_2 = replies.path(1);
 
-    assertThat(response_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
-    assertThat(response_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
+    assertThat(reply_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
+    assertThat(reply_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
 
-    assertThat(response_1.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
-    assertThat(response_2.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
+    assertThat(reply_1.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
+    assertThat(reply_2.get("_links").get("update").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
 
-    assertThat(response_1.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
-    assertThat(response_2.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
+    assertThat(reply_1.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
+    assertThat(reply_2.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
 
-    assertThat(response_1.get("_links").get("reply")).isNull(); // respond only to latest response
-    assertThat(response_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
+    assertThat(reply_1.get("_links").get("reply")).isNull(); // respond only to latest reply
+    assertThat(reply_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
   }
 
   @Test
@@ -226,31 +226,31 @@ public class CommentRootResourceTest {
     assertThat(comment_1.get("_links").get("delete")).isNull();
     assertThat(comment_2.get("_links").get("delete")).isNull();
 
-    JsonNode responses = comment_2.get("_embedded").get("responses");
-    JsonNode response_1 = responses.path(0);
-    JsonNode response_2 = responses.path(1);
+    JsonNode replies = comment_2.get("_embedded").get("replies");
+    JsonNode reply_1 = replies.path(0);
+    JsonNode reply_2 = replies.path(1);
 
-    assertThat(response_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
-    assertThat(response_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
+    assertThat(reply_1.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_1");
+    assertThat(reply_2.get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2_2");
 
-    assertThat(response_1.get("_links").get("update")).isNull();
-    assertThat(response_2.get("_links").get("update")).isNull();
+    assertThat(reply_1.get("_links").get("update")).isNull();
+    assertThat(reply_2.get("_links").get("update")).isNull();
 
-    assertThat(response_1.get("_links").get("delete")).isNull();
-    assertThat(response_2.get("_links").get("delete")).isNull();
+    assertThat(reply_1.get("_links").get("delete")).isNull();
+    assertThat(reply_2.get("_links").get("delete")).isNull();
 
-    assertThat(response_1.get("_links").get("reply")).isNull();
-    assertThat(response_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
+    assertThat(reply_1.get("_links").get("reply")).isNull();
+    assertThat(reply_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
   }
 
   private void mockExistingComments() {
     PullRequestRootComment comment1 = createComment("1", "1. comment", "author", new Location("", "", ""));
     PullRequestRootComment comment2 = createComment("2", "2. comment", "author", new Location("", "", ""));
 
-    PullRequestComment response1 = createResponse("2_1", "1. response", "author");
-    PullRequestComment response2 = createResponse("2_2", "2. response", "author");
+    PullRequestComment reply1 = createReply("2_1", "1. reply", "author");
+    PullRequestComment reply2 = createReply("2_2", "2. reply", "author");
 
-    comment2.setReplies(asList(response1, response2));
+    comment2.setReplies(asList(reply1, reply2));
 
     ArrayList<PullRequestRootComment> list = Lists.newArrayList(comment1, comment2);
     when(service.getAll("space", "name", "1")).thenReturn(list);

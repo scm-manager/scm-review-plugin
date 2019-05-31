@@ -43,7 +43,7 @@ public class PullRequestRootComment extends PullRequestComment implements Clonea
     return location;
   }
 
-  public List<PullRequestComment> getResponses() {
+  public List<PullRequestComment> getReplies() {
     return Collections.unmodifiableList(replies);
   }
 
@@ -59,7 +59,7 @@ public class PullRequestRootComment extends PullRequestComment implements Clonea
     this.replies = replies;
   }
 
-  public void removeResponse(PullRequestComment response) {
-    this.replies.remove(response);
+  public void removeReply(PullRequestComment reply) {
+    this.replies.remove(reply);
   }
 }

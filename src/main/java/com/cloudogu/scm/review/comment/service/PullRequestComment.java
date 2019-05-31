@@ -12,7 +12,7 @@ import java.time.Instant;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class PullRequestComment implements Cloneable {
 
-  public static PullRequestComment createResponse(String id, String text, String author) {
+  public static PullRequestComment createReply(String id, String text, String author) {
     PullRequestComment comment = new PullRequestComment();
     comment.setId(id);
     comment.setComment(text);

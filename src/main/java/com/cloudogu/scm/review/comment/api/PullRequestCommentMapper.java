@@ -63,7 +63,7 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
     linksBuilder.self(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, target.getId()));
     if (!target.isSystemComment() && PermissionCheck.mayModifyComment(repository, source)) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId())));
-      if (!(source instanceof PullRequestRootComment) || ((PullRequestRootComment)source).getResponses().isEmpty()) {
+      if (!(source instanceof PullRequestRootComment) || ((PullRequestRootComment)source).getReplies().isEmpty()) {
         linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId())));
       }
     }
@@ -71,18 +71,18 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
   }
 
   @AfterMapping
-  void appendResponses(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
+  void appendReplies(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
     target.withEmbedded(
-      "responses",
+      "replies",
       source
-        .getResponses()
+        .getReplies()
         .stream()
-        .map(response -> this.map(response, repository, pullRequestId))
+        .map(reply -> this.map(reply, repository, pullRequestId))
         .collect(toList())
     );
-    List<HalRepresentation> responses = target.getEmbedded().getItemsBy("responses");
-    if (!responses.isEmpty()) {
-      appendReplyLink((PullRequestCommentDto) responses.get(responses.size() - 1), repository, pullRequestId, source.getId());
+    List<HalRepresentation> replies = target.getEmbedded().getItemsBy("replies");
+    if (!replies.isEmpty()) {
+      appendReplyLink((PullRequestCommentDto) replies.get(replies.size() - 1), repository, pullRequestId, source.getId());
     } else {
       appendReplyLink(target, repository, pullRequestId, source.getId());
     }

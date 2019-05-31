@@ -45,7 +45,7 @@ export type Comment = BasicComment & {
 };
 
 export type RootComment = Comment & {
-  responses: Comment[]
+  replies: Comment[]
 }
 
 export type PullRequestCollection = Collection & {

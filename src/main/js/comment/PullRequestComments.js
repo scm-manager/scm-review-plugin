@@ -14,7 +14,7 @@ type Props = {
 type State = {
   pullRequestComments?: Comments,
   error?: Error,
-  responseEditor: Comment,
+  replyEditor: Comment,
   loading: boolean
 };
 
