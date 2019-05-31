@@ -382,6 +382,14 @@ public class CommentServiceTest {
     assertThat(storedComment.getResponses()).isEmpty();
   }
 
+  @Test(expected = ScmConstraintViolationException.class)
+  @SubjectAware(username = "dent")
+  public void shouldFailDeletingSystemComment() {
+    PullRequestComment systemComment = EXISTING_ROOT_COMMENT;
+    systemComment.setSystemComment(true);
+    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, systemComment.getId());
+  }
+
   @Test
   @SubjectAware(username = "dent")
   public void shouldTriggerDeleteEventForResponse() {

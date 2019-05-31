@@ -127,6 +127,7 @@ public class CommentService {
       commentId,
       rootComment -> {
         PermissionCheck.checkModifyComment(repository, rootComment);
+        doThrow().violation("Must not delete system comment").when(rootComment.isSystemComment());
         doThrow().violation("Must not delete root comment with existing response").when(!rootComment.getResponses().isEmpty());
         getCommentStore(repository).delete(pullRequestId, commentId);
         eventBus.post(new CommentEvent(repository, pullRequest, null, rootComment, HandlerEventType.DELETE));
