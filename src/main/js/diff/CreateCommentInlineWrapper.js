@@ -3,26 +3,44 @@ import * as React from "react";
 import injectSheet from "react-jss";
 
 const styles = {
-  wrapper: {
+  wrapperRoot: {
     fontSize: "1rem",
     padding: "1rem",
+    borderTop: "1px solid #dbdbdb",
+  },
 
-    "& + &": {
-      borderTop: "1px solid #dbdbdb"
-    }
+  wrapperChild: {
+    fontSize: "1rem",
+    padding: "1rem",
+    marginLeft: "30px",
+    borderTop: "1px solid #dbdbdb",
+  },
+
+  arrow: {
+    margin: "0px 30px -40px 30px",
+    fontSize: "16px",
+    color: "#e5e5e5"
   }
 };
 
 type Props = {
   children: React.Node,
   // context props
-  classes: any
+  classes: any,
+  isChildComment: boolean
 };
 
 class CreateCommentInlineWrapper extends React.Component<Props> {
   render() {
-    const { classes, children } = this.props;
-    return <div className={classes.wrapper}>{children}</div>;
+    const { classes, children, isChildComment } = this.props;
+    return (
+      <>
+        {isChildComment && <div className={classes.arrow}> <i className="fas fa-chevron-right"></i> </div>}
+        <div className={isChildComment ? classes.wrapperChild : classes.wrapperRoot}>
+          {children}
+        </div>
+      </>
+    );
   }
 }
 

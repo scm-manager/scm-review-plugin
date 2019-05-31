@@ -5,6 +5,7 @@ import type { Comments, PullRequest } from "../types/PullRequest";
 import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
+import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 
 type Props = {
   pullRequest: PullRequest
@@ -13,6 +14,7 @@ type Props = {
 type State = {
   pullRequestComments?: Comments,
   error?: Error,
+  replyEditor: Comment,
   loading: boolean
 };
 
@@ -82,20 +84,21 @@ class PullRequestComments extends React.Component<Props, State> {
       pullRequestComments._embedded.pullRequestComments
     ) {
       const comments = pullRequestComments._embedded.pullRequestComments;
+
       const createLink = pullRequestComments._links.create
         ? pullRequestComments._links.create.href
         : null;
       return (
         <>
-          {comments.map(comment => {
-            return (
-              <PullRequestComment
-                comment={comment}
-                refresh={this.updatePullRequestComments}
-                handleError={this.handleError}
-              />
-            );
-          })}
+          {comments.map(rootComment => (
+            <div className="comment-wrapper">
+                <PullRequestComment
+                  comment={rootComment}
+                  refresh={this.updatePullRequestComments}
+                  handleError={this.onError}
+                />
+            </div>
+          ))}
           {createLink ? (
             <CreateComment
               url={createLink}

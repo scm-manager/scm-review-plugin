@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review.comment.dto;
+package com.cloudogu.scm.review.comment.api;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

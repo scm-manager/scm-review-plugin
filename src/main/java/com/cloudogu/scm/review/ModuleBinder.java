@@ -1,6 +1,6 @@
 package com.cloudogu.scm.review;
 
-import com.cloudogu.scm.review.comment.dto.PullRequestCommentMapper;
+import com.cloudogu.scm.review.comment.api.PullRequestCommentMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;

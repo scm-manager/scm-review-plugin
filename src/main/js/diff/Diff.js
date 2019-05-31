@@ -12,7 +12,7 @@ import {
 import type { Repository } from "@scm-manager/ui-types";
 import { createDiffUrl } from "../pullRequest";
 import { translate, type TFunction } from "react-i18next";
-import type { Comment, PullRequest, Location } from "../types/PullRequest";
+import type { PullRequest, Location, RootComment } from "../types/PullRequest";
 import CreateComment from "../comment/CreateComment";
 import CreateCommentInlineWrapper from "./CreateCommentInlineWrapper";
 import PullRequestComment from "../comment/PullRequestComment";
@@ -44,14 +44,14 @@ type State = {
     [string]: {
       [string]: {
         editor: boolean,
-        comments: Comment[]
+        comments: RootComment[]
       }
     }
   },
   files: {
     [string]: {
       editor: boolean,
-      comments: Comment[]
+      comments: RootComment[]
     }
   }
 };
@@ -131,12 +131,12 @@ class Diff extends React.Component<Props, State> {
 
   fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
+    const location = { file: file.newPath };
 
     const annotations = [];
-
     const fileState = this.state.files[path] || [];
     if (fileState.comments && fileState.comments.length > 0) {
-      annotations.push(this.createComments(fileState.comments));
+      annotations.push(this.createComments(fileState, location));
     }
 
     if (fileState.editor) {
@@ -161,17 +161,17 @@ class Diff extends React.Component<Props, State> {
     if (hunkState) {
       Object.keys(hunkState).forEach((changeId: string) => {
         const lineState = hunkState[changeId];
+        const location = createLocation(context, changeId);
 
         if (lineState) {
           const lineAnnotations = [];
           if (lineState.comments && lineState.comments.length > 0) {
-            lineAnnotations.push(this.createComments(lineState.comments));
+            lineAnnotations.push(this.createComments(lineState, location));
           }
           if (lineState.editor) {
             const location = createLocation(context, changeId);
             lineAnnotations.push(this.createNewCommentEditor(location));
           }
-
           if (lineAnnotations.length > 0) {
             annotations[changeId] = (
               <InlineComments>{lineAnnotations}</InlineComments>
@@ -189,7 +189,7 @@ class Diff extends React.Component<Props, State> {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         setCollapse(false);
-        this.setFileEditor(path, true);
+        this.setFileEditor(path, true, null);
       };
       return <AddCommentButton action={openFileEditor} />;
     }
@@ -202,19 +202,12 @@ class Diff extends React.Component<Props, State> {
     }
   };
 
-  reply = (comment: Comment) => {
-    const location = comment.location;
-    if (location) {
-      this.openEditor(location);
-    }
-  };
-
   openEditor = (location: Location) => {
     const changeId = location.changeId;
     if (location.hunk && changeId) {
-      this.setLineEditor(location, true);
+      this.setLineEditor(location, true, null);
     } else {
-      this.setFileEditor(location.file, true);
+      this.setFileEditor(location.file, true, null);
     }
   };
 
@@ -281,24 +274,19 @@ class Diff extends React.Component<Props, State> {
     }, callback);
   };
 
-  createComments = (comments: Comment[]) => {
-    const onReply = (index: number) => {
-      if (index === comments.length - 1 && this.isPermittedToComment()) {
-        return this.reply;
-      }
-    };
+  createComments = fileState => {
+    const comments = fileState.comments;
 
     return (
       <>
-        {comments.map((comment, index) => (
-          <CreateCommentInlineWrapper>
+        {comments.map(rootComment => (
+          <div className="comment-wrapper">
             <PullRequestComment
-              comment={comment}
+              comment={rootComment}
               refresh={this.fetchComments}
-              onReply={onReply(index)}
               handleError={this.onError}
             />
-          </CreateCommentInlineWrapper>
+          </div>
         ))}
       </>
     );

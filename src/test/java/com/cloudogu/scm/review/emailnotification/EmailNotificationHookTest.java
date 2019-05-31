@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.emailnotification;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.PullRequestComment;
+import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
@@ -94,8 +95,8 @@ class EmailNotificationHookTest {
 
   @Test
   void shouldNotSendSystemEmails() throws Exception {
-    comment.setSystemComment(true);
-    CommentEvent commentEvent = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
+    PullRequestComment systemComment = PullRequestRootComment.createSystemComment("1");
+    CommentEvent commentEvent = new CommentEvent(repository, pullRequest, systemComment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleCommentEvents(commentEvent);
 
     verify(service, never()).sendEmails(any(), any(), any());
