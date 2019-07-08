@@ -2,9 +2,9 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
@@ -39,7 +39,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
+import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -247,15 +247,15 @@ public class CommentRootResourceTest {
   }
 
   private void mockExistingComments() {
-    PullRequestRootComment comment1 = createComment("1", "1. comment", "author", new Location("", "", ""));
-    PullRequestRootComment comment2 = createComment("2", "2. comment", "author", new Location("", "", ""));
+    Comment comment1 = createComment("1", "1. comment", "author", new Location("", "", ""));
+    Comment comment2 = createComment("2", "2. comment", "author", new Location("", "", ""));
 
     Reply reply1 = createReply("2_1", "1. reply", "author");
     Reply reply2 = createReply("2_2", "2. reply", "author");
 
     comment2.setReplies(asList(reply1, reply2));
 
-    ArrayList<PullRequestRootComment> list = Lists.newArrayList(comment1, comment2);
+    ArrayList<Comment> list = Lists.newArrayList(comment1, comment2);
     when(service.getAll("space", "name", "1")).thenReturn(list);
     when(service.get("space", "name", "1", "1")).thenReturn(comment1);
     when(service.get("space", "name", "1", "2")).thenReturn(comment2);

@@ -3,7 +3,7 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
@@ -54,7 +54,7 @@ public class CommentResource {
                       @PathParam("pullRequestId") String pullRequestId,
                       @PathParam("commentId") String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    PullRequestRootComment comment = service.get(namespace, name, pullRequestId, commentId);
+    Comment comment = service.get(namespace, name, pullRequestId, commentId);
     return Response.ok(commentMapper.map(comment, repository, pullRequestId)).build();
   }
 
@@ -67,7 +67,7 @@ public class CommentResource {
                       @PathParam("commentId") String commentId,
                       @PathParam("replyId") String replyId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    PullRequestRootComment comment = service.get(namespace, name, pullRequestId, commentId);
+    Comment comment = service.get(namespace, name, pullRequestId, commentId);
     Reply reply = service.getReply(namespace, name, pullRequestId, commentId, replyId);
     return Response.ok(replyMapper.map(reply, repository, pullRequestId, comment)).build();
   }

@@ -10,7 +10,7 @@ import java.time.Instant;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class PullRequestComment implements Cloneable {
+public abstract class BasicComment implements Cloneable {
 
   private String id;
   private String comment;
@@ -50,9 +50,9 @@ public abstract class PullRequestComment implements Cloneable {
     this.comment = comment;
   }
 
-  public PullRequestComment clone() {
+  public BasicComment clone() {
     try {
-      return (PullRequestComment) super.clone();
+      return (BasicComment) super.clone();
     } catch (CloneNotSupportedException ex) {
       throw new RuntimeException(ex);
     }

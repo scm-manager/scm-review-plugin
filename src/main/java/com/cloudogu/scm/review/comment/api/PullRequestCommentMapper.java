@@ -1,7 +1,7 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
@@ -33,9 +33,9 @@ public abstract class PullRequestCommentMapper  {
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
-  abstract PullRequestCommentDto map(PullRequestRootComment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
+  abstract PullRequestCommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
 
-  abstract PullRequestRootComment map(PullRequestCommentDto pullRequestCommentDto);
+  abstract Comment map(PullRequestCommentDto pullRequestCommentDto);
 
   @Named("mapAuthor")
   DisplayedUserDto mapAuthor(String authorId) {
@@ -51,7 +51,7 @@ public abstract class PullRequestCommentMapper  {
   }
 
   @AfterMapping
-  void appendLinks(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
+  void appendLinks(@MappingTarget PullRequestCommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();
@@ -66,7 +66,7 @@ public abstract class PullRequestCommentMapper  {
   }
 
   @AfterMapping
-  void appendReplies(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
+  void appendReplies(@MappingTarget PullRequestCommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId) {
     target.withEmbedded(
       "replies",
       source

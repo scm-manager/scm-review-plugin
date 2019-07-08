@@ -3,7 +3,7 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
+import com.cloudogu.scm.review.comment.service.Comment;
 import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -62,7 +62,7 @@ public class CommentRootResource {
     if (pullRequestCommentDto.isSystemComment()){
       throw new AuthorizationException("Is is Forbidden to create a system comment.");
     }
-    PullRequestRootComment comment = mapper.map(pullRequestCommentDto);
+    Comment comment = mapper.map(pullRequestCommentDto);
     String id = service.add(namespace, name,  pullRequestId, comment);
     URI location = URI.create(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, id));
     return Response.created(location).build();
@@ -76,7 +76,7 @@ public class CommentRootResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    List<PullRequestRootComment> list = service.getAll(namespace, name, pullRequestId);
+    List<Comment> list = service.getAll(namespace, name, pullRequestId);
     List<PullRequestCommentDto> dtoList = list
       .stream()
       .map(comment -> mapper.map(comment, repository, pullRequestId))

@@ -4,7 +4,7 @@ import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
@@ -27,7 +27,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.net.URISyntaxException;
 
-import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
+import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static java.net.URI.create;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class CommentResourceTest {
 
-  public static final PullRequestRootComment EXISTING_ROOT_COMMENT = createComment("1", "1. comment", "slarti", new Location());
+  public static final Comment EXISTING_ROOT_COMMENT = createComment("1", "1. comment", "slarti", new Location());
   private final Repository repository = mock(Repository.class);
   private final UriInfo uriInfo = mock(UriInfo.class);
 
@@ -112,7 +112,7 @@ public class CommentResourceTest {
 
     assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
     verify(service).modifyComment(eq("space"), eq("name"), eq("1"), eq("1"),
-      argThat((PullRequestRootComment t) -> t.getComment().equals(newComment)));
+      argThat((Comment t) -> t.getComment().equals(newComment)));
   }
 
   @Test

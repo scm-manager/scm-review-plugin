@@ -26,7 +26,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 
-import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
+import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.time.Instant.now;
 import static java.time.Instant.ofEpochMilli;
@@ -54,7 +54,7 @@ public class CommentServiceTest {
   private final String PULL_REQUEST_ID = "pr_id";
   private final Instant NOW = now().truncatedTo(ChronoUnit.SECONDS);
   private final String COMMENT_ID = "1";
-  private final PullRequestRootComment EXISTING_ROOT_COMMENT = createComment(COMMENT_ID, "1. comment", "author", new Location());
+  private final Comment EXISTING_ROOT_COMMENT = createComment(COMMENT_ID, "1. comment", "author", new Location());
   private final Reply EXISTING_REPLY = createReply("resp_1", "1. reply", "author");
 
   {
@@ -86,7 +86,7 @@ public class CommentServiceTest {
   private Clock clock;
 
   @Captor
-  private ArgumentCaptor<PullRequestRootComment> rootCommentCaptor;
+  private ArgumentCaptor<Comment> rootCommentCaptor;
   @Captor
   private ArgumentCaptor<CommentEvent> eventCaptor;
 
@@ -106,7 +106,7 @@ public class CommentServiceTest {
 
   @Test
   public void shouldGetComment() {
-    PullRequestRootComment comment = commentService.get(NAMESPACE, NAME, PULL_REQUEST_ID, COMMENT_ID);
+    Comment comment = commentService.get(NAMESPACE, NAME, PULL_REQUEST_ID, COMMENT_ID);
 
     assertThat(comment).isEqualTo(EXISTING_ROOT_COMMENT);
   }
@@ -121,11 +121,11 @@ public class CommentServiceTest {
   public void shouldAddComment() {
     when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    PullRequestRootComment comment = createComment("2", "2. comment", "author", new Location());
+    Comment comment = createComment("2", "2. comment", "author", new Location());
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getAuthor()).isEqualTo("createCommentUser");
     assertThat(storedComment.getDate()).isEqualTo(NOW);
   }
@@ -135,7 +135,7 @@ public class CommentServiceTest {
   public void shouldPostEventForNewRootComment() {
     when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    PullRequestRootComment comment = createComment("2", "2. comment", "author", new Location());
+    Comment comment = createComment("2", "2. comment", "author", new Location());
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
@@ -145,7 +145,7 @@ public class CommentServiceTest {
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "trillian")
   public void shouldFailIfUserHasNoPermissionToCreateComment() {
-    PullRequestRootComment comment = createComment("2", "2. comment", "author", new Location());
+    Comment comment = createComment("2", "2. comment", "author", new Location());
 
     commentService.add(REPOSITORY.getNamespace(), REPOSITORY.getName(), PULL_REQUEST_ID, comment);
   }
@@ -160,7 +160,7 @@ public class CommentServiceTest {
     commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getReplies()).hasSize(2);
     assertThat(storedComment.getReplies()).contains(reply);
     assertThat(storedComment.getReplies().get(1).getAuthor()).isEqualTo("createCommentUser");
@@ -193,13 +193,13 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldModifyRootCommentText() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setComment("new comment");
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getComment()).isEqualTo("new comment");
   }
 
@@ -207,13 +207,13 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldModifyRootCommentDoneFlag() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setDone(true);
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.isDone()).isTrue();
   }
 
@@ -221,7 +221,7 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldTriggerModifyEventForRootComment() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setDone(true);
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
@@ -234,14 +234,14 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldKeepAuthorAndDateWhenModifyingRootComment() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setAuthor("new author");
     changedRootComment.setDate(ofEpochMilli(123));
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getAuthor()).isEqualTo(EXISTING_ROOT_COMMENT.getAuthor());
     assertThat(storedComment.getDate()).isEqualTo(EXISTING_ROOT_COMMENT.getDate());
   }
@@ -251,7 +251,7 @@ public class CommentServiceTest {
   public void shouldModifyCommentWhenUserHasNoModifyPermissionButCommentIsHerOwn() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
     EXISTING_ROOT_COMMENT.setAuthor("createCommentUser");
-    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
@@ -261,7 +261,7 @@ public class CommentServiceTest {
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "createCommentUser")
   public void shouldFailModifyingRootCommentWhenUserHasNoPermission() {
-    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
   }
@@ -269,7 +269,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldFailModifyWhenCommentDoesNotExist() {
-    PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
+    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setComment("new comment");
 
     Assertions.assertThrows(NotFoundException.class, () -> commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, "no such id", changedRootComment));
@@ -329,7 +329,7 @@ public class CommentServiceTest {
     commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getReplies()).hasSize(1);
     assertThat(storedComment.getReplies().get(0).getComment()).isEqualTo("new comment");
   }
@@ -355,7 +355,7 @@ public class CommentServiceTest {
     commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getReplies()).hasSize(1);
   }
 
@@ -375,14 +375,14 @@ public class CommentServiceTest {
     commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId());
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getReplies()).isEmpty();
   }
 
   @Test(expected = ScmConstraintViolationException.class)
   @SubjectAware(username = "dent")
   public void shouldFailDeletingSystemComment() {
-    PullRequestComment systemComment = EXISTING_ROOT_COMMENT;
+    BasicComment systemComment = EXISTING_ROOT_COMMENT;
     commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, systemComment.getId());
   }
 
@@ -416,7 +416,7 @@ public class CommentServiceTest {
 
     commentService.addStatusChangedComment(REPOSITORY, PULL_REQUEST_ID, SystemCommentType.MERGED);
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    PullRequestRootComment storedComment = rootCommentCaptor.getValue();
+    Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getAuthor()).isEqualTo("trillian");
     assertThat(storedComment.getDate()).isEqualTo(NOW);
     assertThat(storedComment.getComment()).isEqualTo("merged");
@@ -426,7 +426,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "rr")
   public void shouldGetAllComments() {
-    Collection<PullRequestRootComment> all = commentService.getAll(REPOSITORY.getNamespace(), REPOSITORY.getName(), PULL_REQUEST_ID);
+    Collection<Comment> all = commentService.getAll(REPOSITORY.getNamespace(), REPOSITORY.getName(), PULL_REQUEST_ID);
 
     assertThat(all).containsExactly(EXISTING_ROOT_COMMENT);
   }

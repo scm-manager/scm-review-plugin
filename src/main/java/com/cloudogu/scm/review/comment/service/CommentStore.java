@@ -32,7 +32,7 @@ public class CommentStore {
     this.keyGenerator = keyGenerator;
   }
 
-  public String add(Repository repository, String pullRequestId, PullRequestRootComment pullRequestComment) {
+  public String add(Repository repository, String pullRequestId, Comment pullRequestComment) {
 
     PullRequest pullRequest = pullRequestStoreFactory.create(repository).get(pullRequestId);
     return withLockDo(pullRequestId, () -> {
@@ -46,10 +46,10 @@ public class CommentStore {
     });
   }
 
-  public void update(String pullRequestId, PullRequestRootComment rootComment) {
+  public void update(String pullRequestId, Comment rootComment) {
     withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = this.get(pullRequestId);
-      List<PullRequestRootComment> pullRequestCommentList = pullRequestComments.getComments();
+      List<Comment> pullRequestCommentList = pullRequestComments.getComments();
       for (int i = 0; i < pullRequestCommentList.size(); ++i) {
         if (pullRequestCommentList.get(i).getId().equals(rootComment.getId())) {
           pullRequestCommentList.set(i, rootComment);
@@ -61,7 +61,7 @@ public class CommentStore {
     });
   }
 
-  public List<PullRequestRootComment> getAll(String pullRequestId) {
+  public List<Comment> getAll(String pullRequestId) {
     return get(pullRequestId).getComments();
   }
 
@@ -78,7 +78,7 @@ public class CommentStore {
   public void delete(String pullRequestId, String commentId) {
     withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = get(pullRequestId);
-      for (Iterator<PullRequestRootComment> iter = pullRequestComments.getComments().iterator(); iter.hasNext(); ) {
+      for (Iterator<Comment> iter = pullRequestComments.getComments().iterator(); iter.hasNext(); ) {
         if (iter.next().getId().equals(commentId)) {
           iter.remove();
           break;

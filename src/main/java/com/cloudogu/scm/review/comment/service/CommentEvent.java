@@ -8,13 +8,13 @@ import sonia.scm.event.HandlerEvent;
 import sonia.scm.repository.Repository;
 
 @Event
-public class CommentEvent extends BasicPullRequestEvent implements HandlerEvent<PullRequestComment> {
+public class CommentEvent extends BasicPullRequestEvent implements HandlerEvent<BasicComment> {
 
-  private final PullRequestComment comment;
-  private final PullRequestComment oldComment;
+  private final BasicComment comment;
+  private final BasicComment oldComment;
   private final HandlerEventType type;
 
-  public CommentEvent(Repository repository, PullRequest pullRequest, PullRequestComment comment, PullRequestComment oldComment, HandlerEventType type) {
+  public CommentEvent(Repository repository, PullRequest pullRequest, BasicComment comment, BasicComment oldComment, HandlerEventType type) {
     super(repository, pullRequest);
     this.comment = comment;
     this.oldComment = oldComment;
@@ -22,12 +22,12 @@ public class CommentEvent extends BasicPullRequestEvent implements HandlerEvent<
   }
 
   @Override
-  public PullRequestComment getItem() {
+  public BasicComment getItem() {
     return comment;
   }
 
   @Override
-  public PullRequestComment getOldItem() {
+  public BasicComment getOldItem() {
     return oldComment;
   }
 

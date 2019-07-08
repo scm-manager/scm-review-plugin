@@ -1,8 +1,8 @@
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.TestData;
+import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
@@ -44,8 +44,8 @@ class MailTextResolverTest {
   private Set<String> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
-  private PullRequestComment comment;
-  private PullRequestComment oldComment;
+  private BasicComment comment;
+  private BasicComment oldComment;
 
   private final Subject subject = mock(Subject.class);
 

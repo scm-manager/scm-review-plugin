@@ -10,18 +10,18 @@ import java.util.List;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class PullRequestRootComment extends PullRequestComment {
+public class Comment extends BasicComment {
 
-  public static PullRequestRootComment createSystemComment(String key) {
-    PullRequestRootComment comment = new PullRequestRootComment();
+  public static Comment createSystemComment(String key) {
+    Comment comment = new Comment();
     comment.setDate(Instant.now());
     comment.setSystemComment(true);
     comment.setComment(key);
     return comment;
   }
 
-  public static PullRequestRootComment createComment(String id, String text, String author, Location location) {
-    PullRequestRootComment comment = new PullRequestRootComment();
+  public static Comment createComment(String id, String text, String author, Location location) {
+    Comment comment = new Comment();
     comment.setId(id);
     comment.setComment(text);
     comment.setAuthor(author);
@@ -37,8 +37,8 @@ public class PullRequestRootComment extends PullRequestComment {
   private List<Reply> replies = new ArrayList<>();
 
   @Override
-  public PullRequestRootComment clone() {
-    return (PullRequestRootComment) super.clone();
+  public Comment clone() {
+    return (Comment) super.clone();
   }
 
   public Location getLocation() {
@@ -77,7 +77,7 @@ public class PullRequestRootComment extends PullRequestComment {
     this.replies = replies;
   }
 
-  public void removeReply(PullRequestComment reply) {
+  public void removeReply(BasicComment reply) {
     this.replies.remove(reply);
   }
 }

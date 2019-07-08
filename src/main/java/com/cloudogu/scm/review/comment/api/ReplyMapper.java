@@ -1,8 +1,7 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.Links;
@@ -28,7 +27,7 @@ public abstract class ReplyMapper {
   private CommentPathBuilder commentPathBuilder;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  abstract ReplyDto map(Reply reply, @Context Repository repository, @Context String pullRequestId, @Context PullRequestRootComment comment);
+  abstract ReplyDto map(Reply reply, @Context Repository repository, @Context String pullRequestId, @Context Comment comment);
 
   abstract Reply map(ReplyDto replyDto);
 
@@ -45,7 +44,7 @@ public abstract class ReplyMapper {
   }
 
   @AfterMapping
-  void appendLinks(@MappingTarget ReplyDto target, PullRequestComment source, @Context Repository repository, @Context String pullRequestId, @Context PullRequestRootComment comment) {
+  void appendLinks(@MappingTarget ReplyDto target, Reply source, @Context Repository repository, @Context String pullRequestId, @Context Comment comment) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();

@@ -2,7 +2,7 @@ package com.cloudogu.scm.review.comment.service;
 
 import java.time.Instant;
 
-public class Reply extends PullRequestComment {
+public class Reply extends BasicComment {
 
   public static Reply createReply(String id, String text, String author) {
     Reply comment = new Reply();
