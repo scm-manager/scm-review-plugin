@@ -30,15 +30,13 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
   private UserDisplayManager userDisplayManager;
   @Inject
   private CommentPathBuilder commentPathBuilder;
+  @Inject
+  private ReplyMapper replyMapper;
 
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
   abstract PullRequestCommentDto map(PullRequestRootComment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
-
-  @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
-  abstract PullRequestCommentDto map(PullRequestComment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
 
   abstract PullRequestRootComment map(PullRequestCommentDto pullRequestCommentDto);
 
@@ -77,18 +75,18 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
       source
         .getReplies()
         .stream()
-        .map(reply -> this.map(reply, repository, pullRequestId))
+        .map(reply -> replyMapper.map(reply, repository, pullRequestId))
         .collect(toList())
     );
     List<HalRepresentation> replies = target.getEmbedded().getItemsBy("replies");
     if (!replies.isEmpty()) {
-      appendReplyLink((PullRequestCommentDto) replies.get(replies.size() - 1), repository, pullRequestId, source.getId());
+      appendReplyLink((ReplyableDto) replies.get(replies.size() - 1), repository, pullRequestId, source.getId());
     } else {
       appendReplyLink(target, repository, pullRequestId, source.getId());
     }
   }
 
-  private void appendReplyLink(PullRequestCommentDto target, Repository repository, String pullRequestId, String commentId) {
+  private void appendReplyLink(ReplyableDto target, Repository repository, String pullRequestId, String commentId) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();
@@ -100,5 +98,9 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
     return new DisplayedUserDto(user.getId(), user.getDisplayName());
+  }
+
+  void setReplyMapper(ReplyMapper replyMapper) {
+    this.replyMapper = replyMapper;
   }
 }

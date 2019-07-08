@@ -84,7 +84,7 @@ class EmailNotificationHookTest {
       new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.DELETE)
     );
     return events.stream().map(event ->
-      DynamicTest.dynamicTest(event.toString(), () -> {
+      DynamicTest.dynamicTest(event.getEventType().toString(), () -> {
         emailNotificationHook.handleCommentEvents(event);
 
         verify(service).sendEmails(isA(CommentEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));

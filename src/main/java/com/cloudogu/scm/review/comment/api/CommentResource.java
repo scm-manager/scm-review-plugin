@@ -32,14 +32,16 @@ public class CommentResource {
 
   private final CommentService service;
   private RepositoryResolver repositoryResolver;
-  private final PullRequestCommentMapper mapper;
+  private final PullRequestCommentMapper commentMapper;
+  private final ReplyMapper replyMapper;
   private final CommentPathBuilder commentPathBuilder;
 
   @Inject
-  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, PullRequestCommentMapper mapper, CommentPathBuilder commentPathBuilder) {
+  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, PullRequestCommentMapper commentMapper, ReplyMapper replyMapper, CommentPathBuilder commentPathBuilder) {
     this.repositoryResolver = repositoryResolver;
     this.service = service;
-    this.mapper = mapper;
+    this.commentMapper = commentMapper;
+    this.replyMapper = replyMapper;
     this.commentPathBuilder = commentPathBuilder;
   }
 
@@ -52,7 +54,7 @@ public class CommentResource {
                       @PathParam("commentId") String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequestRootComment comment = service.get(namespace, name, pullRequestId, commentId);
-    return Response.ok(mapper.map(comment, repository, pullRequestId)).build();
+    return Response.ok(commentMapper.map(comment, repository, pullRequestId)).build();
   }
 
   @DELETE
@@ -95,7 +97,7 @@ public class CommentResource {
                          @PathParam("pullRequestId") String pullRequestId,
                          @PathParam("commentId") String commentId,
                          @Valid PullRequestCommentDto pullRequestCommentDto) {
-    service.modify(namespace, name, pullRequestId, commentId, mapper.map(pullRequestCommentDto));
+    service.modify(namespace, name, pullRequestId, commentId, commentMapper.map(pullRequestCommentDto));
     return Response.noContent().build();
   }
 
@@ -107,8 +109,8 @@ public class CommentResource {
                         @PathParam("name") String name,
                         @PathParam("pullRequestId") String pullRequestId,
                         @PathParam("commentId") String commentId,
-                        @Valid PullRequestCommentDto pullRequestCommentDto) {
-    String newId = service.reply(namespace, name, pullRequestId, commentId, mapper.map(pullRequestCommentDto));
+                        @Valid ReplyDto replyDto) {
+    String newId = service.reply(namespace, name, pullRequestId, commentId, replyMapper.map(replyDto));
     String newLocation = commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, newId);
     return Response.created(create(newLocation)).build();
   }

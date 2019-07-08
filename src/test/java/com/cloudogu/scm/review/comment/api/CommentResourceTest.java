@@ -59,7 +59,7 @@ public class CommentResourceTest {
   @Before
   public void init() {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentResource resource = new CommentResource(service, repositoryResolver, new PullRequestCommentMapperImpl(), commentPathBuilder);
+    CommentResource resource = new CommentResource(service, repositoryResolver, new PullRequestCommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
@@ -98,7 +98,7 @@ public class CommentResourceTest {
 
     assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
     verify(service).modify(eq("space"), eq("name"), eq("1"), eq("1"),
-      argThat(t -> t.getComment().equals(newComment)));
+      argThat((PullRequestRootComment t) -> t.getComment().equals(newComment)));
   }
 
   @Test

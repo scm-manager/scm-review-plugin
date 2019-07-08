@@ -4,8 +4,8 @@ import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
+import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
@@ -39,8 +39,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-import static com.cloudogu.scm.review.comment.service.PullRequestComment.createReply;
 import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
+import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -86,6 +86,8 @@ public class CommentRootResourceTest {
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock();
 
   @InjectMocks
+  private ReplyMapperImpl replyMapper;
+  @InjectMocks
   private PullRequestCommentMapperImpl pullRequestCommentMapper;
 
   @Before
@@ -95,6 +97,7 @@ public class CommentRootResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
+    pullRequestCommentMapper.setReplyMapper(replyMapper);
     CommentRootResource resource = new CommentRootResource(pullRequestCommentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
@@ -247,8 +250,8 @@ public class CommentRootResourceTest {
     PullRequestRootComment comment1 = createComment("1", "1. comment", "author", new Location("", "", ""));
     PullRequestRootComment comment2 = createComment("2", "2. comment", "author", new Location("", "", ""));
 
-    PullRequestComment reply1 = createReply("2_1", "1. reply", "author");
-    PullRequestComment reply2 = createReply("2_2", "2. reply", "author");
+    Reply reply1 = createReply("2_1", "1. reply", "author");
+    Reply reply2 = createReply("2_2", "2. reply", "author");
 
     comment2.setReplies(asList(reply1, reply2));
 
