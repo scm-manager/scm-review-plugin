@@ -1,11 +1,10 @@
 // @flow
 import React from "react";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
-import type { Comments, PullRequest } from "../types/PullRequest";
+import type {Comments, PullRequest, Reply} from "../types/PullRequest";
 import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
-import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 
 type Props = {
   pullRequest: PullRequest
@@ -14,7 +13,7 @@ type Props = {
 type State = {
   pullRequestComments?: Comments,
   error?: Error,
-  replyEditor: Comment,
+  replyEditor: Reply,
   loading: boolean
 };
 

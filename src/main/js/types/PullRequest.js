@@ -41,12 +41,15 @@ export type Comment = BasicComment & {
   done: boolean,
   file?: string,
   lineId?: string,
+  replies: Comment[],
   _links: Links
 };
 
-export type RootComment = Comment & {
-  replies: Comment[]
-}
+export type Reply = BasicComment & {
+  author: DisplayedUser,
+  date: string,
+  _links: Links
+};
 
 export type PullRequestCollection = Collection & {
   _embedded: {

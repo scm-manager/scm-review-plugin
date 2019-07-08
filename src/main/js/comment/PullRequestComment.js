@@ -11,7 +11,7 @@ import {
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
-import type { Comment } from "../types/PullRequest";
+import type {Comment, Reply} from "../types/PullRequest";
 import {
   deletePullRequestComment,
   updatePullRequestComment
@@ -35,7 +35,7 @@ type State = {
   edit: boolean,
   updatedComment: string,
   loading: boolean,
-  replyEditor: Comment
+  replyEditor: Reply
 };
 
 class PullRequestComment extends React.Component<Props, State> {
