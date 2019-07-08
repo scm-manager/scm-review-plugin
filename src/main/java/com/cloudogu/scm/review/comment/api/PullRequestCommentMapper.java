@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
@@ -11,7 +10,6 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
@@ -24,7 +22,7 @@ import static de.otto.edison.hal.Link.link;
 import static java.util.stream.Collectors.toList;
 
 @Mapper
-public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRootComment, PullRequestCommentDto> {
+public abstract class PullRequestCommentMapper  {
 
   @Inject
   private UserDisplayManager userDisplayManager;
@@ -32,7 +30,6 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
   private CommentPathBuilder commentPathBuilder;
   @Inject
   private ReplyMapper replyMapper;
-
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
@@ -54,14 +51,14 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
   }
 
   @AfterMapping
-  void appendLinks(@MappingTarget PullRequestCommentDto target, PullRequestComment source, @Context Repository repository, @Context String pullRequestId) {
+  void appendLinks(@MappingTarget PullRequestCommentDto target, PullRequestRootComment source, @Context Repository repository, @Context String pullRequestId) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();
     linksBuilder.self(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, target.getId()));
     if (!target.isSystemComment() && PermissionCheck.mayModifyComment(repository, source)) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId())));
-      if (!(source instanceof PullRequestRootComment) || ((PullRequestRootComment)source).getReplies().isEmpty()) {
+      if (source.getReplies().isEmpty()) {
         linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId())));
       }
     }
@@ -75,7 +72,7 @@ public abstract class PullRequestCommentMapper extends BaseMapper<PullRequestRoo
       source
         .getReplies()
         .stream()
-        .map(reply -> replyMapper.map(reply, repository, pullRequestId))
+        .map(reply -> replyMapper.map(reply, repository, pullRequestId, source))
         .collect(toList())
     );
     List<HalRepresentation> replies = target.getEmbedded().getItemsBy("replies");

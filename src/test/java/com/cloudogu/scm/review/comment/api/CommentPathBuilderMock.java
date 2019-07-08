@@ -14,6 +14,9 @@ public class CommentPathBuilderMock {
     when(commentPathBuilder.createCommentSelfUri(any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3)
     );
+    when(commentPathBuilder.createReplySelfUri(any(), any(), any(), any(), any())).thenAnswer(
+      invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/replies/" + invocation.getArgument(4)
+    );
     when(commentPathBuilder.createDeleteCommentUri(any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3)
     );
@@ -22,6 +25,12 @@ public class CommentPathBuilderMock {
     );
     when(commentPathBuilder.createReplyCommentUri(any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/reply"
+    );
+    when(commentPathBuilder.createDeleteReplyUri(any(), any(), any(), any(), any())).thenAnswer(
+      invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/replies/" + invocation.getArgument(4)
+    );
+    when(commentPathBuilder.createUpdateReplyUri(any(), any(), any(), any(), any())).thenAnswer(
+      invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/replies/" + invocation.getArgument(4)
     );
     return commentPathBuilder;
   }

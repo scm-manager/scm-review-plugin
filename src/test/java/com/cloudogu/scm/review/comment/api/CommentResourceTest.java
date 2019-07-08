@@ -5,6 +5,7 @@ import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
+import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
@@ -85,6 +86,19 @@ public class CommentResourceTest {
   }
 
   @Test
+  public void shouldDeleteReply() throws URISyntaxException {
+    MockHttpRequest request =
+      MockHttpRequest
+        .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies/x")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    verify(service).delete("space", "name", "1", "x");
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+  }
+
+  @Test
   public void shouldUpdateComment() throws URISyntaxException {
     String newComment = "haha";
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
@@ -97,8 +111,25 @@ public class CommentResourceTest {
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
-    verify(service).modify(eq("space"), eq("name"), eq("1"), eq("1"),
+    verify(service).modifyComment(eq("space"), eq("name"), eq("1"), eq("1"),
       argThat((PullRequestRootComment t) -> t.getComment().equals(newComment)));
+  }
+
+  @Test
+  public void shouldUpdateReply() throws URISyntaxException {
+    String newComment = "haha";
+    byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies/x")
+        .content(pullRequestCommentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+    verify(service).modifyReply(eq("space"), eq("name"), eq("1"), eq("x"),
+      argThat((Reply r) -> r.getComment().equals(newComment)));
   }
 
   @Test
@@ -109,7 +140,7 @@ public class CommentResourceTest {
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
     MockHttpRequest request =
       MockHttpRequest
-        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/reply")
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies")
         .content(pullRequestCommentJson)
         .contentType(MediaType.APPLICATION_JSON);
 

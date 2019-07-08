@@ -196,7 +196,7 @@ public class CommentServiceTest {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setComment("new comment");
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -210,7 +210,7 @@ public class CommentServiceTest {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setDone(true);
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -224,7 +224,7 @@ public class CommentServiceTest {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setDone(true);
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.MODIFY);
@@ -238,7 +238,7 @@ public class CommentServiceTest {
     changedRootComment.setAuthor("new author");
     changedRootComment.setDate(ofEpochMilli(123));
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -253,7 +253,7 @@ public class CommentServiceTest {
     EXISTING_ROOT_COMMENT.setAuthor("createCommentUser");
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
   }
@@ -263,7 +263,7 @@ public class CommentServiceTest {
   public void shouldFailModifyingRootCommentWhenUserHasNoPermission() {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
   }
 
   @Test
@@ -272,7 +272,7 @@ public class CommentServiceTest {
     PullRequestRootComment changedRootComment = EXISTING_ROOT_COMMENT.clone();
     changedRootComment.setComment("new comment");
 
-    Assertions.assertThrows(NotFoundException.class, () -> commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, "no such id", changedRootComment));
+    Assertions.assertThrows(NotFoundException.class, () -> commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, "no such id", changedRootComment));
 
     verify(store, never()).update(any(), any());
   }
@@ -326,7 +326,7 @@ public class CommentServiceTest {
     Reply changedReply = EXISTING_REPLY.clone();
     changedReply.setComment("new comment");
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
+    commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -340,7 +340,7 @@ public class CommentServiceTest {
     Reply changedReply = EXISTING_REPLY.clone();
     changedReply.setComment("new comment");
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
+    commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.MODIFY);
@@ -352,7 +352,7 @@ public class CommentServiceTest {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
     Reply changedReply = EXISTING_REPLY.clone();
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
+    commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     PullRequestRootComment storedComment = rootCommentCaptor.getValue();
@@ -364,7 +364,7 @@ public class CommentServiceTest {
   public void shouldFailModifyingReplyWhenUserHasNoPermission() {
     Reply changedReply = EXISTING_REPLY.clone();
 
-    commentService.modify(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
+    commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
   }
 
   @Test
