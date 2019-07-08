@@ -14,11 +14,17 @@ import sonia.scm.security.KeyGenerator;
 
 import javax.inject.Inject;
 import java.time.Clock;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
+import static com.cloudogu.scm.review.comment.service.CommentTransition.REOPEN;
+import static com.cloudogu.scm.review.comment.service.CommentTransition.SET_DONE;
+import static java.util.Collections.singleton;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
@@ -94,9 +100,28 @@ public class CommentService {
     PermissionCheck.checkModifyComment(repository, rootComment);
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
-    rootComment.setDone(changedComment.isDone());
     getCommentStore(repository).update(pullRequestId, rootComment);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
+  }
+
+  public Collection<CommentTransition> possibleTransitions(Comment comment) {
+    switch (comment.getType()) {
+      case COMMENT:
+        return singleton(MAKE_TASK);
+      case TASK_TODO:
+        return singleton(SET_DONE);
+      case TASK_DONE:
+        return singleton(REOPEN);
+      default:
+        throw new IllegalStateException("unknown type in comment: " + comment.getType());
+    }
+  }
+
+  public void transform(String namespace, String name, String pullRequestId, String commentId, CommentTransition transition) {
+    Comment comment = get(namespace, name, pullRequestId, commentId);
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    transition.accept(comment);
+    getCommentStore(repository).update(pullRequestId, comment);
   }
 
   public void modifyReply(String namespace, String name, String pullRequestId, String replyId, Reply changedReply) {

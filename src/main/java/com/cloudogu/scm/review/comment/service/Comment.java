@@ -32,13 +32,17 @@ public class Comment extends BasicComment {
 
   private Location location;
   private boolean systemComment;
-  private boolean done;
+  private CommentType type;
 
   private List<Reply> replies = new ArrayList<>();
 
   @Override
   public Comment clone() {
     return (Comment) super.clone();
+  }
+
+  public CommentType getType() {
+    return type;
   }
 
   public Location getLocation() {
@@ -49,20 +53,16 @@ public class Comment extends BasicComment {
     return systemComment;
   }
 
-  public boolean isDone() {
-    return done;
-  }
-
   public List<Reply> getReplies() {
     return Collections.unmodifiableList(replies);
   }
 
-  public void setLocation(Location location) {
-    this.location = location;
+  public void setType(CommentType type) {
+    this.type = type;
   }
 
-  public void setDone(boolean done) {
-    this.done = done;
+  public void setLocation(Location location) {
+    this.location = location;
   }
 
   void setSystemComment(boolean systemComment) {

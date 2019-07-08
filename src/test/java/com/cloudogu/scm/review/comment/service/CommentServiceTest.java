@@ -27,6 +27,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
+import static com.cloudogu.scm.review.comment.service.CommentTransition.SET_DONE;
+import static com.cloudogu.scm.review.comment.service.CommentType.TASK_DONE;
 import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.time.Instant.now;
 import static java.time.Instant.ofEpochMilli;
@@ -207,24 +209,22 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldModifyRootCommentDoneFlag() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
-    changedRootComment.setDone(true);
+    EXISTING_ROOT_COMMENT.setType(CommentType.TASK_TODO);
 
-    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+    commentService.transform(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), SET_DONE);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
-    assertThat(storedComment.isDone()).isTrue();
+    assertThat(storedComment.getType()).isEqualTo(TASK_DONE);
   }
 
   @Test
   @SubjectAware(username = "dent")
   public void shouldTriggerModifyEventForRootComment() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    Comment changedRootComment = EXISTING_ROOT_COMMENT.clone();
-    changedRootComment.setDone(true);
+    EXISTING_ROOT_COMMENT.setType(CommentType.TASK_TODO);
 
-    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), changedRootComment);
+    commentService.transform(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_ROOT_COMMENT.getId(), SET_DONE);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
     assertThat(eventCaptor.getValue().getEventType()).isEqualTo(HandlerEventType.MODIFY);
