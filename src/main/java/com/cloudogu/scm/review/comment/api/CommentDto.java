@@ -38,7 +38,7 @@ public class CommentDto extends ReplyableDto {
 
   private boolean systemComment;
 
-  private boolean done;
+  private String type;
 
   /**
    * suppress squid:S1185 (Overriding methods should do more than simply call the same method in the super class)
