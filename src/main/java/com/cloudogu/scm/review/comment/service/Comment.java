@@ -82,4 +82,8 @@ public class Comment extends BasicComment {
   public void removeReply(BasicComment reply) {
     this.replies.remove(reply);
   }
+
+  public void addTransition(CommentTransition transition, String user) {
+    super.addTransition(transition, user);
+  }
 }
