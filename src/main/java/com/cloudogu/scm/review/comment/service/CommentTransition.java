@@ -7,7 +7,7 @@ import static com.cloudogu.scm.review.comment.service.CommentType.TASK_DONE;
 import static com.cloudogu.scm.review.comment.service.CommentType.TASK_TODO;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
-public enum CommentTransition implements Consumer<Comment> {
+public enum CommentTransition implements Consumer<Comment>, Transition {
   SET_DONE {
     @Override
     public void accept(Comment comment) {
@@ -34,9 +34,5 @@ public enum CommentTransition implements Consumer<Comment> {
         .when(comment.getType() != TASK_DONE);
       comment.setType(TASK_TODO);
     }
-  },
-  CHANGE_TEXT {
-    @Override
-    public void accept(Comment comment) {}
   }
 }

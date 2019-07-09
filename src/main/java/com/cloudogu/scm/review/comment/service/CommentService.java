@@ -20,10 +20,10 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-import static com.cloudogu.scm.review.comment.service.CommentTransition.CHANGE_TEXT;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.REOPEN;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.SET_DONE;
+import static com.cloudogu.scm.review.comment.service.TextTransition.CHANGE_TEXT;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;

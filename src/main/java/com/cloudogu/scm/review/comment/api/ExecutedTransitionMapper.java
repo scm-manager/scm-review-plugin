@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.ExecutedTransition;
+import com.cloudogu.scm.review.comment.service.Transition;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -26,6 +27,10 @@ public abstract class ExecutedTransitionMapper implements InstantAttributeMapper
   @Named("mapUser")
   DisplayedUserDto mapUser(String userId) {
     return new DisplayUserMapper(userDisplayManager).map(userId);
+  }
+
+  String map(Transition transition) {
+    return transition == null? null: transition.name();
   }
 
   void appendTransitions(@MappingTarget BasicCommentDto target, BasicComment source) {

@@ -8,20 +8,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ExecutedTransition {
 
-  private CommentTransition transition;
+  private Transition transition;
   private long date;
   private String user;
 
   public ExecutedTransition() {
   }
 
-  public ExecutedTransition(CommentTransition transition, long date, String user) {
+  public ExecutedTransition(Transition transition, long date, String user) {
     this.transition = transition;
     this.date = date;
     this.user = user;
   }
 
-  public CommentTransition getTransition() {
+  public Transition getTransition() {
     return transition;
   }
 
