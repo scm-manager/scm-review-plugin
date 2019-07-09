@@ -12,6 +12,9 @@ public class ExecutedTransition {
   private long date;
   private String user;
 
+  public ExecutedTransition() {
+  }
+
   public ExecutedTransition(CommentTransition transition, long date, String user) {
     this.transition = transition;
     this.date = date;
