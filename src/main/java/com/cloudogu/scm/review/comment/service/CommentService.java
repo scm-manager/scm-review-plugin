@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import static com.cloudogu.scm.review.comment.service.CommentTransition.CHANGE_TEXT;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.REOPEN;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.SET_DONE;
@@ -104,6 +105,7 @@ public class CommentService {
     PermissionCheck.checkModifyComment(repository, rootComment);
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
+    rootComment.addTransition(CHANGE_TEXT, getCurrentUserId());
     getCommentStore(repository).update(pullRequestId, rootComment);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
   }
@@ -150,6 +152,7 @@ public class CommentService {
         PermissionCheck.checkModifyComment(repository, reply);
         BasicComment clone = reply.clone();
         reply.setComment(changedReply.getComment());
+        reply.addTransition(CHANGE_TEXT, getCurrentUserId());
         getCommentStore(repository).update(pullRequestId, parent);
         eventBus.post(new CommentEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
       }

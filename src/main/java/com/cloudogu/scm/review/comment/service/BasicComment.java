@@ -7,6 +7,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Collections.unmodifiableList;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -17,6 +21,8 @@ public abstract class BasicComment implements Cloneable {
   private String author;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant date;
+
+  private List<ExecutedTransition> executedTransitions = new ArrayList<>();
 
   public String getId() {
     return id;
@@ -34,6 +40,10 @@ public abstract class BasicComment implements Cloneable {
     return date;
   }
 
+  public List<ExecutedTransition> getExecutedTransitions() {
+    return unmodifiableList(executedTransitions);
+  }
+
   public void setId(String id) {
     this.id = id;
   }
@@ -48,6 +58,10 @@ public abstract class BasicComment implements Cloneable {
 
   public void setComment(String comment) {
     this.comment = comment;
+  }
+
+  public void addTransition(CommentTransition transition, String user) {
+    this.executedTransitions.add(new ExecutedTransition(transition, System.currentTimeMillis(), user));
   }
 
   public BasicComment clone() {

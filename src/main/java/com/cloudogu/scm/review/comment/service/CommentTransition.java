@@ -34,5 +34,9 @@ public enum CommentTransition implements Consumer<Comment> {
         .when(comment.getType() != TASK_DONE);
       comment.setType(TASK_TODO);
     }
+  },
+  CHANGE_TEXT {
+    @Override
+    public void accept(Comment comment) {}
   }
 }

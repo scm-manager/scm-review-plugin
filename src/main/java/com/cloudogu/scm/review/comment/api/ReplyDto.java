@@ -16,16 +16,5 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class ReplyDto extends ReplyableDto {
-
-  @NonNull
-  @Size(min = 1)
-  private String comment;
-
-  private String id;
-
-  @Valid
-  private DisplayedUserDto author;
-
-  private Instant date;
+public class ReplyDto extends BasicCommentDto {
 }

@@ -78,7 +78,7 @@ public abstract class CommentMapper {
     );
     List<HalRepresentation> replies = target.getEmbedded().getItemsBy("replies");
     if (!replies.isEmpty()) {
-      appendReplyLink((ReplyableDto) replies.get(replies.size() - 1), repository, pullRequestId, source.getId());
+      appendReplyLink((BasicCommentDto) replies.get(replies.size() - 1), repository, pullRequestId, source.getId());
     } else {
       appendReplyLink(target, repository, pullRequestId, source.getId());
     }
@@ -86,17 +86,10 @@ public abstract class CommentMapper {
 
   @AfterMapping
   void appendTransitions(@MappingTarget CommentDto target, Comment source) {
-    target.withEmbedded(
-      "transitions",
-      source
-        .getExecutedTransitions()
-        .stream()
-        .map(t -> executedTransitionMapper.map(t))
-        .collect(toList())
-    );
+    executedTransitionMapper.appendTransitions(target, source);
   }
 
-  private void appendReplyLink(ReplyableDto target, Repository repository, String pullRequestId, String commentId) {
+  private void appendReplyLink(BasicCommentDto target, Repository repository, String pullRequestId, String commentId) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();

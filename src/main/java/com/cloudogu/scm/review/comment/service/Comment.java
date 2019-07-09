@@ -37,7 +37,6 @@ public class Comment extends BasicComment {
   private CommentType type = COMMENT;
 
   private List<Reply> replies = new ArrayList<>();
-  private List<ExecutedTransition> executedTransitions = new ArrayList<>();
 
   @Override
   public Comment clone() {
@@ -58,10 +57,6 @@ public class Comment extends BasicComment {
 
   public List<Reply> getReplies() {
     return unmodifiableList(replies);
-  }
-
-  public List<ExecutedTransition> getExecutedTransitions() {
-    return unmodifiableList(executedTransitions);
   }
 
   public void setType(CommentType type) {
@@ -86,9 +81,5 @@ public class Comment extends BasicComment {
 
   public void removeReply(BasicComment reply) {
     this.replies.remove(reply);
-  }
-
-  public void addTransition(CommentTransition transition, String user) {
-    this.executedTransitions.add(new ExecutedTransition(transition, System.currentTimeMillis(), user));
   }
 }

@@ -24,6 +24,8 @@ public abstract class ReplyMapper {
   private UserDisplayManager userDisplayManager;
   @Inject
   private CommentPathBuilder commentPathBuilder;
+  @Inject
+  private ExecutedTransitionMapper executedTransitionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   abstract ReplyDto map(Reply reply, @Context Repository repository, @Context String pullRequestId, @Context Comment comment);
@@ -53,5 +55,14 @@ public abstract class ReplyMapper {
       linksBuilder.single(link("delete", commentPathBuilder.createDeleteReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId())));
     }
     target.add(linksBuilder.build());
+  }
+
+  @AfterMapping
+  void appendTransitions(@MappingTarget ReplyDto target, Reply source) {
+    executedTransitionMapper.appendTransitions(target, source);
+  }
+
+  void setExecutedTransitionMapper(ExecutedTransitionMapperImpl executedTransitionMapper) {
+    this.executedTransitionMapper = executedTransitionMapper;
   }
 }

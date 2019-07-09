@@ -102,6 +102,7 @@ public class CommentRootResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     commentMapper.setReplyMapper(replyMapper);
     commentMapper.setExecutedTransitionMapper(executedTransitionMapper);
+    replyMapper.setExecutedTransitionMapper(executedTransitionMapper);
     CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
