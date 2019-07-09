@@ -60,13 +60,13 @@ public class CommentResourceTest {
   @Before
   public void init() {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentResource resource = new CommentResource(service, repositoryResolver, new PullRequestCommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new TransitionMapper(commentPathBuilder));
+    CommentResource resource = new CommentResource(service, repositoryResolver, new CommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new TransitionMapper(commentPathBuilder));
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
-        Providers.of(new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder)), commentService)));
+        Providers.of(new CommentRootResource(new CommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder)), commentService)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);

@@ -22,7 +22,7 @@ import static de.otto.edison.hal.Link.link;
 import static java.util.stream.Collectors.toList;
 
 @Mapper
-public abstract class PullRequestCommentMapper  {
+public abstract class CommentMapper {
 
   @Inject
   private UserDisplayManager userDisplayManager;

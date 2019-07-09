@@ -88,7 +88,7 @@ public class CommentRootResourceTest {
   @InjectMocks
   private ReplyMapperImpl replyMapper;
   @InjectMocks
-  private PullRequestCommentMapperImpl pullRequestCommentMapper;
+  private CommentMapperImpl commentMapper;
 
   @Before
   public void init() {
@@ -97,8 +97,8 @@ public class CommentRootResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    pullRequestCommentMapper.setReplyMapper(replyMapper);
-    CommentRootResource resource = new CommentRootResource(pullRequestCommentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder);
+    commentMapper.setReplyMapper(replyMapper);
+    CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());

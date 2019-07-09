@@ -31,7 +31,7 @@ import static com.cloudogu.scm.review.HalRepresentations.createCollection;
 public class CommentRootResource {
 
 
-  private final PullRequestCommentMapper mapper;
+  private final CommentMapper mapper;
   private final RepositoryResolver repositoryResolver;
   private final CommentService service;
   private final Provider<CommentResource> commentResourceProvider;
@@ -39,7 +39,7 @@ public class CommentRootResource {
 
 
   @Inject
-  public CommentRootResource(PullRequestCommentMapper mapper, RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider, CommentPathBuilder commentPathBuilder) {
+  public CommentRootResource(CommentMapper mapper, RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider, CommentPathBuilder commentPathBuilder) {
     this.mapper = mapper;
     this.repositoryResolver = repositoryResolver;
     this.service = service;

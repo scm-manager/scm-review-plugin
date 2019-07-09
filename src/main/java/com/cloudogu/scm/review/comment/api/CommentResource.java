@@ -38,13 +38,13 @@ public class CommentResource {
 
   private final CommentService service;
   private RepositoryResolver repositoryResolver;
-  private final PullRequestCommentMapper commentMapper;
+  private final CommentMapper commentMapper;
   private final ReplyMapper replyMapper;
   private final CommentPathBuilder commentPathBuilder;
   private final TransitionMapper transitionMapper;
 
   @Inject
-  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, PullRequestCommentMapper commentMapper, ReplyMapper replyMapper, CommentPathBuilder commentPathBuilder, TransitionMapper transitionMapper) {
+  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, CommentMapper commentMapper, ReplyMapper replyMapper, CommentPathBuilder commentPathBuilder, TransitionMapper transitionMapper) {
     this.repositoryResolver = repositoryResolver;
     this.service = service;
     this.commentMapper = commentMapper;
