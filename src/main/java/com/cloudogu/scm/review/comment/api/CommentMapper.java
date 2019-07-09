@@ -33,9 +33,9 @@ public abstract class CommentMapper {
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
-  abstract PullRequestCommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
+  abstract CommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
 
-  abstract Comment map(PullRequestCommentDto pullRequestCommentDto);
+  abstract Comment map(CommentDto commentDto);
 
   @Named("mapAuthor")
   DisplayedUserDto mapAuthor(String authorId) {
@@ -51,7 +51,7 @@ public abstract class CommentMapper {
   }
 
   @AfterMapping
-  void appendLinks(@MappingTarget PullRequestCommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId) {
+  void appendLinks(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();
@@ -66,7 +66,7 @@ public abstract class CommentMapper {
   }
 
   @AfterMapping
-  void appendReplies(@MappingTarget PullRequestCommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId) {
+  void appendReplies(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId) {
     target.withEmbedded(
       "replies",
       source

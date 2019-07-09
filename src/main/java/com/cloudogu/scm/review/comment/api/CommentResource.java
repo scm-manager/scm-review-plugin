@@ -141,8 +141,8 @@ public class CommentResource {
                                 @PathParam("name") String name,
                                 @PathParam("pullRequestId") String pullRequestId,
                                 @PathParam("commentId") String commentId,
-                                @Valid PullRequestCommentDto pullRequestCommentDto) {
-    service.modifyComment(namespace, name, pullRequestId, commentId, commentMapper.map(pullRequestCommentDto));
+                                @Valid CommentDto commentDto) {
+    service.modifyComment(namespace, name, pullRequestId, commentId, commentMapper.map(commentDto));
     return Response.noContent().build();
   }
 

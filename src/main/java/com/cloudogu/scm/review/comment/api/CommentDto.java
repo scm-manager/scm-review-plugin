@@ -19,7 +19,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class PullRequestCommentDto extends ReplyableDto {
+public class CommentDto extends ReplyableDto {
 
   @NonNull
   @Size(min = 1)
