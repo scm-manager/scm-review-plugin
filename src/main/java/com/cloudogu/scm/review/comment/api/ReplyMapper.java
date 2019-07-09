@@ -11,7 +11,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.repository.Repository;
-import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
@@ -32,7 +31,7 @@ public abstract class ReplyMapper {
   abstract Reply map(ReplyDto replyDto);
 
   DisplayedUserDto mapAuthor(String authorId) {
-    return userDisplayManager.get(authorId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(authorId, authorId));
+    return new DisplayUserMapper(userDisplayManager).map(authorId);
   }
 
   String mapAuthor(DisplayedUserDto author) {
@@ -54,9 +53,5 @@ public abstract class ReplyMapper {
       linksBuilder.single(link("delete", commentPathBuilder.createDeleteReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId())));
     }
     target.add(linksBuilder.build());
-  }
-
-  private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
-    return new DisplayedUserDto(user.getId(), user.getDisplayName());
   }
 }

@@ -11,7 +11,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.repository.Repository;
-import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
@@ -30,6 +29,8 @@ public abstract class CommentMapper {
   private CommentPathBuilder commentPathBuilder;
   @Inject
   private ReplyMapper replyMapper;
+  @Inject
+  private ExecutedTransitionMapper executedTransitionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
@@ -39,7 +40,7 @@ public abstract class CommentMapper {
 
   @Named("mapAuthor")
   DisplayedUserDto mapAuthor(String authorId) {
-    return userDisplayManager.get(authorId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(authorId, authorId));
+    return new DisplayUserMapper(userDisplayManager).map(authorId);
   }
 
   String mapAuthor(DisplayedUserDto author) {
@@ -83,6 +84,18 @@ public abstract class CommentMapper {
     }
   }
 
+  @AfterMapping
+  void appendTransitions(@MappingTarget CommentDto target, Comment source) {
+    target.withEmbedded(
+      "transitions",
+      source
+        .getExecutedTransitions()
+        .stream()
+        .map(t -> executedTransitionMapper.map(t))
+        .collect(toList())
+    );
+  }
+
   private void appendReplyLink(ReplyableDto target, Repository repository, String pullRequestId, String commentId) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
@@ -93,11 +106,11 @@ public abstract class CommentMapper {
     target.add(linksBuilder.build());
   }
 
-  private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
-    return new DisplayedUserDto(user.getId(), user.getDisplayName());
-  }
-
   void setReplyMapper(ReplyMapper replyMapper) {
     this.replyMapper = replyMapper;
+  }
+
+  public void setExecutedTransitionMapper(ExecutedTransitionMapperImpl executedTransitionMapper) {
+    this.executedTransitionMapper = executedTransitionMapper;
   }
 }

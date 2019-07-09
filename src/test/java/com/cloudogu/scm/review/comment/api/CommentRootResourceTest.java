@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.CommentTransition;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
@@ -88,6 +89,8 @@ public class CommentRootResourceTest {
   @InjectMocks
   private ReplyMapperImpl replyMapper;
   @InjectMocks
+  private ExecutedTransitionMapperImpl executedTransitionMapper;
+  @InjectMocks
   private CommentMapperImpl commentMapper;
 
   @Before
@@ -98,6 +101,7 @@ public class CommentRootResourceTest {
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     commentMapper.setReplyMapper(replyMapper);
+    commentMapper.setExecutedTransitionMapper(executedTransitionMapper);
     CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
@@ -109,13 +113,13 @@ public class CommentRootResourceTest {
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
-  public void shouldCreateNewPullRequestComment() throws URISyntaxException {
+  public void shouldCreateNewComment() throws URISyntaxException {
     when(service.add(eq(REPOSITORY_NAMESPACE), eq(REPOSITORY_NAME), eq("1"), argThat(t -> t.getComment().equals("this is my comment")))).thenReturn("1");
-    byte[] pullRequestCommentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
+    byte[] commentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
     MockHttpRequest request =
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
-        .content(pullRequestCommentJson)
+        .content(commentJson)
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
@@ -126,7 +130,7 @@ public class CommentRootResourceTest {
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
-  public void shouldGetAllPullRequestComments() throws URISyntaxException, IOException {
+  public void shouldGetAllComments() throws URISyntaxException, IOException {
     mockExistingComments();
 
     MockHttpRequest request =
@@ -244,6 +248,35 @@ public class CommentRootResourceTest {
 
     assertThat(reply_1.get("_links").get("reply")).isNull();
     assertThat(reply_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldEmbedTransitions() throws URISyntaxException, IOException {
+    mockExistingComments();
+    Comment commentWithTransitions = service.get("space", "name", "1", "1");
+    commentWithTransitions.addTransition(CommentTransition.MAKE_TASK, "slarti");
+    commentWithTransitions.addTransition(CommentTransition.SET_DONE, "dent");
+
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    System.out.println(response.getContentAsString());
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequestComments").get(0);
+    JsonNode embeddedTransitionsNode = prNode.get("_embedded").get("transitions");
+    JsonNode transition_1 = embeddedTransitionsNode.path(0);
+    JsonNode transition_2 = embeddedTransitionsNode.path(1);
+    assertThat(transition_1.get("transition").asText()).isEqualTo("MAKE_TASK");
+    assertThat(transition_1.get("user").get("id").asText()).isEqualTo("slarti");
+    assertThat(transition_2.get("transition").asText()).isEqualTo("SET_DONE");
+    assertThat(transition_2.get("user").get("id").asText()).isEqualTo("dent");
   }
 
   private void mockExistingComments() {
