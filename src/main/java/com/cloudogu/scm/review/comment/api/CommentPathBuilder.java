@@ -86,4 +86,14 @@ class CommentPathBuilder {
       .method("deleteReply").parameters(replyId)
       .href();
   }
+
+  String createTransitionUri(String namespace, String name, String pullRequestId, String commentId) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    return linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("transform").parameters()
+      .href();
+  }
 }

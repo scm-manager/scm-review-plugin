@@ -60,7 +60,7 @@ public class CommentResourceTest {
   @Before
   public void init() {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentResource resource = new CommentResource(service, repositoryResolver, new PullRequestCommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder);
+    CommentResource resource = new CommentResource(service, repositoryResolver, new PullRequestCommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new TransitionMapper(commentPathBuilder));
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());

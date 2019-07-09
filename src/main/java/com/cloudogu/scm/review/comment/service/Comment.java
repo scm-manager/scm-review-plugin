@@ -5,8 +5,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
+import static com.cloudogu.scm.review.comment.service.CommentType.COMMENT;
+import static java.util.Collections.unmodifiableList;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -32,9 +34,10 @@ public class Comment extends BasicComment {
 
   private Location location;
   private boolean systemComment;
-  private CommentType type;
+  private CommentType type = COMMENT;
 
   private List<Reply> replies = new ArrayList<>();
+  private List<ExecutedTransition> executedTransitions = new ArrayList<>();
 
   @Override
   public Comment clone() {
@@ -54,7 +57,11 @@ public class Comment extends BasicComment {
   }
 
   public List<Reply> getReplies() {
-    return Collections.unmodifiableList(replies);
+    return unmodifiableList(replies);
+  }
+
+  public List<ExecutedTransition> getExecutedTransitions() {
+    return unmodifiableList(executedTransitions);
   }
 
   public void setType(CommentType type) {
@@ -79,5 +86,9 @@ public class Comment extends BasicComment {
 
   public void removeReply(BasicComment reply) {
     this.replies.remove(reply);
+  }
+
+  public void addTransition(CommentTransition transition, String user) {
+    this.executedTransitions.add(new ExecutedTransition(transition, System.currentTimeMillis(), user));
   }
 }

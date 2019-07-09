@@ -15,7 +15,6 @@ import sonia.scm.security.KeyGenerator;
 import javax.inject.Inject;
 import java.time.Clock;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -24,6 +23,7 @@ import java.util.stream.Stream;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.REOPEN;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.SET_DONE;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
@@ -83,7 +83,11 @@ public class CommentService {
 
   private void initializeNewComment(BasicComment pullRequestComment) {
     pullRequestComment.setDate(clock.instant());
-    pullRequestComment.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
+    pullRequestComment.setAuthor(getCurrentUserId());
+  }
+
+  private String getCurrentUserId() {
+    return SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
   }
 
   public void modifyComment(String namespace, String name, String pullRequestId, String commentId, Comment changedComment) {
@@ -104,7 +108,12 @@ public class CommentService {
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
   }
 
-  public Collection<CommentTransition> possibleTransitions(Comment comment) {
+  public Collection<CommentTransition> possibleTransitions(String namespace, String name, String pullRequestId, String commentId) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    if (!PermissionCheck.mayComment(repository)) {
+      return emptyList();
+    }
+    Comment comment = get(namespace, name, pullRequestId, commentId);
     switch (comment.getType()) {
       case COMMENT:
         return singleton(MAKE_TASK);
@@ -121,6 +130,7 @@ public class CommentService {
     Comment comment = get(namespace, name, pullRequestId, commentId);
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     transition.accept(comment);
+    comment.addTransition(transition, getCurrentUserId());
     getCommentStore(repository).update(pullRequestId, comment);
   }
 
