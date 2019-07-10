@@ -59,6 +59,7 @@ public abstract class CommentMapper {
     linksBuilder.self(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, target.getId()));
     if (!target.isSystemComment() && PermissionCheck.mayModifyComment(repository, source)) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId())));
+      linksBuilder.single(link("transitions", commentPathBuilder.createTransitionUri(namespace, name, pullRequestId, target.getId())));
       if (source.getReplies().isEmpty()) {
         linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId())));
       }
