@@ -252,7 +252,7 @@ class PullRequestComment extends React.Component<Props, State> {
       );
 
     const editIcon =
-      comment._links.update && comment.type === "TASK_TODO" && !collapsed ? (
+      comment._links.update && !collapsed ? (
         <a
           className="level-item"
           onClick={this.startUpdate}
@@ -267,7 +267,7 @@ class PullRequestComment extends React.Component<Props, State> {
       );
 
     const replyIcon =
-      !!comment._links.reply && !collapsed ? (
+      !!comment._links.reply && comment.type !== "TASK_DONE" && !collapsed ? (
         <a
           className="level-item"
           onClick={() => this.reply(comment)}
@@ -414,16 +414,20 @@ class PullRequestComment extends React.Component<Props, State> {
     let done = null;
     switch (comment.type) {
       case "TASK_TODO":
-        done = (<span className="tag is-rounded is-warning">
-          <span className="fas fa-check-circle">&nbsp;</span>
-          {t("scm-review-plugin.comment.tag.task")}
-        </span>);
+        done = (
+          <span className="tag is-rounded is-warning">
+            <span className="fas fa-check-circle">&nbsp;</span>
+            {t("scm-review-plugin.comment.tag.task")}
+          </span>
+        );
         break;
       case "TASK_DONE":
-        done = (<span className="tag is-rounded is-success">
-          <span className="fas fa-check-circle">&nbsp;</span>
-          {t("scm-review-plugin.comment.tag.done")}
-        </span>);
+        done = (
+          <span className="tag is-rounded is-success">
+            <span className="fas fa-check-circle">&nbsp;</span>
+            {t("scm-review-plugin.comment.tag.done")}
+          </span>
+        );
         break;
       default:
         break;
@@ -442,6 +446,22 @@ class PullRequestComment extends React.Component<Props, State> {
       : t("scm-review-plugin.comment.collapse");
     const collapseIcon = collapsed ? "fa-angle-right" : "fa-angle-down";
 
+    let lastEdited = null;
+    if (
+      comment._embedded &&
+      comment._embedded.transitions &&
+      comment._embedded.transitions.length > 1
+    ) {
+      const commentTransitions = comment._embedded.transitions;
+      const latestEditor =
+        commentTransitions[commentTransitions.length - 1].user.displayName;
+      lastEdited = (
+        <>
+          ({t("scm-review-plugin.comment.lastEdited")} <strong>{latestEditor}</strong>)
+        </>
+      );
+    }
+
     return (
       <>
         <CreateCommentInlineWrapper isChildComment={this.props.child}>
@@ -459,7 +479,7 @@ class PullRequestComment extends React.Component<Props, State> {
                 </a>
                 <span className={classes.commentMeta}>
                   <strong>{comment.author.displayName}</strong>{" "}
-                  <DateFromNow date={comment.date} />
+                  <DateFromNow date={comment.date} /> {lastEdited}
                 </span>
                 {tag} {done}
                 <br />

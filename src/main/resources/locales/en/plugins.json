@@ -78,6 +78,7 @@
       "expand": "Expand",
       "save": "Save",
       "cancel": "Cancel",
+      "lastEdited": "last edited by",
       "confirmDeleteAlert": {
         "title": "Delete comment",
         "message": "Do you really want to delete the comment?",
