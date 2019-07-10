@@ -30,7 +30,8 @@ export type Location = {
 
 export type BasicComment = {
   comment: string,
-  id: string
+  id: string,
+  type: string
 };
 
 export type Comment = BasicComment & {
@@ -38,7 +39,6 @@ export type Comment = BasicComment & {
   location?: Location,
   date: string,
   systemComment: boolean,
-  done: boolean,
   file?: string,
   lineId?: string,
   replies: Comment[],

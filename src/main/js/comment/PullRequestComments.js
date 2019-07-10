@@ -95,6 +95,7 @@ class PullRequestComments extends React.Component<Props, State> {
                   comment={rootComment}
                   refresh={this.updatePullRequestComments}
                   handleError={this.onError}
+                  createLink={createLink}
                 />
             </div>
           ))}

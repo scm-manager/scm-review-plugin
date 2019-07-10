@@ -4,6 +4,7 @@ import {
   Button,
   Loading,
   SubmitButton,
+  Radio,
   Textarea
 } from "@scm-manager/ui-components";
 import type { BasicComment, Location } from "../types/PullRequest";
@@ -31,7 +32,10 @@ class CreateComment extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      loading: false
+      loading: false,
+      newComment: {
+        type: "COMMENT"
+      }
     };
   }
 
@@ -40,6 +44,15 @@ class CreateComment extends React.Component<Props, State> {
       newComment: {
         ...this.state.newComment,
         [name]: value
+      }
+    });
+  };
+
+  switchCommentType = event => {
+    this.setState({
+      newComment: {
+        ...this.state.newComment,
+        type: event.target.value
       }
     });
   };
@@ -89,6 +102,29 @@ class CreateComment extends React.Component<Props, State> {
       );
     }
 
+    let toggleType = null;
+    const regex = new RegExp("/replies$");
+    if (!url.match(regex)) {
+      toggleType = (<div className="field is-grouped">
+        <div className="control">
+          <Radio
+            name="comment_type"
+            value="COMMENT"
+            checked={this.state.newComment.type === "COMMENT"}
+            label={t("scm-review-plugin.comment.type.comment")}
+            onChange={this.switchCommentType}
+          />
+          <Radio
+            name="comment_type"
+            value="TASK_TODO"
+            checked={this.state.newComment.type === "TASK_TODO"}
+            label={t("scm-review-plugin.comment.type.task")}
+            onChange={this.switchCommentType}
+          />
+        </div>
+      </div>);
+    }
+
     return (
       <>
         {url ? (
@@ -99,16 +135,17 @@ class CreateComment extends React.Component<Props, State> {
                   <Textarea
                     name="comment"
                     autofocus={autofocus}
-                    placeholder={t("scm-review-plugin.comment.add")}
+                    placeholder={t(this.state.newComment.type === "TASK_TODO" ? "scm-review-plugin.comment.addTask" : "scm-review-plugin.comment.addComment")}
                     onChange={this.handleChanges}
                   />
                 </div>
               </div>
+              {toggleType}
               <div className="field">
                 <div className="level-left">
                   <div className="level-item">
                     <SubmitButton
-                      label={t("scm-review-plugin.comment.add")}
+                      label={t(this.state.newComment.type === "TASK_TODO" ? "scm-review-plugin.comment.addTask" : "scm-review-plugin.comment.addComment")}
                       action={this.submit}
                       disabled={!this.isValid()}
                       loading={loading}

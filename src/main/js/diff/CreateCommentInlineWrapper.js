@@ -8,14 +8,12 @@ const styles = {
     padding: "1rem",
     borderTop: "1px solid #dbdbdb",
   },
-
   wrapperChild: {
     fontSize: "1rem",
     padding: "1rem",
     marginLeft: "30px",
     borderTop: "1px solid #dbdbdb",
   },
-
   arrow: {
     margin: "0px 30px -40px 30px",
     fontSize: "16px",
@@ -35,7 +33,7 @@ class CreateCommentInlineWrapper extends React.Component<Props> {
     const { classes, children, isChildComment } = this.props;
     return (
       <>
-        {isChildComment && <div className={classes.arrow}> <i className="fas fa-chevron-right"></i> </div>}
+        {isChildComment && <div className={classes.arrow}><i className="fas fa-caret-right" /></div>}
         <div className={isChildComment ? classes.wrapperChild : classes.wrapperRoot}>
           {children}
         </div>

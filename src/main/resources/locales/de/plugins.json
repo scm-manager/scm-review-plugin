@@ -68,7 +68,8 @@
       "createButton": "Pull Request erstellen"
     },
     "comment": {
-      "add": "Kommentar hinzufügen",
+      "addComment": "Kommentar hinzufügen",
+      "addTask": "Aufgabe hinzufügen",
       "delete": "Löschen",
       "update": "Aktualisieren",
       "reply": "Antworten",
@@ -100,8 +101,13 @@
         "rejected": "Der Pull-Request wurde abgelehnt.",
         "sourceDeleted": "Der Quell-Branch des Pull-Requests wurde gelöscht."
       },
+      "type": {
+        "comment": "Kommentar",
+        "task": "Aufgabe"
+      },
       "tag": {
         "system": "system",
+        "task": "Aufgabe",
         "done": "erledigt"
       }
     }
