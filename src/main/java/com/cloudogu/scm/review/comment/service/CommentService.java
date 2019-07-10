@@ -131,9 +131,12 @@ public class CommentService {
   public void transform(String namespace, String name, String pullRequestId, String commentId, CommentTransition transition) {
     Comment comment = get(namespace, name, pullRequestId, commentId);
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    transition.accept(comment);
-    comment.addTransition(transition, getCurrentUserId());
-    getCommentStore(repository).update(pullRequestId, comment);
+    PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
+    Comment clone = comment.clone();
+    transition.accept(clone);
+    clone.addTransition(transition, getCurrentUserId());
+    getCommentStore(repository).update(pullRequestId, clone);
+    eventBus.post(new CommentEvent(repository, pullRequest, comment, clone, HandlerEventType.MODIFY));
   }
 
   public void modifyReply(String namespace, String name, String pullRequestId, String replyId, Reply changedReply) {
