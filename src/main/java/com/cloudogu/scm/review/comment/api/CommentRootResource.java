@@ -2,8 +2,8 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
-import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.CommentService;
 import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -79,7 +79,7 @@ public class CommentRootResource {
     List<Comment> list = service.getAll(namespace, name, pullRequestId);
     List<CommentDto> dtoList = list
       .stream()
-      .map(comment -> mapper.map(comment, repository, pullRequestId))
+      .map(comment -> mapper.map(comment, repository, pullRequestId, service.possibleTransitions(namespace, name, pullRequestId, comment.getId())))
       .collect(Collectors.toList());
     boolean permission = PermissionCheck.mayComment(repository);
     return Response.ok(createCollection(uriInfo, permission, dtoList, "pullRequestComments")).build();

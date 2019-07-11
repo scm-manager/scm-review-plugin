@@ -6,7 +6,6 @@ import com.cloudogu.scm.review.comment.service.Transition;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.InstantAttributeMapper;
 import sonia.scm.user.UserDisplayManager;
 
@@ -33,7 +32,7 @@ public abstract class ExecutedTransitionMapper implements InstantAttributeMapper
     return transition == null? null: transition.name();
   }
 
-  void appendTransitions(@MappingTarget BasicCommentDto target, BasicComment source) {
+  void appendTransitions(BasicCommentDto target, BasicComment source) {
     target.withEmbedded(
       "transitions",
       source

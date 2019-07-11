@@ -32,7 +32,7 @@ public class CommentPathBuilderMock {
     when(commentPathBuilder.createUpdateReplyUri(any(), any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/replies/" + invocation.getArgument(4)
     );
-    when(commentPathBuilder.createTransitionUri(any(), any(), any(), any())).thenAnswer(
+    when(commentPathBuilder.createPossibleTransitionUri(any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/transitions"
     );
     return commentPathBuilder;

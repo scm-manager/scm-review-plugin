@@ -28,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import java.util.Collection;
 import java.util.List;
 
 import static com.cloudogu.scm.review.HalRepresentations.createCollection;
@@ -62,7 +63,8 @@ public class CommentResource {
                              @PathParam("commentId") String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     Comment comment = service.get(namespace, name, pullRequestId, commentId);
-    return Response.ok(commentMapper.map(comment, repository, pullRequestId)).build();
+    Collection<CommentTransition> possibleTransitions = service.possibleTransitions(namespace, name, pullRequestId, comment.getId());
+    return Response.ok(commentMapper.map(comment, repository, pullRequestId, possibleTransitions)).build();
   }
 
   @GET
@@ -186,7 +188,7 @@ public class CommentResource {
   @GET
   @Path("transitions")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getTransitions(@Context UriInfo uriInfo,
+  public Response getPossibleTransitions(@Context UriInfo uriInfo,
                                  @PathParam("namespace") String namespace,
                                  @PathParam("name") String name,
                                  @PathParam("pullRequestId") String pullRequestId,
@@ -209,6 +211,6 @@ public class CommentResource {
                             @PathParam("commentId") String commentId,
                             @Valid TransitionDto transitionDto) {
     service.transform(namespace, name, pullRequestId, commentId, CommentTransition.valueOf(transitionDto.getName()));
-    return Response.created(create(commentPathBuilder.createTransitionUri(namespace, name, pullRequestId, commentId))).build();
+    return Response.created(create(commentPathBuilder.createPossibleTransitionUri(namespace, name, pullRequestId, commentId))).build();
   }
 }

@@ -91,6 +91,8 @@ public class CommentRootResourceTest {
   @InjectMocks
   private ExecutedTransitionMapperImpl executedTransitionMapper;
   @InjectMocks
+  private TransitionMapper possibleTransitionMapper;
+  @InjectMocks
   private CommentMapperImpl commentMapper;
 
   @Before
@@ -102,6 +104,7 @@ public class CommentRootResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     commentMapper.setReplyMapper(replyMapper);
     commentMapper.setExecutedTransitionMapper(executedTransitionMapper);
+    commentMapper.setPossibleTransitionMapper(possibleTransitionMapper);
     replyMapper.setExecutedTransitionMapper(executedTransitionMapper);
     CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));

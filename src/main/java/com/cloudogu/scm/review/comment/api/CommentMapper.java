@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.CommentTransition;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
@@ -15,6 +16,7 @@ import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Collection;
 import java.util.List;
 
 import static de.otto.edison.hal.Link.link;
@@ -31,10 +33,12 @@ public abstract class CommentMapper {
   private ReplyMapper replyMapper;
   @Inject
   private ExecutedTransitionMapper executedTransitionMapper;
+  @Inject
+  private TransitionMapper possibleTransitionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
-  abstract CommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId);
+  abstract CommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions);
 
   abstract Comment map(CommentDto commentDto);
 
@@ -59,7 +63,7 @@ public abstract class CommentMapper {
     linksBuilder.self(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, target.getId()));
     if (!target.isSystemComment() && PermissionCheck.mayModifyComment(repository, source)) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId())));
-      linksBuilder.single(link("transitions", commentPathBuilder.createTransitionUri(namespace, name, pullRequestId, target.getId())));
+      linksBuilder.single(link("possibleTransitions", commentPathBuilder.createPossibleTransitionUri(namespace, name, pullRequestId, target.getId())));
       if (source.getReplies().isEmpty()) {
         linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId())));
       }
@@ -90,6 +94,11 @@ public abstract class CommentMapper {
     executedTransitionMapper.appendTransitions(target, source);
   }
 
+  @AfterMapping
+  void appendPossibleTransitions(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions) {
+    possibleTransitionMapper.appendTransitions(target, possibleTransitions, repository.getNamespace(), repository.getName(), pullRequestId, source.getId());
+  }
+
   private void appendReplyLink(BasicCommentDto target, Repository repository, String pullRequestId, String commentId) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
@@ -106,5 +115,9 @@ public abstract class CommentMapper {
 
   public void setExecutedTransitionMapper(ExecutedTransitionMapperImpl executedTransitionMapper) {
     this.executedTransitionMapper = executedTransitionMapper;
+  }
+
+  public void setPossibleTransitionMapper(TransitionMapper possibleTransitionMapper) {
+    this.possibleTransitionMapper = possibleTransitionMapper;
   }
 }

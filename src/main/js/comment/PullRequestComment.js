@@ -131,10 +131,7 @@ class PullRequestComment extends React.Component<Props, State> {
 
   done = () => {
     const { comment, handleError } = this.props;
-    comment.type = "TASK_DONE";
-    this.setState({
-      loading: true
-    });
+    let transformUrl = comment._embedded.possibleTransitions.filter(t => t.t.name === "SET_DONE").first()._links.transform.href;
     updatePullRequestComment(comment._links.update.href, comment).then(
       response => {
         if (response.error) {
