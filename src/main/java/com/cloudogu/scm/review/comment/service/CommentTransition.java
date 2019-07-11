@@ -26,6 +26,15 @@ public enum CommentTransition implements Consumer<Comment>, Transition {
       comment.setType(TASK_TODO);
     }
   },
+  MAKE_COMMENT {
+    @Override
+    public void accept(Comment comment) {
+      doThrow()
+        .violation("cannot make comment with type " + comment.getType() + " to comment", "transition", "name")
+        .when(comment.getType() != TASK_DONE && comment.getType() != TASK_TODO);
+      comment.setType(COMMENT);
+    }
+  },
   REOPEN {
     @Override
     public void accept(Comment comment) {

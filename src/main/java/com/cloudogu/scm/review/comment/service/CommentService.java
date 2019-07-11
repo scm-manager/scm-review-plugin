@@ -20,10 +20,12 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
+import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_COMMENT;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.REOPEN;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.SET_DONE;
 import static com.cloudogu.scm.review.comment.service.TextTransition.CHANGE_TEXT;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
@@ -120,9 +122,9 @@ public class CommentService {
       case COMMENT:
         return singleton(MAKE_TASK);
       case TASK_TODO:
-        return singleton(SET_DONE);
+        return asList(SET_DONE, MAKE_COMMENT);
       case TASK_DONE:
-        return singleton(REOPEN);
+        return asList(REOPEN, MAKE_COMMENT);
       default:
         throw new IllegalStateException("unknown type in comment: " + comment.getType());
     }
