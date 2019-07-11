@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 @Getter @Setter
 public class TransitionDto extends HalRepresentation {
 
+  @SuppressWarnings("squid:S2637") // name is marked as "not null", but we need this default constructor for jackson
   public TransitionDto() {
   }
 
