@@ -9,7 +9,6 @@ import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.common.base.Strings;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
@@ -18,7 +17,6 @@ import com.webcohesion.enunciate.metadata.rs.TypeHint;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
-import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
