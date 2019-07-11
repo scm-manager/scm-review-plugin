@@ -47,8 +47,8 @@ class EmailNotificationHookTest {
   private Set<String> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
-  private BasicComment comment;
-  private BasicComment oldComment;
+  private Comment comment;
+  private Comment oldComment;
   private HashSet<String> reviewers;
 
   @BeforeEach
@@ -93,7 +93,7 @@ class EmailNotificationHookTest {
 
   @Test
   void shouldNotSendSystemEmails() throws Exception {
-    BasicComment systemComment = Comment.createSystemComment("1");
+    Comment systemComment = Comment.createSystemComment("1");
     CommentEvent commentEvent = new CommentEvent(repository, pullRequest, systemComment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleCommentEvents(commentEvent);
 

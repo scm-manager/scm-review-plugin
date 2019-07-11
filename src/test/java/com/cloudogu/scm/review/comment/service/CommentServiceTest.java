@@ -91,7 +91,7 @@ public class CommentServiceTest {
   @Captor
   private ArgumentCaptor<Comment> rootCommentCaptor;
   @Captor
-  private ArgumentCaptor<CommentEvent> eventCaptor;
+  private ArgumentCaptor<BasicCommentEvent> eventCaptor;
 
   private CommentService commentService;
 

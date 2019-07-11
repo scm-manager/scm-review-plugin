@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review;
 
 
-import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -33,7 +32,7 @@ public class TestData {
     return pullRequest;
   }
 
-  public static BasicComment createComment() {
+  public static Comment createComment() {
     return Comment.createComment("1", "this is my comment", "author", new Location());
   }
 }

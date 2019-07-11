@@ -78,7 +78,7 @@ public class CommentService {
 
     getCommentStore(repository).update(pullRequestId, originalRootComment);
 
-    eventBus.post(new CommentEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
+    eventBus.post(new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
     return reply.getId();
   }
 
@@ -153,11 +153,11 @@ public class CommentService {
       ).execute(
       (parent, reply) -> {
         PermissionCheck.checkModifyComment(repository, reply);
-        BasicComment clone = reply.clone();
+        Reply clone = reply.clone();
         reply.setComment(changedReply.getComment());
         reply.addTransition(CHANGE_TEXT, getCurrentUserId());
         getCommentStore(repository).update(pullRequestId, parent);
-        eventBus.post(new CommentEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
+        eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
       }
     );
   }
@@ -189,7 +189,7 @@ public class CommentService {
             PermissionCheck.checkModifyComment(repository, reply);
             parent.removeReply(reply);
             getCommentStore(repository).update(pullRequestId, parent);
-            eventBus.post(new CommentEvent(repository, pullRequest, null, reply, HandlerEventType.DELETE));
+            eventBus.post(new ReplyEvent(repository, pullRequest, null, reply, HandlerEventType.DELETE));
           }
         )
       );
@@ -255,14 +255,14 @@ public class CommentService {
   private static class ReplyWithParent {
 
     private final Comment parent;
-    private final BasicComment reply;
+    private final Reply reply;
 
-    ReplyWithParent(Comment parent, BasicComment reply) {
+    ReplyWithParent(Comment parent, Reply reply) {
       this.parent = parent;
       this.reply = reply;
     }
 
-    void execute(BiConsumer<Comment, BasicComment> consumer) {
+    void execute(BiConsumer<Comment, Reply> consumer) {
       consumer.accept(parent, reply);
     }
   }
