@@ -13,10 +13,10 @@ class DisplayUserMapper {
   }
 
   DisplayedUserDto map(String userId) {
-    return userDisplayManager.get(userId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(userId, userId));
+    return userDisplayManager.get(userId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(userId, userId, null));
   }
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
-    return new DisplayedUserDto(user.getId(), user.getDisplayName());
+    return new DisplayedUserDto(user.getId(), user.getDisplayName(), user.getMail());
   }
 }
