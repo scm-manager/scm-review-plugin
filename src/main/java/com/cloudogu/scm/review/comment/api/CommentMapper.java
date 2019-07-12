@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
+import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
@@ -82,10 +83,12 @@ public abstract class CommentMapper {
         .collect(toList())
     );
     List<HalRepresentation> replies = target.getEmbedded().getItemsBy("replies");
-    if (!replies.isEmpty()) {
-      appendReplyLink((BasicCommentDto) replies.get(replies.size() - 1), repository, pullRequestId, source.getId());
-    } else {
-      appendReplyLink(target, repository, pullRequestId, source.getId());
+    if (!source.getType().equals(CommentType.TASK_DONE)) {
+      if (!replies.isEmpty()) {
+        appendReplyLink((BasicCommentDto) replies.get(replies.size() - 1), repository, pullRequestId, source.getId());
+      } else {
+        appendReplyLink(target, repository, pullRequestId, source.getId());
+      }
     }
   }
 
