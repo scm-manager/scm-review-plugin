@@ -140,10 +140,7 @@ class PullRequestComment extends React.Component<Props, State> {
           });
           handleError(response.error);
         } else {
-          // TODO reload comment
-          this.setState({
-            loading: false
-          });
+          this.props.refresh();
         }
       }
     );
@@ -363,11 +360,11 @@ class PullRequestComment extends React.Component<Props, State> {
         <div className="level-right">
           {deleteIcon}
           {editIcon}
-          {replyIcon}
-          {doneIcon}
           {makeTaskIcon}
-          {reopenIcon}
           {normalCommentIcon}
+          {replyIcon}
+          {reopenIcon}
+          {doneIcon}
         </div>
       </div>
     );
