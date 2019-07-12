@@ -259,7 +259,7 @@ class PullRequestComment extends React.Component<Props, State> {
       );
 
     const replyIcon =
-      !!comment._links.reply && comment.type !== "TASK_DONE" && !collapsed ? (
+      !!comment._links.reply && !collapsed ? (
         <a
           className="level-item"
           onClick={() => this.reply(comment)}
