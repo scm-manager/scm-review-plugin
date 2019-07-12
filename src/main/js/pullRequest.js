@@ -49,10 +49,7 @@ export function updatePullRequestComment(url: string, comment: BasicComment) {
     .then(response => {
       return response;
     })
-    .catch(cause => {
-      const error = new Error(
-        `could not update pull request comment: ${cause.message}`
-      );
+    .catch(error => {
       return { error: error };
     });
 }

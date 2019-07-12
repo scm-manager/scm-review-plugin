@@ -5,7 +5,6 @@ import type { Comments, PullRequest } from "../types/PullRequest";
 import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
-import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 
 type Props = {
   pullRequest: PullRequest
@@ -95,7 +94,7 @@ class PullRequestComments extends React.Component<Props, State> {
                 <PullRequestComment
                   comment={rootComment}
                   refresh={this.updatePullRequestComments}
-                  handleError={this.onError}
+                  handleError={this.handleError}
                 />
             </div>
           ))}
