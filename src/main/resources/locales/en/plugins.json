@@ -82,6 +82,7 @@
       "save": "Save",
       "cancel": "Cancel",
       "lastEdited": "last edited by",
+      "markedDoneBy": "finished by ",
       "confirmDeleteAlert": {
         "title": "Delete comment",
         "message": "Do you really want to delete the comment?",

@@ -486,7 +486,7 @@ class PullRequestComment extends React.Component<Props, State> {
         break;
       case "TASK_DONE":
         done = (
-          <span className="tag is-rounded is-success">
+          <span className="tag is-rounded is-success" title={this.getSetDoneByLabel()}>
             <span className="fas fa-check-circle">&nbsp;</span>
             {t("scm-review-plugin.comment.tag.done")}
           </span>
@@ -561,20 +561,37 @@ class PullRequestComment extends React.Component<Props, State> {
       comment._embedded &&
       comment._embedded.transitions
     ) {
-      const textChangeTransitions = comment._embedded.transitions.filter(t => t.transition === "CHANGE_TEXT");
-      if (textChangeTransitions.length > 0) {
-        const latestTransition = textChangeTransitions[textChangeTransitions.length - 1];
-        if (latestTransition.user.id !== comment.author.id) {
-          const latestEditor = latestTransition.user.displayName;
-          return (
-            <>
-              ({t("scm-review-plugin.comment.lastEdited")} <strong>{latestEditor}</strong>)
-            </>
-          );
-        }
+      const latestTransition = this.getLatestTransition("CHANGE_TEXT");
+      if (latestTransition && latestTransition.user.id !== comment.author.id) {
+        const latestEditor = latestTransition.user.displayName;
+        return (
+          <>
+            ({t("scm-review-plugin.comment.lastEdited")} <strong>{latestEditor}</strong>)
+          </>
+        );
       }
     }
     return null;
+  };
+
+  getLatestTransition = (type: string) => {
+    const { comment } = this.props;
+    if (
+      comment._embedded &&
+      comment._embedded.transitions
+    ) {
+      const latestTransitions = comment._embedded.transitions.filter(t => t.transition === type);
+      if (latestTransitions.length > 0) {
+        return latestTransitions[latestTransitions.length - 1];
+      }
+    }
+    return null;
+  };
+
+  getSetDoneByLabel = () => {
+    const { t } = this.props;
+    const transition = this.getLatestTransition("SET_DONE");
+    return t("scm-review-plugin.comment.markedDoneBy") + transition.user.displayName;
   };
 
   reply = (comment: Comment) => {
