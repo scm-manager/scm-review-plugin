@@ -512,21 +512,7 @@ class PullRequestComment extends React.Component<Props, State> {
       : t("scm-review-plugin.comment.collapse");
     const collapseIcon = collapsed ? "fa-angle-right" : "fa-angle-down";
 
-    let lastEdited = null;
-    if (
-      comment._embedded &&
-      comment._embedded.transitions &&
-      comment._embedded.transitions.length > 1
-    ) {
-      const commentTransitions = comment._embedded.transitions;
-      const latestEditor =
-        commentTransitions[commentTransitions.length - 1].user.displayName;
-      lastEdited = (
-        <>
-          ({t("scm-review-plugin.comment.lastEdited")} <strong>{latestEditor}</strong>)
-        </>
-      );
-    }
+    let lastEdited = this.getLastEdited();
 
     return (
       <>
@@ -571,6 +557,28 @@ class PullRequestComment extends React.Component<Props, State> {
       </>
     );
   }
+
+  getLastEdited = () => {
+    const { comment, t } = this.props;
+    if (
+      comment._embedded &&
+      comment._embedded.transitions
+    ) {
+      const textChangeTransitions = comment._embedded.transitions.filter(t => t.transition === "CHANGE_TEXT");
+      if (textChangeTransitions.length > 0) {
+        const latestTransition = textChangeTransitions[textChangeTransitions.length - 1];
+        if (latestTransition.user.id !== comment.author.id) {
+          const latestEditor = latestTransition.user.displayName;
+          return (
+            <>
+              ({t("scm-review-plugin.comment.lastEdited")} <strong>{latestEditor}</strong>)
+            </>
+          );
+        }
+      }
+    }
+    return null;
+  };
 
   reply = (comment: Comment) => {
     this.openReplyEditor(comment);
