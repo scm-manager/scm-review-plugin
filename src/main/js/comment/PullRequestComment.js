@@ -412,28 +412,7 @@ class PullRequestComment extends React.Component<Props, State> {
   createMessageEditor = () => {
     const { t } = this.props;
     const { updatedComment } = this.state;
-    let toggleType = null;
     if (updatedComment.type) {
-      toggleType = (
-        <div className="field is-grouped">
-          <div className="control">
-            <Radio
-              name="update_comment_type"
-              value="COMMENT"
-              checked={updatedComment.type === "COMMENT"}
-              label={t("scm-review-plugin.comment.type.comment")}
-              onChange={this.switchCommentType}
-            />
-            <Radio
-              name="update_comment_type"
-              value="TASK_TODO"
-              checked={updatedComment.type === "TASK_TODO"}
-              label={t("scm-review-plugin.comment.type.task")}
-              onChange={this.switchCommentType}
-            />
-          </div>
-        </div>
-      );
     }
     return (
       <>
@@ -442,7 +421,6 @@ class PullRequestComment extends React.Component<Props, State> {
           value={updatedComment.comment}
           onChange={this.handleUpdateChange}
         />
-        {toggleType}
       </>
     );
   };
