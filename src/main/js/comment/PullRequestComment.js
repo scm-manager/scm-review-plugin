@@ -82,7 +82,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   update = () => {
-    const { comment, handleError } = this.props;
+    const { comment, handleError, refresh } = this.props;
     comment.comment = this.state.updatedComment.comment;
     comment.type = this.state.updatedComment.type;
     this.setState({
@@ -97,10 +97,8 @@ class PullRequestComment extends React.Component<Props, State> {
           });
           handleError(response.error);
         } else {
-          this.setState({
-            loading: false,
-            edit: false
-          });
+          console.log("JA! HIER!");
+          refresh();
         }
       }
     );
