@@ -569,7 +569,7 @@ class PullRequestComment extends React.Component<Props, State> {
   getSetDoneByLabel = () => {
     const { t } = this.props;
     const transition = this.getLatestTransition("SET_DONE");
-    return t("scm-review-plugin.comment.markedDoneBy") + transition.user.displayName;
+    return !transition ? null : t("scm-review-plugin.comment.markedDoneBy") + transition.user.displayName;
   };
 
   reply = (comment: Comment) => {
