@@ -62,3 +62,8 @@ export type Comments = Collection & {
     pullRequestComments: Comment[]
   }
 };
+
+export type PossibleTransition = {
+  name: string,
+  _links: Links
+}

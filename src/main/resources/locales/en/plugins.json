@@ -74,6 +74,9 @@
       "update": "Update",
       "reply": "Reply",
       "done": "Mark as done",
+      "makeTask": "Make task from comment",
+      "reopen": "Reopen task",
+      "makeComment": "Make comment from task",
       "collapse": "Collapse",
       "expand": "Expand",
       "save": "Save",
@@ -86,8 +89,26 @@
         "cancel": "No"
       },
       "confirmDoneAlert": {
-        "title": "Mark as done comment",
-        "message": "Do you really want to mark as done the comment?",
+        "title": "Mark as done",
+        "message": "Do you really want to mark this task as done?",
+        "submit": "Yes",
+        "cancel": "No"
+      },
+      "confirmMakeTaskAlert": {
+        "title": "Create a task from this comment",
+        "message": "Do you really want to make this comment a task?",
+        "submit": "Yes",
+        "cancel": "No"
+      },
+      "reopenAlert": {
+        "title": "Mark as NOT done",
+        "message": "Do you really want to reopen this task?",
+        "submit": "Yes",
+        "cancel": "No"
+      },
+      "makeCommentAlert": {
+        "title": "Make this a normal comment",
+        "message": "Do you really want to transform this task to a normal comment?",
         "submit": "Yes",
         "cancel": "No"
       },

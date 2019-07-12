@@ -74,6 +74,9 @@
       "update": "Aktualisieren",
       "reply": "Antworten",
       "done": "Als erledigt markieren",
+      "makeTask": "In Aufgabe umwandeln",
+      "reopen": "Aufgabe wieder öffnen",
+      "makeComment": "In Kommentar umwandeln",
       "collapse": "Einklappen",
       "expand": "Ausklappen",
       "save": "Speichern",
@@ -86,8 +89,26 @@
         "cancel": "Nein"
       },
       "confirmDoneAlert": {
-        "title": "Kommentar als erledigt markieren",
-        "message": "Soll der Kommentar wirklich als erledigt markiert werden?",
+        "title": "Aufgabe als erledigt markieren",
+        "message": "Soll die Aufgabe wirklich als erledigt markiert werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      },
+      "confirmMakeTaskAlert": {
+        "title": "Aufgabe aus Kommentar erstellen",
+        "message": "Soll der Kommentar wirklich in eine Aufgabe umgewandelt werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      },
+      "reopenAlert": {
+        "title": "Aufgabe als NICHT erledigt markieren",
+        "message": "Soll die Aufgabe wirklich als nicht erledigt markiert werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      },
+      "makeCommentAlert": {
+        "title": "Aufgabe in einen normalen Kommentar umwandeln",
+        "message": "Soll die Aufgabe wirklich in einen normalen Kommentar umgewandelt werden?",
         "submit": "Ja",
         "cancel": "Nein"
       },

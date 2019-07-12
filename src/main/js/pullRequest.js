@@ -1,7 +1,7 @@
 //@flow
 import type {
   BasicComment,
-  BasicPullRequest,
+  BasicPullRequest, PossibleTransition,
   PullRequest
 } from "./types/PullRequest";
 import {
@@ -46,6 +46,20 @@ export function createPullRequestComment(url: string, comment: BasicComment) {
 export function updatePullRequestComment(url: string, comment: BasicComment) {
   return apiClient
     .put(url, comment)
+    .then(response => {
+      return response;
+    })
+    .catch(cause => {
+      const error = new Error(
+        `could not update pull request comment: ${cause.message}`
+      );
+      return { error: error };
+    });
+}
+
+export function transformPullRequestComment(transition: PossibleTransition) {
+  return apiClient
+    .post(transition._links.transform.href, transition)
     .then(response => {
       return response;
     })
