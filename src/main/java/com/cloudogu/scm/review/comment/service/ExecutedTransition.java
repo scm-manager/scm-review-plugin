@@ -6,22 +6,28 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "transition")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ExecutedTransition {
+public class ExecutedTransition<T extends Transition> {
 
-  private Transition transition;
+  private String id;
+  private T transition;
   private long date;
   private String user;
 
   public ExecutedTransition() {
   }
 
-  public ExecutedTransition(Transition transition, long date, String user) {
+  public ExecutedTransition(String id, T transition, long date, String user) {
+    this.id = id;
     this.transition = transition;
     this.date = date;
     this.user = user;
   }
 
-  public Transition getTransition() {
+  public String getId() {
+    return id;
+  }
+
+  public T getTransition() {
     return transition;
   }
 

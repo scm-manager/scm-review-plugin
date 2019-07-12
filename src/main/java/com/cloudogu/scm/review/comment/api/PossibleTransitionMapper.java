@@ -9,12 +9,12 @@ import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;
 
-public class TransitionMapper {
+public class PossibleTransitionMapper {
 
   private final CommentPathBuilder commentPathBuilder;
 
   @Inject
-  public TransitionMapper(CommentPathBuilder commentPathBuilder) {
+  public PossibleTransitionMapper(CommentPathBuilder commentPathBuilder) {
     this.commentPathBuilder = commentPathBuilder;
   }
 

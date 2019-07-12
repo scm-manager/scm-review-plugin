@@ -5,6 +5,7 @@ import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
+import com.cloudogu.scm.review.comment.service.ExecutedTransition;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
@@ -58,7 +59,7 @@ public class CommentRootResourceTest {
   @Rule
   public final ShiroRule shiroRule = new ShiroRule();
 
-  private final Repository repository = mock(Repository.class);
+  private final Repository repository = new Repository(REPOSITORY_ID, "git", REPOSITORY_NAMESPACE, REPOSITORY_NAME);
   private final UriInfo uriInfo = mock(UriInfo.class);
 
   private Dispatcher dispatcher;
@@ -91,16 +92,12 @@ public class CommentRootResourceTest {
   @InjectMocks
   private ExecutedTransitionMapperImpl executedTransitionMapper;
   @InjectMocks
-  private TransitionMapper possibleTransitionMapper;
+  private PossibleTransitionMapper possibleTransitionMapper;
   @InjectMocks
   private CommentMapperImpl commentMapper;
 
   @Before
   public void init() {
-    when(repository.getId()).thenReturn(REPOSITORY_ID);
-    when(repository.getName()).thenReturn(REPOSITORY_NAME);
-    when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
-    when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     commentMapper.setReplyMapper(replyMapper);
     commentMapper.setExecutedTransitionMapper(executedTransitionMapper);
@@ -259,8 +256,8 @@ public class CommentRootResourceTest {
   public void shouldEmbedTransitions() throws URISyntaxException, IOException {
     mockExistingComments();
     Comment commentWithTransitions = service.get("space", "name", "1", "1");
-    commentWithTransitions.addTransition(CommentTransition.MAKE_TASK, "slarti");
-    commentWithTransitions.addTransition(CommentTransition.SET_DONE, "dent");
+    commentWithTransitions.addCommentTransition(new ExecutedTransition<>("1", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "slarti"));
+    commentWithTransitions.addCommentTransition(new ExecutedTransition<>("2", CommentTransition.SET_DONE, System.currentTimeMillis(), "dent"));
 
     MockHttpRequest request =
       MockHttpRequest

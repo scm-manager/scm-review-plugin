@@ -60,12 +60,12 @@ public abstract class BasicComment implements Cloneable {
     this.comment = comment;
   }
 
-  public void addTransition(TextTransition transition, String user) {
-    this.addTransition((Transition) transition, user);
+  public void addTextTransition(ExecutedTransition<TextTransition> transition) {
+    this.executedTransitions.add(transition);
   }
 
-  void addTransition(Transition transition, String user) {
-    this.executedTransitions.add(new ExecutedTransition(transition, System.currentTimeMillis(), user));
+  void addTransition(ExecutedTransition<?> transition) {
+    this.executedTransitions.add(transition);
   }
 
   public BasicComment clone() {

@@ -35,6 +35,9 @@ public class CommentPathBuilderMock {
     when(commentPathBuilder.createPossibleTransitionUri(any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/transitions"
     );
+    when(commentPathBuilder.createExecutedTransitionUri(any(), any(), any(), any(), any())).thenAnswer(
+      invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/transitions/" + invocation.getArgument(4)
+    );
     return commentPathBuilder;
   }
 }

@@ -2,10 +2,12 @@ package com.cloudogu.scm.review.comment.api;
 
 
 import com.cloudogu.scm.review.RepositoryResolver;
-import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
+import com.cloudogu.scm.review.comment.service.ExecutedTransition;
 import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import com.webcohesion.enunciate.metadata.rs.TypeHint;
@@ -27,31 +29,29 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.Collection;
-import java.util.List;
 
-import static com.cloudogu.scm.review.HalRepresentations.createCollection;
 import static java.net.URI.create;
-import static java.util.stream.Collectors.toList;
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
+import static sonia.scm.NotFoundException.notFound;
 
 public class CommentResource {
 
   private final CommentService service;
-  private RepositoryResolver repositoryResolver;
+  private final RepositoryResolver repositoryResolver;
   private final CommentMapper commentMapper;
   private final ReplyMapper replyMapper;
   private final CommentPathBuilder commentPathBuilder;
-  private final TransitionMapper transitionMapper;
+  private final ExecutedTransitionMapper executedTransitionMapper;
 
   @Inject
-  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, CommentMapper commentMapper, ReplyMapper replyMapper, CommentPathBuilder commentPathBuilder, TransitionMapper transitionMapper) {
+  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, CommentMapper commentMapper, ReplyMapper replyMapper, CommentPathBuilder commentPathBuilder, ExecutedTransitionMapper executedTransitionMapper) {
     this.repositoryResolver = repositoryResolver;
     this.service = service;
     this.commentMapper = commentMapper;
     this.replyMapper = replyMapper;
     this.commentPathBuilder = commentPathBuilder;
-    this.transitionMapper = transitionMapper;
+    this.executedTransitionMapper = executedTransitionMapper;
   }
 
   @GET
@@ -186,19 +186,23 @@ public class CommentResource {
   }
 
   @GET
-  @Path("transitions")
+  @Path("transitions/{transitionId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getPossibleTransitions(@Context UriInfo uriInfo,
+  public Response getExecutedTransition(@Context UriInfo uriInfo,
                                  @PathParam("namespace") String namespace,
                                  @PathParam("name") String name,
                                  @PathParam("pullRequestId") String pullRequestId,
-                                 @PathParam("commentId") String commentId) {
-    List<TransitionDto> transitions = service
-      .possibleTransitions(namespace, name, pullRequestId, commentId)
+                                 @PathParam("commentId") String commentId,
+                                 @PathParam("transitionId") String transitionId) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    Comment comment = service.get(namespace, name, pullRequestId, commentId);
+    ExecutedTransition<?> executedTransition = comment
+      .getExecutedTransitions()
       .stream()
-      .map(t -> transitionMapper.map(t, namespace, name, pullRequestId, commentId))
-      .collect(toList());
-    return Response.ok(createCollection(uriInfo, false, transitions, "transitions")).build();
+      .filter(t -> transitionId.equals(t.getId()))
+      .findFirst()
+      .orElseThrow(() -> notFound(entity("transition", transitionId).in(Comment.class, commentId).in(PullRequest.class, pullRequestId).in(new NamespaceAndName(namespace, name))));
+    return Response.ok(executedTransitionMapper.map(executedTransition, new NamespaceAndName(namespace, name), pullRequestId, comment)).build();
   }
 
   @POST
@@ -210,7 +214,7 @@ public class CommentResource {
                             @PathParam("pullRequestId") String pullRequestId,
                             @PathParam("commentId") String commentId,
                             @Valid TransitionDto transitionDto) {
-    service.transform(namespace, name, pullRequestId, commentId, CommentTransition.valueOf(transitionDto.getName()));
-    return Response.created(create(commentPathBuilder.createPossibleTransitionUri(namespace, name, pullRequestId, commentId))).build();
+    ExecutedTransition<CommentTransition> executedTransition = service.transform(namespace, name, pullRequestId, commentId, CommentTransition.valueOf(transitionDto.getName()));
+    return Response.created(create(commentPathBuilder.createExecutedTransitionUri(namespace, name, pullRequestId, commentId, executedTransition.getId()))).build();
   }
 }

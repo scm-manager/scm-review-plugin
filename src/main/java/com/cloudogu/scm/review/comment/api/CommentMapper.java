@@ -34,7 +34,7 @@ public abstract class CommentMapper {
   @Inject
   private ExecutedTransitionMapper executedTransitionMapper;
   @Inject
-  private TransitionMapper possibleTransitionMapper;
+  private PossibleTransitionMapper possibleTransitionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
@@ -90,8 +90,8 @@ public abstract class CommentMapper {
   }
 
   @AfterMapping
-  void appendTransitions(@MappingTarget CommentDto target, Comment source) {
-    executedTransitionMapper.appendTransitions(target, source);
+  void appendTransitions(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId) {
+    executedTransitionMapper.appendTransitions(target, source, repository.getNamespaceAndName(), pullRequestId);
   }
 
   @AfterMapping
@@ -117,7 +117,7 @@ public abstract class CommentMapper {
     this.executedTransitionMapper = executedTransitionMapper;
   }
 
-  public void setPossibleTransitionMapper(TransitionMapper possibleTransitionMapper) {
+  public void setPossibleTransitionMapper(PossibleTransitionMapper possibleTransitionMapper) {
     this.possibleTransitionMapper = possibleTransitionMapper;
   }
 }

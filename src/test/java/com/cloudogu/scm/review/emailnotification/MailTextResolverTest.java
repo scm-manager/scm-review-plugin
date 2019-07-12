@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
+import com.cloudogu.scm.review.comment.service.ExecutedTransition;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
@@ -137,7 +138,7 @@ class MailTextResolverTest {
   @Test
   void shouldRenderEmailOnCommentTransition() {
     Comment taskComment = oldComment.clone();
-    taskComment.addTransition(CommentTransition.MAKE_TASK, "dent");
+    taskComment.addCommentTransition(new ExecutedTransition<>("new", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "dent"));
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY);
 
     CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);

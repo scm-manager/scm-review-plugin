@@ -107,7 +107,7 @@ public class CommentService {
     PermissionCheck.checkModifyComment(repository, rootComment);
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
-    rootComment.addTransition(CHANGE_TEXT, getCurrentUserId());
+    rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
     getCommentStore(repository).update(pullRequestId, rootComment);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
   }
@@ -130,15 +130,17 @@ public class CommentService {
     }
   }
 
-  public void transform(String namespace, String name, String pullRequestId, String commentId, CommentTransition transition) {
+  public ExecutedTransition<CommentTransition> transform(String namespace, String name, String pullRequestId, String commentId, CommentTransition transition) {
     Comment comment = get(namespace, name, pullRequestId, commentId);
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
     Comment clone = comment.clone();
     transition.accept(clone);
-    clone.addTransition(transition, getCurrentUserId());
+    ExecutedTransition<CommentTransition> executedTransition = new ExecutedTransition<>(keyGenerator.createKey(), transition, System.currentTimeMillis(), getCurrentUserId());
+    clone.addCommentTransition(executedTransition);
     getCommentStore(repository).update(pullRequestId, clone);
     eventBus.post(new CommentEvent(repository, pullRequest, comment, clone, HandlerEventType.MODIFY));
+    return executedTransition;
   }
 
   public void modifyReply(String namespace, String name, String pullRequestId, String replyId, Reply changedReply) {
@@ -157,7 +159,7 @@ public class CommentService {
         PermissionCheck.checkModifyComment(repository, reply);
         Reply clone = reply.clone();
         reply.setComment(changedReply.getComment());
-        reply.addTransition(CHANGE_TEXT, getCurrentUserId());
+        reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
         getCommentStore(repository).update(pullRequestId, parent);
         eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
       }

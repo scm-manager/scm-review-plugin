@@ -58,8 +58,8 @@ public abstract class ReplyMapper {
   }
 
   @AfterMapping
-  void appendTransitions(@MappingTarget ReplyDto target, Reply source) {
-    executedTransitionMapper.appendTransitions(target, source);
+  void appendTransitions(@MappingTarget ReplyDto target, Reply source, @Context Repository repository, @Context String pullRequestId) {
+    executedTransitionMapper.appendTransitions(target, source, repository.getNamespaceAndName(), pullRequestId);
   }
 
   void setExecutedTransitionMapper(ExecutedTransitionMapperImpl executedTransitionMapper) {
