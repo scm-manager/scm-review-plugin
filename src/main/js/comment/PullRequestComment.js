@@ -46,6 +46,9 @@ const styles = {
   linkColor: {
     color: "inherit"
   },
+  authorName: {
+    marginLeft: "7px"
+  },
   commentMeta: {
     padding: "0 0.4rem"
   }
@@ -501,9 +504,11 @@ class PullRequestComment extends React.Component<Props, State> {
                   <span className="icon is-small">
                     <i className={classNames("fa", collapseIcon)} />
                   </span>
+                  <span className={classes.authorName}>
+                    <strong>{comment.author.displayName}</strong>{" "}
+                  </span>
                 </a>
                 <span className={classes.commentMeta}>
-                  <strong>{comment.author.displayName}</strong>{" "}
                   <DateFromNow date={comment.date} /> {lastEdited}
                 </span>
                 {tag} {done}
