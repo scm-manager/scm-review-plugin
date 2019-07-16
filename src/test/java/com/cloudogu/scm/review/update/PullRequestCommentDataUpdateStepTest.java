@@ -64,7 +64,11 @@ class PullRequestCommentDataUpdateStepTest {
 
     assertThat(dataStore.getAll().values().iterator().next().getComments().size()).isEqualTo(2);
     assertThat(dataStore.getAll().values().iterator().next().getComments().get(0).getType()).isEqualTo(CommentType.COMMENT);
+    assertThat(dataStore.getAll().values().iterator().next().getComments().get(0).getAuthor()).isEqualTo("trillian");
+    assertThat(dataStore.getAll().values().iterator().next().getComments().get(0).getComment()).isEqualTo("comment1");
     assertThat(dataStore.getAll().values().iterator().next().getComments().get(1).getType()).isEqualTo(CommentType.COMMENT);
+    assertThat(dataStore.getAll().values().iterator().next().getComments().get(1).getAuthor()).isEqualTo("edi");
+    assertThat(dataStore.getAll().values().iterator().next().getComments().get(1).getComment()).isEqualTo("comment2");
   }
 
   @Test
