@@ -47,7 +47,7 @@ const styles = {
     color: "inherit"
   },
   authorName: {
-    marginLeft: "7px"
+    marginLeft: "5px"
   },
   commentMeta: {
     padding: "0 0.4rem"
@@ -100,7 +100,6 @@ class PullRequestComment extends React.Component<Props, State> {
           });
           handleError(response.error);
         } else {
-          console.log("JA! HIER!");
           refresh();
         }
       }
