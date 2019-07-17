@@ -514,19 +514,7 @@ class PullRequestComment extends React.Component<Props, State> {
                     <i className={classNames("fa", collapseIcon)} />
                   </span>
                   <span className={classes.authorName}>
-                    <strong>
-                      <a
-                        className={classes.linkColor}
-                        href={"mailto:" + comment.author.mail}
-                        title={
-                          t("scm-review-plugin.comment.mailtoAuthor") +
-                          " " +
-                          comment.author.mail
-                        }
-                      >
-                        {comment.author.displayName}
-                      </a>
-                    </strong>{" "}
+                    <strong>{comment.author.displayName}</strong>{" "}
                   </span>
                 </a>
                 <span className={classes.commentMeta}>
