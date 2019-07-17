@@ -15,7 +15,8 @@ const styles = {
     borderTop: "1px solid #dbdbdb",
   },
   arrow: {
-    margin: "0px 30px -41px 30px",
+    position: "absolute",
+    margin: "1rem 0 0 2em",
     fontSize: "16px",
     color: "#e5e5e5"
   }
