@@ -9,7 +9,8 @@ export type BasicPullRequest = {
 
 export type DisplayedUser = {
   id: string,
-  displayName: string
+  displayName: string,
+  mail: string
 };
 
 export type PullRequest = BasicPullRequest & {

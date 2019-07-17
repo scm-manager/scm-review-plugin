@@ -82,7 +82,8 @@
       "save": "Speichern",
       "cancel": "Abbrechen",
       "lastEdited": "zuletzt bearbeitet von",
-      "markedDoneBy": "Abgeschlossen von ",
+      "markedDoneBy": "Abgeschlossen von",
+      "mailtoAuthor": "Mail senden an",
       "confirmDeleteAlert": {
         "title": "Kommentar löschen",
         "message": "Soll der Kommentar wirklich gelöscht werden?",
@@ -129,7 +130,7 @@
         "task": "Aufgabe"
       },
       "tag": {
-        "system": "system",
+        "system": "System",
         "task": "Aufgabe",
         "done": "erledigt"
       }

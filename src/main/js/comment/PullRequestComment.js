@@ -514,7 +514,19 @@ class PullRequestComment extends React.Component<Props, State> {
                     <i className={classNames("fa", collapseIcon)} />
                   </span>
                   <span className={classes.authorName}>
-                    <strong>{comment.author.displayName}</strong>{" "}
+                    <strong>
+                      <a
+                        className={classes.linkColor}
+                        href={"mailto:" + comment.author.mail}
+                        title={
+                          t("scm-review-plugin.comment.mailtoAuthor") +
+                          " " +
+                          comment.author.mail
+                        }
+                      >
+                        {comment.author.displayName}
+                      </a>
+                    </strong>{" "}
                   </span>
                 </a>
                 <span className={classes.commentMeta}>
@@ -581,6 +593,7 @@ class PullRequestComment extends React.Component<Props, State> {
     return !transition
       ? null
       : t("scm-review-plugin.comment.markedDoneBy") +
+          " " +
           transition.user.displayName;
   };
 

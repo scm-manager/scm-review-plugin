@@ -82,7 +82,8 @@
       "save": "Save",
       "cancel": "Cancel",
       "lastEdited": "last edited by",
-      "markedDoneBy": "finished by ",
+      "markedDoneBy": "finished by",
+      "mailtoAuthor": "Send mail to",
       "confirmDeleteAlert": {
         "title": "Delete comment",
         "message": "Do you really want to delete the comment?",
@@ -129,7 +130,7 @@
         "task": "Task"
       },
       "tag": {
-        "system": "system",
+        "system": "System",
         "task": "Task",
         "done": "done"
       }
