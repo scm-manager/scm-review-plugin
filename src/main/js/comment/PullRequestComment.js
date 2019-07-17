@@ -9,7 +9,6 @@ import {
   DateFromNow,
   Loading,
   MarkdownView,
-  Radio,
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
@@ -218,15 +217,6 @@ class PullRequestComment extends React.Component<Props, State> {
     });
   };
 
-  switchCommentType = event => {
-    this.setState({
-      updatedComment: {
-        ...this.state.updatedComment,
-        type: event.target.value
-      }
-    });
-  };
-
   createEditIcons = () => {
     const { comment, createLink, t } = this.props;
     const { collapsed } = this.state;
@@ -428,7 +418,6 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createMessageEditor = () => {
-    const { t } = this.props;
     const { updatedComment } = this.state;
     if (updatedComment.type) {
     }
