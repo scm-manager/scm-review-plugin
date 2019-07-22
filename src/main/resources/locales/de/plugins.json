@@ -29,6 +29,10 @@
       "date": "Datum",
       "reviewer": "Reviewers",
       "addReviewer": "Reviewer hinzufügen",
+      "ci-status-bar": {
+        "result-message" : "Fehler",
+        "analysis-message": "Analyse(n)"
+      },
       "tabs": {
         "commits": "Commits",
         "diff": "Diff",
