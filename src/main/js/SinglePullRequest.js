@@ -3,14 +3,16 @@ import React from "react";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { Switch, Route, withRouter } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
-import type { Repository } from "@scm-manager/ui-types";
+import type {Changeset, Repository} from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { getPullRequest } from "./pullRequest";
 import type { History } from "history";
 import Edit from "./Edit";
+import CIStatusBar from "./CIStatusBar";
 
 type Props = {
   repository: Repository,
+  changeset: Changeset,
   userAutocompleteLink: string,
   match: any,
   history: History
@@ -72,7 +74,7 @@ class SinglePullRequest extends React.Component<Props, State> {
   };
 
   render() {
-    const { match, repository, userAutocompleteLink } = this.props;
+    const { match, repository, userAutocompleteLink, changeset } = this.props;
     const { loading, error, pullRequest } = this.state;
 
     if (error) {
@@ -84,28 +86,31 @@ class SinglePullRequest extends React.Component<Props, State> {
     }
 
     return (
-      <Switch>
-        <Route
-          component={() => (
-            <Edit
-              repository={repository}
-              pullRequest={pullRequest}
-              userAutocompleteLink={userAutocompleteLink}
-            />
-          )}
-          path={`${match.url}/edit`}
-          exact
-        />
-        <Route
-          component={() => (
-            <PullRequestDetails
-              repository={repository}
-              pullRequest={pullRequest}
-            />
-          )}
-          path={`${match.url}`}
-        />
-      </Switch>
+      <div>
+        <CIStatusBar/>
+        <Switch>
+          <Route
+            component={() => (
+              <Edit
+                repository={repository}
+                pullRequest={pullRequest}
+                userAutocompleteLink={userAutocompleteLink}
+              />
+            )}
+            path={`${match.url}/edit`}
+            exact
+          />
+          <Route
+            component={() => (
+              <PullRequestDetails
+                repository={repository}
+                pullRequest={pullRequest}
+              />
+            )}
+            path={`${match.url}`}
+          />
+        </Switch>
+      </div>
     );
   }
 }
