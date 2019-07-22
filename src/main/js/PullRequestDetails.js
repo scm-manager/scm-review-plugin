@@ -1,5 +1,11 @@
 // @flow
 import React from "react";
+import injectSheet from "react-jss";
+import { translate } from "react-i18next";
+import { withRouter } from "react-router-dom";
+import classNames from "classnames";
+import type { History } from "history";
+import type { Repository } from "@scm-manager/ui-types";
 import {
   DateFromNow,
   Loading,
@@ -10,10 +16,7 @@ import {
   MarkdownView,
   Button
 } from "@scm-manager/ui-components";
-import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
-import { translate } from "react-i18next";
-import { withRouter } from "react-router-dom";
 import {
   getSubscription,
   handleSubscription,
@@ -22,9 +25,6 @@ import {
 } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
-import type { History } from "history";
-import injectSheet from "react-jss";
-import classNames from "classnames";
 import RejectButton from "./RejectButton";
 
 const styles = {
@@ -382,9 +382,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             "field-body is-inline-flex"
           )}
         >
-          <div className={"user"}>
-            {pullRequest.author.displayName}
-          </div>
+          <div className={"user"}>{pullRequest.author.displayName}</div>
           &nbsp;
           <DateFromNow date={pullRequest.creationDate} />
         </div>
@@ -410,7 +408,11 @@ class PullRequestDetails extends React.Component<Props, State> {
             >
               <ul className="is-separated">
                 {pullRequest.reviewer.map(reviewer => {
-                  return <li className={"user"} key={reviewer.id}>{reviewer.displayName}</li>;
+                  return (
+                    <li className={"user"} key={reviewer.id}>
+                      {reviewer.displayName}
+                    </li>
+                  );
                 })}
               </ul>
             </div>
@@ -458,7 +460,8 @@ class PullRequestDetails extends React.Component<Props, State> {
             <div className="media-right">
               <span
                 className={classNames(
-                  "tag is-medium",
+                  "tag",
+                  "is-medium",
                   pullRequest.status === "MERGED"
                     ? "is-success"
                     : pullRequest.status === "REJECTED"
@@ -470,7 +473,7 @@ class PullRequestDetails extends React.Component<Props, State> {
               </span>
             </div>
           </div>
-
+          
           {description}
 
           <div className={classNames(classes.userListMargin, "media")}>
