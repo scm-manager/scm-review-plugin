@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryDAO;
 import sonia.scm.repository.xml.XmlRepositoryDAO;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
@@ -28,7 +27,7 @@ import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 class PullRequestCommentDataUpdateStepTest {
 
   @Mock
-  RepositoryDAO repositoryDAO;
+  XmlRepositoryDAO repositoryDAO;
 
   private PullRequestCommentDataUpdateStep updateStep;
   private DataStoreFactory dataStoreFactory = new InMemoryDataStoreFactory(new InMemoryDataStore());
