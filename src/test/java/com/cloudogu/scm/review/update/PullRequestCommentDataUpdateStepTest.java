@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryDAO;
 import sonia.scm.repository.xml.XmlRepositoryDAO;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
@@ -17,6 +18,7 @@ import sonia.scm.store.InMemoryDataStoreFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -26,7 +28,7 @@ import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 class PullRequestCommentDataUpdateStepTest {
 
   @Mock
-  XmlRepositoryDAO repositoryDAO;
+  RepositoryDAO repositoryDAO;
 
   private PullRequestCommentDataUpdateStep updateStep;
   private DataStoreFactory dataStoreFactory = new InMemoryDataStoreFactory(new InMemoryDataStore());
@@ -62,13 +64,15 @@ class PullRequestCommentDataUpdateStepTest {
 
     updateStep.doUpdate();
 
-    assertThat(dataStore.getAll().values().iterator().next().getComments().size()).isEqualTo(2);
-    assertThat(dataStore.getAll().values().iterator().next().getComments().get(0).getType()).isEqualTo(CommentType.COMMENT);
-    assertThat(dataStore.getAll().values().iterator().next().getComments().get(0).getAuthor()).isEqualTo("trillian");
-    assertThat(dataStore.getAll().values().iterator().next().getComments().get(0).getComment()).isEqualTo("comment1");
-    assertThat(dataStore.getAll().values().iterator().next().getComments().get(1).getType()).isEqualTo(CommentType.COMMENT);
-    assertThat(dataStore.getAll().values().iterator().next().getComments().get(1).getAuthor()).isEqualTo("edi");
-    assertThat(dataStore.getAll().values().iterator().next().getComments().get(1).getComment()).isEqualTo("comment2");
+    List<Comment> storedComments = dataStore.getAll().values().iterator().next().getComments();
+
+    assertThat(storedComments.size()).isEqualTo(2);
+    assertThat(storedComments.get(0).getType()).isEqualTo(CommentType.COMMENT);
+    assertThat(storedComments.get(0).getAuthor()).isEqualTo("trillian");
+    assertThat(storedComments.get(0).getComment()).isEqualTo("comment1");
+    assertThat(storedComments.get(1).getType()).isEqualTo(CommentType.COMMENT);
+    assertThat(storedComments.get(1).getAuthor()).isEqualTo("edi");
+    assertThat(storedComments.get(1).getComment()).isEqualTo("comment2");
   }
 
   @Test

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import sonia.scm.migration.UpdateStep;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.xml.XmlRepositoryDAO;
+import sonia.scm.repository.RepositoryDAO;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
 import sonia.scm.version.Version;
@@ -18,11 +18,11 @@ public class PullRequestCommentDataUpdateStep implements UpdateStep {
 
   private static final Logger LOG = LoggerFactory.getLogger(PullRequestCommentDataUpdateStep.class);
   private static final String STORE_NAME = "pullRequestComment";
-  private final XmlRepositoryDAO repositoryDAO;
+  private final RepositoryDAO repositoryDAO;
   private final DataStoreFactory dataStoreFactory;
 
   @Inject
-  public PullRequestCommentDataUpdateStep(XmlRepositoryDAO repositoryDAO, DataStoreFactory dataStoreFactory) {
+  public PullRequestCommentDataUpdateStep(RepositoryDAO repositoryDAO, DataStoreFactory dataStoreFactory) {
     this.repositoryDAO = repositoryDAO;
     this.dataStoreFactory = dataStoreFactory;
   }
