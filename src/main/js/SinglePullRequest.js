@@ -3,16 +3,15 @@ import React from "react";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { Switch, Route, withRouter } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
-import type {Changeset, Repository} from "@scm-manager/ui-types";
+import type {Repository} from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { getPullRequest } from "./pullRequest";
 import type { History } from "history";
 import Edit from "./Edit";
-import CIStatusBar from "./CIStatusBar";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
 
 type Props = {
   repository: Repository,
-  changeset: Changeset,
   userAutocompleteLink: string,
   match: any,
   history: History
@@ -72,9 +71,9 @@ class SinglePullRequest extends React.Component<Props, State> {
       }
     });
   };
-
+  
   render() {
-    const { match, repository, userAutocompleteLink, changeset } = this.props;
+    const { match, repository, userAutocompleteLink } = this.props;
     const { loading, error, pullRequest } = this.state;
 
     if (error) {
@@ -87,7 +86,11 @@ class SinglePullRequest extends React.Component<Props, State> {
 
     return (
       <div>
-        <CIStatusBar/>
+        <ExtensionPoint
+          name={"reviewPlugin.pullrequest.top"}
+          renderAll={true}
+          props={{repository, pullRequest}}
+          />
         <Switch>
           <Route
             component={() => (
