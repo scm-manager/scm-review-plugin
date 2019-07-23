@@ -26,6 +26,7 @@ import {
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
+import {ExtensionPoint} from "@scm-manager/ui-extensions";
 
 const styles = {
   userListMargin: {
@@ -424,7 +425,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     );
     return (
       <div className="columns">
-        <div className="column is-clipped">
+        <div className="column">
           <div className="media">
             <div className="media-content">
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
@@ -475,7 +476,11 @@ class PullRequestDetails extends React.Component<Props, State> {
           </div>
           
           {description}
-
+          <ExtensionPoint
+            name={"reviewPlugin.pullrequest.top"}
+            renderAll={true}
+            props={{repository, pullRequest}}
+          />
           <div className={classNames(classes.userListMargin, "media")}>
             <div className="media-content">
               {author}

@@ -8,7 +8,6 @@ import type { PullRequest } from "./types/PullRequest";
 import { getPullRequest } from "./pullRequest";
 import type { History } from "history";
 import Edit from "./Edit";
-import { ExtensionPoint } from "@scm-manager/ui-extensions";
 
 type Props = {
   repository: Repository,
@@ -86,11 +85,6 @@ class SinglePullRequest extends React.Component<Props, State> {
 
     return (
       <div>
-        <ExtensionPoint
-          name={"reviewPlugin.pullrequest.top"}
-          renderAll={true}
-          props={{repository, pullRequest}}
-          />
         <Switch>
           <Route
             component={() => (
