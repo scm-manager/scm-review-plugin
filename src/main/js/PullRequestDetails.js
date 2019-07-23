@@ -474,13 +474,13 @@ class PullRequestDetails extends React.Component<Props, State> {
               </span>
             </div>
           </div>
-          
-          {description}
           <ExtensionPoint
             name={"reviewPlugin.pullrequest.top"}
             renderAll={true}
             props={{repository, pullRequest}}
           />
+          {description}
+
           <div className={classNames(classes.userListMargin, "media")}>
             <div className="media-content">
               {author}
