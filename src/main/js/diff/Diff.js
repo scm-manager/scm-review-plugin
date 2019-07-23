@@ -275,6 +275,7 @@ class Diff extends React.Component<Props, State> {
   };
 
   createComments = fileState => {
+    const { pullRequest } = this.props;
     const comments = fileState.comments;
 
     return (
@@ -285,6 +286,7 @@ class Diff extends React.Component<Props, State> {
               comment={rootComment}
               refresh={this.fetchComments}
               handleError={this.onError}
+              createLink={pullRequest._links.createComment}
             />
           </div>
         ))}

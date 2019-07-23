@@ -1,16 +1,14 @@
 package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.comment.service.BasicComment;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Location;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.junit.Rule;
 import org.junit.Test;
 import sonia.scm.repository.Repository;
-
-import java.time.Instant;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -24,7 +22,7 @@ public class PermissionCheckTest {
   @Test
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldAllowModificationsForAuthor() {
-    PullRequestComment comment = createComment("trillian");
+    BasicComment comment = createComment("trillian");
 
     boolean modificationsAllowed = PermissionCheck.mayModifyComment(createRepository(), comment);
 
@@ -34,7 +32,7 @@ public class PermissionCheckTest {
   @Test
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldNotFailOnModificationsForAuthor() {
-    PullRequestComment comment = createComment("trillian");
+    BasicComment comment = createComment("trillian");
 
     PermissionCheck.checkModifyComment(createRepository(), comment);
   }
@@ -42,7 +40,7 @@ public class PermissionCheckTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldAllowModificationsForPushPermission() {
-    PullRequestComment comment = createComment("author");
+    BasicComment comment = createComment("author");
 
     boolean modificationsAllowed = PermissionCheck.mayModifyComment(createRepository(), comment);
 
@@ -52,7 +50,7 @@ public class PermissionCheckTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldNotFailOnModificationsForPushPermission() {
-    PullRequestComment comment = createComment("trillian");
+    BasicComment comment = createComment("trillian");
 
     PermissionCheck.checkModifyComment(createRepository(), comment);
   }
@@ -60,7 +58,7 @@ public class PermissionCheckTest {
   @Test
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldDisallowModificationsForNonAuthorWithoutPermission() {
-    PullRequestComment comment = createComment("other");
+    BasicComment comment = createComment("other");
 
     boolean modificationsAllowed = PermissionCheck.mayModifyComment(createRepository(), comment);
 
@@ -70,13 +68,13 @@ public class PermissionCheckTest {
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldFailOnModificationsForNonAuthorWithoutPermission() {
-    PullRequestComment comment = createComment("other");
+    BasicComment comment = createComment("other");
 
     PermissionCheck.checkModifyComment(createRepository(), comment);
   }
 
-  private PullRequestRootComment createComment(String author) {
-    return PullRequestRootComment.createComment( "1", "1. comment", author, new Location());
+  private Comment createComment(String author) {
+    return Comment.createComment( "1", "1. comment", author, new Location());
   }
 
   private Repository createRepository() {

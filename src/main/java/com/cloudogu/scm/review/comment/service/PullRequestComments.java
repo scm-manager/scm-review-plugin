@@ -15,5 +15,5 @@ import java.util.List;
 public class PullRequestComments {
 
   @XmlElement(name = "comment")
-  private List<PullRequestRootComment> comments = new ArrayList<>();
+  private List<Comment> comments = new ArrayList<>();
 }

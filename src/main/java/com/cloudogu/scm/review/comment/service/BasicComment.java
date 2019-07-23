@@ -7,27 +7,22 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Collections.unmodifiableList;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class PullRequestComment implements Cloneable {
-
-  public static PullRequestComment createReply(String id, String text, String author) {
-    PullRequestComment comment = new PullRequestComment();
-    comment.setId(id);
-    comment.setComment(text);
-    comment.setAuthor(author);
-    comment.setDate(Instant.now());
-    return comment;
-  }
+public abstract class BasicComment implements Cloneable {
 
   private String id;
   private String comment;
   private String author;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant date;
-  private boolean systemComment;
-  private boolean done;
+
+  private List<ExecutedTransition> executedTransitions = new ArrayList<>();
 
   public String getId() {
     return id;
@@ -45,12 +40,8 @@ public class PullRequestComment implements Cloneable {
     return date;
   }
 
-  public boolean isSystemComment() {
-    return systemComment;
-  }
-
-  public boolean isDone() {
-    return done;
+  public List<ExecutedTransition> getExecutedTransitions() {
+    return unmodifiableList(executedTransitions);
   }
 
   public void setId(String id) {
@@ -69,17 +60,17 @@ public class PullRequestComment implements Cloneable {
     this.comment = comment;
   }
 
-  public void setDone(boolean done) {
-    this.done = done;
+  public void addTextTransition(ExecutedTransition<TextTransition> transition) {
+    this.executedTransitions.add(transition);
   }
 
-  void setSystemComment(boolean systemComment) {
-    this.systemComment = systemComment;
+  void addTransition(ExecutedTransition<?> transition) {
+    this.executedTransitions.add(transition);
   }
 
-  public PullRequestComment clone() {
+  public BasicComment clone() {
     try {
-      return (PullRequestComment) super.clone();
+      return (BasicComment) super.clone();
     } catch (CloneNotSupportedException ex) {
       throw new RuntimeException(ex);
     }

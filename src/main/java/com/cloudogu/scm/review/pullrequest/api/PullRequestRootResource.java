@@ -10,10 +10,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import sonia.scm.ScmConstraintViolationException;
-import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
 
 import javax.inject.Inject;

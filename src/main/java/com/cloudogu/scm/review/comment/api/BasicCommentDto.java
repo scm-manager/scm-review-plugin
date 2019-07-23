@@ -1,12 +1,9 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 
@@ -15,12 +12,9 @@ import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
 
-
 @Getter
 @Setter
-@NoArgsConstructor
-@EqualsAndHashCode
-public class PullRequestCommentDto extends HalRepresentation {
+abstract class BasicCommentDto extends HalRepresentation {
 
   @NonNull
   @Size(min = 1)
@@ -32,14 +26,6 @@ public class PullRequestCommentDto extends HalRepresentation {
   private DisplayedUserDto author;
 
   private Instant date;
-
-  @Valid
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private LocationDto location;
-
-  private boolean systemComment;
-
-  private boolean done;
 
   /**
    * suppress squid:S1185 (Overriding methods should do more than simply call the same method in the super class)

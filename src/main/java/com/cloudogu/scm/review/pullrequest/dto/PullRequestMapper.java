@@ -69,7 +69,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Named("mapAuthor")
   DisplayedUserDto mapAuthor(String authorId) {
-    return userDisplayManager.get(authorId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(authorId, authorId));
+    return userDisplayManager.get(authorId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(authorId, authorId, null));
   }
 
   String mapAuthor(DisplayedUserDto author) {
@@ -105,6 +105,6 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   }
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
-    return new DisplayedUserDto(user.getId(), user.getDisplayName());
+    return new DisplayedUserDto(user.getId(), user.getDisplayName(), user.getMail());
   }
 }

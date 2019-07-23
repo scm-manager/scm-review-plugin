@@ -9,7 +9,8 @@ export type BasicPullRequest = {
 
 export type DisplayedUser = {
   id: string,
-  displayName: string
+  displayName: string,
+  mail: string
 };
 
 export type PullRequest = BasicPullRequest & {
@@ -30,7 +31,8 @@ export type Location = {
 
 export type BasicComment = {
   comment: string,
-  id: string
+  id: string,
+  type: string
 };
 
 export type Comment = BasicComment & {
@@ -38,15 +40,17 @@ export type Comment = BasicComment & {
   location?: Location,
   date: string,
   systemComment: boolean,
-  done: boolean,
   file?: string,
   lineId?: string,
+  replies: Comment[],
   _links: Links
 };
 
-export type RootComment = Comment & {
-  replies: Comment[]
-}
+export type Reply = BasicComment & {
+  author: DisplayedUser,
+  date: string,
+  _links: Links
+};
 
 export type PullRequestCollection = Collection & {
   _embedded: {
@@ -59,3 +63,8 @@ export type Comments = Collection & {
     pullRequestComments: Comment[]
   }
 };
+
+export type PossibleTransition = {
+  name: string,
+  _links: Links
+}

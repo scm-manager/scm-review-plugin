@@ -2,8 +2,8 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -31,7 +31,7 @@ import static com.cloudogu.scm.review.HalRepresentations.createCollection;
 public class CommentRootResource {
 
 
-  private final PullRequestCommentMapper mapper;
+  private final CommentMapper mapper;
   private final RepositoryResolver repositoryResolver;
   private final CommentService service;
   private final Provider<CommentResource> commentResourceProvider;
@@ -39,7 +39,7 @@ public class CommentRootResource {
 
 
   @Inject
-  public CommentRootResource(PullRequestCommentMapper mapper, RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider, CommentPathBuilder commentPathBuilder) {
+  public CommentRootResource(CommentMapper mapper, RepositoryResolver repositoryResolver, CommentService service, Provider<CommentResource> commentResourceProvider, CommentPathBuilder commentPathBuilder) {
     this.mapper = mapper;
     this.repositoryResolver = repositoryResolver;
     this.service = service;
@@ -58,11 +58,11 @@ public class CommentRootResource {
   public Response create(@PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
-                         @Valid @NotNull PullRequestCommentDto pullRequestCommentDto) {
-    if (pullRequestCommentDto.isSystemComment()){
+                         @Valid @NotNull CommentDto commentDto) {
+    if (commentDto.isSystemComment()){
       throw new AuthorizationException("Is is Forbidden to create a system comment.");
     }
-    PullRequestRootComment comment = mapper.map(pullRequestCommentDto);
+    Comment comment = mapper.map(commentDto);
     String id = service.add(namespace, name,  pullRequestId, comment);
     URI location = URI.create(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, id));
     return Response.created(location).build();
@@ -76,10 +76,10 @@ public class CommentRootResource {
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    List<PullRequestRootComment> list = service.getAll(namespace, name, pullRequestId);
-    List<PullRequestCommentDto> dtoList = list
+    List<Comment> list = service.getAll(namespace, name, pullRequestId);
+    List<CommentDto> dtoList = list
       .stream()
-      .map(comment -> mapper.map(comment, repository, pullRequestId))
+      .map(comment -> mapper.map(comment, repository, pullRequestId, service.possibleTransitions(namespace, name, pullRequestId, comment.getId())))
       .collect(Collectors.toList());
     boolean permission = PermissionCheck.mayComment(repository);
     return Response.ok(createCollection(uriInfo, permission, dtoList, "pullRequestComments")).build();

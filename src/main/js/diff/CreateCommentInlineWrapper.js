@@ -1,6 +1,7 @@
 //@flow
 import * as React from "react";
 import injectSheet from "react-jss";
+import classNames from "classnames";
 
 const styles = {
   wrapperRoot: {
@@ -8,16 +9,12 @@ const styles = {
     padding: "1rem",
     borderTop: "1px solid #dbdbdb",
   },
-
   wrapperChild: {
-    fontSize: "1rem",
-    padding: "1rem",
-    marginLeft: "30px",
-    borderTop: "1px solid #dbdbdb",
+    marginLeft: "2rem",
   },
-
   arrow: {
-    margin: "0px 30px -40px 30px",
+    position: "absolute",
+    margin: "1rem 0 0 2em",
     fontSize: "16px",
     color: "#e5e5e5"
   }
@@ -35,8 +32,8 @@ class CreateCommentInlineWrapper extends React.Component<Props> {
     const { classes, children, isChildComment } = this.props;
     return (
       <>
-        {isChildComment && <div className={classes.arrow}> <i className="fas fa-chevron-right"></i> </div>}
-        <div className={isChildComment ? classes.wrapperChild : classes.wrapperRoot}>
+        {isChildComment && <div className={classes.arrow}><i className="fas fa-caret-right" /></div>}
+        <div className={classNames(classes.wrapperRoot, isChildComment ? classes.wrapperChild : "")}>
           {children}
         </div>
       </>

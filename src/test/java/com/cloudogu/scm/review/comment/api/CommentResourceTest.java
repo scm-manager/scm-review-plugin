@@ -4,7 +4,8 @@ import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
+import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
@@ -26,7 +27,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.net.URISyntaxException;
 
-import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
+import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static java.net.URI.create;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class CommentResourceTest {
 
-  public static final PullRequestRootComment EXISTING_ROOT_COMMENT = createComment("1", "1. comment", "slarti", new Location());
+  public static final Comment EXISTING_ROOT_COMMENT = createComment("1", "1. comment", "slarti", new Location());
   private final Repository repository = mock(Repository.class);
   private final UriInfo uriInfo = mock(UriInfo.class);
 
@@ -59,13 +60,13 @@ public class CommentResourceTest {
   @Before
   public void init() {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentResource resource = new CommentResource(service, repositoryResolver, new PullRequestCommentMapperImpl(), commentPathBuilder);
+    CommentResource resource = new CommentResource(service, repositoryResolver, new CommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new ExecutedTransitionMapperImpl());
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
-        Providers.of(new CommentRootResource(new PullRequestCommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder)), commentService)));
+        Providers.of(new CommentRootResource(new CommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder)), commentService)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);
@@ -85,6 +86,19 @@ public class CommentResourceTest {
   }
 
   @Test
+  public void shouldDeleteReply() throws URISyntaxException {
+    MockHttpRequest request =
+      MockHttpRequest
+        .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies/x")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    verify(service).delete("space", "name", "1", "x");
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+  }
+
+  @Test
   public void shouldUpdateComment() throws URISyntaxException {
     String newComment = "haha";
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
@@ -97,8 +111,25 @@ public class CommentResourceTest {
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
-    verify(service).modify(eq("space"), eq("name"), eq("1"), eq("1"),
-      argThat(t -> t.getComment().equals(newComment)));
+    verify(service).modifyComment(eq("space"), eq("name"), eq("1"), eq("1"),
+      argThat((Comment t) -> t.getComment().equals(newComment)));
+  }
+
+  @Test
+  public void shouldUpdateReply() throws URISyntaxException {
+    String newComment = "haha";
+    byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies/x")
+        .content(pullRequestCommentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+    verify(service).modifyReply(eq("space"), eq("name"), eq("1"), eq("x"),
+      argThat((Reply r) -> r.getComment().equals(newComment)));
   }
 
   @Test
@@ -109,7 +140,7 @@ public class CommentResourceTest {
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
     MockHttpRequest request =
       MockHttpRequest
-        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/reply")
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies")
         .content(pullRequestCommentJson)
         .contentType(MediaType.APPLICATION_JSON);
 

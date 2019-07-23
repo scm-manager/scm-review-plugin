@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.comment.service.CommentEvent;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
@@ -35,12 +34,16 @@ public class EmailNotificationHook {
 
   @Subscribe
   public void handleCommentEvents(CommentEvent event) {
-    PullRequestComment comment = event.getItem();
-    if (event.getEventType() == HandlerEventType.DELETE){
-      comment = event.getOldItem();
-    }
-    if (!comment.isSystemComment()) {
+    if (!isSystemComment(event)) {
       handleEvent(event, new CommentEventMailTextResolver(event));
+    }
+  }
+
+  private boolean isSystemComment(CommentEvent event) {
+    if (event.getEventType() == HandlerEventType.DELETE){
+      return event.getOldItem().isSystemComment();
+    } else {
+      return event.getItem().isSystemComment();
     }
   }
 

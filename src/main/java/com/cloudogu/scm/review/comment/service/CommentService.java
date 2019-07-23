@@ -6,6 +6,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.HandlerEventType;
+import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -13,12 +14,20 @@ import sonia.scm.security.KeyGenerator;
 
 import javax.inject.Inject;
 import java.time.Clock;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_COMMENT;
+import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
+import static com.cloudogu.scm.review.comment.service.CommentTransition.REOPEN;
+import static com.cloudogu.scm.review.comment.service.CommentTransition.SET_DONE;
+import static com.cloudogu.scm.review.comment.service.TextTransition.CHANGE_TEXT;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
@@ -46,13 +55,13 @@ public class CommentService {
     this.clock = clock;
   }
 
-  public String add(String namespace, String name, String pullRequestId, PullRequestRootComment pullRequestComment) {
+  public String add(String namespace, String name, String pullRequestId, Comment pullRequestComment) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkComment(repository);
     return addWithoutPermissionCheck(repository, pullRequestId, pullRequestComment);
   }
 
-  private String addWithoutPermissionCheck(Repository repository, String pullRequestId, PullRequestRootComment pullRequestComment) {
+  private String addWithoutPermissionCheck(Repository repository, String pullRequestId, Comment pullRequestComment) {
     initializeNewComment(pullRequestComment);
     String newId = getCommentStore(repository).add(repository, pullRequestId, pullRequestComment);
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
@@ -60,59 +69,104 @@ public class CommentService {
     return newId;
   }
 
-  public String reply(String namespace, String name, String pullRequestId, String rootCommentId, PullRequestComment pullRequestComment) {
+  public String reply(String namespace, String name, String pullRequestId, String rootCommentId, Reply reply) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkComment(repository);
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
-    PullRequestRootComment originalRootComment = get(repository, pullRequestId, rootCommentId);
-    pullRequestComment.setId(keyGenerator.createKey());
-    initializeNewComment(pullRequestComment);
-    originalRootComment.addReply(pullRequestComment);
+    Comment originalRootComment = get(repository, pullRequestId, rootCommentId);
+    reply.setId(keyGenerator.createKey());
+    initializeNewComment(reply);
+    originalRootComment.addReply(reply);
 
     getCommentStore(repository).update(pullRequestId, originalRootComment);
 
-    eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
-    return pullRequestComment.getId();
+    eventBus.post(new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
+    return reply.getId();
   }
 
-  private void initializeNewComment(PullRequestComment pullRequestComment) {
+  private void initializeNewComment(BasicComment pullRequestComment) {
     pullRequestComment.setDate(clock.instant());
-    pullRequestComment.setAuthor(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
+    pullRequestComment.setAuthor(getCurrentUserId());
   }
 
-  public void modify(String namespace, String name, String pullRequestId, String commentId, PullRequestComment changedComment) {
+  private String getCurrentUserId() {
+    return SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
+  }
+
+  public void modifyComment(String namespace, String name, String pullRequestId, String commentId, Comment changedComment) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
 
-    doWithEitherRootCommentOrReply(
-      repository,
-      pullRequestId,
-      commentId,
-      rootComment -> {
-        PermissionCheck.checkModifyComment(repository, rootComment);
-        PullRequestRootComment clone = rootComment.clone();
-        rootComment.setComment(changedComment.getComment());
-        rootComment.setDone(changedComment.isDone());
-        getCommentStore(repository).update(pullRequestId, rootComment);
-        eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
-      },
+    Comment rootComment = findRootComment(repository, pullRequestId, commentId)
+      .<NotFoundException>orElseThrow(() -> {
+          throw notFound(entity(BasicComment.class, String.valueOf(changedComment.getId()))
+            .in(PullRequest.class, pullRequestId)
+            .in(repository.getNamespaceAndName()));
+        }
+      );
+    PermissionCheck.checkModifyComment(repository, rootComment);
+    Comment clone = rootComment.clone();
+    rootComment.setComment(changedComment.getComment());
+    rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
+    getCommentStore(repository).update(pullRequestId, rootComment);
+    eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
+  }
+
+  public Collection<CommentTransition> possibleTransitions(String namespace, String name, String pullRequestId, String commentId) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    if (!PermissionCheck.mayComment(repository)) {
+      return emptyList();
+    }
+    Comment comment = get(namespace, name, pullRequestId, commentId);
+    switch (comment.getType()) {
+      case COMMENT:
+        return singleton(MAKE_TASK);
+      case TASK_TODO:
+        return asList(SET_DONE, MAKE_COMMENT);
+      case TASK_DONE:
+        return asList(REOPEN, MAKE_COMMENT);
+      default:
+        throw new IllegalStateException("unknown type in comment: " + comment.getType());
+    }
+  }
+
+  public ExecutedTransition<CommentTransition> transform(String namespace, String name, String pullRequestId, String commentId, CommentTransition transition) {
+    Comment comment = get(namespace, name, pullRequestId, commentId);
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
+    Comment clone = comment.clone();
+    transition.accept(clone);
+    ExecutedTransition<CommentTransition> executedTransition = new ExecutedTransition<>(keyGenerator.createKey(), transition, System.currentTimeMillis(), getCurrentUserId());
+    clone.addCommentTransition(executedTransition);
+    getCommentStore(repository).update(pullRequestId, clone);
+    eventBus.post(new CommentEvent(repository, pullRequest, comment, clone, HandlerEventType.MODIFY));
+    return executedTransition;
+  }
+
+  public void modifyReply(String namespace, String name, String pullRequestId, String replyId, Reply changedReply) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
+
+    findReplyWithParent(repository, pullRequestId, replyId)
+      .<NotFoundException>orElseThrow(
+        () -> {
+          throw notFound(entity(Reply.class, String.valueOf(changedReply.getId()))
+            .in(PullRequest.class, pullRequestId)
+            .in(repository.getNamespaceAndName()));
+        }
+      ).execute(
       (parent, reply) -> {
         PermissionCheck.checkModifyComment(repository, reply);
-        PullRequestComment clone = reply.clone();
-        reply.setComment(changedComment.getComment());
-        reply.setDone(changedComment.isDone());
+        Reply clone = reply.clone();
+        reply.setComment(changedReply.getComment());
+        reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
         getCommentStore(repository).update(pullRequestId, parent);
-        eventBus.post(new CommentEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
-      },
-      () -> {
-        throw notFound(entity(PullRequestComment.class, String.valueOf(changedComment.getId()))
-          .in(PullRequest.class, pullRequestId)
-          .in(repository.getNamespaceAndName()));
+        eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
       }
     );
   }
 
-  public List<PullRequestRootComment> getAll(String namespace, String name, String pullRequestId) {
+  public List<Comment> getAll(String namespace, String name, String pullRequestId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkRead(repository);
     return getCommentStore(repository).getAll(pullRequestId);
@@ -121,37 +175,53 @@ public class CommentService {
   public void delete(String namespace, String name, String pullRequestId, String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
-    doWithEitherRootCommentOrReply(
-      repository,
-      pullRequestId,
-      commentId,
-      rootComment -> {
-        PermissionCheck.checkModifyComment(repository, rootComment);
-        doThrow().violation("Must not delete system comment").when(rootComment.isSystemComment());
-        doThrow().violation("Must not delete root comment with existing replies").when(!rootComment.getReplies().isEmpty());
-        getCommentStore(repository).delete(pullRequestId, commentId);
-        eventBus.post(new CommentEvent(repository, pullRequest, null, rootComment, HandlerEventType.DELETE));
-      },
-      (parent, reply) -> {
-        PermissionCheck.checkModifyComment(repository, reply);
-        parent.removeReply(reply);
-        getCommentStore(repository).update(pullRequestId, parent);
-        eventBus.post(new CommentEvent(repository, pullRequest, null, reply, HandlerEventType.DELETE));
-      },
-      () -> {}
-    );
+
+    findRootComment(repository, pullRequestId, commentId)
+      .ifPresent(
+        rootComment -> {
+          PermissionCheck.checkModifyComment(repository, rootComment);
+          doThrow().violation("Must not delete system comment").when(rootComment.isSystemComment());
+          doThrow().violation("Must not delete root comment with existing replies").when(!rootComment.getReplies().isEmpty());
+          getCommentStore(repository).delete(pullRequestId, commentId);
+          eventBus.post(new CommentEvent(repository, pullRequest, null, rootComment, HandlerEventType.DELETE));
+        }
+      );
+    findReplyWithParent(repository, pullRequestId, commentId)
+      .ifPresent(
+        replyWithParent -> replyWithParent.execute(
+          (parent, reply) -> {
+            PermissionCheck.checkModifyComment(repository, reply);
+            parent.removeReply(reply);
+            getCommentStore(repository).update(pullRequestId, parent);
+            eventBus.post(new ReplyEvent(repository, pullRequest, null, reply, HandlerEventType.DELETE));
+          }
+        )
+      );
   }
 
-  public PullRequestRootComment get(String namespace, String name, String pullRequestId, String commentId) {
+  public Comment get(String namespace, String name, String pullRequestId, String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     return get(repository, pullRequestId, commentId);
   }
 
-  public PullRequestRootComment get(Repository repository, String pullRequestId, String commentId) {
+  public Comment get(Repository repository, String pullRequestId, String commentId) {
     return findRootComment(repository, pullRequestId, commentId)
-      .orElseThrow(() -> notFound(entity(PullRequestComment.class, String.valueOf(commentId))
+      .orElseThrow(() -> notFound(entity(BasicComment.class, String.valueOf(commentId))
         .in(PullRequest.class, pullRequestId)
         .in(repository.getNamespaceAndName())));
+  }
+
+  public Reply getReply(String namespace, String name, String pullRequestId, String commentId, String replyId) {
+    Comment comment = get(namespace, name, pullRequestId, commentId);
+    return comment
+      .getReplies()
+      .stream()
+      .filter(r -> r.getId().equals(replyId))
+      .findFirst()
+      .orElseThrow(() -> notFound(entity(Reply.class, String.valueOf(replyId))
+        .in(Comment.class, commentId)
+        .in(PullRequest.class, pullRequestId)
+        .in(new NamespaceAndName(namespace, name))));
   }
 
   private CommentStore getCommentStore(Repository repository) {
@@ -159,38 +229,16 @@ public class CommentService {
   }
 
   public void addStatusChangedComment(Repository repository, String pullRequestId, SystemCommentType commentType) {
-    PullRequestRootComment comment = PullRequestRootComment.createSystemComment(commentType.getKey());
+    Comment comment = Comment.createSystemComment(commentType.getKey());
     addWithoutPermissionCheck(repository, pullRequestId, comment);
   }
 
-  private Optional<PullRequestRootComment> findRootComment(Repository repository, String pullRequestId, String commentId) {
+  private Optional<Comment> findRootComment(Repository repository, String pullRequestId, String commentId) {
     return getCommentStore(repository)
       .getAll(pullRequestId)
       .stream()
       .filter(rootComment -> rootComment.getId().equals(commentId))
       .findFirst();
-  }
-
-  private void doWithEitherRootCommentOrReply(
-    Repository repository,
-    String pullRequestId,
-    String commentId,
-    Consumer<PullRequestRootComment> rootCommentConsumer,
-    BiConsumer<PullRequestRootComment, PullRequestComment> replyConsumer,
-    Runnable notFoundHandler
-  ) {
-    Optional<PullRequestRootComment> existingRootComment = findRootComment(repository, pullRequestId, commentId);
-    if (existingRootComment.isPresent()) {
-      rootCommentConsumer.accept(existingRootComment.get());
-    } else {
-      Optional<ReplyWithParent> existingReply =
-        findReplyWithParent(repository, pullRequestId, commentId);
-      if (existingReply.isPresent()) {
-        replyConsumer.accept(existingReply.get().parent, existingReply.get().reply);
-      } else {
-        notFoundHandler.run();
-      }
-    }
   }
 
   private Optional<ReplyWithParent> findReplyWithParent(Repository repository, String pullRequestId, String commentId) {
@@ -210,12 +258,16 @@ public class CommentService {
 
   private static class ReplyWithParent {
 
-    private final PullRequestRootComment parent;
-    private final PullRequestComment reply;
+    private final Comment parent;
+    private final Reply reply;
 
-    public ReplyWithParent(PullRequestRootComment parent, PullRequestComment reply) {
+    ReplyWithParent(Comment parent, Reply reply) {
       this.parent = parent;
       this.reply = reply;
+    }
+
+    void execute(BiConsumer<Comment, Reply> consumer) {
+      consumer.accept(parent, reply);
     }
   }
 }

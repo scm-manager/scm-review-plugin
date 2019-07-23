@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
@@ -21,7 +20,7 @@ import sonia.scm.store.DataStore;
 
 import java.util.Map;
 
-import static com.cloudogu.scm.review.comment.service.PullRequestRootComment.createComment;
+import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,7 +69,7 @@ class CommentStoreTest {
   void shouldAddTheFirstComment() {
     String pullRequestId = "1";
     when(dataStore.get(pullRequestId)).thenReturn(null);
-    PullRequestRootComment pullRequestComment = createComment("1", "my Comment", "author", new Location());
+    Comment pullRequestComment = createComment("1", "my Comment", "author", new Location());
     store.add(repository, pullRequestId, pullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
@@ -81,9 +80,9 @@ class CommentStoreTest {
   @Test
   void shouldAddCommentToExistingCommentList() {
     String pullRequestId = "1";
-    PullRequestRootComment oldPRComment = createComment("1", "my comment", "author", new Location());
+    Comment oldPRComment = createComment("1", "my comment", "author", new Location());
     PullRequestComments pullRequestComments = new PullRequestComments();
-    PullRequestRootComment newPullRequestComment = createComment("2", "my new comment", "author", new Location());
+    Comment newPullRequestComment = createComment("2", "my new comment", "author", new Location());
     pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
 
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
@@ -127,13 +126,13 @@ class CommentStoreTest {
   void shouldUpdateAnExistingComment() {
     PullRequestComments pullRequestComments = new PullRequestComments();
     pullRequestComments.getComments().add(createComment("1", "1. comment", "author", new Location()));
-    PullRequestRootComment commentToChange = createComment("2", "2. comment", "author", new Location());
+    Comment commentToChange = createComment("2", "2. comment", "author", new Location());
     pullRequestComments.getComments().add(commentToChange);
     pullRequestComments.getComments().add(createComment("3", "3. comment", "author", new Location()));
     String pullRequestId = "id";
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
 
-    PullRequestRootComment copy = commentToChange.clone();
+    Comment copy = commentToChange.clone();
     copy.setComment("new text");
     store.update(pullRequestId, copy);
 

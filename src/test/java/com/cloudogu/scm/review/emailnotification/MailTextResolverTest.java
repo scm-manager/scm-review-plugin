@@ -1,8 +1,10 @@
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.TestData;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
+import com.cloudogu.scm.review.comment.service.CommentTransition;
+import com.cloudogu.scm.review.comment.service.ExecutedTransition;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
@@ -25,7 +27,6 @@ import sonia.scm.template.Template;
 import sonia.scm.template.TemplateEngine;
 import sonia.scm.template.TemplateType;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.net.URL;
 import java.util.Locale;
@@ -44,8 +45,8 @@ class MailTextResolverTest {
   private Set<String> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
-  private PullRequestComment comment;
-  private PullRequestComment oldComment;
+  private Comment comment;
+  private Comment oldComment;
 
   private final Subject subject = mock(Subject.class);
 
@@ -98,7 +99,7 @@ class MailTextResolverTest {
   }
 
   @Test
-  void shouldRenderEmailOnModifiedPullRequest() throws IOException {
+  void shouldRenderEmailOnModifiedPullRequest() {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
 
     PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
@@ -107,7 +108,7 @@ class MailTextResolverTest {
   }
 
   @Test
-  void shouldRenderEmailOnCreatedPullRequest() throws IOException {
+  void shouldRenderEmailOnCreatedPullRequest() {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
 
     PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
@@ -116,7 +117,7 @@ class MailTextResolverTest {
   }
 
   @Test
-  void shouldNotRenderReviewerEmailOnCreatedPullRequest() throws IOException {
+  void shouldNotRenderReviewerEmailOnCreatedPullRequest() {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
 
     PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
@@ -126,7 +127,7 @@ class MailTextResolverTest {
   }
 
   @Test
-  void shouldRenderEmailOnCreatedComment() throws IOException {
+  void shouldRenderEmailOnCreatedComment() {
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
 
     CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);
@@ -135,7 +136,9 @@ class MailTextResolverTest {
   }
 
   @Test
-  void shouldRenderEmailOnModifiedComment() throws IOException {
+  void shouldRenderEmailOnCommentTransition() {
+    Comment taskComment = oldComment.clone();
+    taskComment.addCommentTransition(new ExecutedTransition<>("new", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "dent"));
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY);
 
     CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);
@@ -144,7 +147,16 @@ class MailTextResolverTest {
   }
 
   @Test
-  void shouldRenderEmailOnDeletedComment() throws IOException {
+  void shouldRenderEmailOnModifiedComment() {
+    CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY);
+
+    CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);
+
+    assertEmail(renderer, "changed");
+  }
+
+  @Test
+  void shouldRenderEmailOnDeletedComment() {
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.DELETE);
 
     CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);
@@ -153,7 +165,7 @@ class MailTextResolverTest {
   }
 
   @Test
-  void shouldRenderEmailOnMergedPullRequest() throws IOException {
+  void shouldRenderEmailOnMergedPullRequest() {
     PullRequestMergedEvent event = new PullRequestMergedEvent(repository, pullRequest);
 
     PullRequestMergedMailTextResolver renderer = new PullRequestMergedMailTextResolver(event);
@@ -162,7 +174,7 @@ class MailTextResolverTest {
   }
 
   @Test
-  void shouldRenderEmailOnRejectedPullRequest() throws IOException {
+  void shouldRenderEmailOnRejectedPullRequest() {
     PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
 
     PullRequestRejectedMailTextResolver renderer = new PullRequestRejectedMailTextResolver(event);
@@ -170,11 +182,11 @@ class MailTextResolverTest {
     assertEmail(renderer, "rejected");
   }
 
-  private void assertEmail(MailTextResolver renderer, String event) throws IOException {
+  private void assertEmail(MailTextResolver renderer, String event) {
     assertEmail(renderer, event, false);
   }
 
-  private AbstractCharSequenceAssert<?, String> assertEmail(MailTextResolver renderer, String event, boolean isReviewer) throws IOException {
+  private AbstractCharSequenceAssert<?, String> assertEmail(MailTextResolver renderer, String event, boolean isReviewer) {
     String mailSubject = renderer.getMailSubject(Locale.ENGLISH);
     return assertThat(mailSubject).isNotEmpty()
       .contains(repository.getName(), repository.getNamespace(), pullRequest.getId(), pullRequest.getTitle(), event);

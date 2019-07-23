@@ -17,7 +17,7 @@ class AddCommentButton extends React.Component<Props> {
         <span className="icon">
           <i className="fas fa-comment" />
         </span>
-        <span>{t("scm-review-plugin.comment.add")}</span>
+        <span>{t("scm-review-plugin.comment.addComment")}</span>
       </Button>
     );
   }

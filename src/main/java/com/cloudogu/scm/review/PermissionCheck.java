@@ -1,6 +1,6 @@
 package com.cloudogu.scm.review;
 
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
+import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -60,11 +60,11 @@ public final class PermissionCheck {
    *
    *  @return true if the user can update/delete a comment
    */
-  public static boolean mayModifyComment(Repository repository, PullRequestComment requestComment ) {
+  public static boolean mayModifyComment(Repository repository, BasicComment requestComment ) {
     return currentUserIsAuthor(requestComment.getAuthor()) || mayModify(repository);
   }
 
-  public static void checkModifyComment(Repository repository, PullRequestComment requestComment ) {
+  public static void checkModifyComment(Repository repository, BasicComment requestComment ) {
     if (currentUserIsAuthor(requestComment.getAuthor())) {
       return;
     }

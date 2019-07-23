@@ -1,9 +1,9 @@
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.TestData;
+import com.cloudogu.scm.review.comment.service.BasicComment;
+import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
-import com.cloudogu.scm.review.comment.service.PullRequestComment;
-import com.cloudogu.scm.review.comment.service.PullRequestRootComment;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
@@ -19,10 +19,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
-import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.repository.Repository;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,8 +47,8 @@ class EmailNotificationHookTest {
   private Set<String> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
-  private PullRequestComment comment;
-  private PullRequestComment oldComment;
+  private Comment comment;
+  private Comment oldComment;
   private HashSet<String> reviewers;
 
   @BeforeEach
@@ -84,7 +82,7 @@ class EmailNotificationHookTest {
       new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.DELETE)
     );
     return events.stream().map(event ->
-      DynamicTest.dynamicTest(event.toString(), () -> {
+      DynamicTest.dynamicTest(event.getEventType().toString(), () -> {
         emailNotificationHook.handleCommentEvents(event);
 
         verify(service).sendEmails(isA(CommentEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
@@ -95,7 +93,7 @@ class EmailNotificationHookTest {
 
   @Test
   void shouldNotSendSystemEmails() throws Exception {
-    PullRequestComment systemComment = PullRequestRootComment.createSystemComment("1");
+    Comment systemComment = Comment.createSystemComment("1");
     CommentEvent commentEvent = new CommentEvent(repository, pullRequest, systemComment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleCommentEvents(commentEvent);
 

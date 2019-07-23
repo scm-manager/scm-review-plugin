@@ -68,15 +68,21 @@
       "createButton": "Pull Request erstellen"
     },
     "comment": {
-      "add": "Kommentar hinzufügen",
+      "addComment": "Kommentar hinzufügen",
+      "addTask": "Aufgabe hinzufügen",
       "delete": "Löschen",
       "update": "Aktualisieren",
       "reply": "Antworten",
       "done": "Als erledigt markieren",
+      "makeTask": "In Aufgabe umwandeln",
+      "reopen": "Aufgabe wieder öffnen",
+      "makeComment": "In Kommentar umwandeln",
       "collapse": "Einklappen",
       "expand": "Ausklappen",
       "save": "Speichern",
       "cancel": "Abbrechen",
+      "lastEdited": "zuletzt bearbeitet von",
+      "markedDoneBy": "Abgeschlossen von",
       "confirmDeleteAlert": {
         "title": "Kommentar löschen",
         "message": "Soll der Kommentar wirklich gelöscht werden?",
@@ -84,8 +90,26 @@
         "cancel": "Nein"
       },
       "confirmDoneAlert": {
-        "title": "Kommentar als erledigt markieren",
-        "message": "Soll der Kommentar wirklich als erledigt markiert werden?",
+        "title": "Aufgabe als erledigt markieren",
+        "message": "Soll die Aufgabe wirklich als erledigt markiert werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      },
+      "confirmMakeTaskAlert": {
+        "title": "Aufgabe aus Kommentar erstellen",
+        "message": "Soll der Kommentar wirklich in eine Aufgabe umgewandelt werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      },
+      "reopenAlert": {
+        "title": "Aufgabe als NICHT erledigt markieren",
+        "message": "Soll die Aufgabe wirklich als nicht erledigt markiert werden?",
+        "submit": "Ja",
+        "cancel": "Nein"
+      },
+      "makeCommentAlert": {
+        "title": "Aufgabe in einen normalen Kommentar umwandeln",
+        "message": "Soll die Aufgabe wirklich in einen normalen Kommentar umgewandelt werden?",
         "submit": "Ja",
         "cancel": "Nein"
       },
@@ -100,8 +124,13 @@
         "rejected": "Der Pull-Request wurde abgelehnt.",
         "sourceDeleted": "Der Quell-Branch des Pull-Requests wurde gelöscht."
       },
+      "type": {
+        "comment": "Kommentar",
+        "task": "Aufgabe"
+      },
       "tag": {
-        "system": "system",
+        "system": "System",
+        "task": "Aufgabe",
         "done": "erledigt"
       }
     }

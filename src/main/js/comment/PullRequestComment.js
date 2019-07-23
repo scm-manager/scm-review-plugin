@@ -2,6 +2,7 @@
 import React from "react";
 import classNames from "classnames";
 import { translate, type TFunction } from "react-i18next";
+import injectSheet from "react-jss";
 import {
   Button,
   confirmAlert,
@@ -11,9 +12,10 @@ import {
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
-import type { Comment } from "../types/PullRequest";
+import type { BasicComment, Comment, Reply } from "../types/PullRequest";
 import {
   deletePullRequestComment,
+  transformPullRequestComment,
   updatePullRequestComment
 } from "../pullRequest";
 import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
@@ -25,17 +27,31 @@ type Props = {
   refresh: () => void,
   handleError: (error: Error) => void,
   child: boolean,
+  createLink: string,
 
   // context props
+  classes: any,
   t: TFunction
 };
 
 type State = {
   collapsed: boolean,
   edit: boolean,
-  updatedComment: string,
+  updatedComment: BasicComment,
   loading: boolean,
-  replyEditor: Comment
+  replyEditor: Reply
+};
+
+const styles = {
+  linkColor: {
+    color: "inherit"
+  },
+  authorName: {
+    marginLeft: "5px"
+  },
+  commentMeta: {
+    padding: "0 0.4rem"
+  }
 };
 
 class PullRequestComment extends React.Component<Props, State> {
@@ -43,8 +59,10 @@ class PullRequestComment extends React.Component<Props, State> {
     super(props);
     this.state = {
       loading: false,
-      updatedComment: props.comment.comment,
-      collapsed: props.comment.done,
+      updatedComment: {
+        ...props.comment
+      },
+      collapsed: props.comment.type === "TASK_DONE",
       edit: false
     };
   }
@@ -60,13 +78,16 @@ class PullRequestComment extends React.Component<Props, State> {
     this.setState({
       loading: false,
       edit: false,
-      updatedComment: this.props.comment.comment
+      updatedComment: {
+        ...this.props.comment
+      }
     });
   };
 
   update = () => {
-    const { comment, handleError } = this.props;
-    comment.comment = this.state.updatedComment;
+    const { comment, handleError, refresh } = this.props;
+    comment.comment = this.state.updatedComment.comment;
+    comment.type = this.state.updatedComment.type;
     this.setState({
       loading: true
     });
@@ -79,10 +100,7 @@ class PullRequestComment extends React.Component<Props, State> {
           });
           handleError(response.error);
         } else {
-          this.setState({
-            loading: false,
-            edit: false
-          });
+          refresh();
         }
       }
     );
@@ -111,41 +129,35 @@ class PullRequestComment extends React.Component<Props, State> {
     });
   };
 
-  done = () => {
+  executeTransition = (transition: string) => {
     const { comment, handleError } = this.props;
-    comment.done = true;
-    this.setState({
-      loading: true
-    });
-    updatePullRequestComment(comment._links.update.href, comment).then(
-      response => {
-        if (response.error) {
-          this.setState({
-            loading: false
-          });
-          handleError(response.error);
-        } else {
-          this.setState({
-            loading: false,
-            collapsed: true
-          });
-        }
-      }
+    let transformation = comment._embedded.possibleTransitions.find(
+      t => t.name === transition
     );
+    transformPullRequestComment(transformation).then(response => {
+      if (response.error) {
+        this.setState({
+          loading: false
+        });
+        handleError(response.error);
+      } else {
+        this.props.refresh();
+      }
+    });
   };
 
-  confirmDone = () => {
+  confirmTransition = (transition: string, translationKey: string) => () => {
     const { t } = this.props;
     confirmAlert({
-      title: t("scm-review-plugin.comment.confirmDoneAlert.title"),
-      message: t("scm-review-plugin.comment.confirmDoneAlert.message"),
+      title: t(translationKey + ".title"),
+      message: t(translationKey + ".message"),
       buttons: [
         {
-          label: t("scm-review-plugin.comment.confirmDoneAlert.submit"),
-          onClick: () => this.done()
+          label: t(translationKey + ".submit"),
+          onClick: () => this.executeTransition(transition)
         },
         {
-          label: t("scm-review-plugin.comment.confirmDoneAlert.cancel"),
+          label: t(translationKey + ".cancel"),
           onClick: () => null
         }
       ]
@@ -196,14 +208,17 @@ class PullRequestComment extends React.Component<Props, State> {
     });
   };
 
-  handleUpdateChange = (updatedComment: string) => {
+  handleUpdateChange = (comment: string) => {
     this.setState({
-      updatedComment: updatedComment
+      updatedComment: {
+        ...this.state.updatedComment,
+        comment: comment
+      }
     });
   };
 
   createEditIcons = () => {
-    const { comment, t } = this.props;
+    const { comment, createLink, t } = this.props;
     const { collapsed } = this.state;
 
     const deleteIcon =
@@ -251,45 +266,120 @@ class PullRequestComment extends React.Component<Props, State> {
         ""
       );
 
-    const collapseTitle = collapsed
-      ? t("scm-review-plugin.comment.expand")
-      : t("scm-review-plugin.comment.collapse");
-    const collapseIcon = collapsed ? "fa-angle-left" : "fa-angle-down";
-    const doneIcon = !comment.done ? (
-      comment._links.update ? (
-        <a
-          className="level-item"
-          onClick={this.confirmDone}
-          title={t("scm-review-plugin.comment.done")}
-        >
-          <span className="icon is-small">
-            <i className="fas fa-check-circle" />
-          </span>
-        </a>
+    let doneTransformation = this.containsPossibleTransition("SET_DONE");
+    const doneIcon =
+      !!doneTransformation && !collapsed ? (
+        createLink ? (
+          <a
+            className="level-item"
+            onClick={this.confirmTransition(
+              "SET_DONE",
+              "scm-review-plugin.comment.confirmDoneAlert"
+            )}
+            title={t("scm-review-plugin.comment.done")}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-check-circle" />
+            </span>
+          </a>
+        ) : (
+          ""
+        )
       ) : (
         ""
-      )
-    ) : (
-      <a
-        className="level-item"
-        onClick={this.toggleCollapse}
-        title={collapseTitle}
-      >
-        <span className="icon is-small">
-          <i className={classNames("fa", collapseIcon)} />
-        </span>
-      </a>
+      );
+
+    let makeTaskTransformation = this.containsPossibleTransition("MAKE_TASK");
+    const makeTaskIcon =
+      !!makeTaskTransformation && !collapsed ? (
+        createLink ? (
+          <a
+            className="level-item"
+            onClick={this.confirmTransition(
+              "MAKE_TASK",
+              "scm-review-plugin.comment.confirmMakeTaskAlert"
+            )}
+            title={t("scm-review-plugin.comment.makeTask")}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-tasks" />
+            </span>
+          </a>
+        ) : (
+          ""
+        )
+      ) : (
+        ""
+      );
+
+    let reopenTransformation = this.containsPossibleTransition("REOPEN");
+    const reopenIcon =
+      !!reopenTransformation && !collapsed ? (
+        createLink ? (
+          <a
+            className="level-item"
+            onClick={this.confirmTransition(
+              "REOPEN",
+              "scm-review-plugin.comment.reopenAlert"
+            )}
+            title={t("scm-review-plugin.comment.reopen")}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-undo" />
+            </span>
+          </a>
+        ) : (
+          ""
+        )
+      ) : (
+        ""
+      );
+
+    let normalCommentTransformation = this.containsPossibleTransition(
+      "MAKE_COMMENT"
     );
+    const normalCommentIcon =
+      !!normalCommentTransformation && !collapsed ? (
+        createLink ? (
+          <a
+            className="level-item"
+            onClick={this.confirmTransition(
+              "MAKE_COMMENT",
+              "scm-review-plugin.comment.makeCommentAlert"
+            )}
+            title={t("scm-review-plugin.comment.makeComment")}
+          >
+            <span className="icon is-small">
+              <i className="fas fa-comment-dots" />
+            </span>
+          </a>
+        ) : (
+          ""
+        )
+      ) : (
+        ""
+      );
 
     return (
       <div className="media-right">
         <div className="level-right">
           {deleteIcon}
           {editIcon}
+          {makeTaskIcon}
+          {normalCommentIcon}
           {replyIcon}
+          {reopenIcon}
           {doneIcon}
         </div>
       </div>
+    );
+  };
+
+  containsPossibleTransition = (name: string) => {
+    const { comment } = this.props;
+    return (
+      comment._embedded.possibleTransitions &&
+      comment._embedded.possibleTransitions.find(t => t.name === name)
     );
   };
 
@@ -303,7 +393,7 @@ class PullRequestComment extends React.Component<Props, State> {
           <SubmitButton
             label={t("scm-review-plugin.comment.save")}
             action={this.update}
-            disabled={updatedComment.trim() === ""}
+            disabled={updatedComment.comment.trim() === ""}
             scrollToTop={false}
           />
         </div>
@@ -329,17 +419,21 @@ class PullRequestComment extends React.Component<Props, State> {
 
   createMessageEditor = () => {
     const { updatedComment } = this.state;
+    if (updatedComment.type) {
+    }
     return (
-      <Textarea
-        name="comment"
-        value={updatedComment}
-        onChange={this.handleUpdateChange}
-      />
+      <>
+        <Textarea
+          name="comment"
+          value={updatedComment.comment}
+          onChange={this.handleUpdateChange}
+        />
+      </>
     );
   };
 
   render() {
-    const { comment, refresh, handleError, t } = this.props;
+    const { comment, refresh, handleError, classes, t } = this.props;
     const { loading, collapsed, edit } = this.state;
 
     if (loading) {
@@ -350,7 +444,7 @@ class PullRequestComment extends React.Component<Props, State> {
     let editButtons = null;
     let message = null;
     let tag = comment.location ? (
-      <span className="tag is-rounded is-info" title={comment.location.file}>
+      <span className="tag is-rounded" title={comment.location.file}>
         <span className="fas fa-code">&nbsp;</span>
         {comment.location.file.replace(/^.+\//, "")}
       </span>
@@ -358,21 +452,38 @@ class PullRequestComment extends React.Component<Props, State> {
       ""
     );
     tag = comment.systemComment ? (
-      <span className="tag is-rounded is-info ">
+      <span className="tag is-rounded">
         <span className="fas fa-bolt">&nbsp;</span>
         {t("scm-review-plugin.comment.tag.system")}
       </span>
     ) : (
       tag
     );
-    let done = comment.done ? (
-      <span className="tag is-rounded is-info ">
-        <span className="fas fa-check-circle">&nbsp;</span>
-        {t("scm-review-plugin.comment.tag.done")}
-      </span>
-    ) : (
-      ""
-    );
+    let done = null;
+    switch (comment.type) {
+      case "TASK_TODO":
+        done = (
+          <span className="tag is-rounded is-warning">
+            <span className="fas fa-check-circle">&nbsp;</span>
+            {t("scm-review-plugin.comment.tag.task")}
+          </span>
+        );
+        break;
+      case "TASK_DONE":
+        done = (
+          <span
+            className="tag is-rounded is-success"
+            title={this.getSetDoneByLabel()}
+          >
+            <span className="fas fa-check-circle">&nbsp;</span>
+            {t("scm-review-plugin.comment.tag.done")}
+          </span>
+        );
+        break;
+      default:
+        break;
+    }
+
     if (edit) {
       message = this.createMessageEditor();
       editButtons = this.createEditButtons();
@@ -381,15 +492,35 @@ class PullRequestComment extends React.Component<Props, State> {
       icons = this.createEditIcons();
     }
 
+    const collapseTitle = collapsed
+      ? t("scm-review-plugin.comment.expand")
+      : t("scm-review-plugin.comment.collapse");
+    const collapseIcon = collapsed ? "fa-angle-right" : "fa-angle-down";
+
+    let lastEdited = this.getLastEdited();
+
     return (
       <>
         <CreateCommentInlineWrapper isChildComment={this.props.child}>
           <article className="media">
             <div className="media-content is-clipped content">
               <p>
-                <strong>{comment.author.displayName} </strong>
-                <DateFromNow date={comment.date} />
-                &nbsp; {tag} {done}
+                <a
+                  className={classes.linkColor}
+                  onClick={this.toggleCollapse}
+                  title={collapseTitle}
+                >
+                  <span className="icon is-small">
+                    <i className={classNames("fa", collapseIcon)} />
+                  </span>
+                  <span className={classes.authorName}>
+                    <strong>{comment.author.displayName}</strong>{" "}
+                  </span>
+                </a>
+                <span className={classes.commentMeta}>
+                  <DateFromNow date={comment.date} /> {lastEdited}
+                </span>
+                {tag} {done}
                 <br />
                 {message}
               </p>
@@ -413,6 +544,46 @@ class PullRequestComment extends React.Component<Props, State> {
       </>
     );
   }
+
+  getLastEdited = () => {
+    const { comment, t } = this.props;
+    if (comment._embedded && comment._embedded.transitions) {
+      const latestTransition = this.getLatestTransition("CHANGE_TEXT");
+      if (latestTransition && latestTransition.user.id !== comment.author.id) {
+        const latestEditor = latestTransition.user.displayName;
+        return (
+          <>
+            ({t("scm-review-plugin.comment.lastEdited")}{" "}
+            <strong>{latestEditor}</strong>)
+          </>
+        );
+      }
+    }
+    return null;
+  };
+
+  getLatestTransition = (type: string) => {
+    const { comment } = this.props;
+    if (comment._embedded && comment._embedded.transitions) {
+      const latestTransitions = comment._embedded.transitions.filter(
+        t => t.transition === type
+      );
+      if (latestTransitions.length > 0) {
+        return latestTransitions[latestTransitions.length - 1];
+      }
+    }
+    return null;
+  };
+
+  getSetDoneByLabel = () => {
+    const { t } = this.props;
+    const transition = this.getLatestTransition("SET_DONE");
+    return !transition
+      ? null
+      : t("scm-review-plugin.comment.markedDoneBy") +
+          " " +
+          transition.user.displayName;
+  };
 
   reply = (comment: Comment) => {
     this.openReplyEditor(comment);
@@ -448,4 +619,4 @@ class PullRequestComment extends React.Component<Props, State> {
   }
 }
 
-export default translate("plugins")(PullRequestComment);
+export default translate("plugins")(injectSheet(styles)(PullRequestComment));
