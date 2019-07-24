@@ -3,7 +3,7 @@ import React from "react";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { Switch, Route, withRouter } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
-import type {Repository} from "@scm-manager/ui-types";
+import type { Repository } from "@scm-manager/ui-types";
 import type { PullRequest } from "./types/PullRequest";
 import { getPullRequest } from "./pullRequest";
 import type { History } from "history";
@@ -70,7 +70,7 @@ class SinglePullRequest extends React.Component<Props, State> {
       }
     });
   };
-  
+
   render() {
     const { match, repository, userAutocompleteLink } = this.props;
     const { loading, error, pullRequest } = this.state;
@@ -84,7 +84,6 @@ class SinglePullRequest extends React.Component<Props, State> {
     }
 
     return (
-      <div>
         <Switch>
           <Route
             component={() => (
@@ -107,7 +106,6 @@ class SinglePullRequest extends React.Component<Props, State> {
             path={`${match.url}`}
           />
         </Switch>
-      </div>
     );
   }
 }
