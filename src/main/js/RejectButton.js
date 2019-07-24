@@ -14,21 +14,21 @@ class RejectButton extends React.Component<Props> {
     const { t, reject } = this.props;
     confirmAlert({
       title: t(
-        "scm-review-plugin.show-pull-request.rejectButton.confirm-alert.title"
+        "scm-review-plugin.show-pullRequest.rejectButton.confirm-alert.title"
       ),
       message: t(
-        "scm-review-plugin.show-pull-request.rejectButton.confirm-alert.message"
+        "scm-review-plugin.show-pullRequest.rejectButton.confirm-alert.message"
       ),
       buttons: [
         {
           label: t(
-            "scm-review-plugin.show-pull-request.rejectButton.confirm-alert.submit"
+            "scm-review-plugin.show-pullRequest.rejectButton.confirm-alert.submit"
           ),
           onClick: () => reject()
         },
         {
           label: t(
-            "scm-review-plugin.show-pull-request.rejectButton.confirm-alert.cancel"
+            "scm-review-plugin.show-pullRequest.rejectButton.confirm-alert.cancel"
           ),
           onClick: () => null
         }
@@ -44,7 +44,7 @@ class RejectButton extends React.Component<Props> {
       <p className="control">
         <Button
           label={t(
-            "scm-review-plugin.show-pull-request.rejectButton.button-title"
+            "scm-review-plugin.show-pullRequest.rejectButton.button-title"
           )}
           action={action}
           loading={loading}

@@ -89,20 +89,20 @@ class EditForm extends React.Component<Props, State> {
         <InputField
           name="title"
           value={title}
-          label={t("scm-review-plugin.pull-request.title")}
+          label={t("scm-review-plugin.pullRequest.title")}
           onChange={this.onChange}
         />
         <Textarea
           name="description"
           value={description}
-          label={t("scm-review-plugin.pull-request.description")}
+          label={t("scm-review-plugin.pullRequest.description")}
           onChange={this.onChange}
         />
         <div className="field is-grouped is-grouped-multiline">
           {reviewer ? (
             <div className="control">
               <strong>
-                {t("scm-review-plugin.pull-request.reviewer")}
+                {t("scm-review-plugin.pullRequest.reviewer")}
                 {listSymbol}
               </strong>
             </div>
@@ -131,7 +131,7 @@ class EditForm extends React.Component<Props, State> {
               creatable={false}
               loadSuggestions={this.loadUserSuggestions}
               valueSelected={this.selectName}
-              placeholder={t("scm-review-plugin.pull-request.addReviewer")}
+              placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
             />
           </div>
         </div>

@@ -105,7 +105,7 @@ class CreateForm extends React.Component<Props, State> {
           <div className="column is-clipped">
             <Select
               name="source"
-              label={t("scm-review-plugin.pull-request.sourceBranch")}
+              label={t("scm-review-plugin.pullRequest.sourceBranch")}
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
@@ -115,7 +115,7 @@ class CreateForm extends React.Component<Props, State> {
           <div className="column is-clipped">
             <Select
               name="target"
-              label={t("scm-review-plugin.pull-request.targetBranch")}
+              label={t("scm-review-plugin.pullRequest.targetBranch")}
               options={options}
               onChange={this.handleFormChange}
               loading={loading}

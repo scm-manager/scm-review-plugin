@@ -126,7 +126,7 @@ class Changesets extends React.Component<Props, State> {
     } else if (changesets && changesets._embedded.changesets.length === 0) {
       return (
         <Notification type="info">
-          {t("scm-review-plugin.pull-request.noChangesets")}
+          {t("scm-review-plugin.pullRequest.noChangesets")}
         </Notification>
       );
     }
