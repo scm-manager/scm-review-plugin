@@ -100,8 +100,8 @@ class PullRequestList extends React.Component<Props, State> {
     if (error) {
       return (
         <ErrorPage
-          title={t("scm-review-plugin.pullRequests.errorTitle")}
-          subtitle={t("scm-review-plugin.pullRequests.errorSubtitle")}
+          title={t("scm-review-plugin.pull-requests.error-title")}
+          subtitle={t("scm-review-plugin.pull-requests.error-subtitle")}
           error={error}
         />
       );
@@ -115,7 +115,7 @@ class PullRequestList extends React.Component<Props, State> {
 
     const createButton = pullRequests._links.create ? (
       <CreateButton
-        label={t("scm-review-plugin.pullRequests.createButton")}
+        label={t("scm-review-plugin.pull-requests.createButton")}
         link={to}
       />
     ) : null;

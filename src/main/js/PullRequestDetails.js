@@ -375,7 +375,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             "field-label is-inline-flex"
           )}
         >
-          {t("scm-review-plugin.pullRequest.author")}:
+          {t("scm-review-plugin.pull-request.author")}:
         </div>
         <div
           className={classNames(
@@ -399,7 +399,7 @@ class PullRequestDetails extends React.Component<Props, State> {
                 "field-label is-inline-flex"
               )}
             >
-              {t("scm-review-plugin.pullRequest.reviewer")}:
+              {t("scm-review-plugin.pull-request.reviewer")}:
             </div>
             <div
               className={classNames(

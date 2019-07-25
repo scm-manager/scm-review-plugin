@@ -18,12 +18,13 @@
       "not-supported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt."
     },
     "no-requests": "Keine Pull Requests mit diesen Kriterien gefunden.",
-    "pullRequest": {
+    "pull-request": {
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
       "title": "Titel",
       "description": "Beschreibung",
       "status": "Status",
+      "id": "ID",
       "author": "Autor",
       "date": "Datum",
       "reviewer": "Reviewers",
@@ -60,9 +61,10 @@
       "notification": "Pull Request erfolgreich gemerged!",
       "targetDeleted": "Der Target Branch wurde gelösch!"
     },
-    "pullRequests": {
-      "errorTitle": "Fehler",
-      "errorSubtitle": "Unbekannter Pull Request Fehler",
+    "pull-requests": {
+      "error-title": "Fehler",
+      "error-subtitle": "Unbekannter Pull Request Fehler",
+      "description": "Beschreibung",
       "createButton": "Pull Request erstellen"
     },
     "comment": {

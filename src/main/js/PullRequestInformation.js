@@ -69,7 +69,7 @@ class PullRequestInformation extends React.Component<Props> {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
           <Link to={`${baseURL}/changesets/`}>
-            {t("scm-review-plugin.pullRequest.tabs.commits")}
+            {t("scm-review-plugin.pull-request.tabs.commits")}
           </Link>
         </li>
       );
@@ -116,7 +116,7 @@ class PullRequestInformation extends React.Component<Props> {
       diffTab = (
         <li className={this.navigationClass("diff")}>
           <Link to={`${baseURL}/diff/`}>
-            {t("scm-review-plugin.pullRequest.tabs.diff")}
+            {t("scm-review-plugin.pull-request.tabs.diff")}
           </Link>
         </li>
       );
@@ -142,7 +142,7 @@ class PullRequestInformation extends React.Component<Props> {
     let commentTab = pullRequest ? (
       <li className={this.navigationClass("comments")}>
         <Link to={`${baseURL}/comments/`}>
-          {t("scm-review-plugin.pullRequest.tabs.comments")}
+          {t("scm-review-plugin.pull-request.tabs.comments")}
         </Link>
       </li>
     ) : (

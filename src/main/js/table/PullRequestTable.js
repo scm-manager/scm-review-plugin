@@ -18,16 +18,16 @@ class PullRequestTable extends React.Component<Props> {
         <thead>
           <tr>
             <th className="is-hidden-mobile">
-              {t("scm-review-plugin.pullRequest.title")}
+              {t("scm-review-plugin.pull-request.title")}
             </th>
-            <th>{t("scm-review-plugin.pullRequest.sourceBranch")}</th>
-            <th>{t("scm-review-plugin.pullRequest.targetBranch")}</th>
-            <th>{t("scm-review-plugin.pullRequest.author")}</th>
+            <th>{t("scm-review-plugin.pull-request.sourceBranch")}</th>
+            <th>{t("scm-review-plugin.pull-request.targetBranch")}</th>
+            <th>{t("scm-review-plugin.pull-request.author")}</th>
             <th className="is-hidden-mobile">
-              {t("scm-review-plugin.pullRequest.date")}
+              {t("scm-review-plugin.pull-request.date")}
             </th>
             <th className="is-hidden-mobile">
-              {t("scm-review-plugin.pullRequest.status")}
+              {t("scm-review-plugin.pull-request.status")}
             </th>
           </tr>
         </thead>
