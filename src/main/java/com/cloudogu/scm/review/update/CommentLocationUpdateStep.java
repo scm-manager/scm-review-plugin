@@ -12,6 +12,7 @@ import sonia.scm.version.Version;
 
 import javax.inject.Inject;
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -26,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class CommentLocationUpdateStep implements UpdateStep {
 
@@ -52,21 +54,29 @@ public class CommentLocationUpdateStep implements UpdateStep {
   }
 
   private void updateStorePath(Path storePath) throws IOException {
-    Files.list(storePath).forEach(storeFile -> {
-      try {
-        updateStoreFile(storeFile);
-      } catch (ParserConfigurationException | IOException | SAXException | TransformerException e) {
-        throw new UpdateException("could not parse comment file " + storeFile + " in path " + storePath, e);
-      }
-    });
+    try (Stream<Path> files = Files.list(storePath)) {
+      files.forEach(storeFile -> {
+        try {
+          updateStoreFile(storeFile);
+        } catch (ParserConfigurationException | IOException | SAXException | TransformerException e) {
+          throw new UpdateException("could not parse comment file " + storeFile + " in path " + storePath, e);
+        }
+      });
+    }
   }
 
   private void updateStoreFile(Path storeFile) throws ParserConfigurationException, IOException, SAXException, TransformerException {
-    Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(storeFile.toFile());
+    Document document = createDocumentBuilder().parse(storeFile.toFile());
 
     List<Node> nodes = extractChangeIdNodes(document);
     nodes.forEach(node -> updateLocation(document, node));
     writeChangedNodes(storeFile, document, nodes);
+  }
+
+  private DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+    return factory.newDocumentBuilder();
   }
 
   private List<Node> extractChangeIdNodes(Document document) {
