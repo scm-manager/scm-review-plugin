@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<pull-request-comments>
+  <comment>
+    <id>6CRClnjIiC</id>
+    <comment>Don't panic!</comment>
+    <author>sdorra</author>
+    <date>1545306294752</date>
+    <systemComment>false</systemComment>
+    <type>COMMENT</type>
+    <replies>
+      <id>9PRVoqF1tC</id>
+      <comment>ok</comment>
+      <author>fscholdei</author>
+      <date>1562757746193</date>
+    </replies>
+    <replies>
+      <id>62RVoqKtXD</id>
+      <comment>ok2</comment>
+      <author>fscholdei</author>
+      <date>1562757768739</date>
+    </replies>
+    <replies>
+      <id>68RVoqPI0E</id>
+      <comment>ok3</comment>
+      <author>fscholdei</author>
+      <date>1562757785632</date>
+    </replies>
+  </comment>
+  <comment>
+    <id>4HRHJU8pu6</id>
+    <comment>Go for it!</comment>
+    <author>fscholdei</author>
+    <date>1549468553102</date>
+    <systemComment>false</systemComment>
+    <type>COMMENT</type>
+  </comment>
+  <comment>
+    <id>DCRKOarwU3</id>
+    <comment>Test 23!</comment>
+    <author>scmadmin</author>
+    <date>1552292436633</date>
+    <executedTransitions>
+      <id>FWRX39Qrn4</id>
+      <transition>com.cloudogu.scm.review.comment.service.CommentTransition:MAKE_TASK</transition>
+      <date>1563885321463</date>
+      <user>sdorra</user>
+    </executedTransitions>
+    <executedTransitions>
+      <id>9XRX39S435</id>
+      <transition>com.cloudogu.scm.review.comment.service.CommentTransition:SET_DONE</transition>
+      <date>1563885326067</date>
+      <user>sdorra</user>
+    </executedTransitions>
+    <location>
+      <changeId>I25</changeId>
+      <file>README.md</file>
+      <hunk>@@ -1,3 +1,41 @@</hunk>
+    </location>
+    <systemComment>false</systemComment>
+    <type>TASK_DONE</type>
+    <replies>
+      <id>2PRX39IQK2</id>
+      <comment>Hallo</comment>
+      <author>sdorra</author>
+      <date>1563885289008</date>
+    </replies>
+  </comment>
+  <comment>
+    <id>9RRKbwGjF8</id>
+    <comment>blah</comment>
+    <author>sdorra</author>
+    <date>1552489629167</date>
+    <executedTransitions>
+      <id>CjRX39LYk3</id>
+      <transition>com.cloudogu.scm.review.comment.service.TextTransition:CHANGE_TEXT</transition>
+      <date>1563885301062</date>
+      <user>sdorra</user>
+    </executedTransitions>
+    <location>
+      <changeId>I39</changeId>
+      <file>README.md</file>
+      <hunk>@@ -1,3 +1,41 @@</hunk>
+    </location>
+    <systemComment>false</systemComment>
+    <type>COMMENT</type>
+    <replies>
+      <id>4dRTHKMXe6</id>
+      <comment>Hallo?</comment>
+      <author>sdorra</author>
+      <date>1560430263822</date>
+    </replies>
+  </comment>
+</pull-request-comments>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<pull-request-comments>
+  <comment>
+    <id>1</id>
+    <comment>Insert</comment>
+    <author>tricia</author>
+    <date>1552489629167</date>
+    <location>
+      <changeId>I39</changeId>
+      <file>README.md</file>
+      <hunk>@@ -1,3 +1,41 @@</hunk>
+    </location>
+    <systemComment>false</systemComment>
+    <type>COMMENT</type>
+  </comment>
+  <comment>
+    <id>2</id>
+    <comment>Delete</comment>
+    <author>tricia</author>
+    <date>1552489629167</date>
+    <location>
+      <changeId>D39</changeId>
+      <file>README.md</file>
+      <hunk>@@ -1,3 +1,41 @@</hunk>
+    </location>
+    <systemComment>false</systemComment>
+    <type>COMMENT</type>
+  </comment>
+  <comment>
+    <id>3</id>
+    <comment>Normal</comment>
+    <author>tricia</author>
+    <date>1552489629167</date>
+    <location>
+      <changeId>N39</changeId>
+      <file>README.md</file>
+      <hunk>@@ -1,3 +1,41 @@</hunk>
+    </location>
+    <systemComment>false</systemComment>
+    <type>COMMENT</type>
+  </comment>
+</pull-request-comments>

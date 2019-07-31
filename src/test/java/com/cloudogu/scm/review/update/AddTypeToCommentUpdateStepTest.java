@@ -24,12 +24,12 @@ import static org.mockito.Mockito.when;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 
 @ExtendWith(MockitoExtension.class)
-class PullRequestCommentDataUpdateStepTest {
+class AddTypeToCommentUpdateStepTest {
 
   @Mock
   XmlRepositoryDAO repositoryDAO;
 
-  private PullRequestCommentDataUpdateStep updateStep;
+  private AddTypeToCommentUpdateStep updateStep;
   private DataStoreFactory dataStoreFactory = new InMemoryDataStoreFactory(new InMemoryDataStore());
   private DataStore<PullRequestComments> dataStore;
   private Repository repository = createHeartOfGold();
@@ -39,7 +39,7 @@ class PullRequestCommentDataUpdateStepTest {
   @BeforeEach
   void init() {
     dataStore = dataStoreFactory.withType(PullRequestComments.class).withName(STORE_NAME).forRepository(repository).build();
-    updateStep = new PullRequestCommentDataUpdateStep(repositoryDAO, dataStoreFactory);
+    updateStep = new AddTypeToCommentUpdateStep(repositoryDAO, dataStoreFactory);
   }
 
   @BeforeEach
