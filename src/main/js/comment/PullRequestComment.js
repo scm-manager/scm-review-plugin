@@ -26,7 +26,7 @@ type Props = {
   comment: Comment,
   refresh: () => void,
   handleError: (error: Error) => void,
-  child: boolean,
+  child?: boolean,
   createLink: string,
 
   // context props
@@ -39,7 +39,7 @@ type State = {
   edit: boolean,
   updatedComment: BasicComment,
   loading: boolean,
-  replyEditor: Reply
+  replyEditor?: Reply
 };
 
 const styles = {
@@ -443,14 +443,17 @@ class PullRequestComment extends React.Component<Props, State> {
     let icons = null;
     let editButtons = null;
     let message = null;
-    let tag = comment.location ? (
-      <span className="tag is-rounded" title={comment.location.file}>
+
+    let tag = "";
+    if (comment.location) {
+      const file = comment.location.file;
+      tag = (
+        <span className="tag is-rounded" title={file}>
         <span className="fas fa-code">&nbsp;</span>
         {comment.location.file.replace(/^.+\//, "")}
       </span>
-    ) : (
-      ""
-    );
+      );
+    }
     tag = comment.systemComment ? (
       <span className="tag is-rounded">
         <span className="fas fa-bolt">&nbsp;</span>
@@ -604,7 +607,7 @@ class PullRequestComment extends React.Component<Props, State> {
           refresh={() => this.closeReplyEditor()}
           onCancel={() => this.closeReplyEditor()}
           autofocus={true}
-          handleError={this.onError}
+          handleError={this.props.handleError} // TODO check??
         />
       </CreateCommentInlineWrapper>
     );

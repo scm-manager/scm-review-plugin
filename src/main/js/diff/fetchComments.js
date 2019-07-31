@@ -1,19 +1,20 @@
 // @flow
 import { getPullRequestComments } from "../pullRequest";
-import { createHunkIdFromLocation } from "./locations";
-import type { Comment } from "../types/PullRequest";
+import {createChangeIdFromLocation, createHunkIdFromLocation, isInlineLocation} from "./locations";
+import type { Comment, Location } from "../types/PullRequest";
 
 type FileComments = {
+  // path
   [string]: {
-    // path
     comments: Comment[]
   }
 };
 type LineComments = {
+  // hunkid
   [string]: {
-    // hunkid
+    // changeid
     [string]: {
-      // changeid
+      location: Location,
       comments: Comment[]
     }
   }
@@ -42,16 +43,12 @@ function addLineComments(lineComments: LineComments, comment: Comment) {
     throw new Error("location is not defined");
   }
 
-  const changeId = location.changeId;
-  if (!changeId) {
-    // should never happen, mostly to make flow happy
-    throw new Error("location has no change id");
-  }
-
   const hunkId = createHunkIdFromLocation(location);
+  const changeId = createChangeIdFromLocation(location);
   const hunkComments = lineComments[hunkId] || {};
 
   const changeComments = hunkComments[changeId] || {
+    location,
     comments: []
   };
   changeComments.comments.push(comment);
@@ -72,7 +69,7 @@ export function fetchComments(url: string) {
       const files = {};
 
       comments.forEach(comment => {
-        if (comment.location.hunk && comment.location.changeId) {
+        if (isInlineLocation(comment.location)) {
           addLineComments(lines, comment);
         } else {
           addFileComments(files, comment);

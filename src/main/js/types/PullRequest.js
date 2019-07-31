@@ -26,7 +26,8 @@ export type PullRequest = BasicPullRequest & {
 export type Location = {
   file: string,
   hunk?: string,
-  changeId?: string
+  oldLineNumber?: number,
+  newLineNumber?: number
 };
 
 export type BasicComment = {

@@ -13,6 +13,7 @@ public class Location implements Cloneable {
 
   private String file;
   private String hunk;
-  private String changeId;
+  private Integer oldLineNumber;
+  private Integer newLineNumber;
 
 }

@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.UserDisplayManager;
 
@@ -46,9 +45,7 @@ import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -281,8 +278,8 @@ public class CommentRootResourceTest {
   }
 
   private void mockExistingComments() {
-    Comment comment1 = createComment("1", "1. comment", "author", new Location("", "", ""));
-    Comment comment2 = createComment("2", "2. comment", "author", new Location("", "", ""));
+    Comment comment1 = createComment("1", "1. comment", "author", new Location("", "", 0, 0));
+    Comment comment2 = createComment("2", "2. comment", "author", new Location("", "", 0, 0));
 
     Reply reply1 = createReply("2_1", "1. reply", "author");
     Reply reply2 = createReply("2_2", "2. reply", "author");

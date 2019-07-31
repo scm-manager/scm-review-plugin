@@ -1,8 +1,7 @@
 //@flow
 import React from "react";
-import type { DiffEventContext } from "@scm-manager/ui-components";
+import type { DiffEventContext, File, AnnotationFactoryContext } from "@scm-manager/ui-components";
 import {
-  AnnotationFactoryContext,
   ErrorNotification,
   Loading,
   LoadingDiff,
@@ -21,7 +20,7 @@ import StyledDiffWrapper from "./StyledDiffWrapper";
 import {
   createHunkId,
   createHunkIdFromLocation,
-  createLocation
+  createInlineLocation, isInlineLocation, createChangeIdFromLocation
 } from "./locations";
 import { fetchComments } from "./fetchComments";
 import AddCommentButton from "./AddCommentButton";
@@ -44,6 +43,7 @@ type State = {
     [string]: {
       [string]: {
         editor: boolean,
+        location: Location,
         comments: RootComment[]
       }
     }
@@ -131,12 +131,11 @@ class Diff extends React.Component<Props, State> {
 
   fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
-    const location = { file: file.newPath };
 
     const annotations = [];
     const fileState = this.state.files[path] || [];
     if (fileState.comments && fileState.comments.length > 0) {
-      annotations.push(this.createComments(fileState, location));
+      annotations.push(this.createComments(fileState));
     }
 
     if (fileState.editor) {
@@ -161,16 +160,14 @@ class Diff extends React.Component<Props, State> {
     if (hunkState) {
       Object.keys(hunkState).forEach((changeId: string) => {
         const lineState = hunkState[changeId];
-        const location = createLocation(context, changeId);
 
         if (lineState) {
           const lineAnnotations = [];
           if (lineState.comments && lineState.comments.length > 0) {
-            lineAnnotations.push(this.createComments(lineState, location));
+            lineAnnotations.push(this.createComments(lineState));
           }
           if (lineState.editor) {
-            const location = createLocation(context, changeId);
-            lineAnnotations.push(this.createNewCommentEditor(location));
+            lineAnnotations.push(this.createNewCommentEditor(lineState.location));
           }
           if (lineAnnotations.length > 0) {
             annotations[changeId] = (
@@ -189,7 +186,7 @@ class Diff extends React.Component<Props, State> {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         setCollapse(false);
-        this.setFileEditor(path, true, null);
+        this.setFileEditor(path, true);
       };
       return <AddCommentButton action={openFileEditor} />;
     }
@@ -197,22 +194,21 @@ class Diff extends React.Component<Props, State> {
 
   onGutterClick = (context: DiffEventContext) => {
     if (this.isPermittedToComment()) {
-      const location = createLocation(context, context.changeId);
+      const location = createInlineLocation(context);
       this.openEditor(location);
     }
   };
 
   openEditor = (location: Location) => {
-    const changeId = location.changeId;
-    if (location.hunk && changeId) {
-      this.setLineEditor(location, true, null);
+    if (isInlineLocation(location)) {
+      this.setLineEditor(location, true);
     } else {
-      this.setFileEditor(location.file, true, null);
+      this.setFileEditor(location.file, true);
     }
   };
 
   closeEditor = (location: Location, callback?: () => void) => {
-    if (location.hunk && location.changeId) {
+    if (isInlineLocation(location)) {
       this.setLineEditor(location, false, callback);
     } else {
       this.setFileEditor(location.file, false, callback);
@@ -251,10 +247,7 @@ class Diff extends React.Component<Props, State> {
     callback?: () => void
   ) => {
     const hunkId = createHunkIdFromLocation(location);
-    const changeId = location.changeId;
-    if (!changeId) {
-      throw new Error("invalid state change id is required");
-    }
+    const changeId = createChangeIdFromLocation(location);
 
     this.setState(state => {
       const currentHunk = state.lines[hunkId] || {};
@@ -266,6 +259,7 @@ class Diff extends React.Component<Props, State> {
             ...currentHunk,
             [changeId]: {
               editor: showEditor,
+              location,
               comments: currentLine.comments || []
             }
           }

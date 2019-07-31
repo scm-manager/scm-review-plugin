@@ -19,7 +19,8 @@ public class LocationDto {
   @Size(min = 1)
   private String hunk;
 
-  @Size(min = 1)
-  private String changeId;
+  private Integer oldLineNumber;
+
+  private Integer newLineNumber;
 
 }
