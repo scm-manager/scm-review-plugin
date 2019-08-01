@@ -7,6 +7,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import sonia.scm.migration.UpdateException;
 import sonia.scm.migration.UpdateStep;
+import sonia.scm.plugin.Extension;
 import sonia.scm.repository.RepositoryLocationResolver;
 import sonia.scm.version.Version;
 
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Extension
 public class CommentLocationUpdateStep implements UpdateStep {
 
   private RepositoryLocationResolver.RepositoryLocationResolverInstance<Path> locationResolver;
