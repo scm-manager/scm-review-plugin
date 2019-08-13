@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -84,7 +85,6 @@ class FlagCommentsAsOutdatedHookTest {
     );
 
     PostReceiveRepositoryHookEvent event = prepareEvent(one, two);
-    lenient().when(event.getRepository()).thenReturn(repository);
     when(event.getContext().getChangesetProvider().getChangesets()).thenReturn(changesets);
 
     Set<String> modifications = ImmutableSet.of("pom.xml");
@@ -97,6 +97,23 @@ class FlagCommentsAsOutdatedHookTest {
     assertThat(two.isOutdated()).isTrue();
 
     verifyChanged(two);
+  }
+
+  @Test
+  void shouldNotCollectModificationWithoutFileComments() throws IOException {
+    Comment one = Comment.createSystemComment("awesome");
+
+    List<Changeset> changesets = ImmutableList.of(
+      new Changeset(),
+      new Changeset()
+    );
+
+    PostReceiveRepositoryHookEvent event = prepareEvent(one);
+    when(event.getContext().getChangesetProvider().getChangesets()).thenReturn(changesets);
+
+    hook.flagAffectedComments(event);
+
+    verify(modificationCollector, never()).collect(any(), any());
   }
 
   private void flagAffectedComments(Comment one, Comment two) throws IOException {
