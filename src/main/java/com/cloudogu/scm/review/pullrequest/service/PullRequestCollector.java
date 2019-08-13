@@ -1,24 +1,21 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class PullRequestCollector {
+public class PullRequestCollector {
 
   private final PullRequestService pullRequestService;
 
   @Inject
-  PullRequestCollector(PullRequestService pullRequestService) {
+  public PullRequestCollector(PullRequestService pullRequestService) {
     this.pullRequestService = pullRequestService;
   }
 
-  List<PullRequest> collectAffectedPullRequests(Repository repository, List<String> affectedBranches) {
+  public List<PullRequest> collectAffectedPullRequests(Repository repository, List<String> affectedBranches) {
     return pullRequestService.getAll(repository.getNamespace(), repository.getName())
       .stream()
       .filter(pr -> pr.getStatus() == PullRequestStatus.OPEN)

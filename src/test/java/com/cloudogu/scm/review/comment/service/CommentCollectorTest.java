@@ -1,7 +1,6 @@
-package com.cloudogu.scm.review;
+package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.comment.service.Comment;
-import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;

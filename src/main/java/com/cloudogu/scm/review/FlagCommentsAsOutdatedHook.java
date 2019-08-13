@@ -1,8 +1,10 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.CommentCollector;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestCollector;
 import com.github.legman.Subscribe;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
@@ -28,11 +30,11 @@ public class FlagCommentsAsOutdatedHook {
   private final ModificationCollector modificationCollector;
 
   @Inject
-  public FlagCommentsAsOutdatedHook(PullRequestCollector pullRequestCollector, CommentCollector commentCollector, CommentService commentService, ModificationCollector modificationCollector) {
+  public FlagCommentsAsOutdatedHook(PullRequestCollector pullRequestCollector, CommentCollector commentCollector, ModificationCollector modificationCollector, CommentService commentService) {
     this.pullRequestCollector = pullRequestCollector;
     this.commentCollector = commentCollector;
-    this.commentService = commentService;
     this.modificationCollector = modificationCollector;
+    this.commentService = commentService;
   }
 
   @Subscribe
