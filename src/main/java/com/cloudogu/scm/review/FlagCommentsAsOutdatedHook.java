@@ -38,7 +38,7 @@ public class FlagCommentsAsOutdatedHook {
   }
 
   @Subscribe
-  void flagAffectedComments(PostReceiveRepositoryHookEvent event) {
+  public void flagAffectedComments(PostReceiveRepositoryHookEvent event) {
     Repository repository = event.getRepository();
     List<String> affectedBranches = event.getContext().getBranchProvider().getCreatedOrModified();
     List<PullRequest> pullRequests = pullRequestCollector.collectAffectedPullRequests(repository, affectedBranches);
