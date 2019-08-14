@@ -131,7 +131,8 @@
       "tag": {
         "system": "System",
         "task": "Task",
-        "done": "done"
+        "done": "done",
+        "outdated": "outdated"
       }
     }
   },

@@ -131,7 +131,8 @@
       "tag": {
         "system": "System",
         "task": "Aufgabe",
-        "done": "erledigt"
+        "done": "erledigt",
+        "outdated" : "veraltet"
       }
     }
   },
