@@ -20,6 +20,7 @@ public class CommentDto extends BasicCommentDto {
   private LocationDto location;
 
   private boolean systemComment;
+  private boolean outdated;
 
   private String type;
 }

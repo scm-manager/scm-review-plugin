@@ -445,6 +445,7 @@ class PullRequestComment extends React.Component<Props, State> {
     let message = null;
 
     let tag = "";
+    let outdatedTag = "";
     if (comment.location) {
       const file = comment.location.file;
       tag = (
@@ -461,6 +462,14 @@ class PullRequestComment extends React.Component<Props, State> {
       </span>
     ) : (
       tag
+    );
+    outdatedTag = comment.outdated ? (
+      <span className="tag is-rounded">
+        <span className="fas fa-clock">&nbsp;</span>
+        {t("scm-review-plugin.comment.tag.outdated")}
+      </span>
+    ) : (
+      outdatedTag
     );
     let done = null;
     switch (comment.type) {
@@ -523,7 +532,7 @@ class PullRequestComment extends React.Component<Props, State> {
                 <span className={classes.commentMeta}>
                   <DateFromNow date={comment.date} /> {lastEdited}
                 </span>
-                {tag} {done}
+                {tag} {outdatedTag} {done}
                 <br />
                 {message}
               </p>
