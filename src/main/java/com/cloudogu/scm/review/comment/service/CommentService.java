@@ -93,6 +93,24 @@ public class CommentService {
     return SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString();
   }
 
+  public void markAsOutdated(String namespace, String name, String pullRequestId, String commentId) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    PermissionCheck.checkComment(repository);
+    Comment rootComment = findRootComment(repository, pullRequestId, commentId)
+      .<NotFoundException>orElseThrow(() -> {
+          throw notFound(entity(BasicComment.class, commentId)
+            .in(PullRequest.class, pullRequestId)
+            .in(repository.getNamespaceAndName()));
+        }
+      );
+
+    PermissionCheck.checkModifyComment(repository, rootComment);
+    if (!rootComment.isOutdated()) {
+      rootComment.setOutdated(true);
+      getCommentStore(repository).update(pullRequestId, rootComment);
+    }
+  }
+
   public void modifyComment(String namespace, String name, String pullRequestId, String commentId, Comment changedComment) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
@@ -107,7 +125,6 @@ public class CommentService {
     PermissionCheck.checkModifyComment(repository, rootComment);
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
-    rootComment.setOutdated(changedComment.isOutdated());
     rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
     getCommentStore(repository).update(pullRequestId, rootComment);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));

@@ -124,7 +124,7 @@ class FlagCommentsAsOutdatedHookTest {
   }
 
   private void verifyChanged(Comment one) {
-    verify(commentService).modifyComment(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId(), one);
+    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
   }
 
   private PostReceiveRepositoryHookEvent prepareEvent(Comment... comments) {

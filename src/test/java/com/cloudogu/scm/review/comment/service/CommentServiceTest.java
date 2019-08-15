@@ -447,4 +447,30 @@ public class CommentServiceTest {
 
     assertThat(commentTransitions).isEmpty();
   }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldMarkCommentAsOutdated() {
+    doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
+
+    Comment comment = EXISTING_COMMENT.clone();
+    commentService.markAsOutdated(NAMESPACE, NAME, PULL_REQUEST_ID, comment.getId());
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.isOutdated()).isTrue();
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldNotMarkAlreadyOutdatedComments() {
+    Comment comment = EXISTING_COMMENT.clone();
+    comment.setOutdated(true);
+
+    when(store.getAll(PULL_REQUEST_ID)).thenReturn(singletonList(comment));
+
+    commentService.markAsOutdated(NAMESPACE, NAME, PULL_REQUEST_ID, comment.getId());
+
+    verify(store, never()).update(any(), any());
+  }
 }

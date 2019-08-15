@@ -60,7 +60,7 @@ public class FlagCommentsAsOutdatedHook {
 
   private void flagAsOutdated(Repository repository, PullRequest pr, Comment comment) {
     comment.setOutdated(true);
-    commentService.modifyComment(repository.getNamespace(), repository.getName(), pr.getId(), comment.getId(), comment);
+    commentService.markAsOutdated(repository.getNamespace(), repository.getName(), pr.getId(), comment.getId());
   }
 
   private boolean isGlobalComment(Comment comment) {
