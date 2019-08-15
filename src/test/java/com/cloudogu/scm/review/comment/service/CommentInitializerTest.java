@@ -214,4 +214,51 @@ class CommentInitializerTest {
         .contains(3, 4, 5, 6, 7, 8, 9);
     }
   }
+
+  @Nested
+  class withMixedLines {
+
+    @BeforeEach
+    void initRepositoryService() {
+      when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+    }
+
+    @BeforeEach
+    void mockDiffResult() throws IOException {
+      when(repositoryService.getDiffResultCommand()).thenReturn(diffResultCommandBuilder);
+      Hunk hunk = new MockedHunk.Builder()
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(2).newLineNumber(4).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(3).newLineNumber(5).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(4).newLineNumber(6).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(5).get())
+        .addDiffLine(new MockedDiffLine.Builder().newLineNumber(7).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(6).newLineNumber(8).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(7).newLineNumber(9).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(8).newLineNumber(10).get())
+        .get();
+      DiffFile diffFile = new MockedDiffFile.Builder().oldPath("newPath").newPath("newPath").addHunk(hunk).get();
+      DiffResult diffResult = new MockedDiffResult.Builder().diffFile(diffFile).get();
+      when(diffResultCommandBuilder.getDiffResult()).thenReturn(diffResult);
+    }
+
+    @Test
+    void shouldSetContextForInlineCommentWithCommentInTheMiddle() throws IOException {
+      Comment comment = new Comment();
+      comment.setLocation(new Location("newPath", "irrelevant", 5, null));
+
+      initializer.initialize(comment, REPOSITORY.getId());
+
+      assertThat(comment.getContext()).isNotNull();
+      assertThat(comment.getContext().getChanges())
+        .hasSize(7)
+        .extracting(DiffLine::getOldLineNumber)
+        .extracting(n -> n.orElse(-1))
+        .contains(2, 3, 4, 5, -1, 6, 7);
+      assertThat(comment.getContext().getChanges())
+        .hasSize(7)
+        .extracting(DiffLine::getNewLineNumber)
+        .extracting(n -> n.orElse(-1))
+        .contains(4, 5, 6, -1, 7, 8, 9);
+    }
+  }
 }

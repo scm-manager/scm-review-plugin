@@ -93,22 +93,30 @@ public class CommentInitializer {
 
   private EvictingQueue<DiffLine> extractContextLines(Comment comment, Hunk hunk) {
     EvictingQueue<DiffLine> contextLines = EvictingQueue.create(CONTEXT_SIZE);
+    Integer trailingLineCount = null;
+    boolean lineFound = false;
     for (DiffLine line : hunk) {
       if (comment.getLocation().getNewLineNumber() != null) {
-        addLineToContext(contextLines, line, comment.getLocation().getNewLineNumber(), line.getNewLineNumber());
+        lineFound = addLineToContext(contextLines, line, comment.getLocation().getNewLineNumber(), line.getNewLineNumber());
       } else {
-        addLineToContext(contextLines, line, comment.getLocation().getOldLineNumber(), line.getOldLineNumber());
+        lineFound = addLineToContext(contextLines, line, comment.getLocation().getOldLineNumber(), line.getOldLineNumber());
+      }
+      if (lineFound) {
+        trailingLineCount = CONTEXT_SIZE / 2 + 1;
+      }
+      if (trailingLineCount != null) {
+        trailingLineCount = trailingLineCount - 1;
+        if (trailingLineCount <= 0 && contextLines.size() >= CONTEXT_SIZE) {
+          return contextLines;
+        }
       }
     }
     return contextLines;
   }
 
-  private void addLineToContext(EvictingQueue<DiffLine> contextLines, DiffLine line, Integer commentLineNumber, OptionalInt hunkLineNumber) {
-    int contextEndLineNumber = commentLineNumber + CONTEXT_SIZE / 2;
-
-    if (hunkLineNumber.getAsInt() <= contextEndLineNumber || contextLines.size() < CONTEXT_SIZE) {
-      contextLines.add(line);
-    }
+  private boolean addLineToContext(EvictingQueue<DiffLine> contextLines, DiffLine line, Integer commentLineNumber, OptionalInt hunkLineNumber) {
+    contextLines.add(line);
+    return hunkLineNumber.isPresent() && hunkLineNumber.getAsInt() == commentLineNumber;
   }
 
   private String getCurrentUserId() {
