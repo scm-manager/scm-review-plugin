@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.service;
 
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.NotFoundException;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.DiffFile;
 import sonia.scm.repository.api.DiffLine;
@@ -82,7 +84,7 @@ class CommentInitializerTest {
   }
 
   @Nested
-  class withDiffResult {
+  class withAddedLinesOnly {
 
     @BeforeEach
     void initRepositoryService() {
@@ -152,5 +154,22 @@ class CommentInitializerTest {
         .extracting(OptionalInt::getAsInt)
         .contains(2, 3, 4, 5, 6, 7, 8);
     }
+
+    @Test
+    void shouldThrowNotFoundForNotExistingFileName() {
+      Comment comment = new Comment();
+      comment.setLocation(new Location("notExistingPath", "irrelevant", null, 2));
+
+      Assertions.assertThrows(NotFoundException.class, () -> initializer.initialize(comment, REPOSITORY.getId()));
+    }
+
+    @Test
+    void shouldThrowNotFoundForNotExistingLineNumber() {
+      Comment comment = new Comment();
+      comment.setLocation(new Location("newPath", "irrelevant", null, 42));
+
+      Assertions.assertThrows(NotFoundException.class, () -> initializer.initialize(comment, REPOSITORY.getId()));
+    }
   }
+  
 }

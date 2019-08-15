@@ -2,8 +2,9 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.google.common.collect.EvictingQueue;
 import com.google.inject.Inject;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.apache.shiro.SecurityUtils;
+import sonia.scm.ContextEntry;
+import sonia.scm.NotFoundException;
 import sonia.scm.repository.api.DiffFile;
 import sonia.scm.repository.api.DiffLine;
 import sonia.scm.repository.api.DiffResult;
@@ -15,22 +16,19 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.List;
 
 public class CommentInitializer {
   public static final int CONTEXT_SIZE = 7;
   private final Clock clock;
-  private final DiffResultCommandBuilder diffResultCommandBuilder;
   private final RepositoryServiceFactory repositoryServiceFactory;
 
   @Inject
-  public CommentInitializer(RepositoryServiceFactory repositoryServiceFactory, DiffResultCommandBuilder diffResultCommandBuilder) {
-    this(repositoryServiceFactory, diffResultCommandBuilder, Clock.systemDefaultZone());
+  public CommentInitializer(RepositoryServiceFactory repositoryServiceFactory) {
+    this(repositoryServiceFactory, Clock.systemDefaultZone());
   }
 
-  CommentInitializer(RepositoryServiceFactory repositoryServiceFactory, DiffResultCommandBuilder diffResultCommandBuilder, Clock clock) {
+  CommentInitializer(RepositoryServiceFactory repositoryServiceFactory, Clock clock) {
     this.repositoryServiceFactory = repositoryServiceFactory;
-    this.diffResultCommandBuilder = diffResultCommandBuilder;
     this.clock = clock;
   }
 
@@ -43,27 +41,56 @@ public class CommentInitializer {
         DiffResultCommandBuilder diffResultCommand = repositoryService.getDiffResultCommand();
         DiffResult diffResult = diffResultCommand.getDiffResult();
 
-        for (DiffFile diffFile : diffResult) {
-          if (diffFile.getNewPath().equals(comment.getLocation().getFile())) {
-            for (Hunk hunk : diffFile) {
-              Integer commentNewLineNumber = comment.getLocation().getNewLineNumber();
-              if (commentNewLineNumber >= hunk.getNewStart() && commentNewLineNumber < (hunk.getNewStart() + hunk.getNewLineCount())) {
-                EvictingQueue<DiffLine> contextLines = EvictingQueue.create(CONTEXT_SIZE);
-                for (DiffLine line : hunk) {
-                  int contextEndLineNumber = comment.getLocation().getNewLineNumber() + CONTEXT_SIZE / 2;
-
-                  if (line.getNewLineNumber().getAsInt() <= contextEndLineNumber || contextLines.size() < CONTEXT_SIZE) {
-                    contextLines.add(line);
-                  }
-                }
-                comment.setContext(new InlineContext(new ArrayList<>(contextLines)));
-              }
-            }
-          }
-
-        }
+        EvictingQueue<DiffLine> contextLines = computeContext(comment, diffResult);
+        comment.setContext(new InlineContext(new ArrayList<>(contextLines)));
       }
     }
+  }
+
+  private EvictingQueue<DiffLine> computeContext(Comment comment, DiffResult diffResult) {
+    DiffFile matchingDiffFile = findMatchingDiffFile(comment, diffResult);
+    Hunk matchingHunk = findMatchingHunk(comment, matchingDiffFile);
+    return extractContextLines(comment, matchingHunk);
+  }
+
+  private DiffFile findMatchingDiffFile(Comment comment, DiffResult diffResult) {
+    DiffFile matchingDiffFile = null;
+    for (DiffFile diffFile : diffResult) {
+      if (diffFile.getNewPath().equals(comment.getLocation().getFile())) {
+        matchingDiffFile = diffFile;
+      }
+    }
+    if (matchingDiffFile == null) {
+      throw NotFoundException.notFound(ContextEntry.ContextBuilder.entity("fileName", comment.getLocation().getFile()));
+    }
+    return matchingDiffFile;
+  }
+
+  private Hunk findMatchingHunk(Comment comment, DiffFile diffFile) {
+    Hunk matchingHunk = null;
+    for (Hunk hunk : diffFile) {
+      Integer commentNewLineNumber = comment.getLocation().getNewLineNumber();
+      if (commentNewLineNumber >= hunk.getNewStart() && commentNewLineNumber < (hunk.getNewStart() + hunk.getNewLineCount())) {
+        matchingHunk = hunk;
+        break;
+      }
+    }
+    if (matchingHunk == null) {
+      throw NotFoundException.notFound(ContextEntry.ContextBuilder.entity("lineNumber", comment.getLocation().getNewLineNumber().toString()));
+    }
+    return matchingHunk;
+  }
+
+  private EvictingQueue<DiffLine> extractContextLines(Comment comment, Hunk hunk) {
+    EvictingQueue<DiffLine> contextLines = EvictingQueue.create(CONTEXT_SIZE);
+    for (DiffLine line : hunk) {
+      int contextEndLineNumber = comment.getLocation().getNewLineNumber() + CONTEXT_SIZE / 2;
+
+      if (line.getNewLineNumber().getAsInt() <= contextEndLineNumber || contextLines.size() < CONTEXT_SIZE) {
+        contextLines.add(line);
+      }
+    }
+    return contextLines;
   }
 
   private String getCurrentUserId() {
