@@ -22,6 +22,7 @@ import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 import CreateComment from "./CreateComment";
 import RecursivePullRequestComment from "./RecursivePullRequestComment";
 import {FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag} from "./tags";
+import TagGroup from "./TagGroup";
 
 type Props = {
   comment: Comment,
@@ -436,6 +437,10 @@ class PullRequestComment extends React.Component<Props, State> {
   collectTags = (comment: Comment) => {
     const tags = [];
 
+    if (comment.outdated) {
+      tags.push(<OutdatedTag/>);
+    }
+
     if (comment.location && comment.location.file) {
       tags.push(<FileTag path={comment.location.file}/>);
     }
@@ -444,17 +449,17 @@ class PullRequestComment extends React.Component<Props, State> {
       tags.push(<SystemTag/>);
     }
 
-    if (comment.outdated) {
-      tags.push(<OutdatedTag/>);
-    }
-
     if (comment.type === "TASK_TODO") {
       tags.push(<TaskTodoTag />);
     } else if (comment.type === "TASK_DONE") {
       tags.push(<TaskDoneTag title={this.getSetDoneByLabel()}/>);
     }
 
-    return tags;
+    if (tags.length > 0) {
+      return <TagGroup>{tags}</TagGroup>;
+    }
+
+    return null;
   };
 
   render() {
