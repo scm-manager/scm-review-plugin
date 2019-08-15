@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.comment.service;
 
-import com.google.common.collect.EvictingQueue;
 import com.google.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.ContextEntry;
@@ -15,11 +14,11 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.io.IOException;
 import java.time.Clock;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalInt;
 
 public class CommentInitializer {
-  public static final int CONTEXT_SIZE = 7;
+
   private final Clock clock;
   private final RepositoryServiceFactory repositoryServiceFactory;
 
@@ -42,13 +41,13 @@ public class CommentInitializer {
         DiffResultCommandBuilder diffResultCommand = repositoryService.getDiffResultCommand();
         DiffResult diffResult = diffResultCommand.getDiffResult();
 
-        EvictingQueue<DiffLine> contextLines = computeContext(comment, diffResult);
-        comment.setContext(new InlineContext(new ArrayList<>(contextLines)));
+        List<DiffLine> contextLines = computeContext(comment, diffResult);
+        comment.setContext(new InlineContext(contextLines));
       }
     }
   }
 
-  private EvictingQueue<DiffLine> computeContext(Comment comment, DiffResult diffResult) {
+  private List<DiffLine> computeContext(Comment comment, DiffResult diffResult) {
     DiffFile matchingDiffFile = findMatchingDiffFile(comment, diffResult);
     Hunk matchingHunk = findMatchingHunk(comment, matchingDiffFile);
     return extractContextLines(comment, matchingHunk);
@@ -91,32 +90,26 @@ public class CommentInitializer {
     throw NotFoundException.notFound(ContextEntry.ContextBuilder.entity("lineNumber", comment.getLocation().getOldLineNumber().toString()));
   }
 
-  private EvictingQueue<DiffLine> extractContextLines(Comment comment, Hunk hunk) {
-    EvictingQueue<DiffLine> contextLines = EvictingQueue.create(CONTEXT_SIZE);
-    Integer trailingLineCount = null;
-    boolean lineFound = false;
+  private List<DiffLine> extractContextLines(Comment comment, Hunk hunk) {
+
+    ContextCollector<DiffLine> contextLines = new ContextCollector<>();
+
     for (DiffLine line : hunk) {
       if (comment.getLocation().getNewLineNumber() != null) {
-        lineFound = addLineToContext(contextLines, line, comment.getLocation().getNewLineNumber(), line.getNewLineNumber());
+        addLineToContext(contextLines, line, comment.getLocation().getNewLineNumber(), line.getNewLineNumber());
       } else {
-        lineFound = addLineToContext(contextLines, line, comment.getLocation().getOldLineNumber(), line.getOldLineNumber());
-      }
-      if (lineFound) {
-        trailingLineCount = CONTEXT_SIZE / 2 + 1;
-      }
-      if (trailingLineCount != null) {
-        trailingLineCount = trailingLineCount - 1;
-        if (trailingLineCount <= 0 && contextLines.size() >= CONTEXT_SIZE) {
-          return contextLines;
-        }
+        addLineToContext(contextLines, line, comment.getLocation().getOldLineNumber(), line.getOldLineNumber());
       }
     }
-    return contextLines;
+    return contextLines.getContext();
   }
 
-  private boolean addLineToContext(EvictingQueue<DiffLine> contextLines, DiffLine line, Integer commentLineNumber, OptionalInt hunkLineNumber) {
-    contextLines.add(line);
-    return hunkLineNumber.isPresent() && hunkLineNumber.getAsInt() == commentLineNumber;
+  private void addLineToContext(ContextCollector contextLines, DiffLine line, Integer commentLineNumber, OptionalInt hunkLineNumber) {
+    if (hunkLineNumber.isPresent() && hunkLineNumber.getAsInt() == commentLineNumber) {
+      contextLines.addCentral(line);
+    } else {
+      contextLines.add(line);
+    }
   }
 
   private String getCurrentUserId() {
