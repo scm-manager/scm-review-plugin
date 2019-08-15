@@ -16,6 +16,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.OptionalInt;
 
 public class CommentInitializer {
   public static final int CONTEXT_SIZE = 7;
@@ -54,43 +55,60 @@ public class CommentInitializer {
   }
 
   private DiffFile findMatchingDiffFile(Comment comment, DiffResult diffResult) {
-    DiffFile matchingDiffFile = null;
     for (DiffFile diffFile : diffResult) {
       if (diffFile.getNewPath().equals(comment.getLocation().getFile())) {
-        matchingDiffFile = diffFile;
+        return diffFile;
       }
     }
-    if (matchingDiffFile == null) {
-      throw NotFoundException.notFound(ContextEntry.ContextBuilder.entity("fileName", comment.getLocation().getFile()));
-    }
-    return matchingDiffFile;
+    throw NotFoundException.notFound(ContextEntry.ContextBuilder.entity("fileName", comment.getLocation().getFile()));
   }
 
   private Hunk findMatchingHunk(Comment comment, DiffFile diffFile) {
-    Hunk matchingHunk = null;
+    if (comment.getLocation().getNewLineNumber() != null) {
+      return findMatchingHunkForNewLineNumber(comment, diffFile);
+    } else {
+      return findMatchingHunkForOldLineNumber(comment, diffFile);
+    }
+  }
+
+  private Hunk findMatchingHunkForNewLineNumber(Comment comment, DiffFile diffFile) {
     for (Hunk hunk : diffFile) {
       Integer commentNewLineNumber = comment.getLocation().getNewLineNumber();
       if (commentNewLineNumber >= hunk.getNewStart() && commentNewLineNumber < (hunk.getNewStart() + hunk.getNewLineCount())) {
-        matchingHunk = hunk;
-        break;
+        return hunk;
       }
     }
-    if (matchingHunk == null) {
-      throw NotFoundException.notFound(ContextEntry.ContextBuilder.entity("lineNumber", comment.getLocation().getNewLineNumber().toString()));
+    throw NotFoundException.notFound(ContextEntry.ContextBuilder.entity("lineNumber", comment.getLocation().getNewLineNumber().toString()));
+  }
+
+  private Hunk findMatchingHunkForOldLineNumber(Comment comment, DiffFile diffFile) {
+    for (Hunk hunk : diffFile) {
+      Integer commentOldLineNumber = comment.getLocation().getOldLineNumber();
+      if (commentOldLineNumber >= hunk.getOldStart() && commentOldLineNumber < (hunk.getOldStart() + hunk.getOldLineCount())) {
+        return hunk;
+      }
     }
-    return matchingHunk;
+    throw NotFoundException.notFound(ContextEntry.ContextBuilder.entity("lineNumber", comment.getLocation().getOldLineNumber().toString()));
   }
 
   private EvictingQueue<DiffLine> extractContextLines(Comment comment, Hunk hunk) {
     EvictingQueue<DiffLine> contextLines = EvictingQueue.create(CONTEXT_SIZE);
     for (DiffLine line : hunk) {
-      int contextEndLineNumber = comment.getLocation().getNewLineNumber() + CONTEXT_SIZE / 2;
-
-      if (line.getNewLineNumber().getAsInt() <= contextEndLineNumber || contextLines.size() < CONTEXT_SIZE) {
-        contextLines.add(line);
+      if (comment.getLocation().getNewLineNumber() != null) {
+        addLineToContext(contextLines, line, comment.getLocation().getNewLineNumber(), line.getNewLineNumber());
+      } else {
+        addLineToContext(contextLines, line, comment.getLocation().getOldLineNumber(), line.getOldLineNumber());
       }
     }
     return contextLines;
+  }
+
+  private void addLineToContext(EvictingQueue<DiffLine> contextLines, DiffLine line, Integer commentLineNumber, OptionalInt hunkLineNumber) {
+    int contextEndLineNumber = commentLineNumber + CONTEXT_SIZE / 2;
+
+    if (hunkLineNumber.getAsInt() <= contextEndLineNumber || contextLines.size() < CONTEXT_SIZE) {
+      contextLines.add(line);
+    }
   }
 
   private String getCurrentUserId() {

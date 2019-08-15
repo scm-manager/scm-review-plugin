@@ -171,5 +171,47 @@ class CommentInitializerTest {
       Assertions.assertThrows(NotFoundException.class, () -> initializer.initialize(comment, REPOSITORY.getId()));
     }
   }
-  
+
+  @Nested
+  class withDeletedLinesOnly {
+
+    @BeforeEach
+    void initRepositoryService() {
+      when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+    }
+
+    @BeforeEach
+    void mockDiffResult() throws IOException {
+      when(repositoryService.getDiffResultCommand()).thenReturn(diffResultCommandBuilder);
+      Hunk hunk = new MockedHunk.Builder()
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(2).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(3).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(4).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(5).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(6).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(7).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(8).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(9).get())
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(10).get())
+        .get();
+      DiffFile diffFile = new MockedDiffFile.Builder().oldPath("newPath").newPath("newPath").addHunk(hunk).get();
+      DiffResult diffResult = new MockedDiffResult.Builder().diffFile(diffFile).get();
+      when(diffResultCommandBuilder.getDiffResult()).thenReturn(diffResult);
+    }
+
+    @Test
+    void shouldSetContextForInlineCommentWithCommentInTheMiddle() throws IOException {
+      Comment comment = new Comment();
+      comment.setLocation(new Location("newPath", "irrelevant", 6, null));
+
+      initializer.initialize(comment, REPOSITORY.getId());
+
+      assertThat(comment.getContext()).isNotNull();
+      assertThat(comment.getContext().getChanges())
+        .hasSize(7)
+        .extracting(DiffLine::getOldLineNumber)
+        .extracting(OptionalInt::getAsInt)
+        .contains(3, 4, 5, 6, 7, 8, 9);
+    }
+  }
 }
