@@ -27,12 +27,12 @@ public class CommentInitializer {
     this(repositoryServiceFactory, Clock.systemDefaultZone());
   }
 
-  CommentInitializer(RepositoryServiceFactory repositoryServiceFactory, Clock clock) {
+  private CommentInitializer(RepositoryServiceFactory repositoryServiceFactory, Clock clock) {
     this.repositoryServiceFactory = repositoryServiceFactory;
     this.clock = clock;
   }
 
-  public void initialize(Comment comment, String repositoryId) throws IOException {
+  void initialize(Comment comment, String repositoryId) throws IOException {
     comment.setDate(clock.instant());
     comment.setAuthor(getCurrentUserId());
 
@@ -104,7 +104,7 @@ public class CommentInitializer {
     return contextLines.getContext();
   }
 
-  private void addLineToContext(ContextCollector contextLines, DiffLine line, Integer commentLineNumber, OptionalInt hunkLineNumber) {
+  private void addLineToContext(ContextCollector<DiffLine> contextLines, DiffLine line, Integer commentLineNumber, OptionalInt hunkLineNumber) {
     if (hunkLineNumber.isPresent() && hunkLineNumber.getAsInt() == commentLineNumber) {
       contextLines.addCentral(line);
     } else {
