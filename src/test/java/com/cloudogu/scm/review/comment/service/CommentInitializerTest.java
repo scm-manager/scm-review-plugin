@@ -216,7 +216,7 @@ class CommentInitializerTest {
   }
 
   @Nested
-  class withMixedLines {
+  class withSingleChangedLine {
 
     @BeforeEach
     void initRepositoryService() {
@@ -259,6 +259,40 @@ class CommentInitializerTest {
         .extracting(DiffLine::getNewLineNumber)
         .extracting(n -> n.orElse(-1))
         .contains(4, 5, 6, -1, 7, 8, 9);
+    }
+  }
+
+  @Nested
+  class withNotEnoughLines {
+
+    @BeforeEach
+    void initRepositoryService() {
+      when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+    }
+
+    @BeforeEach
+    void mockDiffResult() throws IOException {
+      when(repositoryService.getDiffResultCommand()).thenReturn(diffResultCommandBuilder);
+      Hunk hunk = new MockedHunk.Builder()
+        .addDiffLine(new MockedDiffLine.Builder().newLineNumber(1).get())
+        .get();
+      DiffFile diffFile = new MockedDiffFile.Builder().oldPath("newPath").newPath("newPath").addHunk(hunk).get();
+      DiffResult diffResult = new MockedDiffResult.Builder().diffFile(diffFile).get();
+      when(diffResultCommandBuilder.getDiffResult()).thenReturn(diffResult);
+    }
+
+    @Test
+    void shouldSetContextForInlineCommentWithCommentInTheMiddle() throws IOException {
+      Comment comment = new Comment();
+      comment.setLocation(new Location("newPath", "irrelevant", null, 1));
+
+      initializer.initialize(comment, REPOSITORY.getId());
+
+      assertThat(comment.getContext()).isNotNull();
+      assertThat(comment.getContext().getChanges())
+        .extracting(DiffLine::getNewLineNumber)
+        .extracting(OptionalInt::getAsInt)
+        .containsExactly(1);
     }
   }
 }
