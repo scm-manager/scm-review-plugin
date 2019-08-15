@@ -131,7 +131,11 @@
       "tag": {
         "system": "System",
         "task": "Aufgabe",
-        "done": "erledigt"
+        "done": "erledigt",
+        "outdated": {
+          "label": "veraltet",
+          "title": "Das Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches"
+        }
       }
     }
   },

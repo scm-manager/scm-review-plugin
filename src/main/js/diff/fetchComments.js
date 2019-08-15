@@ -69,7 +69,7 @@ export function fetchComments(url: string) {
       const files = {};
 
       comments.forEach(comment => {
-        if (isInlineLocation(comment.location)) {
+        if (isInlineLocation(comment.location) && !comment.outdated) {
           addLineComments(lines, comment);
         } else {
           addFileComments(files, comment);

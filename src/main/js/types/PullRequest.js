@@ -40,6 +40,7 @@ export type Comment = BasicComment & {
   author: DisplayedUser,
   location?: Location,
   date: string,
+  outdated: boolean,
   systemComment: boolean,
   file?: string,
   lineId?: string,

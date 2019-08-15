@@ -35,6 +35,7 @@ public class Comment extends BasicComment {
   private Location location;
   private boolean systemComment;
   private CommentType type = COMMENT;
+  private boolean outdated;
 
   private List<Reply> replies = new ArrayList<>();
 
@@ -55,6 +56,8 @@ public class Comment extends BasicComment {
     return systemComment;
   }
 
+  public boolean isOutdated() { return outdated; }
+
   public List<Reply> getReplies() {
     return unmodifiableList(replies);
   }
@@ -65,6 +68,10 @@ public class Comment extends BasicComment {
 
   public void setLocation(Location location) {
     this.location = location;
+  }
+
+  public void setOutdated(boolean outdated) {
+    this.outdated = outdated;
   }
 
   void setSystemComment(boolean systemComment) {

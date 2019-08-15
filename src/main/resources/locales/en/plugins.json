@@ -131,7 +131,11 @@
       "tag": {
         "system": "System",
         "task": "Task",
-        "done": "done"
+        "done": "done",
+        "outdated": {
+          "label": "outdated",
+          "title": "The comment is related to an older of the source or target branch"
+        }
       }
     }
   },
