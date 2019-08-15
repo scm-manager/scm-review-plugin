@@ -21,6 +21,7 @@ import {
 import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 import CreateComment from "./CreateComment";
 import RecursivePullRequestComment from "./RecursivePullRequestComment";
+import {FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag} from "./tags";
 
 type Props = {
   comment: Comment,
@@ -432,6 +433,30 @@ class PullRequestComment extends React.Component<Props, State> {
     );
   };
 
+  collectTags = (comment: Comment) => {
+    const tags = [];
+
+    if (comment.location && comment.location.file) {
+      tags.push(<FileTag path={comment.location.file}/>);
+    }
+
+    if (comment.systemComment) {
+      tags.push(<SystemTag/>);
+    }
+
+    if (comment.outdated) {
+      tags.push(<OutdatedTag/>);
+    }
+
+    if (comment.type === "TASK_TODO") {
+      tags.push(<TaskTodoTag />);
+    } else if (comment.type === "TASK_DONE") {
+      tags.push(<TaskDoneTag title={this.getSetDoneByLabel()}/>);
+    }
+
+    return tags;
+  };
+
   render() {
     const { comment, refresh, handleError, classes, t } = this.props;
     const { loading, collapsed, edit } = this.state;
@@ -443,58 +468,6 @@ class PullRequestComment extends React.Component<Props, State> {
     let icons = null;
     let editButtons = null;
     let message = null;
-
-    let tag = "";
-    let outdatedTag = "";
-    if (comment.location) {
-      const file = comment.location.file;
-      tag = (
-        <span className="tag is-rounded" title={file}>
-        <span className="fas fa-code">&nbsp;</span>
-        {comment.location.file.replace(/^.+\//, "")}
-      </span>
-      );
-    }
-    tag = comment.systemComment ? (
-      <span className="tag is-rounded">
-        <span className="fas fa-bolt">&nbsp;</span>
-        {t("scm-review-plugin.comment.tag.system")}
-      </span>
-    ) : (
-      tag
-    );
-    outdatedTag = comment.outdated ? (
-      <span className="tag is-rounded">
-        <span className="fas fa-clock">&nbsp;</span>
-        {t("scm-review-plugin.comment.tag.outdated")}
-      </span>
-    ) : (
-      outdatedTag
-    );
-    let done = null;
-    switch (comment.type) {
-      case "TASK_TODO":
-        done = (
-          <span className="tag is-rounded is-warning">
-            <span className="fas fa-check-circle">&nbsp;</span>
-            {t("scm-review-plugin.comment.tag.task")}
-          </span>
-        );
-        break;
-      case "TASK_DONE":
-        done = (
-          <span
-            className="tag is-rounded is-success"
-            title={this.getSetDoneByLabel()}
-          >
-            <span className="fas fa-check-circle">&nbsp;</span>
-            {t("scm-review-plugin.comment.tag.done")}
-          </span>
-        );
-        break;
-      default:
-        break;
-    }
 
     if (edit) {
       message = this.createMessageEditor();
@@ -532,7 +505,7 @@ class PullRequestComment extends React.Component<Props, State> {
                 <span className={classes.commentMeta}>
                   <DateFromNow date={comment.date} /> {lastEdited}
                 </span>
-                {tag} {outdatedTag} {done}
+                {this.collectTags(comment)}
                 <br />
                 {message}
               </p>
@@ -591,7 +564,7 @@ class PullRequestComment extends React.Component<Props, State> {
     const { t } = this.props;
     const transition = this.getLatestTransition("SET_DONE");
     return !transition
-      ? null
+      ? undefined
       : t("scm-review-plugin.comment.markedDoneBy") +
           " " +
           transition.user.displayName;

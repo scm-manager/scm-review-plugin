@@ -132,7 +132,10 @@
         "system": "System",
         "task": "Task",
         "done": "done",
-        "outdated": "outdated"
+        "outdated": {
+          "label": "outdated",
+          "title": "The comment is related to an older of the source or target branch"
+        }
       }
     }
   },
