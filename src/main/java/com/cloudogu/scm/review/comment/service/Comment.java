@@ -36,6 +36,7 @@ public class Comment extends BasicComment {
   private boolean systemComment;
   private CommentType type = COMMENT;
   private boolean outdated;
+  private InlineContext context;
 
   private List<Reply> replies = new ArrayList<>();
 
@@ -92,5 +93,14 @@ public class Comment extends BasicComment {
 
   public void addCommentTransition(ExecutedTransition<CommentTransition> transition) {
     super.addTransition(transition);
+  }
+
+  public InlineContext getContext() {
+    return this.context;
+  }
+
+
+  public void setContext(InlineContext context) {
+    this.context = context;
   }
 }
