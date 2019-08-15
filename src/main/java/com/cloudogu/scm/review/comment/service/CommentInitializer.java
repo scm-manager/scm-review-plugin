@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.ContextEntry;
 import sonia.scm.NotFoundException;
+import sonia.scm.repository.InternalRepositoryException;
+import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.DiffFile;
 import sonia.scm.repository.api.DiffLine;
 import sonia.scm.repository.api.DiffResult;
@@ -32,18 +34,32 @@ public class CommentInitializer {
     this.clock = clock;
   }
 
-  void initialize(Comment comment, String repositoryId) throws IOException {
+  void initialize(BasicComment comment, String repositoryId) {
     comment.setDate(clock.instant());
     comment.setAuthor(getCurrentUserId());
 
+    if (comment instanceof Comment) {
+      initializeContextFromDiff((Comment) comment, repositoryId);
+    }
+  }
+
+  private void initializeContextFromDiff(Comment comment, String repositoryId)  {
     if (comment.getLocation() != null && comment.getLocation().getHunk() != null) {
       try (RepositoryService repositoryService = repositoryServiceFactory.create(repositoryId)) {
         DiffResultCommandBuilder diffResultCommand = repositoryService.getDiffResultCommand();
-        DiffResult diffResult = diffResultCommand.getDiffResult();
+        DiffResult diffResult = getDiffResult(repositoryService.getRepository(), diffResultCommand);
 
         List<DiffLine> contextLines = computeContext(comment, diffResult);
         comment.setContext(new InlineContext(contextLines));
       }
+    }
+  }
+
+  private DiffResult getDiffResult(Repository repository, DiffResultCommandBuilder diffResultCommand) {
+    try {
+      return diffResultCommand.getDiffResult();
+    } catch (IOException e) {
+      throw new InternalRepositoryException(repository, "could not load diff result", e);
     }
   }
 

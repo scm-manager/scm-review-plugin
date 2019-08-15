@@ -63,7 +63,7 @@ class CommentInitializerTest {
   class withoutDiffResult {
 
     @Test
-    void shouldSetCurrentAuthor() throws IOException {
+    void shouldSetCurrentAuthor() {
       Comment comment = new Comment();
 
       initializer.initialize(comment, REPOSITORY.getId());
@@ -72,7 +72,7 @@ class CommentInitializerTest {
     }
 
     @Test
-    void shouldSetCurrentTime() throws IOException {
+    void shouldSetCurrentTime() {
       Instant now = Instant.now();
       when(clock.instant()).thenReturn(now);
       Comment comment = new Comment();
@@ -111,7 +111,7 @@ class CommentInitializerTest {
     }
 
     @Test
-    void shouldSetContextForInlineCommentWithCommentInTheMiddle() throws IOException {
+    void shouldSetContextForInlineCommentWithCommentInTheMiddle() {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 6));
 
@@ -126,7 +126,7 @@ class CommentInitializerTest {
     }
 
     @Test
-    void shouldSetContextForInlineCommentWithCommentAtTheEnd() throws IOException {
+    void shouldSetContextForInlineCommentWithCommentAtTheEnd() {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 10));
 
@@ -141,7 +141,7 @@ class CommentInitializerTest {
     }
 
     @Test
-    void shouldSetContextForInlineCommentWithCommentAtTheBeginning() throws IOException {
+    void shouldSetContextForInlineCommentWithCommentAtTheBeginning() {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 2));
 
@@ -200,7 +200,7 @@ class CommentInitializerTest {
     }
 
     @Test
-    void shouldSetContextForInlineCommentWithCommentInTheMiddle() throws IOException {
+    void shouldSetContextForInlineCommentWithCommentInTheMiddle() {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", 6, null));
 
@@ -242,7 +242,7 @@ class CommentInitializerTest {
     }
 
     @Test
-    void shouldSetContextForInlineCommentWithCommentInTheMiddle() throws IOException {
+    void shouldSetContextForInlineCommentWithCommentInTheMiddle() {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", 5, null));
 
@@ -282,7 +282,7 @@ class CommentInitializerTest {
     }
 
     @Test
-    void shouldSetContextForInlineCommentWithCommentInTheMiddle() throws IOException {
+    void shouldSetContextForInlineCommentWithCommentInTheMiddle() {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 1));
 
