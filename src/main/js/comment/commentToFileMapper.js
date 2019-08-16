@@ -23,9 +23,9 @@ export function mapCommentToFile(comment: Comment) {
 function mapContextLine(contextLine: ContextLine) {
   return           {
     content: contextLine.content,
-    isInsert: contextLine.newLineNumber && !contextLine.oldLineNumber,
-    isDelete: !contextLine.newLineNumber && contextLine.oldLineNumber,
-    isNormal: contextLine.newLineNumber && contextLine.oldLineNumber,
+    isInsert: !!contextLine.newLineNumber && !contextLine.oldLineNumber,
+    isDelete: !contextLine.newLineNumber && !!contextLine.oldLineNumber,
+    isNormal: !!contextLine.newLineNumber && !!contextLine.oldLineNumber,
     lineNumber: determineLineNumber(contextLine),
     newLineNumber: contextLine.newLineNumber,
     oldLineNumber: contextLine.oldLineNumber,
