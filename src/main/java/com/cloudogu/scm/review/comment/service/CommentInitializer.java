@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.comment.service;
 
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.ContextEntry;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.stream.Collectors;
 
 public class CommentInitializer {
 
@@ -34,22 +36,27 @@ public class CommentInitializer {
     this.clock = clock;
   }
 
-  void initialize(BasicComment comment, String repositoryId) {
+  void initialize(BasicComment comment, PullRequest pullRequest, String repositoryId) {
     comment.setDate(clock.instant());
     comment.setAuthor(getCurrentUserId());
 
     if (comment instanceof Comment) {
-      initializeContextFromDiff((Comment) comment, repositoryId);
+      initializeContextFromDiff((Comment) comment, pullRequest, repositoryId);
     }
   }
 
-  private void initializeContextFromDiff(Comment comment, String repositoryId)  {
+  private void initializeContextFromDiff(Comment comment, PullRequest pullRequest, String repositoryId)  {
     if (comment.getLocation() != null && comment.getLocation().getHunk() != null) {
       try (RepositoryService repositoryService = repositoryServiceFactory.create(repositoryId)) {
         DiffResultCommandBuilder diffResultCommand = repositoryService.getDiffResultCommand();
+        diffResultCommand.setRevision(pullRequest.getSource()).setAncestorChangeset(pullRequest.getTarget());
         DiffResult diffResult = getDiffResult(repositoryService.getRepository(), diffResultCommand);
 
-        List<DiffLine> contextLines = computeContext(comment, diffResult);
+        List<ContextLine> contextLines =
+          computeContext(comment, diffResult)
+          .stream()
+          .map(ContextLine::copy)
+          .collect(Collectors.toList());
         comment.setContext(new InlineContext(contextLines));
       }
     }

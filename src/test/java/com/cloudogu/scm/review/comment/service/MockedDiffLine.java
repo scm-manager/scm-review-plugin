@@ -2,7 +2,6 @@ package com.cloudogu.scm.review.comment.service;
 
 import sonia.scm.repository.api.DiffLine;
 
-import java.util.Optional;
 import java.util.OptionalInt;
 
 import static java.util.OptionalInt.empty;

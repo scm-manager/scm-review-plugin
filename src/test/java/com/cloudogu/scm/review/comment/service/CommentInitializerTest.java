@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.comment.service;
 
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.Assertions;
@@ -26,7 +27,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.OptionalInt;
 
+import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 
@@ -36,6 +39,7 @@ class CommentInitializerTest {
   static final String PRINCIPAL = "dent";
 
   private static final Repository REPOSITORY = createHeartOfGold();
+  private static final PullRequest PULL_REQUEST = createPullRequest();
 
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   Subject subject;
@@ -66,7 +70,7 @@ class CommentInitializerTest {
     void shouldSetCurrentAuthor() {
       Comment comment = new Comment();
 
-      initializer.initialize(comment, REPOSITORY.getId());
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
 
       assertThat(comment.getAuthor()).isEqualTo(PRINCIPAL);
     }
@@ -77,7 +81,7 @@ class CommentInitializerTest {
       when(clock.instant()).thenReturn(now);
       Comment comment = new Comment();
 
-      initializer.initialize(comment, REPOSITORY.getId());
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
 
       assertThat(comment.getDate()).isEqualTo(now);
     }
@@ -115,10 +119,10 @@ class CommentInitializerTest {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 6));
 
-      initializer.initialize(comment, REPOSITORY.getId());
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
 
       assertThat(comment.getContext()).isNotNull();
-      assertThat(comment.getContext().getChanges())
+      assertThat(comment.getContext().getLines())
         .hasSize(7)
         .extracting(DiffLine::getNewLineNumber)
         .extracting(OptionalInt::getAsInt)
@@ -130,10 +134,10 @@ class CommentInitializerTest {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 10));
 
-      initializer.initialize(comment, REPOSITORY.getId());
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
 
       assertThat(comment.getContext()).isNotNull();
-      assertThat(comment.getContext().getChanges())
+      assertThat(comment.getContext().getLines())
         .hasSize(7)
         .extracting(DiffLine::getNewLineNumber)
         .extracting(OptionalInt::getAsInt)
@@ -145,10 +149,10 @@ class CommentInitializerTest {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 2));
 
-      initializer.initialize(comment, REPOSITORY.getId());
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
 
       assertThat(comment.getContext()).isNotNull();
-      assertThat(comment.getContext().getChanges())
+      assertThat(comment.getContext().getLines())
         .hasSize(7)
         .extracting(DiffLine::getNewLineNumber)
         .extracting(OptionalInt::getAsInt)
@@ -160,7 +164,7 @@ class CommentInitializerTest {
       Comment comment = new Comment();
       comment.setLocation(new Location("notExistingPath", "irrelevant", null, 2));
 
-      Assertions.assertThrows(NotFoundException.class, () -> initializer.initialize(comment, REPOSITORY.getId()));
+      Assertions.assertThrows(NotFoundException.class, () -> initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId()));
     }
 
     @Test
@@ -168,7 +172,18 @@ class CommentInitializerTest {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 42));
 
-      Assertions.assertThrows(NotFoundException.class, () -> initializer.initialize(comment, REPOSITORY.getId()));
+      Assertions.assertThrows(NotFoundException.class, () -> initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId()));
+    }
+
+    @Test
+    void shouldCallDiffResultWithSourceAndTarget() throws IOException {
+      Comment comment = new Comment();
+      comment.setLocation(new Location("newPath", "irrelevant", null, 2));
+
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
+
+      verify(diffResultCommandBuilder).setRevision(PULL_REQUEST.getSource());
+      verify(diffResultCommandBuilder).setAncestorChangeset(PULL_REQUEST.getTarget());
     }
   }
 
@@ -204,10 +219,10 @@ class CommentInitializerTest {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", 6, null));
 
-      initializer.initialize(comment, REPOSITORY.getId());
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
 
       assertThat(comment.getContext()).isNotNull();
-      assertThat(comment.getContext().getChanges())
+      assertThat(comment.getContext().getLines())
         .hasSize(7)
         .extracting(DiffLine::getOldLineNumber)
         .extracting(OptionalInt::getAsInt)
@@ -246,15 +261,15 @@ class CommentInitializerTest {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", 5, null));
 
-      initializer.initialize(comment, REPOSITORY.getId());
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
 
       assertThat(comment.getContext()).isNotNull();
-      assertThat(comment.getContext().getChanges())
+      assertThat(comment.getContext().getLines())
         .hasSize(7)
         .extracting(DiffLine::getOldLineNumber)
         .extracting(n -> n.orElse(-1))
         .contains(2, 3, 4, 5, -1, 6, 7);
-      assertThat(comment.getContext().getChanges())
+      assertThat(comment.getContext().getLines())
         .hasSize(7)
         .extracting(DiffLine::getNewLineNumber)
         .extracting(n -> n.orElse(-1))
@@ -286,10 +301,10 @@ class CommentInitializerTest {
       Comment comment = new Comment();
       comment.setLocation(new Location("newPath", "irrelevant", null, 1));
 
-      initializer.initialize(comment, REPOSITORY.getId());
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
 
       assertThat(comment.getContext()).isNotNull();
-      assertThat(comment.getContext().getChanges())
+      assertThat(comment.getContext().getLines())
         .extracting(DiffLine::getNewLineNumber)
         .extracting(OptionalInt::getAsInt)
         .containsExactly(1);

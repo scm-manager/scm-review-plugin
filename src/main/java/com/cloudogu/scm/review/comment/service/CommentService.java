@@ -57,9 +57,9 @@ public class CommentService {
   }
 
   private String addWithoutPermissionCheck(Repository repository, String pullRequestId, Comment pullRequestComment) {
-    initializeNewComment(pullRequestComment, repository.getId());
-    String newId = getCommentStore(repository).add(repository, pullRequestId, pullRequestComment);
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
+    initializeNewComment(pullRequestComment, pullRequest, repository.getId());
+    String newId = getCommentStore(repository).add(repository, pullRequestId, pullRequestComment);
     eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
     return newId;
   }
@@ -70,7 +70,7 @@ public class CommentService {
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
     Comment originalRootComment = get(repository, pullRequestId, rootCommentId);
     reply.setId(keyGenerator.createKey());
-    initializeNewComment(reply, repository.getId());
+    initializeNewComment(reply, pullRequest, repository.getId());
     originalRootComment.addReply(reply);
 
     getCommentStore(repository).update(pullRequestId, originalRootComment);
@@ -79,8 +79,8 @@ public class CommentService {
     return reply.getId();
   }
 
-  private void initializeNewComment(BasicComment pullRequestComment, String repositoryId) {
-    commentInitializer.initialize(pullRequestComment, repositoryId);
+  private void initializeNewComment(BasicComment pullRequestComment, PullRequest pullRequest, String repositoryId) {
+    commentInitializer.initialize(pullRequestComment, pullRequest, repositoryId);
   }
 
   private String getCurrentUserId() {

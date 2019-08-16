@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.comment.service;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import sonia.scm.store.DataStore;
 import java.util.Map;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
+import static com.cloudogu.scm.review.comment.service.ContextLine.copy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -172,5 +174,22 @@ class CommentStoreTest {
 
     assertThat(newStore).isNotNull();
     assertThat(newStore.getComments()).isEmpty();
+  }
+
+  @Test
+  void shouldCreateNewCommentWithInlineContext() {
+    String pullRequestId = "1";
+    Comment comment = createComment("1", "1. comment", "author", new Location("file.txt", "123", null, 3));
+    comment.setContext(new InlineContext(ImmutableList.of(
+      copy(new MockedDiffLine.Builder().newLineNumber(1).get()),
+      copy(new MockedDiffLine.Builder().newLineNumber(2).get()),
+      copy(new MockedDiffLine.Builder().newLineNumber(3).get())
+    )));
+
+    store.add(repository, pullRequestId, comment);
+
+    Comment storedComment = backingMap.get(pullRequestId).getComments().iterator().next();
+    assertThat(storedComment).isEqualTo(comment);
+    assertThat(storedComment.getContext().getLines()).hasSize(3);
   }
 }

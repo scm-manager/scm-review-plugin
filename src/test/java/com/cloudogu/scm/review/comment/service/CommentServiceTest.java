@@ -111,7 +111,7 @@ public class CommentServiceTest {
       comment.setDate(NOW);
       comment.setAuthor(author);
       return null;
-    }).when(commentInitializer).initialize(any(), any());
+    }).when(commentInitializer).initialize(any(), any(), any());
   }
 
   @Test
