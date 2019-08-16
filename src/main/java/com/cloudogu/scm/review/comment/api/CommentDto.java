@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.Valid;
+import java.util.List;
 
 
 @Getter
@@ -23,4 +24,20 @@ public class CommentDto extends BasicCommentDto {
   private boolean outdated;
 
   private String type;
+
+  private InlineContextDto context;
+
+  @Getter
+  @Setter
+  static class InlineContextDto {
+    private List<ContextLineDto> lines;
+  }
+
+  @Getter
+  @Setter
+  static class ContextLineDto {
+    private Integer oldLineNumber;
+    private Integer newLineNumber;
+    private String content;
+  }
 }

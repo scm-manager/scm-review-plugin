@@ -28,7 +28,7 @@ public class MockedDiffLine implements DiffLine {
     return null;
   }
 
-  static class Builder {
+  public static class Builder {
 
     private final MockedDiffLine diffLine = new MockedDiffLine();
 
@@ -37,7 +37,7 @@ public class MockedDiffLine implements DiffLine {
       return this;
     }
 
-    Builder newLineNumber(int newLineNumber) {
+    public Builder newLineNumber(int newLineNumber) {
       diffLine.newLineNumber = of(newLineNumber);
       return this;
     }
@@ -47,7 +47,7 @@ public class MockedDiffLine implements DiffLine {
       return this;
     }
 
-    MockedDiffLine get() {
+    public MockedDiffLine get() {
       return diffLine;
     }
   }

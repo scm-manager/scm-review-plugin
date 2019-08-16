@@ -28,7 +28,7 @@ public class ContextLine implements DiffLine {
     return content;
   }
 
-  static ContextLine copy(DiffLine diffLine) {
+  public static ContextLine copy(DiffLine diffLine) {
     ContextLine contextLine = new ContextLine();
     contextLine.oldLineNumber = diffLine.getOldLineNumber().isPresent() ? diffLine.getOldLineNumber().getAsInt() : null;
     contextLine.newLineNumber = diffLine.getNewLineNumber().isPresent() ? diffLine.getNewLineNumber().getAsInt() : null;
