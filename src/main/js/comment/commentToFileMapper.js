@@ -4,10 +4,6 @@ import type {ContextLine} from "../types/PullRequest";
 
 export function mapCommentToFile(comment: Comment) {
 
-  if (!comment.context) {
-    return null;
-  }
-
   const changes = comment.context.lines.map(line => mapContextLine(line));
 
   return {

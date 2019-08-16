@@ -1,7 +1,7 @@
 // @flow
 import React from "react";
 import classNames from "classnames";
-import { translate, type TFunction } from "react-i18next";
+import {type TFunction, translate} from "react-i18next";
 import injectSheet from "react-jss";
 import {
   Button,
@@ -13,12 +13,8 @@ import {
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
-import type { BasicComment, Comment, Reply } from "../types/PullRequest";
-import {
-  deletePullRequestComment,
-  transformPullRequestComment,
-  updatePullRequestComment
-} from "../pullRequest";
+import type {BasicComment, Comment, Reply} from "../types/PullRequest";
+import {deletePullRequestComment, transformPullRequestComment, updatePullRequestComment} from "../pullRequest";
 import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 import CreateComment from "./CreateComment";
 import RecursivePullRequestComment from "./RecursivePullRequestComment";
@@ -501,15 +497,7 @@ class PullRequestComment extends React.Component<Props, State> {
       : t("scm-review-plugin.comment.collapse");
     const collapseIcon = collapsed ? "fa-angle-right" : "fa-angle-down";
 
-    let lastEdited = this.getLastEdited();
-
-
-
-    const file = mapCommentToFile(comment);
-
-    console.log("UNSER COMMENT", comment);
-
-    console.log("UNSERE VERSION", file);
+    const lastEdited = this.getLastEdited();
 
     return (
       <>
@@ -518,7 +506,7 @@ class PullRequestComment extends React.Component<Props, State> {
           title={t("scm-review-plugin.comment.modal.contextView")}
           closeFunction={() => this.onClose()}
           body={
-            <DiffFile file={file} />
+            <DiffFile file={mapCommentToFile(comment)} />
           }
           active={true}/>
         }
