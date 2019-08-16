@@ -13,13 +13,13 @@ type Props = {
   t: TFunction
 };
 
-const Tag: StatelessFunctionalComponent<Props> = ({icon, label, title, color}) => {
+const Tag: StatelessFunctionalComponent<Props> = ({icon, label, title, color, onClick}) => {
   let classes = "tag is-rounded";
   if (color) {
     classes += ` is-${color}`;
   }
   return (
-    <span className={classes} title={title}>
+    <span className={classes} title={title} onClick={onClick}>
       <span className={classNames("fas", "fa-" + icon)}>&nbsp;</span> {label}
     </span>
   );
@@ -43,8 +43,12 @@ const TranslatedTag = translate("plugins")(({label, title, t, ...restProps}: Tra
   return <Tag label={t(`scm-review-plugin.comment.tag.${label}`)} title={translatedTitle} {...restProps} />;
 });
 
+type OutdatedTagProps = {
+  onClick: () => void
+};
+
 export const SystemTag = () => <TranslatedTag icon="bolt" label="system"/>;
-export const OutdatedTag = () => <TranslatedTag icon="clock" label="outdated.label" title="outdated.title"/>;
+export const OutdatedTag = ({onClick}: OutdatedTagProps) => <TranslatedTag icon="clock" label="outdated.label" title="outdated.title" onClick={onClick}/>;
 export const TaskTodoTag = () => <TranslatedTag icon="check-circle" label="task" color="warning" />;
 
 type TitleOnlyProps = {

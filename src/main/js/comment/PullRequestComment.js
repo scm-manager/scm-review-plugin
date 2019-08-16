@@ -9,6 +9,7 @@ import {
   DateFromNow,
   Loading,
   MarkdownView,
+  Modal,
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
@@ -23,6 +24,8 @@ import CreateComment from "./CreateComment";
 import RecursivePullRequestComment from "./RecursivePullRequestComment";
 import {FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag} from "./tags";
 import TagGroup from "./TagGroup";
+import DiffFile from "@scm-manager/ui-components/src/repos/DiffFile";
+import {mapCommentToFile} from "./commentToFileMapper";
 
 type Props = {
   comment: Comment,
@@ -41,6 +44,7 @@ type State = {
   edit: boolean,
   updatedComment: BasicComment,
   loading: boolean,
+  contextModalOpen: boolean,
   replyEditor?: Reply
 };
 
@@ -434,11 +438,21 @@ class PullRequestComment extends React.Component<Props, State> {
     );
   };
 
+  openContextModal = () => {
+    if (this.props.comment.context) {
+      this.setState({contextModalOpen: true});
+    }
+  };
+
+  onClose = () => {
+    this.setState({contextModalOpen: false});
+  };
+
   collectTags = (comment: Comment) => {
     const tags = [];
 
     if (comment.outdated) {
-      tags.push(<OutdatedTag/>);
+      tags.push(<OutdatedTag onClick={this.openContextModal}/>);
     }
 
     if (comment.location && comment.location.file) {
@@ -464,7 +478,7 @@ class PullRequestComment extends React.Component<Props, State> {
 
   render() {
     const { comment, refresh, handleError, classes, t } = this.props;
-    const { loading, collapsed, edit } = this.state;
+    const { loading, collapsed, edit, contextModalOpen } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -489,8 +503,25 @@ class PullRequestComment extends React.Component<Props, State> {
 
     let lastEdited = this.getLastEdited();
 
+
+
+    const file = mapCommentToFile(comment);
+
+    console.log("UNSER COMMENT", comment);
+
+    console.log("UNSERE VERSION", file);
+
     return (
       <>
+        {contextModalOpen &&
+        <Modal
+          title={t("scm-review-plugin.comment.modal.contextView")}
+          closeFunction={() => this.onClose()}
+          body={
+            <DiffFile file={file} />
+          }
+          active={true}/>
+        }
         <CreateCommentInlineWrapper isChildComment={this.props.child}>
           <article className="media">
             <div className="media-content is-clipped content">
