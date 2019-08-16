@@ -22,6 +22,9 @@ import {FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag} from "./tags"
 import TagGroup from "./TagGroup";
 import DiffFile from "@scm-manager/ui-components/src/repos/DiffFile";
 import {mapCommentToFile} from "./commentToFileMapper";
+import type {AnnotationFactoryContext} from "@scm-manager/ui-components";
+import InlineComments from "../diff/InlineComments";
+import {createChangeIdFromLocation} from "../diff/locations";
 
 type Props = {
   comment: Comment,
@@ -506,7 +509,7 @@ class PullRequestComment extends React.Component<Props, State> {
           title={t("scm-review-plugin.comment.modal.contextView")}
           closeFunction={() => this.onClose()}
           body={
-            <DiffFile file={mapCommentToFile(comment)} />
+            <DiffFile file={mapCommentToFile(comment)} annotationFactory={this.inlineComment(comment)} />
           }
           active={true}/>
         }
@@ -553,6 +556,22 @@ class PullRequestComment extends React.Component<Props, State> {
       </>
     );
   }
+
+  inlineComment = (comment: Comment) => {
+    return (context: AnnotationFactoryContext) => {
+      const annotations = {};
+      annotations[createChangeIdFromLocation(comment.location)] = (
+        <InlineComments>
+          <CreateCommentInlineWrapper isChildComment={false}>
+            <article className="media">
+              <div className="media-content is-clipped content"><p>{comment.comment}</p></div>
+            </article>
+          </CreateCommentInlineWrapper>
+        </InlineComments>
+      );
+      return annotations;
+    }
+  };
 
   getLastEdited = () => {
     const { comment, t } = this.props;
