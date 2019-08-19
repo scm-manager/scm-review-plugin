@@ -447,11 +447,11 @@ class PullRequestComment extends React.Component<Props, State> {
     } : null;
 
     if (comment.outdated) {
-      tags.push(<OutdatedTag onClick={openContextModal}/>);
+      tags.push(<OutdatedTag onClick={openContextModal} />);
     }
 
     if (comment.location && comment.location.file) {
-      tags.push(<FileTag path={comment.location.file}/>);
+      tags.push(<FileTag path={comment.location.file} onClick={openContextModal} />);
     }
 
     if (comment.systemComment) {
