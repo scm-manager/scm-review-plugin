@@ -38,7 +38,9 @@
   <scm-version>2</scm-version>
 
   <information>
+    <displayName>Review</displayName>
     <author>Cloudogu GmbH</author>
+    <category>Workflow</category>
   </information>
 
   <conditions>

@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <artifactId>scm-plugins</artifactId>
     <groupId>sonia.scm.plugins</groupId>
@@ -14,7 +13,7 @@
   <name>scm-review-plugin</name>
   <packaging>smp</packaging>
   <url>https://bitbucket.org/scm-manager/scm-review-plugin</url>
-  <description>SCM-Manager Review Plugin</description>
+  <description>Depict a review process with pull requests</description>
 
   <scm>
     <connection>scm:hg:http://bitbucket.org/scm-manager/scm-review-plugin</connection>
@@ -130,7 +129,7 @@
           <plugin>
             <groupId>sonia.scm.maven</groupId>
             <artifactId>smp-maven-plugin</artifactId>
-            <version>1.0.0-alpha-4</version>
+            <version>1.0.0-alpha-6</version>
             <extensions>true</extensions>
             <configuration>
               <links>
