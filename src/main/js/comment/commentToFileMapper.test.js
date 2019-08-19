@@ -25,7 +25,10 @@ describe("commentToFileMapper", () => {
     };
 
     const comment = {
-      context
+      context,
+      location: {
+        file: "file"
+      }
     };
 
     const mappedContext = mapCommentToFile(comment);
@@ -43,5 +46,7 @@ describe("commentToFileMapper", () => {
     expect(changes[2].type).toBe("normal");
     expect(changes[2].oldLineNumber).toBe(10);
     expect(changes[2].newLineNumber).toBe(11);
+
+    expect(mappedContext.newPath).toBe("file");
   });
 });
