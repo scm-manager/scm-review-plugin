@@ -42,7 +42,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private UserDisplayManager userDisplayManager;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
   @Inject
-  private RepositoryServiceFactory repositoryServiceFactory;
+  private BranchRevisionResolver branchRevisionResolver;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")
@@ -104,26 +104,15 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest().update(repository.getNamespace(), repository.getName(), target.getId())));
     }
     if (PermissionCheck.mayComment(repository)) {
-      try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
-        String sourceRevision = getRevision(repositoryService, pullRequest.getSource());
-        String targetRevision = getRevision(repositoryService, pullRequest.getTarget());
-        linksBuilder.single(link("createComment", pullRequestResourceLinks.pullRequestComments().create(repository.getNamespace(), repository.getName(), target.getId(), sourceRevision, targetRevision)));
-      }
+      BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(repository.getNamespaceAndName(), pullRequest);
+      String sourceRevision = revisions.getSourceRevision();
+      String targetRevision = revisions.getTargetRevision();
+      linksBuilder.single(link("createComment", pullRequestResourceLinks.pullRequestComments().create(repository.getNamespace(), repository.getName(), target.getId(), sourceRevision, targetRevision)));
     }
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
     }
     target.add(linksBuilder.build());
-  }
-
-  private String getRevision(RepositoryService repositoryService, String branch) {
-    try {
-      LogCommandBuilder logCommand = repositoryService.getLogCommand();
-      ChangesetPagingResult changesets = logCommand.setBranch(branch).setPagingLimit(1).getChangesets();
-      return changesets.iterator().next().getId();
-    } catch (IOException ex) {
-      throw new InternalRepositoryException(repositoryService.getRepository(), "could not determine revision for branch " + branch, ex);
-    }
   }
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {

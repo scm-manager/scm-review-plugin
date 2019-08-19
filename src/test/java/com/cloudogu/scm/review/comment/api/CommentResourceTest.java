@@ -8,7 +8,9 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
+import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.inject.util.Providers;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.mock.MockDispatcherFactory;
@@ -20,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
@@ -55,6 +58,11 @@ public class CommentResourceTest {
   private CommentService service;
   @Mock
   private CommentService commentService;
+  @Mock
+  private PullRequestService pullRequestService;
+  @Mock
+  private BranchRevisionResolver branchRevisionResolver;
+
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock("https://scm-manager.org/scm/api/v2");
 
   @Before
@@ -66,7 +74,7 @@ public class CommentResourceTest {
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
-        Providers.of(new CommentRootResource(new CommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder)), commentService)));
+        Providers.of(new CommentRootResource(new CommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder, pullRequestService, branchRevisionResolver)), commentService)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);

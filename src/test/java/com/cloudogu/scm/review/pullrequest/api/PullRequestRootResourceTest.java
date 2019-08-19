@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -60,7 +61,6 @@ import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -105,6 +105,8 @@ public class PullRequestRootResourceTest {
   private RepositoryServiceFactory repositoryServiceFactory;
   @Mock
   private RepositoryService repositoryService;
+  @Mock
+  private BranchRevisionResolver branchRevisionResolver;
   @Mock
   private LogCommandBuilder logCommandBuilder;
 
@@ -423,6 +425,7 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetCommentLink() throws URISyntaxException, IOException {
+    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
     dispatcher.invoke(request, response);
@@ -441,6 +444,7 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetUpdateLink() throws URISyntaxException, IOException {
+    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
 
@@ -639,7 +643,7 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldReturnCollectionWithCreateLink() throws URISyntaxException, IOException {
-    mockChangesets("develop", "master");
+    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
 
     JsonNode links = invokeAndReturnLinks();
 
@@ -702,19 +706,5 @@ public class PullRequestRootResourceTest {
     when(subLogCommandBuilder.setPagingStart(0)).thenReturn(subLogCommandBuilder);
     when(subLogCommandBuilder.setPagingLimit(1)).thenReturn(subLogCommandBuilder);
     when(subLogCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(changesets.length, asList(changesets)));
-
-    mockSingleChangeset(sourceBranch);
-    mockSingleChangeset(targetBranch);
-  }
-
-  private void mockSingleChangeset(String branch) throws IOException {
-    when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
-    LogCommandBuilder subLogCommandBuilder = mock(LogCommandBuilder.class);
-    lenient().when(logCommandBuilder.setBranch(branch)).thenReturn(subLogCommandBuilder);
-    lenient().when(subLogCommandBuilder.setPagingStart(0)).thenReturn(subLogCommandBuilder);
-    lenient().when(subLogCommandBuilder.setPagingLimit(1)).thenReturn(subLogCommandBuilder);
-    Changeset changeset = new Changeset();
-    changeset.setId(branch + "Id");
-    lenient().when(subLogCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, singletonList(changeset)));
   }
 }
