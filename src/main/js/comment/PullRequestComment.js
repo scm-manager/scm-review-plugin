@@ -1,7 +1,7 @@
 // @flow
 import React from "react";
 import classNames from "classnames";
-import { translate, type TFunction } from "react-i18next";
+import {type TFunction, translate} from "react-i18next";
 import injectSheet from "react-jss";
 import {
   Button,
@@ -9,20 +9,22 @@ import {
   DateFromNow,
   Loading,
   MarkdownView,
+  Modal,
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
-import type { BasicComment, Comment, Reply } from "../types/PullRequest";
-import {
-  deletePullRequestComment,
-  transformPullRequestComment,
-  updatePullRequestComment
-} from "../pullRequest";
+import type {BasicComment, Comment, Reply} from "../types/PullRequest";
+import {deletePullRequestComment, transformPullRequestComment, updatePullRequestComment} from "../pullRequest";
 import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 import CreateComment from "./CreateComment";
 import RecursivePullRequestComment from "./RecursivePullRequestComment";
 import {FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag} from "./tags";
 import TagGroup from "./TagGroup";
+import DiffFile from "@scm-manager/ui-components/src/repos/DiffFile";
+import {mapCommentToFile} from "./commentToFileMapper";
+import type {AnnotationFactoryContext} from "@scm-manager/ui-components";
+import InlineComments from "../diff/InlineComments";
+import {createChangeIdFromLocation} from "../diff/locations";
 
 type Props = {
   comment: Comment,
@@ -41,6 +43,7 @@ type State = {
   edit: boolean,
   updatedComment: BasicComment,
   loading: boolean,
+  contextModalOpen: boolean,
   replyEditor?: Reply
 };
 
@@ -421,8 +424,6 @@ class PullRequestComment extends React.Component<Props, State> {
 
   createMessageEditor = () => {
     const { updatedComment } = this.state;
-    if (updatedComment.type) {
-    }
     return (
       <>
         <Textarea
@@ -434,15 +435,23 @@ class PullRequestComment extends React.Component<Props, State> {
     );
   };
 
+  onClose = () => {
+    this.setState({contextModalOpen: false});
+  };
+
   collectTags = (comment: Comment) => {
     const tags = [];
 
+    const openContextModal = this.props.comment.context ? () => {
+      this.setState({contextModalOpen: true});
+    } : null;
+
     if (comment.outdated) {
-      tags.push(<OutdatedTag/>);
+      tags.push(<OutdatedTag onClick={openContextModal} />);
     }
 
     if (comment.location && comment.location.file) {
-      tags.push(<FileTag path={comment.location.file}/>);
+      tags.push(<FileTag path={comment.location.file} onClick={openContextModal} />);
     }
 
     if (comment.systemComment) {
@@ -464,7 +473,7 @@ class PullRequestComment extends React.Component<Props, State> {
 
   render() {
     const { comment, refresh, handleError, classes, t } = this.props;
-    const { loading, collapsed, edit } = this.state;
+    const { loading, collapsed, edit, contextModalOpen } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -487,10 +496,27 @@ class PullRequestComment extends React.Component<Props, State> {
       : t("scm-review-plugin.comment.collapse");
     const collapseIcon = collapsed ? "fa-angle-right" : "fa-angle-down";
 
-    let lastEdited = this.getLastEdited();
+    const lastEdited = this.getLastEdited();
 
     return (
       <>
+        {contextModalOpen &&
+        <Modal
+          title={t("scm-review-plugin.comment.contextModal.title")}
+          closeFunction={() => this.onClose()}
+          body={<>
+            <strong>{t("scm-review-plugin.comment.contextModal.message")}</strong>
+            <br/>
+            <br/>
+            <DiffFile
+              file={mapCommentToFile(comment)}
+              collapsible={false}
+              annotationFactory={this.inlineComment(comment)}
+            />
+          </>
+          }
+          active={true}/>
+        }
         <CreateCommentInlineWrapper isChildComment={this.props.child}>
           <article className="media">
             <div className="media-content is-clipped content">
@@ -534,6 +560,29 @@ class PullRequestComment extends React.Component<Props, State> {
       </>
     );
   }
+
+  inlineComment = (comment: Comment) => {
+    const {classes} = this.props;
+    return (context: AnnotationFactoryContext) => {
+      const annotations = {};
+      annotations[createChangeIdFromLocation(comment.location)] = (
+        <InlineComments>
+          <CreateCommentInlineWrapper isChildComment={false}>
+            <article className="media">
+              <div className="media-content is-clipped content"><p>
+                <strong>{comment.author.displayName}</strong>{" "}
+                <span className={classes.commentMeta}>
+                  <DateFromNow date={comment.date}/> {this.getLastEdited()}
+                </span>
+                <br/>
+                {comment.comment}</p></div>
+            </article>
+          </CreateCommentInlineWrapper>
+        </InlineComments>
+      );
+      return annotations;
+    }
+  };
 
   getLastEdited = () => {
     const { comment, t } = this.props;

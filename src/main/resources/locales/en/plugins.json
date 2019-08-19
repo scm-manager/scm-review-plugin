@@ -83,6 +83,10 @@
       "cancel": "Cancel",
       "lastEdited": "last edited by",
       "markedDoneBy": "finished by",
+      "contextModal": {
+        "title": "Original Context",
+        "message": "This is the original diff context at the time of comment creation"
+      },
       "confirmDeleteAlert": {
         "title": "Delete comment",
         "message": "Do you really want to delete the comment?",
@@ -134,7 +138,8 @@
         "done": "done",
         "outdated": {
           "label": "outdated",
-          "title": "The comment is related to an older of the source or target branch"
+          "title": "The comment is related to an older of the source or target branch",
+          "titleClickable": "The comment is related to an older of the source or target branch. Click here to see the original context."
         }
       }
     }

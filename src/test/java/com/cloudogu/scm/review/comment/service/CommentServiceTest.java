@@ -21,7 +21,7 @@ import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 
-import java.time.Clock;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -57,8 +57,9 @@ public class CommentServiceTest {
   private final String PULL_REQUEST_ID = "pr_id";
   private final Instant NOW = now().truncatedTo(ChronoUnit.SECONDS);
   private final String COMMENT_ID = "1";
-  private final Comment EXISTING_COMMENT = createComment(COMMENT_ID, "1. comment", "author", new Location());
-  private final Reply EXISTING_REPLY = createReply("resp_1", "1. reply", "author");
+  private final String author = "author";
+  private final Comment EXISTING_COMMENT = createComment(COMMENT_ID, "1. comment", author, new Location());
+  private final Reply EXISTING_REPLY = createReply("resp_1", "1. reply", author);
 
   {
     EXISTING_COMMENT.addReply(EXISTING_REPLY);
@@ -86,7 +87,7 @@ public class CommentServiceTest {
   private ScmEventBus eventBus;
 
   @Mock
-  private Clock clock;
+  private CommentInitializer commentInitializer;
 
   @Captor
   private ArgumentCaptor<Comment> rootCommentCaptor;
@@ -96,15 +97,21 @@ public class CommentServiceTest {
   private CommentService commentService;
 
   @Before
-  public void init() {
+  public void init() throws IOException {
     when(storeFactory.create(any())).thenReturn(store);
-    when(clock.instant()).thenReturn(NOW);
     doNothing().when(eventBus).post(eventCaptor.capture());
 
     when(repositoryResolver.resolve(REPOSITORY.getNamespaceAndName())).thenReturn(REPOSITORY);
-    commentService = new CommentService(repositoryResolver, pullRequestService, storeFactory, keyGenerator, eventBus, clock);
+    commentService = new CommentService(repositoryResolver, pullRequestService, storeFactory, keyGenerator, eventBus, commentInitializer);
 
     lenient().when(store.getAll(PULL_REQUEST_ID)).thenReturn(singletonList(EXISTING_COMMENT));
+
+    lenient().doAnswer(invocation -> {
+      BasicComment comment = invocation.getArgument(0);
+      comment.setDate(NOW);
+      comment.setAuthor(author);
+      return null;
+    }).when(commentInitializer).initialize(any(), any(), any());
   }
 
   @Test
@@ -124,12 +131,12 @@ public class CommentServiceTest {
   public void shouldAddComment() {
     when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    Comment comment = createComment("2", "2. comment", "author", new Location());
+    Comment comment = createComment("2", "2. comment", author, new Location());
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
-    assertThat(storedComment.getAuthor()).isEqualTo("createCommentUser");
+    assertThat(storedComment.getAuthor()).isEqualTo("author");
     assertThat(storedComment.getDate()).isEqualTo(NOW);
   }
 
@@ -138,7 +145,7 @@ public class CommentServiceTest {
   public void shouldPostEventForNewRootComment() {
     when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    Comment comment = createComment("2", "2. comment", "author", new Location());
+    Comment comment = createComment("2", "2. comment", author, new Location());
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
 
     assertThat(eventCaptor.getAllValues()).hasSize(1);
@@ -148,7 +155,7 @@ public class CommentServiceTest {
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "trillian")
   public void shouldFailIfUserHasNoPermissionToCreateComment() {
-    Comment comment = createComment("2", "2. comment", "author", new Location());
+    Comment comment = createComment("2", "2. comment", author, new Location());
 
     commentService.add(REPOSITORY.getNamespace(), REPOSITORY.getName(), PULL_REQUEST_ID, comment);
   }
@@ -158,7 +165,7 @@ public class CommentServiceTest {
   public void shouldAddReplyToParentComment() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
 
-    Reply reply = createReply("new reply", "1. comment", "author");
+    Reply reply = createReply("new reply", "1. comment", author);
 
     commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
 
@@ -166,8 +173,6 @@ public class CommentServiceTest {
     Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getReplies()).hasSize(2);
     assertThat(storedComment.getReplies()).contains(reply);
-    assertThat(storedComment.getReplies().get(1).getAuthor()).isEqualTo("createCommentUser");
-    assertThat(storedComment.getReplies().get(1).getDate()).isEqualTo(NOW);
     assertThat(storedComment.getReplies().get(1).getId()).isNotEqualTo("new reply");
   }
 
@@ -176,7 +181,7 @@ public class CommentServiceTest {
   public void shouldPostEventForNewReply() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
 
-    Reply reply = createReply("1", "1. comment", "author");
+    Reply reply = createReply("1", "1. comment", author);
 
     commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
 
@@ -187,7 +192,7 @@ public class CommentServiceTest {
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "trillian")
   public void shouldFailIfUserHasNoPermissionTocreateReply() {
-    Reply reply = createReply("1", "1. comment", "author");
+    Reply reply = createReply("1", "1. comment", author);
 
     commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
   }
@@ -418,8 +423,6 @@ public class CommentServiceTest {
     commentService.addStatusChangedComment(REPOSITORY, PULL_REQUEST_ID, SystemCommentType.MERGED);
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
-    assertThat(storedComment.getAuthor()).isEqualTo("trillian");
-    assertThat(storedComment.getDate()).isEqualTo(NOW);
     assertThat(storedComment.getComment()).isEqualTo("merged");
     assertThat(storedComment.isSystemComment()).isTrue();
   }

@@ -45,8 +45,19 @@ export type Comment = BasicComment & {
   file?: string,
   lineId?: string,
   replies: Comment[],
+  context?: Context,
   _links: Links
 };
+
+export type Context = {
+  lines: ContextLine[]
+}
+
+export type ContextLine = {
+  content: string,
+  newLineNumber?: number,
+  oldLineNumber?: number
+}
 
 export type Reply = BasicComment & {
   author: DisplayedUser,

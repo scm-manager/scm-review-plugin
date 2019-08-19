@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
 import com.cloudogu.scm.review.comment.service.CommentType;
+import com.cloudogu.scm.review.comment.service.ContextLine;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
@@ -19,8 +20,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.Collection;
 import java.util.List;
+import java.util.OptionalInt;
 
 import static de.otto.edison.hal.Link.link;
+import static java.util.OptionalInt.empty;
+import static java.util.OptionalInt.of;
 import static java.util.stream.Collectors.toList;
 
 @Mapper
@@ -42,6 +46,9 @@ public abstract class CommentMapper {
   abstract CommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions);
 
   abstract Comment map(CommentDto commentDto);
+
+  abstract CommentDto.ContextLineDto map(ContextLine line);
+  abstract ContextLine map(CommentDto.ContextLineDto line);
 
   @Named("mapAuthor")
   DisplayedUserDto mapAuthor(String authorId) {
@@ -100,6 +107,10 @@ public abstract class CommentMapper {
   @AfterMapping
   void appendPossibleTransitions(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions) {
     possibleTransitionMapper.appendTransitions(target, possibleTransitions, repository.getNamespace(), repository.getName(), pullRequestId, source.getId());
+  }
+
+  Integer mapOptional(OptionalInt optionalInt) {
+    return optionalInt.isPresent() ? optionalInt.getAsInt() : null;
   }
 
   private void appendReplyLink(BasicCommentDto target, Repository repository, String pullRequestId, String commentId) {
