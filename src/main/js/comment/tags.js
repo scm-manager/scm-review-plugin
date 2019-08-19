@@ -14,16 +14,18 @@ type Props = {
 };
 
 const Tag: StatelessFunctionalComponent<Props> = ({icon, label, title, color, onClick}) => {
-  let classes = "tag is-rounded";
+  let classes = ["tag", "is-rounded"];
   if (color) {
-    classes += ` is-${color}`;
+    classes.push(` is-${color}`);
   }
+  let iconClasses = ["fas", "fa-" + icon];
   if (onClick) {
-    classes += " has-cursor-pointer";
+    classes.push("has-cursor-pointer");
+    iconClasses.push("has-text-link");
   }
   return (
-    <span className={classes} title={title} onClick={onClick}>
-      <span className={classNames("fas", "fa-" + icon)}>&nbsp;</span> {label}
+    <span className={classNames(classes)} title={title} onClick={onClick}>
+      <span className={classNames(iconClasses)}>&nbsp;</span> {label}
     </span>
   );
 };
@@ -51,7 +53,8 @@ type ClickableTagProps = {
 };
 
 export const SystemTag = () => <TranslatedTag icon="bolt" label="system"/>;
-export const OutdatedTag = ({onClick}: ClickableTagProps) => <TranslatedTag icon="clock" label="outdated.label" title="outdated.title" onClick={onClick} />;
+export const OutdatedTag = ({onClick}: ClickableTagProps) =>
+  <TranslatedTag icon="clock" label="outdated.label" title={onClick?"outdated.titleClickable":"outdated.title"} onClick={onClick} />;
 export const TaskTodoTag = () => <TranslatedTag icon="check-circle" label="task" color="warning" />;
 
 type TitleOnlyProps = {

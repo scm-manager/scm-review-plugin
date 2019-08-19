@@ -83,6 +83,10 @@
       "cancel": "Abbrechen",
       "lastEdited": "zuletzt bearbeitet von",
       "markedDoneBy": "Abgeschlossen von",
+      "contextModal": {
+        "title": "Ursprünglicher Kontext",
+        "message": "Dieses ist der ursprüngliche Kontext zum Zeitpunkt der Erstellung des Kommentars"
+      },
       "confirmDeleteAlert": {
         "title": "Kommentar löschen",
         "message": "Soll der Kommentar wirklich gelöscht werden?",
@@ -134,7 +138,8 @@
         "done": "erledigt",
         "outdated": {
           "label": "veraltet",
-          "title": "Das Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches"
+          "title": "Das Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches",
+          "titleClickable": "Das Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
         }
       }
     }
