@@ -12,7 +12,7 @@ export function mapCommentToFile(comment: Comment) {
         changes
       }
     ],
-    type: "add" //TODO
+    newPath: comment.location.file
   };
 }
 

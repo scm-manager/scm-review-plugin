@@ -505,7 +505,11 @@ class PullRequestComment extends React.Component<Props, State> {
           title={t("scm-review-plugin.comment.modal.contextView")}
           closeFunction={() => this.onClose()}
           body={
-            <DiffFile file={mapCommentToFile(comment)} annotationFactory={this.inlineComment(comment)} />
+            <DiffFile
+              file={mapCommentToFile(comment)}
+              collapsible={false}
+              annotationFactory={this.inlineComment(comment)}
+            />
           }
           active={true}/>
         }
