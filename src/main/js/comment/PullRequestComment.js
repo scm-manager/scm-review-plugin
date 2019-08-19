@@ -424,8 +424,6 @@ class PullRequestComment extends React.Component<Props, State> {
 
   createMessageEditor = () => {
     const { updatedComment } = this.state;
-    if (updatedComment.type) {
-    }
     return (
       <>
         <Textarea
@@ -556,13 +554,20 @@ class PullRequestComment extends React.Component<Props, State> {
   }
 
   inlineComment = (comment: Comment) => {
+    const {classes} = this.props;
     return (context: AnnotationFactoryContext) => {
       const annotations = {};
       annotations[createChangeIdFromLocation(comment.location)] = (
         <InlineComments>
           <CreateCommentInlineWrapper isChildComment={false}>
             <article className="media">
-              <div className="media-content is-clipped content"><p>{comment.comment}</p></div>
+              <div className="media-content is-clipped content"><p>
+                <strong>{comment.author.displayName}</strong>{" "}
+                <span className={classes.commentMeta}>
+                  <DateFromNow date={comment.date}/> {this.getLastEdited()}
+                </span>
+                <br/>
+                {comment.comment}</p></div>
             </article>
           </CreateCommentInlineWrapper>
         </InlineComments>
