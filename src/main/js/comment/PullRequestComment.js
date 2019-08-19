@@ -437,12 +437,6 @@ class PullRequestComment extends React.Component<Props, State> {
     );
   };
 
-  openContextModal = () => {
-    if (this.props.comment.context) {
-      this.setState({contextModalOpen: true});
-    }
-  };
-
   onClose = () => {
     this.setState({contextModalOpen: false});
   };
@@ -450,8 +444,12 @@ class PullRequestComment extends React.Component<Props, State> {
   collectTags = (comment: Comment) => {
     const tags = [];
 
+    const openContextModal = this.props.comment.context ? () => {
+      this.setState({contextModalOpen: true});
+    } : null;
+
     if (comment.outdated) {
-      tags.push(<OutdatedTag onClick={this.openContextModal}/>);
+      tags.push(<OutdatedTag onClick={openContextModal}/>);
     }
 
     if (comment.location && comment.location.file) {

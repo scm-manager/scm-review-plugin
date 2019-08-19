@@ -18,6 +18,9 @@ const Tag: StatelessFunctionalComponent<Props> = ({icon, label, title, color, on
   if (color) {
     classes += ` is-${color}`;
   }
+  if (onClick) {
+    classes += " has-cursor-pointer";
+  }
   return (
     <span className={classes} title={title} onClick={onClick}>
       <span className={classNames("fas", "fa-" + icon)}>&nbsp;</span> {label}
