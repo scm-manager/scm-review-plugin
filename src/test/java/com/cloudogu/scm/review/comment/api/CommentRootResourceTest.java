@@ -6,7 +6,9 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
 import com.cloudogu.scm.review.comment.service.ExecutedTransition;
+import com.cloudogu.scm.review.comment.service.InlineContext;
 import com.cloudogu.scm.review.comment.service.Location;
+import com.cloudogu.scm.review.comment.service.MockedDiffLine;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
@@ -15,6 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.inject.util.Providers;
 import org.jboss.resteasy.core.Dispatcher;
@@ -41,11 +44,14 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
+import static com.cloudogu.scm.review.comment.service.ContextLine.copy;
 import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -145,6 +151,7 @@ public class CommentRootResourceTest {
     JsonNode comment_1 = prNode.path(0);
     JsonNode comment_2 = prNode.path(1);
     assertThat(comment_1.get("comment").asText()).isEqualTo("1. comment");
+    assertThat(comment_1.get("context").get("lines").size()).isEqualTo(3);
     assertThat(comment_2.get("comment").asText()).isEqualTo("2. comment");
 
     JsonNode replies = comment_2.get("_embedded").get("replies");
@@ -278,8 +285,14 @@ public class CommentRootResourceTest {
   }
 
   private void mockExistingComments() {
-    Comment comment1 = createComment("1", "1. comment", "author", new Location("", "", 0, 0));
+    Comment comment1 = createComment("1", "1. comment", "author", new Location("file.txt", "123", 0, 3));
     Comment comment2 = createComment("2", "2. comment", "author", new Location("", "", 0, 0));
+
+    comment1.setContext(new InlineContext(ImmutableList.of(
+      copy(new MockedDiffLine.Builder().newLineNumber(1).get()),
+      copy(new MockedDiffLine.Builder().newLineNumber(2).get()),
+      copy(new MockedDiffLine.Builder().newLineNumber(3).get())
+    )));
 
     Reply reply1 = createReply("2_1", "1. reply", "author");
     Reply reply2 = createReply("2_2", "2. reply", "author");

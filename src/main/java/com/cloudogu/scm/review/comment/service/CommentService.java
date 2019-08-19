@@ -13,7 +13,6 @@ import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 
 import javax.inject.Inject;
-import java.time.Clock;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -39,20 +38,16 @@ public class CommentService {
   private final CommentStoreFactory storeFactory;
   private final KeyGenerator keyGenerator;
   private final ScmEventBus eventBus;
-  private final Clock clock;
+  private final CommentInitializer commentInitializer;
 
   @Inject
-  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus) {
-    this(repositoryResolver, pullRequestService, storeFactory, keyGenerator, eventBus, Clock.systemDefaultZone());
-  }
-
-  CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, Clock clock) {
+  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer) {
     this.repositoryResolver = repositoryResolver;
     this.pullRequestService = pullRequestService;
     this.storeFactory = storeFactory;
     this.keyGenerator = keyGenerator;
     this.eventBus = eventBus;
-    this.clock = clock;
+    this.commentInitializer = commentInitializer;
   }
 
   public String add(String namespace, String name, String pullRequestId, Comment pullRequestComment) {
@@ -62,9 +57,9 @@ public class CommentService {
   }
 
   private String addWithoutPermissionCheck(Repository repository, String pullRequestId, Comment pullRequestComment) {
-    initializeNewComment(pullRequestComment);
-    String newId = getCommentStore(repository).add(repository, pullRequestId, pullRequestComment);
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
+    initializeNewComment(pullRequestComment, pullRequest, repository.getId());
+    String newId = getCommentStore(repository).add(repository, pullRequestId, pullRequestComment);
     eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
     return newId;
   }
@@ -75,7 +70,7 @@ public class CommentService {
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
     Comment originalRootComment = get(repository, pullRequestId, rootCommentId);
     reply.setId(keyGenerator.createKey());
-    initializeNewComment(reply);
+    initializeNewComment(reply, pullRequest, repository.getId());
     originalRootComment.addReply(reply);
 
     getCommentStore(repository).update(pullRequestId, originalRootComment);
@@ -84,9 +79,8 @@ public class CommentService {
     return reply.getId();
   }
 
-  private void initializeNewComment(BasicComment pullRequestComment) {
-    pullRequestComment.setDate(clock.instant());
-    pullRequestComment.setAuthor(getCurrentUserId());
+  private void initializeNewComment(BasicComment pullRequestComment, PullRequest pullRequest, String repositoryId) {
+    commentInitializer.initialize(pullRequestComment, pullRequest, repositoryId);
   }
 
   private String getCurrentUserId() {
