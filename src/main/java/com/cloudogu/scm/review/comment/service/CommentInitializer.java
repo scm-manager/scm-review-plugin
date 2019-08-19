@@ -7,6 +7,7 @@ import sonia.scm.ContextEntry;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.DiffFile;
 import sonia.scm.repository.api.DiffLine;
 import sonia.scm.repository.api.DiffResult;
@@ -45,21 +46,27 @@ public class CommentInitializer {
     }
   }
 
-  private void initializeContextFromDiff(Comment comment, PullRequest pullRequest, String repositoryId)  {
+  private void initializeContextFromDiff(Comment comment, PullRequest pullRequest, String repositoryId) {
     if (comment.getLocation() != null && comment.getLocation().getHunk() != null) {
       try (RepositoryService repositoryService = repositoryServiceFactory.create(repositoryId)) {
-        DiffResultCommandBuilder diffResultCommand = repositoryService.getDiffResultCommand();
-        diffResultCommand.setRevision(pullRequest.getSource()).setAncestorChangeset(pullRequest.getTarget());
-        DiffResult diffResult = getDiffResult(repositoryService.getRepository(), diffResultCommand);
-
-        List<ContextLine> contextLines =
-          computeContext(comment, diffResult)
-          .stream()
-          .map(ContextLine::copy)
-          .collect(Collectors.toList());
-        comment.setContext(new InlineContext(contextLines));
+        if (repositoryService.isSupported(Command.DIFF_RESULT)) {
+          initializeContextFromDiff(comment, pullRequest, repositoryService);
+        }
       }
     }
+  }
+
+  private void initializeContextFromDiff(Comment comment, PullRequest pullRequest, RepositoryService repositoryService) {
+    DiffResultCommandBuilder diffResultCommand = repositoryService.getDiffResultCommand();
+    diffResultCommand.setRevision(pullRequest.getSource()).setAncestorChangeset(pullRequest.getTarget());
+    DiffResult diffResult = getDiffResult(repositoryService.getRepository(), diffResultCommand);
+
+    List<ContextLine> contextLines =
+      computeContext(comment, diffResult)
+      .stream()
+      .map(ContextLine::copy)
+      .collect(Collectors.toList());
+    comment.setContext(new InlineContext(contextLines));
   }
 
   private DiffResult getDiffResult(Repository repository, DiffResultCommandBuilder diffResultCommand) {

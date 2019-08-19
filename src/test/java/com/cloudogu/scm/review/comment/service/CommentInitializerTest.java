@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.DiffFile;
 import sonia.scm.repository.api.DiffLine;
 import sonia.scm.repository.api.DiffResult;
@@ -29,6 +30,7 @@ import java.util.OptionalInt;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
@@ -93,6 +95,7 @@ class CommentInitializerTest {
     @BeforeEach
     void initRepositoryService() {
       when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+      when(repositoryService.isSupported(Command.DIFF_RESULT)).thenReturn(true);
     }
 
     @BeforeEach
@@ -193,6 +196,7 @@ class CommentInitializerTest {
     @BeforeEach
     void initRepositoryService() {
       when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+      when(repositoryService.isSupported(Command.DIFF_RESULT)).thenReturn(true);
     }
 
     @BeforeEach
@@ -236,6 +240,7 @@ class CommentInitializerTest {
     @BeforeEach
     void initRepositoryService() {
       when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+      when(repositoryService.isSupported(Command.DIFF_RESULT)).thenReturn(true);
     }
 
     @BeforeEach
@@ -283,6 +288,7 @@ class CommentInitializerTest {
     @BeforeEach
     void initRepositoryService() {
       when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+      when(repositoryService.isSupported(Command.DIFF_RESULT)).thenReturn(true);
     }
 
     @BeforeEach
@@ -309,5 +315,18 @@ class CommentInitializerTest {
         .extracting(OptionalInt::getAsInt)
         .containsExactly(1);
     }
+  }
+
+  @Test
+  void shouldNotCallUnsupportedCommand() {
+    when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+    when(repositoryService.isSupported(Command.DIFF_RESULT)).thenReturn(false);
+
+    Comment comment = new Comment();
+    comment.setLocation(new Location("newPath", "irrelevant", null, 1));
+
+    initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
+
+    verify(repositoryService, never()).getDiffResultCommand();
   }
 }
