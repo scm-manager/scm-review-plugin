@@ -100,12 +100,12 @@ public class PullRequestResourceLinks {
         .href();
     }
 
-    public String create(String namespace, String name, String pullRequestId) {
+    public String create(String namespace, String name, String pullRequestId, String sourceRevision, String targetRevision) {
       return linkBuilder
         .method("getPullRequestResource").parameters()
         .method("comments").parameters()
         .method("create").parameters(namespace, name, pullRequestId)
-        .href();
+        .href() + "?sourceRevision=" + sourceRevision + "&targetRevision=" + targetRevision;
     }
   }
 
