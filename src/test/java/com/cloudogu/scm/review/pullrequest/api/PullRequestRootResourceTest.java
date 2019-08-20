@@ -434,8 +434,6 @@ public class PullRequestRootResourceTest {
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
     prNode.elements().forEachRemaining(node -> {
-      String actualCreateLink = node.path("_links").path("createComment").path("href").asText();
-      assertThat(actualCreateLink).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText() + "/comments/?sourceRevision=developId&targetRevision=masterId");
       String actualCollectionLink = node.path("_links").path("comments").path("href").asText();
       assertThat(actualCollectionLink).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText() + "/comments/");
     });

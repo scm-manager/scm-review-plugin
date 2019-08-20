@@ -103,12 +103,6 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest().update(repository.getNamespace(), repository.getName(), target.getId())));
     }
-    if (PermissionCheck.mayComment(repository)) {
-      BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(repository.getNamespaceAndName(), pullRequest);
-      String sourceRevision = revisions.getSourceRevision();
-      String targetRevision = revisions.getTargetRevision();
-      linksBuilder.single(link("createComment", pullRequestResourceLinks.pullRequestComments().create(repository.getNamespace(), repository.getName(), target.getId(), sourceRevision, targetRevision)));
-    }
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
     }

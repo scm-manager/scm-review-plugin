@@ -2,14 +2,15 @@
 import { getPullRequestComments } from "../pullRequest";
 import {createChangeIdFromLocation, createHunkIdFromLocation, isInlineLocation} from "./locations";
 import type { Comment, Location } from "../types/PullRequest";
+import type {Link} from "@scm-manager/ui-types";
 
-type FileComments = {
+export type FileCommentCollection = {
   // path
   [string]: {
     comments: Comment[]
   }
 };
-type LineComments = {
+export type LineCommentCollection = {
   // hunkid
   [string]: {
     // changeid
@@ -19,8 +20,13 @@ type LineComments = {
     }
   }
 };
+export type DiffRelatedCommentCollection = {
+  files: FileCommentCollection,
+  lines: LineCommentCollection,
+  createLink: Link
+};
 
-function addFileComments(fileComments: FileComments, comment: Comment) {
+function addFileComments(fileComments: FileCommentCollection, comment: Comment) {
   const location = comment.location;
   if (!location) {
     // should never happen, mostly to make flow happy
@@ -36,7 +42,7 @@ function addFileComments(fileComments: FileComments, comment: Comment) {
   fileComments[file] = fileState;
 }
 
-function addLineComments(lineComments: LineComments, comment: Comment) {
+function addLineComments(lineComments: LineCommentCollection, comment: Comment) {
   const location = comment.location;
   if (!location) {
     // should never happen, mostly to make flow happy
@@ -57,18 +63,19 @@ function addLineComments(lineComments: LineComments, comment: Comment) {
   lineComments[hunkId] = hunkComments;
 }
 
-export function fetchComments(url: string) {
+export function fetchDiffRelatedComments(url: string): DiffRelatedCommentCollection {
   return getPullRequestComments(url)
-    .then(comments =>
-      comments._embedded.pullRequestComments.filter(
-        comment => !!comment.location
-      )
-    )
+    .then(comments => {
+      return {
+        comments: comments._embedded.pullRequestComments.filter(comment => !!comment.location),
+        createLink: comments._links.create
+      }
+    })
     .then(comments => {
       const lines = {};
       const files = {};
 
-      comments.forEach(comment => {
+      comments.comments.forEach(comment => {
         if (isInlineLocation(comment.location) && !comment.outdated) {
           addLineComments(lines, comment);
         } else {
@@ -78,7 +85,8 @@ export function fetchComments(url: string) {
 
       return {
         lines,
-        files
+        files,
+        createLink: comments.createLink
       };
     });
 }
