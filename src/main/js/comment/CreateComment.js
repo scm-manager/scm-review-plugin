@@ -5,7 +5,8 @@ import {
   Loading,
   SubmitButton,
   Radio,
-  Textarea
+  Textarea,
+  ErrorNotification
 } from "@scm-manager/ui-components";
 import type { BasicComment, Location } from "../types/PullRequest";
 import { translate, type TFunction } from "react-i18next";
@@ -17,7 +18,6 @@ type Props = {
   onCancel?: () => void,
   refresh: () => void,
   autofocus?: boolean,
-  handleError: (error: Error) => void,
 
   // context props
   t: TFunction
@@ -25,7 +25,8 @@ type Props = {
 
 type State = {
   newComment?: BasicComment,
-  loading: boolean
+  loading: boolean,
+  errorResult?: Error
 };
 
 class CreateComment extends React.Component<Props, State> {
@@ -63,13 +64,12 @@ class CreateComment extends React.Component<Props, State> {
       return;
     }
 
-    const { url, location, refresh, handleError } = this.props;
+    const { url, location, refresh } = this.props;
     this.setState({ loading: true });
 
     createPullRequestComment(url, { ...newComment, location }).then(result => {
       if (result.error) {
-        this.setState({ loading: false });
-        handleError(result.error);
+          this.setState({ errorResult: result.error, loading: false });
       } else {
         newComment.comment = "";
         this.setState({ loading: false });
@@ -85,7 +85,7 @@ class CreateComment extends React.Component<Props, State> {
 
   render() {
     const { autofocus, onCancel, t, url } = this.props;
-    const { loading } = this.state;
+    const { loading, errorResult } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -134,12 +134,14 @@ class CreateComment extends React.Component<Props, State> {
                 <div className="control">
                   <Textarea
                     name="comment"
+                    value={this.state.newComment.comment}
                     autofocus={autofocus}
                     placeholder={t(this.state.newComment.type === "TASK_TODO" ? "scm-review-plugin.comment.addTask" : "scm-review-plugin.comment.addComment")}
                     onChange={this.handleChanges}
                   />
                 </div>
               </div>
+              {errorResult && <ErrorNotification error={errorResult}/>}
               {toggleType}
               <div className="field">
                 <div className="level-left">
