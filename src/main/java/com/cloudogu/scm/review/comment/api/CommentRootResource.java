@@ -103,7 +103,7 @@ public class CommentRootResource {
       createCollection(
         permission,
         resourceLinks.pullRequestComments().all(namespace, name, pullRequestId),
-        resourceLinks.pullRequestComments().create(namespace, name, pullRequestId, revisions.getSourceRevision(), revisions.getTargetRevision()),
+        resourceLinks.pullRequestComments().create(namespace, name, pullRequestId, revisions),
         dtoList,
         "pullRequestComments")
     ).build();

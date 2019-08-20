@@ -3,6 +3,7 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
+import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfo;
 
@@ -125,12 +126,14 @@ public class PullRequestResourceLinks {
         .href();
     }
 
-    public String create(String namespace, String name, String pullRequestId, String sourceRevision, String targetRevision) {
-      return linkBuilder
+    public String create(String namespace, String name, String pullRequestId, BranchRevisionResolver.RevisionResult revisionResult) {
+      String link = linkBuilder
         .method("getPullRequestResource").parameters()
         .method("comments").parameters()
         .method("create").parameters(namespace, name, pullRequestId)
-        .href() + "?sourceRevision=" + sourceRevision + "&targetRevision=" + targetRevision;
+        .href();
+      return
+        LinkRevisionAppender.append(link, revisionResult);
     }
   }
 }
