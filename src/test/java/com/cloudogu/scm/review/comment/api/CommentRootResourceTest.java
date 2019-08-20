@@ -125,13 +125,13 @@ public class CommentRootResourceTest {
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), commentService)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
+    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldCreateNewComment() throws URISyntaxException {
     when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
-    when(branchRevisionResolver.getRevisions(any(), eq(PULL_REQUEST))).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(service.add(eq(REPOSITORY_NAMESPACE), eq(REPOSITORY_NAME), eq("1"), argThat(t -> t.getComment().equals("this is my comment")))).thenReturn("1");
     byte[] commentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
     MockHttpRequest request =
@@ -384,6 +384,26 @@ public class CommentRootResourceTest {
     assertThat(transition_1.get("user").get("id").asText()).isEqualTo("slarti");
     assertThat(transition_2.get("transition").asText()).isEqualTo("SET_DONE");
     assertThat(transition_2.get("user").get("id").asText()).isEqualTo("dent");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldGetCreateLinkWithRevisions() throws URISyntaxException, IOException {
+    mockExistingComments();
+
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode createLinkNode = jsonNode.get("_links").get("create").get("href");
+
+    assertThat(createLinkNode.asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/?sourceRevision=source&targetRevision=target");
   }
 
   private void mockExistingComments() {

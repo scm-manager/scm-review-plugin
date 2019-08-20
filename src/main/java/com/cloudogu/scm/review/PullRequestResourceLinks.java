@@ -27,6 +27,31 @@ public class PullRequestResourceLinks {
     this.scmPathInfo = scmPathInfo;
   }
 
+  public PullRequestCollectionLinks pullRequestCollection() {
+
+    return new PullRequestCollectionLinks(scmPathInfo);
+  }
+
+  public static class PullRequestCollectionLinks {
+    private final LinkBuilder pullRequestLinkBuilder;
+
+    PullRequestCollectionLinks(ScmPathInfo pathInfo) {
+      pullRequestLinkBuilder = new LinkBuilder(pathInfo, PullRequestRootResource.class);
+    }
+
+    public String all(String namespace, String name) {
+      return pullRequestLinkBuilder
+        .method("getAll").parameters(namespace, name)
+        .href();
+    }
+
+    public String create(String namespace, String name) {
+      return pullRequestLinkBuilder
+        .method("create").parameters(namespace, name)
+        .href();
+    }
+  }
+
   public PullRequestLinks pullRequest() {
     return new PullRequestLinks(scmPathInfo);
   }
@@ -108,5 +133,4 @@ public class PullRequestResourceLinks {
         .href() + "?sourceRevision=" + sourceRevision + "&targetRevision=" + targetRevision;
     }
   }
-
 }

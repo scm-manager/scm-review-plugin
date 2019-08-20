@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
@@ -101,6 +102,7 @@ public class CommentRootResource {
                          @PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId) {
+    PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     List<Comment> list = service.getAll(namespace, name, pullRequestId);
     List<CommentDto> dtoList = list
@@ -108,6 +110,15 @@ public class CommentRootResource {
       .map(comment -> mapper.map(comment, repository, pullRequestId, service.possibleTransitions(namespace, name, pullRequestId, comment.getId())))
       .collect(Collectors.toList());
     boolean permission = PermissionCheck.mayComment(repository);
-    return Response.ok(createCollection(uriInfo, permission, dtoList, "pullRequestComments")).build();
+    PullRequest pullRequest = pullRequestService.get(namespace, name, pullRequestId);
+    BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(new NamespaceAndName(namespace, name), pullRequest);
+    return Response.ok(
+      createCollection(
+        permission,
+        resourceLinks.pullRequestComments().all(namespace, name, pullRequestId),
+        resourceLinks.pullRequestComments().create(namespace, name, pullRequestId, revisions.getSourceRevision(), revisions.getTargetRevision()),
+        dtoList,
+        "pullRequestComments")
+    ).build();
   }
 }

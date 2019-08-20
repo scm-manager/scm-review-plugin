@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
@@ -114,8 +115,10 @@ public class PullRequestRootResource {
       .sorted(Comparator.comparing(this::getLastModification).reversed())
       .collect(Collectors.toList());
 
+    PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
     boolean permission = PermissionCheck.mayCreate(repository);
-    return Response.ok(createCollection(uriInfo, permission, pullRequestDtos, "pullRequests")).build();
+    return Response.ok(
+      createCollection(permission, resourceLinks.pullRequestCollection().all(namespace, name), resourceLinks.pullRequestCollection().create(namespace, name), pullRequestDtos, "pullRequests")).build();
   }
 
   private Instant getLastModification(PullRequestDto pr) {
