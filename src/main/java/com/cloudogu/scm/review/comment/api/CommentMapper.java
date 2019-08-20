@@ -8,6 +8,7 @@ import com.cloudogu.scm.review.comment.service.ContextLine;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -63,16 +64,16 @@ public abstract class CommentMapper {
   }
 
   @AfterMapping
-  void appendLinks(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId) {
+  void appendLinks(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId, @Context BranchRevisionResolver.RevisionResult revisions) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();
     linksBuilder.self(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, target.getId()));
     if (!target.isSystemComment() && PermissionCheck.mayModifyComment(repository, source)) {
-      linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId())));
+      linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId(), revisions)));
       linksBuilder.single(link("possibleTransitions", commentPathBuilder.createPossibleTransitionUri(namespace, name, pullRequestId, target.getId())));
       if (source.getReplies().isEmpty()) {
-        linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId())));
+        linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId(), revisions)));
       }
     }
     target.add(linksBuilder.build());

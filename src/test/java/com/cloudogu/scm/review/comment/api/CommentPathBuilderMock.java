@@ -17,10 +17,10 @@ public class CommentPathBuilderMock {
     when(commentPathBuilder.createReplySelfUri(any(), any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/replies/" + invocation.getArgument(4)
     );
-    when(commentPathBuilder.createDeleteCommentUri(any(), any(), any(), any())).thenAnswer(
+    when(commentPathBuilder.createDeleteCommentUri(any(), any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3)
     );
-    when(commentPathBuilder.createUpdateCommentUri(any(), any(), any(), any())).thenAnswer(
+    when(commentPathBuilder.createUpdateCommentUri(any(), any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3)
     );
     when(commentPathBuilder.createReplyCommentUri(any(), any(), any(), any(), any())).thenAnswer(
