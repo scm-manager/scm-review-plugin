@@ -8,7 +8,7 @@ import {
   Notification,
   diffs
 } from "@scm-manager/ui-components";
-import type { Repository } from "@scm-manager/ui-types";
+import type { Repository, Link } from "@scm-manager/ui-types";
 import { createDiffUrl } from "../pullRequest";
 import { translate, type TFunction } from "react-i18next";
 import type { PullRequest, Location, RootComment } from "../types/PullRequest";
@@ -22,7 +22,7 @@ import {
   createHunkIdFromLocation,
   createInlineLocation, isInlineLocation, createChangeIdFromLocation
 } from "./locations";
-import { fetchComments } from "./fetchComments";
+import { fetchDiffRelatedComments } from "./fetchDiffRelatedComments";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 
@@ -53,7 +53,8 @@ type State = {
       editor: boolean,
       comments: RootComment[]
     }
-  }
+  },
+  createLink: Link
 };
 
 class Diff extends React.Component<Props, State> {
@@ -62,7 +63,8 @@ class Diff extends React.Component<Props, State> {
     this.state = {
       loading: true,
       files: {},
-      lines: {}
+      lines: {},
+      createLink: null
     };
   }
 
@@ -77,14 +79,15 @@ class Diff extends React.Component<Props, State> {
         loading: true
       });
 
-      fetchComments(pullRequest._links.comments.href)
-        .then(comments =>
-          this.setState({
-            loading: false,
-            error: undefined,
-            // TODO do we need to keep editor state?
-            ...comments
-          })
+      fetchDiffRelatedComments(pullRequest._links.comments.href)
+        .then(comments => {
+            this.setState({
+              loading: false,
+              error: undefined,
+              // TODO do we need to keep editor state?
+              ...comments
+            })
+          }
         )
         .catch(error =>
           this.setState({
@@ -235,10 +238,7 @@ class Diff extends React.Component<Props, State> {
   };
 
   isPermittedToComment = () => {
-    const { pullRequest } = this.props;
-    return (
-      pullRequest && pullRequest._links && !!pullRequest._links.createComment
-    );
+    return !!this.state.createLink;
   };
 
   setLineEditor = (
@@ -269,7 +269,6 @@ class Diff extends React.Component<Props, State> {
   };
 
   createComments = fileState => {
-    const { pullRequest } = this.props;
     const comments = fileState.comments;
 
     return (
@@ -280,7 +279,7 @@ class Diff extends React.Component<Props, State> {
               comment={rootComment}
               refresh={this.fetchComments}
               handleError={this.onError}
-              createLink={pullRequest._links.createComment}
+              createLink={this.state.createLink}
             />
           </div>
         ))}
@@ -289,17 +288,15 @@ class Diff extends React.Component<Props, State> {
   };
 
   createNewCommentEditor = (location: Location) => {
-    const { pullRequest } = this.props;
-    if (pullRequest._links.createComment) {
+    if (this.state.createLink) {
       return (
         <CreateCommentInlineWrapper>
           <CreateComment
-            url={pullRequest._links.createComment.href}
+            url={this.state.createLink.href}
             location={location}
             refresh={() => this.closeEditor(location, this.fetchComments)}
             onCancel={() => this.closeEditor(location)}
             autofocus={true}
-            handleError={this.onError}
           />
         </CreateCommentInlineWrapper>
       );

@@ -103,7 +103,6 @@ class PullRequestComments extends React.Component<Props, State> {
             <CreateComment
               url={createLink}
               refresh={this.updatePullRequestComments}
-              handleError={this.handleError}
             />
           ) : (
             ""

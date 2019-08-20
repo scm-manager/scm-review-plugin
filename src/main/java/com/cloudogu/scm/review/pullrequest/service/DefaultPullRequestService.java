@@ -54,10 +54,10 @@ public class DefaultPullRequestService implements PullRequestService {
   private void verifyNewChangesetsOnSource(Repository repository, String source, String target) throws NoDifferenceException {
     try (RepositoryService repositoryService = this.repositoryServiceFactory.create(repository)) {
       ChangesetPagingResult changesets = repositoryService.getLogCommand()
-        .setPagingStart(0)
-        .setPagingLimit(1)
         .setStartChangeset(source)
         .setAncestorChangeset(target)
+        .setPagingStart(0)
+        .setPagingLimit(1)
         .getChangesets();
 
       if (changesets.getChangesets().isEmpty()) {

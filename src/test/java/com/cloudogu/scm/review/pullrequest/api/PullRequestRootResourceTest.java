@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -32,7 +33,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
@@ -65,6 +65,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -101,10 +102,16 @@ public class PullRequestRootResourceTest {
   private UserDisplayManager userDisplayManager;
 
   @Mock
-  private RepositoryServiceFactory repositoryService;
+  private RepositoryServiceFactory repositoryServiceFactory;
+  @Mock
+  private RepositoryService repositoryService;
+  @Mock
+  private BranchRevisionResolver branchRevisionResolver;
+  @Mock
+  private LogCommandBuilder logCommandBuilder;
 
   @InjectMocks
-  private PullRequestMapperImpl mapper ;
+  private PullRequestMapperImpl mapper;
 
   private ScmEventBus eventBus = mock(ScmEventBus.class) ;
 
@@ -117,7 +124,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryService);
+    DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
     pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, commentService)));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
@@ -125,13 +132,14 @@ public class PullRequestRootResourceTest {
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
+    lenient().when(repositoryServiceFactory.create(any(Repository.class))).thenReturn(repositoryService);
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldCreateNewValidPullRequest() throws URISyntaxException, IOException {
     mockPrincipal();
-    mockChangesets(new Changeset());
+    mockChangesets("sourceBranch", "targetBranch", new Changeset());
 
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request =
@@ -235,7 +243,7 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldRejectWithoutDiff() throws URISyntaxException, IOException {
     mockPrincipal();
-    mockChangesets();
+    mockChangesets("sourceBranch", "targetBranch");
 
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request =
@@ -417,6 +425,7 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetCommentLink() throws URISyntaxException, IOException {
+    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
     dispatcher.invoke(request, response);
@@ -425,16 +434,15 @@ public class PullRequestRootResourceTest {
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
     prNode.elements().forEachRemaining(node -> {
-      String actual = node.path("_links").path("createComment").path("href").asText();
-      assertThat(actual).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText() + "/comments/");
-      actual = node.path("_links").path("comments").path("href").asText();
-      assertThat(actual).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText() + "/comments/");
+      String actualCollectionLink = node.path("_links").path("comments").path("href").asText();
+      assertThat(actualCollectionLink).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText() + "/comments/");
     });
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetUpdateLink() throws URISyntaxException, IOException {
+    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
 
@@ -474,7 +482,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
-  public void shouldFailOnUpdatingNonExistingPullRequest() throws URISyntaxException, UnsupportedEncodingException {
+  public void shouldFailOnUpdatingNonExistingPullRequest() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     when(store.get("opened_1")).thenThrow(new NotFoundException("x", "y"));
     MockHttpRequest request = MockHttpRequest
@@ -492,7 +500,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
-  public void shouldFailUpdatingOnMissingModifyPushPermission() throws URISyntaxException, UnsupportedEncodingException {
+  public void shouldFailUpdatingOnMissingModifyPushPermission() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
@@ -603,7 +611,8 @@ public class PullRequestRootResourceTest {
     prNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(status));
   }
 
-  private void initRepoWithPRs(String namespace, String name) {
+  private void initRepoWithPRs(String namespace, String name) throws IOException {
+    mockChangesets("develop", "master", new Changeset());
     when(repository.getNamespace()).thenReturn(namespace);
     when(repository.getName()).thenReturn(name);
     PullRequest openedPR1 = createPullRequest("opened_1", PullRequestStatus.OPEN);
@@ -632,6 +641,8 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldReturnCollectionWithCreateLink() throws URISyntaxException, IOException {
+    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
+
     JsonNode links = invokeAndReturnLinks();
 
     assertThat(links.has("create")).isTrue();
@@ -685,11 +696,13 @@ public class PullRequestRootResourceTest {
     when(principals.oneByType(User.class)).thenReturn(user1);
   }
 
-  private void mockChangesets(Changeset... changesets) throws IOException {
-    RepositoryService service = mock(RepositoryService.class);
-    when(repositoryService.create(any(Repository.class))).thenReturn(service);
-    LogCommandBuilder logCommandBuilder = mock(LogCommandBuilder.class, Mockito.RETURNS_SELF);
-    when(service.getLogCommand()).thenReturn(logCommandBuilder);
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(changesets.length, asList(changesets)));
+  private void mockChangesets(String sourceBranch, String targetBranch, Changeset... changesets) throws IOException {
+    when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
+    LogCommandBuilder subLogCommandBuilder = mock(LogCommandBuilder.class);
+    when(logCommandBuilder.setStartChangeset(sourceBranch)).thenReturn(subLogCommandBuilder);
+    when(subLogCommandBuilder.setAncestorChangeset(targetBranch)).thenReturn(subLogCommandBuilder);
+    when(subLogCommandBuilder.setPagingStart(0)).thenReturn(subLogCommandBuilder);
+    when(subLogCommandBuilder.setPagingLimit(1)).thenReturn(subLogCommandBuilder);
+    when(subLogCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(changesets.length, asList(changesets)));
   }
 }

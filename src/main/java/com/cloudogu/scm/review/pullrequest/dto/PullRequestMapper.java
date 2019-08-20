@@ -13,13 +13,19 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
+import sonia.scm.repository.ChangesetPagingResult;
+import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.LogCommandBuilder;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +41,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   @Inject
   private UserDisplayManager userDisplayManager;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
+  @Inject
+  private BranchRevisionResolver branchRevisionResolver;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")
@@ -94,9 +102,6 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     }
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest().update(repository.getNamespace(), repository.getName(), target.getId())));
-    }
-    if (PermissionCheck.mayComment(repository)) {
-      linksBuilder.single(link("createComment", pullRequestResourceLinks.pullRequestComments().create(repository.getNamespace(), repository.getName(), target.getId())));
     }
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));

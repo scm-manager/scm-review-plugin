@@ -7,6 +7,7 @@ import {
   Button,
   confirmAlert,
   DateFromNow,
+  ErrorNotification,
   Loading,
   MarkdownView,
   Modal,
@@ -44,7 +45,8 @@ type State = {
   updatedComment: BasicComment,
   loading: boolean,
   contextModalOpen: boolean,
-  replyEditor?: Reply
+  replyEditor?: Reply,
+  errorResult?: Error
 };
 
 const styles = {
@@ -90,7 +92,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   update = () => {
-    const { comment, handleError, refresh } = this.props;
+    const { comment, refresh } = this.props;
     comment.comment = this.state.updatedComment.comment;
     comment.type = this.state.updatedComment.type;
     this.setState({
@@ -101,9 +103,8 @@ class PullRequestComment extends React.Component<Props, State> {
         if (response.error) {
           this.setState({
             loading: false,
-            edit: false
+            errorResult: response.error
           });
-          handleError(response.error);
         } else {
           refresh();
         }
@@ -423,7 +424,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createMessageEditor = () => {
-    const { updatedComment } = this.state;
+    const { updatedComment, errorResult } = this.state;
     return (
       <>
         <Textarea
@@ -431,6 +432,7 @@ class PullRequestComment extends React.Component<Props, State> {
           value={updatedComment.comment}
           onChange={this.handleUpdateChange}
         />
+        {errorResult && <ErrorNotification error={errorResult}/>}
       </>
     );
   };
@@ -643,7 +645,6 @@ class PullRequestComment extends React.Component<Props, State> {
           refresh={() => this.closeReplyEditor()}
           onCancel={() => this.closeReplyEditor()}
           autofocus={true}
-          handleError={this.props.handleError} // TODO check??
         />
       </CreateCommentInlineWrapper>
     );

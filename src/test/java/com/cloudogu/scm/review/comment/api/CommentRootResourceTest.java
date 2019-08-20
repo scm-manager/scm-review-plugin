@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
@@ -12,7 +13,10 @@ import com.cloudogu.scm.review.comment.service.MockedDiffLine;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
+import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
@@ -32,6 +36,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Provider;
@@ -40,6 +45,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
@@ -49,6 +55,7 @@ import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -59,6 +66,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class CommentRootResourceTest {
 
+  public static final PullRequest PULL_REQUEST = TestData.createPullRequest();
   @Rule
   public final ShiroRule shiroRule = new ShiroRule();
 
@@ -84,6 +92,10 @@ public class CommentRootResourceTest {
 
   @Mock
   private CommentService commentService;
+  @Mock
+  private PullRequestService pullRequestService;
+  @Mock
+  private BranchRevisionResolver branchRevisionResolver;
 
   @Mock
   private UserDisplayManager userDisplayManager;
@@ -106,19 +118,77 @@ public class CommentRootResourceTest {
     commentMapper.setExecutedTransitionMapper(executedTransitionMapper);
     commentMapper.setPossibleTransitionMapper(possibleTransitionMapper);
     replyMapper.setExecutedTransitionMapper(executedTransitionMapper);
-    CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder);
+    CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder, pullRequestService, branchRevisionResolver);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = MockDispatcherFactory.createDispatcher();
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), commentService)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
+    when(branchRevisionResolver.getRevisions(any(), any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
+    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
   }
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldCreateNewComment() throws URISyntaxException {
+    when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
     when(service.add(eq(REPOSITORY_NAMESPACE), eq(REPOSITORY_NAME), eq("1"), argThat(t -> t.getComment().equals("this is my comment")))).thenReturn("1");
+    byte[] commentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments?sourceRevision=source&targetRevision=target")
+        .content(commentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+    assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldThrowConflictExceptionIfSourceRevisionNotEqualPullRequestSourceRevision() throws URISyntaxException, UnsupportedEncodingException {
+    when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
+    when(branchRevisionResolver.getRevisions(any(), eq(PULL_REQUEST))).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
+
+    byte[] commentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments?sourceRevision=other&targetRevision=target")
+        .content(commentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldThrowConflictExceptionIfTargetRevisionNotEqualPullRequestTargetRevision() throws URISyntaxException, UnsupportedEncodingException {
+    when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
+    when(branchRevisionResolver.getRevisions(any(), eq(PULL_REQUEST))).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
+
+    byte[] commentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments?sourceRevision=source&targetRevision=other")
+        .content(commentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldNotThrowConflictExceptionIfNoExpectationsInUrl() throws URISyntaxException, UnsupportedEncodingException {
+    when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
+    when(branchRevisionResolver.getRevisions(any(), eq(PULL_REQUEST))).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
+
     byte[] commentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
     MockHttpRequest request =
       MockHttpRequest
@@ -127,9 +197,42 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
-    assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldNotThrowConflictExceptionIfOnlyOneExpectationInUrl() throws URISyntaxException, UnsupportedEncodingException {
+    when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
+    when(branchRevisionResolver.getRevisions(any(), eq(PULL_REQUEST))).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
+
+    byte[] commentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments?sourceRevision=source")
+        .content(commentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldThrowConflictExceptionIfSingleExpectationInUrlIsWrong() throws URISyntaxException, UnsupportedEncodingException {
+    when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
+    when(branchRevisionResolver.getRevisions(any(), eq(PULL_REQUEST))).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
+
+    byte[] commentJson = "{\"comment\" : \"this is my comment\"}".getBytes();
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments?sourceRevision=other")
+        .content(commentJson)
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
   }
 
   @Test
@@ -282,6 +385,26 @@ public class CommentRootResourceTest {
     assertThat(transition_1.get("user").get("id").asText()).isEqualTo("slarti");
     assertThat(transition_2.get("transition").asText()).isEqualTo("SET_DONE");
     assertThat(transition_2.get("user").get("id").asText()).isEqualTo("dent");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
+  public void shouldGetCreateLinkWithRevisions() throws URISyntaxException, IOException {
+    mockExistingComments();
+
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments")
+        .contentType(MediaType.APPLICATION_JSON);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode createLinkNode = jsonNode.get("_links").get("create").get("href");
+
+    assertThat(createLinkNode.asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/?sourceRevision=source&targetRevision=target");
   }
 
   private void mockExistingComments() {
