@@ -125,6 +125,7 @@ public class CommentRootResourceTest {
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), commentService)));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
+    when(branchRevisionResolver.getRevisions(any(), any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
   }
 

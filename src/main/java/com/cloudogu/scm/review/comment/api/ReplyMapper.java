@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
@@ -28,7 +29,7 @@ public abstract class ReplyMapper {
   private ExecutedTransitionMapper executedTransitionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  abstract ReplyDto map(Reply reply, @Context Repository repository, @Context String pullRequestId, @Context Comment comment);
+  abstract ReplyDto map(Reply reply, @Context Repository repository, @Context String pullRequestId, @Context Comment comment, @Context BranchRevisionResolver.RevisionResult revisions);
 
   abstract Reply map(ReplyDto replyDto);
 
@@ -45,14 +46,14 @@ public abstract class ReplyMapper {
   }
 
   @AfterMapping
-  void appendLinks(@MappingTarget ReplyDto target, Reply source, @Context Repository repository, @Context String pullRequestId, @Context Comment comment) {
+  void appendLinks(@MappingTarget ReplyDto target, Reply source, @Context Repository repository, @Context String pullRequestId, @Context Comment comment, @Context BranchRevisionResolver.RevisionResult revisions) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();
     linksBuilder.self(commentPathBuilder.createReplySelfUri(namespace, name, pullRequestId, comment.getId(), target.getId()));
     if (PermissionCheck.mayModifyComment(repository, source)) {
-      linksBuilder.single(link("update", commentPathBuilder.createUpdateReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId())));
-      linksBuilder.single(link("delete", commentPathBuilder.createDeleteReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId())));
+      linksBuilder.single(link("update", commentPathBuilder.createUpdateReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId(), revisions)));
+      linksBuilder.single(link("delete", commentPathBuilder.createDeleteReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId(), revisions)));
     }
     target.add(linksBuilder.build());
   }

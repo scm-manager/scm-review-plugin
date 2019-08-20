@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
+import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 
@@ -57,34 +58,34 @@ class CommentPathBuilder {
       .href();
   }
 
-  String createReplyCommentUri(String namespace, String name, String pullRequestId, String commentId) {
+  String createReplyCommentUri(String namespace, String name, String pullRequestId, String commentId, BranchRevisionResolver.RevisionResult revisions) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     return linkBuilder
       .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
       .method("comments").parameters()
       .method("getCommentResource").parameters(commentId)
       .method("reply").parameters()
-      .href();
+      .href() + "?sourceRevision=" + revisions.getSourceRevision() + "&targetRevision=" + revisions.getTargetRevision();
   }
 
-  String createUpdateReplyUri(String namespace, String name, String pullRequestId, String commentId, String replyId) {
+  String createUpdateReplyUri(String namespace, String name, String pullRequestId, String commentId, String replyId, BranchRevisionResolver.RevisionResult revisions) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     return linkBuilder
       .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
       .method("comments").parameters()
       .method("getCommentResource").parameters(commentId)
       .method("updateReply").parameters(replyId)
-      .href();
+      .href() + "?sourceRevision=" + revisions.getSourceRevision() + "&targetRevision=" + revisions.getTargetRevision();
   }
 
-  String createDeleteReplyUri(String namespace, String name, String pullRequestId, String commentId, String replyId) {
+  String createDeleteReplyUri(String namespace, String name, String pullRequestId, String commentId, String replyId, BranchRevisionResolver.RevisionResult revisions) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     return linkBuilder
       .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
       .method("comments").parameters()
       .method("getCommentResource").parameters(commentId)
       .method("deleteReply").parameters(replyId)
-      .href();
+      .href() + "?sourceRevision=" + revisions.getSourceRevision() + "&targetRevision=" + revisions.getTargetRevision();
   }
 
   String createPossibleTransitionUri(String namespace, String name, String pullRequestId, String commentId) {

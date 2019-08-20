@@ -8,9 +8,7 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
-import com.google.common.base.Strings;
 import org.apache.shiro.authz.AuthorizationException;
-import sonia.scm.ConcurrentModificationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
@@ -34,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.HalRepresentations.createCollection;
+import static com.cloudogu.scm.review.comment.api.RevisionChecker.checkRevision;
 
 public class CommentRootResource {
 
@@ -75,25 +74,13 @@ public class CommentRootResource {
       throw new AuthorizationException("Is is Forbidden to create a system comment.");
     }
 
-    PullRequest pullRequest = pullRequestService.get(namespace, name, pullRequestId);
-    if (!Strings.isNullOrEmpty(expectedSourceRevision) || !Strings.isNullOrEmpty(expectedTargetRevision)) {
-      BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(new NamespaceAndName(namespace, name), pullRequest);
-      String currentSourceRevision = revisions.getSourceRevision();
-      String currentTargetRevision = revisions.getTargetRevision();
-      if (revisionsMatchIfSpecified(expectedSourceRevision, expectedTargetRevision, currentSourceRevision, currentTargetRevision)) {
-        throw new ConcurrentModificationException(PullRequest.class, pullRequestId);
-      }
-    }
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     Comment comment = mapper.map(commentDto);
     String id = service.add(namespace, name, pullRequestId, comment);
     URI location = URI.create(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, id));
     return Response.created(location).build();
   }
 
-  private boolean revisionsMatchIfSpecified(String expectedSourceRevision, String expectedTargetRevision, String currentSourceRevision, String currentTargetRevision) {
-    return (!Strings.isNullOrEmpty(expectedSourceRevision) && !currentSourceRevision.equals(expectedSourceRevision)) ||
-      (!Strings.isNullOrEmpty(expectedTargetRevision) && !currentTargetRevision.equals(expectedTargetRevision));
-  }
 
   @GET
   @Path("")
@@ -104,14 +91,14 @@ public class CommentRootResource {
                          @PathParam("pullRequestId") String pullRequestId) {
     PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    PullRequest pullRequest = pullRequestService.get(namespace, name, pullRequestId);
+    BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(new NamespaceAndName(namespace, name), pullRequest);
     List<Comment> list = service.getAll(namespace, name, pullRequestId);
     List<CommentDto> dtoList = list
       .stream()
-      .map(comment -> mapper.map(comment, repository, pullRequestId, service.possibleTransitions(namespace, name, pullRequestId, comment.getId())))
+      .map(comment -> mapper.map(comment, repository, pullRequestId, service.possibleTransitions(namespace, name, pullRequestId, comment.getId()), revisions))
       .collect(Collectors.toList());
     boolean permission = PermissionCheck.mayComment(repository);
-    PullRequest pullRequest = pullRequestService.get(namespace, name, pullRequestId);
-    BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(new NamespaceAndName(namespace, name), pullRequest);
     return Response.ok(
       createCollection(
         permission,
