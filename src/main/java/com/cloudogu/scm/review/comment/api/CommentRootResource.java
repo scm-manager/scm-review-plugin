@@ -57,7 +57,12 @@ public class CommentRootResource {
   }
 
   @Path("{commentId}")
-  public CommentResource getCommentResource() {
+  public CommentResource getCommentResource(@PathParam("namespace") String namespace,
+                                            @PathParam("name") String name,
+                                            @PathParam("pullRequestId") String pullRequestId,
+                                            @QueryParam("sourceRevision") String expectedSourceRevision,
+                                            @QueryParam("targetRevision") String expectedTargetRevision) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     return commentResourceProvider.get();
   }
 
