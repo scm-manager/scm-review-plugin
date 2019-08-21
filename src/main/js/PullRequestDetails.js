@@ -424,8 +424,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       </>
     );
     return (
-      <div className="columns">
-        <div className="column">
+      <>
           <div className="media">
             <div className="media-content">
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
@@ -504,8 +503,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             target={pullRequest.target}
             status={pullRequest.status}
           />
-        </div>
-      </div>
+          </>
     );
   }
 }
