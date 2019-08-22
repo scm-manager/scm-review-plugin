@@ -7,6 +7,7 @@ import {
   Button,
   confirmAlert,
   DateFromNow,
+  DiffFile,
   ErrorNotification,
   Loading,
   MarkdownView,
@@ -21,7 +22,6 @@ import CreateComment from "./CreateComment";
 import RecursivePullRequestComment from "./RecursivePullRequestComment";
 import {FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag} from "./tags";
 import TagGroup from "./TagGroup";
-import DiffFile from "@scm-manager/ui-components/src/repos/DiffFile";
 import {mapCommentToFile} from "./commentToFileMapper";
 import type {AnnotationFactoryContext} from "@scm-manager/ui-components";
 import InlineComments from "../diff/InlineComments";
