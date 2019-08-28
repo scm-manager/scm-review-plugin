@@ -12,13 +12,13 @@
   <version>2.0.0-SNAPSHOT</version>
   <name>scm-review-plugin</name>
   <packaging>smp</packaging>
-  <url>https://bitbucket.org/scm-manager/scm-review-plugin</url>
+  <url>https://github.com/scm-manager/scm-review-plugin</url>
   <description>Depict a review process with pull requests</description>
 
   <scm>
-    <connection>scm:hg:http://bitbucket.org/scm-manager/scm-review-plugin</connection>
-    <developerConnection>scm:hg:https://bitbucket.org/scm-manager/scm-review-plugin</developerConnection>
-    <url>http://bitbucket.org/scm-manager/scm-review-plugin</url>
+    <connection>scm:git:https://github.com/scm-manager/scm-review-plugin</connection>
+    <developerConnection>scm:git:https://github.com/scm-manager/scm-review-plugin</developerConnection>
+    <url>https://github.com/scm-manager/scm-review-plugin</url>
   </scm>
 
   <properties>
