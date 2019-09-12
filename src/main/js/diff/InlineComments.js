@@ -4,8 +4,8 @@ import injectSheet from "react-jss";
 
 const styles = {
   comments: {
-    borderTop: "1px solid #dbdbdb",
-    borderBottom: "1px solid #dbdbdb"
+    borderTop: "1px solid var(--border)",
+    borderBottom: "1px solid var(--border)"
   }
 };
 
