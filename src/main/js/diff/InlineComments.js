@@ -2,17 +2,20 @@
 import * as React from "react";
 import injectSheet from "react-jss";
 
+type Props = {
+  children: React.Node,
+
+  // context props
+  classes: any
+};
+
 const styles = {
   comments: {
+    paddingLeft: "6.75rem",
+    backgroundColor: "var(--light)",
     borderTop: "1px solid var(--border)",
     borderBottom: "1px solid var(--border)"
   }
-};
-
-type Props = {
-  children: React.Node,
-  // context props
-  classes: any
 };
 
 class InlineComments extends React.Component<Props> {
