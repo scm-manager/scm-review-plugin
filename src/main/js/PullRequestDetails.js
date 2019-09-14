@@ -6,6 +6,7 @@ import { withRouter } from "react-router-dom";
 import classNames from "classnames";
 import type { History } from "history";
 import type { Repository } from "@scm-manager/ui-types";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   DateFromNow,
   Loading,
@@ -26,30 +27,6 @@ import {
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
-import {ExtensionPoint} from "@scm-manager/ui-extensions";
-
-const styles = {
-  userListMargin: {
-    marginBottom: "1.5em"
-  },
-  userLabelAlignment: {
-    textAlign: "left",
-    marginRight: 0,
-    minWidth: "5.5em"
-  },
-  userFieldFlex: {
-    flexGrow: 8
-  },
-  tagShorter: {
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    maxWidth: "25em"
-  },
-  borderTop: {
-    borderTop: "none !important"
-  }
-};
 
 type Props = {
   repository: Repository,
@@ -73,6 +50,30 @@ type State = {
   subscriptionLabel: string,
   subscriptionLink: string,
   subscriptionColor: string
+};
+
+const styles = {
+  userListMargin: {
+    marginBottom: "1.5em"
+  },
+  userLabelAlignment: {
+    textAlign: "left",
+    marginRight: 0,
+    minWidth: "5.5em"
+  },
+  userFieldFlex: {
+    flexGrow: 8
+  },
+  tagShorter: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    maxWidth: "25em"
+  },
+  borderTop: {
+    padding: "0 !important",
+    borderTop: "none !important"
+  }
 };
 
 class PullRequestDetails extends React.Component<Props, State> {
@@ -425,85 +426,89 @@ class PullRequestDetails extends React.Component<Props, State> {
     );
     return (
       <>
-          <div className="media">
-            <div className="media-content">
-              <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
-            </div>
-            {editButton}
+        <div className="media">
+          <div className="media-content">
+            <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
           </div>
+          {editButton}
+        </div>
 
-          {mergeNotification}
+        {mergeNotification}
 
-          <div className={classNames(classes.borderTop, "media")}>
-            <div className="media-content">
-              <div>
-                <span
-                  className="tag is-light is-medium"
-                  title={pullRequest.source}
-                >
-                  <span className={classes.tagShorter}>
-                    {pullRequest.source}
-                  </span>
-                </span>{" "}
-                <i className="fas fa-long-arrow-alt-right" />{" "}
-                <span
-                  className="tag is-light is-medium"
-                  title={pullRequest.target}
-                >
-                  <span className={classes.tagShorter}>
-                    {pullRequest.target}
-                  </span>
-                </span>
-                {targetBranchDeletedWarning}
-              </div>
-            </div>
-            <div className="media-right">
-              <span
-                className={classNames(
-                  "tag",
-                  "is-medium",
-                  pullRequest.status === "MERGED"
-                    ? "is-success"
-                    : pullRequest.status === "REJECTED"
-                    ? "is-danger"
-                    : ""
-                )}
-              >
-                {pullRequest.status}
-              </span>
-            </div>
+        <div className={classNames("media", classes.borderTop)}>
+          <div className="media-content">
+            <span
+              className={classNames(
+                "tag",
+                "is-light",
+                "is-medium",
+                classes.tagShorter
+              )}
+              title={pullRequest.source}
+            >
+              {pullRequest.source}
+            </span>{" "}
+            <i className="fas fa-long-arrow-alt-right" />{" "}
+            <span
+              className={classNames(
+                "tag",
+                "is-light",
+                "is-medium",
+                classes.tagShorter
+              )}
+              title={pullRequest.target}
+            >
+              {pullRequest.target}
+            </span>
+            {targetBranchDeletedWarning}
           </div>
-          <ExtensionPoint
-            name={"reviewPlugin.pullrequest.top"}
-            renderAll={true}
-            props={{repository, pullRequest}}
-          />
-          {description}
-
-          <div className={classNames(classes.userListMargin, "media")}>
-            <div className="media-content">
-              {author}
-              {reviewerList}
-            </div>
+          <div className="media-right">
+            <span
+              className={classNames(
+                "tag",
+                "is-medium",
+                pullRequest.status === "MERGED"
+                  ? "is-success"
+                  : pullRequest.status === "REJECTED"
+                  ? "is-danger"
+                  : ""
+              )}
+            >
+              {pullRequest.status}
+            </span>
           </div>
+        </div>
+        <ExtensionPoint
+          name={"reviewPlugin.pullrequest.top"}
+          renderAll={true}
+          props={{ repository, pullRequest }}
+        />
+        {description}
 
-          <div className="level">
-            <div className="level-left">
-              <div className="level-item">{rejectButton}</div>
-              <div className="level-item">{mergeButton}</div>
-            </div>
-            {subscription}
+        <div className={classNames("media", classes.userListMargin)}>
+          <div className="media-content">
+            {author}
+            {reviewerList}
           </div>
+        </div>
 
-          <PullRequestInformation
-            pullRequest={pullRequest}
-            baseURL={match.url}
-            repository={repository}
-            source={pullRequest.source}
-            target={pullRequest.target}
-            status={pullRequest.status}
-          />
-          </>
+        <div className="level">
+          <div className="level-left">
+            <div className="level-item">{rejectButton}</div>
+            <div className="level-item">{mergeButton}</div>
+          </div>
+          {subscription}
+        </div>
+
+        <PullRequestInformation
+          pullRequest={pullRequest}
+          baseURL={match.url}
+          repository={repository}
+          source={pullRequest.source}
+          target={pullRequest.target}
+          status={pullRequest.status}
+        />
+      </>
     );
   }
 }
