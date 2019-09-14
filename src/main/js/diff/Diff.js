@@ -1,6 +1,13 @@
 //@flow
 import React from "react";
-import type { DiffEventContext, File, AnnotationFactoryContext } from "@scm-manager/ui-components";
+import { translate, type TFunction } from "react-i18next";
+import type { Repository, Link } from "@scm-manager/ui-types";
+import type {
+  DiffEventContext,
+  File,
+  AnnotationFactoryContext
+} from "@scm-manager/ui-components";
+import type { PullRequest, Location, RootComment } from "../types/PullRequest";
 import {
   ErrorNotification,
   Loading,
@@ -8,21 +15,20 @@ import {
   Notification,
   diffs
 } from "@scm-manager/ui-components";
-import type { Repository, Link } from "@scm-manager/ui-types";
 import { createDiffUrl } from "../pullRequest";
-import { translate, type TFunction } from "react-i18next";
-import type { PullRequest, Location, RootComment } from "../types/PullRequest";
-import CreateComment from "../comment/CreateComment";
-import CreateCommentInlineWrapper from "./CreateCommentInlineWrapper";
-import PullRequestComment from "../comment/PullRequestComment";
-import InlineComments from "./InlineComments";
-import StyledDiffWrapper from "./StyledDiffWrapper";
 import {
   createHunkId,
   createHunkIdFromLocation,
-  createInlineLocation, isInlineLocation, createChangeIdFromLocation
+  createInlineLocation,
+  isInlineLocation,
+  createChangeIdFromLocation
 } from "./locations";
 import { fetchDiffRelatedComments } from "./fetchDiffRelatedComments";
+import PullRequestComment from "../comment/PullRequestComment";
+import CreateComment from "../comment/CreateComment";
+import CreateCommentInlineWrapper from "./CreateCommentInlineWrapper";
+import InlineComments from "./InlineComments";
+import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 
@@ -81,14 +87,13 @@ class Diff extends React.Component<Props, State> {
 
       fetchDiffRelatedComments(pullRequest._links.comments.href)
         .then(comments => {
-            this.setState({
-              loading: false,
-              error: undefined,
-              // TODO do we need to keep editor state?
-              ...comments
-            })
-          }
-        )
+          this.setState({
+            loading: false,
+            error: undefined,
+            // TODO do we need to keep editor state?
+            ...comments
+          });
+        })
         .catch(error =>
           this.setState({
             loading: false,
@@ -170,7 +175,9 @@ class Diff extends React.Component<Props, State> {
             lineAnnotations.push(this.createComments(lineState));
           }
           if (lineState.editor) {
-            lineAnnotations.push(this.createNewCommentEditor(lineState.location));
+            lineAnnotations.push(
+              this.createNewCommentEditor(lineState.location)
+            );
           }
           if (lineAnnotations.length > 0) {
             annotations[changeId] = (

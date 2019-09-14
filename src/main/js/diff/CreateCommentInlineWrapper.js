@@ -5,12 +5,12 @@ import classNames from "classnames";
 
 const styles = {
   wrapperRoot: {
-    fontSize: "1rem",
+    fontSize: "0.9rem",
     padding: "1rem",
-    borderTop: "1px solid var(--border)",
+    borderTop: "1px solid var(--border)"
   },
   wrapperChild: {
-    marginLeft: "2rem",
+    marginLeft: "2rem"
   },
   arrow: {
     position: "absolute",
@@ -31,8 +31,17 @@ class CreateCommentInlineWrapper extends React.Component<Props> {
     const { classes, children, isChildComment } = this.props;
     return (
       <>
-        {isChildComment && <div className={classNames("has-text-grey-lighter", classes.arrow)}><i className="fas fa-caret-right" /></div>}
-        <div className={classNames(classes.wrapperRoot, isChildComment ? classes.wrapperChild : "")}>
+        {isChildComment && (
+          <div className={classNames("has-text-grey-lighter", classes.arrow)}>
+            <i className="fas fa-caret-right" />
+          </div>
+        )}
+        <div
+          className={classNames(
+            classes.wrapperRoot,
+            isChildComment ? classes.wrapperChild : ""
+          )}
+        >
           {children}
         </div>
       </>
