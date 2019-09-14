@@ -53,8 +53,9 @@ type State = {
 };
 
 const styles = {
-  userListMargin: {
-    marginBottom: "1.5em"
+  wordWrap: {
+    width: "100%",
+    wordWrap: "break-word"
   },
   userLabelAlignment: {
     textAlign: "left",
@@ -64,15 +65,18 @@ const styles = {
   userFieldFlex: {
     flexGrow: 8
   },
+  borderTop: {
+    padding: "0 !important",
+    borderTop: "none !important"
+  },
   tagShorter: {
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
     maxWidth: "25em"
   },
-  borderTop: {
-    padding: "0 !important",
-    borderTop: "none !important"
+  userListMargin: {
+    marginBottom: "1.5em"
   }
 };
 
@@ -277,7 +281,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     if (pullRequest.description) {
       description = (
         <div className="media">
-          <div className="media-content">
+          <div className={classNames("media-content", classes.wordWrap)}>
             <MarkdownView
               className="content"
               content={pullRequest.description}
@@ -356,16 +360,13 @@ class PullRequestDetails extends React.Component<Props, State> {
     ) : (
       ""
     );
-
     const targetBranchDeletedWarning = targetBranchDeleted ? (
-      <span className="icon has-text-warning">
-        <Tooltip
-          className={classes.tooltip}
-          message={t("scm-review-plugin.show-pull-request.targetDeleted")}
-        >
-          <i className="fas fa-exclamation-triangle" />
-        </Tooltip>
-      </span>
+      <Tooltip
+        className="icon has-text-warning"
+        message={t("scm-review-plugin.show-pull-request.targetDeleted")}
+      >
+        <i className="fas fa-exclamation-triangle" />
+      </Tooltip>
     ) : null;
 
     const author = (
