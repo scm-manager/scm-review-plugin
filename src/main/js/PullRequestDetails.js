@@ -15,7 +15,8 @@ import {
   ErrorNotification,
   Tooltip,
   MarkdownView,
-  Button
+  Button,
+  Tag
 } from "@scm-manager/ui-components";
 import type { PullRequest } from "./types/PullRequest";
 import {
@@ -64,6 +65,10 @@ const styles = {
   },
   userFieldFlex: {
     flexGrow: 8
+  },
+  userInline: {
+    display: "inline-block",
+    fontWeight: "bold"
   },
   borderTop: {
     padding: "0 !important",
@@ -295,7 +300,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     if (showNotification) {
       mergeNotification = (
         <Notification
-          type={"info"}
+          type="info"
           children={t("scm-review-plugin.show-pull-request.notification")}
           onClose={() => this.onClose()}
         />
@@ -385,7 +390,9 @@ class PullRequestDetails extends React.Component<Props, State> {
             "field-body is-inline-flex"
           )}
         >
-          <div className={"user"}>{pullRequest.author.displayName}</div>
+          <div className={classes.userInline}>
+            {pullRequest.author.displayName}
+          </div>
           &nbsp;
           <DateFromNow date={pullRequest.creationDate} />
         </div>
@@ -412,7 +419,7 @@ class PullRequestDetails extends React.Component<Props, State> {
               <ul className="is-separated">
                 {pullRequest.reviewer.map(reviewer => {
                   return (
-                    <li className={"user"} key={reviewer.id}>
+                    <li className={classes.userInline} key={reviewer.id}>
                       {reviewer.displayName}
                     </li>
                   );
@@ -438,45 +445,33 @@ class PullRequestDetails extends React.Component<Props, State> {
 
         <div className={classNames("media", classes.borderTop)}>
           <div className="media-content">
-            <span
-              className={classNames(
-                "tag",
-                "is-light",
-                "is-medium",
-                classes.tagShorter
-              )}
+            <Tag
+              className={classNames("is-medium", classes.tagShorter)}
+              color="light"
+              label={pullRequest.source}
               title={pullRequest.source}
-            >
-              {pullRequest.source}
-            </span>{" "}
+            />{" "}
             <i className="fas fa-long-arrow-alt-right" />{" "}
-            <span
-              className={classNames(
-                "tag",
-                "is-light",
-                "is-medium",
-                classes.tagShorter
-              )}
+            <Tag
+              className={classNames("is-medium", classes.tagShorter)}
+              color="light"
+              label={pullRequest.target}
               title={pullRequest.target}
-            >
-              {pullRequest.target}
-            </span>
+            />
             {targetBranchDeletedWarning}
           </div>
           <div className="media-right">
-            <span
-              className={classNames(
-                "tag",
-                "is-medium",
+            <Tag
+              className="is-medium"
+              color={
                 pullRequest.status === "MERGED"
-                  ? "is-success"
+                  ? "success"
                   : pullRequest.status === "REJECTED"
-                  ? "is-danger"
-                  : ""
-              )}
-            >
-              {pullRequest.status}
-            </span>
+                  ? "danger"
+                  : "light"
+              }
+              label={pullRequest.status}
+            />
           </div>
         </div>
         <ExtensionPoint
