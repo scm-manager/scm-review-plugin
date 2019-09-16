@@ -112,13 +112,11 @@ class Edit extends React.Component<Props, State> {
             userAutocompleteLink={userAutocompleteLink}
             handleFormChange={this.handleFormChange}
           />
-          <div>
-            <SubmitButton
-              label={t("scm-review-plugin.edit.submitButton")}
-              action={this.submit}
-              loading={loading}
-            />
-          </div>
+          <SubmitButton
+            label={t("scm-review-plugin.edit.submitButton")}
+            action={this.submit}
+            loading={loading}
+          />
         </div>
       </div>
     );
