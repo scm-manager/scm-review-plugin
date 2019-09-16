@@ -84,7 +84,7 @@ export const TaskDoneTag = ({ title }: TitleOnlyProps) => (
   <TranslatedTag
     icon="check-circle"
     label="done"
-    color="success"
+    color="outline-success"
     title={title}
   />
 );
