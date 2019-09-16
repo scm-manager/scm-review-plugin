@@ -6,8 +6,12 @@ import classNames from "classnames";
 const styles = {
   wrapperRoot: {
     fontSize: "0.9rem",
-    padding: "1rem",
-    borderTop: "1px solid var(--border)"
+    padding: "1.5rem",
+    borderTop: "1px solid var(--border)",
+
+    "& .content:not(:last-child)": {
+      marginBottom: "0"
+    }
   },
   wrapperChild: {
     marginLeft: "2rem"
