@@ -1,10 +1,10 @@
 // @flow
 import React from "react";
 import { Link, withRouter } from "react-router-dom";
-import type { PullRequest } from "./../types/PullRequest";
-import { DateFromNow } from "@scm-manager/ui-components";
 import injectSheet from "react-jss";
 import classNames from "classnames";
+import { DateFromNow, Tag } from "@scm-manager/ui-components";
+import type { PullRequest } from "./../types/PullRequest";
 
 const styles = {
   wordBreakMinWidth: {
@@ -47,18 +47,17 @@ class PullRequestRow extends React.Component<Props> {
           )}
         </td>
         <td className="is-hidden-mobile">
-          <span
-            className={classNames(
-              "tag is-medium",
+          <Tag
+            className="is-medium"
+            color={
               pullRequest.status === "MERGED"
-                ? "is-success"
+                ? "success"
                 : pullRequest.status === "REJECTED"
-                ? "is-danger"
-                : ""
-            )}
-          >
-            {pullRequest.status}
-          </span>
+                ? "danger"
+                : "light"
+            }
+            label={pullRequest.status}
+          />
         </td>
       </tr>
     );
