@@ -71,6 +71,7 @@ const styles = {
     fontWeight: "bold"
   },
   containerBorder: {
+    marginBottom: "2rem",
     padding: "1rem",
     border: "1px solid var(--border)",
     borderRadius: "4px"
