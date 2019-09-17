@@ -70,6 +70,11 @@ const styles = {
     display: "inline-block",
     fontWeight: "bold"
   },
+  containerBorder: {
+    padding: "1rem",
+    border: "1px solid var(--border)",
+    borderRadius: "4px"
+  },
   borderTop: {
     padding: "0 !important",
     borderTop: "none !important"
@@ -434,66 +439,68 @@ class PullRequestDetails extends React.Component<Props, State> {
     );
     return (
       <>
-        <div className="media">
-          <div className="media-content">
-            <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
+        <div className={classes.containerBorder}>
+          <div className="media">
+            <div className="media-content">
+              <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
+            </div>
+            {editButton}
           </div>
-          {editButton}
-        </div>
 
-        {mergeNotification}
+          {mergeNotification}
 
-        <div className={classNames("media", classes.borderTop)}>
-          <div className="media-content">
-            <Tag
-              className={classNames("is-medium", classes.tagShorter)}
-              color="light"
-              label={pullRequest.source}
-              title={pullRequest.source}
-            />{" "}
-            <i className="fas fa-long-arrow-alt-right" />{" "}
-            <Tag
-              className={classNames("is-medium", classes.tagShorter)}
-              color="light"
-              label={pullRequest.target}
-              title={pullRequest.target}
-            />
-            {targetBranchDeletedWarning}
+          <div className={classNames("media", classes.borderTop)}>
+            <div className="media-content">
+              <Tag
+                className={classNames("is-medium", classes.tagShorter)}
+                color="light"
+                label={pullRequest.source}
+                title={pullRequest.source}
+              />{" "}
+              <i className="fas fa-long-arrow-alt-right" />{" "}
+              <Tag
+                className={classNames("is-medium", classes.tagShorter)}
+                color="light"
+                label={pullRequest.target}
+                title={pullRequest.target}
+              />
+              {targetBranchDeletedWarning}
+            </div>
+            <div className="media-right">
+              <Tag
+                className="is-medium"
+                color={
+                  pullRequest.status === "MERGED"
+                    ? "success"
+                    : pullRequest.status === "REJECTED"
+                    ? "danger"
+                    : "light"
+                }
+                label={pullRequest.status}
+              />
+            </div>
           </div>
-          <div className="media-right">
-            <Tag
-              className="is-medium"
-              color={
-                pullRequest.status === "MERGED"
-                  ? "success"
-                  : pullRequest.status === "REJECTED"
-                  ? "danger"
-                  : "light"
-              }
-              label={pullRequest.status}
-            />
-          </div>
-        </div>
-        <ExtensionPoint
-          name={"reviewPlugin.pullrequest.top"}
-          renderAll={true}
-          props={{ repository, pullRequest }}
-        />
-        {description}
+          <ExtensionPoint
+            name={"reviewPlugin.pullrequest.top"}
+            renderAll={true}
+            props={{ repository, pullRequest }}
+          />
+          {description}
 
-        <div className={classNames("media", classes.userListMargin)}>
-          <div className="media-content">
-            {author}
-            {reviewerList}
+          <div className={classNames("media", classes.userListMargin)}>
+            <div className="media-content">
+              {author}
+              {reviewerList}
+            </div>
           </div>
-        </div>
 
-        <div className="level">
-          <div className="level-left">
-            <div className="level-item">{rejectButton}</div>
-            <div className="level-item">{mergeButton}</div>
+          <div className="level">
+            <div className="level-left">
+              <div className="level-item">{rejectButton}</div>
+              <div className="level-item">{mergeButton}</div>
+            </div>
+            {subscription}
           </div>
-          {subscription}
         </div>
 
         <PullRequestInformation
