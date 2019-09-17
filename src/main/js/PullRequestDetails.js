@@ -48,9 +48,9 @@ type State = {
   mergeButtonLoading: boolean,
   rejectButtonLoading: boolean,
   showNotification: boolean,
+  subscriptionIcon: string,
   subscriptionLabel: string,
-  subscriptionLink: string,
-  subscriptionColor: string
+  subscriptionLink: string
 };
 
 const styles = {
@@ -97,7 +97,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.state = {
       loading: false,
       loadingSubscription: true,
-      subscriptionColor: "success",
       pullRequest: this.props.pullRequest,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
@@ -143,16 +142,16 @@ class PullRequestDetails extends React.Component<Props, State> {
           if (response._links.subscribe) {
             this.setState({
               loadingSubscription: false,
+              subscriptionIcon: "plus",
               subscriptionLabel: "subscribe",
-              subscriptionLink: response._links.subscribe.href,
-              subscriptionColor: "success"
+              subscriptionLink: response._links.subscribe.href
             });
           } else if (response._links.unsubscribe) {
             this.setState({
               loadingSubscription: false,
+              subscriptionIcon: "minus",
               subscriptionLabel: "unsubscribe",
-              subscriptionLink: response._links.unsubscribe.href,
-              subscriptionColor: "warning"
+              subscriptionLink: response._links.unsubscribe.href
             });
           }
         }
@@ -274,9 +273,9 @@ class PullRequestDetails extends React.Component<Props, State> {
       targetBranchDeleted,
       rejectButtonLoading,
       showNotification,
+      subscriptionIcon,
       subscriptionLabel,
       subscriptionLink,
-      subscriptionColor,
       loadingSubscription
     } = this.state;
 
@@ -347,7 +346,7 @@ class PullRequestDetails extends React.Component<Props, State> {
         "/edit";
       editButton = (
         <div className="media-right">
-          <Button link={toEdit} color="primary" className="reduced-mobile">
+          <Button link={toEdit} color="outline-link" className="reduced-mobile">
             <span className="icon is-small">
               <i className="fas fa-edit" />
             </span>
@@ -358,14 +357,19 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
 
     const subscription = subscriptionLink ? (
-      <div className="level-right">
+      <div className="level-left">
         <div className="level-item">
           <Button
-            label={t("scm-review-plugin.edit." + subscriptionLabel)}
+            className="reduced-mobile"
             action={this.handleSubscription}
             loading={loadingSubscription}
-            color={subscriptionColor}
-          />
+            color="outline-link"
+          >
+            <span className="icon is-small">
+              <i className={`fas fa-${subscriptionIcon}`} />
+            </span>
+            <span>{t("scm-review-plugin.edit." + subscriptionLabel)}</span>
+          </Button>
         </div>
       </div>
     ) : (
@@ -496,11 +500,11 @@ class PullRequestDetails extends React.Component<Props, State> {
           </div>
 
           <div className="level">
-            <div className="level-left">
+            {subscription}
+            <div className="level-right">
               <div className="level-item">{rejectButton}</div>
               <div className="level-item">{mergeButton}</div>
             </div>
-            {subscription}
           </div>
         </div>
 
