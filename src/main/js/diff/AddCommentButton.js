@@ -13,7 +13,7 @@ class AddCommentButton extends React.Component<Props> {
   render() {
     const { action, t } = this.props;
     return (
-      <Button action={action} className="reduced-mobile">
+      <Button action={action}>
         <span className="icon">
           <i className="fas fa-comment" />
         </span>
