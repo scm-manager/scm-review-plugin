@@ -73,7 +73,7 @@ const styles = {
   containerBorder: {
     marginBottom: "2rem",
     padding: "1rem",
-    border: "1px solid var(--border)",
+    border: "1px solid #dbdbdb", //var(--border)
     borderRadius: "4px"
   },
   borderTop: {
@@ -360,7 +360,6 @@ class PullRequestDetails extends React.Component<Props, State> {
       <div className="level-left">
         <div className="level-item">
           <Button
-            className="reduced-mobile"
             action={this.handleSubscription}
             loading={loadingSubscription}
             color="outline-link"

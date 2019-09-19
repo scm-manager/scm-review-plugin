@@ -70,7 +70,7 @@ const styles = {
     padding: "0 0.4rem"
   },
   lighterColor: {
-    color: "var(--dark-50)"
+    color: "#9a9a9a" //var(--dark-50)
   }
 };
 

@@ -7,7 +7,7 @@ const styles = {
   wrapperRoot: {
     fontSize: "0.9rem",
     padding: "1.5rem",
-    borderTop: "1px solid var(--border)",
+    borderTop: "1px solid #dbdbdb", //var(--border)
 
     "& .content:not(:last-child)": {
       marginBottom: "0"

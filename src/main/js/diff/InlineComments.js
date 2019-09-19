@@ -12,12 +12,12 @@ type Props = {
 const styles = {
   comments: {
     paddingLeft: "6.5rem",
-    backgroundColor: "var(--background)",
-    borderTop: "1px solid var(--border)",
-    borderBottom: "1px solid var(--border)",
+    backgroundColor: "whitesmoke", //var(--background)
+    borderTop: "1px solid #dbdbdb", //var(--border)
+    borderBottom: "1px solid #dbdbdb", //var(--border)
 
     "& > *": {
-      backgroundColor: "var(--white)"
+      backgroundColor: "white" //var(--white)
     }
   }
 };
