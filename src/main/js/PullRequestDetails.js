@@ -346,7 +346,11 @@ class PullRequestDetails extends React.Component<Props, State> {
         "/edit";
       editButton = (
         <div className="media-right">
-          <Button link={toEdit} color="outline-link" className="reduced-mobile">
+          <Button
+            link={toEdit}
+            color="link is-outlined"
+            className="reduced-mobile"
+          >
             <span className="icon is-small">
               <i className="fas fa-edit" />
             </span>
@@ -362,7 +366,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           <Button
             action={this.handleSubscription}
             loading={loadingSubscription}
-            color="outline-link"
+            color="link is-outlined"
           >
             <span className="icon is-small">
               <i className={`fas fa-${subscriptionIcon}`} />
