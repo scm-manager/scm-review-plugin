@@ -18,7 +18,7 @@ const styles = {
   },
   arrow: {
     position: "absolute",
-    margin: "1rem 0 0 2em",
+    margin: "1.5rem 0 0 2.5em",
     fontSize: "16px"
   }
 };
