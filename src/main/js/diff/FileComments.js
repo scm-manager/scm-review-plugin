@@ -4,7 +4,7 @@ import injectSheet from "react-jss";
 
 const styles = {
   wrapper: {
-    borderBottom: "1px solid #dbdbdb" //var(--border)
+    borderBottom: "1px solid #dbdbdb" // border
   }
 };
 
