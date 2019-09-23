@@ -1,6 +1,8 @@
 //@flow
 import React from "react";
 import { translate, type TFunction } from "react-i18next";
+import injectSheet from "react-jss";
+import classNames from "classnames";
 import type { Repository, Link } from "@scm-manager/ui-types";
 import type {
   DiffEventContext,
@@ -38,7 +40,8 @@ type Props = {
   source: string,
   target: string,
 
-  //context props
+  // context props
+  classes: any,
   t: TFunction
 };
 
@@ -61,6 +64,14 @@ type State = {
     }
   },
   createLink: Link
+};
+
+const styles = {
+  commentWrapper: {
+    "& .inline-comment + .inline-comment": {
+      borderTop: "1px solid #dbdbdb" // $border
+    }
+  }
 };
 
 class Diff extends React.Component<Props, State> {
@@ -276,12 +287,15 @@ class Diff extends React.Component<Props, State> {
   };
 
   createComments = fileState => {
+    const { classes } = this.props;
     const comments = fileState.comments;
 
     return (
       <>
         {comments.map(rootComment => (
-          <div className="comment-wrapper">
+          <div
+            className={classNames("comment-wrapper", classes.commentWrapper)}
+          >
             <PullRequestComment
               comment={rootComment}
               refresh={this.fetchComments}
@@ -318,4 +332,4 @@ class Diff extends React.Component<Props, State> {
   };
 }
 
-export default translate("plugins")(Diff);
+export default injectSheet(styles)(translate("plugins")(Diff));

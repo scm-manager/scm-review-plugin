@@ -18,6 +18,11 @@ const styles = {
 
     "& > *": {
       backgroundColor: "white" // white
+    },
+
+    /* reply on same line as inline comment */
+    "& .comment-wrapper + .inline-comment": {
+      borderTop: "1px solid #dbdbdb" // $border
     }
   }
 };

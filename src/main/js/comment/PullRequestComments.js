@@ -1,13 +1,18 @@
 // @flow
 import React from "react";
+import injectSheet from "react-jss";
+import classNames from "classnames";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
-import type {Comments, PullRequest, Reply} from "../types/PullRequest";
+import type { Comments, PullRequest, Reply } from "../types/PullRequest";
 import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
 
 type Props = {
-  pullRequest: PullRequest
+  pullRequest: PullRequest,
+
+  // context props
+  classes: any
 };
 
 type State = {
@@ -15,6 +20,16 @@ type State = {
   error?: Error,
   replyEditor: Reply,
   loading: boolean
+};
+
+const styles = {
+  commentWrapper: {
+    borderTop: "1px solid #dbdbdb", // $border
+
+    "& .inline-comment + .inline-comment": {
+      borderTop: "1px solid #dbdbdb" // $border
+    }
+  }
 };
 
 class PullRequestComments extends React.Component<Props, State> {
@@ -64,6 +79,7 @@ class PullRequestComments extends React.Component<Props, State> {
   };
 
   render() {
+    const { classes } = this.props;
     const { loading, error, pullRequestComments } = this.state;
 
     if (error) {
@@ -90,13 +106,15 @@ class PullRequestComments extends React.Component<Props, State> {
       return (
         <>
           {comments.map(rootComment => (
-            <div className="comment-wrapper">
-                <PullRequestComment
-                  comment={rootComment}
-                  refresh={this.updatePullRequestComments}
-                  createLink={createLink}
-                  handleError={this.handleError}
-                />
+            <div
+              className={classNames("comment-wrapper", classes.commentWrapper)}
+            >
+              <PullRequestComment
+                comment={rootComment}
+                refresh={this.updatePullRequestComments}
+                createLink={createLink}
+                handleError={this.handleError}
+              />
             </div>
           ))}
           {createLink ? (
@@ -113,4 +131,4 @@ class PullRequestComments extends React.Component<Props, State> {
   }
 }
 
-export default PullRequestComments;
+export default injectSheet(styles)(PullRequestComments);

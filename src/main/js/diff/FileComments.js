@@ -10,6 +10,7 @@ const styles = {
 
 type Props = {
   children: React.Node,
+
   // context props
   classes: any
 };
