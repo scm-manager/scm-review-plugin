@@ -73,7 +73,7 @@ const styles = {
   containerBorder: {
     marginBottom: "2rem",
     padding: "1rem",
-    border: "1px solid #dbdbdb", //var(--border)
+    border: "1px solid #dbdbdb", // border
     borderRadius: "4px"
   },
   borderTop: {
@@ -88,6 +88,14 @@ const styles = {
   },
   userListMargin: {
     marginBottom: "1.5em"
+  },
+  /* fix overflow and alignment on mobile page */
+  wrapper: {
+    flexFlow: "row wrap",
+
+    "& > .level-right": {
+      marginLeft: "auto"
+    }
   }
 };
 
@@ -502,7 +510,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             </div>
           </div>
 
-          <div className="level">
+          <div className={classNames("level", classes.wrapper)}>
             {subscription}
             <div className="level-right">
               <div className="level-item">{rejectButton}</div>
