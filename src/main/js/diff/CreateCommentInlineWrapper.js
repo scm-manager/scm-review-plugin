@@ -7,7 +7,6 @@ const styles = {
   wrapperRoot: {
     fontSize: "0.9rem",
     padding: "1.5rem",
-    borderTop: "1px solid #dbdbdb", // border
 
     "& .content:not(:last-child)": {
       marginBottom: "0"
@@ -18,8 +17,7 @@ const styles = {
   },
   arrow: {
     position: "absolute",
-    margin: "1.5rem 0 0 2.5em",
-    fontSize: "16px"
+    marginLeft: "-1.5em"
   }
 };
 
@@ -34,21 +32,20 @@ class CreateCommentInlineWrapper extends React.Component<Props> {
   render() {
     const { classes, children, isChildComment } = this.props;
     return (
-      <>
+      <div
+        className={classNames(
+          "inline-comment",
+          classes.wrapperRoot,
+          isChildComment ? classes.wrapperChild : ""
+        )}
+      >
         {isChildComment && (
           <div className={classNames("has-text-grey-lighter", classes.arrow)}>
             <i className="fas fa-caret-right" />
           </div>
         )}
-        <div
-          className={classNames(
-            classes.wrapperRoot,
-            isChildComment ? classes.wrapperChild : ""
-          )}
-        >
-          {children}
-        </div>
-      </>
+        {children}
+      </div>
     );
   }
 }
