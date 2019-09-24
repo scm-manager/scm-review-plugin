@@ -60,6 +60,11 @@ type State = {
 };
 
 const styles = {
+  modal: {
+    "& table.diff .diff-gutter:empty:hover::after": {
+      display: "none"
+    }
+  },
   linkColor: {
     color: "inherit"
   },
@@ -521,6 +526,7 @@ class PullRequestComment extends React.Component<Props, State> {
       <>
         {contextModalOpen && (
           <Modal
+            className={classes.modal}
             title={t("scm-review-plugin.comment.contextModal.title")}
             closeFunction={() => this.onClose()}
             body={

@@ -14,7 +14,7 @@ type Props = {
 
 const styles = {
   commentable: {
-    "& table.diff tr:hover td": {
+    "& table.diff tr:hover > td": {
       backgroundColor: "#fff7d5 !important" // warning-25
     }
   }
