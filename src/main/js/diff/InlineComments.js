@@ -1,6 +1,7 @@
 //@flow
 import * as React from "react";
 import injectSheet from "react-jss";
+import classNames from "classnames";
 
 type Props = {
   children: React.Node,
@@ -11,13 +12,12 @@ type Props = {
 
 const styles = {
   comments: {
-    paddingLeft: "6.5rem",
-    backgroundColor: "whitesmoke", // background
-    borderTop: "1px solid #dbdbdb", // border
-    borderBottom: "1px solid #dbdbdb", // border
+    backgroundColor: "whitesmoke", // $background
+    borderTop: "1px solid #dbdbdb", // $border
+    borderBottom: "1px solid #dbdbdb", // $border
 
     "& > *": {
-      backgroundColor: "white" // white
+      backgroundColor: "white" // $white
     },
 
     /* reply on same line as inline comment */
@@ -30,7 +30,11 @@ const styles = {
 class InlineComments extends React.Component<Props> {
   render() {
     const { children, classes } = this.props;
-    return <div className={classes.comments}>{children}</div>;
+    return (
+      <div className={classNames("is-indented-line", classes.comments)}>
+        {children}
+      </div>
+    );
   }
 }
 
