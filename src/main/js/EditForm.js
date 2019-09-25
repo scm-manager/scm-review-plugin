@@ -1,6 +1,11 @@
 // @flow
 import React from "react";
-import { InputField, Autocomplete, Textarea } from "@scm-manager/ui-components";
+import {
+  InputField,
+  Textarea,
+  TagGroup,
+  Autocomplete
+} from "@scm-manager/ui-components";
 import { translate } from "react-i18next";
 import type { DisplayedUser } from "./types/PullRequest";
 import type { SelectValue } from "@scm-manager/ui-types";
@@ -58,11 +63,8 @@ class EditForm extends React.Component<Props, State> {
       });
   };
 
-  removeReviewer = reviewer => {
-    this.onChange(
-      this.state.reviewer.filter(value => value !== reviewer),
-      "reviewer"
-    );
+  removeReviewer = (reviewer: DisplayedUser[]) => {
+    this.onChange(reviewer, "reviewer");
   };
 
   selectName = (selection: SelectValue) => {
@@ -83,7 +85,6 @@ class EditForm extends React.Component<Props, State> {
   render() {
     const { t } = this.props;
     const { title, description, reviewer } = this.state;
-    const listSymbol = reviewer.length > 0 ? ":" : "";
     return (
       <>
         <InputField
@@ -98,33 +99,11 @@ class EditForm extends React.Component<Props, State> {
           label={t("scm-review-plugin.pull-request.description")}
           onChange={this.onChange}
         />
-        <div className="field is-grouped is-grouped-multiline">
-          {reviewer ? (
-            <div className="control">
-              <strong>
-                {t("scm-review-plugin.pull-request.reviewer")}
-                {listSymbol}
-              </strong>
-            </div>
-          ) : (
-            ""
-          )}
-          {reviewer.map(reviewerItem => {
-            return (
-              <div className="control">
-                <div className="tags has-addons">
-                  <span className="tag is-info">
-                    {reviewerItem.displayName}
-                  </span>
-                  <a
-                    className="tag is-delete"
-                    onClick={() => this.removeReviewer(reviewerItem)}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <TagGroup
+          items={reviewer}
+          label={t("scm-review-plugin.pull-request.reviewer")}
+          onRemove={this.removeReviewer}
+        />
         <div className="field">
           <div className="control">
             <Autocomplete

@@ -107,7 +107,7 @@ class Create extends React.Component<Props, State> {
           repository={repository}
           source={pullRequest.source}
           target={pullRequest.target}
-          status={"OPEN"}
+          status="OPEN"
           baseURL={match.url}
         />
       );

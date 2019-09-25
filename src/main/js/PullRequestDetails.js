@@ -6,6 +6,7 @@ import { withRouter } from "react-router-dom";
 import classNames from "classnames";
 import type { History } from "history";
 import type { Repository } from "@scm-manager/ui-types";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   DateFromNow,
   Loading,
@@ -14,7 +15,8 @@ import {
   ErrorNotification,
   Tooltip,
   MarkdownView,
-  Button
+  Button,
+  Tag
 } from "@scm-manager/ui-components";
 import type { PullRequest } from "./types/PullRequest";
 import {
@@ -26,30 +28,6 @@ import {
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
-import {ExtensionPoint} from "@scm-manager/ui-extensions";
-
-const styles = {
-  userListMargin: {
-    marginBottom: "1.5em"
-  },
-  userLabelAlignment: {
-    textAlign: "left",
-    marginRight: 0,
-    minWidth: "5.5em"
-  },
-  userFieldFlex: {
-    flexGrow: 8
-  },
-  tagShorter: {
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    maxWidth: "25em"
-  },
-  borderTop: {
-    borderTop: "none !important"
-  }
-};
 
 type Props = {
   repository: Repository,
@@ -70,9 +48,55 @@ type State = {
   mergeButtonLoading: boolean,
   rejectButtonLoading: boolean,
   showNotification: boolean,
+  subscriptionIcon: string,
   subscriptionLabel: string,
-  subscriptionLink: string,
-  subscriptionColor: string
+  subscriptionLink: string
+};
+
+const styles = {
+  wordWrap: {
+    width: "100%",
+    wordWrap: "break-word"
+  },
+  userLabelAlignment: {
+    textAlign: "left",
+    marginRight: 0,
+    minWidth: "5.5em"
+  },
+  userFieldFlex: {
+    flexGrow: 8
+  },
+  userInline: {
+    display: "inline-block",
+    fontWeight: "bold"
+  },
+  containerBorder: {
+    marginBottom: "2rem",
+    padding: "1rem",
+    border: "1px solid #dbdbdb", // border
+    borderRadius: "4px"
+  },
+  borderTop: {
+    padding: "0 !important",
+    borderTop: "none !important"
+  },
+  tagShorter: {
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    maxWidth: "25em"
+  },
+  userListMargin: {
+    marginBottom: "1.5em"
+  },
+  /* fix overflow and alignment on mobile page */
+  wrapper: {
+    flexFlow: "row wrap",
+
+    "& > .level-right": {
+      marginLeft: "auto"
+    }
+  }
 };
 
 class PullRequestDetails extends React.Component<Props, State> {
@@ -81,7 +105,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.state = {
       loading: false,
       loadingSubscription: true,
-      subscriptionColor: "success",
       pullRequest: this.props.pullRequest,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
@@ -127,16 +150,16 @@ class PullRequestDetails extends React.Component<Props, State> {
           if (response._links.subscribe) {
             this.setState({
               loadingSubscription: false,
+              subscriptionIcon: "plus",
               subscriptionLabel: "subscribe",
-              subscriptionLink: response._links.subscribe.href,
-              subscriptionColor: "success"
+              subscriptionLink: response._links.subscribe.href
             });
           } else if (response._links.unsubscribe) {
             this.setState({
               loadingSubscription: false,
+              subscriptionIcon: "minus",
               subscriptionLabel: "unsubscribe",
-              subscriptionLink: response._links.unsubscribe.href,
-              subscriptionColor: "warning"
+              subscriptionLink: response._links.unsubscribe.href
             });
           }
         }
@@ -258,9 +281,9 @@ class PullRequestDetails extends React.Component<Props, State> {
       targetBranchDeleted,
       rejectButtonLoading,
       showNotification,
+      subscriptionIcon,
       subscriptionLabel,
       subscriptionLink,
-      subscriptionColor,
       loadingSubscription
     } = this.state;
 
@@ -276,7 +299,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     if (pullRequest.description) {
       description = (
         <div className="media">
-          <div className="media-content">
+          <div className={classNames("media-content", classes.wordWrap)}>
             <MarkdownView
               className="content"
               content={pullRequest.description}
@@ -290,7 +313,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     if (showNotification) {
       mergeNotification = (
         <Notification
-          type={"info"}
+          type="info"
           children={t("scm-review-plugin.show-pull-request.notification")}
           onClose={() => this.onClose()}
         />
@@ -331,40 +354,42 @@ class PullRequestDetails extends React.Component<Props, State> {
         "/edit";
       editButton = (
         <div className="media-right">
-          <Button link={toEdit} color="primary" className="reduced-mobile">
-            <span className="icon is-small">
-              <i className="fas fa-edit" />
-            </span>
-            <span>{t("scm-review-plugin.edit.button")}</span>
-          </Button>
+          <Button
+            link={toEdit}
+            color="link is-outlined"
+            label={t("scm-review-plugin.edit.button")}
+            icon="edit"
+            reducedMobile={true}
+          />
         </div>
       );
     }
 
     const subscription = subscriptionLink ? (
-      <div className="level-right">
+      <div className="level-left">
         <div className="level-item">
           <Button
-            label={t("scm-review-plugin.edit." + subscriptionLabel)}
             action={this.handleSubscription}
             loading={loadingSubscription}
-            color={subscriptionColor}
-          />
+            color="link is-outlined"
+          >
+            <span className="icon is-small">
+              <i className={`fas fa-${subscriptionIcon}`} />
+            </span>
+            <span>{t("scm-review-plugin.edit." + subscriptionLabel)}</span>
+          </Button>
         </div>
       </div>
     ) : (
       ""
     );
-
     const targetBranchDeletedWarning = targetBranchDeleted ? (
-      <span className="icon has-text-warning">
-        <Tooltip
-          className={classes.tooltip}
-          message={t("scm-review-plugin.show-pull-request.targetDeleted")}
-        >
-          <i className="fas fa-exclamation-triangle" />
-        </Tooltip>
-      </span>
+      <Tooltip
+        className="icon has-text-warning"
+        message={t("scm-review-plugin.show-pull-request.targetDeleted")}
+      >
+        <i className="fas fa-exclamation-triangle" />
+      </Tooltip>
     ) : null;
 
     const author = (
@@ -383,7 +408,9 @@ class PullRequestDetails extends React.Component<Props, State> {
             "field-body is-inline-flex"
           )}
         >
-          <div className={"user"}>{pullRequest.author.displayName}</div>
+          <div className={classes.userInline}>
+            {pullRequest.author.displayName}
+          </div>
           &nbsp;
           <DateFromNow date={pullRequest.creationDate} />
         </div>
@@ -410,7 +437,7 @@ class PullRequestDetails extends React.Component<Props, State> {
               <ul className="is-separated">
                 {pullRequest.reviewer.map(reviewer => {
                   return (
-                    <li className={"user"} key={reviewer.id}>
+                    <li className={classes.userInline} key={reviewer.id}>
                       {reviewer.displayName}
                     </li>
                   );
@@ -425,6 +452,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     );
     return (
       <>
+        <div className={classes.containerBorder}>
           <div className="media">
             <div className="media-content">
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
@@ -434,76 +462,69 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           {mergeNotification}
 
-          <div className={classNames(classes.borderTop, "media")}>
+          <div className={classNames("media", classes.borderTop)}>
             <div className="media-content">
-              <div>
-                <span
-                  className="tag is-light is-medium"
-                  title={pullRequest.source}
-                >
-                  <span className={classes.tagShorter}>
-                    {pullRequest.source}
-                  </span>
-                </span>{" "}
-                <i className="fas fa-long-arrow-alt-right" />{" "}
-                <span
-                  className="tag is-light is-medium"
-                  title={pullRequest.target}
-                >
-                  <span className={classes.tagShorter}>
-                    {pullRequest.target}
-                  </span>
-                </span>
-                {targetBranchDeletedWarning}
-              </div>
+              <Tag
+                className={classNames("is-medium", classes.tagShorter)}
+                color="light"
+                label={pullRequest.source}
+                title={pullRequest.source}
+              />{" "}
+              <i className="fas fa-long-arrow-alt-right" />{" "}
+              <Tag
+                className={classNames("is-medium", classes.tagShorter)}
+                color="light"
+                label={pullRequest.target}
+                title={pullRequest.target}
+              />
+              {targetBranchDeletedWarning}
             </div>
             <div className="media-right">
-              <span
-                className={classNames(
-                  "tag",
-                  "is-medium",
+              <Tag
+                className="is-medium"
+                color={
                   pullRequest.status === "MERGED"
-                    ? "is-success"
+                    ? "success"
                     : pullRequest.status === "REJECTED"
-                    ? "is-danger"
-                    : ""
-                )}
-              >
-                {pullRequest.status}
-              </span>
+                    ? "danger"
+                    : "light"
+                }
+                label={pullRequest.status}
+              />
             </div>
           </div>
           <ExtensionPoint
             name={"reviewPlugin.pullrequest.top"}
             renderAll={true}
-            props={{repository, pullRequest}}
+            props={{ repository, pullRequest }}
           />
           {description}
 
-          <div className={classNames(classes.userListMargin, "media")}>
+          <div className={classNames("media", classes.userListMargin)}>
             <div className="media-content">
               {author}
               {reviewerList}
             </div>
           </div>
 
-          <div className="level">
-            <div className="level-left">
+          <div className={classNames("level", classes.wrapper)}>
+            {subscription}
+            <div className="level-right">
               <div className="level-item">{rejectButton}</div>
               <div className="level-item">{mergeButton}</div>
             </div>
-            {subscription}
           </div>
+        </div>
 
-          <PullRequestInformation
-            pullRequest={pullRequest}
-            baseURL={match.url}
-            repository={repository}
-            source={pullRequest.source}
-            target={pullRequest.target}
-            status={pullRequest.status}
-          />
-          </>
+        <PullRequestInformation
+          pullRequest={pullRequest}
+          baseURL={match.url}
+          repository={repository}
+          source={pullRequest.source}
+          target={pullRequest.target}
+          status={pullRequest.status}
+        />
+      </>
     );
   }
 }
