@@ -13,6 +13,8 @@ import type { PullRequest, Location, RootComment } from "../types/PullRequest";
 import {
   ErrorNotification,
   Loading,
+  Level,
+  Button,
   LoadingDiff,
   Notification,
   diffs
@@ -63,10 +65,14 @@ type State = {
       comments: RootComment[]
     }
   },
-  createLink: Link
+  createLink: Link,
+  collapsed: boolean
 };
 
 const styles = {
+  bottomMargin: {
+    marginBottom: "1rem !important"
+  },
   commentWrapper: {
     "& .inline-comment + .inline-comment": {
       borderTop: "1px solid #dbdbdb" // $border
@@ -81,7 +87,8 @@ class Diff extends React.Component<Props, State> {
       loading: true,
       files: {},
       lines: {},
-      createLink: null
+      createLink: null,
+      collapsed: false
     };
   }
 
@@ -119,14 +126,14 @@ class Diff extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, source, target, t } = this.props;
-    const { loading, error } = this.state;
+    const { repository, source, target, classes, t } = this.props;
+    const { loading, error, collapsed } = this.state;
     const url = createDiffUrl(repository, source, target);
 
     if (!url) {
       return (
         <Notification type="danger">
-          {t("scm-review-plugin.diff.not-supported")}
+          {t("scm-review-plugin.diff.notSupported")}
         </Notification>
       );
     } else if (loading) {
@@ -136,8 +143,21 @@ class Diff extends React.Component<Props, State> {
     } else {
       return (
         <StyledDiffWrapper commentable={this.isPermittedToComment()}>
+          <Level
+            className={classes.bottomMargin}
+            right={
+              <Button
+                action={this.collapseDiffs}
+                color="default"
+                icon={collapsed ? "eye" : "eye-slash"}
+                label={t("scm-review-plugin.diff.collapseDiffs")}
+                reducedMobile={true}
+              />
+            }
+          />
           <LoadingDiff
             url={url}
+            defaultCollapse={collapsed}
             fileControlFactory={this.createFileControls}
             fileAnnotationFactory={this.fileAnnotationFactory}
             annotationFactory={this.annotationFactory}
@@ -200,6 +220,12 @@ class Diff extends React.Component<Props, State> {
     }
 
     return annotations;
+  };
+
+  collapseDiffs = () => {
+    this.setState(state => ({
+      collapsed: !state.collapsed
+    }));
   };
 
   createFileControls = (file: File, setCollapse: boolean => void) => {

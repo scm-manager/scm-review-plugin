@@ -15,7 +15,8 @@
       "unsubscribe": "Unsubscribe"
     },
     "diff": {
-      "not-supported": "Diffs for pull request are not supported by the type of repository"
+      "notSupported": "Diffs for pull request are not supported by the type of repository",
+      "collapseDiffs": "Collapse"
     },
     "no-requests": "No pull requests matching the selected criteria found",
     "pull-request": {
