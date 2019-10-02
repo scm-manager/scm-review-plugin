@@ -15,7 +15,8 @@
       "unsubscribe": "Unsubscribe"
     },
     "diff": {
-      "not-supported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt."
+      "notSupported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt.",
+      "collapseDiffs": "Auf-/Zuklappen"
     },
     "no-requests": "Keine Pull Requests mit diesen Kriterien gefunden.",
     "pull-request": {
