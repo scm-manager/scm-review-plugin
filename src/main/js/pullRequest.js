@@ -1,7 +1,8 @@
 //@flow
 import type {
   BasicComment,
-  BasicPullRequest, PossibleTransition,
+  BasicPullRequest,
+  PossibleTransition,
   PullRequest
 } from "./types/PullRequest";
 import {

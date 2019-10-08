@@ -6,11 +6,10 @@ import {
   isInlineLocation,
   createChangeIdFromLocation
 } from "./locations";
-import type {Change, DiffEventContext} from "@scm-manager/ui-components";
-import type {Location} from "../types/PullRequest";
+import type { Change, DiffEventContext } from "@scm-manager/ui-components";
+import type { Location } from "../types/PullRequest";
 
 describe("test createChangeIdFromLocation", () => {
-
   const locationHead: Location = {
     file: "a.txt",
     hunk: "@@ -0,0 +1,100 @@"
@@ -48,13 +47,13 @@ describe("test createChangeIdFromLocation", () => {
   });
 
   it("should create change id from deleted location", () => {
-    expect(() => createChangeIdFromLocation(locationHead)).toThrowError("at least one line number has to be set");
+    expect(() => createChangeIdFromLocation(locationHead)).toThrowError(
+      "at least one line number has to be set"
+    );
   });
-
 });
 
 describe("test createHunkIdFromLocation", () => {
-
   it("should create hunk id", () => {
     const location: Location = {
       file: "a.txt",
@@ -75,11 +74,9 @@ describe("test createHunkIdFromLocation", () => {
     const fn = () => createHunkIdFromLocation(location);
     expect(fn).toThrowError("only locations with a hunk could be used");
   });
-
 });
 
 describe("test isInlineLocation", () => {
-
   it("should return true", () => {
     const location: Location = {
       file: "a.txt",
@@ -95,11 +92,9 @@ describe("test isInlineLocation", () => {
     };
     expect(isInlineLocation(location)).toBe(false);
   });
-
 });
 
 describe("test createFileLocation", () => {
-
   const createAddedFileContext = () => {
     return {
       file: {
@@ -139,11 +134,9 @@ describe("test createFileLocation", () => {
 
     expect(location.file).toBe("a.txt");
   });
-
 });
 
 describe("test createInlineLocation", () => {
-
   const createContext = (change: Change) => {
     return {
       file: {
@@ -156,16 +149,15 @@ describe("test createInlineLocation", () => {
       },
       change,
       changeId: "irrelevant"
-    }
+    };
   };
 
   it("should map hunk and file", () => {
-    const context: DiffEventContext = createContext(
-      {
-        content: "i'm a added line",
-        type: "insert",
-        lineNumber: 42
-      });
+    const context: DiffEventContext = createContext({
+      content: "i'm a added line",
+      type: "insert",
+      lineNumber: 42
+    });
 
     const location = createInlineLocation(context);
     expect(location.file).toBe("a.txt");
@@ -173,12 +165,11 @@ describe("test createInlineLocation", () => {
   });
 
   it("should map insert change to location", () => {
-    const context: DiffEventContext = createContext(
-      {
-        content: "i'm a added line",
-        type: "insert",
-        lineNumber: 42
-      });
+    const context: DiffEventContext = createContext({
+      content: "i'm a added line",
+      type: "insert",
+      lineNumber: 42
+    });
 
     const location = createInlineLocation(context);
     expect(location.oldLineNumber).toBeUndefined();
@@ -186,12 +177,11 @@ describe("test createInlineLocation", () => {
   });
 
   it("should map delete change to location", () => {
-    const context: DiffEventContext = createContext(
-      {
-        content: "i'm a deleted line",
-        type: "delete",
-        lineNumber: 42
-      });
+    const context: DiffEventContext = createContext({
+      content: "i'm a deleted line",
+      type: "delete",
+      lineNumber: 42
+    });
 
     const location = createInlineLocation(context);
     expect(location.oldLineNumber).toBe(42);
@@ -199,17 +189,15 @@ describe("test createInlineLocation", () => {
   });
 
   it("should map normal change to location", () => {
-    const context: DiffEventContext = createContext(
-      {
-        content: "i'm a deleted line",
-        type: "normal",
-        oldLineNumber: 21,
-        newLineNumber: 42
-      });
+    const context: DiffEventContext = createContext({
+      content: "i'm a deleted line",
+      type: "normal",
+      oldLineNumber: 21,
+      newLineNumber: 42
+    });
 
     const location = createInlineLocation(context);
     expect(location.oldLineNumber).toBe(21);
     expect(location.newLineNumber).toBe(42);
   });
-
 });

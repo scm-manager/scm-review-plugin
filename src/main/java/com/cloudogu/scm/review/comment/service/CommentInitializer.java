@@ -85,6 +85,11 @@ public class CommentInitializer {
 
   private DiffFile findMatchingDiffFile(Comment comment, DiffResult diffResult) {
     for (DiffFile diffFile : diffResult) {
+      if (diffFile.getNewPath() != null) {
+        if (diffFile.getOldPath().equals(comment.getLocation().getFile())) {
+          return diffFile;
+        }
+      }
       if (diffFile.getNewPath().equals(comment.getLocation().getFile())) {
         return diffFile;
       }
