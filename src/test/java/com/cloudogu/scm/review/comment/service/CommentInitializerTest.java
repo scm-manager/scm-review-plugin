@@ -329,4 +329,45 @@ class CommentInitializerTest {
 
     verify(repositoryService, never()).getDiffResultCommand();
   }
+
+  @Nested
+  class withDeletedLines {
+
+    @BeforeEach
+    void initRepositoryService() {
+      when(repositoryServiceFactory.create(REPOSITORY.getId())).thenReturn(repositoryService);
+      when(repositoryService.isSupported(Command.DIFF_RESULT)).thenReturn(true);
+    }
+
+    @BeforeEach
+    void mockDiffResult() throws IOException {
+      when(repositoryService.getDiffResultCommand()).thenReturn(diffResultCommandBuilder);
+      Hunk hunk = new MockedHunk.Builder()
+        .addDiffLine(new MockedDiffLine.Builder().oldLineNumber(1).newLineNumber(0).get())
+        .get();
+      DiffFile diffFile = new MockedDiffFile.Builder().oldPath("oldPath").newPath("newPath").addHunk(hunk).get();
+      DiffResult diffResult = new MockedDiffResult.Builder().diffFile(diffFile).get();
+      when(diffResultCommandBuilder.getDiffResult()).thenReturn(diffResult);
+    }
+
+    @Test
+    void shouldFindPathForInlineCommentWithOldContext() {
+      Comment comment = new Comment();
+      comment.setLocation(new Location("oldPath", "hunter", 1, null));
+
+      initializer.initialize(comment, PULL_REQUEST, REPOSITORY.getId());
+
+      assertThat(comment.getContext()).isNotNull();
+      assertThat(comment.getContext().getLines())
+        .hasSize(1)
+        .extracting(DiffLine::getNewLineNumber)
+        .extracting(OptionalInt::getAsInt)
+        .contains(0);
+      assertThat(comment.getContext().getLines())
+        .hasSize(1)
+        .extracting(DiffLine::getOldLineNumber)
+        .extracting(OptionalInt::getAsInt)
+        .contains(1);
+    }
+  }
 }

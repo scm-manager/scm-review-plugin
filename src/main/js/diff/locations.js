@@ -1,8 +1,8 @@
 // @flow
 
-import type {BaseContext, DiffEventContext} from "@scm-manager/ui-components";
-import {diffs} from "@scm-manager/ui-components";
-import type {Location} from "../types/PullRequest";
+import type { BaseContext, DiffEventContext } from "@scm-manager/ui-components";
+import { diffs } from "@scm-manager/ui-components";
+import type { Location } from "../types/PullRequest";
 
 export function createHunkId(context: BaseContext): string {
   return diffs.getPath(context.file) + "_" + context.hunk.content;
@@ -22,12 +22,10 @@ export function isInlineLocation(location: Location): boolean {
 export function createFileLocation(context: BaseContext): Location {
   return {
     file: diffs.getPath(context.file)
-  }
+  };
 }
 
-export function createInlineLocation(
-  context: DiffEventContext
-): Location {
+export function createInlineLocation(context: DiffEventContext): Location {
   const change = context.change;
 
   const location: Location = {
