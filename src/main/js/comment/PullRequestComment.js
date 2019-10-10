@@ -63,6 +63,11 @@ const styles = {
   modal: {
     "& table.diff .diff-gutter:empty:hover::after": {
       display: "none"
+    },
+    "& .modal-card": {
+      "@media screen and (min-width: 1280px), print": {
+        width: "1200px"
+      }
     }
   },
   linkColor: {
