@@ -610,7 +610,7 @@ class PullRequestComment extends React.Component<Props, State> {
                     <DateFromNow date={comment.date} /> {this.getLastEdited()}
                   </span>
                   <br />
-                  {comment.comment}
+                  <MarkdownView content={comment.comment} />
                 </p>
               </div>
             </article>
