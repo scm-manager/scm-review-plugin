@@ -680,6 +680,7 @@ class PullRequestComment extends React.Component<Props, State> {
           refresh={() => this.closeReplyEditor()}
           onCancel={() => this.closeReplyEditor()}
           autofocus={true}
+          reply={true}
         />
       </CreateCommentInlineWrapper>
     );

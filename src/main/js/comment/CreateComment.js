@@ -18,6 +18,7 @@ type Props = {
   onCancel?: () => void,
   refresh: () => void,
   autofocus?: boolean,
+  reply?: boolean,
 
   // context props
   t: TFunction
@@ -84,7 +85,7 @@ class CreateComment extends React.Component<Props, State> {
   }
 
   render() {
-    const { autofocus, onCancel, t, url } = this.props;
+    const { autofocus, onCancel, reply, t, url } = this.props;
     const { loading, errorResult } = this.state;
 
     if (loading) {
@@ -103,8 +104,7 @@ class CreateComment extends React.Component<Props, State> {
     }
 
     let toggleType = null;
-    const regex = new RegExp("/replies$");
-    if (!url.match(regex)) {
+    if (!reply) {
       toggleType = (<div className="field is-grouped">
         <div className="control">
           <Radio
