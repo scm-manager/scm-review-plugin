@@ -139,8 +139,24 @@
         "done": "erledigt",
         "outdated": {
           "label": "veraltet",
-          "title": "Das Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches",
-          "titleClickable": "Das Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
+          "title": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches",
+          "titleClickable": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
+        }
+      }
+    }
+  },
+  "permissions": {
+    "repository": {
+      "readPullRequest": {
+        "*": {
+          "displayName": "Alle Pull Requests lesen",
+          "description": "Darf alle Pull Requests aus allen Repositories lesen"
+        }
+      },
+      "readPullRequest,createPullRequest,commentPullRequest,mergePullRequest": {
+        "*": {
+          "displayName": "Alle Pull Requests bearbeiten",
+          "description": "Darf Pull Requests für alle Repositories erstellen, kommentieren und ablehnen"
         }
       }
     }

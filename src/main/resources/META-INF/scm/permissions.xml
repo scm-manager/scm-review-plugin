@@ -1,0 +1,8 @@
+<permissions>
+  <permission>
+    <value>repository:readPullRequest:*</value>
+  </permission>
+  <permission>
+    <value>repository:readPullRequest,createPullRequest,commentPullRequest,mergePullRequest:*</value>
+  </permission>
+</permissions>

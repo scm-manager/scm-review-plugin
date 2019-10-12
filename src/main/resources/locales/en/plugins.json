@@ -145,6 +145,22 @@
       }
     }
   },
+  "permissions": {
+    "repository": {
+      "readPullRequest": {
+        "*": {
+          "displayName": "Read all pull requests",
+          "description": "May see all pull requests for all repositories"
+        }
+      },
+      "readPullRequest,createPullRequest,commentPullRequest,mergePullRequest": {
+        "*": {
+          "displayName": "Modify all pull requests",
+          "description": "May create, comment and reject pull requests for all repositories"
+        }
+      }
+    }
+  },
   "verbs": {
     "repository": {
       "createPullRequest": {
