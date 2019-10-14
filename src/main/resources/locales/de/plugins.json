@@ -41,9 +41,9 @@
       "error-title": "Fehler",
       "error-subtitle": "Unbekannter Pull Request Fehler",
       "mergeButton": {
-        "button-title": "Merge Pull Request",
+        "button-title": "Pull Request mergen",
         "confirm-alert": {
-          "title": "Merge Pull Request",
+          "title": "Pull Request mergen",
           "message": "Soll der Pull Request wirklich gemerged werden?",
           "submit": "Ja",
           "cancel": "Nein"
