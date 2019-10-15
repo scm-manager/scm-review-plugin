@@ -143,7 +143,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       getSubscription(pullRequest._links.subscription.href).then(response => {
         if (response.error) {
           this.setState({
-            error: true,
+            error: response.error,
             loadingSubscription: false
           });
         } else {
@@ -201,7 +201,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           });
         } else if (response.error) {
           this.setState({
-            error: true,
+            error: response.error,
             loading: false,
             mergeButtonLoading: false
           });
@@ -223,7 +223,10 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.setMergeButtonLoadingState();
     merge(repository._links.merge.href, pullRequest).then(response => {
       if (response.error) {
-        this.setState({ error: response.error, mergeButtonLoading: false });
+        this.setState({
+          error: response.error,
+          mergeButtonLoading: false
+        });
       } else if (response.conflict) {
         this.setState({
           mergeHasNoConflict: true,
