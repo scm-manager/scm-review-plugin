@@ -123,24 +123,32 @@ class Changesets extends React.Component<Props, State> {
       return <ErrorNotification error={error} />;
     } else if (loading) {
       return <Loading />;
-    } else if (changesets && changesets._embedded.changesets.length === 0) {
-      return (
-        <Notification type="info">
-          {t("scm-review-plugin.pull-request.noChangesets")}
-        </Notification>
-      );
+    } else if (
+      changesets &&
+      changesets._embedded &&
+      changesets._embedded.changesets
+    ) {
+      if (changesets._embedded.changesets.length !== 0) {
+        return (
+          <div className="panel">
+            <div className="panel-block">
+              <ChangesetList
+                repository={repository}
+                changesets={changesets._embedded.changesets}
+              />
+            </div>
+            {this.renderPaginator()}
+          </div>
+        );
+      } else {
+        return (
+          <Notification type="info">
+            {t("scm-review-plugin.pull-request.noChangesets")}
+          </Notification>
+        );
+      }
     }
-    return (
-      <div className="panel">
-        <div className="panel-block">
-          <ChangesetList
-            repository={repository}
-            changesets={changesets._embedded.changesets}
-          />
-        </div>
-        {this.renderPaginator()}
-      </div>
-    );
+    return null;
   }
 }
 
