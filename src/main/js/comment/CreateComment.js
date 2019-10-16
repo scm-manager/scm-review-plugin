@@ -70,7 +70,7 @@ class CreateComment extends React.Component<Props, State> {
 
     createPullRequestComment(url, { ...newComment, location }).then(result => {
       if (result.error) {
-          this.setState({ errorResult: result.error, loading: false });
+        this.setState({ errorResult: result.error, loading: false });
       } else {
         newComment.comment = "";
         this.setState({ loading: false });
@@ -105,24 +105,26 @@ class CreateComment extends React.Component<Props, State> {
 
     let toggleType = null;
     if (!reply) {
-      toggleType = (<div className="field is-grouped">
-        <div className="control">
-          <Radio
-            name="comment_type"
-            value="COMMENT"
-            checked={this.state.newComment.type === "COMMENT"}
-            label={t("scm-review-plugin.comment.type.comment")}
-            onChange={this.switchCommentType}
-          />
-          <Radio
-            name="comment_type"
-            value="TASK_TODO"
-            checked={this.state.newComment.type === "TASK_TODO"}
-            label={t("scm-review-plugin.comment.type.task")}
-            onChange={this.switchCommentType}
-          />
+      toggleType = (
+        <div className="field is-grouped">
+          <div className="control">
+            <Radio
+              name="comment_type"
+              value="COMMENT"
+              checked={this.state.newComment.type === "COMMENT"}
+              label={t("scm-review-plugin.comment.type.comment")}
+              onChange={this.switchCommentType}
+            />
+            <Radio
+              name="comment_type"
+              value="TASK_TODO"
+              checked={this.state.newComment.type === "TASK_TODO"}
+              label={t("scm-review-plugin.comment.type.task")}
+              onChange={this.switchCommentType}
+            />
+          </div>
         </div>
-      </div>);
+      );
     }
 
     return (
@@ -136,18 +138,26 @@ class CreateComment extends React.Component<Props, State> {
                     name="comment"
                     value={this.state.newComment.comment}
                     autofocus={autofocus}
-                    placeholder={t(this.state.newComment.type === "TASK_TODO" ? "scm-review-plugin.comment.addTask" : "scm-review-plugin.comment.addComment")}
+                    placeholder={t(
+                      this.state.newComment.type === "TASK_TODO"
+                        ? "scm-review-plugin.comment.addTask"
+                        : "scm-review-plugin.comment.addComment"
+                    )}
                     onChange={this.handleChanges}
                   />
                 </div>
               </div>
-              {errorResult && <ErrorNotification error={errorResult}/>}
+              {errorResult && <ErrorNotification error={errorResult} />}
               {toggleType}
               <div className="field">
                 <div className="level-left">
                   <div className="level-item">
                     <SubmitButton
-                      label={t(this.state.newComment.type === "TASK_TODO" ? "scm-review-plugin.comment.addTask" : "scm-review-plugin.comment.addComment")}
+                      label={t(
+                        this.state.newComment.type === "TASK_TODO"
+                          ? "scm-review-plugin.comment.addTask"
+                          : "scm-review-plugin.comment.addComment"
+                      )}
                       action={this.submit}
                       disabled={!this.isValid()}
                       loading={loading}
