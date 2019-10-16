@@ -1,19 +1,17 @@
 // @flow
 import React from "react";
 import { Link, withRouter } from "react-router-dom";
-import injectSheet from "react-jss";
-import classNames from "classnames";
+import styled from "styled-components";
 import { DateFromNow, Tag } from "@scm-manager/ui-components";
 import type { PullRequest } from "./../types/PullRequest";
 
-const styles = {
-  wordBreakMinWidth: {
-    minWidth: "10em"
-  }
-};
+const CellWithWordBreak = styled.td.attrs(props => ({
+  className: "is-word-break"
+}))`
+  min-width: 10em;
+`;
 
 type Props = {
-  classes: any,
   pullRequest: PullRequest
 };
 
@@ -23,19 +21,19 @@ class PullRequestRow extends React.Component<Props> {
   }
 
   render() {
-    const { classes, pullRequest } = this.props;
+    const { pullRequest } = this.props;
     const to = `pull-request/${pullRequest.id}/comments/`;
     return (
       <tr>
-        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
+        <CellWithWordBreak>
           {this.renderLink(to, pullRequest.title)}
-        </td>
-        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
+        </CellWithWordBreak>
+        <CellWithWordBreak>
           {pullRequest.source}
-        </td>
-        <td className={classNames(classes.wordBreakMinWidth, "is-word-break")}>
+        </CellWithWordBreak>
+        <CellWithWordBreak>
           {pullRequest.target}
-        </td>
+        </CellWithWordBreak>
         <td className="is-hidden-mobile">
           {pullRequest.author ? pullRequest.author.displayName : ""}
         </td>
@@ -64,4 +62,4 @@ class PullRequestRow extends React.Component<Props> {
   }
 }
 
-export default withRouter(injectSheet(styles)(PullRequestRow));
+export default withRouter(PullRequestRow);

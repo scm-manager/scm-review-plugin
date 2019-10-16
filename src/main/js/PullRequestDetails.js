@@ -1,9 +1,8 @@
 // @flow
 import React from "react";
-import injectSheet from "react-jss";
+import styled from "styled-components";
 import { translate } from "react-i18next";
 import { withRouter } from "react-router-dom";
-import classNames from "classnames";
 import type { History } from "history";
 import type { Repository } from "@scm-manager/ui-types";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
@@ -32,7 +31,6 @@ import RejectButton from "./RejectButton";
 type Props = {
   repository: Repository,
   pullRequest: PullRequest,
-  classes: any,
   t: string => string,
   match: any,
   history: History
@@ -53,51 +51,72 @@ type State = {
   subscriptionLink: string
 };
 
-const styles = {
-  wordWrap: {
-    width: "100%",
-    wordWrap: "break-word"
-  },
-  userLabelAlignment: {
-    textAlign: "left",
-    marginRight: 0,
-    minWidth: "5.5em"
-  },
-  userFieldFlex: {
-    flexGrow: 8
-  },
-  userInline: {
-    display: "inline-block",
-    fontWeight: "bold"
-  },
-  containerBorder: {
-    marginBottom: "2rem",
-    padding: "1rem",
-    border: "1px solid #dbdbdb", // border
-    borderRadius: "4px"
-  },
-  borderTop: {
-    padding: "0 !important",
-    borderTop: "none !important"
-  },
-  tagShorter: {
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    maxWidth: "25em"
-  },
-  userListMargin: {
-    marginBottom: "1.5em"
-  },
-  /* fix overflow and alignment on mobile page */
-  wrapper: {
-    flexFlow: "row wrap",
+const MediaContent = styled.div.attrs(props => ({
+  className: "media-content"
+}))`
+  width: 100%;
+  word-wrap: break-word;
+`;
 
-    "& > .level-right": {
-      marginLeft: "auto"
-    }
+const UserLabel = styled.div.attrs(props => ({
+  className: "field-label is-inline-flex"
+}))`
+  text-align: left;
+  margin-right: 0;
+  min-width: 5.5em;
+`;
+
+const UserField = styled.div.attrs(props => ({
+  className: "field-body is-inline-flex"
+}))`
+  flex-grow: 8;
+`;
+
+const UserInline = styled.div`
+  display: inline-block;
+  font-weight: bold;
+`;
+
+const UserInlineListItem = styled.div`
+  display: inline-block;
+  font-weight: bold;
+`;
+
+const Container = styled.div`
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid #dbdbdb; // border
+  border-radius: 4px;
+`;
+
+const MediaWithTopBorder = styled.div.attrs(props => ({
+  className: "media"
+}))`
+  padding: 0 !important;
+  border-top: none !important;
+`;
+
+const ShortTag = styled(Tag).attrs(props => ({
+  className: "is-medium",
+  color: "light"
+}))`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 25em
+`;
+
+const UserList = styled.div`
+  margin-bottom: 1.5em;
+`;
+
+const LevelWrapper = styled.div`
+  flex-flow: row wrap;
+
+  & > .level-right {
+    margin-Left: auto;
   }
-};
+`;
 
 class PullRequestDetails extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -274,7 +293,7 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, match, t, classes } = this.props;
+    const { repository, match, t } = this.props;
     const {
       pullRequest,
       error,
@@ -302,12 +321,12 @@ class PullRequestDetails extends React.Component<Props, State> {
     if (pullRequest.description) {
       description = (
         <div className="media">
-          <div className={classNames("media-content", classes.wordWrap)}>
+          <MediaContent>
             <MarkdownView
               className="content"
               content={pullRequest.description}
             />
-          </div>
+          </MediaContent>
         </div>
       );
     }
@@ -397,56 +416,35 @@ class PullRequestDetails extends React.Component<Props, State> {
 
     const author = (
       <div className="field is-horizontal">
-        <div
-          className={classNames(
-            classes.userLabelAlignment,
-            "field-label is-inline-flex"
-          )}
-        >
+        <UserLabel>
           {t("scm-review-plugin.pull-request.author")}:
-        </div>
-        <div
-          className={classNames(
-            classes.userFieldFlex,
-            "field-body is-inline-flex"
-          )}
-        >
-          <div className={classes.userInline}>
+        </UserLabel>
+        <UserField>
+          <UserInline>
             {pullRequest.author.displayName}
-          </div>
-          &nbsp;
+          </UserInline>
           <DateFromNow date={pullRequest.creationDate} />
-        </div>
+        </UserField>
       </div>
     );
     const reviewerList = (
       <>
         {pullRequest.reviewer.length > 0 ? (
           <div className="field is-horizontal">
-            <div
-              className={classNames(
-                classes.userLabelAlignment,
-                "field-label is-inline-flex"
-              )}
-            >
+            <UserLabel>
               {t("scm-review-plugin.pull-request.reviewer")}:
-            </div>
-            <div
-              className={classNames(
-                classes.userFieldFlex,
-                "field-body is-inline-flex"
-              )}
-            >
+            </UserLabel>
+            <UserField>
               <ul className="is-separated">
                 {pullRequest.reviewer.map(reviewer => {
                   return (
-                    <li className={classes.userInline} key={reviewer.id}>
+                    <UserInlineListItem key={reviewer.id}>
                       {reviewer.displayName}
-                    </li>
+                    </UserInlineListItem>
                   );
                 })}
               </ul>
-            </div>
+            </UserField>
           </div>
         ) : (
           ""
@@ -455,7 +453,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     );
     return (
       <>
-        <div className={classes.containerBorder}>
+        <Container>
           <div className="media">
             <div className="media-content">
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
@@ -465,18 +463,14 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           {mergeNotification}
 
-          <div className={classNames("media", classes.borderTop)}>
+          <MediaWithTopBorder>
             <div className="media-content">
-              <Tag
-                className={classNames("is-medium", classes.tagShorter)}
-                color="light"
+              <ShortTag
                 label={pullRequest.source}
                 title={pullRequest.source}
               />{" "}
               <i className="fas fa-long-arrow-alt-right" />{" "}
-              <Tag
-                className={classNames("is-medium", classes.tagShorter)}
-                color="light"
+              <ShortTag
                 label={pullRequest.target}
                 title={pullRequest.target}
               />
@@ -495,7 +489,7 @@ class PullRequestDetails extends React.Component<Props, State> {
                 label={pullRequest.status}
               />
             </div>
-          </div>
+          </MediaWithTopBorder>
           <ExtensionPoint
             name={"reviewPlugin.pullrequest.top"}
             renderAll={true}
@@ -503,21 +497,21 @@ class PullRequestDetails extends React.Component<Props, State> {
           />
           {description}
 
-          <div className={classNames("media", classes.userListMargin)}>
+          <UserList className="media">
             <div className="media-content">
               {author}
               {reviewerList}
             </div>
-          </div>
+          </UserList>
 
-          <div className={classNames("level", classes.wrapper)}>
+          <LevelWrapper className="level">
             {subscription}
             <div className="level-right">
               <div className="level-item">{rejectButton}</div>
               <div className="level-item">{mergeButton}</div>
             </div>
-          </div>
-        </div>
+          </LevelWrapper>
+        </Container>
 
         <PullRequestInformation
           pullRequest={pullRequest}
@@ -533,5 +527,5 @@ class PullRequestDetails extends React.Component<Props, State> {
 }
 
 export default withRouter(
-  injectSheet(styles)(translate("plugins")(PullRequestDetails))
+  translate("plugins")(PullRequestDetails)
 );

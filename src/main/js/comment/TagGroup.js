@@ -1,14 +1,12 @@
 // @flow
 import React, {type Node} from "react";
-import injectSheet from "react-jss";
+import styled from "styled-components";
 
-const styles = {
-  group: {
-    "& > *": {
-      marginRight: "0.5rem"
-    }
+const Group = styled.span`
+  & > * {
+    margin-right: 0.5rem;
   }
-};
+`;
 
 type Props = {
   children?: Node,
@@ -18,13 +16,9 @@ type Props = {
 
 class TagGroup extends React.Component<Props> {
   render() {
-    const { children, classes } = this.props;
-    return (
-      <span className={classes.group}>
-        { children }
-      </span>
-    );
+    const { children } = this.props;
+    return <Group>{ children }</Group>;
   }
 }
 
-export default injectSheet(styles)(TagGroup);
+export default TagGroup;

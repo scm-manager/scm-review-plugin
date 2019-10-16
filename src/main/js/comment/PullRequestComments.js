@@ -1,18 +1,22 @@
 // @flow
 import React from "react";
-import injectSheet from "react-jss";
-import classNames from "classnames";
+import styled from "styled-components";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
 import type { Comments, PullRequest, Reply } from "../types/PullRequest";
 import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
 
-type Props = {
-  pullRequest: PullRequest,
+const CommentWrapper = styled.div`
+  border-top: 1px solid #dbdbdb;
 
-  // context props
-  classes: any
+  & .inline-comment + .inline-comment {
+    border-top: 1px solid #dbdbdb;
+  }
+`;
+
+type Props = {
+  pullRequest: PullRequest
 };
 
 type State = {
@@ -24,11 +28,7 @@ type State = {
 
 const styles = {
   commentWrapper: {
-    borderTop: "1px solid #dbdbdb", // $border
 
-    "& .inline-comment + .inline-comment": {
-      borderTop: "1px solid #dbdbdb" // $border
-    }
   }
 };
 
@@ -79,7 +79,6 @@ class PullRequestComments extends React.Component<Props, State> {
   };
 
   render() {
-    const { classes } = this.props;
     const { loading, error, pullRequestComments } = this.state;
 
     if (error) {
@@ -106,16 +105,14 @@ class PullRequestComments extends React.Component<Props, State> {
       return (
         <>
           {comments.map(rootComment => (
-            <div
-              className={classNames("comment-wrapper", classes.commentWrapper)}
-            >
+            <CommentWrapper className="comment-wrapper">
               <PullRequestComment
                 comment={rootComment}
                 refresh={this.updatePullRequestComments}
                 createLink={createLink}
                 handleError={this.handleError}
               />
-            </div>
+            </CommentWrapper>
           ))}
           {createLink ? (
             <CreateComment
@@ -131,4 +128,4 @@ class PullRequestComments extends React.Component<Props, State> {
   }
 }
 
-export default injectSheet(styles)(PullRequestComments);
+export default PullRequestComments;

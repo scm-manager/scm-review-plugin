@@ -8,13 +8,15 @@ import { withRouter } from "react-router-dom";
 import { getPullRequests } from "./pullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
-import injectSheet from "react-jss";
-import classNames from "classnames";
+import styled from "styled-components";
+
+const ScrollingTable = styled.div`
+  overflow-x: auto;
+`;
 
 type Props = {
   repository: Repository,
   t: string => string,
-  classes: any
 };
 
 type State = {
@@ -22,12 +24,6 @@ type State = {
   error?: Error,
   loading: boolean,
   status: string
-};
-
-const styles = {
-  tableScrolling: {
-    overflowX: "auto"
-  }
 };
 
 class PullRequestList extends React.Component<Props, State> {
@@ -72,7 +68,6 @@ class PullRequestList extends React.Component<Props, State> {
   };
 
   renderPullRequestTable = () => {
-    const { classes } = this.props;
     const { pullRequests, status } = this.state;
 
     const availablePullRequests = pullRequests._embedded.pullRequests;
@@ -86,9 +81,9 @@ class PullRequestList extends React.Component<Props, State> {
           />
         </div>
 
-        <div className={classNames("panel-block", classes.tableScrolling)}>
+        <ScrollingTable className="panel-block">
           <PullRequestTable pullRequests={availablePullRequests} />
-        </div>
+        </ScrollingTable>
       </div>
     );
   };
@@ -129,6 +124,4 @@ class PullRequestList extends React.Component<Props, State> {
   }
 }
 
-export default withRouter(
-  injectSheet(styles)(translate("plugins")(PullRequestList))
-);
+export default withRouter(translate("plugins")(PullRequestList));

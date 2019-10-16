@@ -8,7 +8,7 @@ import {
 } from "@scm-manager/ui-components";
 import type { Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
-import injectSheet from "react-jss";
+import styled from "styled-components";
 import type { BasicPullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
 import { Trans, translate } from "react-i18next";
@@ -17,16 +17,13 @@ import type { History } from "history";
 import { withRouter } from "react-router-dom";
 import queryString from "query-string";
 
-const styles = {
-  controlButtons: {
-    paddingTop: "1.5em"
-  }
-};
+const ControlButtons = styled.div`
+  padding-top: 1.5em;
+`;
 
 type Props = {
   repository: Repository,
   userAutocompleteLink: string,
-  classes: any,
   match: any,
   t: string => string,
   history: History
@@ -89,7 +86,7 @@ class Create extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, classes, match, t } = this.props;
+    const { repository, match, t } = this.props;
     const { pullRequest, loading, error, disabled } = this.state;
 
     const url = this.props.location.search;
@@ -137,18 +134,18 @@ class Create extends React.Component<Props, State> {
 
           {information}
 
-          <div className={classes.controlButtons}>
+          <ControlButtons>
             <SubmitButton
               label={t("scm-review-plugin.create.submitButton")}
               action={this.submit}
               loading={loading}
               disabled={disabled}
             />
-          </div>
+          </ControlButtons>
         </div>
       </div>
     );
   }
 }
 
-export default withRouter(injectSheet(styles)(translate("plugins")(Create)));
+export default withRouter(translate("plugins")(Create));

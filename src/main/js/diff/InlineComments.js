@@ -1,41 +1,35 @@
 //@flow
 import * as React from "react";
-import injectSheet from "react-jss";
-import classNames from "classnames";
+import styled from "styled-components";
 
 type Props = {
-  children: React.Node,
-
-  // context props
-  classes: any
+  children: React.Node
 };
 
-const styles = {
-  comments: {
-    backgroundColor: "whitesmoke", // $background
-    borderTop: "1px solid #dbdbdb", // $border
-    borderBottom: "1px solid #dbdbdb", // $border
+const Comments = styled.div`
+  background-color: whitesmoke; // $background
+  border-top: 1px solid #dbdbdb; // $border
+  border-bottom: 1px solid #dbdbdb; // $border
 
-    "& > *": {
-      backgroundColor: "white" // $white
-    },
-
-    /* reply on same line as inline comment */
-    "& .comment-wrapper + .inline-comment": {
-      borderTop: "1px solid #dbdbdb" // $border
-    }
+  & > * {
+    background-color: white;
   }
-};
+
+  /* reply on same line as inline comment */
+  & .comment-wrapper + .inline-comment {
+    border-top: 1px solid #dbdbdb; // $border
+  }
+`;
 
 class InlineComments extends React.Component<Props> {
   render() {
-    const { children, classes } = this.props;
+    const { children } = this.props;
     return (
-      <div className={classNames("is-indented-line", classes.comments)}>
+      <Comments className="is-indented-line">
         {children}
-      </div>
+      </Comments>
     );
   }
 }
 
-export default injectSheet(styles)(InlineComments);
+export default InlineComments;

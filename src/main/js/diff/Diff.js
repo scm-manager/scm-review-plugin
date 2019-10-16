@@ -1,8 +1,7 @@
 //@flow
 import React from "react";
 import { translate, type TFunction } from "react-i18next";
-import injectSheet from "react-jss";
-import classNames from "classnames";
+import styled from "styled-components";
 import type { Repository, Link } from "@scm-manager/ui-types";
 import type {
   DiffEventContext,
@@ -36,6 +35,16 @@ import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 
+const LevelWithMargin = styled(Level)`
+  margin-bottom: 1rem !important;
+`;
+
+const CommentWrapper = styled.div`
+  & .inline-comment + .inline-comment {
+    border-top: 1px solid #dbdbdb
+  }
+`;
+
 type Props = {
   repository: Repository,
   pullRequest: PullRequest,
@@ -67,17 +76,6 @@ type State = {
   },
   createLink: Link,
   collapsed: boolean
-};
-
-const styles = {
-  bottomMargin: {
-    marginBottom: "1rem !important"
-  },
-  commentWrapper: {
-    "& .inline-comment + .inline-comment": {
-      borderTop: "1px solid #dbdbdb" // $border
-    }
-  }
 };
 
 class Diff extends React.Component<Props, State> {
@@ -126,7 +124,7 @@ class Diff extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, source, target, classes, t } = this.props;
+    const { repository, source, target, t } = this.props;
     const { loading, error, collapsed } = this.state;
     const url = createDiffUrl(repository, source, target);
 
@@ -143,8 +141,7 @@ class Diff extends React.Component<Props, State> {
     } else {
       return (
         <StyledDiffWrapper commentable={this.isPermittedToComment()}>
-          <Level
-            className={classes.bottomMargin}
+          <LevelWithMargin
             right={
               <Button
                 action={this.collapseDiffs}
@@ -313,22 +310,19 @@ class Diff extends React.Component<Props, State> {
   };
 
   createComments = fileState => {
-    const { classes } = this.props;
     const comments = fileState.comments;
 
     return (
       <>
         {comments.map(rootComment => (
-          <div
-            className={classNames("comment-wrapper", classes.commentWrapper)}
-          >
+          <CommentWrapper className="comment-wrapper">
             <PullRequestComment
               comment={rootComment}
               refresh={this.fetchComments}
               handleError={this.onError}
               createLink={this.state.createLink}
             />
-          </div>
+          </CommentWrapper>
         ))}
       </>
     );
@@ -358,4 +352,4 @@ class Diff extends React.Component<Props, State> {
   };
 }
 
-export default injectSheet(styles)(translate("plugins")(Diff));
+export default translate("plugins")(Diff);

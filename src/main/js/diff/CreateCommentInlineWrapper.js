@@ -1,53 +1,56 @@
 //@flow
 import * as React from "react";
-import injectSheet from "react-jss";
-import classNames from "classnames";
+import styled from "styled-components";
 
-const styles = {
-  wrapperRoot: {
-    fontSize: "0.9rem",
-    padding: "1.5rem",
+const WrapperRoot = styled.div.attrs(props => ({
+  className: "inline-comment"
+}))`
+    font-size: 0.9rem;
+    padding: 1.5rem;
 
-    "& .content:not(:last-child)": {
-      marginBottom: "0"
+    & .content:not(:last-child) {
+      margin-bottom: 0;
     }
-  },
-  wrapperChild: {
-    marginLeft: "2rem"
-  },
-  arrow: {
-    position: "absolute",
-    marginLeft: "-1.5em"
-  }
-};
+`;
+
+const WrapperChild = styled(WrapperRoot)`
+  margin-Left: 2rem;
+`;
+
+const Arrow = styled.div`
+  position: absolute;
+  margin-left: -1.5em;
+`;
 
 type Props = {
-  children: React.Node,
-  // context props
-  classes: any,
-  isChildComment: boolean
+  isChildComment: boolean,
+  children: React.Node
 };
 
 class CreateCommentInlineWrapper extends React.Component<Props> {
-  render() {
-    const { classes, children, isChildComment } = this.props;
+
+  renderRoot = (children: React.Node) => {
+    return <WrapperRoot>{children}</WrapperRoot>
+  };
+
+  renderChild = (children: React.Node) => {
     return (
-      <div
-        className={classNames(
-          "inline-comment",
-          classes.wrapperRoot,
-          isChildComment ? classes.wrapperChild : ""
-        )}
-      >
-        {isChildComment && (
-          <div className={classNames("has-text-grey-lighter", classes.arrow)}>
-            <i className="fas fa-caret-right" />
-          </div>
-        )}
+      <WrapperChild>
+        <Arrow className="has-text-grey-lighter">
+          <i className="fas fa-caret-right" />
+        </Arrow>
         {children}
-      </div>
+      </WrapperChild>
     );
+  };
+
+  render() {
+    const { children, isChildComment } = this.props;
+    if (isChildComment) {
+      return this.renderChild(children);
+    }
+    return this.renderRoot(children);
   }
 }
 
-export default injectSheet(styles)(CreateCommentInlineWrapper);
+export default CreateCommentInlineWrapper;

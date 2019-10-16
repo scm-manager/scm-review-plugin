@@ -2,7 +2,7 @@
 import React from "react";
 import classNames from "classnames";
 import { type TFunction, translate } from "react-i18next";
-import injectSheet from "react-jss";
+import styled from "styled-components";
 import {
   Button,
   confirmAlert,
@@ -37,6 +37,38 @@ import type { AnnotationFactoryContext } from "@scm-manager/ui-components";
 import InlineComments from "../diff/InlineComments";
 import { createChangeIdFromLocation } from "../diff/locations";
 
+const StyledModal = styled(Modal)`
+  & table.diff .diff-gutter:empty:hover::after {
+    display: none
+  }
+  
+  & .modal-card {
+    @media screen and (min-width: 1280px), print {
+      width: 1200px
+    }
+  }
+`;
+
+const LinkWithInheritColor = styled.a`
+  color: inherit;
+`;
+
+const AuthorName = styled.span`
+  margin-left: 5px;
+`;
+
+const CommentMetadata = styled.span`
+  padding: 0 0.4rem;
+`;
+
+const LastEdited = styled.small`
+  color: #9a9a9a; // dark-50
+`;
+
+const LatestEditor = styled.span`
+  color: #9a9a9a; // dark-50
+`;
+
 type Props = {
   comment: Comment,
   refresh: () => void,
@@ -45,7 +77,6 @@ type Props = {
   createLink: string,
 
   // context props
-  classes: any,
   t: TFunction
 };
 
@@ -57,31 +88,6 @@ type State = {
   contextModalOpen: boolean,
   replyEditor?: Reply,
   errorResult?: Error
-};
-
-const styles = {
-  modal: {
-    "& table.diff .diff-gutter:empty:hover::after": {
-      display: "none"
-    },
-    "& .modal-card": {
-      "@media screen and (min-width: 1280px), print": {
-        width: "1200px"
-      }
-    }
-  },
-  linkColor: {
-    color: "inherit"
-  },
-  authorName: {
-    marginLeft: "5px"
-  },
-  commentMeta: {
-    padding: "0 0.4rem"
-  },
-  lighterColor: {
-    color: "#9a9a9a" // dark-50
-  }
 };
 
 class PullRequestComment extends React.Component<Props, State> {
@@ -501,7 +507,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   render() {
-    const { comment, refresh, handleError, classes, t } = this.props;
+    const { comment, refresh, handleError, t } = this.props;
     const { loading, collapsed, edit, contextModalOpen } = this.state;
 
     if (loading) {
@@ -530,8 +536,7 @@ class PullRequestComment extends React.Component<Props, State> {
     return (
       <>
         {contextModalOpen && (
-          <Modal
-            className={classes.modal}
+          <StyledModal
             title={t("scm-review-plugin.comment.contextModal.title")}
             closeFunction={() => this.onClose()}
             body={
@@ -555,21 +560,20 @@ class PullRequestComment extends React.Component<Props, State> {
           <article className="media">
             <div className="media-content is-clipped content">
               <p>
-                <a
-                  className={classes.linkColor}
+                <LinkWithInheritColor
                   onClick={this.toggleCollapse}
                   title={collapseTitle}
                 >
                   <span className="icon is-small">
                     <i className={classNames("fa", collapseIcon)} />
                   </span>
-                  <span className={classes.authorName}>
+                  <AuthorName>
                     <strong>{comment.author.displayName}</strong>{" "}
-                  </span>
-                </a>
-                <span className={classes.commentMeta}>
+                  </AuthorName>
+                </LinkWithInheritColor>
+                <CommentMetadata>
                   <DateFromNow date={comment.date} /> {lastEdited}
-                </span>
+                </CommentMetadata>
                 {this.collectTags(comment)}
                 <br />
                 {message}
@@ -596,7 +600,6 @@ class PullRequestComment extends React.Component<Props, State> {
   }
 
   inlineComment = (comment: Comment) => {
-    const { classes } = this.props;
     return (context: AnnotationFactoryContext) => {
       const annotations = {};
       annotations[createChangeIdFromLocation(comment.location)] = (
@@ -606,9 +609,9 @@ class PullRequestComment extends React.Component<Props, State> {
               <div className="media-content is-clipped content">
                 <p>
                   <strong>{comment.author.displayName}</strong>{" "}
-                  <span className={classes.commentMeta}>
+                  <CommentMetadata>
                     <DateFromNow date={comment.date} /> {this.getLastEdited()}
-                  </span>
+                  </CommentMetadata>
                   <br />
                   <MarkdownView content={comment.comment} />
                 </p>
@@ -622,16 +625,15 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   getLastEdited = () => {
-    const { comment, classes, t } = this.props;
+    const { comment, t } = this.props;
     if (comment._embedded && comment._embedded.transitions) {
       const latestTransition = this.getLatestTransition("CHANGE_TEXT");
       if (latestTransition && latestTransition.user.id !== comment.author.id) {
         const latestEditor = latestTransition.user.displayName;
         return (
-          <small className={classes.lighterColor}>
-            ( {t("scm-review-plugin.comment.lastEdited")}{" "}
-            <strong className={classes.lighterColor}>{latestEditor}</strong> )
-          </small>
+          <LastEdited>
+            {t("scm-review-plugin.comment.lastEdited")}{" "}<LatestEditor>{latestEditor}</LatestEditor>
+          </LastEdited>
         );
       }
     }
@@ -695,4 +697,4 @@ class PullRequestComment extends React.Component<Props, State> {
   }
 }
 
-export default translate("plugins")(injectSheet(styles)(PullRequestComment));
+export default translate("plugins")(PullRequestComment);
