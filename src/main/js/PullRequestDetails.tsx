@@ -382,6 +382,7 @@ class PullRequestDetails extends React.Component<Props, State> {
         <UserLabel>{t("scm-review-plugin.pull-request.author")}:</UserLabel>
         <UserField>
           <UserInline>{pullRequest.author.displayName}</UserInline>
+          &nbsp;
           <DateFromNow date={pullRequest.creationDate} />
         </UserField>
       </div>
