@@ -67,7 +67,7 @@ const UserInline = styled.div`
   font-weight: bold;
 `;
 
-const UserInlineListItem = styled.div`
+const UserInlineListItem = styled.li`
   display: inline-block;
   font-weight: bold;
 `;
