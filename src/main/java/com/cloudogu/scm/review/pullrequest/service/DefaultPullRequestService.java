@@ -137,6 +137,33 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
+  public boolean hasUserApproved(Repository repository, String pullRequestId, User user) {
+    return getStore(repository).get(pullRequestId).getApprover()
+      .stream()
+      .anyMatch(recipient -> user.getId().equals(recipient));
+  }
+
+  @Override
+  public void approve(Repository repository, String pullRequestId, User user) {
+    PullRequestStore store = getStore(repository);
+    PullRequest pullRequest = store.get(pullRequestId);
+    pullRequest.addApprover(user.getId());
+    store.update(pullRequest);
+  }
+
+  @Override
+  public void disapprove(Repository repository, String pullRequestId, User user) {
+    PullRequestStore store = getStore(repository);
+    PullRequest pullRequest = store.get(pullRequestId);
+    Set<String> approver = pullRequest.getApprover();
+    approver.stream()
+      .filter(recipient -> user.getId().equals(recipient))
+      .findFirst()
+      .ifPresent(pullRequest::removeApprover);
+    store.update(pullRequest);
+  }
+
+  @Override
   public boolean isUserSubscribed(Repository repository, String pullRequestId, User user) {
     return getStore(repository).get(pullRequestId).getSubscriber()
       .stream()
@@ -149,7 +176,6 @@ public class DefaultPullRequestService implements PullRequestService {
     PullRequest pullRequest = store.get(pullRequestId);
     pullRequest.addSubscriber(user.getId());
     store.update(pullRequest);
-
   }
 
   @Override

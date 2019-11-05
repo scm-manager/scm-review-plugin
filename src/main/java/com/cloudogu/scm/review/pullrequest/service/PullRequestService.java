@@ -75,6 +75,24 @@ public interface PullRequestService {
 
   void reject(Repository repository, PullRequest pullRequest);
 
+  boolean hasUserApproved(Repository repository, String pullRequestId, User user);
+
+  default boolean hasUserApproved(Repository repository, String pullRequestId) {
+    return hasUserApproved(repository, pullRequestId, getCurrentUser());
+  }
+
+  void approve(Repository repository, String pullRequestId, User user);
+
+  default void approve(Repository repository, String pullRequestId) {
+    approve(repository, pullRequestId, getCurrentUser());
+  }
+
+  void disapprove(Repository repository, String pullRequestId, User user);
+
+  default void disapprove(Repository repository, String pullRequestId) {
+    disapprove(repository, pullRequestId, getCurrentUser());
+  }
+
   boolean isUserSubscribed(Repository repository, String pullRequestId, User user);
 
   default boolean isUserSubscribed(Repository repository, String pullRequestId) {

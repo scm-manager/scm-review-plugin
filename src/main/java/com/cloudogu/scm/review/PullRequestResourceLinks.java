@@ -71,6 +71,27 @@ public class PullRequestResourceLinks {
         .href();
     }
 
+    public String approval(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("getApproval").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
+    public String approve(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("approve").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
+    public String disapprove(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("disapprove").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
     public String subscribe(String namespace, String name, String pullRequestId) {
       return pullRequestLinkBuilder
         .method("getPullRequestResource").parameters()

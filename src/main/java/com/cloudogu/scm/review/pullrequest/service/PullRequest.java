@@ -37,8 +37,21 @@ public class PullRequest {
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
   private PullRequestStatus status;
+  private Set<String> approver = new HashSet<>();
   private Set<String> subscriber = new HashSet<>();
   private Set<String> reviewer = new HashSet<>();
+
+  public Set<String> getApprover() {
+    return unmodifiableSet(approver);
+  }
+
+  public void addApprover(String recipient) {
+    this.approver.add(recipient);
+  }
+
+  public void removeApprover(String recipient) {
+    this.approver.remove(recipient);
+  }
 
   public Set<String> getSubscriber() {
     return unmodifiableSet(subscriber);

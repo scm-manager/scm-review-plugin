@@ -20,11 +20,13 @@ import { getSubscription, handleSubscription, merge, reject } from "./pullReques
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
+import ApprovalContainer from "./ApprovalContainer";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  pullRequest: PullRequest;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    pullRequest: PullRequest;
+  };
 
 type State = {
   pullRequest: PullRequest;
@@ -358,15 +360,13 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
 
     const subscription = subscriptionLink ? (
-      <div className="level-left">
-        <div className="level-item">
-          <Button action={this.handleSubscription} loading={loadingSubscription} color="link is-outlined">
-            <span className="icon is-small">
-              <i className={`fas fa-${subscriptionIcon}`} />
-            </span>
-            <span>{t("scm-review-plugin.edit." + subscriptionLabel)}</span>
-          </Button>
-        </div>
+      <div className="level-item">
+        <Button action={this.handleSubscription} loading={loadingSubscription} color="link is-outlined">
+          <span className="icon is-small">
+            <i className={`fas fa-${subscriptionIcon}`} />
+          </span>
+          <span>{t("scm-review-plugin.edit." + subscriptionLabel)}</span>
+        </Button>
       </div>
     ) : (
       ""
@@ -452,7 +452,12 @@ class PullRequestDetails extends React.Component<Props, State> {
           </UserList>
 
           <LevelWrapper className="level">
-            {subscription}
+            <div className="level-left">
+              {subscription}
+              <div className="level-item">
+                <ApprovalContainer pullRequest={pullRequest} />
+              </div>
+            </div>
             <div className="level-right">
               <div className="level-item">{rejectButton}</div>
               <div className="level-item">{mergeButton}</div>

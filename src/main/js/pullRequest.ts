@@ -1,6 +1,6 @@
 import { BasicComment, BasicPullRequest, PossibleTransition, PullRequest } from "./types/PullRequest";
 import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
-import {Repository} from "@scm-manager/ui-types";
+import { Repository } from "@scm-manager/ui-types";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
@@ -116,6 +116,25 @@ export function getPullRequests(url: string) {
     });
 }
 
+export function getApproval(url: string) {
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .catch(err => {
+      return {
+        error: err
+      };
+    });
+}
+
+export function handleApproval(url: string) {
+  return apiClient.post(url).catch((err: Error) => {
+    return {
+      error: err
+    };
+  });
+}
+
 export function getSubscription(url: string) {
   return apiClient
     .get(url)
@@ -128,7 +147,7 @@ export function getSubscription(url: string) {
 }
 
 export function handleSubscription(url: string) {
-  return apiClient.post(url).catch(err => {
+  return apiClient.post(url).catch((err: Error) => {
     return {
       error: err
     };

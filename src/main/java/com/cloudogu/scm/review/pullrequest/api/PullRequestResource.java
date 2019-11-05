@@ -66,6 +66,73 @@ public class PullRequestResource {
   }
 
   @GET
+  @Path("approval")
+  @StatusCodes({
+    @ResponseCode(code = 200, condition = "success"),
+    @ResponseCode(code = 400, condition = "Invalid body"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
+    @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getApproval(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+    Repository repository = service.getRepository(namespace, name);
+    PermissionCheck.checkRead(repository);
+    if (CurrentUserResolver.getCurrentUser() != null && Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
+      return Response.ok().build();
+    }
+    PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
+    if (service.hasUserApproved(repository, pullRequestId)) {
+      String disapprove = resourceLinks.pullRequest().disapprove(namespace, name, pullRequestId);
+
+      Links.Builder linksBuilder = linkingTo().single(Link.link("disapprove", disapprove));
+      return Response.ok(new HalRepresentation(linksBuilder.build())).build();
+    } else {
+      String approve = resourceLinks.pullRequest().approve(namespace, name, pullRequestId);
+
+      Links.Builder linksBuilder = linkingTo().single(Link.link("approve", approve));
+      return Response.ok(new HalRepresentation(linksBuilder.build())).build();
+    }
+  }
+
+  @POST
+  @Path("approve")
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 400, condition = "Invalid body"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
+    @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  @TypeHint(TypeHint.NO_CONTENT.class)
+  public Response approve(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+    Repository repository = service.getRepository(namespace, name);
+    PermissionCheck.checkRead(repository);
+    service.approve(repository, pullRequestId);
+    return Response.noContent().build();
+  }
+
+  @POST
+  @Path("disapprove")
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 400, condition = "Invalid body"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
+    @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  @TypeHint(TypeHint.NO_CONTENT.class)
+  public Response disapprove(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+    Repository repository = service.getRepository(namespace, name);
+    PermissionCheck.checkRead(repository);
+    service.disapprove(repository, pullRequestId);
+    return Response.noContent().build();
+  }
+
+  @GET
   @Path("subscription")
   @StatusCodes({
     @ResponseCode(code = 200, condition = "success"),
