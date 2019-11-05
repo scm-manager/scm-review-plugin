@@ -21,6 +21,8 @@ import java.net.URI;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,7 +50,7 @@ class PullRequestLinkEnricherTest {
   @BeforeEach
   void initMocks() {
     when(appender.linkArrayBuilder(any())).thenReturn(linkArrayBuilder);
-    when(linkArrayBuilder.append(any(), any())).thenReturn(linkArrayBuilder);
+    lenient().when(linkArrayBuilder.append(any(), any())).thenReturn(linkArrayBuilder);
     ScmPathInfoStore pathInfoStore = new ScmPathInfoStore();
     pathInfoStore.set(() -> URI.create("/"));
     enricher = new PullRequestLinkEnricher(Providers.of(pathInfoStore), serviceFactory);
@@ -64,5 +66,14 @@ class PullRequestLinkEnricherTest {
     enricher.enrich(context, appender);
     verify(appender).linkArrayBuilder("merge");
     verify(linkArrayBuilder).append("squash", "/v2/merge?strategy=squash");
+  }
+
+
+  @Test
+  void shouldNotEnrichLinksIfNoStrategyAvailable() {
+    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(false);
+    enricher.enrich(context, appender);
+    verify(appender).linkArrayBuilder("merge");
+    verify(linkArrayBuilder, never()).append("squash", "/v2/merge?strategy=squash");
   }
 }

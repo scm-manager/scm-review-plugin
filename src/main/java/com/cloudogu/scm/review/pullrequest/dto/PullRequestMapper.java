@@ -27,6 +27,7 @@ import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,6 +55,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Named("mapReviewerFromDto")
   Set<String> mapReviewerFromDto(Set<DisplayedUserDto> reviewer) {
+    if (reviewer.isEmpty()) {
+      return Collections.EMPTY_SET;
+    }
     return reviewer
       .stream()
       .map(DisplayedUserDto::getId)

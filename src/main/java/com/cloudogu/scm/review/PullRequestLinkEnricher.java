@@ -35,15 +35,21 @@ public class PullRequestLinkEnricher implements HalEnricher {
     NamespaceAndName namespaceAndName = context.oneRequireByType(NamespaceAndName.class);
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStoreProvider.get().get(), MergeResource.class);
-      HalAppender.LinkArrayBuilder linkCollection = appender
-        .linkArrayBuilder("merge");
+      HalAppender.LinkArrayBuilder linkCollection = appender.linkArrayBuilder("merge");
 
       if (repositoryService.getMergeCommand().isSupported(MergeStrategy.SQUASH)) {
-        linkCollection.append("squash", createLink(linkBuilder, namespaceAndName) + "?strategy=squash");
+        createStrategyLink(linkBuilder, linkCollection, namespaceAndName, "squash");
       }
 
       linkCollection.build();
     }
+  }
+
+  private HalAppender.LinkArrayBuilder createStrategyLink(LinkBuilder linkBuilder,
+                                                          HalAppender.LinkArrayBuilder linkCollection,
+                                                          NamespaceAndName namespaceAndName,
+                                                          String strategy) {
+    return linkCollection.append(strategy, createLink(linkBuilder, namespaceAndName) + "?strategy=" + strategy);
   }
 
   private String createLink(LinkBuilder linkBuilder, NamespaceAndName namespaceAndName) {
