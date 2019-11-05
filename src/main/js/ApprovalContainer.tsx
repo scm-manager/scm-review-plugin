@@ -2,8 +2,8 @@ import React from "react";
 import { ErrorNotification } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
 import { getApproval, handleApproval } from "./pullRequest";
-import DisapprovalButton from "./DisapprovalButton";
 import ApprovalButton from "./ApprovalButton";
+import DisapprovalButton from "./DisapprovalButton";
 
 type Props = {
   pullRequest: PullRequest;

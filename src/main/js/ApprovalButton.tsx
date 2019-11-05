@@ -7,9 +7,7 @@ type Props = WithTranslation & {
   action: () => void;
 };
 
-type State = {
-  mergeInformation: boolean;
-};
+type State = {};
 
 class ApprovalButton extends React.Component<Props, State> {
   render() {
