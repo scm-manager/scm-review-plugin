@@ -51,7 +51,7 @@ class PullRequestInformation extends React.Component<Props> {
     if (status && status === "OPEN") {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
-          <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pull-request.tabs.commits")}</Link>
+          <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pullRequest.tabs.commits")}</Link>
         </li>
       );
       routeChangeset = (
@@ -77,7 +77,7 @@ class PullRequestInformation extends React.Component<Props> {
       );
       diffTab = (
         <li className={this.navigationClass("diff")}>
-          <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pull-request.tabs.diff")}</Link>
+          <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pullRequest.tabs.diff")}</Link>
         </li>
       );
     }
@@ -93,7 +93,7 @@ class PullRequestInformation extends React.Component<Props> {
 
     const commentTab = pullRequest ? (
       <li className={this.navigationClass("comments")}>
-        <Link to={`${baseURL}/comments/`}>{t("scm-review-plugin.pull-request.tabs.comments")}</Link>
+        <Link to={`${baseURL}/comments/`}>{t("scm-review-plugin.pullRequest.tabs.comments")}</Link>
       </li>
     ) : (
       ""

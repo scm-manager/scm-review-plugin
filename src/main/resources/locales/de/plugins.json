@@ -7,19 +7,21 @@
       "submitButton": "Speichern"
     },
     "edit": {
-      "button": "Pull Request bearbeiten",
       "title": "Pull Request",
       "subtitle": "Pull Request ändern für {{repositoryName}}",
-      "submitButton": "Speichern",
-      "subscribe": "Subscribe",
-      "unsubscribe": "Unsubscribe"
+      "submitButton": "Speichern"
     },
     "diff": {
       "notSupported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt.",
       "collapseDiffs": "Auf-/Zuklappen"
     },
-    "no-requests": "Keine Pull Requests mit diesen Kriterien gefunden.",
-    "pull-request": {
+    "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
+    "pullRequests": {
+      "errorTitle": "Fehler",
+      "errorSubtitle": "Unbekannter Pull Request Fehler",
+      "createButton": "Pull Request erstellen"
+    },
+    "pullRequest": {
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
       "title": "Titel",
@@ -35,11 +37,23 @@
         "diff": "Diff",
         "comments": "Comments"
       },
-      "noChangesets": "Keine Changesets gefunden."
+      "noChangesets": "Keine Changesets gefunden.",
+      "details": {
+        "notification": "Pull Request erfolgreich gemerged!",
+        "targetDeleted": "Der Target Branch wurde gelösch!",
+        "buttons": {
+          "edit": "Bearbeiten",
+          "approve": "Freigeben",
+          "disapprove": "Freigabe zurückziehen",
+          "subscribe": "Subscribe",
+          "unsubscribe": "Unsubscribe"
+        }
+      }
     },
     "show-pull-request": {
       "error-title": "Fehler",
       "error-subtitle": "Unbekannter Pull Request Fehler",
+      "merge-information": "Automatischer Merge nicht möglich.",
       "mergeButton": {
         "button-title": "Pull Request mergen",
         "confirm-alert": {
@@ -47,8 +61,7 @@
           "message": "Soll der Pull Request wirklich gemerged werden?",
           "submit": "Ja",
           "cancel": "Nein"
-        },
-        "merge-information": "Automatischer Merge nicht möglich."
+        }
       },
       "rejectButton": {
         "button-title": "Pull Request ablehnen",
@@ -58,15 +71,7 @@
           "submit": "Ja",
           "cancel": "Nein"
         }
-      },
-      "notification": "Pull Request erfolgreich gemerged!",
-      "targetDeleted": "Der Target Branch wurde gelösch!"
-    },
-    "pull-requests": {
-      "error-title": "Fehler",
-      "error-subtitle": "Unbekannter Pull Request Fehler",
-      "description": "Beschreibung",
-      "createButton": "Pull Request erstellen"
+      }
     },
     "comment": {
       "addComment": "Kommentar hinzufügen",

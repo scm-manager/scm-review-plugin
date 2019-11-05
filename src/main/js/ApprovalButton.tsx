@@ -14,7 +14,7 @@ class ApprovalButton extends React.Component<Props, State> {
     const { loading, action, t } = this.props;
     return (
       <Button
-        label={t("scm-review-plugin.show-pull-request.approvalButton")}
+        label={t("scm-review-plugin.pullRequest.details.buttons.approve")}
         loading={loading}
         action={action}
         color="link is-outlined"

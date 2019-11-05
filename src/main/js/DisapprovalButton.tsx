@@ -14,7 +14,7 @@ class DisapprovalButton extends React.Component<Props, State> {
     const { loading, action, t } = this.props;
     return (
       <Button
-        label={t("scm-review-plugin.show-pull-request.disapprovalButton")}
+        label={t("scm-review-plugin.pullRequest.details.buttons.disapprove")}
         loading={loading}
         action={action}
         color="link is-outlined"

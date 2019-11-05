@@ -123,7 +123,7 @@ class Changesets extends React.Component<Props, State> {
           </div>
         );
       } else {
-        return <Notification type="info">{t("scm-review-plugin.pull-request.noChangesets")}</Notification>;
+        return <Notification type="info">{t("scm-review-plugin.pullRequest.noChangesets")}</Notification>;
       }
     }
     return null;
