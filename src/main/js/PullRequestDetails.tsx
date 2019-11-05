@@ -13,14 +13,16 @@ import {
   Tooltip,
   MarkdownView,
   Button,
-  Tag
+  Tag,
+  ButtonGroup
 } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
-import { getSubscription, handleSubscription, merge, reject } from "./pullRequest";
+import { merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
 import ApprovalContainer from "./ApprovalContainer";
+import SubscriptionContainer from "./SubscriptionContainer";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -32,15 +34,11 @@ type State = {
   pullRequest: PullRequest;
   error?: Error;
   loading: boolean;
-  loadingSubscription: boolean;
   mergeHasNoConflict?: boolean;
   targetBranchDeleted?: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
   showNotification: boolean;
-  subscriptionIcon: string;
-  subscriptionLabel: string;
-  subscriptionLink: string;
 };
 
 const MediaContent = styled.div.attrs(props => ({
@@ -115,7 +113,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     super(props);
     this.state = {
       loading: false,
-      loadingSubscription: true,
       pullRequest: this.props.pullRequest,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
@@ -126,9 +123,6 @@ class PullRequestDetails extends React.Component<Props, State> {
   componentDidMount(): void {
     const { pullRequest } = this.props;
     this.getMergeDryRun(pullRequest);
-    if (pullRequest && pullRequest._links.subscription && pullRequest._links.subscription.href) {
-      this.getSubscription(pullRequest);
-    }
   }
 
   updatePullRequest = () => {
@@ -141,48 +135,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     });
   };
 
-  getSubscription(pullRequest: PullRequest) {
-    if (pullRequest && pullRequest._links.subscription && pullRequest._links.subscription.href) {
-      getSubscription(pullRequest._links.subscription.href).then(response => {
-        if (response.error) {
-          this.setState({
-            error: response.error,
-            loadingSubscription: false
-          });
-        } else {
-          if (response._links.subscribe) {
-            this.setState({
-              loadingSubscription: false,
-              subscriptionIcon: "plus",
-              subscriptionLabel: "subscribe",
-              subscriptionLink: response._links.subscribe.href
-            });
-          } else if (response._links.unsubscribe) {
-            this.setState({
-              loadingSubscription: false,
-              subscriptionIcon: "minus",
-              subscriptionLabel: "unsubscribe",
-              subscriptionLink: response._links.unsubscribe.href
-            });
-          }
-        }
-      });
-    }
-  }
-
-  handleSubscription = () => {
-    const { pullRequest } = this.props;
-    const { subscriptionLink } = this.state;
-    this.setState({
-      loadingSubscription: true
-    });
-    handleSubscription(subscriptionLink).then(response => {
-      this.setState({
-        error: response.error
-      });
-      this.getSubscription(pullRequest);
-    });
-  };
 
   getMergeDryRun(pullRequest: PullRequest) {
     const { repository } = this.props;
@@ -289,10 +241,6 @@ class PullRequestDetails extends React.Component<Props, State> {
       targetBranchDeleted,
       rejectButtonLoading,
       showNotification,
-      subscriptionIcon,
-      subscriptionLabel,
-      subscriptionLink,
-      loadingSubscription
     } = this.state;
 
     if (error) {
@@ -319,7 +267,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeNotification = (
         <Notification
           type="info"
-          children={t("scm-review-plugin.show-pull-request.notification")}
+          children={t("scm-review-plugin.pullRequest.details.notification")}
           onClose={() => this.onClose()}
         />
       );
@@ -347,39 +295,25 @@ class PullRequestDetails extends React.Component<Props, State> {
       const toEdit =
         "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
       editButton = (
-        <div className="media-right">
-          <Button
-            link={toEdit}
-            color="link is-outlined"
-            label={t("scm-review-plugin.edit.button")}
-            icon="edit"
-            reducedMobile={true}
-          />
-        </div>
+        <Button
+          link={toEdit}
+          color="link is-outlined"
+          label={t("scm-review-plugin.pullRequest.details.buttons.edit")}
+          icon="edit"
+          reducedMobile={true}
+        />
       );
     }
 
-    const subscription = subscriptionLink ? (
-      <div className="level-item">
-        <Button action={this.handleSubscription} loading={loadingSubscription} color="link is-outlined">
-          <span className="icon is-small">
-            <i className={`fas fa-${subscriptionIcon}`} />
-          </span>
-          <span>{t("scm-review-plugin.edit." + subscriptionLabel)}</span>
-        </Button>
-      </div>
-    ) : (
-      ""
-    );
     const targetBranchDeletedWarning = targetBranchDeleted ? (
-      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.show-pull-request.targetDeleted")}>
+      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
         <i className="fas fa-exclamation-triangle" />
       </Tooltip>
     ) : null;
 
     const author = (
       <div className="field is-horizontal">
-        <UserLabel>{t("scm-review-plugin.pull-request.author")}:</UserLabel>
+        <UserLabel>{t("scm-review-plugin.pullRequest.author")}:</UserLabel>
         <UserField>
           <UserInline>{pullRequest.author.displayName}</UserInline>
           &nbsp;
@@ -391,7 +325,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       <>
         {pullRequest.reviewer.length > 0 ? (
           <div className="field is-horizontal">
-            <UserLabel>{t("scm-review-plugin.pull-request.reviewer")}:</UserLabel>
+            <UserLabel>{t("scm-review-plugin.pullRequest.reviewer")}:</UserLabel>
             <UserField>
               <ul className="is-separated">
                 {pullRequest.reviewer.map(reviewer => {
@@ -412,7 +346,12 @@ class PullRequestDetails extends React.Component<Props, State> {
             <div className="media-content">
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
             </div>
-            {editButton}
+            <div className="media-right">
+              <ButtonGroup>
+                <SubscriptionContainer pullRequest={pullRequest} />
+                {editButton}
+              </ButtonGroup>
+            </div>
           </div>
 
           {mergeNotification}
@@ -453,7 +392,6 @@ class PullRequestDetails extends React.Component<Props, State> {
 
           <LevelWrapper className="level">
             <div className="level-left">
-              {subscription}
               <div className="level-item">
                 <ApprovalContainer pullRequest={pullRequest} />
               </div>
