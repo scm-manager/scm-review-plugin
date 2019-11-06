@@ -425,7 +425,6 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetCommentLink() throws URISyntaxException, IOException {
-    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
     dispatcher.invoke(request, response);
@@ -442,7 +441,6 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetUpdateLink() throws URISyntaxException, IOException {
-    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
 
@@ -641,8 +639,6 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldReturnCollectionWithCreateLink() throws URISyntaxException, IOException {
-    when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("developId", "masterId"));
-
     JsonNode links = invokeAndReturnLinks();
 
     assertThat(links.has("create")).isTrue();

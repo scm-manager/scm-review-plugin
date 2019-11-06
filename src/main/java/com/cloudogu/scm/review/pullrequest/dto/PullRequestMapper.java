@@ -16,6 +16,7 @@ import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
@@ -116,11 +117,13 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
 
       try (RepositoryService service = serviceFactory.create(repository)) {
-        List<Link> strategyLinks = Stream.of(service.getMergeCommand().getSupportedMergeStrategies())
-          .flatMap(Set::stream)
-          .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), strategy))
-          .collect(toList());
-        linksBuilder.array(strategyLinks);
+        if (service.isSupported(Command.MERGE)) {
+          List<Link> strategyLinks = Stream.of(service.getMergeCommand().getSupportedMergeStrategies())
+            .flatMap(Set::stream)
+            .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), strategy))
+            .collect(toList());
+          linksBuilder.array(strategyLinks);
+        }
       }
     }
     target.add(linksBuilder.build());

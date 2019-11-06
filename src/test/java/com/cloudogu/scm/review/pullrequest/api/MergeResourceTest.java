@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.MergeResultToDtoMapper;
 import sonia.scm.repository.api.MergeCommandResult;
 
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -57,13 +56,7 @@ class MergeResourceTest {
   void shouldMergeWithSquash() throws URISyntaxException, IOException {
     when(mergeService.merge(any(), any(), any())).thenReturn(MergeCommandResult.success());
 
-    byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
-
-    MockHttpRequest request =
-      MockHttpRequest
-        .post("/" + MergeResource.MERGE_PATH_V2 + "/space/name")
-        .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+    MockHttpRequest request = createHttpRequest();
 
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(204);
@@ -74,16 +67,19 @@ class MergeResourceTest {
     ImmutableList<String> conflicts = ImmutableList.of("a", "b");
     when(mergeService.merge(any(), any(), any())).thenReturn(MergeCommandResult.failure(conflicts));
 
-    byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
-
-    MockHttpRequest request =
-      MockHttpRequest
-        .post("/" + MergeResource.MERGE_PATH_V2 + "/space/name")
-        .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+    MockHttpRequest request = createHttpRequest();
 
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(409);
+  }
+
+  private MockHttpRequest createHttpRequest() throws IOException, URISyntaxException {
+    byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
+
+    return MockHttpRequest
+      .post("/" + MergeResource.MERGE_PATH_V2 + "/space/name")
+      .content(mergeCommitJson)
+      .contentType("application/vnd.scmm-mergeCommand+json");
   }
 
   private byte[] loadJson(String s) throws IOException {
