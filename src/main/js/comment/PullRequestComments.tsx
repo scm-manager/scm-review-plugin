@@ -6,6 +6,7 @@ import { Comment, Comments, PullRequest, Reply } from "../types/PullRequest";
 import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
+import produce from "immer";
 
 const CommentWrapper = styled.div`
   border-top: 1px solid #dbdbdb;
@@ -85,10 +86,20 @@ class PullRequestComments extends React.Component<Props, State> {
 
   appendComment = (comment: Comment) => {
     this.setState((state: Readonly<State>) => {
-      return {
-        ...state,
-        comments: [...state.comments, comment]
-      };
+      return produce(state, draft => {
+        draft.comments.push(comment);
+      });
+    });
+  };
+
+  deleteComment = (comment: Comment) => {
+    return this.setState(state => {
+      return produce(state, draft => {
+        const index = state.comments.findIndex(c => c.id === comment.id);
+        if (index >= 0) {
+          draft.comments.splice(index, 1);
+        }
+      });
     });
   };
 
@@ -113,6 +124,7 @@ class PullRequestComments extends React.Component<Props, State> {
           <CommentWrapper className="comment-wrapper">
             <PullRequestComment
               comment={rootComment}
+              onDelete={this.deleteComment}
               refresh={this.updatePullRequestComments}
               createLink={createLink}
               handleError={this.handleError}
@@ -120,9 +132,7 @@ class PullRequestComments extends React.Component<Props, State> {
           </CommentWrapper>
         ))}
         {createLink && (
-          <CreateComment url={createLink}
-                         onCreation={this.appendComment}
-                         refresh={this.updatePullRequestComments} />
+          <CreateComment url={createLink} onCreation={this.appendComment} refresh={this.updatePullRequestComments} />
         )}
       </>
     );

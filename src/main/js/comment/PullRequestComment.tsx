@@ -14,6 +14,7 @@ import {
   SubmitButton,
   Textarea
 } from "@scm-manager/ui-components";
+import { Link } from "@scm-manager/ui-types";
 import { BasicComment, Comment, Reply } from "../types/PullRequest";
 import { deletePullRequestComment, transformPullRequestComment, updatePullRequestComment } from "../pullRequest";
 import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
@@ -60,7 +61,8 @@ const LatestEditor = styled.span`
 
 type Props = WithTranslation & {
   comment: Comment;
-  refresh: () => void;
+  onDelete?: (comment: Comment) => void;
+  refresh?: () => void;
   handleError: (error: Error) => void;
   child?: boolean;
   createLink: string;
@@ -127,7 +129,36 @@ class PullRequestComment extends React.Component<Props, State> {
 
   delete = () => {
     const { comment } = this.props;
-    this.deletePullRequestComment(comment._links.delete.href);
+    if (comment._links.delete) {
+      const href = (comment._links.delete as Link).href;
+
+      const { refresh, onDelete, handleError } = this.props;
+      this.setState({
+        loading: true
+      });
+
+      deletePullRequestComment(href).then(response => {
+        if (onDelete) {
+          console.log("delete with OnDelete");
+          onDelete(comment);
+        } else if (refresh) {
+          console.log("delete with refresh");
+          refresh();
+        }
+        this.setState({
+          loading: false
+        });
+      })
+      .catch(error => {
+        this.setState({
+          loading: false
+        });
+        handleError(error);
+      });
+
+    } else {
+      throw new Error("could not find required delete link");
+    }
   };
 
   confirmDelete = () => {
@@ -202,26 +233,6 @@ class PullRequestComment extends React.Component<Props, State> {
           onClick: () => null
         }
       ]
-    });
-  };
-
-  deletePullRequestComment = (url: string) => {
-    const { refresh, handleError } = this.props;
-    this.setState({
-      loading: true
-    });
-    deletePullRequestComment(url).then(response => {
-      if (response.error) {
-        this.setState({
-          loading: false
-        });
-        handleError(response.error);
-      } else {
-        this.setState({
-          loading: false
-        });
-        refresh();
-      }
     });
   };
 

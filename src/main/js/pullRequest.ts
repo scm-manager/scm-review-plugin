@@ -175,16 +175,7 @@ export function getPullRequestComments(url: string) {
 }
 
 export function deletePullRequestComment(url: string) {
-  return apiClient
-    .delete(url)
-    .then(response => {
-      return response;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.delete(url);
 }
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {
