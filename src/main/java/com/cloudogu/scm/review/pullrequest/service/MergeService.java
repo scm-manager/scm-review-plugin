@@ -29,8 +29,17 @@ public class MergeService {
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
       isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
       prepareMergeCommand(mergeCommand, mergeCommitDto, strategy);
+      MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
+      if (isFastForwardPossible(strategy, mergeCommandResult)) {
+        return mergeCommandResult;
+      }
+      prepareMergeCommand(mergeCommand, mergeCommitDto, MergeStrategy.MERGE_COMMIT);
       return mergeCommand.executeMerge();
     }
+  }
+
+  private boolean isFastForwardPossible(MergeStrategy strategy, MergeCommandResult mergeCommandResult) {
+    return strategy == MergeStrategy.FAST_FORWARD_IF_POSSIBLE && mergeCommandResult.isSuccess();
   }
 
   private void isAllowedToMerge(Repository repository, MergeCommandBuilder mergeCommand, MergeStrategy strategy) {
