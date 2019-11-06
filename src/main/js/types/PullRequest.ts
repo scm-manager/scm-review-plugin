@@ -71,6 +71,13 @@ export type Comments = Collection & {
   };
 };
 
+export type Transition = {
+  id: string;
+  transition: string;
+  date: string;
+  user: DisplayedUser;
+};
+
 export type PossibleTransition = {
   name: string;
   _links: Links;

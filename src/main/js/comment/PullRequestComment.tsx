@@ -21,12 +21,14 @@ import { deletePullRequestComment, transformPullRequestComment, updatePullReques
 import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 import CreateComment from "./CreateComment";
 import RecursivePullRequestComment from "./RecursivePullRequestComment";
-import { FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag } from "./tags";
-import TagGroup from "./TagGroup";
 import { mapCommentToFile } from "./commentToFileMapper";
 import { AnnotationFactoryContext } from "@scm-manager/ui-components";
 import InlineComments from "../diff/InlineComments";
 import { createChangeIdFromLocation } from "../diff/locations";
+import CommentActionToolbar from "./CommentActionToolbar";
+import { findLatestTransition } from "./transitions";
+import CommentTags from "./CommentTags";
+import CommentContent from "./CommentContent";
 
 const StyledModal = styled(Modal)`
   & table.diff .diff-gutter:empty:hover::after {
@@ -184,10 +186,8 @@ class PullRequestComment extends React.Component<Props, State> {
       deletePullRequestComment(href)
         .then(response => {
           if (onDelete) {
-            console.log("delete with OnDelete");
             onDelete(comment);
           } else if (refresh) {
-            console.log("delete with refresh");
             refresh();
           }
           this.setState({
@@ -251,7 +251,7 @@ class PullRequestComment extends React.Component<Props, State> {
       });
   };
 
-  confirmTransition = (transition: string, translationKey: string) => () => {
+  confirmTransition = (transition: string, translationKey: string) => {
     const { t } = this.props;
     confirmAlert({
       title: t(translationKey + ".title"),
@@ -303,143 +303,18 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createEditIcons = () => {
-    const { comment, createLink, t } = this.props;
+    const { comment, createLink } = this.props;
     const { collapsed } = this.state;
-
-    const deleteIcon =
-      comment._links.delete && !collapsed ? (
-        <a className="level-item" onClick={this.confirmDelete} title={t("scm-review-plugin.comment.delete")}>
-          <span className="icon is-small">
-            <i className="fas fa-trash" />
-          </span>
-        </a>
-      ) : (
-        ""
-      );
-
-    const editIcon =
-      comment._links.update && !collapsed ? (
-        <a className="level-item" onClick={this.startUpdate} title={t("scm-review-plugin.comment.update")}>
-          <span className="icon is-small">
-            <i className="fas fa-edit" />
-          </span>
-        </a>
-      ) : (
-        ""
-      );
-
-    const replyIcon =
-      !!comment._links.reply && !collapsed ? (
-        <a className="level-item" onClick={() => this.reply(comment)} title={t("scm-review-plugin.comment.reply")}>
-          <span className="icon is-small">
-            <i className="fas fa-reply" />
-          </span>
-        </a>
-      ) : (
-        ""
-      );
-
-    const doneTransformation = this.containsPossibleTransition("SET_DONE");
-    const doneIcon =
-      !!doneTransformation && !collapsed ? (
-        createLink ? (
-          <a
-            className="level-item"
-            onClick={this.confirmTransition("SET_DONE", "scm-review-plugin.comment.confirmDoneAlert")}
-            title={t("scm-review-plugin.comment.done")}
-          >
-            <span className="icon is-small">
-              <i className="fas fa-check-circle" />
-            </span>
-          </a>
-        ) : (
-          ""
-        )
-      ) : (
-        ""
-      );
-
-    const makeTaskTransformation = this.containsPossibleTransition("MAKE_TASK");
-    const makeTaskIcon =
-      !!makeTaskTransformation && !collapsed ? (
-        createLink ? (
-          <a
-            className="level-item"
-            onClick={this.confirmTransition("MAKE_TASK", "scm-review-plugin.comment.confirmMakeTaskAlert")}
-            title={t("scm-review-plugin.comment.makeTask")}
-          >
-            <span className="icon is-small">
-              <i className="fas fa-tasks" />
-            </span>
-          </a>
-        ) : (
-          ""
-        )
-      ) : (
-        ""
-      );
-
-    const reopenTransformation = this.containsPossibleTransition("REOPEN");
-    const reopenIcon =
-      !!reopenTransformation && !collapsed ? (
-        createLink ? (
-          <a
-            className="level-item"
-            onClick={this.confirmTransition("REOPEN", "scm-review-plugin.comment.reopenAlert")}
-            title={t("scm-review-plugin.comment.reopen")}
-          >
-            <span className="icon is-small">
-              <i className="fas fa-undo" />
-            </span>
-          </a>
-        ) : (
-          ""
-        )
-      ) : (
-        ""
-      );
-
-    const normalCommentTransformation = this.containsPossibleTransition("MAKE_COMMENT");
-    const normalCommentIcon =
-      !!normalCommentTransformation && !collapsed ? (
-        createLink ? (
-          <a
-            className="level-item"
-            onClick={this.confirmTransition("MAKE_COMMENT", "scm-review-plugin.comment.makeCommentAlert")}
-            title={t("scm-review-plugin.comment.makeComment")}
-          >
-            <span className="icon is-small">
-              <i className="fas fa-comment-dots" />
-            </span>
-          </a>
-        ) : (
-          ""
-        )
-      ) : (
-        ""
-      );
-
     return (
-      <div className="media-right">
-        <div className="level-right">
-          {deleteIcon}
-          {editIcon}
-          {makeTaskIcon}
-          {normalCommentIcon}
-          {replyIcon}
-          {reopenIcon}
-          {doneIcon}
-        </div>
-      </div>
-    );
-  };
-
-  containsPossibleTransition = (name: string) => {
-    const { comment } = this.props;
-    return (
-      comment._embedded &&
-      comment._embedded.possibleTransitions &&
-      comment._embedded.possibleTransitions.find((t: PossibleTransition) => t.name === name)
+      <CommentActionToolbar
+        comment={comment}
+        collapsed={collapsed}
+        createLink={createLink}
+        onUpdate={this.startUpdate}
+        onDelete={this.confirmDelete}
+        onReply={() => this.reply(comment)}
+        onTransitionChange={this.confirmTransition}
+      />
     );
   };
 
@@ -464,15 +339,6 @@ class PullRequestComment extends React.Component<Props, State> {
     );
   };
 
-  createDisplayMessage = () => {
-    const { comment, t } = this.props;
-
-    const message = comment.systemComment
-      ? t("scm-review-plugin.comment.systemMessage." + comment.comment)
-      : comment.comment;
-    return <MarkdownView content={message} />;
-  };
-
   createMessageEditor = () => {
     const { updatedComment, errorResult } = this.state;
     return (
@@ -490,39 +356,16 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   collectTags = (comment: Comment) => {
-    const tags = [];
-
-    const openContextModal = this.props.comment.context
-      ? () => {
-          this.setState({
-            contextModalOpen: true
-          });
-        }
-      : null;
-
-    if (comment.outdated) {
-      tags.push(<OutdatedTag onClick={openContextModal} />);
+    let onOpenContext = () => {};
+    if (comment.context) {
+      onOpenContext = () => {
+        this.setState({
+          contextModalOpen: true
+        });
+      };
     }
 
-    if (comment.location && comment.location.file) {
-      tags.push(<FileTag path={comment.location.file} onClick={openContextModal} />);
-    }
-
-    if (comment.systemComment) {
-      tags.push(<SystemTag />);
-    }
-
-    if (comment.type === "TASK_TODO") {
-      tags.push(<TaskTodoTag />);
-    } else if (comment.type === "TASK_DONE") {
-      tags.push(<TaskDoneTag title={this.getSetDoneByLabel()} />);
-    }
-
-    if (tags.length > 0) {
-      return <TagGroup>{tags}</TagGroup>;
-    }
-
-    return null;
+    return <CommentTags comment={comment} onOpenContext={onOpenContext} />;
   };
 
   render() {
@@ -541,7 +384,7 @@ class PullRequestComment extends React.Component<Props, State> {
       message = this.createMessageEditor();
       editButtons = this.createEditButtons();
     } else {
-      message = !collapsed ? this.createDisplayMessage() : "";
+      message = !collapsed ? <CommentContent comment={comment} /> : "";
       icons = this.createEditIcons();
     }
 
@@ -639,7 +482,7 @@ class PullRequestComment extends React.Component<Props, State> {
   getLastEdited = () => {
     const { comment, t } = this.props;
     if (comment._embedded && comment._embedded.transitions) {
-      const latestTransition = this.getLatestTransition("CHANGE_TEXT");
+      const latestTransition = findLatestTransition(comment, "CHANGE_TEXT");
       if (latestTransition && latestTransition.user.id !== comment.author.id) {
         const latestEditor = latestTransition.user.displayName;
         return (
@@ -650,23 +493,6 @@ class PullRequestComment extends React.Component<Props, State> {
       }
     }
     return null;
-  };
-
-  getLatestTransition = (type: string) => {
-    const { comment } = this.props;
-    if (comment._embedded && comment._embedded.transitions) {
-      const latestTransitions = comment._embedded.transitions.filter(t => t.transition === type);
-      if (latestTransitions.length > 0) {
-        return latestTransitions[latestTransitions.length - 1];
-      }
-    }
-    return null;
-  };
-
-  getSetDoneByLabel = () => {
-    const { t } = this.props;
-    const transition = this.getLatestTransition("SET_DONE");
-    return !transition ? undefined : t("scm-review-plugin.comment.markedDoneBy") + " " + transition.user.displayName;
   };
 
   reply = (comment: Comment) => {
