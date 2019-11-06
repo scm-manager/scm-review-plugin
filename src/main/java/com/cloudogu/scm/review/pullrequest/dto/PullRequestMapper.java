@@ -61,7 +61,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   @Named("mapReviewerFromDto")
   Set<String> mapReviewerFromDto(Set<DisplayedUserDto> reviewer) {
     if (reviewer.isEmpty()) {
-      return Collections.EMPTY_SET;
+      return Collections.emptySet();
     }
     return reviewer
       .stream()
@@ -69,7 +69,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .map(userDisplayManager::get)
       .filter(Optional::isPresent)
       .map(Optional::get)
-      .map(user -> user.getId())
+      .map(DisplayUser::getId)
       .collect(Collectors.toSet());
   }
 

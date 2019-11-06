@@ -1,10 +1,9 @@
 import React from "react";
-import { Modal } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
-import classNames from "classnames";
+import {Button, Modal, SubmitButton} from "@scm-manager/ui-components";
+import {WithTranslation, withTranslation} from "react-i18next";
 import MergeForm from "./MergeForm";
 import {MergeCommit, PullRequest} from "./types/PullRequest";
-import { Link } from "@scm-manager/ui-types";
+import {Link} from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   close: () => void;
@@ -15,6 +14,7 @@ type Props = WithTranslation & {
 type State = {
   mergeStrategy: string;
   mergeCommit: MergeCommit;
+  loading: boolean;
 };
 
 class MergeModal extends React.Component<Props, State> {
@@ -27,7 +27,8 @@ class MergeModal extends React.Component<Props, State> {
         source: this.props.pullRequest.source,
         target: this.props.pullRequest.target,
         author: this.props.pullRequest.author
-      }
+      },
+      loading: false
     };
   }
 
@@ -38,38 +39,34 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   onChangeCommitMessage = (newMessage: string) => {
-    this.setState({ mergeCommit: { ...this.state.mergeCommit, commitMessage: newMessage} });
+    this.setState({ mergeCommit: { ...this.state.mergeCommit, commitMessage: newMessage } });
+  };
+
+  performMerge = () => {
+    const { merge } = this.props;
+    const { mergeStrategy, mergeCommit } = this.state;
+
+    this.setState({ loading: true });
+    merge(mergeStrategy, mergeCommit);
   };
 
   render() {
-    const { pullRequest, merge, close, t } = this.props;
-    const { mergeStrategy, mergeCommit } = this.state;
-
-    const buttons = [
-      {
-        label: t("scm-review-plugin.show-pull-request.merge-modal.cancel"),
-        onClick: () => close()
-      },
-      {
-        label: t("scm-review-plugin.show-pull-request.merge-modal.merge"),
-        onClick: () => merge(mergeStrategy, mergeCommit)
-      }
-    ];
+    const { pullRequest, close, t } = this.props;
+    const { mergeStrategy, mergeCommit, loading } = this.state;
 
     const footer = (
-      <div className="field is-grouped">
-        {buttons.map((button, i) => (
-          <p className="control">
-            <a
-              className={classNames("button", i === 1 ? "is-info" : "is-grey")}
-              key={i}
-              onClick={() => button.onClick()}
-            >
-              {button.label}
-            </a>
-          </p>
-        ))}
-      </div>
+      <>
+        <Button
+          label={t("scm-review-plugin.show-pull-request.merge-modal.cancel")}
+          action={() => close()}
+          color={"grey"}
+        />
+        <SubmitButton
+          label={t("scm-review-plugin.show-pull-request.merge-modal.merge")}
+          action={() => this.performMerge()}
+          loading={loading}
+        />
+      </>
     );
 
     const body = (
