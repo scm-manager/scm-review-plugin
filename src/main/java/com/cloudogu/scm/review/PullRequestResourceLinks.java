@@ -1,11 +1,14 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
+import com.cloudogu.scm.review.pullrequest.api.MergeResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfo;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
+import sonia.scm.repository.api.MergeStrategy;
 
 
 /**
@@ -134,6 +137,23 @@ public class PullRequestResourceLinks {
         .href();
       return
         LinkRevisionAppender.append(link, revisionResult);
+    }
+  }
+
+  public MergeStrategies mergeStrategies() {
+    return new MergeStrategies(scmPathInfo);
+  }
+
+  public static class MergeStrategies {
+    private final LinkBuilder linkBuilder;
+
+    MergeStrategies(ScmPathInfo pathInfo) {
+      linkBuilder = new LinkBuilder(pathInfo, MergeResource.class);
+    }
+
+    public  String merge(String namespace, String name, MergeStrategy strategy) {
+      return linkBuilder
+        .method("merge").parameters(namespace, name).href() + "?strategy=" + strategy;
     }
   }
 }

@@ -6,6 +6,7 @@ import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.base.Strings;
+import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -13,10 +14,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
-import sonia.scm.repository.ChangesetPagingResult;
-import sonia.scm.repository.InternalRepositoryException;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.LogCommandBuilder;
+import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.DisplayUser;
@@ -25,22 +25,26 @@ import sonia.scm.user.UserDisplayManager;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
+import static java.util.stream.Collectors.toList;
 
 @Mapper
 public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequestDto> {
 
-
   @Inject
   private UserDisplayManager userDisplayManager;
+
+  @Inject
+  private RepositoryServiceFactory serviceFactory;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
   @Inject
   private BranchRevisionResolver branchRevisionResolver;
@@ -99,6 +103,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @AfterMapping
   protected void appendLinks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
+
     Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest().self(repository.getNamespace(), repository.getName(), target.getId()));
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments().all(repository.getNamespace(), repository.getName(), target.getId())));
     if (CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
@@ -109,11 +114,28 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     }
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
+
+      try (RepositoryService service = serviceFactory.create(repository)) {
+        List<Link> strategyLinks = Stream.of(service.getMergeCommand().getSupportedMergeStrategies())
+          .flatMap(Set::stream)
+          .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), strategy))
+          .collect(toList());
+        linksBuilder.array(strategyLinks);
+      }
     }
     target.add(linksBuilder.build());
   }
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
     return new DisplayedUserDto(user.getId(), user.getDisplayName(), user.getMail());
+  }
+
+  private Link createStrategyLink(NamespaceAndName namespaceAndName, MergeStrategy strategy) {
+    return Link.linkBuilder("merge", pullRequestResourceLinks.mergeStrategies().merge(
+        namespaceAndName.getNamespace(),
+        namespaceAndName.getName(),
+        strategy
+      )
+    ).withName(strategy.name()).build();
   }
 }
