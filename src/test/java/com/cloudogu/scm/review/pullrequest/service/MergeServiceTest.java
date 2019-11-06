@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.MergeCommandBuilder;
@@ -46,14 +47,17 @@ class MergeServiceTest {
   @Mock
   private RepositoryService repositoryService;
   @Mock
+  private PullRequestService pullRequestService;
+  @Mock
+  private ScmEventBus scmEventBus;
+  @Mock
   private MergeCommandBuilder mergeCommandBuilder;
 
   private MergeService service;
 
-
   @BeforeEach
   void initService() {
-    service = new MergeService(serviceFactory);
+    service = new MergeService(serviceFactory, pullRequestService, scmEventBus);
   }
 
   @BeforeEach
