@@ -2,6 +2,8 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.MergeStrategyNotSupportedException;
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
+import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
@@ -22,11 +24,11 @@ public class MergeService {
     this.serviceFactory = serviceFactory;
   }
 
-  public MergeCommandResult merge(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
+  public MergeCommandResult merge(NamespaceAndName namespaceAndName, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
       isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
-      prepareMergeCommand(mergeCommand, pullRequest, strategy);
+      prepareMergeCommand(mergeCommand, mergeCommitDto, strategy);
       return mergeCommand.executeMerge();
     }
   }
@@ -38,10 +40,12 @@ public class MergeService {
     }
   }
 
-  private void prepareMergeCommand(MergeCommandBuilder mergeCommand, PullRequest pullRequest, MergeStrategy strategy) {
-    mergeCommand.setBranchToMerge(pullRequest.getSource());
-    mergeCommand.setTargetBranch(pullRequest.getTarget());
+  private void prepareMergeCommand(MergeCommandBuilder mergeCommand, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
+    mergeCommand.setBranchToMerge(mergeCommitDto.getSource());
+    mergeCommand.setTargetBranch(mergeCommitDto.getTarget());
+    mergeCommand.setMessageTemplate(mergeCommitDto.getCommitMessage());
     mergeCommand.setMergeStrategy(strategy);
-    mergeCommand.setAuthor(new Person(pullRequest.getAuthor()));
+    DisplayedUserDto author = mergeCommitDto.getAuthor();
+    mergeCommand.setAuthor(new Person(author.getDisplayName(), author.getMail()));
   }
 }

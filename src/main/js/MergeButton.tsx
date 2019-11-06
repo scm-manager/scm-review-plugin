@@ -2,12 +2,12 @@ import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Button } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
-import { PullRequest } from "./types/PullRequest";
+import {MergeCommit, PullRequest} from "./types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
 import MergeModal from "./MergeModal";
 
 type Props = WithTranslation & {
-  merge: (strategy: String) => void;
+  merge: (strategy: string, commit: MergeCommit) => void;
   repository: Repository;
   mergeHasNoConflict: boolean;
   loading: boolean;
@@ -55,8 +55,7 @@ class MergeButton extends React.Component<Props, State> {
     if (showMergeModal) {
       return (
         <MergeModal
-          title={t("scm-review-plugin.show-pull-request.merge-modal.title")}
-          merge={merge}
+          merge={(strategy: string, mergeCommit: MergeCommit) => merge(strategy, mergeCommit)}
           close={this.toggleMergeModal}
           pullRequest={pullRequest}
         />

@@ -74,3 +74,10 @@ export type PossibleTransition = {
   name: string;
   _links: Links;
 };
+
+export type MergeCommit = {
+  commitMessage: string;
+  source: string;
+  target: string;
+  author: DisplayedUser;
+}

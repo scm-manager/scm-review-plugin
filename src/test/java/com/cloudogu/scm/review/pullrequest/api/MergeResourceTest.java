@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.ExceptionMessageMapper;
-import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableList;
@@ -41,8 +40,6 @@ class MergeResourceTest {
 
   @Mock
   private MergeService mergeService;
-  @Mock
-  private PullRequestMapper pullRequestMapper;
   @Mock
   private MergeResultToDtoMapper mergeResultToDtoMapper;
 

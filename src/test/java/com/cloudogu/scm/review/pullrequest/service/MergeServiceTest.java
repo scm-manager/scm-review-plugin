@@ -1,6 +1,8 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.MergeStrategyNotSupportedException;
+import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
+import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -14,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
-import sonia.scm.repository.api.CommandNotSupportedException;
 import sonia.scm.repository.api.MergeCommandBuilder;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
@@ -70,12 +71,9 @@ class MergeServiceTest {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success());
 
-    PullRequest pullRequest = new PullRequest();
-    pullRequest.setSource("squash");
-    pullRequest.setTarget("master");
-    pullRequest.setAuthor("Philip J Fry");
+    MergeCommitDto mergeCommit = createMergeCommit();
 
-    MergeCommandResult result = service.merge(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH);
+    MergeCommandResult result = service.merge(REPOSITORY.getNamespaceAndName(), mergeCommit, MergeStrategy.SQUASH);
 
     assertThat(result.isSuccess()).isTrue();
   }
@@ -85,12 +83,17 @@ class MergeServiceTest {
   void shouldThrowExceptionIfStrategyNotSupported() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(false);
 
-    PullRequest pullRequest = new PullRequest();
-    pullRequest.setSource("squash");
-    pullRequest.setTarget("master");
-    pullRequest.setAuthor("Philip J Fry");
+    MergeCommitDto mergeCommit = createMergeCommit();
 
-    assertThrows(MergeStrategyNotSupportedException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH));
+    assertThrows(MergeStrategyNotSupportedException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), mergeCommit, MergeStrategy.SQUASH));
+  }
+
+  private MergeCommitDto createMergeCommit() {
+    MergeCommitDto mergeCommit = new MergeCommitDto();
+    mergeCommit.setSource("squash");
+    mergeCommit.setTarget("master");
+    mergeCommit.setAuthor(new DisplayedUserDto("philip", "Philip J Fry", "philip@fry.com"));
+    return mergeCommit;
   }
 
   private void mockPrincipal() {

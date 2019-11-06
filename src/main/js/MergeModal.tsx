@@ -3,25 +3,31 @@ import { Modal } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import classNames from "classnames";
 import MergeForm from "./MergeForm";
-import { PullRequest } from "./types/PullRequest";
+import {MergeCommit, PullRequest} from "./types/PullRequest";
 import { Link } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   close: () => void;
-  merge: (strategy: string) => void;
+  merge: (strategy: string, mergeCommit: MergeCommit) => void;
   pullRequest: PullRequest;
 };
 
 type State = {
   mergeStrategy: string;
-  commitMessage: string;
+  mergeCommit: MergeCommit;
 };
 
 class MergeModal extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      mergeStrategy: "mergeCommit"
+      mergeStrategy: "MERGE_COMMIT",
+      mergeCommit: {
+        commitMessage: "",
+        source: this.props.pullRequest.source,
+        target: this.props.pullRequest.target,
+        author: this.props.pullRequest.author
+      }
     };
   }
 
@@ -32,12 +38,12 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   onChangeCommitMessage = (newMessage: string) => {
-    this.setState({ commitMessage: newMessage });
+    this.setState({ mergeCommit: { ...this.state.mergeCommit, commitMessage: newMessage} });
   };
 
   render() {
     const { pullRequest, merge, close, t } = this.props;
-    const { mergeStrategy, commitMessage } = this.state;
+    const { mergeStrategy, mergeCommit } = this.state;
 
     const buttons = [
       {
@@ -46,7 +52,7 @@ class MergeModal extends React.Component<Props, State> {
       },
       {
         label: t("scm-review-plugin.show-pull-request.merge-modal.merge"),
-        onClick: () => merge(this.state.mergeStrategy)
+        onClick: () => merge(mergeStrategy, mergeCommit)
       }
     ];
 
@@ -71,7 +77,7 @@ class MergeModal extends React.Component<Props, State> {
         selectedStrategy={mergeStrategy}
         selectStrategy={this.selectStrategy}
         strategyLinks={pullRequest._links.merge as Link[]}
-        commitMessage={commitMessage}
+        commitMessage={mergeCommit.commitMessage}
         onChangeCommitMessage={this.onChangeCommitMessage}
       />
     );
