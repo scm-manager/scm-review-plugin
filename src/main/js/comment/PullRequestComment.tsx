@@ -12,7 +12,8 @@ import {
   MarkdownView,
   Modal,
   SubmitButton,
-  Textarea
+  Textarea,
+  apiClient
 } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import { BasicComment, Comment, Reply } from "../types/PullRequest";
@@ -62,6 +63,7 @@ const LatestEditor = styled.span`
 type Props = WithTranslation & {
   comment: Comment;
   onDelete?: (comment: Comment) => void;
+  onUpdate?: (comment: Comment) => void;
   refresh?: () => void;
   handleError: (error: Error) => void;
   child?: boolean;
@@ -109,22 +111,54 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   update = () => {
-    const { comment, refresh } = this.props;
-    comment.comment = this.state.updatedComment.comment;
-    comment.type = this.state.updatedComment.type;
+    const { refresh, onUpdate } = this.props;
+    const { updatedComment } = this.state;
+    const comment = {
+      ...this.props.comment,
+      comment: updatedComment.comment,
+      type: updatedComment.type
+    };
+
     this.setState({
       loading: true
     });
-    updatePullRequestComment(comment._links.update.href, comment).then(response => {
-      if (response.error) {
+
+    if (!comment._links.update) {
+      throw new Error("comment has no update link");
+    }
+
+    const link = comment._links.update as Link;
+
+    updatePullRequestComment(link.href, comment)
+      .then(() => {
+        if (onUpdate) {
+          this.fetchRefreshed(comment).then((c: Comment) => {
+            onUpdate(c);
+            this.setState({
+              loading: false,
+              edit: false,
+              updatedComment: {
+                ...c
+              }
+            });
+          });
+        } else if (refresh) {
+          this.setState({
+            loading: false
+          });
+        }
+      })
+      .catch(error => {
         this.setState({
           loading: false,
-          errorResult: response.error
+          errorResult: error
         });
-      } else {
-        refresh();
-      }
-    });
+      });
+  };
+
+  fetchRefreshed = (comment: Comment) => {
+    const link = comment._links.self as Link;
+    return apiClient.get(link.href).then(response => response.json());
   };
 
   delete = () => {
@@ -137,25 +171,25 @@ class PullRequestComment extends React.Component<Props, State> {
         loading: true
       });
 
-      deletePullRequestComment(href).then(response => {
-        if (onDelete) {
-          console.log("delete with OnDelete");
-          onDelete(comment);
-        } else if (refresh) {
-          console.log("delete with refresh");
-          refresh();
-        }
-        this.setState({
-          loading: false
+      deletePullRequestComment(href)
+        .then(response => {
+          if (onDelete) {
+            console.log("delete with OnDelete");
+            onDelete(comment);
+          } else if (refresh) {
+            console.log("delete with refresh");
+            refresh();
+          }
+          this.setState({
+            loading: false
+          });
+        })
+        .catch(error => {
+          this.setState({
+            loading: false
+          });
+          handleError(error);
         });
-      })
-      .catch(error => {
-        this.setState({
-          loading: false
-        });
-        handleError(error);
-      });
-
     } else {
       throw new Error("could not find required delete link");
     }

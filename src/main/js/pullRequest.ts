@@ -37,16 +37,7 @@ export function createPullRequestComment(url: string, comment: BasicComment) {
 }
 
 export function updatePullRequestComment(url: string, comment: BasicComment) {
-  return apiClient
-    .put(url, comment)
-    .then(response => {
-      return response;
-    })
-    .catch(error => {
-      return {
-        error: error
-      };
-    });
+  return apiClient.put(url, comment)
 }
 
 export function transformPullRequestComment(transition: PossibleTransition) {

@@ -103,6 +103,17 @@ class PullRequestComments extends React.Component<Props, State> {
     });
   };
 
+  replaceComment = (comment: Comment) => {
+    return this.setState(state => {
+      return produce(state, draft => {
+        const index = state.comments.findIndex(c => c.id === comment.id);
+        if (index >= 0) {
+          draft.comments[index] = comment;
+        }
+      });
+    });
+  };
+
   render() {
     const { loading, error, comments, links } = this.state;
 
@@ -125,6 +136,7 @@ class PullRequestComments extends React.Component<Props, State> {
             <PullRequestComment
               comment={rootComment}
               onDelete={this.deleteComment}
+              onUpdate={this.replaceComment}
               refresh={this.updatePullRequestComments}
               createLink={createLink}
               handleError={this.handleError}
