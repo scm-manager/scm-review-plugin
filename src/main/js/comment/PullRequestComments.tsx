@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
-import { Comments, PullRequest, Reply } from "../types/PullRequest";
+import { Link, Links } from "@scm-manager/ui-types";
+import { Comment, Comments, PullRequest, Reply } from "../types/PullRequest";
 import { getPullRequestComments } from "../pullRequest";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
@@ -19,9 +20,10 @@ type Props = {
 };
 
 type State = {
-  pullRequestComments?: Comments;
+  comments: Comment[];
+  links?: Links;
   error?: Error;
-  replyEditor: Reply;
+  replyEditor?: Reply;
   loading: boolean;
 };
 
@@ -33,7 +35,8 @@ class PullRequestComments extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      loading: true
+      loading: true,
+      comments: []
     };
   }
 
@@ -51,7 +54,7 @@ class PullRequestComments extends React.Component<Props, State> {
   handleError = (error: Error) => {
     this.setState({
       loading: false,
-      error: error
+      error
     });
   };
 
@@ -59,24 +62,38 @@ class PullRequestComments extends React.Component<Props, State> {
     this.setState({
       loading: true
     });
-    const url = this.props.pullRequest._links.comments.href;
-    getPullRequestComments(url).then(response => {
-      if (response.error) {
+    const url = (this.props.pullRequest._links.comments as Link).href;
+    getPullRequestComments(url)
+      .then((commentResponse: Comments) => {
+        let comments = [];
+        if (commentResponse && commentResponse._embedded) {
+          comments = commentResponse._embedded.pullRequestComments;
+        }
         this.setState({
-          error: response.error,
-          loading: false
+          loading: false,
+          comments,
+          links: commentResponse._links
         });
-      } else {
+      })
+      .catch(error => {
         this.setState({
-          pullRequestComments: response,
-          loading: false
+          loading: false,
+          error
         });
-      }
+      });
+  };
+
+  appendComment = (comment: Comment) => {
+    this.setState((state: Readonly<State>) => {
+      return {
+        ...state,
+        comments: [...state.comments, comment]
+      };
     });
   };
 
   render() {
-    const { loading, error, pullRequestComments } = this.state;
+    const { loading, error, comments, links } = this.state;
 
     if (error) {
       return <ErrorNotification error={error} />;
@@ -85,30 +102,30 @@ class PullRequestComments extends React.Component<Props, State> {
     if (loading) {
       return <Loading />;
     }
-    if (!pullRequestComments) {
+    if (!links) {
       return <div />;
     }
 
-    if (pullRequestComments && pullRequestComments._embedded && pullRequestComments._embedded.pullRequestComments) {
-      const comments = pullRequestComments._embedded.pullRequestComments;
-
-      const createLink = pullRequestComments._links.create ? pullRequestComments._links.create.href : null;
-      return (
-        <>
-          {comments.map(rootComment => (
-            <CommentWrapper className="comment-wrapper">
-              <PullRequestComment
-                comment={rootComment}
-                refresh={this.updatePullRequestComments}
-                createLink={createLink}
-                handleError={this.handleError}
-              />
-            </CommentWrapper>
-          ))}
-          {createLink ? <CreateComment url={createLink} refresh={this.updatePullRequestComments} /> : ""}
-        </>
-      );
-    }
+    const createLink = links.create ? (links.create as Link).href : undefined;
+    return (
+      <>
+        {comments.map(rootComment => (
+          <CommentWrapper className="comment-wrapper">
+            <PullRequestComment
+              comment={rootComment}
+              refresh={this.updatePullRequestComments}
+              createLink={createLink}
+              handleError={this.handleError}
+            />
+          </CommentWrapper>
+        ))}
+        {createLink && (
+          <CreateComment url={createLink}
+                         onCreation={this.appendComment}
+                         refresh={this.updatePullRequestComments} />
+        )}
+      </>
+    );
   }
 }
 

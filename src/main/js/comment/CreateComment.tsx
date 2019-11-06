@@ -1,6 +1,6 @@
 import React from "react";
-import { Button, Loading, SubmitButton, Radio, Textarea, ErrorNotification } from "@scm-manager/ui-components";
-import { BasicComment, Location } from "../types/PullRequest";
+import { Button, Loading, SubmitButton, Radio, Textarea, ErrorNotification, apiClient } from "@scm-manager/ui-components";
+import {BasicComment, Comment, Location} from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { createPullRequestComment } from "../pullRequest";
 
@@ -8,7 +8,8 @@ type Props = WithTranslation & {
   url: string;
   location?: Location;
   onCancel?: () => void;
-  refresh: () => void;
+  refresh?: () => void;
+  onCreation?: (comment: Comment) => void;
   autofocus?: boolean;
   reply?: boolean;
 };
@@ -66,7 +67,7 @@ class CreateComment extends React.Component<Props, State> {
       return;
     }
 
-    const { url, location, refresh } = this.props;
+    const { url, location, refresh, onCreation } = this.props;
     this.setState({
       loading: true
     });
@@ -74,19 +75,53 @@ class CreateComment extends React.Component<Props, State> {
     createPullRequestComment(url, {
       ...newComment,
       location
-    }).then(result => {
-      if (result.error) {
+    })
+      .then((response: Response) => {
+        if (onCreation) {
+          return this.fetchCreatedComment(response);
+        } else if (refresh) {
+          refresh();
+        }
+
+
+      })
+      .catch((errorResult: Error) => {
         this.setState({
-          errorResult: result.error,
+          errorResult,
           loading: false
         });
-      } else {
-        newComment.comment = "";
-        this.setState({
-          loading: false
+      });
+  };
+
+  fetchCreatedComment = (response: Response) => {
+    const commentHref = response.headers.get("Location");
+    if (commentHref) {
+      return apiClient.get(commentHref)
+        .then(response => response.json())
+        .then(comment => {
+          if (this.props.onCreation) {
+            this.props.onCreation(comment);
+          }
+          this.finishedLoading()
         });
-        refresh();
+    } else {
+      throw new Error("missing location header");
+    }
+  };
+
+  finishedLoading = () => {
+    this.setState(state => {
+      let newComment;
+      if (state.newComment) {
+        newComment = {
+          ...state.newComment,
+          comment: ""
+        }
       }
+      return {
+        loading: false,
+        newComment
+      };
     });
   };
 

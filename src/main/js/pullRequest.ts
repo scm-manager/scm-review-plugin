@@ -33,11 +33,6 @@ export function createPullRequestComment(url: string, comment: BasicComment) {
     .post(url, comment)
     .then(response => {
       return response;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
     });
 }
 
@@ -176,15 +171,7 @@ export function getChangesets(url: string) {
 export function getPullRequestComments(url: string) {
   return apiClient
     .get(url)
-    .then(response => response.json())
-    .then(pullRequestComments => {
-      return pullRequestComments;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+    .then(response => response.json());
 }
 
 export function deletePullRequestComment(url: string) {
