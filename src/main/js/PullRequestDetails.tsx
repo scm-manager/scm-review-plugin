@@ -216,7 +216,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
   }
 
-  performMerge = () => {
+  performMerge = (strategy: String) => {
     const { repository } = this.props;
     const { pullRequest } = this.state;
     this.setMergeButtonLoadingState();
