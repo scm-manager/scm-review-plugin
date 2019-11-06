@@ -14,7 +14,8 @@ import {
   MarkdownView,
   Button,
   Tag,
-  ButtonGroup
+  ButtonGroup,
+  Icon
 } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
 import { merge, reject } from "./pullRequest";
@@ -135,7 +136,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     });
   };
 
-
   getMergeDryRun(pullRequest: PullRequest) {
     const { repository } = this.props;
     if (repository._links.mergeDryRun && repository._links.mergeDryRun.href && pullRequest.status === "OPEN") {
@@ -240,7 +240,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeHasNoConflict,
       targetBranchDeleted,
       rejectButtonLoading,
-      showNotification,
+      showNotification
     } = this.state;
 
     if (error) {
@@ -329,6 +329,18 @@ class PullRequestDetails extends React.Component<Props, State> {
             <UserField>
               <ul className="is-separated">
                 {pullRequest.reviewer.map(reviewer => {
+                  if (reviewer.approved) {
+                    return (
+                      <UserInlineListItem key={reviewer.id}>
+                        {reviewer.displayName}{" "}
+                        <Icon
+                          title={t("scm-review-plugin.pullRequest.details.approved")}
+                          name="check"
+                          color="success"
+                        />
+                      </UserInlineListItem>
+                    );
+                  }
                   return <UserInlineListItem key={reviewer.id}>{reviewer.displayName}</UserInlineListItem>;
                 })}
               </ul>

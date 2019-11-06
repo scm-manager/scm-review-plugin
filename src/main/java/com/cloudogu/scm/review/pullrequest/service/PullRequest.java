@@ -12,9 +12,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 
 @Getter
@@ -37,20 +40,15 @@ public class PullRequest {
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
   private PullRequestStatus status;
-  private Set<String> approver = new HashSet<>();
   private Set<String> subscriber = new HashSet<>();
-  private Set<String> reviewer = new HashSet<>();
-
-  public Set<String> getApprover() {
-    return unmodifiableSet(approver);
-  }
+  private Map<String, Boolean> reviewer = new HashMap<>();
 
   public void addApprover(String recipient) {
-    this.approver.add(recipient);
+    this.reviewer.put(recipient, true);
   }
 
   public void removeApprover(String recipient) {
-    this.approver.remove(recipient);
+    this.reviewer.put(recipient, false);
   }
 
   public Set<String> getSubscriber() {
@@ -58,7 +56,11 @@ public class PullRequest {
   }
 
   public Set<String> getReviewer() {
-    return unmodifiableSet(reviewer);
+    return unmodifiableSet(reviewer.keySet());
+  }
+
+  public Map<String, Boolean> getApprover() {
+    return unmodifiableMap(reviewer);
   }
 
   public void addSubscriber(String recipient) {
