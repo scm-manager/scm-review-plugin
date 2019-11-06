@@ -16,7 +16,7 @@ import {
   apiClient
 } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
-import { BasicComment, Comment, Reply } from "../types/PullRequest";
+import { BasicComment, Comment, PossibleTransition, Reply } from "../types/PullRequest";
 import { deletePullRequestComment, transformPullRequestComment, updatePullRequestComment } from "../pullRequest";
 import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
 import CreateComment from "./CreateComment";
@@ -89,7 +89,8 @@ class PullRequestComment extends React.Component<Props, State> {
         ...props.comment
       },
       collapsed: props.comment.type === "TASK_DONE",
-      edit: false
+      edit: false,
+      contextModalOpen: false
     };
   }
 
@@ -132,16 +133,7 @@ class PullRequestComment extends React.Component<Props, State> {
     updatePullRequestComment(link.href, comment)
       .then(() => {
         if (onUpdate) {
-          this.fetchRefreshed(comment).then((c: Comment) => {
-            onUpdate(c);
-            this.setState({
-              loading: false,
-              edit: false,
-              updatedComment: {
-                ...c
-              }
-            });
-          });
+          return this.fetchRefreshed(comment, onUpdate);
         } else if (refresh) {
           this.setState({
             loading: false
@@ -156,9 +148,27 @@ class PullRequestComment extends React.Component<Props, State> {
       });
   };
 
-  fetchRefreshed = (comment: Comment) => {
+  fetchRefreshed = (comment: Comment, callback: (c: Comment) => void) => {
     const link = comment._links.self as Link;
-    return apiClient.get(link.href).then(response => response.json());
+    return apiClient
+      .get(link.href)
+      .then(response => response.json())
+      .then((c: Comment) => {
+        callback(c);
+        this.setState({
+          loading: false,
+          edit: false,
+          updatedComment: {
+            ...c
+          }
+        });
+      })
+      .catch(error => {
+        this.setState({
+          loading: false,
+          errorResult: error
+        });
+      });
   };
 
   delete = () => {
@@ -214,18 +224,31 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   executeTransition = (transition: string) => {
-    const { comment, handleError } = this.props;
-    const transformation = comment._embedded.possibleTransitions.find(t => t.name === transition);
-    transformPullRequestComment(transformation).then(response => {
-      if (response.error) {
+    const { comment, handleError, refresh, onUpdate } = this.props;
+
+    if (!(comment && comment._embedded && comment._embedded.possibleTransitions)) {
+      throw new Error("comment has no possible transitions");
+    }
+
+    const transformation = comment._embedded.possibleTransitions.find((t: PossibleTransition) => t.name === transition);
+    if (!transformation) {
+      throw new Error("comment does not have transition " + transition);
+    }
+
+    transformPullRequestComment(transformation)
+      .then(response => {
+        if (onUpdate) {
+          return this.fetchRefreshed(comment, onUpdate);
+        } else if (refresh) {
+          refresh();
+        }
+      })
+      .catch(error => {
         this.setState({
           loading: false
         });
-        handleError(response.error);
-      } else {
-        this.props.refresh();
-      }
-    });
+        handleError(error);
+      });
   };
 
   confirmTransition = (transition: string, translationKey: string) => () => {
@@ -413,7 +436,11 @@ class PullRequestComment extends React.Component<Props, State> {
 
   containsPossibleTransition = (name: string) => {
     const { comment } = this.props;
-    return comment._embedded.possibleTransitions && comment._embedded.possibleTransitions.find(t => t.name === name);
+    return (
+      comment._embedded &&
+      comment._embedded.possibleTransitions &&
+      comment._embedded.possibleTransitions.find((t: PossibleTransition) => t.name === name)
+    );
   };
 
   createEditButtons = () => {

@@ -28,10 +28,6 @@ type State = {
   loading: boolean;
 };
 
-const styles = {
-  commentWrapper: {}
-};
-
 class PullRequestComments extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);

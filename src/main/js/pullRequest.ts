@@ -1,6 +1,6 @@
 import { BasicComment, BasicPullRequest, PossibleTransition, PullRequest } from "./types/PullRequest";
 import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
-import {Repository} from "@scm-manager/ui-types";
+import {Repository, Link} from "@scm-manager/ui-types";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
@@ -41,17 +41,8 @@ export function updatePullRequestComment(url: string, comment: BasicComment) {
 }
 
 export function transformPullRequestComment(transition: PossibleTransition) {
-  return apiClient
-    .post(transition._links.transform.href, transition)
-    .then(response => {
-      return response;
-    })
-    .catch(cause => {
-      const error = new Error(`could not update pull request comment: ${cause.message}`);
-      return {
-        error: error
-      };
-    });
+  const link = transition._links.transform as Link;
+  return apiClient.post(link.href, transition);
 }
 
 export function getBranches(url: string) {

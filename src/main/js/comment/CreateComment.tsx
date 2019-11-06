@@ -1,6 +1,14 @@
 import React from "react";
-import { Button, Loading, SubmitButton, Radio, Textarea, ErrorNotification, apiClient } from "@scm-manager/ui-components";
-import {BasicComment, Comment, Location} from "../types/PullRequest";
+import {
+  Button,
+  Loading,
+  SubmitButton,
+  Radio,
+  Textarea,
+  ErrorNotification,
+  apiClient
+} from "@scm-manager/ui-components";
+import { BasicComment, Comment, Location } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { createPullRequestComment } from "../pullRequest";
 
@@ -82,8 +90,6 @@ class CreateComment extends React.Component<Props, State> {
         } else if (refresh) {
           refresh();
         }
-
-
       })
       .catch((errorResult: Error) => {
         this.setState({
@@ -96,13 +102,14 @@ class CreateComment extends React.Component<Props, State> {
   fetchCreatedComment = (response: Response) => {
     const commentHref = response.headers.get("Location");
     if (commentHref) {
-      return apiClient.get(commentHref)
+      return apiClient
+        .get(commentHref)
         .then(response => response.json())
         .then(comment => {
           if (this.props.onCreation) {
             this.props.onCreation(comment);
           }
-          this.finishedLoading()
+          this.finishedLoading();
         });
     } else {
       throw new Error("missing location header");
@@ -116,7 +123,7 @@ class CreateComment extends React.Component<Props, State> {
         newComment = {
           ...state.newComment,
           comment: ""
-        }
+        };
       }
       return {
         loading: false,
