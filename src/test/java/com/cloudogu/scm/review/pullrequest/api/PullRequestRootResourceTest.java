@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
+import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
@@ -146,7 +147,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -180,7 +181,7 @@ public class PullRequestRootResourceTest {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request = MockHttpRequest.post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
       .content(pullRequestJson)
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
@@ -202,7 +203,7 @@ public class PullRequestRootResourceTest {
     MockHttpRequest request = MockHttpRequest
       .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME)
       .content(pullRequestJson)
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
     assertExceptionFrom(response).hasMessageMatching("pull request with id id in repository with id .* already exists");
   }
@@ -215,7 +216,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -231,7 +232,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -250,7 +251,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -268,7 +269,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/X")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -286,7 +287,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME)
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -469,7 +470,7 @@ public class PullRequestRootResourceTest {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_NO_CONTENT);
@@ -488,7 +489,7 @@ public class PullRequestRootResourceTest {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/opened_1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -504,7 +505,7 @@ public class PullRequestRootResourceTest {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
     PullRequest pullRequest = createPullRequest();
     when(store.get("1")).thenReturn(pullRequest);
 

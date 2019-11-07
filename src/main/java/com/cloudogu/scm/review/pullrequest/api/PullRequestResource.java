@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
 import com.cloudogu.scm.review.comment.service.CommentService;
@@ -58,7 +59,7 @@ public class PullRequestResource {
 
   @GET
   @Path("")
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(PullRequestMediaType.PULL_REQUEST)
   public Response get(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
@@ -75,7 +76,7 @@ public class PullRequestResource {
     @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
     @ResponseCode(code = 500, condition = "internal server error")
   })
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(PullRequestMediaType.PULL_REQUEST)
   public Response getApproval(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
@@ -142,7 +143,7 @@ public class PullRequestResource {
     @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
     @ResponseCode(code = 500, condition = "internal server error")
   })
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(PullRequestMediaType.PULL_REQUEST)
   public Response getSubscription(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
@@ -204,7 +205,7 @@ public class PullRequestResource {
 
   @PUT
   @Path("")
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes(PullRequestMediaType.PULL_REQUEST)
   @StatusCodes({
     @ResponseCode(code = 204, condition = "update success"),
     @ResponseCode(code = 400, condition = "Invalid body"),
