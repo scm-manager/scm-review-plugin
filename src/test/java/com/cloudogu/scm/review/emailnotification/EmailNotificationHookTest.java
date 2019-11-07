@@ -85,7 +85,7 @@ class EmailNotificationHookTest {
       DynamicTest.dynamicTest(event.getEventType().toString(), () -> {
         emailNotificationHook.handleCommentEvents(event);
 
-        verify(service).sendEmails(isA(CommentEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
+        verify(service).sendEmails(isA(CommentEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
         reset(service);
       })
     );
@@ -111,7 +111,7 @@ class EmailNotificationHookTest {
       DynamicTest.dynamicTest(event.toString(), () -> {
         emailNotificationHook.handlePullRequestEvents(event);
 
-        verify(service).sendEmails(isA(PullRequestEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
+        verify(service).sendEmails(isA(PullRequestEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
         reset(service);
       })
     );
@@ -122,7 +122,7 @@ class EmailNotificationHookTest {
     PullRequestMergedEvent event = new PullRequestMergedEvent(repository, pullRequest);
     emailNotificationHook.handleMergedPullRequest(event);
 
-    verify(service).sendEmails(isA(PullRequestMergedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
+    verify(service).sendEmails(isA(PullRequestMergedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
   }
 
   @Test
@@ -130,7 +130,7 @@ class EmailNotificationHookTest {
     PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
     emailNotificationHook.handleRejectedPullRequest(event);
 
-    verify(service).sendEmails(isA(PullRequestRejectedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));
+    verify(service).sendEmails(isA(PullRequestRejectedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
   }
 
 }

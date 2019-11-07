@@ -55,11 +55,7 @@ public class PullRequest {
     return unmodifiableSet(subscriber);
   }
 
-  public Set<String> getReviewer() {
-    return unmodifiableSet(reviewer.keySet());
-  }
-
-  public Map<String, Boolean> getApprover() {
+  public Map<String, Boolean> getReviewer() {
     return unmodifiableMap(reviewer);
   }
 

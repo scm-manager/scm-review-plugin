@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DefaultPullRequestService implements PullRequestService {
@@ -71,7 +72,7 @@ public class DefaultPullRequestService implements PullRequestService {
   private void computeSubscriberForNewPullRequest(PullRequest pullRequest) {
     User user = CurrentUserResolver.getCurrentUser();
     Set<String> subscriber = new HashSet<>(pullRequest.getSubscriber());
-    subscriber.addAll(pullRequest.getReviewer());
+    subscriber.addAll(pullRequest.getReviewer().keySet());
     subscriber.add(user.getId());
     pullRequest.setSubscriber(subscriber);
   }
@@ -89,7 +90,7 @@ public class DefaultPullRequestService implements PullRequestService {
 
   private void computeSubscriberForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
     Set<String> newSubscriber = new HashSet<>(oldPullRequest.getSubscriber());
-    Set<String> addedReviewers = changedPullRequest.getReviewer().stream().filter(r -> !oldPullRequest.getReviewer().contains(r)).collect(Collectors.toSet());
+    Set<String> addedReviewers = changedPullRequest.getReviewer().keySet().stream().filter(r -> !oldPullRequest.getReviewer().keySet().contains(r)).collect(Collectors.toSet());
     newSubscriber.addAll(addedReviewers);
     changedPullRequest.setSubscriber(newSubscriber);
   }
@@ -138,9 +139,10 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public boolean hasUserApproved(Repository repository, String pullRequestId, User user) {
-    return getStore(repository).get(pullRequestId).getApprover()
+    return getStore(repository).get(pullRequestId).getReviewer().entrySet()
       .stream()
-      .anyMatch(recipient -> user.getId().equals(recipient));
+      .filter(Map.Entry::getValue)
+      .anyMatch(entry -> entry.getKey().equals(user.getId()));
   }
 
   @Override
@@ -155,7 +157,7 @@ public class DefaultPullRequestService implements PullRequestService {
   public void disapprove(Repository repository, String pullRequestId, User user) {
     PullRequestStore store = getStore(repository);
     PullRequest pullRequest = store.get(pullRequestId);
-    Set<String> approver = pullRequest.getApprover();
+    Set<String> approver = pullRequest.getReviewer().keySet();
     approver.stream()
       .filter(recipient -> user.getId().equals(recipient))
       .findFirst()

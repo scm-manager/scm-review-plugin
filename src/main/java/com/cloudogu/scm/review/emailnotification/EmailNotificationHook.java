@@ -65,7 +65,7 @@ public class EmailNotificationHook {
       return;
     }
     try {
-      service.sendEmails(mailTextResolver, pullRequest.getSubscriber(), pullRequest.getReviewer());
+      service.sendEmails(mailTextResolver, pullRequest.getSubscriber(), pullRequest.getReviewer().keySet());
     } catch (Exception e) {
       log.warn("Error on sending Email", e);
     }

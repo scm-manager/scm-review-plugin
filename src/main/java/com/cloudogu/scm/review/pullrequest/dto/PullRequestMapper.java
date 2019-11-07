@@ -12,21 +12,17 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.BaseMapper;
-import sonia.scm.repository.ChangesetPagingResult;
-import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.LogCommandBuilder;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,30 +45,40 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
+  @Mapping(target = "subscriber", ignore = true)
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewerFromDto")
   public abstract PullRequest map(PullRequestDto dto);
 
   @Named("mapReviewerFromDto")
-  Set<String> mapReviewerFromDto(Set<DisplayedUserDto> reviewer) {
+  Map<String, Boolean> mapReviewerFromDto(Set<ReviewerDto> reviewer) {
     return reviewer
       .stream()
-      .map(DisplayedUserDto::getId)
+      .map(ReviewerDto::getId)
       .map(userDisplayManager::get)
       .filter(Optional::isPresent)
       .map(Optional::get)
-      .map(user -> user.getId())
-      .collect(Collectors.toSet());
+      .map(DisplayUser::getId)
+      .collect(Collectors.toMap(p->p, p -> false));
   }
 
   @Named("mapReviewer")
-  Set<DisplayedUserDto> mapReviewer(Set<String> reviewer) {
+  Set<ReviewerDto> mapReviewer(Map<String, Boolean> reviewer) {
     return reviewer
+      .entrySet()
       .stream()
-      .map(userDisplayManager::get)
-      .filter(Optional::isPresent)
-      .map(Optional::get)
-      .map(this::createDisplayedUserDto)
+      .map(entry -> this.createReviewerDto(getUserIfAvailable(entry), entry.getValue()))
       .collect(Collectors.toSet());
+  }
+
+  private DisplayUser getUserIfAvailable(Map.Entry<String, Boolean> entry) {
+    DisplayUser user = userDisplayManager.get(entry.getKey()).isPresent()
+      ? userDisplayManager.get(entry.getKey()).get()
+      : null;
+
+    if (user == null) {
+      throw new NotFoundException(DisplayUser.class, String.format("User %s not found", entry.getKey()));
+    }
+    return user;
   }
 
   @Named("mapAuthor")
@@ -112,5 +118,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
     return new DisplayedUserDto(user.getId(), user.getDisplayName(), user.getMail());
+  }
+
+  private ReviewerDto createReviewerDto(DisplayUser user, Boolean approved) {
+    return new ReviewerDto(user.getId(), user.getDisplayName(), user.getMail(), approved);
   }
 }
