@@ -16,24 +16,24 @@ const CommentTags: FC<Props> = ({ comment, onOpenContext }) => {
   const tags = [];
 
   if (comment.outdated) {
-    tags.push(<OutdatedTag onClick={onOpenContext} />);
+    tags.push(<OutdatedTag key="outdated" onClick={onOpenContext} />);
   }
 
   if (comment.location && comment.location.file) {
-    tags.push(<FileTag path={comment.location.file} onClick={onOpenContext} />);
+    tags.push(<FileTag key="file" path={comment.location.file} onClick={onOpenContext} />);
   }
 
   if (comment.systemComment) {
-    tags.push(<SystemTag />);
+    tags.push(<SystemTag key="system" />);
   }
 
   if (comment.type === "TASK_TODO") {
-    tags.push(<TaskTodoTag />);
+    tags.push(<TaskTodoTag key="todo" />);
   } else if (comment.type === "TASK_DONE") {
     const transition = findLatestTransition(comment, "SET_DONE");
     if (transition) {
       tags.push(
-        <TaskDoneTag title={t("scm-review-plugin.comment.markedDoneBy") + " " + transition.user.displayName} />
+        <TaskDoneTag key="done" title={t("scm-review-plugin.comment.markedDoneBy") + " " + transition.user.displayName} />
       );
     }
   }

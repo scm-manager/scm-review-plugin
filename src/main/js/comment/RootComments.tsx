@@ -128,7 +128,7 @@ class RootComments extends React.Component<Props, State> {
     return (
       <>
         {comments.map(rootComment => (
-          <CommentWrapper className="comment-wrapper">
+          <CommentWrapper key={rootComment.id} className="comment-wrapper">
             <PullRequestComment
               comment={rootComment}
               onDelete={this.deleteComment}
