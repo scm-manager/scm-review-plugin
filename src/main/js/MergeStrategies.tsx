@@ -1,7 +1,7 @@
 import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Link } from "@scm-manager/ui-types";
-import { Radio, Textarea } from "@scm-manager/ui-components";
+import {WithTranslation, withTranslation} from "react-i18next";
+import {Link} from "@scm-manager/ui-types";
+import {Radio} from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = WithTranslation & {

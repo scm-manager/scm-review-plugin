@@ -50,6 +50,11 @@ class MergeModal extends React.Component<Props, State> {
     merge(mergeStrategy, mergeCommit);
   };
 
+  shouldCommitMessageExists = () => {
+    const { mergeStrategy, mergeCommit } = this.state;
+    return mergeStrategy != "FAST_FORWARD_IF_POSSIBLE" && mergeCommit.commitMessage == "";
+  };
+
   render() {
     const { pullRequest, close, t } = this.props;
     const { mergeStrategy, mergeCommit, loading } = this.state;
@@ -65,6 +70,7 @@ class MergeModal extends React.Component<Props, State> {
           label={t("scm-review-plugin.show-pull-request.merge-modal.merge")}
           action={() => this.performMerge()}
           loading={loading}
+          disabled={this.shouldCommitMessageExists()}
         />
       </>
     );
