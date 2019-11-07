@@ -43,9 +43,6 @@ public class MergeService {
       MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
       updatePullRequestStatusIfNecessary(repositoryService, mergeCommitDto, strategy,  mergeCommandResult);
 
-      if (strategy == MergeStrategy.FAST_FORWARD_IF_POSSIBLE) {
-        return tryMergingFastForward(mergeCommand, mergeCommitDto, strategy, mergeCommandResult);
-      }
       return mergeCommandResult;
     }
   }
@@ -61,22 +58,6 @@ public class MergeService {
         scmEventBus.post(new PullRequestMergedEvent(repository, pullRequest));
       }
     }
-  }
-
-  private MergeCommandResult tryMergingFastForward(MergeCommandBuilder mergeCommand, MergeCommitDto mergeCommitDto, MergeStrategy strategy, MergeCommandResult mergeCommandResult) {
-    if (isFastForwardPossible(strategy, mergeCommandResult)) {
-      return mergeCommandResult;
-    }
-    return mergeWithCommit(mergeCommand, mergeCommitDto);
-  }
-
-  private MergeCommandResult mergeWithCommit(MergeCommandBuilder mergeCommand, MergeCommitDto mergeCommitDto) {
-    prepareMergeCommand(mergeCommand, mergeCommitDto, MergeStrategy.MERGE_COMMIT);
-    return mergeCommand.executeMerge();
-  }
-
-  private boolean isFastForwardPossible(MergeStrategy strategy, MergeCommandResult mergeCommandResult) {
-    return strategy == MergeStrategy.FAST_FORWARD_IF_POSSIBLE && mergeCommandResult.isSuccess() && !mergeCommandResult.isAborted();
   }
 
   private void isAllowedToMerge(Repository repository, MergeCommandBuilder mergeCommand, MergeStrategy strategy) {
