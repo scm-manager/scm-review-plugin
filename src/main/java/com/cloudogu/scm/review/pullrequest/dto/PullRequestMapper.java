@@ -116,17 +116,21 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
 
-      try (RepositoryService service = serviceFactory.create(repository)) {
-        if (service.isSupported(Command.MERGE)) {
-          List<Link> strategyLinks = Stream.of(service.getMergeCommand().getSupportedMergeStrategies())
-            .flatMap(Set::stream)
-            .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), strategy))
-            .collect(toList());
-          linksBuilder.array(strategyLinks);
-        }
-      }
+      appendMergeStrategyLinks(linksBuilder, repository);
     }
     target.add(linksBuilder.build());
+  }
+
+  private void appendMergeStrategyLinks(Links.Builder linksBuilder, @Context Repository repository) {
+    try (RepositoryService service = serviceFactory.create(repository)) {
+      if (service.isSupported(Command.MERGE)) {
+        List<Link> strategyLinks = Stream.of(service.getMergeCommand().getSupportedMergeStrategies())
+          .flatMap(Set::stream)
+          .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), strategy))
+          .collect(toList());
+        linksBuilder.array(strategyLinks);
+      }
+    }
   }
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
