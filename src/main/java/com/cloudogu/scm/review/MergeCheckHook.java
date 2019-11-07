@@ -119,7 +119,7 @@ public class MergeCheckHook {
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
       commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
-      eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
+      eventBus.post(new PullRequestMergedEvent(repository,pullRequest));
     }
 
     private boolean pullRequestSourceBranchIsDeleted(PullRequest pullRequest) {

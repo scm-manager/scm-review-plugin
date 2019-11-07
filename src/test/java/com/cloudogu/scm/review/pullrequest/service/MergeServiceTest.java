@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.MergeStrategyNotSupportedException;
+import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.github.sdorra.shiro.ShiroRule;
@@ -49,6 +50,8 @@ class MergeServiceTest {
   @Mock
   private PullRequestService pullRequestService;
   @Mock
+  private CommentService commentService;
+  @Mock
   private ScmEventBus scmEventBus;
   @Mock
   private MergeCommandBuilder mergeCommandBuilder;
@@ -57,7 +60,7 @@ class MergeServiceTest {
 
   @BeforeEach
   void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, scmEventBus);
+    service = new MergeService(serviceFactory, pullRequestService, commentService, scmEventBus);
   }
 
   @BeforeEach
@@ -76,7 +79,6 @@ class MergeServiceTest {
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success());
 
     MergeCommitDto mergeCommit = createMergeCommit();
-
     MergeCommandResult result = service.merge(REPOSITORY.getNamespaceAndName(), mergeCommit, MergeStrategy.SQUASH);
 
     assertThat(result.isSuccess()).isTrue();

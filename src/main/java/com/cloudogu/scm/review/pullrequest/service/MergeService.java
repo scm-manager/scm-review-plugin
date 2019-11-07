@@ -2,6 +2,8 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.MergeStrategyNotSupportedException;
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import sonia.scm.event.ScmEventBus;
@@ -21,12 +23,14 @@ public class MergeService {
 
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
+  private final CommentService commentService;
   private final ScmEventBus scmEventBus;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, ScmEventBus scmEventBus) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, CommentService commentService, ScmEventBus scmEventBus) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
+    this.commentService = commentService;
     this.scmEventBus = scmEventBus;
   }
 
@@ -51,9 +55,10 @@ public class MergeService {
       Repository repository = repositoryService.getRepository();
       Optional<PullRequest> optionalPullRequest = pullRequestService.get(repository, mergeCommitDto.getSource(), mergeCommitDto.getTarget(), PullRequestStatus.OPEN);
       if (optionalPullRequest.isPresent()) {
-        pullRequestService.setStatus(repository, optionalPullRequest.get(), PullRequestStatus.MERGED);
-        //TODO should i create a comment on merge? Would create additional dependency to CommentService
-        scmEventBus.post(new PullRequestMergedEvent(repository, optionalPullRequest.get()));
+        PullRequest pullRequest = optionalPullRequest.get();
+        pullRequestService.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
+        commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
+        scmEventBus.post(new PullRequestMergedEvent(repository, pullRequest));
       }
     }
   }
