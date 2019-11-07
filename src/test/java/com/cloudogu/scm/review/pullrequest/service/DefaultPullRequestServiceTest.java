@@ -31,8 +31,10 @@ import java.io.IOException;
 import java.time.Instant;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -134,8 +136,7 @@ class DefaultPullRequestServiceTest {
     @Test
     void shouldStoreReviewerAsSubscriber() throws NoDifferenceException {
       PullRequest pullRequest = createPullRequest(null, null, null);
-      pullRequest.setReviewer(singleton("reviewer"));
-
+      pullRequest.setReviewer(singletonMap("reviewer", false));
       service.add(REPOSITORY, pullRequest);
 
       assertThat(pullRequest.getSubscriber())
@@ -192,7 +193,7 @@ class DefaultPullRequestServiceTest {
     void mockOldPullRequest() {
       oldPullRequest = createPullRequest("changed", Instant.ofEpochSecond(1_000_000), null);
       oldPullRequest.setSubscriber(singleton("subscriber"));
-      oldPullRequest.setReviewer(singleton("reviewer"));
+      oldPullRequest.setReviewer(singletonMap("reviewer", false));
       when(store.get("changed")).thenReturn(oldPullRequest);
     }
 
@@ -231,7 +232,7 @@ class DefaultPullRequestServiceTest {
     @Test
     void shouldAddNewReviewerAsSubscriber() {
       PullRequest pullRequest = createPullRequest("changed", null, null);
-      pullRequest.setReviewer(singleton("new_reviewer"));
+      pullRequest.setReviewer(singletonMap("new_reviewer", false));
 
       service.update(REPOSITORY, "changed", pullRequest);
 
@@ -254,6 +255,6 @@ class DefaultPullRequestServiceTest {
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, null, emptySet(), emptySet());
+    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, null, emptySet(), emptyMap());
   }
 }
