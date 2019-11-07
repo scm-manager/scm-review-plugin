@@ -28,7 +28,7 @@ type State = {
   loading: boolean;
 };
 
-class PullRequestComments extends React.Component<Props, State> {
+class RootComments extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -147,4 +147,4 @@ class PullRequestComments extends React.Component<Props, State> {
   }
 }
 
-export default PullRequestComments;
+export default RootComments;

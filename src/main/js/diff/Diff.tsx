@@ -24,7 +24,7 @@ import {
 import { fetchDiffRelatedComments } from "./fetchDiffRelatedComments";
 import PullRequestComment from "../comment/PullRequestComment";
 import CreateComment from "../comment/CreateComment";
-import CreateCommentInlineWrapper from "./CreateCommentInlineWrapper";
+import CommentSpacingWrapper from "../comment/CommentSpacingWrapper";
 import InlineComments from "./InlineComments";
 import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
@@ -306,7 +306,7 @@ class Diff extends React.Component<Props, State> {
   createNewCommentEditor = (location: Location) => {
     if (this.state.createLink) {
       return (
-        <CreateCommentInlineWrapper>
+        <CommentSpacingWrapper>
           <CreateComment
             url={this.state.createLink.href}
             location={location}
@@ -314,7 +314,7 @@ class Diff extends React.Component<Props, State> {
             onCancel={() => this.closeEditor(location)}
             autofocus={true}
           />
-        </CreateCommentInlineWrapper>
+        </CommentSpacingWrapper>
       );
     }
     return null;

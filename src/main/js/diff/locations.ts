@@ -49,7 +49,7 @@ export function createInlineLocation(context: DiffEventContext): Location {
   return location;
 }
 
-export function createChangeIdFromLocation(location: Location) {
+export function createChangeIdFromLocation(location: Location): string {
   if (location.oldLineNumber && location.newLineNumber) {
     return "N" + location.oldLineNumber;
   } else if (location.newLineNumber) {

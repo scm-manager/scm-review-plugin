@@ -5,7 +5,7 @@ import { WithTranslation, withTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, withRouter, RouteComponentProps } from "react-router-dom";
 import Diff from "./diff/Diff";
-import PullRequestComments from "./comment/PullRequestComments";
+import RootComments from "./comment/RootComments";
 import { PullRequest } from "./types/PullRequest";
 
 type Props = WithTranslation & RouteComponentProps & {
@@ -84,7 +84,7 @@ class PullRequestInformation extends React.Component<Props> {
     routes = (
       <Switch>
         <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
-        <Route path={`${baseURL}/comments`} render={() => <PullRequestComments pullRequest={pullRequest} />} exact />
+        <Route path={`${baseURL}/comments`} render={() => <RootComments pullRequest={pullRequest} />} exact />
         {routeChangeset}
         {routeChangesetPagination}
         {routeDiff}

@@ -4,7 +4,7 @@ import { Comment } from "../types/PullRequest";
 
 type Props = {
   comment: Comment;
-  refresh: () => void;
+  refresh?: () => void;
   handleError: (error: Error) => void;
   child: boolean;
 };

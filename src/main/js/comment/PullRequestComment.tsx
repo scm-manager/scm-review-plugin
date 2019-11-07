@@ -6,11 +6,8 @@ import {
   Button,
   confirmAlert,
   DateFromNow,
-  DiffFile,
   ErrorNotification,
   Loading,
-  MarkdownView,
-  Modal,
   SubmitButton,
   Textarea,
   apiClient
@@ -18,29 +15,16 @@ import {
 import { Link } from "@scm-manager/ui-types";
 import { BasicComment, Comment, PossibleTransition, Reply } from "../types/PullRequest";
 import { deletePullRequestComment, transformPullRequestComment, updatePullRequestComment } from "../pullRequest";
-import CreateCommentInlineWrapper from "../diff/CreateCommentInlineWrapper";
+import CommentSpacingWrapper from "./CommentSpacingWrapper";
 import CreateComment from "./CreateComment";
 import RecursivePullRequestComment from "./RecursivePullRequestComment";
-import { mapCommentToFile } from "./commentToFileMapper";
-import { AnnotationFactoryContext } from "@scm-manager/ui-components";
-import InlineComments from "../diff/InlineComments";
-import { createChangeIdFromLocation } from "../diff/locations";
 import CommentActionToolbar from "./CommentActionToolbar";
-import { findLatestTransition } from "./transitions";
 import CommentTags from "./CommentTags";
 import CommentContent from "./CommentContent";
-
-const StyledModal = styled(Modal)`
-  & table.diff .diff-gutter:empty:hover::after {
-    display: none;
-  }
-
-  & .modal-card {
-    @media screen and (min-width: 1280px), print {
-      width: 1200px;
-    }
-  }
-`;
+import CommentMetadata from "./CommentMetadata";
+import ContextModal from "./ContextModal";
+import LastEdited from "./LastEdited";
+import EditButtons from "./EditButtons";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -48,18 +32,6 @@ const LinkWithInheritColor = styled.a`
 
 const AuthorName = styled.span`
   margin-left: 5px;
-`;
-
-const CommentMetadata = styled.span`
-  padding: 0 0.4rem;
-`;
-
-const LastEdited = styled.small`
-  color: #9a9a9a; // dark-50
-`;
-
-const LatestEditor = styled.span`
-  color: #9a9a9a; // dark-50
 `;
 
 type Props = WithTranslation & {
@@ -275,24 +247,6 @@ class PullRequestComment extends React.Component<Props, State> {
     }));
   };
 
-  confirmCancelUpdate = () => {
-    const { t } = this.props;
-    confirmAlert({
-      title: t("scm-review-plugin.comment.confirmCancelUpdateAlert.title"),
-      message: t("scm-review-plugin.comment.confirmCancelUpdateAlert.message"),
-      buttons: [
-        {
-          label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.submit"),
-          onClick: () => this.cancelUpdate()
-        },
-        {
-          label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.cancel"),
-          onClick: () => null
-        }
-      ]
-    });
-  };
-
   handleUpdateChange = (comment: string) => {
     this.setState({
       updatedComment: {
@@ -315,27 +269,6 @@ class PullRequestComment extends React.Component<Props, State> {
         onReply={() => this.reply(comment)}
         onTransitionChange={this.confirmTransition}
       />
-    );
-  };
-
-  createEditButtons = () => {
-    const { t } = this.props;
-    const { updatedComment } = this.state;
-
-    return (
-      <div className="level-left">
-        <div className="level-item">
-          <SubmitButton
-            label={t("scm-review-plugin.comment.save")}
-            action={this.update}
-            disabled={updatedComment.comment.trim() === ""}
-            scrollToTop={false}
-          />
-        </div>
-        <div className="level-item">
-          <Button label={t("scm-review-plugin.comment.cancel")} color="warning" action={this.confirmCancelUpdate} />
-        </div>
-      </div>
     );
   };
 
@@ -382,7 +315,7 @@ class PullRequestComment extends React.Component<Props, State> {
 
     if (edit) {
       message = this.createMessageEditor();
-      editButtons = this.createEditButtons();
+      editButtons = <EditButtons comment={comment} onSubmit={this.update} onCancel={this.cancelUpdate} />;
     } else {
       message = !collapsed ? <CommentContent comment={comment} /> : "";
       icons = this.createEditIcons();
@@ -391,30 +324,10 @@ class PullRequestComment extends React.Component<Props, State> {
     const collapseTitle = collapsed ? t("scm-review-plugin.comment.expand") : t("scm-review-plugin.comment.collapse");
     const collapseIcon = collapsed ? "fa-angle-right" : "fa-angle-down";
 
-    const lastEdited = this.getLastEdited();
-
     return (
       <>
-        {contextModalOpen && (
-          <StyledModal
-            title={t("scm-review-plugin.comment.contextModal.title")}
-            closeFunction={() => this.onClose()}
-            body={
-              <>
-                <strong>{t("scm-review-plugin.comment.contextModal.message")}</strong>
-                <br />
-                <br />
-                <DiffFile
-                  file={mapCommentToFile(comment)}
-                  collapsible={false}
-                  annotationFactory={this.inlineComment(comment)}
-                />
-              </>
-            }
-            active={true}
-          />
-        )}
-        <CreateCommentInlineWrapper isChildComment={this.props.child}>
+        {contextModalOpen && <ContextModal comment={comment} onClose={this.onClose} />}
+        <CommentSpacingWrapper isChildComment={this.props.child}>
           <article className="media">
             <div className="media-content is-clipped content">
               <p>
@@ -427,7 +340,7 @@ class PullRequestComment extends React.Component<Props, State> {
                   </AuthorName>
                 </LinkWithInheritColor>
                 <CommentMetadata>
-                  <DateFromNow date={comment.date} /> {lastEdited}
+                  <DateFromNow date={comment.date} /> <LastEdited comment={comment} />
                 </CommentMetadata>
                 {this.collectTags(comment)}
                 <br />
@@ -437,11 +350,11 @@ class PullRequestComment extends React.Component<Props, State> {
             </div>
             {icons}
           </article>
-        </CreateCommentInlineWrapper>
+        </CommentSpacingWrapper>
         {!collapsed &&
           !!comment._embedded &&
           !!comment._embedded.replies &&
-          comment._embedded.replies.map(childComment => (
+          comment._embedded.replies.map((childComment: Comment) => (
             <RecursivePullRequestComment
               child={true}
               comment={childComment}
@@ -453,47 +366,6 @@ class PullRequestComment extends React.Component<Props, State> {
       </>
     );
   }
-
-  inlineComment = (comment: Comment) => {
-    return (context: AnnotationFactoryContext) => {
-      const annotations = {};
-      annotations[createChangeIdFromLocation(comment.location)] = (
-        <InlineComments>
-          <CreateCommentInlineWrapper isChildComment={false}>
-            <article className="media">
-              <div className="media-content is-clipped content">
-                <p>
-                  <strong>{comment.author.displayName}</strong>{" "}
-                  <CommentMetadata>
-                    <DateFromNow date={comment.date} /> {this.getLastEdited()}
-                  </CommentMetadata>
-                  <br />
-                  <MarkdownView content={comment.comment} />
-                </p>
-              </div>
-            </article>
-          </CreateCommentInlineWrapper>
-        </InlineComments>
-      );
-      return annotations;
-    };
-  };
-
-  getLastEdited = () => {
-    const { comment, t } = this.props;
-    if (comment._embedded && comment._embedded.transitions) {
-      const latestTransition = findLatestTransition(comment, "CHANGE_TEXT");
-      if (latestTransition && latestTransition.user.id !== comment.author.id) {
-        const latestEditor = latestTransition.user.displayName;
-        return (
-          <LastEdited>
-            {t("scm-review-plugin.comment.lastEdited")} <LatestEditor>{latestEditor}</LatestEditor>
-          </LastEdited>
-        );
-      }
-    }
-    return null;
-  };
 
   reply = (comment: Comment) => {
     this.openReplyEditor(comment);
@@ -507,16 +379,21 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createNewReplyEditor(replyComment: Comment) {
+    if (!replyComment._links.reply) {
+      throw new Error("reply links is missing");
+    }
+
+    const replyLink = replyComment._links.reply as Link;
     return (
-      <CreateCommentInlineWrapper>
+      <CommentSpacingWrapper>
         <CreateComment
-          url={replyComment._links.reply.href}
+          url={replyLink.href}
           refresh={() => this.closeReplyEditor()}
           onCancel={() => this.closeReplyEditor()}
           autofocus={true}
           reply={true}
         />
-      </CreateCommentInlineWrapper>
+      </CommentSpacingWrapper>
     );
   }
 
@@ -529,7 +406,7 @@ class PullRequestComment extends React.Component<Props, State> {
   closeReplyEditor() {
     this.setState(
       {
-        replyEditor: null
+        replyEditor: undefined
       },
       this.props.refresh
     );
