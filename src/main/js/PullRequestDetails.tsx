@@ -1,22 +1,22 @@
 import React from "react";
 import styled from "styled-components";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { withRouter, RouteComponentProps } from "react-router-dom";
-import { Repository, Link } from "@scm-manager/ui-types";
-import { ExtensionPoint } from "@scm-manager/ui-extensions";
+import {WithTranslation, withTranslation} from "react-i18next";
+import {RouteComponentProps, withRouter} from "react-router-dom";
+import {Link, Repository} from "@scm-manager/ui-types";
+import {ExtensionPoint} from "@scm-manager/ui-extensions";
 import {
-  DateFromNow,
-  Loading,
-  Notification,
-  Title,
-  ErrorNotification,
-  Tooltip,
-  MarkdownView,
   Button,
-  Tag
+  DateFromNow,
+  ErrorNotification,
+  Loading,
+  MarkdownView,
+  Notification,
+  Tag,
+  Title,
+  Tooltip
 } from "@scm-manager/ui-components";
-import { MergeCommit, PullRequest } from "./types/PullRequest";
-import { dryRun, getSubscription, handleSubscription, merge, reject } from "./pullRequest";
+import {MergeCommit, PullRequest} from "./types/PullRequest";
+import {dryRun, getSubscription, handleSubscription, merge, reject} from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -187,14 +187,12 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   shouldRunDryMerge = (pullRequest: PullRequest) => {
-    const { repository } = this.props;
-    return repository._links.mergeDryRun && (repository._links.mergeDryRun as Link).href && pullRequest.status === "OPEN";
+    return pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN";
   };
 
   getMergeDryRun(pullRequest: PullRequest) {
-    const { repository } = this.props;
     if (this.shouldRunDryMerge(pullRequest)) {
-      dryRun((repository._links.mergeDryRun as Link).href, pullRequest).then(response => {
+      dryRun(pullRequest).then(response => {
         if (response.conflict) {
           this.setState({
             mergeButtonLoading: false,

@@ -16,6 +16,7 @@ import org.mapstruct.MappingTarget;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.api.RepositoryService;
@@ -116,7 +117,11 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
 
-      appendMergeStrategyLinks(linksBuilder, repository);
+      if(RepositoryPermissions.push(repository).isPermitted()) {
+        linksBuilder.single(link("mergeDryRun", pullRequestResourceLinks.mergeLinks().dryRun(repository.getNamespace(), repository.getName())));
+        appendMergeStrategyLinks(linksBuilder, repository);
+      }
+
     }
     target.add(linksBuilder.build());
   }
@@ -138,7 +143,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   }
 
   private Link createStrategyLink(NamespaceAndName namespaceAndName, MergeStrategy strategy) {
-    return Link.linkBuilder("merge", pullRequestResourceLinks.mergeStrategies().merge(
+    return Link.linkBuilder("merge", pullRequestResourceLinks.mergeLinks().merge(
         namespaceAndName.getNamespace(),
         namespaceAndName.getName(),
         strategy

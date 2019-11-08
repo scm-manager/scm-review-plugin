@@ -2,9 +2,14 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
+import com.webcohesion.enunciate.metadata.rs.ResponseCode;
+import com.webcohesion.enunciate.metadata.rs.StatusCodes;
+import sonia.scm.ConcurrentModificationException;
+import sonia.scm.api.v2.resources.MergeCommandDto;
 import sonia.scm.api.v2.resources.MergeResultToDtoMapper;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.MergeCommandResult;
+import sonia.scm.repository.api.MergeDryRunCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
 
 import javax.inject.Inject;
@@ -46,4 +51,26 @@ public class MergeResource {
       return Response.status(409).entity(mergeResultToDtoMapper.map(result)).build();
     }
   }
+
+  @POST
+  @Path("{namespace}/{name}/dry-run")
+  @Consumes("application/vnd.scmm-mergeCommand+json")
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "merge can be done automatically"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 409, condition = "The branches can not be merged automatically due to conflicts"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  public Response dryRun(
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @Valid MergeCommandDto mergeCommandDto
+  ) {
+    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(new NamespaceAndName(namespace, name), mergeCommandDto);
+      if (mergeDryRunCommandResult.isMergeable()) {
+        return Response.noContent().build();
+      } else {
+        throw new ConcurrentModificationException("revision", mergeCommandDto.getTargetRevision());
+      }
+    }
 }

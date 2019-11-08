@@ -36,7 +36,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Provider;
@@ -55,7 +54,6 @@ import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -161,7 +159,7 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    assertEquals(HttpServletResponse.SC_CONFLICT, response.getStatus());
     assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
   }
 
@@ -179,7 +177,7 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    assertEquals(HttpServletResponse.SC_CONFLICT, response.getStatus());
     assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
   }
 
@@ -231,7 +229,7 @@ public class CommentRootResourceTest {
         .contentType(MediaType.APPLICATION_JSON);
 
     dispatcher.invoke(request, response);
-    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    assertEquals(HttpServletResponse.SC_CONFLICT, response.getStatus());
     assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
   }
 

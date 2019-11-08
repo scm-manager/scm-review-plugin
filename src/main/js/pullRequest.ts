@@ -1,6 +1,6 @@
 import {BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest} from "./types/PullRequest";
-import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
-import {Repository, Link} from "@scm-manager/ui-types";
+import {apiClient, ConflictError, NotFoundError} from "@scm-manager/ui-components";
+import {Link, Repository} from "@scm-manager/ui-types";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
@@ -159,10 +159,10 @@ export function merge(url: string, mergeCommit: MergeCommit) {
     });
 }
 
-export function dryRun(url: string, pullRequest: PullRequest) {
+export function dryRun(pullRequest: PullRequest) {
   return apiClient
     .post(
-      url,
+      (pullRequest._links.mergeDryRun as Link).href,
       {
         sourceRevision: pullRequest.source,
         targetRevision: pullRequest.target

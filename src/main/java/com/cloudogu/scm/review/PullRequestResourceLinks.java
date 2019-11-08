@@ -7,7 +7,6 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfo;
-import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.repository.api.MergeStrategy;
 
 
@@ -140,19 +139,23 @@ public class PullRequestResourceLinks {
     }
   }
 
-  public MergeStrategies mergeStrategies() {
-    return new MergeStrategies(scmPathInfo);
+  public MergeLinks mergeLinks() {
+    return new MergeLinks(scmPathInfo);
   }
 
-  public static class MergeStrategies {
-    private final LinkBuilder linkBuilder;
+  public static class MergeLinks {
+    private final LinkBuilder mergeLinkBuilder;
 
-    MergeStrategies(ScmPathInfo pathInfo) {
-      linkBuilder = new LinkBuilder(pathInfo, MergeResource.class);
+    MergeLinks(ScmPathInfo pathInfo) {
+      this.mergeLinkBuilder = new LinkBuilder(pathInfo, MergeResource.class);
     }
 
-    public  String merge(String namespace, String name, MergeStrategy strategy) {
-      return linkBuilder
+    public String dryRun(String namespace, String name) {
+      return mergeLinkBuilder.method("dryRun").parameters(namespace, name).href();
+    }
+
+    public String merge(String namespace, String name, MergeStrategy strategy) {
+      return mergeLinkBuilder
         .method("merge").parameters(namespace, name).href() + "?strategy=" + strategy;
     }
   }
