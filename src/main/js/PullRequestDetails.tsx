@@ -32,7 +32,7 @@ type State = {
   error?: Error;
   loading: boolean;
   loadingSubscription: boolean;
-  mergeHasNoConflict?: boolean;
+  mergeHasNoConflict: boolean;
   targetBranchDeleted?: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
@@ -119,6 +119,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeButtonLoading: true,
       rejectButtonLoading: false,
       showNotification: false,
+      mergeHasNoConflict: false,
       subscriptionIcon: "",
       subscriptionLabel: "",
       subscriptionLink: ""
@@ -337,7 +338,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     let rejectButton = null;
     if (pullRequest._links.reject) {
       rejectButton = <RejectButton reject={() => this.performReject()} loading={rejectButtonLoading} />;
-      if (!!repository._links.merge) {
+      if (!!pullRequest._links.merge) {
         mergeButton = targetBranchDeleted ? null : (
           <MergeButton
             merge={(strategy: string, commit: MergeCommit) => this.performMerge(strategy, commit)}
