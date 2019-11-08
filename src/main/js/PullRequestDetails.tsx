@@ -1,37 +1,38 @@
 import React from "react";
 import styled from "styled-components";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { withRouter, RouteComponentProps } from "react-router-dom";
-import { Repository } from "@scm-manager/ui-types";
-import { ExtensionPoint } from "@scm-manager/ui-extensions";
+import {WithTranslation, withTranslation} from "react-i18next";
+import {RouteComponentProps, withRouter} from "react-router-dom";
+import {Link, Repository} from "@scm-manager/ui-types";
+import {ExtensionPoint} from "@scm-manager/ui-extensions";
 import {
-  DateFromNow,
-  Loading,
-  Notification,
-  Title,
-  ErrorNotification,
-  Tooltip,
-  MarkdownView,
   Button,
-  Tag
+  DateFromNow,
+  ErrorNotification,
+  Loading,
+  MarkdownView,
+  Notification,
+  Tag,
+  Title,
+  Tooltip
 } from "@scm-manager/ui-components";
-import { PullRequest } from "./types/PullRequest";
-import { getSubscription, handleSubscription, merge, reject } from "./pullRequest";
+import {MergeCommit, PullRequest} from "./types/PullRequest";
+import {dryRun, getSubscription, handleSubscription, merge, reject} from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  pullRequest: PullRequest;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    pullRequest: PullRequest;
+  };
 
 type State = {
   pullRequest: PullRequest;
   error?: Error;
   loading: boolean;
   loadingSubscription: boolean;
-  mergeHasNoConflict?: boolean;
+  mergeHasNoConflict: boolean;
   targetBranchDeleted?: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
@@ -117,14 +118,18 @@ class PullRequestDetails extends React.Component<Props, State> {
       pullRequest: this.props.pullRequest,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
-      showNotification: false
+      showNotification: false,
+      mergeHasNoConflict: false,
+      subscriptionIcon: "",
+      subscriptionLabel: "",
+      subscriptionLink: ""
     };
   }
 
   componentDidMount(): void {
     const { pullRequest } = this.props;
     this.getMergeDryRun(pullRequest);
-    if (pullRequest && pullRequest._links.subscription && pullRequest._links.subscription.href) {
+    if (pullRequest && pullRequest._links.subscription && (pullRequest._links.subscription as Link).href) {
       this.getSubscription(pullRequest);
     }
   }
@@ -140,8 +145,8 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   getSubscription(pullRequest: PullRequest) {
-    if (pullRequest && pullRequest._links.subscription && pullRequest._links.subscription.href) {
-      getSubscription(pullRequest._links.subscription.href).then(response => {
+    if (pullRequest && pullRequest._links.subscription && (pullRequest._links.subscription as Link).href) {
+      getSubscription((pullRequest._links.subscription as Link).href).then(response => {
         if (response.error) {
           this.setState({
             error: response.error,
@@ -182,10 +187,13 @@ class PullRequestDetails extends React.Component<Props, State> {
     });
   };
 
+  shouldRunDryMerge = (pullRequest: PullRequest) => {
+    return pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN";
+  };
+
   getMergeDryRun(pullRequest: PullRequest) {
-    const { repository } = this.props;
-    if (repository._links.mergeDryRun && repository._links.mergeDryRun.href && pullRequest.status === "OPEN") {
-      merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
+    if (this.shouldRunDryMerge(pullRequest)) {
+      dryRun(pullRequest).then(response => {
         if (response.conflict) {
           this.setState({
             mergeButtonLoading: false,
@@ -216,11 +224,14 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
   }
 
-  performMerge = () => {
-    const { repository } = this.props;
+  findStrategyLink = (links: Link[], strategy: string) => {
+    return links.filter(link => link.name === strategy)[0].href;
+  };
+
+  performMerge = (strategy: string, commit: MergeCommit) => {
     const { pullRequest } = this.state;
     this.setMergeButtonLoadingState();
-    merge(repository._links.merge.href, pullRequest).then(response => {
+    merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit).then(response => {
       if (response.error) {
         this.setState({
           error: response.error,
@@ -272,7 +283,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.setState({
       ...this.state,
       showNotification: false,
-      mergeConflict: false
+      mergeHasNoConflict: false
     });
   };
 
@@ -327,10 +338,10 @@ class PullRequestDetails extends React.Component<Props, State> {
     let rejectButton = null;
     if (pullRequest._links.reject) {
       rejectButton = <RejectButton reject={() => this.performReject()} loading={rejectButtonLoading} />;
-      if (!!repository._links.merge) {
+      if (!!pullRequest._links.merge) {
         mergeButton = targetBranchDeleted ? null : (
           <MergeButton
-            merge={() => this.performMerge()}
+            merge={(strategy: string, commit: MergeCommit) => this.performMerge(strategy, commit)}
             mergeHasNoConflict={mergeHasNoConflict}
             loading={mergeButtonLoading}
             repository={repository}
@@ -341,7 +352,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
 
     let editButton = null;
-    if (pullRequest._links.update && pullRequest._links.update.href) {
+    if (pullRequest._links.update && (pullRequest._links.update as Link).href) {
       const toEdit =
         "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
       editButton = (

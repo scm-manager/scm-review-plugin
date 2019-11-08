@@ -39,7 +39,7 @@ class ManualMergeInformation extends React.Component<Props> {
 
     return (
       <Modal
-        title={t("scm-review-plugin.show-pull-request.mergeButton.merge-information")}
+        title={t("scm-review-plugin.show-pull-request.merge-button.merge-information")}
         closeFunction={() => onClose()}
         body={body}
         active={true}

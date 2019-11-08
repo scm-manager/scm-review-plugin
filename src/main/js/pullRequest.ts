@@ -1,6 +1,6 @@
-import { BasicComment, BasicPullRequest, PossibleTransition, PullRequest } from "./types/PullRequest";
-import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
-import {Repository} from "@scm-manager/ui-types";
+import {BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest} from "./types/PullRequest";
+import {apiClient, ConflictError, NotFoundError} from "@scm-manager/ui-components";
+import {Link, Repository} from "@scm-manager/ui-types";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
@@ -135,10 +135,34 @@ export function handleSubscription(url: string) {
   });
 }
 
-export function merge(url: string, pullRequest: PullRequest) {
+export function merge(url: string, mergeCommit: MergeCommit) {
   return apiClient
     .post(
       url,
+      mergeCommit,
+      "application/vnd.scmm-mergeCommand+json"
+    )
+    .catch(err => {
+      if (err instanceof ConflictError) {
+        return {
+          conflict: err
+        };
+      } else if (err instanceof NotFoundError) {
+        return {
+          notFound: err
+        };
+      } else {
+        return {
+          error: err
+        };
+      }
+    });
+}
+
+export function dryRun(pullRequest: PullRequest) {
+  return apiClient
+    .post(
+      (pullRequest._links.mergeDryRun as Link).href,
       {
         sourceRevision: pullRequest.source,
         targetRevision: pullRequest.target
@@ -216,5 +240,5 @@ function createIncomingUrl(repository: Repository, linkName: string, source: str
 }
 
 export function reject(pullRequest: PullRequest) {
-  return apiClient.post(pullRequest._links.reject.href);
+  return apiClient.post((pullRequest._links.reject as Link).href);
 }

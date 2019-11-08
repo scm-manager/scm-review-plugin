@@ -40,16 +40,26 @@
     "show-pull-request": {
       "error-title": "Fehler",
       "error-subtitle": "Unbekannter Pull Request Fehler",
-      "mergeButton": {
+      "merge-button": {
         "button-title": "Pull Request mergen",
-        "confirm-alert": {
-          "title": "Pull Request mergen",
-          "message": "Soll der Pull Request wirklich gemerged werden?",
-          "submit": "Ja",
-          "cancel": "Nein"
-        },
         "merge-information": "Automatischer Merge nicht möglich."
       },
+      "merge-modal": {
+        "title": "Pull Request mergen",
+        "merge": "Merge",
+        "cancel": "Abbrechen"
+      },
+      "merge-strategies": {
+        "SQUASH": "Squash",
+        "MERGE_COMMIT": "Merge Commit",
+        "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward, wenn möglich",
+        "help": {
+          "SQUASH": "Alle Commits des Source-Branches werden als ein neuer Commit auf dem Target-Branch zusammengefasst.",
+          "MERGE_COMMIT": "Die Branches werden mit einem neuen Commit gemerged.",
+          "FAST_FORWARD_IF_POSSIBLE": "Falls möglich wird der Target-Branch ohne Merge auf den Stand des Source-Branches gesetzt. Falls dieses nicht möglich ist, wird ein normaler Merge-Commit erzeugt."
+        }
+      },
+      "commit-message": "Bitte Commit Nachricht eingeben",
       "rejectButton": {
         "button-title": "Pull Request ablehnen",
         "confirm-alert": {
