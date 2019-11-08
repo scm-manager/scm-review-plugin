@@ -19,6 +19,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
@@ -38,6 +39,7 @@ public class MergeResource {
   @POST
   @Path("{namespace}/{name}")
   @Consumes("application/vnd.scmm-mergeCommand+json")
+  @Produces("application/json")
   public Response merge(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
