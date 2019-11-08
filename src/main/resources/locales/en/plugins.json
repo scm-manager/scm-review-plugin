@@ -194,5 +194,11 @@
         "description": "May merge or reject pull requests (merge needs additional permission to push the repository)"
       }
     }
+  },
+  "errors": {
+    "DTRhFJFgU1": {
+      "displayName": "Merge conflict",
+      "description": "The branches could not be merged because there were merge conflicts."
+    }
   }
 }
