@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.MergeStrategyNotSupportedException;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.SystemCommentType;
@@ -40,7 +39,7 @@ public class MergeService {
   public MergeCommandResult merge(NamespaceAndName namespaceAndName, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
-      isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
+      PermissionCheck.mayMerge(repositoryService.getRepository());
       prepareMergeCommand(mergeCommand, mergeCommitDto, strategy);
 
       MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
@@ -70,13 +69,6 @@ public class MergeService {
         commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
         scmEventBus.post(new PullRequestMergedEvent(repository, pullRequest));
       }
-    }
-  }
-
-  private void isAllowedToMerge(Repository repository, MergeCommandBuilder mergeCommand, MergeStrategy strategy) {
-    PermissionCheck.mayMerge(repository);
-    if (!mergeCommand.isSupported(strategy)) {
-      throw new MergeStrategyNotSupportedException(repository, strategy);
     }
   }
 
