@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.MergeStrategyNotSupportedException;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
@@ -26,7 +25,6 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -75,23 +73,12 @@ class MergeServiceTest {
   @Test
   @SubjectAware(username = "trillian", password = "secret")
   void shouldMergeSuccessfully() {
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success());
 
     MergeCommitDto mergeCommit = createMergeCommit();
     MergeCommandResult result = service.merge(REPOSITORY.getNamespaceAndName(), mergeCommit, MergeStrategy.SQUASH);
 
     assertThat(result.isSuccess()).isTrue();
-  }
-
-  @Test
-  @SubjectAware(username = "trillian", password = "secret")
-  void shouldThrowExceptionIfStrategyNotSupported() {
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(false);
-
-    MergeCommitDto mergeCommit = createMergeCommit();
-
-    assertThrows(MergeStrategyNotSupportedException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), mergeCommit, MergeStrategy.SQUASH));
   }
 
   private MergeCommitDto createMergeCommit() {
