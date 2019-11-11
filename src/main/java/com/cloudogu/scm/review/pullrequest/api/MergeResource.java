@@ -20,6 +20,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
@@ -77,7 +78,7 @@ public class MergeResource {
 
   @GET
   @Path("{namespace}/{name}/squash-commit-message")
-  @Consumes("application/vnd.scmm-mergeCommand+json")
+  @Produces("text/plain")
   @StatusCodes({
     @ResponseCode(code = 200, condition = "squash commit message was created"),
     @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
@@ -86,9 +87,10 @@ public class MergeResource {
   public Response createSquashCommitMessage(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @Valid MergeCommandDto mergeCommandDto
+    @QueryParam("sourceRevision") String sourceRevision,
+    @QueryParam("targetRevision") String targetRevision
   ) {
-    String commitMessage = service.createSquashCommitMessage(new NamespaceAndName(namespace, name), mergeCommandDto);
+    String commitMessage = service.createSquashCommitMessage(new NamespaceAndName(namespace, name), sourceRevision, targetRevision);
     return Response.status(200).entity(commitMessage).build();
   }
 }

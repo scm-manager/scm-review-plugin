@@ -4,6 +4,7 @@ import {WithTranslation, withTranslation} from "react-i18next";
 import MergeForm from "./MergeForm";
 import {MergeCommit, PullRequest} from "./types/PullRequest";
 import {Link} from "@scm-manager/ui-types";
+import {getSquashCommitDefaultMessage} from "./pullRequest";
 
 type Props = WithTranslation & {
   close: () => void;
@@ -14,6 +15,7 @@ type Props = WithTranslation & {
 type State = {
   mergeStrategy: string;
   mergeCommit: MergeCommit;
+  defaultSquashCommitMessage: string;
   loading: boolean;
 };
 
@@ -29,14 +31,36 @@ class MergeModal extends React.Component<Props, State> {
         author: this.props.pullRequest.author,
         shouldDeleteSourceBranch: false
       },
+      defaultSquashCommitMessage: "",
       loading: false
     };
   }
 
+  componentDidMount(): void {
+    const { pullRequest } = this.props;
+    if (pullRequest && pullRequest._links && pullRequest._links.squashCommitMessage) {
+      getSquashCommitDefaultMessage(this.createSquashCommitMessageLink()).then(commitMessage => {
+        this.setState({
+          defaultSquashCommitMessage: commitMessage
+        });
+      });
+    }
+  }
+
+  createSquashCommitMessageLink = () => {
+    const { pullRequest } = this.props;
+    const { mergeCommit } = this.state;
+    return `${(pullRequest._links.squashCommitMessage as Link).href}?sourceRevision=${mergeCommit.source}&targetRevision=${mergeCommit.target}`;
+  };
+
   selectStrategy = (strategy: string) => {
+    const { defaultSquashCommitMessage, mergeCommit } = this.state;
     this.setState({
       mergeStrategy: strategy
     });
+    if (strategy === "SQUASH" && defaultSquashCommitMessage && mergeCommit.commitMessage === "") {
+      this.onChangeCommitMessage(defaultSquashCommitMessage);
+    }
   };
 
   onChangeCommitMessage = (newMessage: string) => {
@@ -57,7 +81,7 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   onChangeDeleteSourceBranch = (value: boolean) => {
-    this.setState({mergeCommit: { ...this.state.mergeCommit, shouldDeleteSourceBranch: value}});
+    this.setState({ mergeCommit: { ...this.state.mergeCommit, shouldDeleteSourceBranch: value } });
   };
 
   render() {

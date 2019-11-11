@@ -66,17 +66,17 @@ public class MergeService {
     return new MergeDryRunCommandResult(false);
   }
 
-  public String createSquashCommitMessage(NamespaceAndName namespaceAndName, MergeCommandDto mergeCommandDto) {
+  public String createSquashCommitMessage(NamespaceAndName namespaceAndName, String sourceRevision, String targetRevision) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
         try {
           StringBuilder builder = new StringBuilder();
           repositoryService.getLogCommand()
-            .setBranch(mergeCommandDto.getSourceRevision())
-            .setAncestorChangeset(mergeCommandDto.getTargetRevision())
+            .setBranch(sourceRevision)
+            .setAncestorChangeset(targetRevision)
             .getChangesets()
             .getChangesets()
-            .forEach(c -> builder.append(c.getDescription()).append("\n"));
+            .forEach(c -> builder.append("-- ").append(c.getDescription()).append("\n\n"));
           return builder.toString();
         } catch (IOException e) {
           throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()),
