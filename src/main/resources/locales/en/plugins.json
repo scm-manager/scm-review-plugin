@@ -19,7 +19,7 @@
       "collapseDiffs": "Collapse"
     },
     "noRequests": "No pull requests matching the selected criteria found",
-    "pull-request": {
+    "pullRequest": {
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
       "title": "Title",
