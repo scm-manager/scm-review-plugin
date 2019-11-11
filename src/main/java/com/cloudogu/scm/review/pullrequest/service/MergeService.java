@@ -6,8 +6,10 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
+import sonia.scm.ContextEntry;
 import sonia.scm.api.v2.resources.MergeCommandDto;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
@@ -21,6 +23,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.Optional;
 
 public class MergeService {
@@ -43,13 +46,12 @@ public class MergeService {
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
       isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
       prepareMergeCommand(mergeCommand, mergeCommitDto, strategy);
-
       MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
-      updatePullRequestStatusIfNecessary(repositoryService, mergeCommitDto, strategy,  mergeCommandResult);
 
       if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
         repositoryService.getBranchCommand().delete(mergeCommitDto.getSource());
       }
+      updatePullRequestStatusIfNecessary(repositoryService, mergeCommitDto, strategy, mergeCommandResult);
       return mergeCommandResult;
     }
   }
@@ -64,8 +66,13 @@ public class MergeService {
     return new MergeDryRunCommandResult(false);
   }
 
-  private void updatePullRequestStatusIfNecessary(RepositoryService repositoryService, MergeCommitDto mergeCommitDto, MergeStrategy strategy, MergeCommandResult mergeCommandResult) {
-    if (strategy == MergeStrategy.SQUASH && mergeCommandResult.isSuccess()) {
+  private void updatePullRequestStatusIfNecessary(
+    RepositoryService repositoryService,
+    MergeCommitDto mergeCommitDto,
+    MergeStrategy strategy,
+    MergeCommandResult mergeCommandResult
+  ) {
+    if (shouldUpdatePullRequestStatus(repositoryService, mergeCommitDto, strategy, mergeCommandResult)) {
       Repository repository = repositoryService.getRepository();
       Optional<PullRequest> optionalPullRequest = pullRequestService.get(repository, mergeCommitDto.getSource(), mergeCommitDto.getTarget(), PullRequestStatus.OPEN);
       if (optionalPullRequest.isPresent()) {
@@ -74,6 +81,32 @@ public class MergeService {
         commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
         scmEventBus.post(new PullRequestMergedEvent(repository, pullRequest));
       }
+    }
+  }
+
+  private boolean shouldUpdatePullRequestStatus(
+    RepositoryService repositoryService,
+    MergeCommitDto mergeCommitDto,
+    MergeStrategy strategy,
+    MergeCommandResult mergeCommandResult
+  ) {
+    return (strategy == MergeStrategy.SQUASH && mergeCommandResult.isSuccess())
+      || (mergeCommandResult.isSuccess()
+      && mergeCommitDto.isShouldDeleteSourceBranch()
+      && repositoryService.isSupported(Command.BRANCHES)
+      && !branchExists(repositoryService, mergeCommitDto));
+  }
+
+  private boolean branchExists(RepositoryService repositoryService, MergeCommitDto mergeCommitDto) {
+    try {
+      return repositoryService
+        .getBranchesCommand()
+        .getBranches()
+        .getBranches()
+        .stream()
+        .anyMatch(b ->b.getName().equals(mergeCommitDto.getSource()));
+    } catch (IOException e) {
+      throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()), "Could not read branches");
     }
   }
 
