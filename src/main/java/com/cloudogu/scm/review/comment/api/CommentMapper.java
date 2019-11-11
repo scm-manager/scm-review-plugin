@@ -91,11 +91,7 @@ public abstract class CommentMapper {
     );
     List<HalRepresentation> replies = target.getEmbedded().getItemsBy("replies");
     if (!source.getType().equals(CommentType.TASK_DONE)) {
-      if (!replies.isEmpty()) {
-        appendReplyLink((BasicCommentDto) replies.get(replies.size() - 1), repository, pullRequestId, source.getId(), revisions);
-      } else {
-        appendReplyLink(target, repository, pullRequestId, source.getId(), revisions);
-      }
+      appendReplyLink(target, repository, pullRequestId, source.getId(), revisions);
     }
   }
 

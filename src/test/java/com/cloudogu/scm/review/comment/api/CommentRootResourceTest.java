@@ -293,8 +293,9 @@ public class CommentRootResourceTest {
     assertThat(comment_1.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
     assertThat(comment_2.get("_links").get("delete")).isNull(); // must not delete comment with responses
 
+    // root comments have reply links
     assertThat(comment_1.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/1/reply");
-    assertThat(comment_2.get("_links").get("reply")).isNull(); // respond only to latest reply
+    assertThat(comment_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
 
     JsonNode replies = comment_2.get("_embedded").get("replies");
     JsonNode reply_1 = replies.path(0);
@@ -309,8 +310,9 @@ public class CommentRootResourceTest {
     assertThat(reply_1.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/replies/2_1");
     assertThat(reply_2.get("_links").get("delete").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/replies/2_2");
 
-    assertThat(reply_1.get("_links").get("reply")).isNull(); // respond only to latest reply
-    assertThat(reply_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
+    // replies no longer have a reply link
+    assertThat(reply_1.get("_links").get("reply")).isNull();
+    assertThat(reply_2.get("_links").get("reply")).isNull();
   }
 
   @Test
@@ -355,7 +357,7 @@ public class CommentRootResourceTest {
     assertThat(reply_2.get("_links").get("delete")).isNull();
 
     assertThat(reply_1.get("_links").get("reply")).isNull();
-    assertThat(reply_2.get("_links").get("reply").get("href").asText()).isEqualTo("/v2/pull-requests/space/name/1/comments/2/reply");
+    assertThat(reply_2.get("_links").get("reply")).isNull();
   }
 
   @Test
