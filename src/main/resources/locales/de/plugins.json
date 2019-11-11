@@ -70,7 +70,11 @@
         }
       },
       "notification": "Pull Request erfolgreich gemerged!",
-      "targetDeleted": "Der Target Branch wurde gelösch!"
+      "targetDeleted": "Der Target Branch wurde gelöscht!",
+      "delete-source-branch": {
+        "flag": "Source Branch löschen",
+        "help": "Nach einem erfolgreichen Merge wird der Source-Branch entfernt"
+      }
     },
     "pull-requests": {
       "error-title": "Fehler",

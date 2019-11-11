@@ -70,7 +70,11 @@
         }
       },
       "notification": "Pull request merged successfully!",
-      "targetDeleted": "The target branch has been deleted!"
+      "targetDeleted": "The target branch has been deleted!",
+      "delete-source-branch": {
+        "flag": "Delete source branch",
+        "help": "Source branch will be deleted after successful merge"
+      }
     },
     "pull-requests": {
       "error-title": "Error",

@@ -26,9 +26,10 @@ class MergeModal extends React.Component<Props, State> {
         commitMessage: "",
         source: this.props.pullRequest.source,
         target: this.props.pullRequest.target,
-        author: this.props.pullRequest.author
+        author: this.props.pullRequest.author,
+        shouldDeleteSourceBranch: false
       },
-      loading: false
+      loading: false,
     };
   }
 
@@ -53,6 +54,10 @@ class MergeModal extends React.Component<Props, State> {
   shouldCommitMessageExists = () => {
     const { mergeStrategy, mergeCommit } = this.state;
     return mergeStrategy != "FAST_FORWARD_IF_POSSIBLE" && mergeCommit.commitMessage == "";
+  };
+
+  onChangeDeleteSourceBranch = (value: boolean) => {
+    this.setState({mergeCommit: { ...this.state.mergeCommit, shouldDeleteSourceBranch: value}});
   };
 
   render() {
@@ -82,6 +87,8 @@ class MergeModal extends React.Component<Props, State> {
         strategyLinks={pullRequest._links.merge as Link[]}
         commitMessage={mergeCommit.commitMessage}
         onChangeCommitMessage={this.onChangeCommitMessage}
+        shouldDeleteSourceBranch={mergeCommit.shouldDeleteSourceBranch}
+        onChangeDeleteSourceBranch={this.onChangeDeleteSourceBranch}
       />
     );
 

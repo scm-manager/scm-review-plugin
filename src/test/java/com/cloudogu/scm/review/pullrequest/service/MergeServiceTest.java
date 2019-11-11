@@ -18,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
+import sonia.scm.repository.api.BranchCommandBuilder;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.MergeCommandBuilder;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
@@ -28,6 +30,7 @@ import sonia.scm.user.User;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SubjectAware(
@@ -43,6 +46,8 @@ class MergeServiceTest {
 
   private final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
 
+  @Mock
+  BranchCommandBuilder branchCommandBuilder;
   @Mock
   private RepositoryServiceFactory serviceFactory;
   @Mock
@@ -78,9 +83,24 @@ class MergeServiceTest {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success());
 
-    MergeCommitDto mergeCommit = createMergeCommit();
+    MergeCommitDto mergeCommit = createMergeCommit(false);
     MergeCommandResult result = service.merge(REPOSITORY.getNamespaceAndName(), mergeCommit, MergeStrategy.SQUASH);
 
+    assertThat(result.isSuccess()).isTrue();
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  void shouldCloseBranchIfFlagIsSet() {
+    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success());
+    when(repositoryService.getBranchCommand()).thenReturn(branchCommandBuilder);
+    when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);
+
+    MergeCommitDto mergeCommit = createMergeCommit(true);
+    MergeCommandResult result = service.merge(REPOSITORY.getNamespaceAndName(), mergeCommit, MergeStrategy.SQUASH);
+
+    verify(branchCommandBuilder).delete(mergeCommit.getSource());
     assertThat(result.isSuccess()).isTrue();
   }
 
@@ -89,16 +109,17 @@ class MergeServiceTest {
   void shouldThrowExceptionIfStrategyNotSupported() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(false);
 
-    MergeCommitDto mergeCommit = createMergeCommit();
+    MergeCommitDto mergeCommit = createMergeCommit(false);
 
     assertThrows(MergeStrategyNotSupportedException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), mergeCommit, MergeStrategy.SQUASH));
   }
 
-  private MergeCommitDto createMergeCommit() {
+  private MergeCommitDto createMergeCommit(boolean deleteBranch) {
     MergeCommitDto mergeCommit = new MergeCommitDto();
     mergeCommit.setSource("squash");
     mergeCommit.setTarget("master");
     mergeCommit.setAuthor(new DisplayedUserDto("philip", "Philip J Fry", "philip@fry.com"));
+    mergeCommit.setShouldDeleteSourceBranch(deleteBranch);
     return mergeCommit;
   }
 

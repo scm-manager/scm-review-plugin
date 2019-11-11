@@ -12,6 +12,7 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.MergeCommandBuilder;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
@@ -46,6 +47,9 @@ public class MergeService {
       MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
       updatePullRequestStatusIfNecessary(repositoryService, mergeCommitDto, strategy,  mergeCommandResult);
 
+      if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
+        repositoryService.getBranchCommand().delete(mergeCommitDto.getSource());
+      }
       return mergeCommandResult;
     }
   }

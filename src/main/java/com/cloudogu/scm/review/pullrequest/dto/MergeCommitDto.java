@@ -14,4 +14,5 @@ public class MergeCommitDto {
   private String source;
   private String target;
   private DisplayedUserDto author;
+  private boolean shouldDeleteSourceBranch;
 }
