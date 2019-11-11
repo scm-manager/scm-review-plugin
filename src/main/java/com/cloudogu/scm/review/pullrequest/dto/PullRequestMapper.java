@@ -119,6 +119,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
       if(RepositoryPermissions.push(repository).isPermitted()) {
         linksBuilder.single(link("mergeDryRun", pullRequestResourceLinks.mergeLinks().dryRun(repository.getNamespace(), repository.getName())));
+        linksBuilder.single(link("squashCommitMessage", pullRequestResourceLinks.mergeLinks().createSquashCommitMessage(repository.getNamespace(), repository.getName())));
         appendMergeStrategyLinks(linksBuilder, repository);
       }
 

@@ -115,24 +115,14 @@ class MergeResourceTest {
   }
 
   @Test
-  void shouldCreateCommitMessage() throws IOException, URISyntaxException {
+  void shouldCreateSquashCommitMessage() throws IOException, URISyntaxException {
     when(mergeService.createSquashCommitMessage(any(), any())).thenReturn("successful");
-    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand_squash.json");
+    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
     MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/squash-commit-message", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).isEqualTo("successful");
-  }
-
-  @Test
-  void shouldReturnNotFoundIfMessageIsEmpty() throws IOException, URISyntaxException {
-    when(mergeService.createSquashCommitMessage(any(), any())).thenReturn("");
-    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand_squash.json");
-    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/squash-commit-message", mergeCommandJson);
-    MockHttpResponse response = new MockHttpResponse();
-    dispatcher.invoke(request, response);
-    assertThat(response.getStatus()).isEqualTo(404);
   }
 
   private MockHttpRequest createHttpPostRequest(String url, byte[] content) throws URISyntaxException {

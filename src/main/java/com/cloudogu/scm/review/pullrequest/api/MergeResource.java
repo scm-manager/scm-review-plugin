@@ -2,7 +2,6 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
-import com.google.common.base.Strings;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import sonia.scm.ConcurrentModificationException;
@@ -82,7 +81,6 @@ public class MergeResource {
   @StatusCodes({
     @ResponseCode(code = 200, condition = "squash commit message was created"),
     @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 404, condition = "squash commit message is null or empty"),
     @ResponseCode(code = 500, condition = "internal server error")
   })
   public Response createSquashCommitMessage(
@@ -91,9 +89,6 @@ public class MergeResource {
     @Valid MergeCommandDto mergeCommandDto
   ) {
     String commitMessage = service.createSquashCommitMessage(new NamespaceAndName(namespace, name), mergeCommandDto);
-    if (Strings.isNullOrEmpty(commitMessage)) {
-      return Response.status(404).build();
-    }
     return Response.status(200).entity(commitMessage).build();
   }
 }
