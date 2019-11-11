@@ -40,7 +40,7 @@
     "showPullRequest": {
       "errorTitle": "Error",
       "mergeButton": {
-        "button-title": "Merge Pull Request",
+        "buttonTitle": "Merge Pull Request",
         "mergeInformation": "Cannot be merged automatically"
       },
       "mergeModal": {
