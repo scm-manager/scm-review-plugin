@@ -1,9 +1,9 @@
 import React from "react";
-import { Repository } from "@scm-manager/ui-types";
-import { Select, ErrorNotification } from "@scm-manager/ui-components";
-import { BasicPullRequest } from "./types/PullRequest";
-import { getBranches } from "./pullRequest";
-import { WithTranslation, withTranslation } from "react-i18next";
+import {Repository} from "@scm-manager/ui-types";
+import {ErrorNotification, Select} from "@scm-manager/ui-components";
+import {BasicPullRequest} from "./types/PullRequest";
+import {getBranches} from "./pullRequest";
+import {WithTranslation, withTranslation} from "react-i18next";
 import EditForm from "./EditForm";
 
 type Props = WithTranslation & {
@@ -102,7 +102,7 @@ class CreateForm extends React.Component<Props, State> {
           <div className="column is-clipped">
             <Select
               name="source"
-              label={t("scm-review-plugin.pull-request.sourceBranch")}
+              label={t("scm-review-plugin.pullRequest.sourceBranch")}
               options={options}
               onChange={this.handleFormChange}
               loading={loading}
@@ -112,7 +112,7 @@ class CreateForm extends React.Component<Props, State> {
           <div className="column is-clipped">
             <Select
               name="target"
-              label={t("scm-review-plugin.pull-request.targetBranch")}
+              label={t("scm-review-plugin.pullRequest.targetBranch")}
               options={options}
               onChange={this.handleFormChange}
               loading={loading}

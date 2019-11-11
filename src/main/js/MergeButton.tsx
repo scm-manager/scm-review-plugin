@@ -1,9 +1,9 @@
 import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Button } from "@scm-manager/ui-components";
+import {WithTranslation, withTranslation} from "react-i18next";
+import {Button} from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
 import {MergeCommit, PullRequest} from "./types/PullRequest";
-import { Repository } from "@scm-manager/ui-types";
+import {Repository} from "@scm-manager/ui-types";
 import MergeModal from "./MergeModal";
 
 type Props = WithTranslation & {
@@ -65,7 +65,7 @@ class MergeButton extends React.Component<Props, State> {
     return (
       <p className="control">
         <Button
-          label={t("scm-review-plugin.show-pull-request.merge-button.button-title")}
+          label={t("scm-review-plugin.showPullRequest.mergeButton.buttonTitle")}
           loading={loading}
           action={action}
           color={color}

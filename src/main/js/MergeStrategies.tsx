@@ -39,8 +39,8 @@ class MergeStrategies extends React.Component<Props> {
                   value={link.href}
                   checked={this.isSelected(link.name || "")}
                   onChange={() => selectStrategy(link.name || "")}
-                  label={t(`scm-review-plugin.show-pull-request.merge-strategies.${link.name}`)}
-                  helpText={t(`scm-review-plugin.show-pull-request.merge-strategies.help.${link.name}`)}
+                  label={t(`scm-review-plugin.showPullRequest.mergeStrategies.${link.name}`)}
+                  helpText={t(`scm-review-plugin.showPullRequest.mergeStrategies.help.${link.name}`)}
                 />
               );
             })}

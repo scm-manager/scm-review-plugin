@@ -18,8 +18,8 @@
       "notSupported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt.",
       "collapseDiffs": "Auf-/Zuklappen"
     },
-    "no-requests": "Keine Pull Requests mit diesen Kriterien gefunden.",
-    "pull-request": {
+    "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
+    "pullRequest": {
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
       "title": "Titel",
@@ -37,19 +37,18 @@
       },
       "noChangesets": "Keine Changesets gefunden."
     },
-    "show-pull-request": {
-      "error-title": "Fehler",
-      "error-subtitle": "Unbekannter Pull Request Fehler",
-      "merge-button": {
-        "button-title": "Pull Request mergen",
-        "merge-information": "Automatischer Merge nicht möglich."
+    "showPullRequest": {
+      "errorTitle": "Fehler",
+      "mergeButton": {
+        "buttonTitle": "Pull Request mergen",
+        "mergeInformation": "Automatischer Merge nicht möglich."
       },
-      "merge-modal": {
+      "mergeModal": {
         "title": "Pull Request mergen",
         "merge": "Merge",
         "cancel": "Abbrechen"
       },
-      "merge-strategies": {
+      "mergeStrategies": {
         "SQUASH": "Squash",
         "MERGE_COMMIT": "Merge Commit",
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward, wenn möglich",
@@ -59,10 +58,10 @@
           "FAST_FORWARD_IF_POSSIBLE": "Falls möglich wird der Source-Branch ohne Commit in den Target-Branch gemerged."
         }
       },
-      "commit-message": "Bitte Commit Nachricht eingeben",
+      "commitMessage": "Bitte Commit Nachricht eingeben",
       "rejectButton": {
-        "button-title": "Pull Request ablehnen",
-        "confirm-alert": {
+        "buttonTitle": "Pull Request ablehnen",
+        "confirmAlert": {
           "title": "Pull Request ablehnen",
           "message": "Soll der Pull Request wirklich abgelehnt werden?",
           "submit": "Ja",
@@ -71,14 +70,14 @@
       },
       "notification": "Pull Request erfolgreich gemerged!",
       "targetDeleted": "Der Target Branch wurde gelöscht!",
-      "delete-source-branch": {
+      "deleteSourceBranch": {
         "flag": "Source Branch löschen",
         "help": "Nach einem erfolgreichen Merge wird der Source-Branch entfernt"
       }
     },
-    "pull-requests": {
-      "error-title": "Fehler",
-      "error-subtitle": "Unbekannter Pull Request Fehler",
+    "pullRequests": {
+      "errorTitle": "Fehler",
+      "errorSubtitle": "Unbekannter Pull Request Fehler",
       "description": "Beschreibung",
       "createButton": "Pull Request erstellen"
     },

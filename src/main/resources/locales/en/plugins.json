@@ -18,7 +18,7 @@
       "notSupported": "Diffs for pull request are not supported by the type of repository",
       "collapseDiffs": "Collapse"
     },
-    "no-requests": "No pull requests matching the selected criteria found",
+    "noRequests": "No pull requests matching the selected criteria found",
     "pull-request": {
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
@@ -37,19 +37,18 @@
       },
       "noChangesets": "No changesets found."
     },
-    "show-pull-request": {
-      "error-title": "Error",
-      "error-subtitle": "Unknown pull request error",
-      "merge-button": {
+    "showPullRequest": {
+      "errorTitle": "Error",
+      "mergeButton": {
         "button-title": "Merge Pull Request",
-        "merge-information": "Cannot be merged automatically"
+        "mergeInformation": "Cannot be merged automatically"
       },
-      "merge-modal": {
+      "mergeModal": {
         "title": "Merge Pull Request",
         "merge": "Merge",
         "cancel": "Cancel"
       },
-      "merge-strategies": {
+      "mergeStrategies": {
         "SQUASH": "Squash",
         "MERGE_COMMIT": "Merge Commit",
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward if possible",
@@ -59,10 +58,10 @@
           "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit"
         }
       },
-      "commit-message": "Please insert your commit message",
+      "commitMessage": "Please insert your commit message",
       "rejectButton": {
-        "button-title": "Reject Pull Request",
-        "confirm-alert": {
+        "buttonTitle": "Reject Pull Request",
+        "confirmAlert": {
           "title": "Reject Pull Request",
           "message": "Do you really want to reject this pull request?",
           "submit": "Yes",
@@ -71,14 +70,14 @@
       },
       "notification": "Pull request merged successfully!",
       "targetDeleted": "The target branch has been deleted!",
-      "delete-source-branch": {
+      "deleteSourceBranch": {
         "flag": "Delete source branch",
         "help": "Source branch will be deleted after successful merge"
       }
     },
-    "pull-requests": {
-      "error-title": "Error",
-      "error-subtitle": "Unknown pull request error",
+    "pullRequests": {
+      "errorTitle": "Error",
+      "errorSubtitle": "Unknown pull request error",
       "description": "Description",
       "createButton": "New pull request"
     },

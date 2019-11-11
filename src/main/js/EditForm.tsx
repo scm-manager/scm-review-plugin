@@ -1,7 +1,7 @@
 import React from "react";
-import { InputField, Textarea, TagGroup, Autocomplete } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { SelectValue, DisplayedUser } from "@scm-manager/ui-types";
+import {Autocomplete, InputField, TagGroup, Textarea} from "@scm-manager/ui-components";
+import {WithTranslation, withTranslation} from "react-i18next";
+import {DisplayedUser, SelectValue} from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   handleFormChange: (value: string, name: string) => void;
@@ -80,18 +80,18 @@ class EditForm extends React.Component<Props, State> {
         <InputField
           name="title"
           value={title}
-          label={t("scm-review-plugin.pull-request.title")}
+          label={t("scm-review-plugin.pullRequest.title")}
           onChange={this.onChange}
         />
         <Textarea
           name="description"
           value={description}
-          label={t("scm-review-plugin.pull-request.description")}
+          label={t("scm-review-plugin.pullRequest.description")}
           onChange={this.onChange}
         />
         <TagGroup
           items={reviewer}
-          label={t("scm-review-plugin.pull-request.reviewer")}
+          label={t("scm-review-plugin.pullRequest.reviewer")}
           onRemove={this.removeReviewer}
         />
         <div className="field">
@@ -100,7 +100,7 @@ class EditForm extends React.Component<Props, State> {
               creatable={false}
               loadSuggestions={this.loadUserSuggestions}
               valueSelected={this.selectName}
-              placeholder={t("scm-review-plugin.pull-request.addReviewer")}
+              placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
             />
           </div>
         </div>

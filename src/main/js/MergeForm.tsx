@@ -40,16 +40,16 @@ class MergeForm extends React.Component<Props> {
         />
         <hr />
         <Textarea
-          placeholder={t("scm-review-plugin.show-pull-request.commit-message")}
+          placeholder={t("scm-review-plugin.showPullRequest.commitMessage")}
           disabled={this.isCommitMessageDisabled()}
           value={commitMessage}
           onChange={onChangeCommitMessage}
         />
         <hr />
         <Checkbox
-          label={t("scm-review-plugin.show-pull-request.delete-source-branch.flag")}
+          label={t("scm-review-plugin.showPullRequest.deleteSourceBranch.flag")}
           checked={shouldDeleteSourceBranch}
-          helpText={t("scm-review-plugin.show-pull-request.delete-source-branch.help")}
+          helpText={t("scm-review-plugin.showPullRequest.deleteSourceBranch.help")}
           onChange={onChangeDeleteSourceBranch}
         />
       </>

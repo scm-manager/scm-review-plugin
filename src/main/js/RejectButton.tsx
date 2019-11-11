@@ -1,6 +1,6 @@
 import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Button, confirmAlert } from "@scm-manager/ui-components";
+import {WithTranslation, withTranslation} from "react-i18next";
+import {Button, confirmAlert} from "@scm-manager/ui-components";
 
 type Props = WithTranslation & {
   reject: () => void;
@@ -11,15 +11,15 @@ class RejectButton extends React.Component<Props> {
   confirmReject = () => {
     const { t, reject } = this.props;
     confirmAlert({
-      title: t("scm-review-plugin.show-pull-request.rejectButton.confirm-alert.title"),
-      message: t("scm-review-plugin.show-pull-request.rejectButton.confirm-alert.message"),
+      title: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.title"),
+      message: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message"),
       buttons: [
         {
-          label: t("scm-review-plugin.show-pull-request.rejectButton.confirm-alert.submit"),
+          label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
           onClick: () => reject()
         },
         {
-          label: t("scm-review-plugin.show-pull-request.rejectButton.confirm-alert.cancel"),
+          label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel"),
           onClick: () => null
         }
       ]
@@ -33,7 +33,7 @@ class RejectButton extends React.Component<Props> {
     return (
       <p className="control">
         <Button
-          label={t("scm-review-plugin.show-pull-request.rejectButton.button-title")}
+          label={t("scm-review-plugin.showPullRequest.rejectButton.buttonTitle")}
           action={action}
           loading={loading}
           color={color}

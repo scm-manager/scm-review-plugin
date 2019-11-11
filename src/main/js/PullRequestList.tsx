@@ -1,10 +1,10 @@
 import React from "react";
-import { Loading, ErrorPage, CreateButton } from "@scm-manager/ui-components";
-import { Repository } from "@scm-manager/ui-types";
-import { PullRequestCollection } from "./types/PullRequest";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { withRouter } from "react-router-dom";
-import { getPullRequests } from "./pullRequest";
+import {CreateButton, ErrorPage, Loading} from "@scm-manager/ui-components";
+import {Repository} from "@scm-manager/ui-types";
+import {PullRequestCollection} from "./types/PullRequest";
+import {WithTranslation, withTranslation} from "react-i18next";
+import {withRouter} from "react-router-dom";
+import {getPullRequests} from "./pullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
 import styled from "styled-components";
@@ -88,8 +88,8 @@ class PullRequestList extends React.Component<Props, State> {
     if (error) {
       return (
         <ErrorPage
-          title={t("scm-review-plugin.pull-requests.error-title")}
-          subtitle={t("scm-review-plugin.pull-requests.error-subtitle")}
+          title={t("scm-review-plugin.pullRequests.errorTitle")}
+          subtitle={t("scm-review-plugin.pullRequests.errorSubtitle")}
           error={error}
         />
       );
@@ -102,7 +102,7 @@ class PullRequestList extends React.Component<Props, State> {
     const to = "pull-requests/add/changesets/";
 
     const createButton = pullRequests._links.create ? (
-      <CreateButton label={t("scm-review-plugin.pull-requests.createButton")} link={to} />
+      <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={to} />
     ) : null;
 
     return (

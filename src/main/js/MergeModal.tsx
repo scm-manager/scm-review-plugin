@@ -67,12 +67,12 @@ class MergeModal extends React.Component<Props, State> {
     const footer = (
       <>
         <Button
-          label={t("scm-review-plugin.show-pull-request.merge-modal.cancel")}
+          label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")}
           action={() => close()}
           color={"grey"}
         />
         <SubmitButton
-          label={t("scm-review-plugin.show-pull-request.merge-modal.merge")}
+          label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}
           action={() => this.performMerge()}
           loading={loading}
           disabled={this.shouldCommitMessageExists()}
@@ -94,7 +94,7 @@ class MergeModal extends React.Component<Props, State> {
 
     return (
       <Modal
-        title={t("scm-review-plugin.show-pull-request.merge-modal.title")}
+        title={t("scm-review-plugin.showPullRequest.mergeModal.title")}
         active={true}
         body={body}
         closeFunction={close}

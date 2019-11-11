@@ -1,9 +1,9 @@
 import React from "react";
-import { Repository } from "@scm-manager/ui-types";
-import { Modal } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { ExtensionPoint } from "@scm-manager/ui-extensions";
-import { PullRequest } from "./types/PullRequest";
+import {Repository} from "@scm-manager/ui-types";
+import {Modal} from "@scm-manager/ui-components";
+import {WithTranslation, withTranslation} from "react-i18next";
+import {ExtensionPoint} from "@scm-manager/ui-extensions";
+import {PullRequest} from "./types/PullRequest";
 
 type Props = WithTranslation & {
   repository: Repository;
@@ -39,7 +39,7 @@ class ManualMergeInformation extends React.Component<Props> {
 
     return (
       <Modal
-        title={t("scm-review-plugin.show-pull-request.merge-button.merge-information")}
+        title={t("scm-review-plugin.showPullRequest.mergeButton.mergeInformation")}
         closeFunction={() => onClose()}
         body={body}
         active={true}
