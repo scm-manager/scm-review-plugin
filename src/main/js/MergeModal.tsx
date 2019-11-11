@@ -29,7 +29,7 @@ class MergeModal extends React.Component<Props, State> {
         author: this.props.pullRequest.author,
         shouldDeleteSourceBranch: false
       },
-      loading: false,
+      loading: false
     };
   }
 

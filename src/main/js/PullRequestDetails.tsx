@@ -16,7 +16,7 @@ import {
   Tooltip
 } from "@scm-manager/ui-components";
 import {MergeCommit, PullRequest} from "./types/PullRequest";
-import {dryRun, getSubscription, handleSubscription, merge, reject} from "./pullRequest";
+import {dryRun, getSquashCommitDefaultMessage, getSubscription, handleSubscription, merge, reject} from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -40,6 +40,7 @@ type State = {
   subscriptionIcon: string;
   subscriptionLabel: string;
   subscriptionLink: string;
+  defaultSquashCommitMessage: string;
 };
 
 const MediaContent = styled.div.attrs(props => ({
@@ -122,7 +123,8 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeHasNoConflict: false,
       subscriptionIcon: "",
       subscriptionLabel: "",
-      subscriptionLink: ""
+      subscriptionLink: "",
+      defaultSquashCommitMessage: ""
     };
   }
 
@@ -131,6 +133,14 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.getMergeDryRun(pullRequest);
     if (pullRequest && pullRequest._links.subscription && (pullRequest._links.subscription as Link).href) {
       this.getSubscription(pullRequest);
+    }
+
+    if (pullRequest && pullRequest._links && pullRequest._links.squashCommitMessage) {
+      getSquashCommitDefaultMessage((pullRequest._links.squashCommitMessage as Link).href).then(commitMessage => {
+        this.setState({
+          defaultSquashCommitMessage: commitMessage
+        });
+      });
     }
   }
 
@@ -188,7 +198,9 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   shouldRunDryMerge = (pullRequest: PullRequest) => {
-    return pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN";
+    return (
+      pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN"
+    );
   };
 
   getMergeDryRun(pullRequest: PullRequest) {

@@ -79,7 +79,8 @@ public class MergeService {
             .forEach(c -> builder.append(c.getDescription()).append("\n"));
           return builder.toString();
         } catch (IOException e) {
-          throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()), "Could not read changesets from repository");
+          throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()),
+            "Could not read changesets from repository");
         }
       }
     }

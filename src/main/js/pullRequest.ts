@@ -136,27 +136,21 @@ export function handleSubscription(url: string) {
 }
 
 export function merge(url: string, mergeCommit: MergeCommit) {
-  return apiClient
-    .post(
-      url,
-      mergeCommit,
-      "application/vnd.scmm-mergeCommand+json"
-    )
-    .catch(err => {
-      if (err instanceof ConflictError) {
-        return {
-          conflict: err
-        };
-      } else if (err instanceof NotFoundError) {
-        return {
-          notFound: err
-        };
-      } else {
-        return {
-          error: err
-        };
-      }
-    });
+  return apiClient.post(url, mergeCommit, "application/vnd.scmm-mergeCommand+json").catch(err => {
+    if (err instanceof ConflictError) {
+      return {
+        conflict: err
+      };
+    } else if (err instanceof NotFoundError) {
+      return {
+        notFound: err
+      };
+    } else {
+      return {
+        error: err
+      };
+    }
+  });
 }
 
 export function dryRun(pullRequest: PullRequest) {
@@ -183,6 +177,17 @@ export function dryRun(pullRequest: PullRequest) {
           error: err
         };
       }
+    });
+}
+
+export function getSquashCommitDefaultMessage(url: string) {
+  return apiClient
+    .get(url)
+    .then(response => response.text())
+    .catch(err => {
+      return {
+        error: err
+      };
     });
 }
 
