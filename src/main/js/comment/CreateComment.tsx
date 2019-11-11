@@ -16,8 +16,7 @@ type Props = WithTranslation & {
   url: string;
   location?: Location;
   onCancel?: () => void;
-  refresh?: () => void;
-  onCreation?: (comment: Comment) => void;
+  onCreation: (comment: Comment) => void;
   autofocus?: boolean;
   reply?: boolean;
 };
@@ -75,7 +74,7 @@ class CreateComment extends React.Component<Props, State> {
       return;
     }
 
-    const { url, location, refresh, onCreation } = this.props;
+    const { url, location } = this.props;
     this.setState({
       loading: true
     });
@@ -84,13 +83,7 @@ class CreateComment extends React.Component<Props, State> {
       ...newComment,
       location
     })
-      .then((response: Response) => {
-        if (onCreation) {
-          return this.fetchCreatedComment(response);
-        } else if (refresh) {
-          refresh();
-        }
-      })
+      .then(this.fetchCreatedComment)
       .catch((errorResult: Error) => {
         this.setState({
           errorResult,

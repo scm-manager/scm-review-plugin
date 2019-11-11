@@ -1,12 +1,17 @@
-import React from "react";
-import styled from "styled-components";
+import React, {FC, useState, useReducer, useEffect} from "react";
+import reducer, {createComment, fetchAll, initialState} from "./module";
+import {Comments, PullRequest} from "../types/PullRequest";
+import {getPullRequestComments} from "../pullRequest";
+
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
-import { Link, Links } from "@scm-manager/ui-types";
-import { Comment, Comments, PullRequest, Reply } from "../types/PullRequest";
-import { getPullRequestComments } from "../pullRequest";
+import { Link  } from "@scm-manager/ui-types";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
-import produce from "immer";
+import styled from "styled-components";
+
+type Props = {
+  pullRequest: PullRequest;
+};
 
 const CommentWrapper = styled.div`
   border-top: 1px solid #dbdbdb;
@@ -16,135 +21,60 @@ const CommentWrapper = styled.div`
   }
 `;
 
-type Props = {
-  pullRequest: PullRequest;
-};
+const RootCommentContainer: FC<Props> = ({pullRequest}) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState();
+  const [links, setLinks] = useState();
+  const [comments, dispatch] = useReducer(reducer, initialState);
 
-type State = {
-  comments: Comment[];
-  links?: Links;
-  error?: Error;
-  replyEditor?: Reply;
-  loading: boolean;
-};
-
-class RootComments extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      loading: true,
-      comments: []
-    };
-  }
-
-  componentDidMount(): void {
-    const { pullRequest } = this.props;
-    if (pullRequest && pullRequest._links && pullRequest._links.comments) {
-      this.updatePullRequestComments();
-    } else {
-      this.setState({
-        loading: false
-      });
-    }
-  }
-
-  handleError = (error: Error) => {
-    this.setState({
-      loading: false,
-      error
-    });
-  };
-
-  updatePullRequestComments = () => {
-    this.setState({
-      loading: true
-    });
-    const url = (this.props.pullRequest._links.comments as Link).href;
+  useEffect(() => {
+    const url = (pullRequest._links.comments as Link).href;
     getPullRequestComments(url)
       .then((commentResponse: Comments) => {
         let comments = [];
         if (commentResponse && commentResponse._embedded) {
           comments = commentResponse._embedded.pullRequestComments;
         }
-        this.setState({
-          loading: false,
-          comments,
-          links: commentResponse._links
-        });
+        setLinks(commentResponse._links);
+        setLoading(false);
+        dispatch(fetchAll(comments));
       })
       .catch(error => {
-        this.setState({
-          loading: false,
-          error
-        });
+        setLoading(false);
+        setError(error);
       });
-  };
+  }, [pullRequest]);
 
-  appendComment = (comment: Comment) => {
-    this.setState((state: Readonly<State>) => {
-      return produce(state, draft => {
-        draft.comments.push(comment);
-      });
-    });
-  };
-
-  deleteComment = (comment: Comment) => {
-    return this.setState(state => {
-      return produce(state, draft => {
-        const index = state.comments.findIndex(c => c.id === comment.id);
-        if (index >= 0) {
-          draft.comments.splice(index, 1);
-        }
-      });
-    });
-  };
-
-  replaceComment = (comment: Comment) => {
-    return this.setState(state => {
-      return produce(state, draft => {
-        const index = state.comments.findIndex(c => c.id === comment.id);
-        if (index >= 0) {
-          draft.comments[index] = comment;
-        }
-      });
-    });
-  };
-
-  render() {
-    const { loading, error, comments, links } = this.state;
-
-    if (error) {
-      return <ErrorNotification error={error} />;
-    }
-
-    if (loading) {
-      return <Loading />;
-    }
-    if (!links) {
-      return <div />;
-    }
-
-    const createLink = links.create ? (links.create as Link).href : undefined;
-    return (
-      <>
-        {comments.map(rootComment => (
-          <CommentWrapper key={rootComment.id} className="comment-wrapper">
-            <PullRequestComment
-              comment={rootComment}
-              onDelete={this.deleteComment}
-              onUpdate={this.replaceComment}
-              refresh={this.updatePullRequestComments}
-              createLink={createLink}
-              handleError={this.handleError}
-            />
-          </CommentWrapper>
-        ))}
-        {createLink && (
-          <CreateComment url={createLink} onCreation={this.appendComment} refresh={this.updatePullRequestComments} />
-        )}
-      </>
-    );
+  if (error) {
+    return <ErrorNotification error={error} />;
   }
-}
 
-export default RootComments;
+  if (loading) {
+    return <Loading />;
+  }
+  if (!links) {
+    return <div />;
+  }
+
+  const createLink = links.create ? (links.create as Link).href : undefined;
+  return (
+    <>
+      {comments.map(rootComment => (
+        <CommentWrapper key={rootComment.id} className="comment-wrapper">
+          <PullRequestComment
+            comment={rootComment}
+            dispatch={dispatch}
+            createLink={createLink}
+            handleError={err => setError(err)}
+          />
+        </CommentWrapper>
+      ))}
+      {createLink && (
+        <CreateComment url={createLink} onCreation={c => dispatch(createComment(c))} />
+      )}
+    </>
+  );
+
+};
+
+export default RootCommentContainer;

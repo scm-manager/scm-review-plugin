@@ -5,9 +5,10 @@ import Toolbar from "./Toolbar";
 import { useTranslation } from "react-i18next";
 
 type Props = {
+  parent?: Comment;
   comment: Comment;
   collapsed: boolean;
-  createLink: string;
+  createLink?: string;
   onUpdate: () => void;
   onDelete: () => void;
   onReply: () => void;
@@ -22,7 +23,7 @@ const containsPossibleTransition = (comment: Comment, name: string) => {
   );
 };
 
-const CommentActionToolbar: FC<Props> = ({ comment, createLink, collapsed, ...actions }) => {
+const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapsed, ...actions }) => {
   const hasLink = (link: string) => {
     return !!comment._links[link];
   };
@@ -31,11 +32,39 @@ const CommentActionToolbar: FC<Props> = ({ comment, createLink, collapsed, ...ac
     return createLink && containsPossibleTransition(comment, name);
   };
 
+  const isLastReply = () => {
+    if (parent && parent._embedded && parent._embedded.replies) {
+      const replies = parent._embedded && parent._embedded.replies as Comment[];
+      const lastReply = replies[replies.length - 1];
+      return lastReply.id === comment.id;
+    }
+    return false;
+  };
+
+  const isEmptyRootComment = () => {
+    return !parent && (!comment._embedded || !comment._embedded.replies || comment._embedded.replies.length === 0);
+  };
+
+  const isReplyable = () => {
+    if (isEmptyRootComment()) {
+      return !!comment._links.reply;
+    } else if (parent && isLastReply()) {
+      // we have to get the link from the parent, after change
+      return !!parent._links.reply;
+    } else {
+      return false;
+    }
+  };
+
+  const isDeletable = () => {
+    return parent || isEmptyRootComment() && hasLink("delete");
+  };
+
   const icons = [];
 
   const { t } = useTranslation("plugins");
 
-  if (hasLink("delete")) {
+  if (isDeletable()) {
     icons.push(
       <ToolbarIcon
         key="delete"
@@ -57,7 +86,7 @@ const CommentActionToolbar: FC<Props> = ({ comment, createLink, collapsed, ...ac
     );
   }
 
-  if (hasLink("reply")) {
+  if (isReplyable()) {
     icons.push(
       <ToolbarIcon key="reply" title={t("scm-review-plugin.comment.reply")} icon={"reply"} onClick={actions.onReply} />
     );

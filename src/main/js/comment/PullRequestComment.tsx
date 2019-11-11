@@ -1,23 +1,12 @@
-import React from "react";
+import React, {Dispatch} from "react";
 import classNames from "classnames";
 import { WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
-import {
-  Button,
-  confirmAlert,
-  DateFromNow,
-  ErrorNotification,
-  Loading,
-  SubmitButton,
-  Textarea,
-  apiClient
-} from "@scm-manager/ui-components";
+import { confirmAlert, DateFromNow, ErrorNotification, Loading, Textarea, apiClient } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
-import { BasicComment, Comment, PossibleTransition, Reply } from "../types/PullRequest";
+import { BasicComment, Comment, PossibleTransition } from "../types/PullRequest";
 import { deletePullRequestComment, transformPullRequestComment, updatePullRequestComment } from "../pullRequest";
 import CommentSpacingWrapper from "./CommentSpacingWrapper";
-import CreateComment from "./CreateComment";
-import RecursivePullRequestComment from "./RecursivePullRequestComment";
 import CommentActionToolbar from "./CommentActionToolbar";
 import CommentTags from "./CommentTags";
 import CommentContent from "./CommentContent";
@@ -25,6 +14,9 @@ import CommentMetadata from "./CommentMetadata";
 import ContextModal from "./ContextModal";
 import LastEdited from "./LastEdited";
 import EditButtons from "./EditButtons";
+import Replies from "./Replies";
+import ReplyEditor from "./ReplyEditor";
+import {createReply, deleteComment, deleteReply, updateComment, updateReply} from "./module";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -35,13 +27,11 @@ const AuthorName = styled.span`
 `;
 
 type Props = WithTranslation & {
+  parent?: Comment;
   comment: Comment;
-  onDelete?: (comment: Comment) => void;
-  onUpdate?: (comment: Comment) => void;
-  refresh?: () => void;
+  dispatch: Dispatch<any>; // ???
   handleError: (error: Error) => void;
-  child?: boolean;
-  createLink: string;
+  createLink?: string;
 };
 
 type State = {
@@ -50,7 +40,7 @@ type State = {
   updatedComment: BasicComment;
   loading: boolean;
   contextModalOpen: boolean;
-  replyEditor?: Reply;
+  replyEditor?: Comment;
   errorResult?: Error;
 };
 
@@ -86,7 +76,6 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   update = () => {
-    const { refresh, onUpdate } = this.props;
     const { updatedComment } = this.state;
     const comment = {
       ...this.props.comment,
@@ -106,13 +95,7 @@ class PullRequestComment extends React.Component<Props, State> {
 
     updatePullRequestComment(link.href, comment)
       .then(() => {
-        if (onUpdate) {
-          return this.fetchRefreshed(comment, onUpdate);
-        } else if (refresh) {
-          this.setState({
-            loading: false
-          });
-        }
+        return this.fetchRefreshed(comment, this.dispatchUpdate);
       })
       .catch(error => {
         this.setState({
@@ -120,6 +103,24 @@ class PullRequestComment extends React.Component<Props, State> {
           errorResult: error
         });
       });
+  };
+
+  dispatchUpdate = (comment: Comment) => {
+    const { parent, dispatch } = this.props;
+    if (parent) {
+      dispatch(updateReply(parent.id, comment));
+    } else {
+      dispatch(updateComment(comment));
+    }
+  };
+
+  dispatchDelete = (comment: Comment) => {
+    const { parent, dispatch } = this.props;
+    if (parent) {
+      dispatch(deleteReply(parent.id, comment));
+    } else {
+      dispatch(deleteComment(comment));
+    }
   };
 
   fetchRefreshed = (comment: Comment, callback: (c: Comment) => void) => {
@@ -145,26 +146,38 @@ class PullRequestComment extends React.Component<Props, State> {
       });
   };
 
+  getChildCount = (comment: Comment) => {
+    if (comment._embedded && comment._embedded.replies) {
+      return comment._embedded.replies.length;
+    }
+    return 0;
+  };
+
   delete = () => {
-    const { comment } = this.props;
+    const { parent, comment, dispatch } = this.props;
     if (comment._links.delete) {
       const href = (comment._links.delete as Link).href;
 
-      const { refresh, onDelete, handleError } = this.props;
+      const { handleError } = this.props;
       this.setState({
         loading: true
       });
 
       deletePullRequestComment(href)
         .then(response => {
-          if (onDelete) {
-            onDelete(comment);
-          } else if (refresh) {
-            refresh();
+          this.dispatchDelete(comment);
+          if (parent && this.getChildCount(parent) === 1 ) {
+            return this.fetchRefreshed(parent, (c: Comment) => dispatch(updateComment(c)))
+              .then(() => {
+                this.setState({
+                  loading: false
+                });
+              });
+          } else {
+            this.setState({
+              loading: false
+            });
           }
-          this.setState({
-            loading: false
-          });
         })
         .catch(error => {
           this.setState({
@@ -196,7 +209,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   executeTransition = (transition: string) => {
-    const { comment, handleError, refresh, onUpdate } = this.props;
+    const { comment, handleError } = this.props;
 
     if (!(comment && comment._embedded && comment._embedded.possibleTransitions)) {
       throw new Error("comment has no possible transitions");
@@ -209,11 +222,7 @@ class PullRequestComment extends React.Component<Props, State> {
 
     transformPullRequestComment(transformation)
       .then(response => {
-        if (onUpdate) {
-          return this.fetchRefreshed(comment, onUpdate);
-        } else if (refresh) {
-          refresh();
-        }
+        return this.fetchRefreshed(comment, this.dispatchUpdate);
       })
       .catch(error => {
         this.setState({
@@ -257,10 +266,11 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createEditIcons = () => {
-    const { comment, createLink } = this.props;
+    const { parent, comment, createLink } = this.props;
     const { collapsed } = this.state;
     return (
       <CommentActionToolbar
+        parent={parent}
         comment={comment}
         collapsed={collapsed}
         createLink={createLink}
@@ -302,7 +312,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   render() {
-    const { comment, refresh, handleError, t } = this.props;
+    const { parent, comment, dispatch, t } = this.props;
     const { loading, collapsed, edit, contextModalOpen } = this.state;
 
     if (loading) {
@@ -327,7 +337,7 @@ class PullRequestComment extends React.Component<Props, State> {
     return (
       <>
         {contextModalOpen && <ContextModal comment={comment} onClose={this.onClose} />}
-        <CommentSpacingWrapper isChildComment={this.props.child}>
+        <CommentSpacingWrapper isChildComment={!!parent}>
           <article className="media">
             <div className="media-content is-clipped content">
               <p>
@@ -351,17 +361,7 @@ class PullRequestComment extends React.Component<Props, State> {
             {icons}
           </article>
         </CommentSpacingWrapper>
-        {!collapsed &&
-          !!comment._embedded &&
-          !!comment._embedded.replies &&
-          comment._embedded.replies.map((childComment: Comment) => (
-            <RecursivePullRequestComment
-              child={true}
-              comment={childComment}
-              refresh={refresh}
-              handleError={handleError}
-            />
-          ))}
+        {!collapsed && <Replies comment={comment} createLink={this.props.createLink} dispatch={dispatch} />}
         {this.createReplyEditorIfNeeded(comment.id)}
       </>
     );
@@ -374,28 +374,18 @@ class PullRequestComment extends React.Component<Props, State> {
   createReplyEditorIfNeeded = (id: string) => {
     const replyComment = this.state.replyEditor;
     if (replyComment && replyComment.id === id) {
-      return this.createNewReplyEditor(replyComment);
+      const {parent, comment} = this.props;
+      return <ReplyEditor comment={parent ? parent : comment}
+                          onCreation={this.onReplyCreated}
+                          onCancel={this.closeReplyEditor}/>;
     }
   };
 
-  createNewReplyEditor(replyComment: Comment) {
-    if (!replyComment._links.reply) {
-      throw new Error("reply links is missing");
-    }
-
-    const replyLink = replyComment._links.reply as Link;
-    return (
-      <CommentSpacingWrapper>
-        <CreateComment
-          url={replyLink.href}
-          refresh={() => this.closeReplyEditor()}
-          onCancel={() => this.closeReplyEditor()}
-          autofocus={true}
-          reply={true}
-        />
-      </CommentSpacingWrapper>
-    );
-  }
+  onReplyCreated = (reply: Comment) => {
+    const { parent, comment, dispatch } = this.props;
+    dispatch(createReply(parent ? parent.id : comment.id, reply));
+    this.closeReplyEditor();
+  };
 
   openReplyEditor(comment: Comment) {
     this.setState({
@@ -403,12 +393,11 @@ class PullRequestComment extends React.Component<Props, State> {
     });
   }
 
-  closeReplyEditor() {
+  closeReplyEditor = () => {
     this.setState(
       {
         replyEditor: undefined
-      },
-      this.props.refresh
+      }
     );
   }
 }
