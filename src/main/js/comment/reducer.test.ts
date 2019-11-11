@@ -1,14 +1,13 @@
-import reducer, {
+import reducer, { initialState, State } from "./reducer";
+import {
   createComment,
   createReply,
   deleteComment,
   deleteReply,
   fetchAll,
-  initialState,
-  State,
   updateComment,
   updateReply
-} from "./module";
+} from "./actiontypes";
 import { Comment } from "../types/PullRequest";
 
 describe("test reducer", () => {

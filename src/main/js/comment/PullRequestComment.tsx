@@ -16,7 +16,7 @@ import LastEdited from "./LastEdited";
 import EditButtons from "./EditButtons";
 import Replies from "./Replies";
 import ReplyEditor from "./ReplyEditor";
-import {createReply, deleteComment, deleteReply, updateComment, updateReply} from "./module";
+import {createReply, deleteComment, deleteReply, updateComment, updateReply} from "./actiontypes";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -30,7 +30,6 @@ type Props = WithTranslation & {
   parent?: Comment;
   comment: Comment;
   dispatch: Dispatch<any>; // ???
-  handleError: (error: Error) => void;
   createLink?: string;
 };
 
@@ -41,7 +40,7 @@ type State = {
   loading: boolean;
   contextModalOpen: boolean;
   replyEditor?: Comment;
-  errorResult?: Error;
+  error?: Error;
 };
 
 class PullRequestComment extends React.Component<Props, State> {
@@ -100,7 +99,7 @@ class PullRequestComment extends React.Component<Props, State> {
       .catch(error => {
         this.setState({
           loading: false,
-          errorResult: error
+          error
         });
       });
   };
@@ -141,7 +140,7 @@ class PullRequestComment extends React.Component<Props, State> {
       .catch(error => {
         this.setState({
           loading: false,
-          errorResult: error
+          error
         });
       });
   };
@@ -157,8 +156,6 @@ class PullRequestComment extends React.Component<Props, State> {
     const { parent, comment, dispatch } = this.props;
     if (comment._links.delete) {
       const href = (comment._links.delete as Link).href;
-
-      const { handleError } = this.props;
       this.setState({
         loading: true
       });
@@ -181,9 +178,9 @@ class PullRequestComment extends React.Component<Props, State> {
         })
         .catch(error => {
           this.setState({
-            loading: false
+            loading: false,
+            error
           });
-          handleError(error);
         });
     } else {
       throw new Error("could not find required delete link");
@@ -209,7 +206,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   executeTransition = (transition: string) => {
-    const { comment, handleError } = this.props;
+    const { comment } = this.props;
 
     if (!(comment && comment._embedded && comment._embedded.possibleTransitions)) {
       throw new Error("comment has no possible transitions");
@@ -226,9 +223,9 @@ class PullRequestComment extends React.Component<Props, State> {
       })
       .catch(error => {
         this.setState({
-          loading: false
+          loading: false,
+          error
         });
-        handleError(error);
       });
   };
 
@@ -283,11 +280,11 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   createMessageEditor = () => {
-    const { updatedComment, errorResult } = this.state;
+    const { updatedComment, error } = this.state;
     return (
       <>
         <Textarea name="comment" value={updatedComment.comment} onChange={this.handleUpdateChange} />
-        {errorResult && <ErrorNotification error={errorResult} />}
+        { error && <ErrorNotification error={error} />}
       </>
     );
   };

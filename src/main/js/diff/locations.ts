@@ -13,8 +13,8 @@ export function createHunkIdFromLocation(location: Location): string {
   return location.file + "_" + location.hunk;
 }
 
-export function isInlineLocation(location: Location): boolean {
-  return !!location.hunk;
+export function isInlineLocation(location?: Location): boolean {
+  return !!location && !!location.hunk;
 }
 
 export function createFileLocation(context: BaseContext): Location {

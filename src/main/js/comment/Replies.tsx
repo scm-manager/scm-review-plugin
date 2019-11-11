@@ -12,12 +12,8 @@ const Replies: FC<Props> = ({ comment, createLink, dispatch }) => {
   if (!comment._embedded || !comment._embedded.replies) {
     return null;
   }
+
   const replies = comment._embedded.replies;
-
-  const onError = (err: Error) => {
-    console.log(err);
-  };
-
   return (
     <>
       {replies.map((reply: Comment) => (
@@ -27,7 +23,6 @@ const Replies: FC<Props> = ({ comment, createLink, dispatch }) => {
           createLink={createLink}
           comment={reply}
           dispatch={dispatch}
-          handleError={onError}
         />
       ))}
     </>

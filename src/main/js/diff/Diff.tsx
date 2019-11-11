@@ -1,19 +1,15 @@
-import React from "react";
+import React, {Dispatch} from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
-import { Repository, Link } from "@scm-manager/ui-types";
+import { Link } from "@scm-manager/ui-types";
 import { DiffEventContext, File, AnnotationFactoryContext } from "@scm-manager/ui-components";
-import { PullRequest, Location, RootComment } from "../types/PullRequest";
+import { Location, Comment } from "../types/PullRequest";
 import {
-  ErrorNotification,
-  Loading,
   Level,
   Button,
   LoadingDiff,
-  Notification,
   diffs
 } from "@scm-manager/ui-components";
-import { createDiffUrl } from "../pullRequest";
 import {
   createHunkId,
   createHunkIdFromLocation,
@@ -21,7 +17,6 @@ import {
   isInlineLocation,
   createChangeIdFromLocation
 } from "./locations";
-import { fetchDiffRelatedComments } from "./fetchDiffRelatedComments";
 import PullRequestComment from "../comment/PullRequestComment";
 import CreateComment from "../comment/CreateComment";
 import CommentSpacingWrapper from "../comment/CommentSpacingWrapper";
@@ -29,6 +24,8 @@ import InlineComments from "./InlineComments";
 import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
+import {DiffRelatedCommentCollection, FileCommentState} from "./reducer";
+import {createComment} from "../comment/actiontypes";
 
 const LevelWithMargin = styled(Level)`
   margin-bottom: 1rem !important;
@@ -41,31 +38,14 @@ const CommentWrapper = styled.div`
 `;
 
 type Props = WithTranslation & {
-  repository: Repository;
-  pullRequest: PullRequest;
-  source: string;
-  target: string;
+  diffUrl: string;
+  comments: DiffRelatedCommentCollection;
+  createLink?: string;
+  dispatch: Dispatch<any>;
 };
 
 type State = {
-  loading: boolean;
-  error?: Error;
-  lines: {
-    [key: string]: {
-      [key: string]: {
-        editor: boolean;
-        location: Location;
-        comments: RootComment[];
-      };
-    };
-  };
-  files: {
-    [key: string]: {
-      editor: boolean;
-      comments: RootComment[];
-    };
-  };
-  createLink: Link;
+  createLink?: Link;
   collapsed: boolean;
 };
 
@@ -73,92 +53,46 @@ class Diff extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      loading: true,
-      files: {},
-      lines: {},
-      createLink: null,
       collapsed: false
     };
   }
 
-  componentDidMount() {
-    this.fetchComments();
-  }
-
-  fetchComments = () => {
-    const { pullRequest } = this.props;
-    if (pullRequest && pullRequest._links && pullRequest._links.comments) {
-      this.setState({
-        loading: true
-      });
-
-      fetchDiffRelatedComments(pullRequest._links.comments.href)
-        .then(comments => {
-          this.setState({
-            loading: false,
-            error: undefined,
-            // TODO do we need to keep editor state?
-            ...comments
-          });
-        })
-        .catch(error =>
-          this.setState({
-            loading: false,
-            error
-          })
-        );
-    } else {
-      this.setState({
-        loading: false
-      });
-    }
-  };
-
   render() {
-    const { repository, source, target, t } = this.props;
-    const { loading, error, collapsed } = this.state;
-    const url = createDiffUrl(repository, source, target);
+    const { diffUrl, t } = this.props;
+    const {  collapsed } = this.state;
 
-    if (!url) {
-      return <Notification type="danger">{t("scm-review-plugin.diff.notSupported")}</Notification>;
-    } else if (loading) {
-      return <Loading />;
-    } else if (error) {
-      return <ErrorNotification error={error} />;
-    } else {
-      return (
-        <StyledDiffWrapper commentable={this.isPermittedToComment()}>
-          <LevelWithMargin
-            right={
-              <Button
-                action={this.collapseDiffs}
-                color="default"
-                icon={collapsed ? "eye" : "eye-slash"}
-                label={t("scm-review-plugin.diff.collapseDiffs")}
-                reducedMobile={true}
-              />
-            }
-          />
-          <LoadingDiff
-            url={url}
-            defaultCollapse={collapsed}
-            fileControlFactory={this.createFileControls}
-            fileAnnotationFactory={this.fileAnnotationFactory}
-            annotationFactory={this.annotationFactory}
-            onClick={this.onGutterClick}
-          />
-        </StyledDiffWrapper>
-      );
-    }
+    return (
+      <StyledDiffWrapper commentable={this.isPermittedToComment()}>
+        <LevelWithMargin
+          right={
+            <Button
+              action={this.collapseDiffs}
+              color="default"
+              icon={collapsed ? "eye" : "eye-slash"}
+              label={t("scm-review-plugin.diff.collapseDiffs")}
+              reducedMobile={true}
+            />
+          }
+        />
+        <LoadingDiff
+          url={diffUrl}
+          defaultCollapse={collapsed}
+          fileControlFactory={this.createFileControls}
+          fileAnnotationFactory={this.fileAnnotationFactory}
+          annotationFactory={this.annotationFactory}
+          onClick={this.onGutterClick}
+        />
+      </StyledDiffWrapper>
+    );
   }
 
   fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
 
     const annotations = [];
-    const fileState = this.state.files[path] || [];
+    const fileState = this.props.comments.files[path] || [];
     if (fileState.comments && fileState.comments.length > 0) {
-      annotations.push(this.createComments(fileState));
+      annotations.push(this.createComments(fileState.comments));
     }
 
     if (fileState.editor) {
@@ -176,10 +110,10 @@ class Diff extends React.Component<Props, State> {
   };
 
   annotationFactory = (context: AnnotationFactoryContext) => {
-    const annotations = {};
+    const annotations: {[key: string]: React.ReactNode} = {};
 
     const hunkId = createHunkId(context);
-    const hunkState = this.state.lines[hunkId];
+    const hunkState = this.props.comments.lines[hunkId];
     if (hunkState) {
       Object.keys(hunkState).forEach((changeId: string) => {
         const lineState = hunkState[changeId];
@@ -187,7 +121,7 @@ class Diff extends React.Component<Props, State> {
         if (lineState) {
           const lineAnnotations = [];
           if (lineState.comments && lineState.comments.length > 0) {
-            lineAnnotations.push(this.createComments(lineState));
+            lineAnnotations.push(this.createComments(lineState.comments));
           }
           if (lineState.editor) {
             lineAnnotations.push(this.createNewCommentEditor(lineState.location));
@@ -284,23 +218,35 @@ class Diff extends React.Component<Props, State> {
     }, callback);
   };
 
-  createComments = fileState => {
-    const comments = fileState.comments;
+  findComment = (id: string): Comment => {
+    const { comments } = this.props;
+    const comment = comments.comments[id];
+    if (!comment) {
+      throw new Error("could not find comment with id " + id);
+    }
+    return comment;
+  };
 
+  createComments = (commentIds: string[]) => {
+    const { createLink, dispatch } = this.props;
     return (
       <>
-        {comments.map(rootComment => (
-          <CommentWrapper className="comment-wrapper">
+        {commentIds.map((commentId: string) => (
+          <CommentWrapper key={commentId} className="comment-wrapper">
             <PullRequestComment
-              comment={rootComment}
-              refresh={this.fetchComments}
-              handleError={this.onError}
-              createLink={this.state.createLink}
+              comment={this.findComment(commentId)}
+              createLink={createLink}
+              dispatch={dispatch}
             />
           </CommentWrapper>
         ))}
       </>
     );
+  };
+
+  onCreation = (comment: Comment) => {
+    const { dispatch } = this.props;
+    dispatch(createComment(comment));
   };
 
   createNewCommentEditor = (location: Location) => {
@@ -310,7 +256,7 @@ class Diff extends React.Component<Props, State> {
           <CreateComment
             url={this.state.createLink.href}
             location={location}
-            refresh={() => this.closeEditor(location, this.fetchComments)}
+            onCreation={this.onCreation}
             onCancel={() => this.closeEditor(location)}
             autofocus={true}
           />
@@ -318,12 +264,6 @@ class Diff extends React.Component<Props, State> {
       );
     }
     return null;
-  };
-
-  onError = (error: Error) => {
-    this.setState({
-      error
-    });
   };
 }
 

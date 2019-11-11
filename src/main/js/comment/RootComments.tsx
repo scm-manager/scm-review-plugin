@@ -1,5 +1,7 @@
 import React, {FC, useState, useReducer, useEffect} from "react";
-import reducer, {createComment, fetchAll, initialState} from "./module";
+import reducer, {initialState} from "./reducer";
+import {createComment, fetchAll} from "./actiontypes";
+
 import {Comments, PullRequest} from "../types/PullRequest";
 import {getPullRequestComments} from "../pullRequest";
 
@@ -8,6 +10,7 @@ import { Link  } from "@scm-manager/ui-types";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
 import styled from "styled-components";
+import useComments from "./useComments";
 
 type Props = {
   pullRequest: PullRequest;
@@ -22,28 +25,8 @@ const CommentWrapper = styled.div`
 `;
 
 const RootCommentContainer: FC<Props> = ({pullRequest}) => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState();
-  const [links, setLinks] = useState();
   const [comments, dispatch] = useReducer(reducer, initialState);
-
-  useEffect(() => {
-    const url = (pullRequest._links.comments as Link).href;
-    getPullRequestComments(url)
-      .then((commentResponse: Comments) => {
-        let comments = [];
-        if (commentResponse && commentResponse._embedded) {
-          comments = commentResponse._embedded.pullRequestComments;
-        }
-        setLinks(commentResponse._links);
-        setLoading(false);
-        dispatch(fetchAll(comments));
-      })
-      .catch(error => {
-        setLoading(false);
-        setError(error);
-      });
-  }, [pullRequest]);
+  const { error, loading, links } = useComments(pullRequest, dispatch);
 
   if (error) {
     return <ErrorNotification error={error} />;
@@ -65,7 +48,6 @@ const RootCommentContainer: FC<Props> = ({pullRequest}) => {
             comment={rootComment}
             dispatch={dispatch}
             createLink={createLink}
-            handleError={err => setError(err)}
           />
         </CommentWrapper>
       ))}

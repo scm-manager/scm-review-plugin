@@ -4,9 +4,9 @@ import { urls } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, withRouter, RouteComponentProps } from "react-router-dom";
-import Diff from "./diff/Diff";
 import RootComments from "./comment/RootComments";
 import { PullRequest } from "./types/PullRequest";
+import DiffRoute from "./diff/DiffRoute";
 
 type Props = WithTranslation & RouteComponentProps & {
   repository: Repository;
@@ -71,7 +71,7 @@ class PullRequestInformation extends React.Component<Props> {
       routeDiff = (
         <Route
           path={`${baseURL}/diff`}
-          render={() => <Diff repository={repository} pullRequest={pullRequest} source={source} target={target} />}
+          render={() => <DiffRoute repository={repository} pullRequest={pullRequest} source={source} target={target} />}
           exact
         />
       );
