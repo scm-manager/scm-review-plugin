@@ -66,6 +66,26 @@ public class MergeService {
     return new MergeDryRunCommandResult(false);
   }
 
+  public String createSquashCommitMessage(NamespaceAndName namespaceAndName, MergeCommandDto mergeCommandDto) {
+    try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
+      if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
+        try {
+          StringBuilder builder = new StringBuilder();
+          repositoryService.getLogCommand()
+            .setBranch(mergeCommandDto.getSourceRevision())
+            .setAncestorChangeset(mergeCommandDto.getTargetRevision())
+            .getChangesets()
+            .getChangesets()
+            .forEach(c -> builder.append(c.getDescription()).append("\n"));
+          return builder.toString();
+        } catch (IOException e) {
+          throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()), "Could not read changesets from repository");
+        }
+      }
+    }
+    return "";
+  }
+
   private void updatePullRequestStatusIfNecessary(
     RepositoryService repositoryService,
     MergeCommitDto mergeCommitDto,

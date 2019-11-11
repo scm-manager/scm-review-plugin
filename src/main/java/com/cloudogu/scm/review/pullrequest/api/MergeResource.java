@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
+import com.google.common.base.Strings;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import sonia.scm.ConcurrentModificationException;
@@ -16,6 +17,7 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -67,10 +69,31 @@ public class MergeResource {
     @Valid MergeCommandDto mergeCommandDto
   ) {
     MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(new NamespaceAndName(namespace, name), mergeCommandDto);
-      if (mergeDryRunCommandResult.isMergeable()) {
-        return Response.noContent().build();
-      } else {
-        throw new ConcurrentModificationException("revision", mergeCommandDto.getTargetRevision());
-      }
+    if (mergeDryRunCommandResult.isMergeable()) {
+      return Response.noContent().build();
+    } else {
+      throw new ConcurrentModificationException("revision", mergeCommandDto.getTargetRevision());
     }
+  }
+
+  @GET
+  @Path("{namespace}/{name}/squash-commit-message")
+  @Consumes("application/vnd.scmm-mergeCommand+json")
+  @StatusCodes({
+    @ResponseCode(code = 200, condition = "squash commit message was created"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 404, condition = "squash commit message is null or empty"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  public Response createSquashCommitMessage(
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @Valid MergeCommandDto mergeCommandDto
+  ) {
+    String commitMessage = service.createSquashCommitMessage(new NamespaceAndName(namespace, name), mergeCommandDto);
+    if (Strings.isNullOrEmpty(commitMessage)) {
+      return Response.status(404).build();
+    }
+    return Response.status(200).entity(commitMessage).build();
+  }
 }

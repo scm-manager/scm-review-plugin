@@ -21,11 +21,15 @@ import sonia.scm.api.v2.resources.MergeCommandDto;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.Branches;
+import sonia.scm.repository.Changeset;
+import sonia.scm.repository.ChangesetPagingResult;
+import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.BranchCommandBuilder;
 import sonia.scm.repository.api.BranchesCommandBuilder;
 import sonia.scm.repository.api.Command;
+import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.MergeCommandBuilder;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
@@ -63,6 +67,8 @@ class MergeServiceTest {
   BranchCommandBuilder branchCommandBuilder;
   @Mock (answer = Answers.RETURNS_DEEP_STUBS)
   BranchesCommandBuilder branchesCommandBuilder;
+  @Mock
+  LogCommandBuilder logCommandBuilder;
   @Mock
   private RepositoryServiceFactory serviceFactory;
   @Mock
@@ -179,6 +185,31 @@ class MergeServiceTest {
     MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(REPOSITORY.getNamespaceAndName(), mergeCommandDto);
 
     assertThat(mergeDryRunCommandResult.isMergeable()).isFalse();
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  void shouldCreateCommitMessageForSquash() throws IOException {
+    when(subject.isPermitted((String) any())).thenReturn(true);
+    when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
+    when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
+    when(logCommandBuilder.setBranch(any())).thenReturn(logCommandBuilder);
+    when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
+
+    Person author = new Person("Philip");
+    Changeset changeset1 = new Changeset("1", 1L, author, "first commit");
+    Changeset changeset2 = new Changeset("2", 2L, author, "second commit");
+
+    ChangesetPagingResult changesets = new ChangesetPagingResult(2, ImmutableList.of(changeset1, changeset2));
+
+    when(logCommandBuilder.getChangesets()).thenReturn(changesets);
+
+    MergeCommandDto mergeCommandDto = new MergeCommandDto();
+    mergeCommandDto.setSourceRevision("squash");
+    mergeCommandDto.setTargetRevision("master");
+    String message = service.createSquashCommitMessage(REPOSITORY.getNamespaceAndName(), mergeCommandDto);
+
+    assertThat(message).isEqualTo("first commit\nsecond commit\n");
   }
 
   private MergeCommitDto createMergeCommit(String source, String target, boolean deleteBranch) {

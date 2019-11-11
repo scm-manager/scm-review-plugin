@@ -60,7 +60,7 @@ class MergeResourceTest {
     when(mergeService.merge(any(), any(), any())).thenReturn(MergeCommandResult.success());
     byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
 
-    MockHttpRequest request = createHttpRequest(MERGE_URL, mergeCommitJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL, mergeCommitJson);
 
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(204);
@@ -72,7 +72,7 @@ class MergeResourceTest {
     when(mergeService.merge(any(), any(), any())).thenReturn(MergeCommandResult.failure(conflicts));
     byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
 
-    MockHttpRequest request = createHttpRequest(MERGE_URL, mergeCommitJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL, mergeCommitJson);
 
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(409);
@@ -84,7 +84,7 @@ class MergeResourceTest {
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
 
-    MockHttpRequest request = createHttpRequest(MERGE_URL + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
 
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
@@ -97,7 +97,7 @@ class MergeResourceTest {
     when(mergeService.dryRun(any(), any())).thenReturn(new MergeDryRunCommandResult(false));
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
-    MockHttpRequest request = createHttpRequest(MERGE_URL + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 
@@ -107,16 +107,44 @@ class MergeResourceTest {
   @Test
   void shouldReturnBadRequestIfMergeCommandDtoInvalid() throws IOException, URISyntaxException {
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand_invalid.json");
-    MockHttpRequest request = createHttpRequest(MERGE_URL + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(400);
   }
 
-  private MockHttpRequest createHttpRequest(String url, byte[] content) throws IOException, URISyntaxException {
+  @Test
+  void shouldCreateCommitMessage() throws IOException, URISyntaxException {
+    when(mergeService.createSquashCommitMessage(any(), any())).thenReturn("successful");
+    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand_squash.json");
+    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/squash-commit-message", mergeCommandJson);
+    MockHttpResponse response = new MockHttpResponse();
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).isEqualTo("successful");
+  }
+
+  @Test
+  void shouldReturnNotFoundIfMessageIsEmpty() throws IOException, URISyntaxException {
+    when(mergeService.createSquashCommitMessage(any(), any())).thenReturn("");
+    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand_squash.json");
+    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/squash-commit-message", mergeCommandJson);
+    MockHttpResponse response = new MockHttpResponse();
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(404);
+  }
+
+  private MockHttpRequest createHttpPostRequest(String url, byte[] content) throws URISyntaxException {
     return MockHttpRequest
       .post(url)
+      .content(content)
+      .contentType("application/vnd.scmm-mergeCommand+json");
+  }
+
+  private MockHttpRequest createHttpGetRequest(String url, byte[] content) throws URISyntaxException {
+    return MockHttpRequest
+      .get(url)
       .content(content)
       .contentType("application/vnd.scmm-mergeCommand+json");
   }
