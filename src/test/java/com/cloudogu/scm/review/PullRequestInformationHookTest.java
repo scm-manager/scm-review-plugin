@@ -35,6 +35,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
 
 @SubjectAware(
   configuration = "classpath:com/cloudogu/scm/review/shiro.ini",
@@ -82,6 +83,7 @@ public class PullRequestInformationHookTest {
     when(event.getRepository()).thenReturn(REPOSITORY);
     when(context.getBranchProvider()).thenReturn(branchProvider);
     when(context.getMessageProvider()).thenReturn(messageProvider);
+    when(context.isFeatureSupported(MESSAGE_PROVIDER)).thenReturn(true);
     when(branchProvider.getCreatedOrModified()).thenReturn(Collections.emptyList());
     when(serviceFactory.create(REPOSITORY)).thenReturn(service);
     when(service.isSupported(Command.MERGE)).thenReturn(true);
