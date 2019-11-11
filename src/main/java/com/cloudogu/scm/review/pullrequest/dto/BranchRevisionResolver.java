@@ -2,15 +2,18 @@ package com.cloudogu.scm.review.pullrequest.dto;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import sonia.scm.repository.Branch;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.List;
 
 public class BranchRevisionResolver {
   private final RepositoryServiceFactory repositoryServiceFactory;
@@ -37,12 +40,24 @@ public class BranchRevisionResolver {
 
   private String getRevision(RepositoryService repositoryService, String branch) {
     try {
+      if (repositoryService.isSupported(Command.BRANCHES)) {
+        List<Branch> branches = repositoryService.getBranchesCommand().getBranches().getBranches();
+        if (!branchExists(branch, branches)) {
+          return "";
+        }
+      }
       LogCommandBuilder logCommand = repositoryService.getLogCommand();
       ChangesetPagingResult changesets = logCommand.setBranch(branch).setPagingLimit(1).getChangesets();
       return changesets.iterator().next().getId();
     } catch (IOException e) {
       throw new InternalRepositoryException(repositoryService.getRepository(), "could not determine revision for branch " + branch, e);
     }
+  }
+
+  private boolean branchExists(String branch, List<Branch> branches) {
+    return branches
+      .stream()
+      .anyMatch(b -> branch.equals(b.getName()));
   }
 
   public static class RevisionResult {
