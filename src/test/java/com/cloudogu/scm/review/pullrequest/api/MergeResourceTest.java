@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.api.v2.resources.MergeResultToDtoMapper;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
 
@@ -42,8 +41,6 @@ class MergeResourceTest {
 
   @Mock
   private MergeService mergeService;
-  @Mock
-  private MergeResultToDtoMapper mergeResultToDtoMapper;
 
   @InjectMocks
   private MergeResource mergeResource;
@@ -115,7 +112,7 @@ class MergeResourceTest {
     assertThat(response.getStatus()).isEqualTo(400);
   }
 
-  private MockHttpRequest createHttpRequest(String url, byte[] content) throws IOException, URISyntaxException {
+  private MockHttpRequest createHttpRequest(String url, byte[] content) throws URISyntaxException {
     return MockHttpRequest
       .post(url)
       .content(content)
