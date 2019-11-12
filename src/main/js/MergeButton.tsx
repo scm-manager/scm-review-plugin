@@ -1,9 +1,9 @@
 import React from "react";
-import {WithTranslation, withTranslation} from "react-i18next";
-import {Button} from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { Button } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
-import {MergeCommit, PullRequest} from "./types/PullRequest";
-import {Repository} from "@scm-manager/ui-types";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { Repository } from "@scm-manager/ui-types";
 import MergeModal from "./MergeModal";
 
 type Props = WithTranslation & {

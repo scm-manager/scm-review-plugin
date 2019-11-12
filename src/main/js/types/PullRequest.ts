@@ -1,4 +1,4 @@
-import {Collection, DisplayedUser, Links} from "@scm-manager/ui-types";
+import { Collection, DisplayedUser, Links } from "@scm-manager/ui-types";
 
 export type BasicPullRequest = {
   source: string;
@@ -80,5 +80,5 @@ export type MergeCommit = {
   source: string;
   target: string;
   author: DisplayedUser;
-  shouldDeleteSourceBranch: boolean
-}
+  shouldDeleteSourceBranch: boolean;
+};

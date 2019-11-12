@@ -1,21 +1,22 @@
 import React from "react";
-import {Repository} from "@scm-manager/ui-types";
-import {urls} from "@scm-manager/ui-components";
-import {WithTranslation, withTranslation} from "react-i18next";
+import { Repository } from "@scm-manager/ui-types";
+import { urls } from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
 import Changesets from "./Changesets";
-import {Link, Redirect, Route, RouteComponentProps, Switch, withRouter} from "react-router-dom";
+import { Link, Redirect, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import Diff from "./diff/Diff";
 import PullRequestComments from "./comment/PullRequestComments";
-import {PullRequest} from "./types/PullRequest";
+import { PullRequest } from "./types/PullRequest";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  pullRequest: PullRequest;
-  baseURL: string;
-  source: string;
-  target: string;
-  status: string;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    pullRequest: PullRequest;
+    baseURL: string;
+    source: string;
+    target: string;
+    status: string;
+  };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
   let strippedUrl = url.substring(baseURL.length);

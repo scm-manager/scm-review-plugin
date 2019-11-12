@@ -1,8 +1,8 @@
 import React from "react";
-import {WithTranslation, withTranslation} from "react-i18next";
-import {Link} from "@scm-manager/ui-types";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { Link } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
-import {Checkbox, Textarea} from "@scm-manager/ui-components";
+import { Checkbox, Textarea } from "@scm-manager/ui-components";
 
 type Props = WithTranslation & {
   strategyLinks: Link[];
