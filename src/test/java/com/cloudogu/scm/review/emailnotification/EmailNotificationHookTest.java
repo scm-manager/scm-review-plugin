@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.TestData;
-import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -22,7 +21,8 @@ import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -49,7 +49,7 @@ class EmailNotificationHookTest {
   private PullRequest oldPullRequest;
   private Comment comment;
   private Comment oldComment;
-  private HashSet<String> reviewers;
+  private Map<String, Boolean> reviewers = new HashMap<>();
 
   @BeforeEach
   void setUp() {
@@ -61,7 +61,8 @@ class EmailNotificationHookTest {
     pullRequest.setSubscriber(subscriber);
     String recipient3 = "user3";
     String recipient4 = "user4";
-    reviewers = Sets.newHashSet(Lists.newArrayList(recipient3, recipient4));
+    reviewers.put(recipient3, Boolean.FALSE);
+    reviewers.put(recipient4, Boolean.TRUE);
     pullRequest.setReviewer(reviewers);
     repository = createHeartOfGold();
     oldPullRequest = TestData.createPullRequest();
@@ -72,7 +73,6 @@ class EmailNotificationHookTest {
     oldComment.setComment("this is my old comment");
     comment.setComment("this is my modified comment");
   }
-
 
   @TestFactory
   Stream<DynamicTest> sendingCommentEmailTestFactory() {
