@@ -33,7 +33,10 @@ const CommentTags: FC<Props> = ({ comment, onOpenContext }) => {
     const transition = findLatestTransition(comment, "SET_DONE");
     if (transition) {
       tags.push(
-        <TaskDoneTag key="done" title={t("scm-review-plugin.comment.markedDoneBy") + " " + transition.user.displayName} />
+        <TaskDoneTag
+          key="done"
+          title={t("scm-review-plugin.comment.markedDoneBy") + " " + transition.user.displayName}
+        />
       );
     }
   }

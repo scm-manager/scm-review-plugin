@@ -1,4 +1,4 @@
-import {Comment, Location} from "../types/PullRequest";
+import { Comment, Location } from "../types/PullRequest";
 
 export type ActionType =
   | "fetchAll"
@@ -82,18 +82,18 @@ export const deleteReply = (parentId: string, reply: Comment): ReplyAction => {
 
 export type EditorAction = Action & {
   location?: Location;
-}
+};
 
 export const openEditor = (location?: Location): EditorAction => {
   return {
     location,
     type: "openEditor"
-  }
+  };
 };
 
 export const closeEditor = (location?: Location): EditorAction => {
   return {
     location,
     type: "closeEditor"
-  }
+  };
 };

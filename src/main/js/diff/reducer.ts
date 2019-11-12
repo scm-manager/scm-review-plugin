@@ -1,14 +1,7 @@
-import {Comment, Location} from "../types/PullRequest";
-import {
-  Action,
-  ActionType,
-  CommentAction,
-  ReplyAction,
-  FetchAllAction,
-  EditorAction
-} from "../comment/actiontypes";
+import { Comment, Location } from "../types/PullRequest";
+import { Action, ActionType, CommentAction, ReplyAction, FetchAllAction, EditorAction } from "../comment/actiontypes";
 import produce from "immer";
-import {createChangeIdFromLocation, createHunkIdFromLocation, isInlineLocation} from "./locations";
+import { createChangeIdFromLocation, createHunkIdFromLocation, isInlineLocation } from "./locations";
 
 export type FileCommentState = {
   comments: string[];
@@ -36,19 +29,13 @@ export type State = DiffRelatedCommentCollection;
 export type DiffRelatedCommentCollection = {
   files: FileCommentCollection;
   lines: LineCommentCollection;
-  comments: {[key: string]: Comment}
+  comments: { [key: string]: Comment };
 };
 
 export const initialState: State = {
-  lines: {
-
-  },
-  files: {
-
-  },
-  comments: {
-
-  }
+  lines: {},
+  files: {},
+  comments: {}
 };
 
 type Reducer = (state: State, action: Action) => State | undefined;
@@ -166,7 +153,7 @@ const reducers: { [type in ActionType]: Reducer } = {
 
     const files = {};
     const lines = {};
-    const comments: {[id: string]: Comment} = {};
+    const comments: { [id: string]: Comment } = {};
 
     commentsWithLocations.forEach((comment: Comment) => {
       if (isInlineLocation(comment.location) && !comment.outdated) {
@@ -262,19 +249,18 @@ const reducers: { [type in ActionType]: Reducer } = {
   openEditor: (state: State, a: Action) => {
     const { location } = a as EditorAction;
     return produce(state, draft => {
-      setEditState(draft, true, location)
+      setEditState(draft, true, location);
     });
   },
   closeEditor: (state: State, a: Action) => {
     const { location } = a as EditorAction;
     return produce(state, draft => {
-      setEditState(draft, false, location)
+      setEditState(draft, false, location);
     });
-  },
+  }
 };
 
 const reducer = (state: State, action: Action) => {
-  console.log(action);
   const nextState = reducers[action.type](state, action);
   return nextState || state;
 };

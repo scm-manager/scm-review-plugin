@@ -1,12 +1,12 @@
-import React, {FC, useState, useReducer, useEffect} from "react";
-import reducer, {initialState} from "./reducer";
-import {createComment, fetchAll} from "./actiontypes";
+import React, { FC, useState, useReducer, useEffect } from "react";
+import reducer, { initialState } from "./reducer";
+import { createComment, fetchAll } from "./actiontypes";
 
-import {Comments, PullRequest} from "../types/PullRequest";
-import {getPullRequestComments} from "../pullRequest";
+import { Comments, PullRequest } from "../types/PullRequest";
+import { getPullRequestComments } from "../pullRequest";
 
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
-import { Link  } from "@scm-manager/ui-types";
+import { Link } from "@scm-manager/ui-types";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
 import styled from "styled-components";
@@ -24,7 +24,7 @@ const CommentWrapper = styled.div`
   }
 `;
 
-const RootCommentContainer: FC<Props> = ({pullRequest}) => {
+const RootCommentContainer: FC<Props> = ({ pullRequest }) => {
   const [comments, dispatch] = useReducer(reducer, initialState);
   const { error, loading, links } = useComments(pullRequest, dispatch);
 
@@ -44,19 +44,12 @@ const RootCommentContainer: FC<Props> = ({pullRequest}) => {
     <>
       {comments.map(rootComment => (
         <CommentWrapper key={rootComment.id} className="comment-wrapper">
-          <PullRequestComment
-            comment={rootComment}
-            dispatch={dispatch}
-            createLink={createLink}
-          />
+          <PullRequestComment comment={rootComment} dispatch={dispatch} createLink={createLink} />
         </CommentWrapper>
       ))}
-      {createLink && (
-        <CreateComment url={createLink} onCreation={c => dispatch(createComment(c))} />
-      )}
+      {createLink && <CreateComment url={createLink} onCreation={c => dispatch(createComment(c))} />}
     </>
   );
-
 };
 
 export default RootCommentContainer;

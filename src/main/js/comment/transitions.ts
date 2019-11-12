@@ -1,4 +1,4 @@
-import {Comment, Transition} from "../types/PullRequest";
+import { Comment, Transition } from "../types/PullRequest";
 
 export const findLatestTransition = (comment: Comment, type: string) => {
   if (comment._embedded && comment._embedded.transitions) {

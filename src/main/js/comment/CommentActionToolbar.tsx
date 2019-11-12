@@ -34,7 +34,7 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
 
   const isLastReply = () => {
     if (parent && parent._embedded && parent._embedded.replies) {
-      const replies = parent._embedded && parent._embedded.replies as Comment[];
+      const replies = parent._embedded && (parent._embedded.replies as Comment[]);
       const lastReply = replies[replies.length - 1];
       return lastReply.id === comment.id;
     }
@@ -57,7 +57,7 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
   };
 
   const isDeletable = () => {
-    return parent || isEmptyRootComment() && hasLink("delete");
+    return parent || (isEmptyRootComment() && hasLink("delete"));
   };
 
   const icons = [];

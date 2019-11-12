@@ -1,6 +1,6 @@
-import React, {FC} from "react";
-import {DateFromNow } from "@scm-manager/ui-components";
-import {Comment} from "../types/PullRequest";
+import React, { FC } from "react";
+import { DateFromNow } from "@scm-manager/ui-components";
+import { Comment } from "../types/PullRequest";
 import CommentSpacingWrapper from "./CommentSpacingWrapper";
 import CommentMetadata from "./CommentMetadata";
 import LastEdited from "./LastEdited";
@@ -11,7 +11,7 @@ type Props = {
   comment: Comment;
 };
 
-const ContextInlineComment: FC<Props> = ({comment}) => (
+const ContextInlineComment: FC<Props> = ({ comment }) => (
   <InlineComments>
     <CommentSpacingWrapper isChildComment={false}>
       <article className="media">

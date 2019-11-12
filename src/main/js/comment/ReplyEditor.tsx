@@ -1,8 +1,8 @@
-import React, {FC} from "react";
+import React, { FC } from "react";
 import CommentSpacingWrapper from "./CommentSpacingWrapper";
 import CreateComment from "./CreateComment";
-import {Comment} from "../types/PullRequest";
-import {Link} from "@scm-manager/ui-types";
+import { Comment } from "../types/PullRequest";
+import { Link } from "@scm-manager/ui-types";
 
 type Props = {
   comment: Comment;
@@ -10,7 +10,7 @@ type Props = {
   onCancel: () => void;
 };
 
-const ReplyEditor: FC<Props> = ({comment, onCreation, onCancel}) => {
+const ReplyEditor: FC<Props> = ({ comment, onCreation, onCancel }) => {
   if (!comment._links.reply) {
     throw new Error("reply links is missing");
   }
@@ -18,13 +18,7 @@ const ReplyEditor: FC<Props> = ({comment, onCreation, onCancel}) => {
   const replyLink = comment._links.reply as Link;
   return (
     <CommentSpacingWrapper>
-      <CreateComment
-        url={replyLink.href}
-        onCreation={onCreation}
-        onCancel={onCancel}
-        autofocus={true}
-        reply={true}
-      />
+      <CreateComment url={replyLink.href} onCreation={onCreation} onCancel={onCancel} autofocus={true} reply={true} />
     </CommentSpacingWrapper>
   );
 };

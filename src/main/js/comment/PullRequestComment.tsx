@@ -1,4 +1,4 @@
-import React, {Dispatch} from "react";
+import React, { Dispatch } from "react";
 import classNames from "classnames";
 import { WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
@@ -16,7 +16,7 @@ import LastEdited from "./LastEdited";
 import EditButtons from "./EditButtons";
 import Replies from "./Replies";
 import ReplyEditor from "./ReplyEditor";
-import {createReply, deleteComment, deleteReply, updateComment, updateReply} from "./actiontypes";
+import { createReply, deleteComment, deleteReply, updateComment, updateReply } from "./actiontypes";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -163,13 +163,12 @@ class PullRequestComment extends React.Component<Props, State> {
       deletePullRequestComment(href)
         .then(response => {
           this.dispatchDelete(comment);
-          if (parent && this.getChildCount(parent) === 1 ) {
-            return this.fetchRefreshed(parent, (c: Comment) => dispatch(updateComment(c)))
-              .then(() => {
-                this.setState({
-                  loading: false
-                });
+          if (parent && this.getChildCount(parent) === 1) {
+            return this.fetchRefreshed(parent, (c: Comment) => dispatch(updateComment(c))).then(() => {
+              this.setState({
+                loading: false
               });
+            });
           } else {
             this.setState({
               loading: false
@@ -284,7 +283,7 @@ class PullRequestComment extends React.Component<Props, State> {
     return (
       <>
         <Textarea name="comment" value={updatedComment.comment} onChange={this.handleUpdateChange} />
-        { error && <ErrorNotification error={error} />}
+        {error && <ErrorNotification error={error} />}
       </>
     );
   };
@@ -371,10 +370,14 @@ class PullRequestComment extends React.Component<Props, State> {
   createReplyEditorIfNeeded = (id: string) => {
     const replyComment = this.state.replyEditor;
     if (replyComment && replyComment.id === id) {
-      const {parent, comment} = this.props;
-      return <ReplyEditor comment={parent ? parent : comment}
-                          onCreation={this.onReplyCreated}
-                          onCancel={this.closeReplyEditor}/>;
+      const { parent, comment } = this.props;
+      return (
+        <ReplyEditor
+          comment={parent ? parent : comment}
+          onCreation={this.onReplyCreated}
+          onCancel={this.closeReplyEditor}
+        />
+      );
     }
   };
 
@@ -391,12 +394,10 @@ class PullRequestComment extends React.Component<Props, State> {
   }
 
   closeReplyEditor = () => {
-    this.setState(
-      {
-        replyEditor: undefined
-      }
-    );
-  }
+    this.setState({
+      replyEditor: undefined
+    });
+  };
 }
 
 export default withTranslation("plugins")(PullRequestComment);

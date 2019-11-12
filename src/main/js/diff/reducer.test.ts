@@ -69,7 +69,7 @@ describe("diff comment reducer tests", () => {
   it("should append file comment", () => {
     const prevState: State = {
       files: {
-        ["test.txt"]: {
+        "test.txt": {
           comments: ["one"]
         }
       },
@@ -89,7 +89,7 @@ describe("diff comment reducer tests", () => {
   it("should create new file comment", () => {
     const prevState: State = {
       files: {
-        ["a.txt"]: {
+        "a.txt": {
           comments: ["one"]
         }
       },
@@ -114,8 +114,8 @@ describe("diff comment reducer tests", () => {
     const prevState: State = {
       files: {},
       lines: {
-        ["a.txt_@@ -28,12 +27,10 @@"]: {
-          ["I27"]: {
+        "a.txt_@@ -28,12 +27,10 @@": {
+          I27: {
             comments: ["one"],
             location
           }
@@ -135,7 +135,7 @@ describe("diff comment reducer tests", () => {
   it("should update file comment", () => {
     const prevState: State = {
       files: {
-        ["a.txt"]: {
+        "a.txt": {
           comments: ["one"]
         }
       },
@@ -154,7 +154,7 @@ describe("diff comment reducer tests", () => {
     const one = createTestFileComment("one", "the awesome one", "a.txt");
     const prevState: State = {
       files: {
-        ["a.txt"]: {
+        "a.txt": {
           comments: ["one"]
         }
       },
@@ -179,8 +179,8 @@ describe("diff comment reducer tests", () => {
     const prevState: State = {
       files: {},
       lines: {
-        ["a.txt_@@ -28,12 +27,10 @@"]: {
-          ["I27"]: {
+        "a.txt_@@ -28,12 +27,10 @@": {
+          I27: {
             comments: ["one"],
             location
           }
@@ -279,7 +279,7 @@ describe("diff comment reducer tests", () => {
   it("should set file edit state to false", () => {
     const prevState: State = {
       files: {
-        ["a.txt"]: {
+        "a.txt": {
           comments: [],
           editor: true
         }
@@ -319,8 +319,8 @@ describe("diff comment reducer tests", () => {
     const prevState: State = {
       files: {},
       lines: {
-        ["a.txt_@@ -28,12 +27,10 @@"]: {
-          ["I27"]: {
+        "a.txt_@@ -28,12 +27,10 @@": {
+          I27: {
             comments: [],
             editor: true,
             location

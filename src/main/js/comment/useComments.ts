@@ -31,7 +31,7 @@ const useComments = (pullRequest: PullRequest, dispatch: Dispatch<any>): Respons
         setLoading(false);
         setError(error);
       });
-  }, [pullRequest]);
+  }, [dispatch, pullRequest]);
 
   return {
     loading,
