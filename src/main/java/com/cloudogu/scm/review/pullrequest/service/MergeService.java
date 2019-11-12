@@ -76,7 +76,7 @@ public class MergeService {
             .setAncestorChangeset(targetRevision)
             .getChangesets()
             .getChangesets()
-            .forEach(c -> builder.append("-- ").append(c.getDescription()).append("\n\n"));
+            .forEach(c -> builder.append("-- ").append(c.getDescription()).append("\n"));
           return builder.toString();
         } catch (IOException e) {
           throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()),
