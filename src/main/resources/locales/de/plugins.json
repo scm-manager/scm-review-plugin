@@ -33,6 +33,7 @@
       "tabs": {
         "commits": "Commits",
         "diff": "Diff",
+        "conflicts": "Konflikte",
         "comments": "Comments"
       },
       "noChangesets": "Keine Changesets gefunden."

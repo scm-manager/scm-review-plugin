@@ -7,6 +7,7 @@ import { Link, Redirect, Route, Switch, withRouter, RouteComponentProps } from "
 import RootComments from "./comment/RootComments";
 import { PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
+import MergeConflicts from "./MergeConflicts";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -44,9 +45,11 @@ class PullRequestInformation extends React.Component<Props> {
 
     let changesetTab = null;
     let diffTab = null;
+    let conflictsTab = null;
     let routeChangeset = null;
     let routeChangesetPagination = null;
     let routeDiff = null;
+    let routeConflicts = null;
 
     if (status && status === "OPEN") {
       changesetTab = (
@@ -80,6 +83,20 @@ class PullRequestInformation extends React.Component<Props> {
           <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pullRequest.tabs.diff")}</Link>
         </li>
       );
+      routeConflicts = (
+        <Route
+          path={`${baseURL}/conflicts`}
+          render={() => (
+            <MergeConflicts repository={repository} pullRequest={pullRequest} source={source} target={target} />
+          )}
+          exact
+        />
+      );
+      conflictsTab = (
+        <li className={this.navigationClass("conflicts")}>
+          <Link to={`${baseURL}/conflicts/`}>{t("scm-review-plugin.pullRequest.tabs.conflicts")}</Link>
+        </li>
+      );
     }
     const routes = (
       <Switch>
@@ -88,6 +105,7 @@ class PullRequestInformation extends React.Component<Props> {
         {routeChangeset}
         {routeChangesetPagination}
         {routeDiff}
+        {routeConflicts}
       </Switch>
     );
 
@@ -106,6 +124,7 @@ class PullRequestInformation extends React.Component<Props> {
             {commentTab}
             {changesetTab}
             {diffTab}
+            {conflictsTab}
           </ul>
         </div>
         {routes}

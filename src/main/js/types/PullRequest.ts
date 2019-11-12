@@ -88,3 +88,12 @@ export type MergeCommit = {
   author: DisplayedUser;
   shouldDeleteSourceBranch: boolean;
 };
+export type Conflict = {
+  type: string;
+  path: string;
+  diff: string;
+};
+
+export type Conflicts = {
+  conflicts: Conflict[];
+};
