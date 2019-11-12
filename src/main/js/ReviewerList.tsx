@@ -11,7 +11,7 @@ type Props = WithTranslation & {
 
 type State = {};
 
-const UserLabel = styled.div.attrs(props => ({
+const UserLabel = styled.div.attrs(() => ({
   className: "field-label is-inline-flex"
 }))`
   text-align: left;
@@ -19,7 +19,7 @@ const UserLabel = styled.div.attrs(props => ({
   min-width: 5.5em;
 `;
 
-const UserField = styled.div.attrs(props => ({
+const UserField = styled.div.attrs(() => ({
   className: "field-body is-inline-flex"
 }))`
   flex-grow: 8;
