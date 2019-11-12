@@ -118,6 +118,20 @@ export function getPullRequests(url: string) {
     });
 }
 
+export function getReviewer(url: string) {
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .then(reviewer => {
+      return reviewer;
+    })
+    .catch(err => {
+      return {
+        error: err
+      };
+    });
+}
+
 export function getApproval(url: string) {
   return apiClient
     .get(url)

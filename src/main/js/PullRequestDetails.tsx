@@ -14,16 +14,16 @@ import {
   MarkdownView,
   Button,
   Tag,
-  ButtonGroup,
-  Icon
+  ButtonGroup
 } from "@scm-manager/ui-components";
-import { PullRequest } from "./types/PullRequest";
-import { merge, reject } from "./pullRequest";
+import { PullRequest, Reviewer } from "./types/PullRequest";
+import { getReviewer, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
 import ApprovalContainer from "./ApprovalContainer";
 import SubscriptionContainer from "./SubscriptionContainer";
+import ReviewerList from "./ReviewerList";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -33,6 +33,7 @@ type Props = WithTranslation &
 
 type State = {
   pullRequest: PullRequest;
+  reviewer: Reviewer[];
   error?: Error;
   loading: boolean;
   mergeHasNoConflict?: boolean;
@@ -64,11 +65,6 @@ const UserField = styled.div.attrs(props => ({
 `;
 
 const UserInline = styled.div`
-  display: inline-block;
-  font-weight: bold;
-`;
-
-const UserInlineListItem = styled.li`
   display: inline-block;
   font-weight: bold;
 `;
@@ -113,6 +109,7 @@ class PullRequestDetails extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      ...this.state,
       loading: false,
       pullRequest: this.props.pullRequest,
       mergeButtonLoading: true,
@@ -134,6 +131,24 @@ class PullRequestDetails extends React.Component<Props, State> {
         from: this.props.match.url + "/updated"
       }
     });
+  };
+
+  fetchReviewer = (): void => {
+    const { pullRequest } = this.props;
+    if (pullRequest._links.self && pullRequest._links.self.href) {
+      const url = this.props.pullRequest._links.self.href + "?fields=reviewer";
+      getReviewer(url).then(response => {
+        if (response.error) {
+          this.setState({
+            error: response.error
+          });
+        } else {
+          this.setState({
+            reviewer: response.reviewer
+          });
+        }
+      });
+    }
   };
 
   getMergeDryRun(pullRequest: PullRequest) {
@@ -321,36 +336,6 @@ class PullRequestDetails extends React.Component<Props, State> {
         </UserField>
       </div>
     );
-    const reviewerList = (
-      <>
-        {pullRequest.reviewer.length > 0 ? (
-          <div className="field is-horizontal">
-            <UserLabel>{t("scm-review-plugin.pullRequest.reviewer")}:</UserLabel>
-            <UserField>
-              <ul className="is-separated">
-                {pullRequest.reviewer.map(reviewer => {
-                  if (reviewer.approved) {
-                    return (
-                      <UserInlineListItem key={reviewer.id}>
-                        {reviewer.displayName}{" "}
-                        <Icon
-                          title={t("scm-review-plugin.pullRequest.details.approved")}
-                          name="check"
-                          color="success"
-                        />
-                      </UserInlineListItem>
-                    );
-                  }
-                  return <UserInlineListItem key={reviewer.id}>{reviewer.displayName}</UserInlineListItem>;
-                })}
-              </ul>
-            </UserField>
-          </div>
-        ) : (
-          ""
-        )}
-      </>
-    );
     return (
       <>
         <Container>
@@ -398,14 +383,14 @@ class PullRequestDetails extends React.Component<Props, State> {
           <UserList className="media">
             <div className="media-content">
               {author}
-              {reviewerList}
+              <ReviewerList pullRequest={pullRequest} reviewer={this.state.reviewer} />
             </div>
           </UserList>
 
           <LevelWrapper className="level">
             <div className="level-left">
               <div className="level-item">
-                <ApprovalContainer pullRequest={pullRequest} />
+                <ApprovalContainer pullRequest={pullRequest} refreshReviewer={() => this.fetchReviewer()} />
               </div>
             </div>
             <div className="level-right">

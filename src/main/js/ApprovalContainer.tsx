@@ -7,6 +7,7 @@ import DisapprovalButton from "./DisapprovalButton";
 
 type Props = {
   pullRequest: PullRequest;
+  refreshReviewer: () => void;
 };
 
 type State = {
@@ -59,7 +60,7 @@ export default class ApprovalContainer extends React.Component<Props, State> {
   }
 
   handleApproval = () => {
-    const { pullRequest } = this.props;
+    const { pullRequest, refreshReviewer } = this.props;
     const { link } = this.state;
     this.setState({
       loading: true
@@ -69,6 +70,7 @@ export default class ApprovalContainer extends React.Component<Props, State> {
         this.setState({
           error: response.error
         });
+        refreshReviewer();
         this.getApproval(pullRequest);
       });
     }
