@@ -25,6 +25,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.HookBranchProvider;
 import sonia.scm.repository.api.HookContext;
+import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.api.HookMessageProvider;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -92,6 +94,7 @@ class MergeCheckHookTest {
     when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
     when(configuration.getBaseUrl()).thenReturn("http://example.com/");
     when(event.getContext()).thenReturn(hookContext);
+    when(hookContext.isFeatureSupported(MESSAGE_PROVIDER)).thenReturn(true);
     when(hookContext.getMessageProvider()).thenReturn(messageProvider);
     doNothing().when(messageProvider).sendMessage(messageCaptor.capture());
   }

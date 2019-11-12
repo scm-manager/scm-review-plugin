@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.ExceptionMessageMapper;
+import com.cloudogu.scm.review.pullrequest.service.MergeConflictException;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableList;
@@ -14,8 +15,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
+import sonia.scm.repository.api.MergeStrategy;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -25,7 +28,12 @@ import static com.google.common.io.Resources.getResource;
 import static com.google.common.io.Resources.toByteArray;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.repository.api.MergeStrategy.SQUASH;
 
 @SubjectAware(
   configuration = "classpath:com/cloudogu/scm/review/shiro.ini",
@@ -34,7 +42,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class MergeResourceTest {
 
-  private final String MERGE_URL = "/" + MergeResource.MERGE_PATH_V2 + "/space/name";
+  private final String MERGE_URL = "/" + MergeResource.MERGE_PATH_V2 + "/space/name/1";
 
   private Dispatcher dispatcher;
   private final MockHttpResponse response = new MockHttpResponse();
@@ -54,26 +62,13 @@ class MergeResourceTest {
 
   @Test
   void shouldMergeWithSquash() throws URISyntaxException, IOException {
-    when(mergeService.merge(any(), any(), any())).thenReturn(MergeCommandResult.success());
     byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
 
-    MockHttpRequest request = createHttpRequest(MERGE_URL, mergeCommitJson);
+    MockHttpRequest request = createHttpRequest(MERGE_URL + "?strategy=SQUASH", mergeCommitJson);
 
     dispatcher.invoke(request, response);
+    verify(mergeService).merge(eq(new NamespaceAndName("space", "name")), eq("1"), any(), eq(SQUASH));
     assertThat(response.getStatus()).isEqualTo(204);
-  }
-
-  @Test
-  void shouldThrowExceptionIfMergeNotSuccessful() throws URISyntaxException, IOException {
-    ImmutableList<String> conflicts = ImmutableList.of("a", "b");
-    when(mergeService.merge(any(), any(), any())).thenReturn(MergeCommandResult.failure(conflicts));
-    byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
-
-    MockHttpRequest request = createHttpRequest(MERGE_URL, mergeCommitJson);
-
-    dispatcher.invoke(request, response);
-    assertThat(response.getStatus()).isEqualTo(400);
-    assertThat(response.getContentAsString()).contains("MergeConflictException", "conflict in merge between squash and master");
   }
 
   @Test

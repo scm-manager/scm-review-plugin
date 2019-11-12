@@ -150,13 +150,13 @@ public class PullRequestResourceLinks {
       this.mergeLinkBuilder = new LinkBuilder(pathInfo, MergeResource.class);
     }
 
-    public String dryRun(String namespace, String name) {
-      return mergeLinkBuilder.method("dryRun").parameters(namespace, name).href();
+    public String dryRun(String namespace, String name, String pullRequestId) {
+      return mergeLinkBuilder.method("dryRun").parameters(namespace, name, pullRequestId).href();
     }
 
-    public String merge(String namespace, String name, MergeStrategy strategy) {
+    public String merge(String namespace, String name, String pullRequestId, MergeStrategy strategy) {
       return mergeLinkBuilder
-        .method("merge").parameters(namespace, name).href() + "?strategy=" + strategy;
+        .method("merge").parameters(namespace, name, pullRequestId).href() + "?strategy=" + strategy;
     }
   }
 }
