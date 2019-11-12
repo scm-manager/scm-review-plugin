@@ -1,6 +1,6 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Button } from "@scm-manager/ui-components";
+import { Button, Icon } from "@scm-manager/ui-components";
 
 type Props = WithTranslation & {
   loading: boolean;
@@ -14,12 +14,13 @@ class SubscribeButton extends React.Component<Props, State> {
     const { loading, action, t } = this.props;
     return (
       <Button
-        label={t("scm-review-plugin.pullRequest.details.buttons.subscribe")}
         loading={loading}
         action={action}
+        title={t("scm-review-plugin.pullRequest.details.buttons.subscribe")}
         color="link is-outlined"
-        icon="plus"
-      />
+      >
+        <Icon name="plus" color="inherit" />
+      </Button>
     );
   }
 }

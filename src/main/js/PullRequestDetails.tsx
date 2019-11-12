@@ -14,7 +14,8 @@ import {
   Notification,
   Tag,
   Title,
-  Tooltip
+  Tooltip,
+  Icon
 } from "@scm-manager/ui-components";
 import { PullRequest, MergeCommit, Reviewer } from "./types/PullRequest";
 import { getReviewer, dryRun, merge, reject } from "./pullRequest";
@@ -153,7 +154,9 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   shouldRunDryMerge = (pullRequest: PullRequest) => {
-    return pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN";
+    return (
+      pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN"
+    );
   };
 
   getMergeDryRun(pullRequest: PullRequest) {
@@ -319,11 +322,11 @@ class PullRequestDetails extends React.Component<Props, State> {
       editButton = (
         <Button
           link={toEdit}
+          title={t("scm-review-plugin.pullRequest.details.buttons.edit")}
           color="link is-outlined"
-          label={t("scm-review-plugin.pullRequest.details.buttons.edit")}
-          icon="edit"
-          reducedMobile={true}
-        />
+        >
+          <Icon name="edit" color="inherit" />
+        </Button>
       );
     }
 
