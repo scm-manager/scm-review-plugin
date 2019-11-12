@@ -40,16 +40,26 @@
     "show-pull-request": {
       "error-title": "Error",
       "error-subtitle": "Unknown pull request error",
-      "mergeButton": {
+      "merge-button": {
         "button-title": "Merge Pull Request",
-        "confirm-alert": {
-          "title": "Merge Pull Request",
-          "message": "Do you really want to merge?",
-          "submit": "Yes",
-          "cancel": "No"
-        },
         "merge-information": "Cannot be merged automatically"
       },
+      "merge-modal": {
+        "title": "Merge Pull Request",
+        "merge": "Merge",
+        "cancel": "Cancel"
+      },
+      "merge-strategies": {
+        "SQUASH": "Squash",
+        "MERGE_COMMIT": "Merge Commit",
+        "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward if possible",
+        "help": {
+          "SQUASH": "Squash all commits of source branch into one new commit --and merge into-- on top of the target branch",
+          "MERGE_COMMIT": "Merge branches with new commit and custom commit message",
+          "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit. If a fast forward is not possible, a normal merge commit will be created."
+        }
+      },
+      "commit-message": "Please insert your commit message",
       "rejectButton": {
         "button-title": "Reject Pull Request",
         "confirm-alert": {
@@ -183,6 +193,12 @@
         "displayName": "merge/reject pull requests",
         "description": "May merge or reject pull requests (merge needs additional permission to push the repository)"
       }
+    }
+  },
+  "errors": {
+    "DTRhFJFgU1": {
+      "displayName": "Merge conflict",
+      "description": "The branches could not be merged because there were merge conflicts."
     }
   }
 }
