@@ -71,9 +71,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   }
 
   private DisplayUser getUserIfAvailable(Map.Entry<String, Boolean> entry) {
-    DisplayUser user = userDisplayManager.get(entry.getKey()).isPresent()
-      ? userDisplayManager.get(entry.getKey()).get()
-      : null;
+    Optional<DisplayUser> childDisplayUser = userDisplayManager.get(entry.getKey());
+    DisplayUser user = childDisplayUser.orElse(null);
 
     if (user == null) {
       throw new NotFoundException(DisplayUser.class, String.format("User %s not found", entry.getKey()));
