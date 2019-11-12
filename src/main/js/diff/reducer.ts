@@ -1,5 +1,12 @@
 import {Comment, Location} from "../types/PullRequest";
-import { Action, ActionType, CommentAction, ReplyAction, FetchAllAction } from "../comment/actiontypes";
+import {
+  Action,
+  ActionType,
+  CommentAction,
+  ReplyAction,
+  FetchAllAction,
+  EditorAction
+} from "../comment/actiontypes";
 import produce from "immer";
 import {createChangeIdFromLocation, createHunkIdFromLocation, isInlineLocation} from "./locations";
 
@@ -118,6 +125,40 @@ const removeLineComment = (lineComments: LineCommentCollection, comment: Comment
   }
 };
 
+const setEditState = (state: State, editor: boolean, location?: Location) => {
+  if (!location) {
+    throw new Error("location is required");
+  }
+
+  if (isInlineLocation(location)) {
+    const lineComments = state.lines;
+
+    const hunkId = createHunkIdFromLocation(location);
+    const changeId = createChangeIdFromLocation(location);
+    const hunkComments = lineComments[hunkId] || {};
+
+    const changeComments = hunkComments[changeId] || {
+      location,
+      comments: []
+    };
+    changeComments.editor = editor;
+
+    hunkComments[changeId] = changeComments;
+    lineComments[hunkId] = hunkComments;
+  } else {
+    const fileComments = state.files;
+
+    const file = location.file;
+    const fileState = fileComments[file] || {
+      comments: []
+    };
+
+    fileState.editor = editor;
+
+    fileComments[file] = fileState;
+  }
+};
+
 const reducers: { [type in ActionType]: Reducer } = {
   fetchAll: (state: State, a: Action) => {
     const action = a as FetchAllAction;
@@ -217,10 +258,23 @@ const reducers: { [type in ActionType]: Reducer } = {
         }
       }
     });
-  }
+  },
+  openEditor: (state: State, a: Action) => {
+    const { location } = a as EditorAction;
+    return produce(state, draft => {
+      setEditState(draft, true, location)
+    });
+  },
+  closeEditor: (state: State, a: Action) => {
+    const { location } = a as EditorAction;
+    return produce(state, draft => {
+      setEditState(draft, false, location)
+    });
+  },
 };
 
 const reducer = (state: State, action: Action) => {
+  console.log(action);
   const nextState = reducers[action.type](state, action);
   return nextState || state;
 };

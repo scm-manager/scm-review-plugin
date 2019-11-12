@@ -79,6 +79,12 @@ const reducers: { [type in ActionType]: Reducer } = {
         }
       });
     }
+  },
+  openEditor: (state: State, a: Action) => {
+    return state;
+  },
+  closeEditor: (state: State, a: Action) => {
+    return state;
   }
 };
 

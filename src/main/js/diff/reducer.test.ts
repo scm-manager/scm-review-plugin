@@ -1,10 +1,12 @@
 import { Comment, Location } from "../types/PullRequest";
 import {
+  closeEditor,
   createComment,
   createReply,
   deleteComment,
   deleteReply,
   fetchAll,
+  openEditor,
   updateComment,
   updateReply
 } from "../comment/actiontypes";
@@ -73,7 +75,7 @@ describe("diff comment reducer tests", () => {
       },
       lines: {},
       comments: {
-        "one": createTestFileComment("one", "comment one", "test.txt")
+        one: createTestFileComment("one", "comment one", "test.txt")
       }
     };
 
@@ -93,7 +95,7 @@ describe("diff comment reducer tests", () => {
       },
       lines: {},
       comments: {
-        "one": createTestFileComment("one", "comment one", "a.txt")
+        one: createTestFileComment("one", "comment one", "a.txt")
       }
     };
 
@@ -120,7 +122,7 @@ describe("diff comment reducer tests", () => {
         }
       },
       comments: {
-        "one": createTestInlineComment("one", "comment one", location)
+        one: createTestInlineComment("one", "comment one", location)
       }
     };
 
@@ -139,7 +141,7 @@ describe("diff comment reducer tests", () => {
       },
       lines: {},
       comments: {
-        "one": createTestFileComment("one", "comment one", "a.txt")
+        one: createTestFileComment("one", "comment one", "a.txt")
       }
     };
 
@@ -158,7 +160,7 @@ describe("diff comment reducer tests", () => {
       },
       lines: {},
       comments: {
-        "one": one
+        one: one
       }
     };
 
@@ -185,7 +187,7 @@ describe("diff comment reducer tests", () => {
         }
       },
       comments: {
-        "one": one
+        one: one
       }
     };
 
@@ -199,7 +201,7 @@ describe("diff comment reducer tests", () => {
       files: {},
       lines: {},
       comments: {
-        "one": createTestFileComment("one", "comment one", "a.txt")
+        one: createTestFileComment("one", "comment one", "a.txt")
       }
     };
 
@@ -209,24 +211,21 @@ describe("diff comment reducer tests", () => {
     if (one && one._embedded && one._embedded.replies) {
       expect(one._embedded.replies.length).toBe(1);
     } else {
-      fail("no replies available")
+      fail("no replies available");
     }
-
   });
 
   it("should delete reply", () => {
     const one = createTestFileComment("one", "comment one", "a.txt");
     const two = createTestComment("two", "comment two");
     one._embedded = {
-      replies: [
-        two
-      ]
+      replies: [two]
     };
     const prevState: State = {
       files: {},
       lines: {},
       comments: {
-        "one": one
+        one: one
       }
     };
 
@@ -235,7 +234,7 @@ describe("diff comment reducer tests", () => {
     if (stateOne && stateOne._embedded && stateOne._embedded.replies) {
       expect(stateOne._embedded.replies.length).toBe(0);
     } else {
-      fail("failed to access replies")
+      fail("failed to access replies");
     }
   });
 
@@ -243,15 +242,13 @@ describe("diff comment reducer tests", () => {
     const one = createTestFileComment("one", "comment one", "a.txt");
     const two = createTestComment("two", "comment two");
     one._embedded = {
-      replies: [
-        two
-      ]
+      replies: [two]
     };
     const prevState: State = {
       files: {},
       lines: {},
       comments: {
-        "one": one
+        one: one
       }
     };
 
@@ -262,7 +259,78 @@ describe("diff comment reducer tests", () => {
     if (stateOne && stateOne._embedded && stateOne._embedded.replies) {
       expect(stateOne._embedded.replies[0].comment).toBe("updated two");
     } else {
-      fail("failed to access replies")
+      fail("failed to access replies");
     }
+  });
+
+  it("should set file edit state to true", () => {
+    const prevState: State = {
+      files: {},
+      lines: {},
+      comments: {}
+    };
+    const location: Location = {
+      file: "a.txt"
+    };
+    const state = reducer(prevState, openEditor(location));
+    expect(state.files["a.txt"].editor).toBe(true);
+  });
+
+  it("should set file edit state to false", () => {
+    const prevState: State = {
+      files: {
+        ["a.txt"]: {
+          comments: [],
+          editor: true
+        }
+      },
+      lines: {},
+      comments: {}
+    };
+    const location: Location = {
+      file: "a.txt"
+    };
+    const state = reducer(prevState, closeEditor(location));
+    expect(state.files["a.txt"].editor).toBe(false);
+  });
+
+  it("should set line edit state to true", () => {
+    const prevState: State = {
+      files: {},
+      lines: {},
+      comments: {}
+    };
+    const location: Location = {
+      file: "a.txt",
+      hunk: "@@ -28,12 +27,10 @@",
+      newLineNumber: 27
+    };
+    const state = reducer(prevState, openEditor(location));
+    expect(state.lines["a.txt_@@ -28,12 +27,10 @@"]["I27"].editor).toBe(true);
+  });
+
+  it("should set line edit state to false", () => {
+    const location: Location = {
+      file: "a.txt",
+      hunk: "@@ -28,12 +27,10 @@",
+      newLineNumber: 27
+    };
+
+    const prevState: State = {
+      files: {},
+      lines: {
+        ["a.txt_@@ -28,12 +27,10 @@"]: {
+          ["I27"]: {
+            comments: [],
+            editor: true,
+            location
+          }
+        }
+      },
+      comments: {}
+    };
+
+    const state = reducer(prevState, closeEditor(location));
+    expect(state.lines["a.txt_@@ -28,12 +27,10 @@"]["I27"].editor).toBe(false);
   });
 });

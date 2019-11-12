@@ -1,22 +1,10 @@
-import React, {Dispatch} from "react";
+import React, { Dispatch } from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
-import { Link } from "@scm-manager/ui-types";
 import { DiffEventContext, File, AnnotationFactoryContext } from "@scm-manager/ui-components";
 import { Location, Comment } from "../types/PullRequest";
-import {
-  Level,
-  Button,
-  LoadingDiff,
-  diffs
-} from "@scm-manager/ui-components";
-import {
-  createHunkId,
-  createHunkIdFromLocation,
-  createInlineLocation,
-  isInlineLocation,
-  createChangeIdFromLocation
-} from "./locations";
+import { Level, Button, LoadingDiff, diffs } from "@scm-manager/ui-components";
+import { createHunkId, createInlineLocation } from "./locations";
 import PullRequestComment from "../comment/PullRequestComment";
 import CreateComment from "../comment/CreateComment";
 import CommentSpacingWrapper from "../comment/CommentSpacingWrapper";
@@ -24,8 +12,8 @@ import InlineComments from "./InlineComments";
 import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
-import {DiffRelatedCommentCollection, FileCommentState} from "./reducer";
-import {createComment} from "../comment/actiontypes";
+import { DiffRelatedCommentCollection } from "./reducer";
+import { closeEditor, createComment, openEditor } from "../comment/actiontypes";
 
 const LevelWithMargin = styled(Level)`
   margin-bottom: 1rem !important;
@@ -45,7 +33,6 @@ type Props = WithTranslation & {
 };
 
 type State = {
-  createLink?: Link;
   collapsed: boolean;
 };
 
@@ -59,7 +46,7 @@ class Diff extends React.Component<Props, State> {
 
   render() {
     const { diffUrl, t } = this.props;
-    const {  collapsed } = this.state;
+    const { collapsed } = this.state;
 
     return (
       <StyledDiffWrapper commentable={this.isPermittedToComment()}>
@@ -110,7 +97,7 @@ class Diff extends React.Component<Props, State> {
   };
 
   annotationFactory = (context: AnnotationFactoryContext) => {
-    const annotations: {[key: string]: React.ReactNode} = {};
+    const annotations: { [key: string]: React.ReactNode } = {};
 
     const hunkId = createHunkId(context);
     const hunkState = this.props.comments.lines[hunkId];
@@ -147,7 +134,9 @@ class Diff extends React.Component<Props, State> {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         setCollapse(false);
-        this.setFileEditor(path, true);
+        this.openEditor({
+          file: path
+        });
       };
       return <AddCommentButton action={openFileEditor} />;
     }
@@ -161,61 +150,17 @@ class Diff extends React.Component<Props, State> {
   };
 
   openEditor = (location: Location) => {
-    if (isInlineLocation(location)) {
-      this.setLineEditor(location, true);
-    } else {
-      this.setFileEditor(location.file, true);
-    }
+    const { dispatch } = this.props;
+    dispatch(openEditor(location));
   };
 
-  closeEditor = (location: Location, callback?: () => void) => {
-    if (isInlineLocation(location)) {
-      this.setLineEditor(location, false, callback);
-    } else {
-      this.setFileEditor(location.file, false, callback);
-    }
-  };
-
-  setFileEditor = (path: string, showEditor: boolean, callback?: () => void) => {
-    this.setState(state => {
-      const current = state.files[path] || {};
-      return {
-        files: {
-          ...state.files,
-          [path]: {
-            editor: showEditor,
-            comments: current.comments || []
-          }
-        }
-      };
-    }, callback);
+  closeEditor = (location: Location) => {
+    const { dispatch } = this.props;
+    dispatch(closeEditor(location));
   };
 
   isPermittedToComment = () => {
-    return !!this.state.createLink;
-  };
-
-  setLineEditor = (location: Location, showEditor: boolean, callback?: () => void) => {
-    const hunkId = createHunkIdFromLocation(location);
-    const changeId = createChangeIdFromLocation(location);
-
-    this.setState(state => {
-      const currentHunk = state.lines[hunkId] || {};
-      const currentLine = currentHunk[changeId] || {};
-      return {
-        lines: {
-          ...state.lines,
-          [hunkId]: {
-            ...currentHunk,
-            [changeId]: {
-              editor: showEditor,
-              location,
-              comments: currentLine.comments || []
-            }
-          }
-        }
-      };
-    }, callback);
+    return !!this.props.createLink;
   };
 
   findComment = (id: string): Comment => {
@@ -233,11 +178,7 @@ class Diff extends React.Component<Props, State> {
       <>
         {commentIds.map((commentId: string) => (
           <CommentWrapper key={commentId} className="comment-wrapper">
-            <PullRequestComment
-              comment={this.findComment(commentId)}
-              createLink={createLink}
-              dispatch={dispatch}
-            />
+            <PullRequestComment comment={this.findComment(commentId)} createLink={createLink} dispatch={dispatch} />
           </CommentWrapper>
         ))}
       </>
@@ -250,11 +191,11 @@ class Diff extends React.Component<Props, State> {
   };
 
   createNewCommentEditor = (location: Location) => {
-    if (this.state.createLink) {
+    if (this.props.createLink) {
       return (
         <CommentSpacingWrapper>
           <CreateComment
-            url={this.state.createLink.href}
+            url={this.props.createLink}
             location={location}
             onCreation={this.onCreation}
             onCancel={() => this.closeEditor(location)}
