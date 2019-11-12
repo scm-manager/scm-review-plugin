@@ -1,6 +1,6 @@
-import {BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest} from "./types/PullRequest";
-import {apiClient, ConflictError, NotFoundError} from "@scm-manager/ui-components";
-import {Link, Repository} from "@scm-manager/ui-types";
+import { BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest } from "./types/PullRequest";
+import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
+import { Link, Repository } from "@scm-manager/ui-types";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
@@ -171,27 +171,21 @@ export function handleSubscription(url: string) {
 }
 
 export function merge(url: string, mergeCommit: MergeCommit) {
-  return apiClient
-    .post(
-      url,
-      mergeCommit,
-      "application/vnd.scmm-mergeCommand+json"
-    )
-    .catch(err => {
-      if (err instanceof ConflictError) {
-        return {
-          conflict: err
-        };
-      } else if (err instanceof NotFoundError) {
-        return {
-          notFound: err
-        };
-      } else {
-        return {
-          error: err
-        };
-      }
-    });
+  return apiClient.post(url, mergeCommit, "application/vnd.scmm-mergeCommand+json").catch(err => {
+    if (err instanceof ConflictError) {
+      return {
+        conflict: err
+      };
+    } else if (err instanceof NotFoundError) {
+      return {
+        notFound: err
+      };
+    } else {
+      return {
+        error: err
+      };
+    }
+  });
 }
 
 export function dryRun(pullRequest: PullRequest) {

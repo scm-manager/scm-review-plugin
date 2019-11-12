@@ -3,15 +3,16 @@ import { Title, Subtitle, SubmitButton, ErrorNotification, Loading } from "@scm-
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import { updatePullRequest } from "./pullRequest";
-import { WithTranslation, withTranslation, Trans } from "react-i18next";
+import { WithTranslation, withTranslation } from "react-i18next";
 import { withRouter, RouteComponentProps } from "react-router-dom";
 import EditForm from "./EditForm";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  pullRequest: PullRequest;
-  userAutocompleteLink: string;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    pullRequest: PullRequest;
+    userAutocompleteLink: string;
+  };
 
 type State = {
   modifiedPullRequest: PullRequest;
@@ -82,19 +83,11 @@ class Edit extends React.Component<Props, State> {
       return <Loading />;
     }
 
-    const subtitle = (
-      <Trans
-        i18nKey="scm-review-plugin.edit.subtitle"
-        values={{
-          repositoryName: repository.name
-        }}
-      />
-    );
     return (
       <div className="columns">
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.edit.title")} />
-          <Subtitle subtitle={subtitle} />
+          <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
 
           {notification}
 

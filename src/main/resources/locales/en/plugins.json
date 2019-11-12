@@ -41,6 +41,7 @@
       "details": {
         "notification": "Pull request merged successfully!",
         "targetDeleted": "The target branch has been deleted!",
+        "approved": "Approved by {{name}}",
         "buttons": {
           "edit": "Edit",
           "approve": "Approve",

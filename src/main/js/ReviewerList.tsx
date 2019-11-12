@@ -47,7 +47,7 @@ class ReviewerList extends React.Component<Props, State> {
                       <UserInlineListItem key={reviewer.id}>
                         {reviewer.displayName}{" "}
                         <Icon
-                          title={t("scm-review-plugin.pullRequest.details.approved")}
+                          title={t("scm-review-plugin.pullRequest.details.approved", { name: reviewer.displayName })}
                           name="check"
                           color="success"
                         />

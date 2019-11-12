@@ -40,7 +40,8 @@
       "noChangesets": "Keine Changesets gefunden.",
       "details": {
         "notification": "Pull Request erfolgreich gemerged!",
-        "targetDeleted": "Der Target Branch wurde gelösch!",
+        "targetDeleted": "Der Target Branch wurde gelöscht!",
+        "approved": "Freigegeben durch {{name}}",
         "buttons": {
           "edit": "Bearbeiten",
           "approve": "Freigeben",
