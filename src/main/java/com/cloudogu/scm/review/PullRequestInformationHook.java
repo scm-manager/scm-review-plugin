@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import java.util.List;
 
 import static java.lang.String.format;
+import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
 
 @EagerSingleton @Extension
 public class PullRequestInformationHook {
@@ -38,7 +39,7 @@ public class PullRequestInformationHook {
   public void checkForInformation(PostReceiveRepositoryHookEvent event) {
     if (PermissionCheck.mayRead(event.getRepository())) {
       try (RepositoryService repositoryService = serviceFactory.create(event.getRepository())) {
-        if (!repositoryService.isSupported(Command.MERGE)) {
+        if (!repositoryService.isSupported(Command.MERGE) || !event.getContext().isFeatureSupported(MESSAGE_PROVIDER)) {
           LOG.trace("ignoring post receive event for repository {}", event.getRepository().getNamespaceAndName());
           return;
         }

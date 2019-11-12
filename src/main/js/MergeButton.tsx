@@ -1,12 +1,13 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Button, confirmAlert } from "@scm-manager/ui-components";
+import { Button } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
-import { PullRequest } from "./types/PullRequest";
+import {MergeCommit, PullRequest} from "./types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
+import MergeModal from "./MergeModal";
 
 type Props = WithTranslation & {
-  merge: () => void;
+  merge: (strategy: string, commit: MergeCommit) => void;
   repository: Repository;
   mergeHasNoConflict: boolean;
   loading: boolean;
@@ -15,13 +16,15 @@ type Props = WithTranslation & {
 
 type State = {
   mergeInformation: boolean;
+  showMergeModal: boolean;
 };
 
 class MergeButton extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      mergeInformation: false
+      mergeInformation: false,
+      showMergeModal: false
     };
   }
 
@@ -37,33 +40,32 @@ class MergeButton extends React.Component<Props, State> {
     });
   };
 
-  confirmMerge = () => {
-    const { t, merge } = this.props;
-    confirmAlert({
-      title: t("scm-review-plugin.show-pull-request.mergeButton.confirm-alert.title"),
-      message: t("scm-review-plugin.show-pull-request.mergeButton.confirm-alert.message"),
-      buttons: [
-        {
-          label: t("scm-review-plugin.show-pull-request.mergeButton.confirm-alert.submit"),
-          onClick: () => merge()
-        },
-        {
-          label: t("scm-review-plugin.show-pull-request.mergeButton.confirm-alert.cancel"),
-          onClick: () => null
-        }
-      ]
-    });
+  toggleMergeModal = () => {
+    this.setState(prevState => ({
+      showMergeModal: !prevState.showMergeModal
+    }));
   };
 
   render() {
-    const { t, loading, mergeHasNoConflict, repository, pullRequest } = this.props;
-    const { mergeInformation } = this.state;
-    const action = mergeHasNoConflict ? this.confirmMerge : this.showInformation;
+    const { t, loading, mergeHasNoConflict, repository, pullRequest, merge } = this.props;
+    const { mergeInformation, showMergeModal } = this.state;
+    const action = mergeHasNoConflict ? this.toggleMergeModal : this.showInformation;
     const color = mergeHasNoConflict ? "primary" : "warning";
+
+    if (showMergeModal) {
+      return (
+        <MergeModal
+          merge={(strategy: string, mergeCommit: MergeCommit) => merge(strategy, mergeCommit)}
+          close={this.toggleMergeModal}
+          pullRequest={pullRequest}
+        />
+      );
+    }
+
     return (
       <p className="control">
         <Button
-          label={t("scm-review-plugin.show-pull-request.mergeButton.button-title")}
+          label={t("scm-review-plugin.show-pull-request.merge-button.button-title")}
           loading={loading}
           action={action}
           color={color}

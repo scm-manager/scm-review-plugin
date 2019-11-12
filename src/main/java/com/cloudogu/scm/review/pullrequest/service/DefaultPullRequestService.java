@@ -188,10 +188,11 @@ public class DefaultPullRequestService implements PullRequestService {
     subscriber.stream()
       .filter(recipient -> user.getId().equals(recipient))
       .findFirst()
-      .ifPresent(s -> pullRequest.removeSubscriber(s));
+      .ifPresent(pullRequest::removeSubscriber);
     store.update(pullRequest);
   }
 
+  @Override
   public void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
     pullRequest.setStatus(newStatus);
     getStore(repository).update(pullRequest);

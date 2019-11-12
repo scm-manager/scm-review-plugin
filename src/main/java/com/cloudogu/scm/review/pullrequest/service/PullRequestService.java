@@ -110,4 +110,6 @@ public interface PullRequestService {
   default void unsubscribe(Repository repository, String pullRequestId) {
     unsubscribe(repository, pullRequestId, getCurrentUser());
   }
+
+  void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus);
 }

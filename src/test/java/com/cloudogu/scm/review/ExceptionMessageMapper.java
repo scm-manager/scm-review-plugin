@@ -2,14 +2,15 @@ package com.cloudogu.scm.review;
 
 import org.apache.shiro.authz.UnauthorizedException;
 import org.jboss.resteasy.mock.MockHttpResponse;
+import sonia.scm.ConcurrentModificationException;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-
 import java.io.UnsupportedEncodingException;
 
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
 import static javax.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,9 +20,18 @@ public class ExceptionMessageMapper implements ExceptionMapper<Exception> {
   public Response toResponse(Exception exception) {
     exception.printStackTrace();
     return Response
-      .status(exception instanceof UnauthorizedException? SC_FORBIDDEN: SC_BAD_REQUEST)
+      .status(resolveResponseStatus(exception))
       .entity(exception.getClass().getName() + "\n" + exception.getMessage())
       .build();
+  }
+
+  private int resolveResponseStatus(Exception exception) {
+    if (exception instanceof UnauthorizedException) {
+      return SC_FORBIDDEN;
+    } else if (exception instanceof ConcurrentModificationException) {
+      return SC_CONFLICT;
+    }
+    return SC_BAD_REQUEST;
   }
 
   public static ExceptionAssert assertExceptionFrom(MockHttpResponse response) throws UnsupportedEncodingException {

@@ -2,22 +2,22 @@ import React from "react";
 import styled from "styled-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { withRouter, RouteComponentProps } from "react-router-dom";
-import { Repository } from "@scm-manager/ui-types";
+import { Repository, Link } from "@scm-manager/ui-types";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
-  DateFromNow,
-  Loading,
-  Notification,
-  Title,
-  ErrorNotification,
-  Tooltip,
-  MarkdownView,
   Button,
+  ButtonGroup,
+  DateFromNow,
+  ErrorNotification,
+  Loading,
+  MarkdownView,
+  Notification,
   Tag,
-  ButtonGroup
+  Title,
+  Tooltip
 } from "@scm-manager/ui-components";
-import { PullRequest, Reviewer } from "./types/PullRequest";
-import { getReviewer, merge, reject } from "./pullRequest";
+import { PullRequest, MergeCommit, Reviewer } from "./types/PullRequest";
+import { getReviewer, dryRun, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -114,7 +114,8 @@ class PullRequestDetails extends React.Component<Props, State> {
       pullRequest: this.props.pullRequest,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
-      showNotification: false
+      showNotification: false,
+      mergeHasNoConflict: false
     };
   }
 
@@ -151,10 +152,13 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
   };
 
+  shouldRunDryMerge = (pullRequest: PullRequest) => {
+    return pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN";
+  };
+
   getMergeDryRun(pullRequest: PullRequest) {
-    const { repository } = this.props;
-    if (repository._links.mergeDryRun && repository._links.mergeDryRun.href && pullRequest.status === "OPEN") {
-      merge(repository._links.mergeDryRun.href, pullRequest).then(response => {
+    if (this.shouldRunDryMerge(pullRequest)) {
+      dryRun(pullRequest).then(response => {
         if (response.conflict) {
           this.setState({
             mergeButtonLoading: false,
@@ -185,11 +189,14 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
   }
 
-  performMerge = () => {
-    const { repository } = this.props;
+  findStrategyLink = (links: Link[], strategy: string) => {
+    return links.filter(link => link.name === strategy)[0].href;
+  };
+
+  performMerge = (strategy: string, commit: MergeCommit) => {
     const { pullRequest } = this.state;
     this.setMergeButtonLoadingState();
-    merge(repository._links.merge.href, pullRequest).then(response => {
+    merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit).then(response => {
       if (response.error) {
         this.setState({
           error: response.error,
@@ -241,7 +248,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.setState({
       ...this.state,
       showNotification: false,
-      mergeConflict: false
+      mergeHasNoConflict: false
     });
   };
 
@@ -292,10 +299,10 @@ class PullRequestDetails extends React.Component<Props, State> {
     let rejectButton = null;
     if (pullRequest._links.reject) {
       rejectButton = <RejectButton reject={() => this.performReject()} loading={rejectButtonLoading} />;
-      if (!!repository._links.merge) {
+      if (!!pullRequest._links.merge) {
         mergeButton = targetBranchDeleted ? null : (
           <MergeButton
-            merge={() => this.performMerge()}
+            merge={(strategy: string, commit: MergeCommit) => this.performMerge(strategy, commit)}
             mergeHasNoConflict={mergeHasNoConflict}
             loading={mergeButtonLoading}
             repository={repository}
@@ -306,7 +313,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
 
     let editButton = null;
-    if (pullRequest._links.update && pullRequest._links.update.href) {
+    if (pullRequest._links.update && (pullRequest._links.update as Link).href) {
       const toEdit =
         "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
       editButton = (
