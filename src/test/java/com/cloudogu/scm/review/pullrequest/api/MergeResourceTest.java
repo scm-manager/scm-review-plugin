@@ -67,7 +67,7 @@ class MergeResourceTest {
   }
 
   @Test
-  void shouldReturnConflictsIfMergeNotSuccessful() throws URISyntaxException, IOException {
+  void shouldThrowExceptionIfMergeNotSuccessful() throws URISyntaxException, IOException {
     ImmutableList<String> conflicts = ImmutableList.of("a", "b");
     when(mergeService.merge(any(), any(), any())).thenReturn(MergeCommandResult.failure(conflicts));
     byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
@@ -75,7 +75,8 @@ class MergeResourceTest {
     MockHttpRequest request = createHttpRequest(MERGE_URL, mergeCommitJson);
 
     dispatcher.invoke(request, response);
-    assertThat(response.getStatus()).isEqualTo(409);
+    assertThat(response.getStatus()).isEqualTo(400);
+    assertThat(response.getContentAsString()).contains("MergeConflictException", "conflict in merge between squash and master");
   }
 
   @Test

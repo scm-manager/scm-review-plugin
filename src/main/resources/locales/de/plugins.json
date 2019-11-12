@@ -194,5 +194,11 @@
         "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
       }
     }
+  },
+  "errors": {
+    "DTRhFJFgU1": {
+      "displayName": "Merge Konflikte",
+      "description": "Die Branches konnten nicht gemerged werden, da Konflikte existieren."
+    }
   }
 }
