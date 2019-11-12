@@ -43,7 +43,7 @@ public class BranchRevisionResolver {
       if (repositoryService.isSupported(Command.BRANCHES)) {
         List<Branch> branches = repositoryService.getBranchesCommand().getBranches().getBranches();
         if (!branchExists(branch, branches)) {
-          return "";
+          return ""; // This can happen for old pull requests whose branches have been deleted. Therefore this is no error.
         }
       }
       LogCommandBuilder logCommand = repositoryService.getLogCommand();
