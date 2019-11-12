@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.MergeStrategyNotSupportedException;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
@@ -30,6 +29,7 @@ import sonia.scm.repository.api.MergeCommandBuilder;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
+import sonia.scm.repository.api.MergeStrategyNotSupportedException;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;

@@ -2,11 +2,9 @@ package com.cloudogu.scm.review.pullrequest.dto;
 
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.google.common.collect.ImmutableList;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,20 +14,19 @@ import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.BranchesCommandBuilder;
-import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,7 +48,10 @@ class BranchRevisionResolverTest {
   @Test
   void shouldGetRevisionsForPullRequest() throws IOException {
     when(repositoryServiceFactory.create(NAMESPACE_AND_NAME)).thenReturn(repositoryService);
+
     PullRequest pullRequest = TestData.createPullRequest();
+    setUpBranches(pullRequest);
+
     mockSingleChangeset(pullRequest.getSource());
     mockSingleChangeset(pullRequest.getTarget());
 
@@ -64,25 +64,33 @@ class BranchRevisionResolverTest {
   @Test
   void shouldGetEmptyRevisionsIfBranchDoesntExist() throws IOException {
     when(repositoryServiceFactory.create(NAMESPACE_AND_NAME)).thenReturn(repositoryService);
-    when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
-    when(repositoryService.getBranchesCommand()).thenReturn(branchesCommandBuilder);
-
-    List<Branch> branchList = new ArrayList<>();
-    branchList.add(Branch.normalBranch("featureBranch", "rev123"));
-    Branches branches = new Branches(branchList);
-
-    when(branchesCommandBuilder.getBranches()).thenReturn(branches);
+    setUpBranches("featureBranch");
 
     PullRequest pullRequest = TestData.createPullRequest();
     pullRequest.setSource("notExisting");
     pullRequest.setTarget("featureBranch");
+
     mockSingleChangeset(pullRequest.getSource());
     mockSingleChangeset(pullRequest.getTarget());
 
     BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(NAMESPACE_AND_NAME, pullRequest);
 
+    // verify that get branches is called only once, because it is expensive
+    verify(branchesCommandBuilder).getBranches();
+
     Assertions.assertThat(revisions.getSourceRevision()).isEqualTo("");
     Assertions.assertThat(revisions.getTargetRevision()).isEqualTo("featureBranchId");
+  }
+
+  private void setUpBranches(PullRequest pullRequest) throws IOException {
+    setUpBranches(pullRequest.getSource(), pullRequest.getTarget());
+  }
+
+  private void setUpBranches(String... names) throws IOException {
+    when(repositoryService.getBranchesCommand()).thenReturn(branchesCommandBuilder);
+    List<Branch> branches = Arrays.stream(names).map(name -> Branch.normalBranch(name, name)).collect(Collectors.toList());
+
+    when(branchesCommandBuilder.getBranches()).thenReturn(new Branches(branches));
   }
 
   private void mockSingleChangeset(String branch) throws IOException {

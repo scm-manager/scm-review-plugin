@@ -53,9 +53,9 @@
         "MERGE_COMMIT": "Merge Commit",
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward if possible",
         "help": {
-          "SQUASH": "Squash all commits of source branch into one new commit and merge into target",
+          "SQUASH": "Squash all commits of source branch into one new commit --and merge into-- on top of the target branch",
           "MERGE_COMMIT": "Merge branches with new commit and custom commit message",
-          "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit"
+          "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit. If a fast forward is not possible, a normal merge commit will be created."
         }
       },
       "commitMessage": "Please insert your commit message",
@@ -196,6 +196,12 @@
         "displayName": "merge/reject pull requests",
         "description": "May merge or reject pull requests (merge needs additional permission to push the repository)"
       }
+    }
+  },
+  "errors": {
+    "DTRhFJFgU1": {
+      "displayName": "Merge conflict",
+      "description": "The branches could not be merged because there were merge conflicts."
     }
   }
 }
