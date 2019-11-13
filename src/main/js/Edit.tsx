@@ -1,10 +1,10 @@
 import React from "react";
-import {ErrorNotification, Loading, SubmitButton, Subtitle, Title} from "@scm-manager/ui-components";
-import {Repository} from "@scm-manager/ui-types";
-import {PullRequest} from "./types/PullRequest";
-import {updatePullRequest} from "./pullRequest";
-import {Trans, withTranslation, WithTranslation} from "react-i18next";
-import {RouteComponentProps, withRouter} from "react-router-dom";
+import { ErrorNotification, Loading, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
+import { Repository } from "@scm-manager/ui-types";
+import { PullRequest } from "./types/PullRequest";
+import { updatePullRequest } from "./pullRequest";
+import { Trans, withTranslation, WithTranslation } from "react-i18next";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import EditForm from "./EditForm";
 
 type Props = WithTranslation &

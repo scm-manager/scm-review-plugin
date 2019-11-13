@@ -1,9 +1,9 @@
 import React from "react";
-import {Button, Modal, SubmitButton} from "@scm-manager/ui-components";
-import {WithTranslation, withTranslation} from "react-i18next";
+import { Button, Modal, SubmitButton } from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
-import {MergeCommit, PullRequest} from "./types/PullRequest";
-import {Link} from "@scm-manager/ui-types";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { Link } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   close: () => void;

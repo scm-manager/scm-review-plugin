@@ -1,6 +1,6 @@
-import {BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest} from "./types/PullRequest";
-import {apiClient, ConflictError, NotFoundError} from "@scm-manager/ui-components";
-import {Link, Repository} from "@scm-manager/ui-types";
+import { BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest } from "./types/PullRequest";
+import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
+import { Link, Repository } from "@scm-manager/ui-types";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient

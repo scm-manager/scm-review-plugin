@@ -1,9 +1,9 @@
 import React from "react";
-import {RouteComponentProps, withRouter} from "react-router-dom";
-import {WithTranslation, withTranslation} from "react-i18next";
-import {Changeset, PagedCollection, Repository} from "@scm-manager/ui-types";
-import {createChangesetUrl, getChangesets} from "./pullRequest";
-import {ChangesetList, ErrorNotification, LinkPaginator, Loading, Notification} from "@scm-manager/ui-components";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { Changeset, PagedCollection, Repository } from "@scm-manager/ui-types";
+import { createChangesetUrl, getChangesets } from "./pullRequest";
+import { ChangesetList, ErrorNotification, LinkPaginator, Loading, Notification } from "@scm-manager/ui-components";
 
 type Props = WithTranslation &
   RouteComponentProps & {
