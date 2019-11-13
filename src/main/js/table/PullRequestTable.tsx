@@ -1,7 +1,7 @@
 import React from "react";
-import {WithTranslation, withTranslation} from "react-i18next";
+import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestRow from "./PullRequestRow";
-import {PullRequest} from "./../types/PullRequest";
+import { PullRequest } from "./../types/PullRequest";
 
 type Props = WithTranslation & {
   pullRequests: PullRequest[];

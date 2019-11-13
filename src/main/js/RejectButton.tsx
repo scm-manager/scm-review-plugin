@@ -1,6 +1,6 @@
 import React from "react";
-import {WithTranslation, withTranslation} from "react-i18next";
-import {Button, confirmAlert} from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { Button, confirmAlert } from "@scm-manager/ui-components";
 
 type Props = WithTranslation & {
   reject: () => void;

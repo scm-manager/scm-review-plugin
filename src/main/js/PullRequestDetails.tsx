@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import {WithTranslation, withTranslation} from "react-i18next";
-import {RouteComponentProps, withRouter} from "react-router-dom";
-import {Link, Repository} from "@scm-manager/ui-types";
-import {ExtensionPoint} from "@scm-manager/ui-extensions";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { Link, Repository } from "@scm-manager/ui-types";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   Button,
   DateFromNow,
@@ -15,8 +15,8 @@ import {
   Title,
   Tooltip
 } from "@scm-manager/ui-components";
-import {MergeCommit, PullRequest} from "./types/PullRequest";
-import {dryRun, getSubscription, handleSubscription, merge, reject} from "./pullRequest";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { dryRun, getSubscription, handleSubscription, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -305,7 +305,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       subscriptionIcon,
       subscriptionLabel,
       subscriptionLink,
-      loadingSubscription,
+      loadingSubscription
     } = this.state;
 
     if (error) {

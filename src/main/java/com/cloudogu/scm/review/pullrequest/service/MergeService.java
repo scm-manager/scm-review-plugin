@@ -1,13 +1,9 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import sonia.scm.ContextEntry;
-import sonia.scm.api.v2.resources.MergeCommandDto;
-import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
@@ -23,43 +19,49 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
+
 import java.io.IOException;
-import java.util.Optional;
+
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 
 public class MergeService {
 
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
-  private final CommentService commentService;
-  private final ScmEventBus scmEventBus;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, CommentService commentService, ScmEventBus scmEventBus) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
-    this.commentService = commentService;
-    this.scmEventBus = scmEventBus;
   }
 
-  public MergeCommandResult merge(NamespaceAndName namespaceAndName, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
+  public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
+      PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
+      assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
       isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
-      prepareMergeCommand(mergeCommand, mergeCommitDto, strategy);
+      prepareMergeCommand(mergeCommand, pullRequest, mergeCommitDto, strategy);
       MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
 
-      if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
-        repositoryService.getBranchCommand().delete(mergeCommitDto.getSource());
+      if (!mergeCommandResult.isSuccess()) {
+        throw new MergeConflictException(namespaceAndName, pullRequest.getSource(), pullRequest.getTarget(), mergeCommandResult);
       }
-      updatePullRequestStatusIfNecessary(repositoryService, mergeCommitDto, strategy, mergeCommandResult);
-      return mergeCommandResult;
+
+      pullRequestService.setMerged(repositoryService.getRepository(), pullRequestId);
+
+      if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
+        repositoryService.getBranchCommand().delete(pullRequest.getSource());
+      }
     }
   }
 
-  public MergeDryRunCommandResult dryRun(NamespaceAndName namespaceAndName, MergeCommandDto mergeCommandDto) {
+  public MergeDryRunCommandResult dryRun(NamespaceAndName namespaceAndName, String pullRequestId) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
+      PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
+      assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
       if (RepositoryPermissions.push(repositoryService.getRepository()).isPermitted()) {
-        MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, mergeCommandDto);
+        MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, pullRequest.getSource(), pullRequest.getTarget());
         return mergeCommandBuilder.dryRun();
       }
     }
@@ -87,70 +89,32 @@ public class MergeService {
     return "";
   }
 
-  private void updatePullRequestStatusIfNecessary(
-    RepositoryService repositoryService,
-    MergeCommitDto mergeCommitDto,
-    MergeStrategy strategy,
-    MergeCommandResult mergeCommandResult
-  ) {
-    if (shouldUpdatePullRequestStatus(repositoryService, mergeCommitDto, strategy, mergeCommandResult)) {
-      Repository repository = repositoryService.getRepository();
-      Optional<PullRequest> optionalPullRequest = pullRequestService.get(repository, mergeCommitDto.getSource(), mergeCommitDto.getTarget(), PullRequestStatus.OPEN);
-      if (optionalPullRequest.isPresent()) {
-        PullRequest pullRequest = optionalPullRequest.get();
-        pullRequestService.setStatus(repository, pullRequest, PullRequestStatus.MERGED);
-        commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
-        scmEventBus.post(new PullRequestMergedEvent(repository, pullRequest));
-      }
-    }
-  }
-
-  private boolean shouldUpdatePullRequestStatus(
-    RepositoryService repositoryService,
-    MergeCommitDto mergeCommitDto,
-    MergeStrategy strategy,
-    MergeCommandResult mergeCommandResult
-  ) {
-    return (strategy == MergeStrategy.SQUASH && mergeCommandResult.isSuccess())
-      || (mergeCommandResult.isSuccess()
-      && mergeCommitDto.isShouldDeleteSourceBranch()
-      && repositoryService.isSupported(Command.BRANCHES)
-      && !branchExists(repositoryService, mergeCommitDto));
-  }
-
-  private boolean branchExists(RepositoryService repositoryService, MergeCommitDto mergeCommitDto) {
-    try {
-      return repositoryService
-        .getBranchesCommand()
-        .getBranches()
-        .getBranches()
-        .stream()
-        .anyMatch(b ->b.getName().equals(mergeCommitDto.getSource()));
-    } catch (IOException e) {
-      throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()), "Could not read branches");
+  private void assertPullRequestIsOpen(Repository repository, PullRequest pullRequest) {
+    if (pullRequest.getStatus() != OPEN) {
+      throw new CannotMergeNotOpenPullRequestException(repository, pullRequest);
     }
   }
 
   private void isAllowedToMerge(Repository repository, MergeCommandBuilder mergeCommand, MergeStrategy strategy) {
-    PermissionCheck.mayMerge(repository);
+    PermissionCheck.checkMerge(repository);
     if (!mergeCommand.isSupported(strategy)) {
       throw new MergeStrategyNotSupportedException(repository, strategy);
     }
   }
 
-  private void prepareMergeCommand(MergeCommandBuilder mergeCommand, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
-    mergeCommand.setBranchToMerge(mergeCommitDto.getSource());
-    mergeCommand.setTargetBranch(mergeCommitDto.getTarget());
+  private void prepareMergeCommand(MergeCommandBuilder mergeCommand, PullRequest pullRequest, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
+    mergeCommand.setBranchToMerge(pullRequest.getSource());
+    mergeCommand.setTargetBranch(pullRequest.getTarget());
     mergeCommand.setMessageTemplate(mergeCommitDto.getCommitMessage());
     mergeCommand.setMergeStrategy(strategy);
     DisplayedUserDto author = mergeCommitDto.getAuthor();
     mergeCommand.setAuthor(new Person(author.getDisplayName(), author.getMail()));
   }
 
-  private MergeCommandBuilder prepareDryRun(RepositoryService repositoryService, MergeCommandDto mergeCommandDto) {
+  private MergeCommandBuilder prepareDryRun(RepositoryService repositoryService, String sourceBranch, String targetBranch) {
     MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
-    mergeCommand.setBranchToMerge(mergeCommandDto.getSourceRevision());
-    mergeCommand.setTargetBranch(mergeCommandDto.getTargetRevision());
+    mergeCommand.setBranchToMerge(sourceBranch);
+    mergeCommand.setTargetBranch(targetBranch);
     return mergeCommand;
   }
 }

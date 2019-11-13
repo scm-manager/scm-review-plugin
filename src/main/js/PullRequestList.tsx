@@ -1,10 +1,10 @@
 import React from "react";
-import {CreateButton, ErrorPage, Loading} from "@scm-manager/ui-components";
-import {Repository} from "@scm-manager/ui-types";
-import {PullRequestCollection} from "./types/PullRequest";
-import {WithTranslation, withTranslation} from "react-i18next";
-import {withRouter} from "react-router-dom";
-import {getPullRequests} from "./pullRequest";
+import { CreateButton, ErrorPage, Loading } from "@scm-manager/ui-components";
+import { Repository } from "@scm-manager/ui-types";
+import { PullRequestCollection } from "./types/PullRequest";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { withRouter } from "react-router-dom";
+import { getPullRequests } from "./pullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
 import styled from "styled-components";

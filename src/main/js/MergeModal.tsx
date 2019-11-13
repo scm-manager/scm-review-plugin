@@ -1,10 +1,9 @@
 import React from "react";
-import {Button, Modal, SubmitButton} from "@scm-manager/ui-components";
-import {WithTranslation, withTranslation} from "react-i18next";
+import { Button, Modal, SubmitButton } from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
-import {MergeCommit, PullRequest} from "./types/PullRequest";
-import {Link} from "@scm-manager/ui-types";
-import {getSquashCommitDefaultMessage} from "./pullRequest";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { Link } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   close: () => void;
@@ -50,7 +49,9 @@ class MergeModal extends React.Component<Props, State> {
   createSquashCommitMessageLink = () => {
     const { pullRequest } = this.props;
     const { mergeCommit } = this.state;
-    return `${(pullRequest._links.squashCommitMessage as Link).href}?sourceRevision=${mergeCommit.source}&targetRevision=${mergeCommit.target}`;
+    return `${(pullRequest._links.squashCommitMessage as Link).href}?sourceRevision=${
+      mergeCommit.source
+    }&targetRevision=${mergeCommit.target}`;
   };
 
   selectStrategy = (strategy: string) => {

@@ -116,22 +116,22 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
 
-      if(RepositoryPermissions.push(repository).isPermitted()) {
-        linksBuilder.single(link("mergeDryRun", pullRequestResourceLinks.mergeLinks().dryRun(repository.getNamespace(), repository.getName())));
+      if(RepositoryPermissions.push(repository).isPermitted() && target.getStatus() == PullRequestStatus.OPEN) {
+        linksBuilder.single(link("mergeDryRun", pullRequestResourceLinks.mergeLinks().dryRun(repository.getNamespace(), repository.getName(), pullRequest.getId())));
         linksBuilder.single(link("squashCommitMessage", pullRequestResourceLinks.mergeLinks().createSquashCommitMessage(repository.getNamespace(), repository.getName())));
-        appendMergeStrategyLinks(linksBuilder, repository);
+        appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
 
     }
     target.add(linksBuilder.build());
   }
 
-  private void appendMergeStrategyLinks(Links.Builder linksBuilder, @Context Repository repository) {
+  private void appendMergeStrategyLinks(Links.Builder linksBuilder, Repository repository, PullRequest pullRequest) {
     try (RepositoryService service = serviceFactory.create(repository)) {
       if (service.isSupported(Command.MERGE)) {
         List<Link> strategyLinks = service.getMergeCommand().getSupportedMergeStrategies()
           .stream()
-          .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), strategy))
+          .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), pullRequest, strategy))
           .collect(toList());
         linksBuilder.array(strategyLinks);
       }
@@ -142,10 +142,11 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     return new DisplayedUserDto(user.getId(), user.getDisplayName(), user.getMail());
   }
 
-  private Link createStrategyLink(NamespaceAndName namespaceAndName, MergeStrategy strategy) {
+  private Link createStrategyLink(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
     return Link.linkBuilder("merge", pullRequestResourceLinks.mergeLinks().merge(
         namespaceAndName.getNamespace(),
         namespaceAndName.getName(),
+        pullRequest.getId(),
         strategy
       )
     ).withName(strategy.name()).build();

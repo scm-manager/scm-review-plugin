@@ -1,9 +1,9 @@
 import React from "react";
-import {Repository} from "@scm-manager/ui-types";
-import {ErrorNotification, Select} from "@scm-manager/ui-components";
-import {BasicPullRequest} from "./types/PullRequest";
-import {getBranches} from "./pullRequest";
-import {WithTranslation, withTranslation} from "react-i18next";
+import { Repository } from "@scm-manager/ui-types";
+import { ErrorNotification, Select } from "@scm-manager/ui-components";
+import { BasicPullRequest } from "./types/PullRequest";
+import { getBranches } from "./pullRequest";
+import { WithTranslation, withTranslation } from "react-i18next";
 import EditForm from "./EditForm";
 
 type Props = WithTranslation & {

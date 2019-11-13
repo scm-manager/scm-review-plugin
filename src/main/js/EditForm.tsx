@@ -1,7 +1,7 @@
 import React from "react";
-import {Autocomplete, InputField, TagGroup, Textarea} from "@scm-manager/ui-components";
-import {WithTranslation, withTranslation} from "react-i18next";
-import {DisplayedUser, SelectValue} from "@scm-manager/ui-types";
+import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   handleFormChange: (value: string, name: string) => void;
@@ -89,11 +89,7 @@ class EditForm extends React.Component<Props, State> {
           label={t("scm-review-plugin.pullRequest.description")}
           onChange={this.onChange}
         />
-        <TagGroup
-          items={reviewer}
-          label={t("scm-review-plugin.pullRequest.reviewer")}
-          onRemove={this.removeReviewer}
-        />
+        <TagGroup items={reviewer} label={t("scm-review-plugin.pullRequest.reviewer")} onRemove={this.removeReviewer} />
         <div className="field">
           <div className="control">
             <Autocomplete

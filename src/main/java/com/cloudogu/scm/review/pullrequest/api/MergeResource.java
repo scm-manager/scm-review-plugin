@@ -2,12 +2,11 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import sonia.scm.ConcurrentModificationException;
-import sonia.scm.api.v2.resources.MergeCommandDto;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
 
@@ -23,6 +22,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
+
 @Path(MergeResource.MERGE_PATH_V2)
 public class MergeResource {
 
@@ -35,27 +36,23 @@ public class MergeResource {
   }
 
   @POST
-  @Path("{namespace}/{name}")
+  @Path("{namespace}/{name}/{pullRequestId}")
   @Consumes("application/vnd.scmm-mergeCommand+json")
   @Produces("application/json")
   public Response merge(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
+    @PathParam("pullRequestId") String pullRequestId,
     @QueryParam("strategy") MergeStrategy strategy,
     @NotNull @Valid MergeCommitDto mergeCommitDto
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    MergeCommandResult result = service.merge(namespaceAndName, mergeCommitDto, strategy);
-    if (result.isSuccess()) {
-      return Response.noContent().build();
-    } else {
-      throw new MergeConflictException(namespaceAndName, mergeCommitDto.getSource(), mergeCommitDto.getTarget(), result);
-    }
+    service.merge(namespaceAndName, pullRequestId, mergeCommitDto, strategy);
+    return Response.noContent().build();
   }
 
   @POST
-  @Path("{namespace}/{name}/dry-run")
-  @Consumes("application/vnd.scmm-mergeCommand+json")
+  @Path("{namespace}/{name}/{pullRequestId}/dry-run")
   @StatusCodes({
     @ResponseCode(code = 204, condition = "merge can be done automatically"),
     @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
@@ -65,13 +62,14 @@ public class MergeResource {
   public Response dryRun(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @Valid MergeCommandDto mergeCommandDto
+    @PathParam("pullRequestId") String pullRequestId
   ) {
-    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(new NamespaceAndName(namespace, name), mergeCommandDto);
+    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
+    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(namespaceAndName, pullRequestId);
     if (mergeDryRunCommandResult.isMergeable()) {
       return Response.noContent().build();
     } else {
-      throw new ConcurrentModificationException("revision", mergeCommandDto.getTargetRevision());
+      throw new ConcurrentModificationException(entity(PullRequest.class, pullRequestId).in(namespaceAndName).build());
     }
   }
 
