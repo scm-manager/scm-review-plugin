@@ -1,6 +1,7 @@
-import { ContextLine } from "../types/PullRequest";
+import { File } from "@scm-manager/ui-components";
+import { Comment, ContextLine } from "../types/PullRequest";
 
-export function mapCommentToFile(comment: Comment) {
+export function mapCommentToFile(comment: Comment): File {
   const changes = comment.context.lines.map(line => mapContextLine(line));
 
   return {

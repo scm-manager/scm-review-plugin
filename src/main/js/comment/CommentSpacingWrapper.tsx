@@ -22,11 +22,11 @@ const Arrow = styled.div`
 `;
 
 type Props = {
-  isChildComment: boolean;
+  isChildComment?: boolean;
   children: ReactNode;
 };
 
-class CreateCommentInlineWrapper extends Component<Props> {
+class CommentSpacingWrapper extends Component<Props> {
   renderRoot = (children: ReactNode) => {
     return <WrapperRoot>{children}</WrapperRoot>;
   };
@@ -51,4 +51,4 @@ class CreateCommentInlineWrapper extends Component<Props> {
   }
 }
 
-export default CreateCommentInlineWrapper;
+export default CommentSpacingWrapper;

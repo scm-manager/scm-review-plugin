@@ -13,8 +13,8 @@ export function createHunkIdFromLocation(location: Location): string {
   return location.file + "_" + location.hunk;
 }
 
-export function isInlineLocation(location: Location): boolean {
-  return !!location.hunk;
+export function isInlineLocation(location?: Location): boolean {
+  return !!location && !!location.hunk;
 }
 
 export function createFileLocation(context: BaseContext): Location {
@@ -49,7 +49,7 @@ export function createInlineLocation(context: DiffEventContext): Location {
   return location;
 }
 
-export function createChangeIdFromLocation(location: Location) {
+export function createChangeIdFromLocation(location: Location): string {
   if (location.oldLineNumber && location.newLineNumber) {
     return "N" + location.oldLineNumber;
   } else if (location.newLineNumber) {

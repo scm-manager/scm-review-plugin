@@ -122,8 +122,8 @@ class CreateForm extends React.Component<Props, State> {
         </div>
 
         <EditForm
-          description={""}
-          title={""}
+          description=""
+          title=""
           reviewer={[]}
           userAutocompleteLink={this.props.userAutocompleteLink}
           handleFormChange={this.handleFormChange}
