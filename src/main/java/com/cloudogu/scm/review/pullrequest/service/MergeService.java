@@ -1,11 +1,8 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
-import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
@@ -21,26 +18,22 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
 
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 
 public class MergeService {
 
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
-  private final CommentService commentService;
-  private final ScmEventBus scmEventBus;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, CommentService commentService, ScmEventBus scmEventBus) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
-    this.commentService = commentService;
-    this.scmEventBus = scmEventBus;
   }
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
+      PermissionCheck.checkMerge(repositoryService.getRepository());
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
@@ -52,17 +45,11 @@ public class MergeService {
         throw new MergeConflictException(namespaceAndName, pullRequest.getSource(), pullRequest.getTarget(), mergeCommandResult);
       }
 
-      updatePullRequestStatusIfNecessary(repositoryService, pullRequest, mergeCommandResult);
+      pullRequestService.setMerged(repositoryService.getRepository(), pullRequestId);
 
       if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
         repositoryService.getBranchCommand().delete(pullRequest.getSource());
       }
-    }
-  }
-
-  private void assertPullRequestIsOpen(Repository repository, PullRequest pullRequest) {
-    if (pullRequest.getStatus() != OPEN) {
-      throw new CannotMergeNotOpenPullRequestException(repository, pullRequest);
     }
   }
 
@@ -78,24 +65,10 @@ public class MergeService {
     return new MergeDryRunCommandResult(false);
   }
 
-  private void updatePullRequestStatusIfNecessary(
-    RepositoryService repositoryService,
-    PullRequest pullRequest,
-    MergeCommandResult mergeCommandResult
-  ) {
-    if (shouldUpdatePullRequestStatus(pullRequest, mergeCommandResult)) {
-      Repository repository = repositoryService.getRepository();
-      pullRequestService.setStatus(repository, pullRequest, MERGED);
-      commentService.addStatusChangedComment(repository, pullRequest.getId(), SystemCommentType.MERGED);
-      scmEventBus.post(new PullRequestMergedEvent(repository, pullRequest));
+  private void assertPullRequestIsOpen(Repository repository, PullRequest pullRequest) {
+    if (pullRequest.getStatus() != OPEN) {
+      throw new CannotMergeNotOpenPullRequestException(repository, pullRequest);
     }
-  }
-
-  private boolean shouldUpdatePullRequestStatus(
-    PullRequest pullRequest,
-    MergeCommandResult mergeCommandResult
-  ) {
-    return mergeCommandResult.isSuccess() && pullRequest.getStatus() != MERGED;
   }
 
   private void isAllowedToMerge(Repository repository, MergeCommandBuilder mergeCommand, MergeStrategy strategy) {

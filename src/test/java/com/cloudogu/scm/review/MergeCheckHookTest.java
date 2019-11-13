@@ -1,9 +1,8 @@
 package com.cloudogu.scm.review;
 
-import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import sonia.scm.event.ScmEventBus;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
@@ -25,7 +23,6 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.HookBranchProvider;
 import sonia.scm.repository.api.HookContext;
-import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.api.HookMessageProvider;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
@@ -35,7 +32,8 @@ import java.io.IOException;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -54,18 +52,12 @@ class MergeCheckHookTest {
   private DefaultPullRequestService service;
 
   @Mock
-  private CommentService commentService;
-
-  @Mock
   private RepositoryServiceFactory repositoryServiceFactory;
 
   @Mock
   private RepositoryService repositoryService;
   @Mock(answer = Answers.RETURNS_SELF)
   private LogCommandBuilder logCommandBuilder;
-
-  @Mock
-  private ScmEventBus eventBus;
 
   @Mock
   private ScmConfiguration configuration;
@@ -87,7 +79,7 @@ class MergeCheckHookTest {
 
   @BeforeEach
   void initRepositoryServiceFactory() {
-    hook = new MergeCheckHook(service, repositoryServiceFactory, messageSenderFactory, commentService, eventBus);
+    hook = new MergeCheckHook(service, repositoryServiceFactory, messageSenderFactory);
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getRepository()).thenReturn(REPOSITORY);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
@@ -119,9 +111,7 @@ class MergeCheckHookTest {
 
     hook.checkForMerges(event);
 
-    verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
-    assertThat(messageCaptor.getAllValues()).isNotEmpty();
-    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), SystemCommentType.MERGED);
+    verify(service).setMerged(REPOSITORY, pullRequest.getId());
   }
 
   @Test
@@ -132,7 +122,7 @@ class MergeCheckHookTest {
 
     hook.checkForMerges(event);
 
-    verify(service, never()).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
+    verify(service, never()).setMerged(REPOSITORY, pullRequest.getId());
   }
 
   @Test
@@ -143,7 +133,7 @@ class MergeCheckHookTest {
     hook.checkForMerges(event);
 
     verify(logCommandBuilder, never()).getChangesets();
-    verify(service, never()).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
+    verify(service, never()).reject(eq(REPOSITORY), eq(pullRequest.getId()), any());
   }
 
   @Test
@@ -155,7 +145,7 @@ class MergeCheckHookTest {
 
     verify(logCommandBuilder, never()).getChangesets();
     verify(service, never()).getAll(NAMESPACE, NAME);
-    verify(service, never()).setStatus(REPOSITORY, pullRequest, PullRequestStatus.MERGED);
+    verify(service, never()).setMerged(REPOSITORY, pullRequest.getId());
   }
 
   @Test
@@ -179,8 +169,7 @@ class MergeCheckHookTest {
 
     hook.checkForMerges(event);
 
-    verify(service).setStatus(REPOSITORY, pullRequest, PullRequestStatus.REJECTED);
-    verify(commentService).addStatusChangedComment(REPOSITORY, pullRequest.getId(), SystemCommentType.SOURCE_DELETED);
+    verify(service).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
   }
 
   private PullRequest openPullRequest() {
