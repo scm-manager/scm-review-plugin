@@ -21,10 +21,16 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import javax.inject.Inject;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 
 public class MergeService {
+
+  private static final String MERGE_COMMIT_MESSAGE_TEMPLATE = String.join("\n",
+    "Merge of branch {0} into {1}",
+    "",
+    "Automatic merge by SCM-Manager.");
 
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
@@ -68,26 +74,34 @@ public class MergeService {
     return new MergeDryRunCommandResult(false);
   }
 
-  public String createSquashCommitMessage(NamespaceAndName namespaceAndName, String pullRequestId) {
-    try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
-      if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
-        PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
-        try {
-          StringBuilder builder = new StringBuilder();
-          repositoryService.getLogCommand()
-            .setBranch(pullRequest.getSource())
-            .setAncestorChangeset(pullRequest.getTarget())
-            .getChangesets()
-            .getChangesets()
-            .forEach(c -> builder.append("-- ").append(c.getDescription()).append("\n"));
-          return builder.toString();
-        } catch (IOException e) {
-          throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()),
-            "Could not read changesets from repository");
-        }
-      }
+  public String createDefaultCommitMessage(NamespaceAndName namespaceAndName, String pullRequestId, MergeStrategy strategy) {
+    PullRequest pullRequest = pullRequestService.get(namespaceAndName.getNamespace(), namespaceAndName.getName(), pullRequestId);
+    if (strategy == null) {
+      return "";
     }
-    return "";
+    switch (strategy) {
+      case SQUASH:
+        try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
+          if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
+            try {
+              StringBuilder builder = new StringBuilder();
+              repositoryService.getLogCommand()
+                .setBranch(pullRequest.getSource())
+                .setAncestorChangeset(pullRequest.getTarget())
+                .getChangesets()
+                .getChangesets()
+                .forEach(c -> builder.append(c.getDescription()).append("\n").append("\n"));
+              return builder.toString();
+            } catch (IOException e) {
+              throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()),
+                "Could not read changesets from repository");
+            }
+          }
+        }
+      default:
+      case MERGE_COMMIT:
+        return MessageFormat.format(MERGE_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget());
+    }
   }
 
   private void assertPullRequestIsOpen(Repository repository, PullRequest pullRequest) {

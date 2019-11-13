@@ -74,19 +74,20 @@ public class MergeResource {
   }
 
   @GET
-  @Path("{namespace}/{name}/{pullRequestId}/squash-commit-message")
+  @Path("{namespace}/{name}/{pullRequestId}/commit-message")
   @Produces("text/plain")
   @StatusCodes({
     @ResponseCode(code = 200, condition = "squash commit message was created"),
     @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
     @ResponseCode(code = 500, condition = "internal server error")
   })
-  public Response createSquashCommitMessage(
+  public Response createDefaultCommitMessage(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @PathParam("pullRequestId") String pullRequestId
+    @PathParam("pullRequestId") String pullRequestId,
+    @QueryParam("strategy") MergeStrategy strategy
   ) {
-    String commitMessage = service.createSquashCommitMessage(new NamespaceAndName(namespace, name), pullRequestId);
+    String commitMessage = service.createDefaultCommitMessage(new NamespaceAndName(namespace, name), pullRequestId, strategy);
     return Response.status(200).entity(commitMessage).build();
   }
 }

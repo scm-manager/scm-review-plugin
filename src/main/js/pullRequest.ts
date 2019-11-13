@@ -146,7 +146,7 @@ export function dryRun(pullRequest: PullRequest) {
   });
 }
 
-export function getSquashCommitDefaultMessage(url: string) {
+export function getDefaultCommitDefaultMessage(url: string) {
   return apiClient
     .get(url)
     .then(response => response.text())

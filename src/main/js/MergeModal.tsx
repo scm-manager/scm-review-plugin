@@ -4,7 +4,7 @@ import { WithTranslation, withTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
 import { Link } from "@scm-manager/ui-types";
-import { getSquashCommitDefaultMessage } from "./pullRequest";
+import { getDefaultCommitDefaultMessage } from "./pullRequest";
 
 type Props = WithTranslation & {
   close: () => void;
@@ -15,8 +15,10 @@ type Props = WithTranslation & {
 type State = {
   mergeStrategy: string;
   mergeCommit: MergeCommit;
-  defaultSquashCommitMessage: string;
+  defaultCommitMessages: { [key: string]: string };
   loading: boolean;
+  loadingDefaultMessage: boolean;
+  messageChanged: boolean;
 };
 
 class MergeModal extends React.Component<Props, State> {
@@ -29,34 +31,53 @@ class MergeModal extends React.Component<Props, State> {
         author: this.props.pullRequest.author,
         shouldDeleteSourceBranch: false
       },
-      defaultSquashCommitMessage: "",
-      loading: false
+      defaultCommitMessages: {},
+      loading: false,
+      loadingDefaultMessage: false,
+      messageChanged: false
     };
   }
-
   componentDidMount(): void {
+    this.getDefaultMessage();
+  }
+
+  getDefaultMessage = () => {
     const { pullRequest } = this.props;
-    if (pullRequest && pullRequest._links && pullRequest._links.squashCommitMessage) {
-      getSquashCommitDefaultMessage((pullRequest._links.squashCommitMessage as Link).href).then(commitMessage => {
-        this.setState({
-          defaultSquashCommitMessage: (commitMessage as string)
+    const { defaultCommitMessages, mergeCommit, mergeStrategy } = this.state;
+    if (!!defaultCommitMessages[mergeStrategy]) {
+      this.setState({ mergeCommit: { ...mergeCommit, commitMessage: defaultCommitMessages[mergeStrategy] } });
+    } else if (pullRequest && pullRequest._links && pullRequest._links.defaultCommitMessage) {
+      this.setState({ loadingDefaultMessage: true }, () => {
+        getDefaultCommitDefaultMessage(
+          (pullRequest._links.defaultCommitMessage as Link).href + "?strategy=" + mergeStrategy
+        ).then(commitMessage => {
+          defaultCommitMessages[mergeStrategy] = commitMessage;
+          this.setState({
+            defaultCommitMessages: defaultCommitMessages,
+            mergeCommit: { ...mergeCommit, commitMessage: commitMessage },
+            messageChanged: false,
+            loadingDefaultMessage: false
+          });
         });
       });
     }
-  }
+  };
 
   selectStrategy = (strategy: string) => {
-    const { defaultSquashCommitMessage, mergeCommit } = this.state;
-    this.setState({
-      mergeStrategy: strategy
-    });
-    if (strategy === "SQUASH" && defaultSquashCommitMessage && mergeCommit.commitMessage === "") {
-      this.onChangeCommitMessage(defaultSquashCommitMessage);
-    }
+    this.setState(
+      {
+        mergeStrategy: strategy
+      },
+      () => {
+        if (!this.state.messageChanged) {
+          this.getDefaultMessage();
+        }
+      }
+    );
   };
 
   onChangeCommitMessage = (newMessage: string) => {
-    this.setState({ mergeCommit: { ...this.state.mergeCommit, commitMessage: newMessage } });
+    this.setState({ messageChanged: true, mergeCommit: { ...this.state.mergeCommit, commitMessage: newMessage } });
   };
 
   performMerge = () => {
@@ -78,15 +99,11 @@ class MergeModal extends React.Component<Props, State> {
 
   render() {
     const { pullRequest, close, t } = this.props;
-    const { mergeStrategy, mergeCommit, loading } = this.state;
+    const { mergeStrategy, mergeCommit, loading, loadingDefaultMessage } = this.state;
 
     const footer = (
       <>
-        <Button
-          label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")}
-          action={() => close()}
-          color="grey"
-        />
+        <Button label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")} action={() => close()} color="grey" />
         <SubmitButton
           label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}
           action={() => this.performMerge()}
@@ -105,6 +122,7 @@ class MergeModal extends React.Component<Props, State> {
         onChangeCommitMessage={this.onChangeCommitMessage}
         shouldDeleteSourceBranch={mergeCommit.shouldDeleteSourceBranch}
         onChangeDeleteSourceBranch={this.onChangeDeleteSourceBranch}
+        disabled={loadingDefaultMessage}
       />
     );
 

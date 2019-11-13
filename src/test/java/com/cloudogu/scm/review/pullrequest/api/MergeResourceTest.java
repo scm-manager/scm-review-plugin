@@ -103,9 +103,9 @@ class MergeResourceTest {
 
   @Test
   void shouldCreateSquashCommitMessage() throws IOException, URISyntaxException {
-    when(mergeService.createSquashCommitMessage(any(), any())).thenReturn("successful");
+    when(mergeService.createDefaultCommitMessage(any(), any(), eq(SQUASH))).thenReturn("successful");
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
-    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/squash-commit-message", mergeCommandJson);
+    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/commit-message/SQUASH", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);

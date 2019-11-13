@@ -12,11 +12,12 @@ type Props = WithTranslation & {
   onChangeCommitMessage: (message: string) => void;
   shouldDeleteSourceBranch: boolean;
   onChangeDeleteSourceBranch: (value: boolean) => void;
+  disabled: boolean;
 };
 
 class MergeForm extends React.Component<Props> {
   isCommitMessageDisabled = () => {
-    return this.props.selectedStrategy === "FAST_FORWARD_IF_POSSIBLE";
+    return this.props.disabled || this.props.selectedStrategy === "FAST_FORWARD_IF_POSSIBLE";
   };
 
   render() {
