@@ -10,7 +10,7 @@ const Toolbar: FC<Props> = ({ collapsed, children }) => {
   }
   return (
     <div className="media-right">
-      <div className="level-right">{collapsed ? null : children}</div>
+      <div className="level-right">{children}</div>
     </div>
   );
 };

@@ -1,9 +1,9 @@
 import React from "react";
-import {Button, Modal, SubmitButton} from "@scm-manager/ui-components";
-import {WithTranslation, withTranslation} from "react-i18next";
+import { Button, Modal, SubmitButton } from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
-import {MergeCommit, PullRequest} from "./types/PullRequest";
-import {Link} from "@scm-manager/ui-types";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { Link } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   close: () => void;
@@ -64,7 +64,7 @@ class MergeModal extends React.Component<Props, State> {
         <Button
           label={t("scm-review-plugin.show-pull-request.merge-modal.cancel")}
           action={() => close()}
-          color={"grey"}
+          color="grey"
         />
         <SubmitButton
           label={t("scm-review-plugin.show-pull-request.merge-modal.merge")}

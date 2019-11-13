@@ -66,29 +66,19 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
 
   if (isDeletable()) {
     icons.push(
-      <ToolbarIcon
-        key="delete"
-        title={t("scm-review-plugin.comment.delete")}
-        icon={"trash"}
-        onClick={actions.onDelete}
-      />
+      <ToolbarIcon key="delete" title={t("scm-review-plugin.comment.delete")} icon="trash" onClick={actions.onDelete} />
     );
   }
 
   if (hasLink("update")) {
     icons.push(
-      <ToolbarIcon
-        key="update"
-        title={t("scm-review-plugin.comment.update")}
-        icon={"edit"}
-        onClick={actions.onUpdate}
-      />
+      <ToolbarIcon key="update" title={t("scm-review-plugin.comment.update")} icon="edit" onClick={actions.onUpdate} />
     );
   }
 
   if (isReplyable()) {
     icons.push(
-      <ToolbarIcon key="reply" title={t("scm-review-plugin.comment.reply")} icon={"reply"} onClick={actions.onReply} />
+      <ToolbarIcon key="reply" title={t("scm-review-plugin.comment.reply")} icon="reply" onClick={actions.onReply} />
     );
   }
 
@@ -97,7 +87,7 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
       <ToolbarIcon
         key="setDone"
         title={t("scm-review-plugin.comment.done")}
-        icon={"check-circle"}
+        icon="check-circle"
         onClick={() => actions.onTransitionChange("SET_DONE", "scm-review-plugin.comment.confirmDoneAlert")}
       />
     );
@@ -108,7 +98,7 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
       <ToolbarIcon
         key="makeTask"
         title={t("scm-review-plugin.comment.makeTask")}
-        icon={"tasks"}
+        icon="tasks"
         onClick={() => actions.onTransitionChange("MAKE_TASK", "scm-review-plugin.comment.confirmMakeTaskAlert")}
       />
     );
@@ -119,7 +109,7 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
       <ToolbarIcon
         key="reOpen"
         title={t("scm-review-plugin.comment.reopen")}
-        icon={"undo"}
+        icon="undo"
         onClick={() => actions.onTransitionChange("REOPEN", "scm-review-plugin.comment.reopenAlert")}
       />
     );
@@ -130,7 +120,7 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
       <ToolbarIcon
         key="makeComment"
         title={t("scm-review-plugin.comment.makeComment")}
-        icon={"comment-dots"}
+        icon="comment-dots"
         onClick={() => actions.onTransitionChange("MAKE_COMMENT", "scm-review-plugin.comment.makeCommentAlert")}
       />
     );
