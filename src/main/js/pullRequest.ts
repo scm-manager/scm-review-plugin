@@ -29,43 +29,18 @@ export function updatePullRequest(url: string, pullRequest: PullRequest) {
 }
 
 export function createPullRequestComment(url: string, comment: BasicComment) {
-  return apiClient
-    .post(url, comment)
-    .then(response => {
-      return response;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.post(url, comment).then(response => {
+    return response;
+  });
 }
 
 export function updatePullRequestComment(url: string, comment: BasicComment) {
-  return apiClient
-    .put(url, comment)
-    .then(response => {
-      return response;
-    })
-    .catch(error => {
-      return {
-        error: error
-      };
-    });
+  return apiClient.put(url, comment);
 }
 
 export function transformPullRequestComment(transition: PossibleTransition) {
-  return apiClient
-    .post(transition._links.transform.href, transition)
-    .then(response => {
-      return response;
-    })
-    .catch(cause => {
-      const error = new Error(`could not update pull request comment: ${cause.message}`);
-      return {
-        error: error
-      };
-    });
+  const link = transition._links.transform as Link;
+  return apiClient.post(link.href, transition);
 }
 
 export function getBranches(url: string) {
@@ -194,30 +169,11 @@ export function getChangesets(url: string) {
 }
 
 export function getPullRequestComments(url: string) {
-  return apiClient
-    .get(url)
-    .then(response => response.json())
-    .then(pullRequestComments => {
-      return pullRequestComments;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.get(url).then(response => response.json());
 }
 
 export function deletePullRequestComment(url: string) {
-  return apiClient
-    .delete(url)
-    .then(response => {
-      return response;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.delete(url);
 }
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {

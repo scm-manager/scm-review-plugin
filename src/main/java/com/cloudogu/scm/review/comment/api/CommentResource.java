@@ -190,7 +190,7 @@ public class CommentResource {
                         @Valid ReplyDto replyDto) {
     RevisionChecker.checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     String newId = service.reply(namespace, name, pullRequestId, commentId, replyMapper.map(replyDto));
-    String newLocation = commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, newId);
+    String newLocation = commentPathBuilder.createReplySelfUri(namespace, name, pullRequestId, commentId, newId);
     return Response.created(create(newLocation)).build();
   }
 

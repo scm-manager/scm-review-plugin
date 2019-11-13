@@ -85,7 +85,7 @@ class MergeModal extends React.Component<Props, State> {
         <Button
           label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")}
           action={() => close()}
-          color={"grey"}
+          color="grey"
         />
         <SubmitButton
           label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}

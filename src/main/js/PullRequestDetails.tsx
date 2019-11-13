@@ -450,7 +450,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             </div>
           </MediaWithTopBorder>
           <ExtensionPoint
-            name={"reviewPlugin.pullrequest.top"}
+            name="reviewPlugin.pullrequest.top"
             renderAll={true}
             props={{
               repository,
