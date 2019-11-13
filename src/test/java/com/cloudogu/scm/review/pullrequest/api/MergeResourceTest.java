@@ -3,7 +3,6 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.github.sdorra.shiro.SubjectAware;
-import com.google.common.collect.ImmutableList;
 import org.jboss.resteasy.core.Dispatcher;
 import org.jboss.resteasy.mock.MockDispatcherFactory;
 import org.jboss.resteasy.mock.MockHttpRequest;
@@ -15,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
 
 import java.io.IOException;
@@ -38,8 +36,7 @@ import static sonia.scm.repository.api.MergeStrategy.SQUASH;
 @ExtendWith(MockitoExtension.class)
 class MergeResourceTest {
 
-  private final String MERGE_URL = "/" + MergeResource.MERGE_PATH_V2 + "/space/name";
-  private final String MERGE_URL_WITH_PR = MERGE_URL + "/1";
+  private final String MERGE_URL = "/" + MergeResource.MERGE_PATH_V2 + "/space/name/1";
 
   private Dispatcher dispatcher;
   private final MockHttpResponse response = new MockHttpResponse();
@@ -61,7 +58,7 @@ class MergeResourceTest {
   void shouldMergeWithSquash() throws URISyntaxException, IOException {
     byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
 
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL_WITH_PR + "?strategy=SQUASH", mergeCommitJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "?strategy=SQUASH", mergeCommitJson);
 
     dispatcher.invoke(request, response);
     verify(mergeService).merge(eq(new NamespaceAndName("space", "name")), eq("1"), any(), eq(SQUASH));
@@ -74,7 +71,7 @@ class MergeResourceTest {
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
 
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL_WITH_PR + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
 
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
@@ -87,7 +84,7 @@ class MergeResourceTest {
     when(mergeService.dryRun(any(), any())).thenReturn(new MergeDryRunCommandResult(false));
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL_WITH_PR + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 
@@ -97,7 +94,7 @@ class MergeResourceTest {
   @Test
   void shouldReturnBadRequestIfMergeCommandDtoInvalid() throws IOException, URISyntaxException {
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand_invalid.json");
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL_WITH_PR + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 
@@ -106,7 +103,7 @@ class MergeResourceTest {
 
   @Test
   void shouldCreateSquashCommitMessage() throws IOException, URISyntaxException {
-    when(mergeService.createSquashCommitMessage(any(), any(), any())).thenReturn("successful");
+    when(mergeService.createSquashCommitMessage(any(), any())).thenReturn("successful");
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
     MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/squash-commit-message", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();

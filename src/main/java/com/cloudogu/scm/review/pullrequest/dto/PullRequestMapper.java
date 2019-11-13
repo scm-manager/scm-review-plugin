@@ -105,20 +105,27 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   @AfterMapping
   protected void appendLinks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
 
-    Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest().self(repository.getNamespace(), repository.getName(), target.getId()));
-    linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments().all(repository.getNamespace(), repository.getName(), target.getId())));
+    Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest()
+      .self(repository.getNamespace(), repository.getName(), target.getId()));
+    linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments()
+      .all(repository.getNamespace(), repository.getName(), target.getId())));
     if (CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
-      linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest().subscription(repository.getNamespace(), repository.getName(), target.getId())));
+      linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest()
+        .subscription(repository.getNamespace(), repository.getName(), target.getId())));
     }
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {
-      linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest().update(repository.getNamespace(), repository.getName(), target.getId())));
+      linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest()
+        .update(repository.getNamespace(), repository.getName(), target.getId())));
     }
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
-      linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest().reject(repository.getNamespace(), repository.getName(), target.getId())));
+      linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest()
+        .reject(repository.getNamespace(), repository.getName(), target.getId())));
 
       if(RepositoryPermissions.push(repository).isPermitted() && target.getStatus() == PullRequestStatus.OPEN) {
-        linksBuilder.single(link("mergeDryRun", pullRequestResourceLinks.mergeLinks().dryRun(repository.getNamespace(), repository.getName(), pullRequest.getId())));
-        linksBuilder.single(link("squashCommitMessage", pullRequestResourceLinks.mergeLinks().createSquashCommitMessage(repository.getNamespace(), repository.getName())));
+        linksBuilder.single(link("mergeDryRun", pullRequestResourceLinks.mergeLinks()
+          .dryRun(repository.getNamespace(), repository.getName(), pullRequest.getId())));
+        linksBuilder.single(link("squashCommitMessage", pullRequestResourceLinks.mergeLinks()
+          .createSquashCommitMessage(repository.getNamespace(), repository.getName(), pullRequest.getId())));
         appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
 

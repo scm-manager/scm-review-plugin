@@ -159,9 +159,9 @@ public class PullRequestResourceLinks {
         .method("merge").parameters(namespace, name, pullRequestId).href() + "?strategy=" + strategy;
     }
 
-    public String createSquashCommitMessage(String namespace, String name) {
+    public String createSquashCommitMessage(String namespace, String name, String pullRequestId) {
       return mergeLinkBuilder
-        .method("createSquashCommitMessage").parameters(namespace, name).href();
+        .method("createSquashCommitMessage").parameters(namespace, name, pullRequestId).href();
     }
   }
 }

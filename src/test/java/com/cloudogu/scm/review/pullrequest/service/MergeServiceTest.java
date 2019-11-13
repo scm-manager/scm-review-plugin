@@ -183,6 +183,8 @@ public class MergeServiceTest {
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     when(logCommandBuilder.setBranch(any())).thenReturn(logCommandBuilder);
     when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
+    PullRequest pullRequest = createPullRequest();
+    when(pullRequestService.get(REPOSITORY, "1")).thenReturn(pullRequest);
 
     Person author = new Person("Philip");
     Changeset changeset1 = new Changeset("1", 1L, author, "first commit");
@@ -191,8 +193,16 @@ public class MergeServiceTest {
     ChangesetPagingResult changesets = new ChangesetPagingResult(2, ImmutableList.of(changeset1, changeset2));
 
     when(logCommandBuilder.getChangesets()).thenReturn(changesets);
-    String message = service.createSquashCommitMessage(REPOSITORY.getNamespaceAndName(), "squash", "master");
+    String message = service.createSquashCommitMessage(REPOSITORY.getNamespaceAndName(), "1");
     assertThat(message).isEqualTo("-- first commit\n-- second commit\n");
+  }
+
+  private PullRequest createPullRequest() {
+    PullRequest pullRequest = new PullRequest();
+    pullRequest.setId("1");
+    pullRequest.setSource("squash");
+    pullRequest.setTarget("master");
+    return pullRequest;
   }
 
   private PullRequest mockPullRequest(String source, String target, String pullRequestId) {

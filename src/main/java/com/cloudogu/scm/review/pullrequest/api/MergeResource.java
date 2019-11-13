@@ -74,7 +74,7 @@ public class MergeResource {
   }
 
   @GET
-  @Path("{namespace}/{name}/squash-commit-message")
+  @Path("{namespace}/{name}/{pullRequestId}/squash-commit-message")
   @Produces("text/plain")
   @StatusCodes({
     @ResponseCode(code = 200, condition = "squash commit message was created"),
@@ -84,10 +84,9 @@ public class MergeResource {
   public Response createSquashCommitMessage(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @QueryParam("sourceRevision") String sourceRevision,
-    @QueryParam("targetRevision") String targetRevision
+    @PathParam("pullRequestId") String pullRequestId
   ) {
-    String commitMessage = service.createSquashCommitMessage(new NamespaceAndName(namespace, name), sourceRevision, targetRevision);
+    String commitMessage = service.createSquashCommitMessage(new NamespaceAndName(namespace, name), pullRequestId);
     return Response.status(200).entity(commitMessage).build();
   }
 }

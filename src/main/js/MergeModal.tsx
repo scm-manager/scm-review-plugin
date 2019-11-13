@@ -37,20 +37,13 @@ class MergeModal extends React.Component<Props, State> {
   componentDidMount(): void {
     const { pullRequest } = this.props;
     if (pullRequest && pullRequest._links && pullRequest._links.squashCommitMessage) {
-      getSquashCommitDefaultMessage(this.createSquashCommitMessageLink()).then(commitMessage => {
+      getSquashCommitDefaultMessage((pullRequest._links.squashCommitMessage as Link).href).then(commitMessage => {
         this.setState({
           defaultSquashCommitMessage: (commitMessage as string)
         });
       });
     }
   }
-
-  createSquashCommitMessageLink = () => {
-    const { pullRequest } = this.props;
-    return `${(pullRequest._links.squashCommitMessage as Link).href}?sourceRevision=${
-      pullRequest.source
-    }&targetRevision=${pullRequest.target}`;
-  };
 
   selectStrategy = (strategy: string) => {
     const { defaultSquashCommitMessage, mergeCommit } = this.state;

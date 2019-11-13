@@ -68,14 +68,15 @@ public class MergeService {
     return new MergeDryRunCommandResult(false);
   }
 
-  public String createSquashCommitMessage(NamespaceAndName namespaceAndName, String sourceRevision, String targetRevision) {
+  public String createSquashCommitMessage(NamespaceAndName namespaceAndName, String pullRequestId) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
+        PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
         try {
           StringBuilder builder = new StringBuilder();
           repositoryService.getLogCommand()
-            .setBranch(sourceRevision)
-            .setAncestorChangeset(targetRevision)
+            .setBranch(pullRequest.getSource())
+            .setAncestorChangeset(pullRequest.getTarget())
             .getChangesets()
             .getChangesets()
             .forEach(c -> builder.append("-- ").append(c.getDescription()).append("\n"));
