@@ -2,7 +2,7 @@ import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Link } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
-import { Textarea } from "@scm-manager/ui-components";
+import { Checkbox, Textarea } from "@scm-manager/ui-components";
 
 type Props = WithTranslation & {
   strategyLinks: Link[];
@@ -10,6 +10,8 @@ type Props = WithTranslation & {
   selectedStrategy: string;
   commitMessage: string;
   onChangeCommitMessage: (message: string) => void;
+  shouldDeleteSourceBranch: boolean;
+  onChangeDeleteSourceBranch: (value: boolean) => void;
 };
 
 class MergeForm extends React.Component<Props> {
@@ -18,7 +20,16 @@ class MergeForm extends React.Component<Props> {
   };
 
   render() {
-    const { strategyLinks, selectedStrategy, selectStrategy, commitMessage, onChangeCommitMessage, t } = this.props;
+    const {
+      strategyLinks,
+      selectedStrategy,
+      selectStrategy,
+      commitMessage,
+      onChangeCommitMessage,
+      shouldDeleteSourceBranch,
+      onChangeDeleteSourceBranch,
+      t
+    } = this.props;
 
     return (
       <>
@@ -29,10 +40,17 @@ class MergeForm extends React.Component<Props> {
         />
         <hr />
         <Textarea
-          placeholder={t("scm-review-plugin.show-pull-request.commit-message")}
+          placeholder={t("scm-review-plugin.showPullRequest.commitMessage")}
           disabled={this.isCommitMessageDisabled()}
           value={commitMessage}
           onChange={onChangeCommitMessage}
+        />
+        <hr />
+        <Checkbox
+          label={t("scm-review-plugin.showPullRequest.deleteSourceBranch.flag")}
+          checked={shouldDeleteSourceBranch}
+          helpText={t("scm-review-plugin.showPullRequest.deleteSourceBranch.help")}
+          onChange={onChangeDeleteSourceBranch}
         />
       </>
     );

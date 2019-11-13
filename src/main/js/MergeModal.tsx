@@ -1,9 +1,9 @@
 import React from "react";
-import {Button, Modal, SubmitButton} from "@scm-manager/ui-components";
-import {WithTranslation, withTranslation} from "react-i18next";
+import { Button, Modal, SubmitButton } from "@scm-manager/ui-components";
+import { WithTranslation, withTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
-import {MergeCommit, PullRequest} from "./types/PullRequest";
-import {Link} from "@scm-manager/ui-types";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { Link } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   close: () => void;
@@ -26,7 +26,8 @@ class MergeModal extends React.Component<Props, State> {
         commitMessage: "",
         source: this.props.pullRequest.source,
         target: this.props.pullRequest.target,
-        author: this.props.pullRequest.author
+        author: this.props.pullRequest.author,
+        shouldDeleteSourceBranch: false
       },
       loading: false
     };
@@ -55,6 +56,10 @@ class MergeModal extends React.Component<Props, State> {
     return mergeStrategy !== "FAST_FORWARD_IF_POSSIBLE" && mergeCommit.commitMessage.trim() === "";
   };
 
+  onChangeDeleteSourceBranch = (value: boolean) => {
+    this.setState({ mergeCommit: { ...this.state.mergeCommit, shouldDeleteSourceBranch: value } });
+  };
+
   render() {
     const { pullRequest, close, t } = this.props;
     const { mergeStrategy, mergeCommit, loading } = this.state;
@@ -62,12 +67,12 @@ class MergeModal extends React.Component<Props, State> {
     const footer = (
       <>
         <Button
-          label={t("scm-review-plugin.show-pull-request.merge-modal.cancel")}
+          label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")}
           action={() => close()}
           color={"grey"}
         />
         <SubmitButton
-          label={t("scm-review-plugin.show-pull-request.merge-modal.merge")}
+          label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}
           action={() => this.performMerge()}
           loading={loading}
           disabled={this.shouldDisableMergeButton()}
@@ -82,12 +87,14 @@ class MergeModal extends React.Component<Props, State> {
         strategyLinks={pullRequest._links.merge as Link[]}
         commitMessage={mergeCommit.commitMessage}
         onChangeCommitMessage={this.onChangeCommitMessage}
+        shouldDeleteSourceBranch={mergeCommit.shouldDeleteSourceBranch}
+        onChangeDeleteSourceBranch={this.onChangeDeleteSourceBranch}
       />
     );
 
     return (
       <Modal
-        title={t("scm-review-plugin.show-pull-request.merge-modal.title")}
+        title={t("scm-review-plugin.showPullRequest.mergeModal.title")}
         active={true}
         body={body}
         closeFunction={close}

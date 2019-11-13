@@ -1,7 +1,5 @@
 {
   "commitMessage": "best commit ever",
-  "source": "squash",
-  "target": "master",
   "author": {
     "id": "fry",
     "displayName": "Philip J Fry",

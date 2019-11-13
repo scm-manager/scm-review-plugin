@@ -59,8 +59,6 @@ public class CommentResourceTest {
   @Mock
   private CommentService service;
   @Mock
-  private CommentService commentService;
-  @Mock
   private PullRequestService pullRequestService;
   @Mock
   private BranchRevisionResolver branchRevisionResolver;
@@ -77,7 +75,7 @@ public class CommentResourceTest {
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
-        Providers.of(new CommentRootResource(new CommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder, pullRequestService, branchRevisionResolver)), commentService)));
+        Providers.of(new CommentRootResource(new CommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder, pullRequestService, branchRevisionResolver)))));
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);

@@ -1,15 +1,16 @@
 import React from "react";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { PagedCollection, Repository, Changeset } from "@scm-manager/ui-types";
+import { Changeset, PagedCollection, Repository } from "@scm-manager/ui-types";
 import { createChangesetUrl, getChangesets } from "./pullRequest";
-import { ErrorNotification, Notification, ChangesetList, LinkPaginator, Loading } from "@scm-manager/ui-components";
+import { ChangesetList, ErrorNotification, LinkPaginator, Loading, Notification } from "@scm-manager/ui-components";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  source: string;
-  target: string;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    source: string;
+    target: string;
+  };
 
 type ChangesetCollection = PagedCollection & {
   _embedded: {
@@ -123,7 +124,7 @@ class Changesets extends React.Component<Props, State> {
           </div>
         );
       } else {
-        return <Notification type="info">{t("scm-review-plugin.pull-request.noChangesets")}</Notification>;
+        return <Notification type="info">{t("scm-review-plugin.pullRequest.noChangesets")}</Notification>;
       }
     }
     return null;

@@ -175,7 +175,7 @@ class MailTextResolverTest {
 
   @Test
   void shouldRenderEmailOnRejectedPullRequest() {
-    PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
+    PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
 
     PullRequestRejectedMailTextResolver renderer = new PullRequestRejectedMailTextResolver(event);
 
