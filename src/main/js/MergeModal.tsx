@@ -4,6 +4,7 @@ import { WithTranslation, withTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
 import { Link } from "@scm-manager/ui-types";
+import { getSquashCommitDefaultMessage } from "./pullRequest";
 
 type Props = WithTranslation & {
   close: () => void;
@@ -25,8 +26,6 @@ class MergeModal extends React.Component<Props, State> {
       mergeStrategy: "MERGE_COMMIT",
       mergeCommit: {
         commitMessage: "",
-        source: this.props.pullRequest.source,
-        target: this.props.pullRequest.target,
         author: this.props.pullRequest.author,
         shouldDeleteSourceBranch: false
       },
@@ -40,7 +39,7 @@ class MergeModal extends React.Component<Props, State> {
     if (pullRequest && pullRequest._links && pullRequest._links.squashCommitMessage) {
       getSquashCommitDefaultMessage(this.createSquashCommitMessageLink()).then(commitMessage => {
         this.setState({
-          defaultSquashCommitMessage: commitMessage
+          defaultSquashCommitMessage: (commitMessage as string)
         });
       });
     }
@@ -48,10 +47,9 @@ class MergeModal extends React.Component<Props, State> {
 
   createSquashCommitMessageLink = () => {
     const { pullRequest } = this.props;
-    const { mergeCommit } = this.state;
     return `${(pullRequest._links.squashCommitMessage as Link).href}?sourceRevision=${
-      mergeCommit.source
-    }&targetRevision=${mergeCommit.target}`;
+      pullRequest.source
+    }&targetRevision=${pullRequest.target}`;
   };
 
   selectStrategy = (strategy: string) => {
