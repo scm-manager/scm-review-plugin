@@ -129,30 +129,21 @@ export function merge(url: string, mergeCommit: MergeCommit) {
 }
 
 export function dryRun(pullRequest: PullRequest) {
-  return apiClient
-    .post(
-      (pullRequest._links.mergeDryRun as Link).href,
-      {
-        sourceRevision: pullRequest.source,
-        targetRevision: pullRequest.target
-      },
-      "application/vnd.scmm-mergeCommand+json"
-    )
-    .catch(err => {
-      if (err instanceof ConflictError) {
-        return {
-          conflict: err
-        };
-      } else if (err instanceof NotFoundError) {
-        return {
-          notFound: err
-        };
-      } else {
-        return {
-          error: err
-        };
-      }
-    });
+  return apiClient.post((pullRequest._links.mergeDryRun as Link).href, {}).catch(err => {
+    if (err instanceof ConflictError) {
+      return {
+        conflict: err
+      };
+    } else if (err instanceof NotFoundError) {
+      return {
+        notFound: err
+      };
+    } else {
+      return {
+        error: err
+      };
+    }
+  });
 }
 
 export function getChangesets(url: string) {

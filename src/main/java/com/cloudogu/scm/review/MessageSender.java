@@ -9,6 +9,8 @@ import sonia.scm.repository.api.HookMessageProvider;
 import javax.inject.Inject;
 import java.util.Arrays;
 
+import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
+
 public class MessageSender {
 
   private final ScmConfiguration configuration;
@@ -48,9 +50,11 @@ public class MessageSender {
   }
 
   private void sendMessages(String... messages) {
-    HookMessageProvider messageProvider = event.getContext().getMessageProvider();
-    messageProvider.sendMessage("");
-    Arrays.stream(messages).forEach(messageProvider::sendMessage);
-    messageProvider.sendMessage("");
+    if (event.getContext().isFeatureSupported(MESSAGE_PROVIDER)) {
+      HookMessageProvider messageProvider = event.getContext().getMessageProvider();
+      messageProvider.sendMessage("");
+      Arrays.stream(messages).forEach(messageProvider::sendMessage);
+      messageProvider.sendMessage("");
+    }
   }
 }

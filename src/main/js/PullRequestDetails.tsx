@@ -1,9 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import {WithTranslation, withTranslation} from "react-i18next";
-import {RouteComponentProps, withRouter} from "react-router-dom";
-import {Link, Repository} from "@scm-manager/ui-types";
-import {ExtensionPoint} from "@scm-manager/ui-extensions";
+import { WithTranslation, withTranslation } from "react-i18next";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { Link, Repository } from "@scm-manager/ui-types";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   Button,
   DateFromNow,
@@ -15,8 +15,8 @@ import {
   Title,
   Tooltip
 } from "@scm-manager/ui-components";
-import {MergeCommit, PullRequest} from "./types/PullRequest";
-import {dryRun, getSubscription, handleSubscription, merge, reject} from "./pullRequest";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { dryRun, getSubscription, handleSubscription, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -188,7 +188,9 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   shouldRunDryMerge = (pullRequest: PullRequest) => {
-    return pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN";
+    return (
+      pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN"
+    );
   };
 
   getMergeDryRun(pullRequest: PullRequest) {
@@ -328,7 +330,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeNotification = (
         <Notification
           type="info"
-          children={t("scm-review-plugin.show-pull-request.notification")}
+          children={t("scm-review-plugin.showPullRequest.notification")}
           onClose={() => this.onClose()}
         />
       );
@@ -383,14 +385,14 @@ class PullRequestDetails extends React.Component<Props, State> {
       ""
     );
     const targetBranchDeletedWarning = targetBranchDeleted ? (
-      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.show-pull-request.targetDeleted")}>
+      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.showPullRequest.targetDeleted")}>
         <i className="fas fa-exclamation-triangle" />
       </Tooltip>
     ) : null;
 
     const author = (
       <div className="field is-horizontal">
-        <UserLabel>{t("scm-review-plugin.pull-request.author")}:</UserLabel>
+        <UserLabel>{t("scm-review-plugin.pullRequest.author")}:</UserLabel>
         <UserField>
           <UserInline>{pullRequest.author.displayName}</UserInline>
           &nbsp;
@@ -402,7 +404,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       <>
         {pullRequest.reviewer.length > 0 ? (
           <div className="field is-horizontal">
-            <UserLabel>{t("scm-review-plugin.pull-request.reviewer")}:</UserLabel>
+            <UserLabel>{t("scm-review-plugin.pullRequest.reviewer")}:</UserLabel>
             <UserField>
               <ul className="is-separated">
                 {pullRequest.reviewer.map(reviewer => {

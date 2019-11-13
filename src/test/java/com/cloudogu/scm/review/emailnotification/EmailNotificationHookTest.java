@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.TestData;
-import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -127,7 +126,7 @@ class EmailNotificationHookTest {
 
   @Test
   void shouldSendEmailsAfterRejectingPullRequest() throws Exception {
-    PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
+    PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
     emailNotificationHook.handleRejectedPullRequest(event);
 
     verify(service).sendEmails(isA(PullRequestRejectedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer()));

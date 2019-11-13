@@ -8,14 +8,15 @@ import RootComments from "./comment/RootComments";
 import { PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  pullRequest: PullRequest;
-  baseURL: string;
-  source: string;
-  target: string;
-  status: string;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    pullRequest: PullRequest;
+    baseURL: string;
+    source: string;
+    target: string;
+    status: string;
+  };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
   let strippedUrl = url.substring(baseURL.length);
@@ -43,7 +44,6 @@ class PullRequestInformation extends React.Component<Props> {
 
     let changesetTab = null;
     let diffTab = null;
-    let routes;
     let routeChangeset = null;
     let routeChangesetPagination = null;
     let routeDiff = null;
@@ -51,7 +51,7 @@ class PullRequestInformation extends React.Component<Props> {
     if (status && status === "OPEN") {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
-          <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pull-request.tabs.commits")}</Link>
+          <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pullRequest.tabs.commits")}</Link>
         </li>
       );
       routeChangeset = (
@@ -77,11 +77,11 @@ class PullRequestInformation extends React.Component<Props> {
       );
       diffTab = (
         <li className={this.navigationClass("diff")}>
-          <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pull-request.tabs.diff")}</Link>
+          <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pullRequest.tabs.diff")}</Link>
         </li>
       );
     }
-    routes = (
+    const routes = (
       <Switch>
         <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
         <Route path={`${baseURL}/comments`} render={() => <RootComments pullRequest={pullRequest} />} exact />
@@ -93,7 +93,7 @@ class PullRequestInformation extends React.Component<Props> {
 
     const commentTab = pullRequest ? (
       <li className={this.navigationClass("comments")}>
-        <Link to={`${baseURL}/comments/`}>{t("scm-review-plugin.pull-request.tabs.comments")}</Link>
+        <Link to={`${baseURL}/comments/`}>{t("scm-review-plugin.pullRequest.tabs.comments")}</Link>
       </li>
     ) : (
       ""
