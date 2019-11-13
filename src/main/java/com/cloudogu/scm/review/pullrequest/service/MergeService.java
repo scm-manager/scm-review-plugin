@@ -33,7 +33,6 @@ public class MergeService {
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
-      PermissionCheck.checkMerge(repositoryService.getRepository());
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
@@ -72,7 +71,7 @@ public class MergeService {
   }
 
   private void isAllowedToMerge(Repository repository, MergeCommandBuilder mergeCommand, MergeStrategy strategy) {
-    PermissionCheck.mayMerge(repository);
+    PermissionCheck.checkMerge(repository);
     if (!mergeCommand.isSupported(strategy)) {
       throw new MergeStrategyNotSupportedException(repository, strategy);
     }
