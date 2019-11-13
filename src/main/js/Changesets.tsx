@@ -5,11 +5,12 @@ import {Changeset, PagedCollection, Repository} from "@scm-manager/ui-types";
 import {createChangesetUrl, getChangesets} from "./pullRequest";
 import {ChangesetList, ErrorNotification, LinkPaginator, Loading, Notification} from "@scm-manager/ui-components";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  source: string;
-  target: string;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    source: string;
+    target: string;
+  };
 
 type ChangesetCollection = PagedCollection & {
   _embedded: {

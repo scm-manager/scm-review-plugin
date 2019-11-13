@@ -4,11 +4,12 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.api.HookMessageProvider;
 
 import javax.inject.Inject;
 import java.util.Arrays;
+
+import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
 
 public class MessageSender {
 
@@ -49,7 +50,7 @@ public class MessageSender {
   }
 
   private void sendMessages(String... messages) {
-    if (event.getContext().isFeatureSupported(HookFeature.MESSAGE_PROVIDER)) {
+    if (event.getContext().isFeatureSupported(MESSAGE_PROVIDER)) {
       HookMessageProvider messageProvider = event.getContext().getMessageProvider();
       messageProvider.sendMessage("");
       Arrays.stream(messages).forEach(messageProvider::sendMessage);

@@ -188,7 +188,9 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   shouldRunDryMerge = (pullRequest: PullRequest) => {
-    return pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN";
+    return (
+      pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN"
+    );
   };
 
   getMergeDryRun(pullRequest: PullRequest) {

@@ -89,11 +89,7 @@ class EditForm extends React.Component<Props, State> {
           label={t("scm-review-plugin.pullRequest.description")}
           onChange={this.onChange}
         />
-        <TagGroup
-          items={reviewer}
-          label={t("scm-review-plugin.pullRequest.reviewer")}
-          onRemove={this.removeReviewer}
-        />
+        <TagGroup items={reviewer} label={t("scm-review-plugin.pullRequest.reviewer")} onRemove={this.removeReviewer} />
         <div className="field">
           <div className="control">
             <Autocomplete

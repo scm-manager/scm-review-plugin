@@ -3,7 +3,6 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
-import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
@@ -115,8 +114,6 @@ public class PullRequestRootResourceTest {
 
   private ScmEventBus eventBus = mock(ScmEventBus.class) ;
 
-  private CommentService commentService = mock(CommentService.class);
-
   @Before
   public void init() {
     when(repository.getId()).thenReturn(REPOSITORY_ID);
@@ -125,7 +122,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
-    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, commentService)));
+    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null)));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -158,7 +155,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException, UnsupportedEncodingException {
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
 
@@ -167,7 +164,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "trillian", password = "secret")
-  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException, UnsupportedEncodingException {
+  public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "");
     dispatcher.invoke(request, response);
 
@@ -526,7 +523,6 @@ public class PullRequestRootResourceTest {
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
-    String currentUser = "username";
     User user1 = new User();
     user1.setName("user1");
     user1.setMail("user1@mail.de");
@@ -546,15 +542,12 @@ public class PullRequestRootResourceTest {
   @Test
   public void shouldNotReturnAnySubscriptionLinkOnMissingUserMail() throws URISyntaxException, IOException {
     // the PR has no subscriber
-    PullRequest pullRequest = createPullRequest();
-
     Subject subject = mock(Subject.class);
     ThreadContext.bind(subject);
 
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
     when(subject.isPermitted(any(String.class))).thenReturn(true);
-    String currentUser = "username";
     User user1 = new User();
     user1.setName("user1");
     user1.setDisplayName("User 1");

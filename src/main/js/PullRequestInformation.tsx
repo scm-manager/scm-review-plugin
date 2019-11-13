@@ -8,14 +8,15 @@ import Diff from "./diff/Diff";
 import PullRequestComments from "./comment/PullRequestComments";
 import {PullRequest} from "./types/PullRequest";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  pullRequest: PullRequest;
-  baseURL: string;
-  source: string;
-  target: string;
-  status: string;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    pullRequest: PullRequest;
+    baseURL: string;
+    source: string;
+    target: string;
+    status: string;
+  };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
   let strippedUrl = url.substring(baseURL.length);

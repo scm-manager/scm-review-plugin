@@ -3,11 +3,16 @@ package com.cloudogu.scm.review.comment.service;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.github.legman.Subscribe;
 import org.apache.shiro.SecurityUtils;
+import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.plugin.Extension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
@@ -31,6 +36,7 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
+@EagerSingleton @Extension
 public class CommentService {
 
   private final RepositoryResolver repositoryResolver;
@@ -280,6 +286,27 @@ public class CommentService {
 
     void execute(BiConsumer<Comment, Reply> consumer) {
       consumer.accept(parent, reply);
+    }
+  }
+
+  @Subscribe
+  public void addCommentOnMerge(PullRequestMergedEvent mergedEvent) {
+    addStatusChangedComment(mergedEvent.getRepository(), mergedEvent.getPullRequest().getId(), SystemCommentType.MERGED);
+  }
+
+  @Subscribe
+  public void addCommentOnReject(PullRequestRejectedEvent rejectedEvent) {
+    addStatusChangedComment(rejectedEvent.getRepository(), rejectedEvent.getPullRequest().getId(), getCommentType(rejectedEvent.getCause()));
+  }
+
+  private SystemCommentType getCommentType(PullRequestRejectedEvent.RejectionCause cause) {
+    switch (cause) {
+      case BRANCH_DELETED:
+        return SystemCommentType.SOURCE_DELETED;
+      case REJECTED_BY_USER:
+        return SystemCommentType.REJECTED;
+      default:
+        throw new IllegalArgumentException("unknown cause: " + cause);
     }
   }
 }

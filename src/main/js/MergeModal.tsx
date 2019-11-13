@@ -29,7 +29,7 @@ class MergeModal extends React.Component<Props, State> {
         author: this.props.pullRequest.author,
         shouldDeleteSourceBranch: false
       },
-      loading: false,
+      loading: false
     };
   }
 
@@ -57,7 +57,7 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   onChangeDeleteSourceBranch = (value: boolean) => {
-    this.setState({mergeCommit: { ...this.state.mergeCommit, shouldDeleteSourceBranch: value}});
+    this.setState({ mergeCommit: { ...this.state.mergeCommit, shouldDeleteSourceBranch: value } });
   };
 
   render() {
