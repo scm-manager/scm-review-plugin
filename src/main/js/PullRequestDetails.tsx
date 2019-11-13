@@ -119,7 +119,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeButtonLoading: true,
       rejectButtonLoading: false,
       showNotification: false,
-      mergeHasNoConflict: false,
+      mergeHasNoConflict: true,
       subscriptionIcon: "",
       subscriptionLabel: "",
       subscriptionLink: ""
@@ -241,7 +241,7 @@ class PullRequestDetails extends React.Component<Props, State> {
         });
       } else if (response.conflict) {
         this.setState({
-          mergeHasNoConflict: true,
+          mergeHasNoConflict: false,
           mergeButtonLoading: false
         });
       } else {
