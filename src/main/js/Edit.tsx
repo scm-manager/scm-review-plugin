@@ -1,17 +1,18 @@
 import React from "react";
-import { Title, Subtitle, SubmitButton, ErrorNotification, Loading } from "@scm-manager/ui-components";
-import { Repository } from "@scm-manager/ui-types";
-import { PullRequest } from "./types/PullRequest";
-import { updatePullRequest } from "./pullRequest";
-import { WithTranslation, withTranslation, Trans } from "react-i18next";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import {ErrorNotification, Loading, SubmitButton, Subtitle, Title} from "@scm-manager/ui-components";
+import {Repository} from "@scm-manager/ui-types";
+import {PullRequest} from "./types/PullRequest";
+import {updatePullRequest} from "./pullRequest";
+import {Trans, withTranslation, WithTranslation} from "react-i18next";
+import {RouteComponentProps, withRouter} from "react-router-dom";
 import EditForm from "./EditForm";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  pullRequest: PullRequest;
-  userAutocompleteLink: string;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    pullRequest: PullRequest;
+    userAutocompleteLink: string;
+  };
 
 type State = {
   modifiedPullRequest: PullRequest;
