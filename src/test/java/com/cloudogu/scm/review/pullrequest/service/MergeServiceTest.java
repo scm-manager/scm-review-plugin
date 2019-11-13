@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.MergeStrategyNotSupportedException;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
@@ -34,6 +33,7 @@ import sonia.scm.repository.api.MergeCommandBuilder;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
+import sonia.scm.repository.api.MergeStrategyNotSupportedException;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
@@ -203,13 +203,8 @@ class MergeServiceTest {
     ChangesetPagingResult changesets = new ChangesetPagingResult(2, ImmutableList.of(changeset1, changeset2));
 
     when(logCommandBuilder.getChangesets()).thenReturn(changesets);
-
-    MergeCommandDto mergeCommandDto = new MergeCommandDto();
-    mergeCommandDto.setSourceRevision("squash");
-    mergeCommandDto.setTargetRevision("master");
-    String message = service.createSquashCommitMessage(REPOSITORY.getNamespaceAndName(), mergeCommandDto);
-
-    assertThat(message).isEqualTo("first commit\nsecond commit\n");
+    String message = service.createSquashCommitMessage(REPOSITORY.getNamespaceAndName(), "squash", "master");
+    assertThat(message).isEqualTo("-- first commit\n-- second commit\n");
   }
 
   private MergeCommitDto createMergeCommit(String source, String target, boolean deleteBranch) {

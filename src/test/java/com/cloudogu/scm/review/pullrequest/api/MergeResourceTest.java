@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.api.v2.resources.MergeResultToDtoMapper;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
 
@@ -42,8 +41,6 @@ class MergeResourceTest {
 
   @Mock
   private MergeService mergeService;
-  @Mock
-  private MergeResultToDtoMapper mergeResultToDtoMapper;
 
   @InjectMocks
   private MergeResource mergeResource;
@@ -67,7 +64,7 @@ class MergeResourceTest {
   }
 
   @Test
-  void shouldReturnConflictsIfMergeNotSuccessful() throws URISyntaxException, IOException {
+  void shouldThrowExceptionIfMergeNotSuccessful() throws URISyntaxException, IOException {
     ImmutableList<String> conflicts = ImmutableList.of("a", "b");
     when(mergeService.merge(any(), any(), any())).thenReturn(MergeCommandResult.failure(conflicts));
     byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
@@ -75,7 +72,8 @@ class MergeResourceTest {
     MockHttpRequest request = createHttpPostRequest(MERGE_URL, mergeCommitJson);
 
     dispatcher.invoke(request, response);
-    assertThat(response.getStatus()).isEqualTo(409);
+    assertThat(response.getStatus()).isEqualTo(400);
+    assertThat(response.getContentAsString()).contains("MergeConflictException", "conflict in merge between squash and master");
   }
 
   @Test
@@ -116,7 +114,7 @@ class MergeResourceTest {
 
   @Test
   void shouldCreateSquashCommitMessage() throws IOException, URISyntaxException {
-    when(mergeService.createSquashCommitMessage(any(), any())).thenReturn("successful");
+    when(mergeService.createSquashCommitMessage(any(), any(), any())).thenReturn("successful");
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
     MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/squash-commit-message", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();

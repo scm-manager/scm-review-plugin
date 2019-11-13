@@ -53,9 +53,9 @@
         "MERGE_COMMIT": "Merge Commit",
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward, wenn möglich",
         "help": {
-          "SQUASH": "Alle Commits des Source-Branches werden als ein neuer Commit in den Target-Branch gemerged.",
+          "SQUASH": "Alle Commits des Source-Branches werden als ein neuer Commit auf dem Target-Branch zusammengefasst.",
           "MERGE_COMMIT": "Die Branches werden mit einem neuen Commit gemerged.",
-          "FAST_FORWARD_IF_POSSIBLE": "Falls möglich wird der Source-Branch ohne Commit in den Target-Branch gemerged."
+          "FAST_FORWARD_IF_POSSIBLE": "Falls möglich wird der Target-Branch ohne Merge auf den Stand des Source-Branches gesetzt. Falls dieses nicht möglich ist, wird ein normaler Merge-Commit erzeugt."
         }
       },
       "commitMessage": "Bitte Commit Nachricht eingeben",
@@ -196,6 +196,12 @@
         "displayName": "Pull-Requests mergen/ablehnen",
         "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
       }
+    }
+  },
+  "errors": {
+    "DTRhFJFgU1": {
+      "displayName": "Merge Konflikte",
+      "description": "Die Branches konnten nicht gemerged werden, da Konflikte existieren."
     }
   }
 }

@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
@@ -130,8 +129,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private void appendMergeStrategyLinks(Links.Builder linksBuilder, @Context Repository repository) {
     try (RepositoryService service = serviceFactory.create(repository)) {
       if (service.isSupported(Command.MERGE)) {
-        List<Link> strategyLinks = Stream.of(service.getMergeCommand().getSupportedMergeStrategies())
-          .flatMap(Set::stream)
+        List<Link> strategyLinks = service.getMergeCommand().getSupportedMergeStrategies()
+          .stream()
           .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), strategy))
           .collect(toList());
         linksBuilder.array(strategyLinks);
