@@ -17,6 +17,7 @@ type Props = WithTranslation &
     source: string;
     target: string;
     status: string;
+    mergeHasNoConflict: boolean;
   };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
@@ -41,7 +42,7 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest, repository, baseURL, status, target, source, t } = this.props;
+    const { pullRequest, repository, baseURL, status, target, source, mergeHasNoConflict, t } = this.props;
 
     let changesetTab = null;
     let diffTab = null;
@@ -83,7 +84,7 @@ class PullRequestInformation extends React.Component<Props> {
           <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pullRequest.tabs.diff")}</Link>
         </li>
       );
-      routeConflicts = (
+      routeConflicts = !mergeHasNoConflict && (
         <Route
           path={`${baseURL}/conflicts`}
           render={() => (
@@ -92,7 +93,7 @@ class PullRequestInformation extends React.Component<Props> {
           exact
         />
       );
-      conflictsTab = (
+      conflictsTab = !mergeHasNoConflict && (
         <li className={this.navigationClass("conflicts")}>
           <Link to={`${baseURL}/conflicts/`}>{t("scm-review-plugin.pullRequest.tabs.conflicts")}</Link>
         </li>

@@ -480,6 +480,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           source={pullRequest.source}
           target={pullRequest.target}
           status={pullRequest.status}
+          mergeHasNoConflict={mergeHasNoConflict}
         />
       </>
     );
