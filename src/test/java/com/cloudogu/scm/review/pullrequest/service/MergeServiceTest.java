@@ -100,7 +100,7 @@ public class MergeServiceTest {
 
   @Test
   @SubjectAware(username = "dent", password = "secret")
-  public void shouldCloseBranchIfFlagIsSet() {
+  public void shouldDeleteBranchIfFlagIsSet() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success());
     mockPullRequest("squash", "master", "1");
@@ -185,15 +185,6 @@ public class MergeServiceTest {
     mergeCommit.setShouldDeleteSourceBranch(deleteBranch);
     return mergeCommit;
   }
-
-//  private void mockPrincipal() {
-//    ThreadContext.bind(subject);
-//    PrincipalCollection principals = mock(PrincipalCollection.class);
-//    when(subject.getPrincipals()).thenReturn(principals);
-//    User user1 = new User();
-//    user1.setName("Philip J Fry");
-//    user1.setDisplayName("Philip");
-//  }
 
   private void mocksForPullRequestUpdate(String branchName) throws IOException {
     lenient().when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);
