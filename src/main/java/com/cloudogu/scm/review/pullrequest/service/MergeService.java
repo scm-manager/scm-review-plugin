@@ -31,6 +31,10 @@ public class MergeService {
     "Merge of branch {0} into {1}",
     "",
     "Automatic merge by SCM-Manager.");
+  private static final String SQUASH_COMMIT_MESSAGE_TEMPLATE = String.join("\n",
+    "Squash commits of branch {0}:",
+    "",
+    "{2}");
 
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
@@ -90,16 +94,24 @@ public class MergeService {
                 .setAncestorChangeset(pullRequest.getTarget())
                 .getChangesets()
                 .getChangesets()
-                .forEach(c -> builder.append(c.getDescription()).append("\n").append("\n"));
-              return builder.toString();
+                .forEach(c -> {
+                  builder.append("- ").append(c.getDescription()).append('\n');
+                  if (c.getDescription().contains("\n")) {
+                    builder.append('\n');
+                  }
+                });
+              return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString());
             } catch (IOException e) {
               throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()),
                 "Could not read changesets from repository");
             }
+          } else {
+            return MessageFormat.format(MERGE_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget());
           }
         }
+      case FAST_FORWARD_IF_POSSIBLE: // should be same as merge (fallback message only)
+      case MERGE_COMMIT: // should be default
       default:
-      case MERGE_COMMIT:
         return MessageFormat.format(MERGE_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget());
     }
   }
