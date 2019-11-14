@@ -15,11 +15,15 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.Branches;
+import sonia.scm.repository.Changeset;
+import sonia.scm.repository.ChangesetPagingResult;
+import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.BranchCommandBuilder;
 import sonia.scm.repository.api.BranchesCommandBuilder;
 import sonia.scm.repository.api.Command;
+import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.MergeCommandBuilder;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
@@ -32,8 +36,10 @@ import java.io.IOException;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -55,6 +61,8 @@ public class MergeServiceTest {
   BranchCommandBuilder branchCommandBuilder;
   @Mock (answer = Answers.RETURNS_DEEP_STUBS)
   BranchesCommandBuilder branchesCommandBuilder;
+  @Mock
+  LogCommandBuilder logCommandBuilder;
   @Mock
   private RepositoryServiceFactory serviceFactory;
   @Mock
@@ -167,6 +175,44 @@ public class MergeServiceTest {
     MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(REPOSITORY.getNamespaceAndName(), "1");
 
     assertThat(mergeDryRunCommandResult.isMergeable()).isFalse();
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldCreateCommitMessageForSquash() throws IOException {
+    when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
+    when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
+    when(logCommandBuilder.setBranch(any())).thenReturn(logCommandBuilder);
+    when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
+    PullRequest pullRequest = createPullRequest();
+    when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
+
+    Person author = new Person("Philip");
+
+    ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
+      new Changeset("1", 1L, author, "first commit"),
+      new Changeset("2", 2L, author, "second commit\nwith multiple lines"),
+      new Changeset("3", 3L, author, "third commit")
+    ));
+
+    when(logCommandBuilder.getChangesets()).thenReturn(changesets);
+    String message = service.createDefaultCommitMessage(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+    assertThat(message).isEqualTo("Squash commits of branch squash:\n" +
+      "\n" +
+      "- first commit\n" +
+      "- second commit\n" +
+      "with multiple lines\n" +
+      "\n" +
+      "- third commit\n"
+    );
+  }
+
+  private PullRequest createPullRequest() {
+    PullRequest pullRequest = new PullRequest();
+    pullRequest.setId("1");
+    pullRequest.setSource("squash");
+    pullRequest.setTarget("master");
+    return pullRequest;
   }
 
   private PullRequest mockPullRequest(String source, String target, String pullRequestId) {

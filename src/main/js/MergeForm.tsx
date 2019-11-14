@@ -2,7 +2,8 @@ import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Link } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
-import { Checkbox, Textarea } from "@scm-manager/ui-components";
+import { Checkbox, Textarea, Button } from "@scm-manager/ui-components";
+import styled from "styled-components";
 
 type Props = WithTranslation & {
   strategyLinks: Link[];
@@ -10,12 +11,22 @@ type Props = WithTranslation & {
   selectedStrategy: string;
   commitMessage: string;
   onChangeCommitMessage: (message: string) => void;
+  onResetCommitMessage: () => void;
   shouldDeleteSourceBranch: boolean;
   onChangeDeleteSourceBranch: (value: boolean) => void;
+  loading: boolean;
 };
+
+const CommitMessageInfo = styled.div`
+  margin-bottom: 1em;
+`;
 
 class MergeForm extends React.Component<Props> {
   isCommitMessageDisabled = () => {
+    return this.props.loading;
+  };
+
+  isShowMessageHint = () => {
     return this.props.selectedStrategy === "FAST_FORWARD_IF_POSSIBLE";
   };
 
@@ -28,6 +39,7 @@ class MergeForm extends React.Component<Props> {
       onChangeCommitMessage,
       shouldDeleteSourceBranch,
       onChangeDeleteSourceBranch,
+      onResetCommitMessage,
       t
     } = this.props;
 
@@ -40,16 +52,25 @@ class MergeForm extends React.Component<Props> {
         />
         <hr />
         <Textarea
-          placeholder={t("scm-review-plugin.showPullRequest.commitMessage")}
+          placeholder={t("scm-review-plugin.showPullRequest.mergeModal.commitMessage")}
           disabled={this.isCommitMessageDisabled()}
           value={commitMessage}
           onChange={onChangeCommitMessage}
         />
+        {this.isShowMessageHint() && (
+          <CommitMessageInfo className="is-size-7">
+            <span className="icon is-small has-text-info">
+              <i className={"fas fa-info-circle"} />
+            </span>{" "}
+            <span>{t("scm-review-plugin.showPullRequest.mergeModal.fallbackMessageInfo")}</span>
+          </CommitMessageInfo>
+        )}
+        <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage} />
         <hr />
         <Checkbox
-          label={t("scm-review-plugin.showPullRequest.deleteSourceBranch.flag")}
+          label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.flag")}
           checked={shouldDeleteSourceBranch}
-          helpText={t("scm-review-plugin.showPullRequest.deleteSourceBranch.help")}
+          helpText={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
           onChange={onChangeDeleteSourceBranch}
         />
       </>

@@ -14,12 +14,12 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
@@ -38,7 +38,7 @@ public class MergeResource {
   @Path("{namespace}/{name}/{pullRequestId}")
   @Consumes("application/vnd.scmm-mergeCommand+json")
   @Produces("application/json")
-  public Response merge(
+  public void merge(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
     @PathParam("pullRequestId") String pullRequestId,
@@ -47,7 +47,6 @@ public class MergeResource {
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
     service.merge(namespaceAndName, pullRequestId, mergeCommitDto, strategy);
-    return Response.noContent().build();
   }
 
   @POST
@@ -58,17 +57,32 @@ public class MergeResource {
     @ResponseCode(code = 409, condition = "The branches can not be merged automatically due to conflicts"),
     @ResponseCode(code = 500, condition = "internal server error")
   })
-  public Response dryRun(
+  public void dryRun(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
     @PathParam("pullRequestId") String pullRequestId
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
     MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(namespaceAndName, pullRequestId);
-    if (mergeDryRunCommandResult.isMergeable()) {
-      return Response.noContent().build();
-    } else {
+    if (!mergeDryRunCommandResult.isMergeable()) {
       throw new ConcurrentModificationException(entity(PullRequest.class, pullRequestId).in(namespaceAndName).build());
     }
+  }
+
+  @GET
+  @Path("{namespace}/{name}/{pullRequestId}/commit-message")
+  @Produces("text/plain")
+  @StatusCodes({
+    @ResponseCode(code = 200, condition = "squash commit message was created"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  public String createDefaultCommitMessage(
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @PathParam("pullRequestId") String pullRequestId,
+    @QueryParam("strategy") MergeStrategy strategy
+  ) {
+    return service.createDefaultCommitMessage(new NamespaceAndName(namespace, name), pullRequestId, strategy);
   }
 }

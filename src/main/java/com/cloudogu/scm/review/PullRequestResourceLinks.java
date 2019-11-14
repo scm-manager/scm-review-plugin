@@ -158,5 +158,10 @@ public class PullRequestResourceLinks {
       return mergeLinkBuilder
         .method("merge").parameters(namespace, name, pullRequestId).href() + "?strategy=" + strategy;
     }
+
+    public String createDefaultCommitMessage(String namespace, String name, String pullRequestId) {
+      return mergeLinkBuilder
+        .method("createDefaultCommitMessage").parameters(namespace, name, pullRequestId).href();
+    }
   }
 }

@@ -46,7 +46,14 @@
       "mergeModal": {
         "title": "Pull Request mergen",
         "merge": "Merge",
-        "cancel": "Abbrechen"
+        "cancel": "Abbrechen",
+        "deleteSourceBranch": {
+          "flag": "Source Branch löschen",
+          "help": "Nach einem erfolgreichen Merge wird der Source-Branch entfernt"
+        },
+        "commitMessage": "Bitte Commit Nachricht eingeben",
+        "resetMessage": "Nachricht zurücksetzen",
+        "fallbackMessageInfo": "Diese Nachricht wird nur genutzt, wenn Fast Forward nicht möglich ist."
       },
       "mergeStrategies": {
         "SQUASH": "Squash",
@@ -58,7 +65,6 @@
           "FAST_FORWARD_IF_POSSIBLE": "Falls möglich wird der Target-Branch ohne Merge auf den Stand des Source-Branches gesetzt. Falls dieses nicht möglich ist, wird ein normaler Merge-Commit erzeugt."
         }
       },
-      "commitMessage": "Bitte Commit Nachricht eingeben",
       "rejectButton": {
         "buttonTitle": "Pull Request ablehnen",
         "confirmAlert": {
@@ -70,10 +76,6 @@
       },
       "notification": "Pull Request erfolgreich gemerged!",
       "targetDeleted": "Der Target Branch wurde gelöscht!",
-      "deleteSourceBranch": {
-        "flag": "Source Branch löschen",
-        "help": "Nach einem erfolgreichen Merge wird der Source-Branch entfernt"
-      }
     },
     "pullRequests": {
       "errorTitle": "Fehler",

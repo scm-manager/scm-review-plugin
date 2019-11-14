@@ -146,6 +146,13 @@ export function dryRun(pullRequest: PullRequest) {
   });
 }
 
+export function getDefaultCommitDefaultMessage(url: string) {
+  return apiClient
+    .get(url)
+    .then(response => response.text())
+    .catch(err => "");
+}
+
 export function getChangesets(url: string) {
   return apiClient
     .get(url)
