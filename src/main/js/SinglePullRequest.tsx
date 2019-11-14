@@ -3,8 +3,8 @@ import { ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { Switch, Route, withRouter, RouteComponentProps } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
 import { Repository, Link } from "@scm-manager/ui-types";
-import { PullRequest } from "./types/PullRequest";
-import { getPullRequest } from "./pullRequest";
+import { PullRequest, Reviewer } from "./types/PullRequest";
+import { getPullRequest, getReviewer } from "./pullRequest";
 import { History } from "history";
 import Edit from "./Edit";
 
@@ -50,9 +50,20 @@ class SinglePullRequest extends React.Component<Props, State> {
     });
   };
 
-  onChangePullRequest = (changes: Partial<PullRequest>) => {
+  fetchReviewer = (): void => {
     const { pullRequest } = this.state;
-    this.setState({ pullRequest: {...pullRequest, ...changes}})
+    if (pullRequest && pullRequest._links && pullRequest._links.self && (pullRequest._links.self as Link).href) {
+      const url = (pullRequest._links.self as Link).href + "?fields=reviewer&fields=_links";
+      getReviewer(url).then(response => {
+        if (response.error) {
+          this.setState({
+            error: response.error
+          });
+        } else {
+          this.setState({ pullRequest: { ...pullRequest, reviewer: response.reviewer, _links: response._links } });
+        }
+      });
+    }
   };
 
   render() {
@@ -71,13 +82,20 @@ class SinglePullRequest extends React.Component<Props, State> {
       <Switch>
         <Route
           component={() => (
-            <Edit repository={repository} pullRequest={pullRequest} userAutocompleteLink={userAutocompleteLink} onChangePullRequest={this.onChangePullRequest}/>
+            <Edit
+              repository={repository}
+              pullRequest={pullRequest}
+              userAutocompleteLink={userAutocompleteLink}
+              fetchReviewer={this.fetchReviewer}
+            />
           )}
           path={`${match.url}/edit`}
           exact
         />
         <Route
-          component={() => <PullRequestDetails repository={repository} pullRequest={pullRequest} onChangePullRequest={this.onChangePullRequest}/>}
+          component={() => (
+            <PullRequestDetails repository={repository} pullRequest={pullRequest} fetchReviewer={this.fetchReviewer} />
+          )}
           path={`${match.url}`}
         />
       </Switch>

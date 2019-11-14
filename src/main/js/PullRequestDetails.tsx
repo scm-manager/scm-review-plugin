@@ -30,7 +30,7 @@ type Props = WithTranslation &
   RouteComponentProps & {
     repository: Repository;
     pullRequest: PullRequest;
-    onChangePullRequest: (changes: Partial<PullRequest>) => void;
+    fetchReviewer: () => void;
   };
 
 type State = {
@@ -131,22 +131,6 @@ class PullRequestDetails extends React.Component<Props, State> {
         from: this.props.match.url + "/updated"
       }
     });
-  };
-
-  fetchReviewer = (): void => {
-    const { pullRequest, onChangePullRequest } = this.props;
-    if (pullRequest._links.self && (pullRequest._links.self as Link).href) {
-      const url = (pullRequest._links.self as Link).href + "?fields=reviewer&fields=_links";
-      getReviewer(url).then(response => {
-        if (response.error) {
-          this.setState({
-            error: response.error
-          });
-        } else {
-          onChangePullRequest({ reviewer: response.reviewer, _links: response._links });
-        }
-      });
-    }
   };
 
   shouldRunDryMerge = (pullRequest: PullRequest) => {
@@ -391,7 +375,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           <LevelWrapper className="level">
             <div className="level-left">
               <div className="level-item">
-                <ApprovalContainer pullRequest={pullRequest} refreshReviewer={() => this.fetchReviewer()} />
+                <ApprovalContainer pullRequest={pullRequest} refreshReviewer={() => this.props.fetchReviewer()} />
               </div>
             </div>
             <div className="level-right">

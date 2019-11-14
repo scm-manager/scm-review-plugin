@@ -1,10 +1,10 @@
 import React from "react";
-import { Title, Subtitle, SubmitButton, ErrorNotification, Loading } from "@scm-manager/ui-components";
+import { ErrorNotification, Loading, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import { updatePullRequest } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import EditForm from "./EditForm";
 
 type Props = WithTranslation &
@@ -12,8 +12,8 @@ type Props = WithTranslation &
     repository: Repository;
     pullRequest: PullRequest;
     userAutocompleteLink: string;
-    onChangePullRequest: (changes: Partial<PullRequest>) => void;
-};
+    fetchReviewer: () => void;
+  };
 
 type State = {
   modifiedPullRequest: PullRequest;
@@ -57,7 +57,8 @@ class Edit extends React.Component<Props, State> {
         this.setState({
           loading: false
         });
-        this.pullRequestUpdated(modifiedPullRequest);
+        this.props.fetchReviewer();
+        this.pullRequestUpdated();
       }
     });
   };
@@ -69,11 +70,10 @@ class Edit extends React.Component<Props, State> {
         [name]: value
       }
     });
-    this.props.onChangePullRequest({[name]: value})
   };
 
   render() {
-    const { repository, t, pullRequest, userAutocompleteLink,onChangePullRequest } = this.props;
+    const { repository, t, pullRequest, userAutocompleteLink, fetchReviewer } = this.props;
     const { loading, error } = this.state;
 
     let notification = null;
@@ -99,7 +99,6 @@ class Edit extends React.Component<Props, State> {
             reviewer={pullRequest.reviewer}
             userAutocompleteLink={userAutocompleteLink}
             handleFormChange={this.handleFormChange}
-            onChangePullRequest={onChangePullRequest}
           />
           <SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={this.submit} loading={loading} />
         </div>
