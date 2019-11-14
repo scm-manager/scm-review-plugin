@@ -36,10 +36,6 @@
       "details": {
         "notification": "Pull Request erfolgreich gemerged!",
         "targetDeleted": "Der Target Branch wurde gelöscht!",
-        "deleteSourceBranch": {
-          "flag": "Source Branch löschen",
-          "help": "Nach einem erfolgreichen Merge wird der Source-Branch entfernt"
-        },
         "approved": "Freigegeben durch {{name}}",
         "buttons": {
           "edit": "Bearbeiten",
@@ -51,9 +47,6 @@
       }
     },
     "showPullRequest": {
-      "errorTitle": "Fehler",
-      "errorSubtitle": "Unbekannter Pull Request Fehler",
-      "createButton": "Pull Request erstellen",
       "mergeButton": {
         "buttonTitle": "Pull Request mergen",
         "mergeInformation": "Automatischer Merge nicht möglich."
@@ -80,7 +73,6 @@
           "FAST_FORWARD_IF_POSSIBLE": "Falls möglich wird der Target-Branch ohne Merge auf den Stand des Source-Branches gesetzt. Falls dieses nicht möglich ist, wird ein normaler Merge-Commit erzeugt."
         }
       },
-      "commitMessage": "Bitte Commit Nachricht eingeben",
       "rejectButton": {
         "buttonTitle": "Pull Request ablehnen",
         "confirmAlert": {
@@ -90,6 +82,11 @@
           "cancel": "Nein"
         }
       }
+    },
+    "pullRequests": {
+      "errorTitle": "Fehler",
+      "errorSubtitle": "Unbekannter Pull Request Fehler",
+      "createButton": "Pull Request erstellen"
     },
     "comment": {
       "addComment": "Kommentar hinzufügen",
