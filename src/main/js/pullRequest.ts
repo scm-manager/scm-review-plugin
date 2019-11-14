@@ -31,43 +31,18 @@ export function updatePullRequest(url: string, pullRequest: PullRequest) {
 }
 
 export function createPullRequestComment(url: string, comment: BasicComment) {
-  return apiClient
-    .post(url, comment)
-    .then(response => {
-      return response;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.post(url, comment).then(response => {
+    return response;
+  });
 }
 
 export function updatePullRequestComment(url: string, comment: BasicComment) {
-  return apiClient
-    .put(url, comment)
-    .then(response => {
-      return response;
-    })
-    .catch(error => {
-      return {
-        error: error
-      };
-    });
+  return apiClient.put(url, comment);
 }
 
 export function transformPullRequestComment(transition: PossibleTransition) {
-  return apiClient
-    .post(transition._links.transform.href, transition)
-    .then(response => {
-      return response;
-    })
-    .catch(cause => {
-      const error = new Error(`could not update pull request comment: ${cause.message}`);
-      return {
-        error: error
-      };
-    });
+  const link = transition._links.transform as Link;
+  return apiClient.post(link.href, transition);
 }
 
 export function getBranches(url: string) {
@@ -189,30 +164,28 @@ export function merge(url: string, mergeCommit: MergeCommit) {
 }
 
 export function dryRun(pullRequest: PullRequest) {
+  return apiClient.post((pullRequest._links.mergeDryRun as Link).href, {}).catch(err => {
+    if (err instanceof ConflictError) {
+      return {
+        conflict: err
+      };
+    } else if (err instanceof NotFoundError) {
+      return {
+        notFound: err
+      };
+    } else {
+      return {
+        error: err
+      };
+    }
+  });
+}
+
+export function getDefaultCommitDefaultMessage(url: string) {
   return apiClient
-    .post(
-      (pullRequest._links.mergeDryRun as Link).href,
-      {
-        sourceRevision: pullRequest.source,
-        targetRevision: pullRequest.target
-      },
-      "application/vnd.scmm-mergeCommand+json"
-    )
-    .catch(err => {
-      if (err instanceof ConflictError) {
-        return {
-          conflict: err
-        };
-      } else if (err instanceof NotFoundError) {
-        return {
-          notFound: err
-        };
-      } else {
-        return {
-          error: err
-        };
-      }
-    });
+    .get(url)
+    .then(response => response.text())
+    .catch(err => "");
 }
 
 export function getChangesets(url: string) {
@@ -227,30 +200,11 @@ export function getChangesets(url: string) {
 }
 
 export function getPullRequestComments(url: string) {
-  return apiClient
-    .get(url)
-    .then(response => response.json())
-    .then(pullRequestComments => {
-      return pullRequestComments;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.get(url).then(response => response.json());
 }
 
 export function deletePullRequestComment(url: string) {
-  return apiClient
-    .delete(url)
-    .then(response => {
-      return response;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.delete(url);
 }
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {

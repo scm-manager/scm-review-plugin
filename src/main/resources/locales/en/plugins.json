@@ -16,11 +16,6 @@
       "collapseDiffs": "Collapse"
     },
     "noRequests": "No pull requests matching the selected criteria found",
-    "pullRequests": {
-      "errorTitle": "Error",
-      "errorSubtitle": "Unknown pull request error",
-      "createButton": "New pull request"
-    },
     "pullRequest": {
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
@@ -41,6 +36,10 @@
       "details": {
         "notification": "Pull request merged successfully!",
         "targetDeleted": "The target branch has been deleted!",
+        "deleteSourceBranch": {
+          "flag": "Delete source branch",
+          "help": "Source branch will be deleted after successful merge"
+        },
         "approved": "Approved by {{name}}",
         "buttons": {
           "edit": "Edit",
@@ -51,19 +50,20 @@
         }
       }
     },
-    "show-pull-request": {
-      "error-title": "Error",
-      "error-subtitle": "Unknown pull request error",
-      "merge-button": {
-        "button-title": "Merge Pull Request",
-        "merge-information": "Cannot be merged automatically"
+    "showPullRequest": {
+      "errorTitle": "Error",
+      "errorSubtitle": "Unknown pull request error",
+      "createButton": "New pull request",
+      "mergeButton": {
+        "buttonTitle": "Merge Pull Request",
+        "mergeInformation": "Cannot be merged automatically"
       },
-      "merge-modal": {
+      "mergeModal": {
         "title": "Merge Pull Request",
         "merge": "Merge",
         "cancel": "Cancel"
       },
-      "merge-strategies": {
+      "mergeStrategies": {
         "SQUASH": "Squash",
         "MERGE_COMMIT": "Merge Commit",
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward if possible",
@@ -73,10 +73,10 @@
           "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit. If a fast forward is not possible, a normal merge commit will be created."
         }
       },
-      "commit-message": "Please insert your commit message",
+      "commitMessage": "Please insert your commit message",
       "rejectButton": {
-        "button-title": "Reject Pull Request",
-        "confirm-alert": {
+        "buttonTitle": "Reject Pull Request",
+        "confirmAlert": {
           "title": "Reject Pull Request",
           "message": "Do you really want to reject this pull request?",
           "submit": "Yes",

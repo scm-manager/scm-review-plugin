@@ -48,7 +48,7 @@ public class BranchRevisionResolver {
     public String resolve(String branch) {
       try {
         if (!isBranchAvailable(branch)) {
-          return "";
+          return ""; // This can happen for old pull requests whose branches have been deleted. Therefore this is no error.
         }
         return resolveChangesetId(branch);
       } catch (IOException e) {

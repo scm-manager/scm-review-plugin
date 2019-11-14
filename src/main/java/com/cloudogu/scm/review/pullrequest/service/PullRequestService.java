@@ -74,7 +74,11 @@ public interface PullRequestService {
 
   void update(Repository repository, String pullRequestId, PullRequest pullRequest);
 
-  void reject(Repository repository, PullRequest pullRequest);
+  void reject(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause);
+
+  void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause);
+
+  void setMerged(Repository repository, String pullRequestId);
 
   boolean hasUserApproved(Repository repository, String pullRequestId, User user);
 
@@ -111,6 +115,4 @@ public interface PullRequestService {
   default void unsubscribe(Repository repository, String pullRequestId) {
     unsubscribe(repository, pullRequestId, getCurrentUser());
   }
-
-  void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus);
 }

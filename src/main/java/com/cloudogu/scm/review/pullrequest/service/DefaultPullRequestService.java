@@ -25,6 +25,10 @@ import java.util.Set;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+
 public class DefaultPullRequestService implements PullRequestService {
 
   private final BranchResolver branchResolver;
@@ -127,12 +131,30 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public void reject(Repository repository, PullRequest pullRequest) {
+  public void reject(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
     PermissionCheck.checkMerge(repository);
-    if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
-      this.setStatus(repository, pullRequest, PullRequestStatus.REJECTED);
-      eventBus.post(new PullRequestRejectedEvent(repository, pullRequest));
-    } else {
+    setRejected(repository, pullRequestId, cause);
+  }
+
+  @Override
+  public void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
+    PullRequest pullRequest = get(repository, pullRequestId);
+    if (pullRequest.getStatus() == OPEN) {
+      this.setStatus(repository, pullRequest, REJECTED);
+      eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause));
+    } else if (pullRequest.getStatus() == MERGED) {
+      throw new StatusChangeNotAllowedException(repository, pullRequest);
+    }
+  }
+
+  @Override
+  public void setMerged(Repository repository, String pullRequestId) {
+    PullRequest pullRequest = get(repository, pullRequestId);
+
+    if (pullRequest.getStatus() == OPEN) {
+      setStatus(repository, pullRequest, MERGED);
+      eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
+    } else if (pullRequest.getStatus() == REJECTED) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
     }
   }
@@ -192,11 +214,9 @@ public class DefaultPullRequestService implements PullRequestService {
     getStore(repository).update(pullRequest);
   }
 
-  @Override
-  public void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
+  private void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
     pullRequest.setStatus(newStatus);
     getStore(repository).update(pullRequest);
-
   }
 
   private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {

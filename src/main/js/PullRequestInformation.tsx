@@ -4,18 +4,19 @@ import { urls } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, withRouter, RouteComponentProps } from "react-router-dom";
-import Diff from "./diff/Diff";
-import PullRequestComments from "./comment/PullRequestComments";
+import RootComments from "./comment/RootComments";
 import { PullRequest } from "./types/PullRequest";
+import DiffRoute from "./diff/DiffRoute";
 
-type Props = WithTranslation & RouteComponentProps & {
-  repository: Repository;
-  pullRequest: PullRequest;
-  baseURL: string;
-  source: string;
-  target: string;
-  status: string;
-};
+type Props = WithTranslation &
+  RouteComponentProps & {
+    repository: Repository;
+    pullRequest: PullRequest;
+    baseURL: string;
+    source: string;
+    target: string;
+    status: string;
+  };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
   let strippedUrl = url.substring(baseURL.length);
@@ -43,7 +44,6 @@ class PullRequestInformation extends React.Component<Props> {
 
     let changesetTab = null;
     let diffTab = null;
-    let routes;
     let routeChangeset = null;
     let routeChangesetPagination = null;
     let routeDiff = null;
@@ -71,7 +71,7 @@ class PullRequestInformation extends React.Component<Props> {
       routeDiff = (
         <Route
           path={`${baseURL}/diff`}
-          render={() => <Diff repository={repository} pullRequest={pullRequest} source={source} target={target} />}
+          render={() => <DiffRoute repository={repository} pullRequest={pullRequest} source={source} target={target} />}
           exact
         />
       );
@@ -81,10 +81,10 @@ class PullRequestInformation extends React.Component<Props> {
         </li>
       );
     }
-    routes = (
+    const routes = (
       <Switch>
         <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
-        <Route path={`${baseURL}/comments`} render={() => <PullRequestComments pullRequest={pullRequest} />} exact />
+        <Route path={`${baseURL}/comments`} render={() => <RootComments pullRequest={pullRequest} />} exact />
         {routeChangeset}
         {routeChangesetPagination}
         {routeDiff}

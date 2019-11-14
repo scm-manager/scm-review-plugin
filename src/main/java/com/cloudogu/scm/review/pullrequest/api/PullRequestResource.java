@@ -5,11 +5,10 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
-import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.SystemCommentType;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.common.base.Strings;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
@@ -42,15 +41,12 @@ public class PullRequestResource {
   private final PullRequestMapper mapper;
   private final PullRequestService service;
   private final Provider<CommentRootResource> commentResourceProvider;
-  private final CommentService commentService;
-
 
   @Inject
-  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, CommentService commentService) {
+  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider) {
     this.mapper = mapper;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
-    this.commentService = commentService;
   }
 
   @Path("comments/")
@@ -199,9 +195,7 @@ public class PullRequestResource {
   @Path("reject")
   public Response reject(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
-    PullRequest pullRequest = service.get(repository, pullRequestId);
-    service.reject(repository, pullRequest);
-    commentService.addStatusChangedComment(repository, pullRequestId, SystemCommentType.REJECTED);
+    service.reject(repository, pullRequestId, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
     return Response.noContent().build();
   }
 }

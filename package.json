@@ -9,7 +9,9 @@
     "watch": "ui-scripts plugin-watch"
   },
   "dependencies": {
-    "@scm-manager/ui-plugins": "latest"
+    "@scm-manager/ui-plugins": "latest",
+    "immer": "^5.0.0",
+    "typescript": "^3.7.0"
   },
   "babel": {
     "presets": [

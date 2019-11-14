@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review.pullrequest.api;
+package com.cloudogu.scm.review.pullrequest.service;
 
 import sonia.scm.ContextEntry;
 import sonia.scm.ExceptionWithContext;
@@ -9,10 +9,10 @@ import java.util.List;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
-class MergeConflictException extends ExceptionWithContext {
+public class MergeConflictException extends ExceptionWithContext {
   private static final String CODE = "DTRhFJFgU1";
 
-  MergeConflictException(NamespaceAndName namespaceAndName, String source, String target, MergeCommandResult mergeResult) {
+  public MergeConflictException(NamespaceAndName namespaceAndName, String source, String target, MergeCommandResult mergeResult) {
     super(
       createContext(namespaceAndName, source, target, mergeResult),
       String.format("conflict in merge between %s and %s", source, target));

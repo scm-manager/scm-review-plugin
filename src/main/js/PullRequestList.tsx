@@ -1,5 +1,5 @@
 import React from "react";
-import { Loading, ErrorPage, CreateButton } from "@scm-manager/ui-components";
+import { CreateButton, ErrorPage, Loading } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequestCollection } from "./types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";

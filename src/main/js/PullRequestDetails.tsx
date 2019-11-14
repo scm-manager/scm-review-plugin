@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { withRouter, RouteComponentProps } from "react-router-dom";
-import { Repository, Link } from "@scm-manager/ui-types";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { Link, Repository } from "@scm-manager/ui-types";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   Button,
@@ -356,7 +356,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             </div>
           </MediaWithTopBorder>
           <ExtensionPoint
-            name={"reviewPlugin.pullrequest.top"}
+            name="reviewPlugin.pullrequest.top"
             renderAll={true}
             props={{
               repository,

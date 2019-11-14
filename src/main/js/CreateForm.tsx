@@ -1,6 +1,6 @@
 import React from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { Select, ErrorNotification } from "@scm-manager/ui-components";
+import { ErrorNotification, Select } from "@scm-manager/ui-components";
 import { BasicPullRequest } from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
@@ -122,8 +122,8 @@ class CreateForm extends React.Component<Props, State> {
         </div>
 
         <EditForm
-          description={""}
-          title={""}
+          description=""
+          title=""
           reviewer={[]}
           userAutocompleteLink={this.props.userAutocompleteLink}
           handleFormChange={this.handleFormChange}

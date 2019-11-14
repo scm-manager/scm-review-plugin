@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.BranchResolver;
-import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -30,6 +29,10 @@ import sonia.scm.user.User;
 import java.io.IOException;
 import java.time.Instant;
 
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -38,7 +41,7 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -50,10 +53,6 @@ class DefaultPullRequestServiceTest {
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
   private static final User LOGGED_IN_USER = new User("user", "display", "user@example.com");
 
-  @Mock
-  RepositoryResolver repositoryResolver;
-  @Mock
-  BranchResolver branchResolver;
   @Mock
   PullRequestStoreFactory storeFactory;
   @Mock
@@ -78,7 +77,7 @@ class DefaultPullRequestServiceTest {
 
   @BeforeEach
   void initEventBus() {
-    doNothing().when(eventBus).post(eventCaptor.capture());
+    lenient().doNothing().when(eventBus).post(eventCaptor.capture());
   }
 
   @Nested
@@ -251,6 +250,84 @@ class DefaultPullRequestServiceTest {
         .isInstanceOf(PullRequestEvent.class)
         .extracting("item", "oldItem", "eventType")
         .containsExactly(pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    }
+  }
+
+  @Nested
+  class WithExistingPullRequest {
+
+      PullRequest pullRequest = createPullRequest("id", null, null);
+
+    @BeforeEach
+    void addExistingPullRequest() {
+      lenient().when(store.get("id")).thenReturn(pullRequest);
+    }
+
+    @Test
+    void shouldSetPullRequestRejectedAndSendEvent() {
+      pullRequest.setStatus(OPEN);
+
+      service.setRejected(REPOSITORY, pullRequest.getId(), REJECTED_BY_USER);
+
+      assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
+      assertThat(eventCaptor.getAllValues()).hasSize(1);
+      PullRequestRejectedEvent event = (PullRequestRejectedEvent) eventCaptor.getValue();
+      assertThat(event.getCause()).isEqualTo(REJECTED_BY_USER);
+      assertThat(event.getRepository()).isSameAs(REPOSITORY);
+      assertThat(event.getPullRequest()).isSameAs(pullRequest);
+    }
+
+    @Test
+    void shouldNotSetPullRequestRejectedMultipleTimes() {
+      pullRequest.setStatus(REJECTED);
+
+      service.setRejected(REPOSITORY, pullRequest.getId(), REJECTED_BY_USER);
+
+      assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
+      assertThat(eventCaptor.getAllValues()).hasSize(0);
+    }
+
+    @Test
+    void shouldNotSetMergedPullRequestRejected() {
+      pullRequest.setStatus(MERGED);
+
+      assertThrows(StatusChangeNotAllowedException.class, () -> service.setRejected(REPOSITORY, pullRequest.getId(), REJECTED_BY_USER));
+
+      assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
+      assertThat(eventCaptor.getAllValues()).hasSize(0);
+    }
+
+    @Test
+    void shouldSetPullRequestMergedAndSendEvent() {
+      pullRequest.setStatus(OPEN);
+
+      service.setMerged(REPOSITORY, pullRequest.getId());
+
+      assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
+      assertThat(eventCaptor.getAllValues()).hasSize(1);
+      PullRequestMergedEvent event = (PullRequestMergedEvent) eventCaptor.getValue();
+      assertThat(event.getRepository()).isSameAs(REPOSITORY);
+      assertThat(event.getPullRequest()).isSameAs(pullRequest);
+    }
+
+    @Test
+    void shouldNotSetPullRequestMergedMultipleTimes() {
+      pullRequest.setStatus(MERGED);
+
+      service.setMerged(REPOSITORY, pullRequest.getId());
+
+      assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
+      assertThat(eventCaptor.getAllValues()).hasSize(0);
+    }
+
+    @Test
+    void shouldNotSetRejectedPullRequestMerged() {
+      pullRequest.setStatus(REJECTED);
+
+      assertThrows(StatusChangeNotAllowedException.class, () -> service.setMerged(REPOSITORY, pullRequest.getId()));
+
+      assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
+      assertThat(eventCaptor.getAllValues()).hasSize(0);
     }
   }
 

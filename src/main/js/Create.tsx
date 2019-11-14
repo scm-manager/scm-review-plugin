@@ -1,5 +1,5 @@
 import React from "react";
-import { Title, Subtitle, SubmitButton, ErrorNotification } from "@scm-manager/ui-components";
+import { ErrorNotification, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
@@ -7,7 +7,7 @@ import { BasicPullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import queryString from "query-string";
 
 const ControlButtons = styled.div`

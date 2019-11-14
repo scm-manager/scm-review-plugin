@@ -1,4 +1,4 @@
-import { DisplayedUser, Links, Collection } from "@scm-manager/ui-types";
+import { Collection, DisplayedUser, Links } from "@scm-manager/ui-types";
 
 export type Reviewer = DisplayedUser & {
   approved: boolean;
@@ -44,6 +44,7 @@ export type Comment = BasicComment & {
   replies: Comment[];
   context?: Context;
   _links: Links;
+  _embedded?: {[key: string]: any};
 };
 
 export type Context = {
@@ -74,6 +75,13 @@ export type Comments = Collection & {
   };
 };
 
+export type Transition = {
+  id: string;
+  transition: string;
+  date: string;
+  user: DisplayedUser;
+};
+
 export type PossibleTransition = {
   name: string;
   _links: Links;
@@ -81,7 +89,6 @@ export type PossibleTransition = {
 
 export type MergeCommit = {
   commitMessage: string;
-  source: string;
-  target: string;
   author: DisplayedUser;
-}
+  shouldDeleteSourceBranch: boolean;
+};

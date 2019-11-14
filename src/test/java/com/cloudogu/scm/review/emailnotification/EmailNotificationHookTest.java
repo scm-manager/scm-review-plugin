@@ -127,7 +127,7 @@ class EmailNotificationHookTest {
 
   @Test
   void shouldSendEmailsAfterRejectingPullRequest() throws Exception {
-    PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest);
+    PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
     emailNotificationHook.handleRejectedPullRequest(event);
 
     verify(service).sendEmails(isA(PullRequestRejectedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
