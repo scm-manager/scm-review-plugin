@@ -29,7 +29,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,17 +63,17 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Named("mapReviewerFromDto")
   Map<String, Boolean> mapReviewerFromDto(Set<ReviewerDto> reviewer) {
-    if (reviewer.isEmpty()) {
-      return Collections.emptyMap();
+    Map<String, Boolean> reviewerMap = new HashMap<>();
+
+    for (ReviewerDto singleReviewer : reviewer) {
+      Optional<DisplayUser> displayUser = userDisplayManager.get(singleReviewer.getId());
+      if (!displayUser.isPresent()) {
+        continue;
+      }
+      reviewerMap.put(displayUser.get().getId(), singleReviewer.isApproved());
     }
-    return reviewer
-      .stream()
-      .map(ReviewerDto::getId)
-      .map(userDisplayManager::get)
-      .filter(Optional::isPresent)
-      .map(Optional::get)
-      .map(DisplayUser::getId)
-      .collect(Collectors.toMap(p->p, p -> false));
+
+    return reviewerMap;
   }
 
   @Named("mapReviewer")
