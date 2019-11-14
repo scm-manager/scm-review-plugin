@@ -25,7 +25,7 @@ class MergeModal extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      mergeStrategy: props.pullRequest._links.merge[0].name,
+      mergeStrategy: this.extractFirstMergeStrategy(props.pullRequest._links.merge as Link[]),
       mergeCommit: {
         commitMessage: "",
         author: this.props.pullRequest.author,
@@ -37,6 +37,15 @@ class MergeModal extends React.Component<Props, State> {
       messageChanged: false
     };
   }
+
+  extractFirstMergeStrategy: (mergeStrategyLinks: Link[]) => string = mergeStrategyLinks => {
+    if (mergeStrategyLinks && mergeStrategyLinks.length > 0 && mergeStrategyLinks[0].name) {
+      return mergeStrategyLinks[0].name;
+    } else {
+      throw new Error("no merge strategies found");
+    }
+  };
+
   componentDidMount(): void {
     this.getDefaultMessage();
   }
