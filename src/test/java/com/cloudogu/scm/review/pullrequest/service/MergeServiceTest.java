@@ -36,6 +36,7 @@ import java.io.IOException;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -188,13 +189,21 @@ public class MergeServiceTest {
 
     Person author = new Person("Philip");
     Changeset changeset1 = new Changeset("1", 1L, author, "first commit");
-    Changeset changeset2 = new Changeset("2", 2L, author, "second commit");
+    Changeset changeset2 = new Changeset("2", 2L, author, "second commit\nwith multiple lines");
+    Changeset changeset3 = new Changeset("3", 3L, author, "third commit");
 
-    ChangesetPagingResult changesets = new ChangesetPagingResult(2, ImmutableList.of(changeset1, changeset2));
+    ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(changeset1, changeset2, changeset3));
 
     when(logCommandBuilder.getChangesets()).thenReturn(changesets);
     String message = service.createDefaultCommitMessage(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-    assertThat(message).isEqualTo("first commit\n\nsecond commit\n\n");
+    assertThat(message).isEqualTo("Squash commits of branch squash:\n" +
+      "\n" +
+      "- first commit\n" +
+      "- second commit\n" +
+      "with multiple lines\n" +
+      "\n" +
+      "- third commit\n"
+    );
   }
 
   private PullRequest createPullRequest() {
