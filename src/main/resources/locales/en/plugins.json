@@ -61,7 +61,14 @@
       "mergeModal": {
         "title": "Merge Pull Request",
         "merge": "Merge",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "deleteSourceBranch": {
+          "flag": "Delete source branch",
+          "help": "Source branch will be deleted after successful merge"
+        },
+        "commitMessage": "Please insert your commit message",
+        "resetMessage": "Reset message",
+        "fallbackMessageInfo": "This message will only be used, when fast forward is not possible."
       },
       "mergeStrategies": {
         "SQUASH": "Squash",
