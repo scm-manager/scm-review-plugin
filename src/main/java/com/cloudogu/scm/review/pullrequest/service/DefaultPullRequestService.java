@@ -146,23 +146,25 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public void approve(Repository repository, String pullRequestId, User user) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
+  public void approve(NamespaceAndName namespaceAndName, String pullRequestId, User user) {
+    Repository repository = getRepository(namespaceAndName.getNamespace(), namespaceAndName.getName());
+    PermissionCheck.checkRead(repository);
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     pullRequest.addApprover(user.getId());
-    store.update(pullRequest);
+    getStore(repository).update(pullRequest);
   }
 
   @Override
-  public void disapprove(Repository repository, String pullRequestId, User user) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
+  public void disapprove(NamespaceAndName namespaceAndName, String pullRequestId, User user) {
+    Repository repository = getRepository(namespaceAndName.getNamespace(), namespaceAndName.getName());
+    PermissionCheck.checkRead(repository);
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     Set<String> approver = pullRequest.getReviewer().keySet();
     approver.stream()
       .filter(recipient -> user.getId().equals(recipient))
       .findFirst()
       .ifPresent(pullRequest::removeApprover);
-    store.update(pullRequest);
+    getStore(repository).update(pullRequest);
   }
 
   @Override
@@ -174,22 +176,20 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public void subscribe(Repository repository, String pullRequestId, User user) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     pullRequest.addSubscriber(user.getId());
-    store.update(pullRequest);
+    getStore(repository).update(pullRequest);
   }
 
   @Override
   public void unsubscribe(Repository repository, String pullRequestId, User user) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     Set<String> subscriber = pullRequest.getSubscriber();
     subscriber.stream()
       .filter(recipient -> user.getId().equals(recipient))
       .findFirst()
       .ifPresent(pullRequest::removeSubscriber);
-    store.update(pullRequest);
+    getStore(repository).update(pullRequest);
   }
 
   @Override
@@ -197,6 +197,11 @@ public class DefaultPullRequestService implements PullRequestService {
     pullRequest.setStatus(newStatus);
     getStore(repository).update(pullRequest);
 
+  }
+
+  private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {
+    PullRequestStore store = getStore(repository);
+    return store.get(pullRequestId);
   }
 
   private PullRequestStore getStore(String namespace, String name) {

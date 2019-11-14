@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.Link;
@@ -46,6 +47,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   @Inject
   private UserDisplayManager userDisplayManager;
 
+  @Inject
+  PullRequestService pullRequestService;
   @Inject
   private RepositoryServiceFactory serviceFactory;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
@@ -119,7 +122,12 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest().self(repository.getNamespace(), repository.getName(), target.getId()));
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments().all(repository.getNamespace(), repository.getName(), target.getId())));
     if (CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
-      linksBuilder.single(link("approval", pullRequestResourceLinks.pullRequest().approval(repository.getNamespace(), repository.getName(), target.getId())));
+      if (pullRequestService.hasUserApproved(repository, pullRequest.getId())) {
+        linksBuilder.single(link("disapprove", pullRequestResourceLinks.pullRequest().disapprove(repository.getNamespace(), repository.getName(), target.getId())));
+      } else {
+        linksBuilder.single(link("approve", pullRequestResourceLinks.pullRequest().approve(repository.getNamespace(), repository.getName(), target.getId())));
+      }
+
       linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest().subscription(repository.getNamespace(), repository.getName(), target.getId())));
     }
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {

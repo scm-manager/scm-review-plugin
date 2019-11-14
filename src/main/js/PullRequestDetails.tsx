@@ -34,7 +34,6 @@ type Props = WithTranslation &
 
 type State = {
   pullRequest: PullRequest;
-  reviewer: Reviewer[];
   error?: Error;
   loading: boolean;
   mergeHasNoConflict?: boolean;
@@ -137,8 +136,8 @@ class PullRequestDetails extends React.Component<Props, State> {
 
   fetchReviewer = (): void => {
     const { pullRequest } = this.props;
-    if (pullRequest._links.self && pullRequest._links.self.href) {
-      const url = this.props.pullRequest._links.self.href + "?fields=reviewer";
+    if (pullRequest._links.self && (pullRequest._links.self as Link).href) {
+      const url = (pullRequest._links.self as Link).href + "?fields=reviewer&fields=_links";
       getReviewer(url).then(response => {
         if (response.error) {
           this.setState({
@@ -146,7 +145,11 @@ class PullRequestDetails extends React.Component<Props, State> {
           });
         } else {
           this.setState({
-            reviewer: response.reviewer
+            pullRequest: {
+              ...pullRequest,
+              reviewer: response.reviewer,
+              _links: response._links
+            }
           });
         }
       });
@@ -320,11 +323,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       const toEdit =
         "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
       editButton = (
-        <Button
-          link={toEdit}
-          title={t("scm-review-plugin.pullRequest.details.buttons.edit")}
-          color="link is-outlined"
-        >
+        <Button link={toEdit} title={t("scm-review-plugin.pullRequest.details.buttons.edit")} color="link is-outlined">
           <Icon name="edit" color="inherit" />
         </Button>
       );

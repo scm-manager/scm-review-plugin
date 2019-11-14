@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
 
@@ -81,16 +82,16 @@ public interface PullRequestService {
     return hasUserApproved(repository, pullRequestId, getCurrentUser());
   }
 
-  void approve(Repository repository, String pullRequestId, User user);
+  void approve(NamespaceAndName namespaceAndName, String pullRequestId, User user);
 
-  default void approve(Repository repository, String pullRequestId) {
-    approve(repository, pullRequestId, getCurrentUser());
+  default void approve(NamespaceAndName namespaceAndName, String pullRequestId) {
+    approve(namespaceAndName, pullRequestId, getCurrentUser());
   }
 
-  void disapprove(Repository repository, String pullRequestId, User user);
+  void disapprove(NamespaceAndName namespaceAndName, String pullRequestId, User user);
 
-  default void disapprove(Repository repository, String pullRequestId) {
-    disapprove(repository, pullRequestId, getCurrentUser());
+  default void disapprove(NamespaceAndName namespaceAndName, String pullRequestId) {
+    disapprove(namespaceAndName, pullRequestId, getCurrentUser());
   }
 
   boolean isUserSubscribed(Repository repository, String pullRequestId, User user);
