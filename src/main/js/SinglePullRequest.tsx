@@ -2,7 +2,7 @@ import React from "react";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { Switch, Route, withRouter, RouteComponentProps } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
-import { Repository } from "@scm-manager/ui-types";
+import { Repository, Link } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import { getPullRequest } from "./pullRequest";
 import { History } from "history";
@@ -52,7 +52,7 @@ class SinglePullRequest extends React.Component<Props, State> {
   fetchPullRequest = (): void => {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
-    const url = repository._links.pullRequest.href + "/" + pullRequestNumber;
+    const url = (repository._links.pullRequest as Link).href + "/" + pullRequestNumber;
     getPullRequest(url).then(response => {
       if (response.error) {
         this.setState({
@@ -66,6 +66,10 @@ class SinglePullRequest extends React.Component<Props, State> {
         });
       }
     });
+  };
+
+  onChangePullRequest = (pullRequest: PullRequest) => {
+    this.setState({ pullRequest})
   };
 
   render() {
@@ -84,13 +88,13 @@ class SinglePullRequest extends React.Component<Props, State> {
       <Switch>
         <Route
           component={() => (
-            <Edit repository={repository} pullRequest={pullRequest} userAutocompleteLink={userAutocompleteLink} />
+            <Edit repository={repository} pullRequest={pullRequest} userAutocompleteLink={userAutocompleteLink} onChangePullRequest={this.onChangePullRequest}/>
           )}
           path={`${match.url}/edit`}
           exact
         />
         <Route
-          component={() => <PullRequestDetails repository={repository} pullRequest={pullRequest} />}
+          component={() => <PullRequestDetails repository={repository} pullRequest={pullRequest} onChangePullRequest={this.onChangePullRequest}/>}
           path={`${match.url}`}
         />
       </Switch>

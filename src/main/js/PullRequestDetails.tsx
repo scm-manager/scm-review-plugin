@@ -30,6 +30,7 @@ type Props = WithTranslation &
   RouteComponentProps & {
     repository: Repository;
     pullRequest: PullRequest;
+    onChangePullRequest: (pullRequest: PullRequest) => void
   };
 
 type State = {
@@ -135,7 +136,7 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   fetchReviewer = (): void => {
-    const { pullRequest } = this.props;
+    const { pullRequest, onChangePullRequest } = this.props;
     if (pullRequest._links.self && (pullRequest._links.self as Link).href) {
       const url = (pullRequest._links.self as Link).href + "?fields=reviewer&fields=_links";
       getReviewer(url).then(response => {
@@ -152,7 +153,8 @@ class PullRequestDetails extends React.Component<Props, State> {
             }
           });
         }
-      });
+      })
+        .then(() => onChangePullRequest(this.state.pullRequest));
     }
   };
 
