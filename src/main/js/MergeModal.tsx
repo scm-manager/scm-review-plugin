@@ -25,7 +25,7 @@ class MergeModal extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      mergeStrategy: "MERGE_COMMIT",
+      mergeStrategy: props.pullRequest._links.merge[0].name,
       mergeCommit: {
         commitMessage: "",
         author: this.props.pullRequest.author,
@@ -45,20 +45,31 @@ class MergeModal extends React.Component<Props, State> {
     const { pullRequest } = this.props;
     const { defaultCommitMessages, mergeCommit, mergeStrategy } = this.state;
     if (!!defaultCommitMessages[mergeStrategy]) {
-      this.setState({ mergeCommit: { ...mergeCommit, commitMessage: defaultCommitMessages[mergeStrategy] } });
+      this.setState({
+        mergeCommit: { ...mergeCommit, commitMessage: defaultCommitMessages[mergeStrategy] },
+        messageChanged: false
+      });
     } else if (pullRequest && pullRequest._links && pullRequest._links.defaultCommitMessage) {
       this.setState({ loadingDefaultMessage: true }, () => {
         getDefaultCommitDefaultMessage(
           (pullRequest._links.defaultCommitMessage as Link).href + "?strategy=" + mergeStrategy
-        ).then(commitMessage => {
-          defaultCommitMessages[mergeStrategy] = commitMessage;
-          this.setState({
-            defaultCommitMessages: defaultCommitMessages,
-            mergeCommit: { ...mergeCommit, commitMessage: commitMessage },
-            messageChanged: false,
-            loadingDefaultMessage: false
+        )
+          .then(commitMessage => {
+            defaultCommitMessages[mergeStrategy] = commitMessage;
+            this.setState({
+              defaultCommitMessages: defaultCommitMessages,
+              mergeCommit: { ...mergeCommit, commitMessage: commitMessage },
+              messageChanged: false,
+              loadingDefaultMessage: false
+            });
+          })
+          .catch(error => {
+            this.setState({
+              mergeCommit: { ...mergeCommit, commitMessage: "" },
+              messageChanged: false,
+              loadingDefaultMessage: false
+            });
           });
-        });
       });
     }
   };
@@ -89,8 +100,8 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   shouldDisableMergeButton = () => {
-    const { mergeStrategy, mergeCommit } = this.state;
-    return mergeStrategy !== "FAST_FORWARD_IF_POSSIBLE" && mergeCommit.commitMessage.trim() === "";
+    const { mergeCommit } = this.state;
+    return !mergeCommit.commitMessage || mergeCommit.commitMessage.trim() === "";
   };
 
   onChangeDeleteSourceBranch = (value: boolean) => {
@@ -120,9 +131,10 @@ class MergeModal extends React.Component<Props, State> {
         strategyLinks={pullRequest._links.merge as Link[]}
         commitMessage={mergeCommit.commitMessage}
         onChangeCommitMessage={this.onChangeCommitMessage}
+        onResetCommitMessage={this.getDefaultMessage}
         shouldDeleteSourceBranch={mergeCommit.shouldDeleteSourceBranch}
         onChangeDeleteSourceBranch={this.onChangeDeleteSourceBranch}
-        disabled={loadingDefaultMessage}
+        loading={loadingDefaultMessage}
       />
     );
 

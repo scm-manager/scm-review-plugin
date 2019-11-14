@@ -150,11 +150,7 @@ export function getDefaultCommitDefaultMessage(url: string) {
   return apiClient
     .get(url)
     .then(response => response.text())
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+    .catch(err => "");
 }
 
 export function getChangesets(url: string) {
