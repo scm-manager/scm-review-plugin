@@ -3,7 +3,6 @@ package com.cloudogu.scm.review.pullrequest.service;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
-import sonia.scm.ContextEntry;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
@@ -86,34 +85,42 @@ public class MergeService {
     }
     switch (strategy) {
       case SQUASH:
-        try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
-          if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
-            try {
-              StringBuilder builder = new StringBuilder();
-              repositoryService.getLogCommand()
-                .setBranch(pullRequest.getSource())
-                .setAncestorChangeset(pullRequest.getTarget())
-                .getChangesets()
-                .getChangesets()
-                .forEach(c -> {
-                  builder.append("- ").append(c.getDescription()).append('\n');
-                  if (c.getDescription().contains("\n")) {
-                    builder.append('\n');
-                  }
-                });
-              return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString());
-            } catch (IOException e) {
-              throw new InternalRepositoryException(entity("Branch", pullRequest.getSource()).in(repositoryService.getRepository()),
-                "Could not read changesets from repository");
-            }
-          } else {
-            return MessageFormat.format(MERGE_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget());
-          }
-        }
+        return createDefaultSquashCommitMessage(namespaceAndName, pullRequest);
       case FAST_FORWARD_IF_POSSIBLE: // should be same as merge (fallback message only)
       case MERGE_COMMIT: // should be default
       default:
-        return MessageFormat.format(MERGE_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget());
+        return createDefaultMergeCommitMessage(pullRequest);
+    }
+  }
+
+  private String createDefaultMergeCommitMessage(PullRequest pullRequest) {
+    return MessageFormat.format(MERGE_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget());
+  }
+
+  private String createDefaultSquashCommitMessage(NamespaceAndName namespaceAndName, PullRequest pullRequest) {
+    try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
+      if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
+        try {
+          StringBuilder builder = new StringBuilder();
+          repositoryService.getLogCommand()
+            .setBranch(pullRequest.getSource())
+            .setAncestorChangeset(pullRequest.getTarget())
+            .getChangesets()
+            .getChangesets()
+            .forEach(c -> {
+              builder.append("- ").append(c.getDescription()).append('\n');
+              if (c.getDescription().contains("\n")) {
+                builder.append('\n');
+              }
+            });
+          return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString());
+        } catch (IOException e) {
+          throw new InternalRepositoryException(entity("Branch", pullRequest.getSource()).in(repositoryService.getRepository()),
+            "Could not read changesets from repository");
+        }
+      } else {
+        return createDefaultMergeCommitMessage(pullRequest);
+      }
     }
   }
 
