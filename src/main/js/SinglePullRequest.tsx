@@ -31,24 +31,6 @@ class SinglePullRequest extends React.Component<Props, State> {
     this.fetchPullRequest();
   }
 
-  /**
-   * update pull request only if needed
-   */
-  componentDidUpdate(): void {
-    const { history } = this.props;
-    // the /updated path is set from the sub components after an update of the pull request.
-    // this is a flag to perform fetching pull request
-    if (
-      history &&
-      history.location.state &&
-      history.location.state.from &&
-      history.location.state.from.indexOf("/updated") > -1
-    ) {
-      this.fetchPullRequest();
-      history.push();
-    }
-  }
-
   fetchPullRequest = (): void => {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
@@ -68,8 +50,9 @@ class SinglePullRequest extends React.Component<Props, State> {
     });
   };
 
-  onChangePullRequest = (pullRequest: PullRequest) => {
-    this.setState({ pullRequest})
+  onChangePullRequest = (changes: Partial<PullRequest>) => {
+    const { pullRequest } = this.state;
+    this.setState({ pullRequest: {...pullRequest, ...changes}})
   };
 
   render() {

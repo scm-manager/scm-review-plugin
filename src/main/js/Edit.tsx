@@ -12,7 +12,8 @@ type Props = WithTranslation &
     repository: Repository;
     pullRequest: PullRequest;
     userAutocompleteLink: string;
-  };
+    onChangePullRequest: (changes: Partial<PullRequest>) => void;
+};
 
 type State = {
   modifiedPullRequest: PullRequest;
@@ -56,7 +57,7 @@ class Edit extends React.Component<Props, State> {
         this.setState({
           loading: false
         });
-        this.pullRequestUpdated();
+        this.pullRequestUpdated(modifiedPullRequest);
       }
     });
   };
@@ -68,10 +69,11 @@ class Edit extends React.Component<Props, State> {
         [name]: value
       }
     });
+    this.props.onChangePullRequest({[name]: value})
   };
 
   render() {
-    const { repository, t, pullRequest, userAutocompleteLink } = this.props;
+    const { repository, t, pullRequest, userAutocompleteLink,onChangePullRequest } = this.props;
     const { loading, error } = this.state;
 
     let notification = null;
@@ -97,6 +99,7 @@ class Edit extends React.Component<Props, State> {
             reviewer={pullRequest.reviewer}
             userAutocompleteLink={userAutocompleteLink}
             handleFormChange={this.handleFormChange}
+            onChangePullRequest={onChangePullRequest}
           />
           <SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={this.submit} loading={loading} />
         </div>

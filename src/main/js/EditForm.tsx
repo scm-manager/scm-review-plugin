@@ -2,6 +2,7 @@ import React from "react";
 import { InputField, Textarea, TagGroup, Autocomplete } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { SelectValue, DisplayedUser } from "@scm-manager/ui-types";
+import {PullRequest} from "./types/PullRequest";
 
 type Props = WithTranslation & {
   handleFormChange: (value: string, name: string) => void;

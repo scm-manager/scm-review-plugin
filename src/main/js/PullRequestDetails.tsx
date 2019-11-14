@@ -30,11 +30,10 @@ type Props = WithTranslation &
   RouteComponentProps & {
     repository: Repository;
     pullRequest: PullRequest;
-    onChangePullRequest: (pullRequest: PullRequest) => void
+    onChangePullRequest: (changes: Partial<PullRequest>) => void;
   };
 
 type State = {
-  pullRequest: PullRequest;
   error?: Error;
   loading: boolean;
   mergeHasNoConflict?: boolean;
@@ -112,7 +111,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.state = {
       ...this.state,
       loading: false,
-      pullRequest: this.props.pullRequest,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
       showNotification: false,
@@ -145,16 +143,9 @@ class PullRequestDetails extends React.Component<Props, State> {
             error: response.error
           });
         } else {
-          this.setState({
-            pullRequest: {
-              ...pullRequest,
-              reviewer: response.reviewer,
-              _links: response._links
-            }
-          });
+          onChangePullRequest({ reviewer: response.reviewer, _links: response._links });
         }
-      })
-        .then(() => onChangePullRequest(this.state.pullRequest));
+      });
     }
   };
 
@@ -202,7 +193,7 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   performMerge = (strategy: string, commit: MergeCommit) => {
-    const { pullRequest } = this.state;
+    const { pullRequest } = this.props;
     this.setMergeButtonLoadingState();
     merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit).then(response => {
       if (response.error) {
@@ -230,7 +221,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.setState({
       rejectButtonLoading: true
     });
-    const { pullRequest } = this.state;
+    const { pullRequest } = this.props;
     reject(pullRequest)
       .then(() => {
         this.setState({
@@ -261,9 +252,8 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, match, t } = this.props;
+    const { repository, pullRequest, match, t } = this.props;
     const {
-      pullRequest,
       error,
       loading,
       mergeButtonLoading,
@@ -394,7 +384,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           <UserList className="media">
             <div className="media-content">
               {author}
-              <ReviewerList pullRequest={pullRequest} reviewer={this.state.reviewer} />
+              <ReviewerList pullRequest={pullRequest} reviewer={pullRequest.reviewer} />
             </div>
           </UserList>
 
