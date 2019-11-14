@@ -20,7 +20,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
@@ -39,7 +38,7 @@ public class MergeResource {
   @Path("{namespace}/{name}/{pullRequestId}")
   @Consumes("application/vnd.scmm-mergeCommand+json")
   @Produces("application/json")
-  public Response merge(
+  public void merge(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
     @PathParam("pullRequestId") String pullRequestId,
@@ -48,7 +47,6 @@ public class MergeResource {
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
     service.merge(namespaceAndName, pullRequestId, mergeCommitDto, strategy);
-    return Response.noContent().build();
   }
 
   @POST
@@ -59,16 +57,14 @@ public class MergeResource {
     @ResponseCode(code = 409, condition = "The branches can not be merged automatically due to conflicts"),
     @ResponseCode(code = 500, condition = "internal server error")
   })
-  public Response dryRun(
+  public void dryRun(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
     @PathParam("pullRequestId") String pullRequestId
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
     MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(namespaceAndName, pullRequestId);
-    if (mergeDryRunCommandResult.isMergeable()) {
-      return Response.noContent().build();
-    } else {
+    if (!mergeDryRunCommandResult.isMergeable()) {
       throw new ConcurrentModificationException(entity(PullRequest.class, pullRequestId).in(namespaceAndName).build());
     }
   }
@@ -81,13 +77,12 @@ public class MergeResource {
     @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
     @ResponseCode(code = 500, condition = "internal server error")
   })
-  public Response createDefaultCommitMessage(
+  public String createDefaultCommitMessage(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
     @PathParam("pullRequestId") String pullRequestId,
     @QueryParam("strategy") MergeStrategy strategy
   ) {
-    String commitMessage = service.createDefaultCommitMessage(new NamespaceAndName(namespace, name), pullRequestId, strategy);
-    return Response.status(200).entity(commitMessage).build();
+    return service.createDefaultCommitMessage(new NamespaceAndName(namespace, name), pullRequestId, strategy);
   }
 }

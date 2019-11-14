@@ -40,7 +40,6 @@ type State = {
   subscriptionIcon: string;
   subscriptionLabel: string;
   subscriptionLink: string;
-  defaultSquashCommitMessage: string;
 };
 
 const MediaContent = styled.div.attrs(props => ({
@@ -123,8 +122,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeHasNoConflict: false,
       subscriptionIcon: "",
       subscriptionLabel: "",
-      subscriptionLink: "",
-      defaultSquashCommitMessage: ""
+      subscriptionLink: ""
     };
   }
 

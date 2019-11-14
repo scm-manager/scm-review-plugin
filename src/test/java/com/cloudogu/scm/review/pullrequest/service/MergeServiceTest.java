@@ -188,11 +188,12 @@ public class MergeServiceTest {
     when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
     Person author = new Person("Philip");
-    Changeset changeset1 = new Changeset("1", 1L, author, "first commit");
-    Changeset changeset2 = new Changeset("2", 2L, author, "second commit\nwith multiple lines");
-    Changeset changeset3 = new Changeset("3", 3L, author, "third commit");
 
-    ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(changeset1, changeset2, changeset3));
+    ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
+      new Changeset("1", 1L, author, "first commit"),
+      new Changeset("2", 2L, author, "second commit\nwith multiple lines"),
+      new Changeset("3", 3L, author, "third commit")
+    ));
 
     when(logCommandBuilder.getChangesets()).thenReturn(changesets);
     String message = service.createDefaultCommitMessage(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
 public class MergeService {
 
@@ -102,7 +103,7 @@ public class MergeService {
                 });
               return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString());
             } catch (IOException e) {
-              throw new InternalRepositoryException(ContextEntry.ContextBuilder.entity(repositoryService.getRepository()),
+              throw new InternalRepositoryException(entity("Branch", pullRequest.getSource()).in(repositoryService.getRepository()),
                 "Could not read changesets from repository");
             }
           } else {
