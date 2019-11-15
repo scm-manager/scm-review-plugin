@@ -15,7 +15,9 @@ import {
   Notification,
   Tag,
   Title,
-  Tooltip
+  Tooltip,
+  ConflictError,
+  NotFoundError
 } from "@scm-manager/ui-components";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
 import { dryRun, merge, reject } from "./pullRequest";
@@ -31,6 +33,7 @@ type Props = WithTranslation &
     repository: Repository;
     pullRequest: PullRequest;
     fetchReviewer: () => void;
+    fetchPullRequest: () => void;
   };
 
 type State = {
@@ -123,17 +126,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.getMergeDryRun(pullRequest);
   }
 
-  updatePullRequest = () => {
-    const { history, match } = this.props;
-    this.props.fetchReviewer();
-    history.push({
-      pathname: `${match.url}/comments`,
-      state: {
-        from: this.props.match.url + "/updated"
-      }
-    });
-  };
-
   shouldRunDryMerge = (pullRequest: PullRequest) => {
     return (
       pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN"
@@ -142,34 +134,36 @@ class PullRequestDetails extends React.Component<Props, State> {
 
   getMergeDryRun(pullRequest: PullRequest) {
     if (this.shouldRunDryMerge(pullRequest)) {
-      dryRun(pullRequest).then(response => {
-        if (response.conflict) {
-          this.setState({
-            mergeButtonLoading: false,
-            loading: false,
-            mergeHasNoConflict: false
-          });
-        } else if (response.notFound) {
-          this.setState({
-            mergeButtonLoading: false,
-            loading: false,
-            targetBranchDeleted: true
-          });
-        } else if (response.error) {
-          this.setState({
-            error: response.error,
-            loading: false,
-            mergeButtonLoading: false
-          });
-        } else {
+      dryRun(pullRequest)
+        .then(response => {
           this.setState({
             mergeHasNoConflict: true,
             targetBranchDeleted: false,
             loading: false,
             mergeButtonLoading: false
           });
-        }
-      });
+        })
+        .catch(err => {
+          if (err instanceof ConflictError) {
+            this.setState({
+              mergeButtonLoading: false,
+              loading: false,
+              mergeHasNoConflict: false
+            });
+          } else if (err instanceof NotFoundError) {
+            this.setState({
+              mergeButtonLoading: false,
+              loading: false,
+              targetBranchDeleted: true
+            });
+          } else {
+            this.setState({
+              error: err,
+              loading: false,
+              mergeButtonLoading: false
+            });
+          }
+        });
     }
   }
 
@@ -178,41 +172,47 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   performMerge = (strategy: string, commit: MergeCommit) => {
-    const { pullRequest } = this.props;
+    const { pullRequest, fetchPullRequest } = this.props;
     this.setMergeButtonLoadingState();
-    merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit).then(response => {
-      if (response.error) {
-        this.setState({
-          error: response.error,
-          mergeButtonLoading: false
-        });
-      } else if (response.conflict) {
-        this.setState({
-          mergeHasNoConflict: true,
-          mergeButtonLoading: false
-        });
-      } else {
+    merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit)
+      .then(response => {
         this.setState({
           loading: true,
           showNotification: true,
           mergeButtonLoading: false
         });
-        this.updatePullRequest();
-      }
-    });
+        fetchPullRequest();
+      })
+      .catch(err => {
+        if (err instanceof ConflictError) {
+          this.setState({
+            mergeHasNoConflict: true,
+            mergeButtonLoading: false
+          });
+          // } else if (err instanceof NotFoundError) {
+          //   return {
+          //     notFound: err
+          //   };
+        } else {
+          this.setState({
+            error: err,
+            mergeButtonLoading: false
+          });
+        }
+      });
   };
 
   performReject = () => {
     this.setState({
       rejectButtonLoading: true
     });
-    const { pullRequest } = this.props;
+    const { pullRequest, fetchPullRequest } = this.props;
     reject(pullRequest)
       .then(() => {
         this.setState({
           rejectButtonLoading: false
         });
-        this.updatePullRequest();
+        fetchPullRequest();
       })
       .catch(cause =>
         this.setState({

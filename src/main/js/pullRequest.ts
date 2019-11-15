@@ -65,18 +65,10 @@ export function getBranches(url: string) {
     });
 }
 
-export function getPullRequest(url: string) {
+export function getPullRequest(url: string): Promise<PullRequest> {
   return apiClient
     .get(url)
-    .then(response => response.json())
-    .then(pullRequest => {
-      return pullRequest;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+    .then(response => response.json());
 }
 
 export function getPullRequests(url: string) {
@@ -146,39 +138,11 @@ export function handleSubscription(url: string) {
 }
 
 export function merge(url: string, mergeCommit: MergeCommit) {
-  return apiClient.post(url, mergeCommit, "application/vnd.scmm-mergeCommand+json").catch(err => {
-    if (err instanceof ConflictError) {
-      return {
-        conflict: err
-      };
-    } else if (err instanceof NotFoundError) {
-      return {
-        notFound: err
-      };
-    } else {
-      return {
-        error: err
-      };
-    }
-  });
+  return apiClient.post(url, mergeCommit, "application/vnd.scmm-mergeCommand+json");
 }
 
 export function dryRun(pullRequest: PullRequest) {
-  return apiClient.post((pullRequest._links.mergeDryRun as Link).href, {}).catch(err => {
-    if (err instanceof ConflictError) {
-      return {
-        conflict: err
-      };
-    } else if (err instanceof NotFoundError) {
-      return {
-        notFound: err
-      };
-    } else {
-      return {
-        error: err
-      };
-    }
-  });
+  return apiClient.post((pullRequest._links.mergeDryRun as Link).href, {})
 }
 
 export function getDefaultCommitDefaultMessage(url: string) {
@@ -223,5 +187,5 @@ function createIncomingUrl(repository: Repository, linkName: string, source: str
 }
 
 export function reject(pullRequest: PullRequest) {
-  return apiClient.post((pullRequest._links.reject as Link).href);
+  return apiClient.post((pullRequest._links.reject as Link).href, {});
 }

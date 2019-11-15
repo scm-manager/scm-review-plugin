@@ -31,22 +31,22 @@ class SinglePullRequest extends React.Component<Props, State> {
     this.fetchPullRequest();
   }
 
-  fetchPullRequest = (): void => {
+  fetchPullRequest = () => {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
     const url = (repository._links.pullRequest as Link).href + "/" + pullRequestNumber;
-    getPullRequest(url).then(response => {
-      if (response.error) {
+    getPullRequest(url)
+      .then(pullRequest => {
         this.setState({
-          error: response.error,
+          pullRequest,
           loading: false
         });
-      } else {
+      })
+      .catch(error => {
         this.setState({
-          pullRequest: response,
+          error,
           loading: false
         });
-      }
     });
   };
 
@@ -94,7 +94,7 @@ class SinglePullRequest extends React.Component<Props, State> {
         />
         <Route
           component={() => (
-            <PullRequestDetails repository={repository} pullRequest={pullRequest} fetchReviewer={this.fetchReviewer} />
+            <PullRequestDetails repository={repository} pullRequest={pullRequest} fetchReviewer={this.fetchReviewer} fetchPullRequest={this.fetchPullRequest}/>
           )}
           path={`${match.url}`}
         />
