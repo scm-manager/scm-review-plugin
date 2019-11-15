@@ -677,24 +677,11 @@ public class PullRequestRootResourceTest {
     verify(store, never()).update(any());
   }
 
-
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldApprove() throws URISyntaxException {
     initPullRequestRootResource();
-
-    Subject subject = mock(Subject.class);
-    shiroRule.setSubject(subject);
-
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(any(String.class))).thenReturn(true);
-
-    User user1 = new User();
-    user1.setName("user1");
-    user1.setDisplayName("User 1");
-    when(principals.oneByType(User.class)).thenReturn(user1);
-
+    mockSubject();
     when(store.get(any())).thenReturn(new PullRequest());
 
     MockHttpRequest request = MockHttpRequest
@@ -709,19 +696,7 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldDisapprove() throws URISyntaxException {
     initPullRequestRootResource();
-
-    Subject subject = mock(Subject.class);
-    shiroRule.setSubject(subject);
-
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(any(String.class))).thenReturn(true);
-
-    User user1 = new User();
-    user1.setName("user1");
-    user1.setDisplayName("User 1");
-    when(principals.oneByType(User.class)).thenReturn(user1);
-
+    mockSubject();
     when(store.get(any())).thenReturn(new PullRequest());
 
     MockHttpRequest request = MockHttpRequest
@@ -729,6 +704,18 @@ public class PullRequestRootResourceTest {
     dispatcher.invoke(request, response);
     verify(pullRequestService).disapprove(any(), any());
     assertThat(response.getStatus()).isEqualTo(204);
+  }
+
+  private void mockSubject() {
+    Subject subject = mock(Subject.class);
+    shiroRule.setSubject(subject);
+
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    when(subject.isPermitted(any(String.class))).thenReturn(true);
+
+    User user1 = new User("user1", "User1", "user@mail.com");
+    when(principals.oneByType(User.class)).thenReturn(user1);
   }
 
   private void initPullRequestRootResource() {
