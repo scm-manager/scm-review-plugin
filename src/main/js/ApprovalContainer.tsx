@@ -14,15 +14,13 @@ type Props = {
 type State = {
   loading: boolean;
   error?: Error;
-  approve: boolean;
 };
 
 export default class ApprovalContainer extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      loading: false,
-      approve: this.props.pullRequest._links && !!this.props.pullRequest._links.approve
+      loading: false
     };
   }
 
@@ -33,14 +31,21 @@ export default class ApprovalContainer extends React.Component<Props, State> {
     });
     const link = this.createHandleApprovalLink();
     if (link) {
-      handleApproval(link).then(response => {
-        this.setState(prevState => ({
-          error: response.error,
-          loading: false,
-          approve: !prevState.approve
-        }));
-        refreshReviewer();
-      });
+      handleApproval(link)
+        .then(response => {
+          this.setState(
+            {
+              loading: false
+            },
+            () => refreshReviewer()
+          );
+        })
+        .catch((error: Error) => {
+          this.setState({
+            loading: false,
+            error
+          });
+        });
     }
   };
 
@@ -58,9 +63,12 @@ export default class ApprovalContainer extends React.Component<Props, State> {
       return <ErrorNotification error={error} />;
     }
 
-    if (this.state.approve) {
+    if (this.props.pullRequest._links && !!this.props.pullRequest._links.approve) {
       return <ApprovalButton loading={loading} action={this.handleApproval} />;
+    } else if (this.props.pullRequest._links && !!this.props.pullRequest._links.disapprove) {
+      return <DisapprovalButton loading={loading} action={this.handleApproval} />;
+    } else {
+      return null;
     }
-    return <DisapprovalButton loading={loading} action={this.handleApproval} />;
   }
 }

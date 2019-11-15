@@ -111,11 +111,7 @@ export function getApproval(url: string) {
 }
 
 export function handleApproval(url: string) {
-  return apiClient.post(url).catch((err: Error) => {
-    return {
-      error: err
-    };
-  });
+  return apiClient.post(url, {});
 }
 
 export function getSubscription(url: string) {
