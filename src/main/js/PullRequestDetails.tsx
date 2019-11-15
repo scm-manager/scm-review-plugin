@@ -125,6 +125,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
   updatePullRequest = () => {
     const { history, match } = this.props;
+    this.props.fetchReviewer();
     history.push({
       pathname: `${match.url}/comments`,
       state: {
