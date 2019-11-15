@@ -1,9 +1,11 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Conflicts, PullRequest } from "./types/PullRequest";
-import { Loading } from "@scm-manager/ui-components";
+import { Conflict, Conflicts, PullRequest } from "./types/PullRequest";
+import { Loading, Diff } from "@scm-manager/ui-components";
 import { Repository, Link } from "@scm-manager/ui-types";
 import { fetchConflicts } from "./pullRequest";
+// @ts-ignore
+import parser from "gitdiff-parser";
 
 type Props = WithTranslation & {
   repository: Repository;
@@ -54,11 +56,18 @@ class MergeConflicts extends React.Component<Props, State> {
     }
   };
 
+  createDiffComponent = (conflict: Conflict) => {
+    const parsedDiff = parser.parse(conflict.diff);
+    return <Diff diff={parsedDiff} {...this.props} />;
+  };
+
   render() {
     if (this.state.loading) {
       return <Loading />;
     }
+
     this.state.conflicts.conflicts.forEach;
+
     return (
       <div className={"content"}>
         <dl>
@@ -67,7 +76,7 @@ class MergeConflicts extends React.Component<Props, State> {
               <dt>{conflict.path}</dt>
               <dd>
                 {conflict.type}
-                {conflict.diff && <pre>{conflict.diff}</pre>}
+                {conflict.diff && this.createDiffComponent(conflict)}
               </dd>
             </>
           ))}
