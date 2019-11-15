@@ -48,7 +48,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private UserDisplayManager userDisplayManager;
 
   @Inject
-  PullRequestService pullRequestService;
+  private PullRequestService pullRequestService;
   @Inject
   private RepositoryServiceFactory serviceFactory;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));

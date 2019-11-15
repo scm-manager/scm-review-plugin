@@ -46,7 +46,7 @@ export default class ApprovalContainer extends React.Component<Props, State> {
 
   createHandleApprovalLink = () => {
     const { pullRequest } = this.props;
-    if (pullRequest._links && pullRequest._links.approve as Link) {
+    if (pullRequest._links && (pullRequest._links.approve as Link)) {
       return (pullRequest._links.approve as Link).href;
     }
     return (pullRequest._links.disapprove as Link).href;

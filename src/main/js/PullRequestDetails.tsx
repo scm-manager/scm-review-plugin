@@ -9,16 +9,16 @@ import {
   ButtonGroup,
   DateFromNow,
   ErrorNotification,
+  Icon,
   Loading,
   MarkdownView,
   Notification,
   Tag,
   Title,
-  Tooltip,
-  Icon
+  Tooltip
 } from "@scm-manager/ui-components";
-import { PullRequest, MergeCommit, Reviewer } from "./types/PullRequest";
-import { getReviewer, dryRun, merge, reject } from "./pullRequest";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { dryRun, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";

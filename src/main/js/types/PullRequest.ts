@@ -44,7 +44,7 @@ export type Comment = BasicComment & {
   replies: Comment[];
   context?: Context;
   _links: Links;
-  _embedded?: {[key: string]: any};
+  _embedded?: { [key: string]: any };
 };
 
 export type Context = {
