@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
@@ -16,6 +17,7 @@ import com.webcohesion.enunciate.metadata.rs.TypeHint;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
@@ -54,11 +56,43 @@ public class PullRequestResource {
 
   @GET
   @Path("")
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(PullRequestMediaType.PULL_REQUEST)
   public Response get(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     return Response.ok(mapper.using(uriInfo).map(service.get(namespace, name, pullRequestId), repository)).build();
+  }
+
+  @POST
+  @Path("approve")
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 400, condition = "Invalid body"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
+    @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  @TypeHint(TypeHint.NO_CONTENT.class)
+  public Response approve(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+    service.approve(new NamespaceAndName(namespace, name), pullRequestId);
+    return Response.noContent().build();
+  }
+
+  @POST
+  @Path("disapprove")
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 400, condition = "Invalid body"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
+    @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  @TypeHint(TypeHint.NO_CONTENT.class)
+  public Response disapprove(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+    service.disapprove(new NamespaceAndName(namespace, name), pullRequestId);
+    return Response.noContent().build();
   }
 
   @GET
@@ -71,7 +105,7 @@ public class PullRequestResource {
     @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
     @ResponseCode(code = 500, condition = "internal server error")
   })
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(PullRequestMediaType.PULL_REQUEST)
   public Response getSubscription(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
@@ -133,7 +167,7 @@ public class PullRequestResource {
 
   @PUT
   @Path("")
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes(PullRequestMediaType.PULL_REQUEST)
   @StatusCodes({
     @ResponseCode(code = 204, condition = "update success"),
     @ResponseCode(code = 400, condition = "Invalid body"),

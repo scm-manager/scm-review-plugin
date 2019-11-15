@@ -7,12 +7,9 @@
       "submitButton": "Speichern"
     },
     "edit": {
-      "button": "Pull Request bearbeiten",
       "title": "Pull Request",
       "subtitle": "Pull Request ändern für {{repositoryName}}",
-      "submitButton": "Speichern",
-      "subscribe": "Subscribe",
-      "unsubscribe": "Unsubscribe"
+      "submitButton": "Speichern"
     },
     "diff": {
       "notSupported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt.",
@@ -35,10 +32,21 @@
         "diff": "Diff",
         "comments": "Comments"
       },
-      "noChangesets": "Keine Changesets gefunden."
+      "noChangesets": "Keine Changesets gefunden.",
+      "details": {
+        "notification": "Pull Request erfolgreich gemerged!",
+        "targetDeleted": "Der Target Branch wurde gelöscht!",
+        "approved": "Freigegeben durch {{name}}",
+        "buttons": {
+          "edit": "Bearbeiten",
+          "approve": "Freigeben",
+          "disapprove": "Freigabe zurückziehen",
+          "subscribe": "Subscribe",
+          "unsubscribe": "Unsubscribe"
+        }
+      }
     },
     "showPullRequest": {
-      "errorTitle": "Fehler",
       "mergeButton": {
         "buttonTitle": "Pull Request mergen",
         "mergeInformation": "Automatischer Merge nicht möglich."
@@ -73,14 +81,11 @@
           "submit": "Ja",
           "cancel": "Nein"
         }
-      },
-      "notification": "Pull Request erfolgreich gemerged!",
-      "targetDeleted": "Der Target Branch wurde gelöscht!",
+      }
     },
     "pullRequests": {
       "errorTitle": "Fehler",
       "errorSubtitle": "Unbekannter Pull Request Fehler",
-      "description": "Beschreibung",
       "createButton": "Pull Request erstellen"
     },
     "comment": {

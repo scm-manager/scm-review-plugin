@@ -27,7 +27,7 @@ public abstract class ExecutedTransitionMapper implements InstantAttributeMapper
   @Inject
   private CommentPathBuilder commentPathBuilder;
 
-
+  @Mapping(target = "attributes", ignore = true)
   @Mapping(target = "user", source = "user", qualifiedByName = "mapUser")
   abstract ExecutedTransitionDto map(ExecutedTransition transition, @Context NamespaceAndName namespaceAndName, @Context String pullRequestId, @Context BasicComment comment);
 

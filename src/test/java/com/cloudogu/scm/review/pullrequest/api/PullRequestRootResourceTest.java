@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.ExceptionMessageMapper;
+import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
@@ -46,7 +47,6 @@ import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -101,6 +101,8 @@ public class PullRequestRootResourceTest {
   private UserDisplayManager userDisplayManager;
 
   @Mock
+  private DefaultPullRequestService pullRequestService;
+  @Mock
   private RepositoryServiceFactory repositoryServiceFactory;
   @Mock
   private RepositoryService repositoryService;
@@ -112,7 +114,7 @@ public class PullRequestRootResourceTest {
   @InjectMocks
   private PullRequestMapperImpl mapper;
 
-  private ScmEventBus eventBus = mock(ScmEventBus.class) ;
+  private ScmEventBus eventBus = mock(ScmEventBus.class);
 
   @Before
   public void init() {
@@ -143,7 +145,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -177,7 +179,7 @@ public class PullRequestRootResourceTest {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request = MockHttpRequest.post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
       .content(pullRequestJson)
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
@@ -199,7 +201,7 @@ public class PullRequestRootResourceTest {
     MockHttpRequest request = MockHttpRequest
       .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME)
       .content(pullRequestJson)
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
     assertExceptionFrom(response).hasMessageMatching("pull request with id id in repository with id .* already exists");
   }
@@ -212,7 +214,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -228,7 +230,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -247,7 +249,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -265,7 +267,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/X")
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -283,7 +285,7 @@ public class PullRequestRootResourceTest {
       MockHttpRequest
         .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME)
         .content(pullRequestJson)
-        .contentType(MediaType.APPLICATION_JSON);
+        .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -464,7 +466,7 @@ public class PullRequestRootResourceTest {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_NO_CONTENT);
@@ -483,7 +485,7 @@ public class PullRequestRootResourceTest {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/opened_1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
 
     dispatcher.invoke(request, response);
 
@@ -499,7 +501,7 @@ public class PullRequestRootResourceTest {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
       .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
-      .contentType(MediaType.APPLICATION_JSON);
+      .contentType(PullRequestMediaType.PULL_REQUEST);
     PullRequest pullRequest = createPullRequest();
     when(store.get("1")).thenReturn(pullRequest);
 
@@ -673,6 +675,56 @@ public class PullRequestRootResourceTest {
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_BAD_REQUEST);
     verify(store, never()).update(any());
+  }
+
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldApprove() throws URISyntaxException {
+    initPullRequestRootResource();
+    mockSubject();
+    when(store.get(any())).thenReturn(new PullRequest());
+
+    MockHttpRequest request = MockHttpRequest
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/approve");
+    dispatcher.invoke(request, response);
+    verify(pullRequestService).approve(new NamespaceAndName("ns", "repo"), "1");
+    assertThat(response.getStatus()).isEqualTo(204);
+  }
+
+
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldDisapprove() throws URISyntaxException {
+    initPullRequestRootResource();
+    mockSubject();
+    when(store.get(any())).thenReturn(new PullRequest());
+
+    MockHttpRequest request = MockHttpRequest
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/disapprove");
+    dispatcher.invoke(request, response);
+    verify(pullRequestService).disapprove(any(), any());
+    assertThat(response.getStatus()).isEqualTo(204);
+  }
+
+  private void mockSubject() {
+    Subject subject = mock(Subject.class);
+    shiroRule.setSubject(subject);
+
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    when(subject.isPermitted(any(String.class))).thenReturn(true);
+
+    User user1 = new User("user1", "User1", "user@mail.com");
+    when(principals.oneByType(User.class)).thenReturn(user1);
+  }
+
+  private void initPullRequestRootResource() {
+    PullRequestRootResource rootResource =
+      new PullRequestRootResource(mapper, pullRequestService, Providers.of(new PullRequestResource(mapper, pullRequestService, null)));
+
+    dispatcher = MockDispatcherFactory.createDispatcher();
+    dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
+    dispatcher.getRegistry().addSingletonResource(rootResource);
   }
 
   private void mockPrincipal() {

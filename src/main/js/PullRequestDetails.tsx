@@ -6,40 +6,44 @@ import { Link, Repository } from "@scm-manager/ui-types";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   Button,
+  ButtonGroup,
   DateFromNow,
   ErrorNotification,
+  Icon,
   Loading,
   MarkdownView,
   Notification,
   Tag,
   Title,
-  Tooltip
+  Tooltip,
+  ConflictError,
+  NotFoundError
 } from "@scm-manager/ui-components";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
-import { dryRun, getSubscription, handleSubscription, merge, reject } from "./pullRequest";
+import { dryRun, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
+import ApprovalContainer from "./ApprovalContainer";
+import SubscriptionContainer from "./SubscriptionContainer";
+import ReviewerList from "./ReviewerList";
 
 type Props = WithTranslation &
   RouteComponentProps & {
     repository: Repository;
     pullRequest: PullRequest;
+    fetchReviewer: () => void;
+    fetchPullRequest: () => void;
   };
 
 type State = {
-  pullRequest: PullRequest;
   error?: Error;
   loading: boolean;
-  loadingSubscription: boolean;
-  mergeHasNoConflict: boolean;
+  mergeHasNoConflict?: boolean;
   targetBranchDeleted?: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
   showNotification: boolean;
-  subscriptionIcon: string;
-  subscriptionLabel: string;
-  subscriptionLink: string;
 };
 
 const MediaContent = styled.div.attrs(props => ({
@@ -64,11 +68,6 @@ const UserField = styled.div.attrs(props => ({
 `;
 
 const UserInline = styled.div`
-  display: inline-block;
-  font-weight: bold;
-`;
-
-const UserInlineListItem = styled.li`
   display: inline-block;
   font-weight: bold;
 `;
@@ -113,79 +112,19 @@ class PullRequestDetails extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      ...this.state,
       loading: false,
-      loadingSubscription: true,
-      pullRequest: this.props.pullRequest,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
       showNotification: false,
-      mergeHasNoConflict: false,
-      subscriptionIcon: "",
-      subscriptionLabel: "",
-      subscriptionLink: ""
+      mergeHasNoConflict: false
     };
   }
 
   componentDidMount(): void {
     const { pullRequest } = this.props;
     this.getMergeDryRun(pullRequest);
-    if (pullRequest && pullRequest._links.subscription && (pullRequest._links.subscription as Link).href) {
-      this.getSubscription(pullRequest);
-    }
   }
-
-  updatePullRequest = () => {
-    const { history, match } = this.props;
-    history.push({
-      pathname: `${match.url}/comments`,
-      state: {
-        from: this.props.match.url + "/updated"
-      }
-    });
-  };
-
-  getSubscription(pullRequest: PullRequest) {
-    if (pullRequest && pullRequest._links.subscription && (pullRequest._links.subscription as Link).href) {
-      getSubscription((pullRequest._links.subscription as Link).href).then(response => {
-        if (response.error) {
-          this.setState({
-            error: response.error,
-            loadingSubscription: false
-          });
-        } else {
-          if (response._links.subscribe) {
-            this.setState({
-              loadingSubscription: false,
-              subscriptionIcon: "plus",
-              subscriptionLabel: "subscribe",
-              subscriptionLink: response._links.subscribe.href
-            });
-          } else if (response._links.unsubscribe) {
-            this.setState({
-              loadingSubscription: false,
-              subscriptionIcon: "minus",
-              subscriptionLabel: "unsubscribe",
-              subscriptionLink: response._links.unsubscribe.href
-            });
-          }
-        }
-      });
-    }
-  }
-
-  handleSubscription = () => {
-    const { pullRequest } = this.props;
-    const { subscriptionLink } = this.state;
-    this.setState({
-      loadingSubscription: true
-    });
-    handleSubscription(subscriptionLink).then(response => {
-      this.setState({
-        error: response.error
-      });
-      this.getSubscription(pullRequest);
-    });
-  };
 
   shouldRunDryMerge = (pullRequest: PullRequest) => {
     return (
@@ -195,34 +134,36 @@ class PullRequestDetails extends React.Component<Props, State> {
 
   getMergeDryRun(pullRequest: PullRequest) {
     if (this.shouldRunDryMerge(pullRequest)) {
-      dryRun(pullRequest).then(response => {
-        if (response.conflict) {
-          this.setState({
-            mergeButtonLoading: false,
-            loading: false,
-            mergeHasNoConflict: false
-          });
-        } else if (response.notFound) {
-          this.setState({
-            mergeButtonLoading: false,
-            loading: false,
-            targetBranchDeleted: true
-          });
-        } else if (response.error) {
-          this.setState({
-            error: response.error,
-            loading: false,
-            mergeButtonLoading: false
-          });
-        } else {
+      dryRun(pullRequest)
+        .then(response => {
           this.setState({
             mergeHasNoConflict: true,
             targetBranchDeleted: false,
             loading: false,
             mergeButtonLoading: false
           });
-        }
-      });
+        })
+        .catch(err => {
+          if (err instanceof ConflictError) {
+            this.setState({
+              mergeButtonLoading: false,
+              loading: false,
+              mergeHasNoConflict: false
+            });
+          } else if (err instanceof NotFoundError) {
+            this.setState({
+              mergeButtonLoading: false,
+              loading: false,
+              targetBranchDeleted: true
+            });
+          } else {
+            this.setState({
+              error: err,
+              loading: false,
+              mergeButtonLoading: false
+            });
+          }
+        });
     }
   }
 
@@ -231,41 +172,47 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   performMerge = (strategy: string, commit: MergeCommit) => {
-    const { pullRequest } = this.state;
+    const { pullRequest, fetchPullRequest } = this.props;
     this.setMergeButtonLoadingState();
-    merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit).then(response => {
-      if (response.error) {
-        this.setState({
-          error: response.error,
-          mergeButtonLoading: false
-        });
-      } else if (response.conflict) {
-        this.setState({
-          mergeHasNoConflict: true,
-          mergeButtonLoading: false
-        });
-      } else {
+    merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit)
+      .then(response => {
         this.setState({
           loading: true,
           showNotification: true,
           mergeButtonLoading: false
         });
-        this.updatePullRequest();
-      }
-    });
+        fetchPullRequest();
+      })
+      .catch(err => {
+        if (err instanceof ConflictError) {
+          this.setState({
+            mergeHasNoConflict: true,
+            mergeButtonLoading: false
+          });
+          // } else if (err instanceof NotFoundError) {
+          //   return {
+          //     notFound: err
+          //   };
+        } else {
+          this.setState({
+            error: err,
+            mergeButtonLoading: false
+          });
+        }
+      });
   };
 
   performReject = () => {
     this.setState({
       rejectButtonLoading: true
     });
-    const { pullRequest } = this.state;
+    const { pullRequest, fetchPullRequest } = this.props;
     reject(pullRequest)
       .then(() => {
         this.setState({
           rejectButtonLoading: false
         });
-        this.updatePullRequest();
+        fetchPullRequest();
       })
       .catch(cause =>
         this.setState({
@@ -290,20 +237,15 @@ class PullRequestDetails extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, match, t } = this.props;
+    const { repository, pullRequest, match, t } = this.props;
     const {
-      pullRequest,
       error,
       loading,
       mergeButtonLoading,
       mergeHasNoConflict,
       targetBranchDeleted,
       rejectButtonLoading,
-      showNotification,
-      subscriptionIcon,
-      subscriptionLabel,
-      subscriptionLink,
-      loadingSubscription
+      showNotification
     } = this.state;
 
     if (error) {
@@ -330,7 +272,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeNotification = (
         <Notification
           type="info"
-          children={t("scm-review-plugin.showPullRequest.notification")}
+          children={t("scm-review-plugin.pullRequest.details.notification")}
           onClose={() => this.onClose()}
         />
       );
@@ -358,34 +300,14 @@ class PullRequestDetails extends React.Component<Props, State> {
       const toEdit =
         "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
       editButton = (
-        <div className="media-right">
-          <Button
-            link={toEdit}
-            color="link is-outlined"
-            label={t("scm-review-plugin.edit.button")}
-            icon="edit"
-            reducedMobile={true}
-          />
-        </div>
+        <Button link={toEdit} title={t("scm-review-plugin.pullRequest.details.buttons.edit")} color="link is-outlined">
+          <Icon name="edit" color="inherit" />
+        </Button>
       );
     }
 
-    const subscription = subscriptionLink ? (
-      <div className="level-left">
-        <div className="level-item">
-          <Button action={this.handleSubscription} loading={loadingSubscription} color="link is-outlined">
-            <span className="icon is-small">
-              <i className={`fas fa-${subscriptionIcon}`} />
-            </span>
-            <span>{t("scm-review-plugin.edit." + subscriptionLabel)}</span>
-          </Button>
-        </div>
-      </div>
-    ) : (
-      ""
-    );
     const targetBranchDeletedWarning = targetBranchDeleted ? (
-      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.showPullRequest.targetDeleted")}>
+      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
         <i className="fas fa-exclamation-triangle" />
       </Tooltip>
     ) : null;
@@ -400,24 +322,6 @@ class PullRequestDetails extends React.Component<Props, State> {
         </UserField>
       </div>
     );
-    const reviewerList = (
-      <>
-        {pullRequest.reviewer.length > 0 ? (
-          <div className="field is-horizontal">
-            <UserLabel>{t("scm-review-plugin.pullRequest.reviewer")}:</UserLabel>
-            <UserField>
-              <ul className="is-separated">
-                {pullRequest.reviewer.map(reviewer => {
-                  return <UserInlineListItem key={reviewer.id}>{reviewer.displayName}</UserInlineListItem>;
-                })}
-              </ul>
-            </UserField>
-          </div>
-        ) : (
-          ""
-        )}
-      </>
-    );
     return (
       <>
         <Container>
@@ -425,7 +329,12 @@ class PullRequestDetails extends React.Component<Props, State> {
             <div className="media-content">
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
             </div>
-            {editButton}
+            <div className="media-right">
+              <ButtonGroup>
+                <SubscriptionContainer pullRequest={pullRequest} />
+                {editButton}
+              </ButtonGroup>
+            </div>
           </div>
 
           {mergeNotification}
@@ -460,12 +369,16 @@ class PullRequestDetails extends React.Component<Props, State> {
           <UserList className="media">
             <div className="media-content">
               {author}
-              {reviewerList}
+              <ReviewerList pullRequest={pullRequest} reviewer={pullRequest.reviewer} />
             </div>
           </UserList>
 
           <LevelWrapper className="level">
-            {subscription}
+            <div className="level-left">
+              <div className="level-item">
+                <ApprovalContainer pullRequest={pullRequest} refreshReviewer={() => this.props.fetchReviewer()} />
+              </div>
+            </div>
             <div className="level-right">
               <div className="level-item">{rejectButton}</div>
               <div className="level-item">{mergeButton}</div>

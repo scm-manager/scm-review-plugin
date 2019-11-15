@@ -12,9 +12,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 
 @Getter
@@ -38,14 +41,22 @@ public class PullRequest {
   private Instant lastModified;
   private PullRequestStatus status;
   private Set<String> subscriber = new HashSet<>();
-  private Set<String> reviewer = new HashSet<>();
+  private Map<String, Boolean> reviewer = new HashMap<>();
+
+  public void addApprover(String recipient) {
+    this.reviewer.put(recipient, true);
+  }
+
+  public void removeApprover(String recipient) {
+    this.reviewer.put(recipient, false);
+  }
 
   public Set<String> getSubscriber() {
     return unmodifiableSet(subscriber);
   }
 
-  public Set<String> getReviewer() {
-    return unmodifiableSet(reviewer);
+  public Map<String, Boolean> getReviewer() {
+    return unmodifiableMap(reviewer);
   }
 
   public void addSubscriber(String recipient) {

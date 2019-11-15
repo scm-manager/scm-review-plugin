@@ -5,7 +5,7 @@ import CreateForm from "./CreateForm";
 import styled from "styled-components";
 import { BasicPullRequest } from "./types/PullRequest";
 import { createPullRequest } from "./pullRequest";
-import { Trans, WithTranslation, withTranslation } from "react-i18next";
+import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import queryString from "query-string";
@@ -103,20 +103,11 @@ class Create extends React.Component<Props, State> {
         />
       );
     }
-    const subtitle = (
-      <Trans
-        i18nKey="scm-review-plugin.create.subtitle"
-        values={{
-          repositoryName: repository.name
-        }}
-      />
-    );
-
     return (
       <div className="columns">
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.create.title")} />
-          <Subtitle subtitle={subtitle} />
+          <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
 
           {notification}
 

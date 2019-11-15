@@ -7,12 +7,9 @@
       "submitButton": "Submit"
     },
     "edit": {
-      "button": "Edit Pull Request",
       "title": "Pull Request",
       "subtitle": "Edit pull request for {{repositoryName}}",
-      "submitButton": "Save",
-      "subscribe": "Subscribe",
-      "unsubscribe": "Unsubscribe"
+      "submitButton": "Save"
     },
     "diff": {
       "notSupported": "Diffs for pull request are not supported by the type of repository",
@@ -35,10 +32,21 @@
         "diff": "Diff",
         "comments": "Comments"
       },
-      "noChangesets": "No changesets found."
+      "noChangesets": "No changesets found.",
+      "details": {
+        "notification": "Pull request merged successfully!",
+        "targetDeleted": "The target branch has been deleted!",
+        "approved": "Approved by {{name}}",
+        "buttons": {
+          "edit": "Edit",
+          "approve": "Approve",
+          "disapprove": "Disapprove",
+          "subscribe": "Subscribe",
+          "unsubscribe": "Unsubscribe"
+        }
+      }
     },
     "showPullRequest": {
-      "errorTitle": "Error",
       "mergeButton": {
         "buttonTitle": "Merge Pull Request",
         "mergeInformation": "Cannot be merged automatically"
@@ -73,15 +81,12 @@
           "submit": "Yes",
           "cancel": "No"
         }
-      },
-      "notification": "Pull request merged successfully!",
-      "targetDeleted": "The target branch has been deleted!"
+      }
     },
     "pullRequests": {
-      "errorTitle": "Error",
-      "errorSubtitle": "Unknown pull request error",
-      "description": "Description",
-      "createButton": "New pull request"
+      "errorTitle": "Fehler",
+      "errorSubtitle": "Unbekannter Pull Request Fehler",
+      "createButton": "Pull Request erstellen"
     },
     "comment": {
       "addComment": "Add comment",

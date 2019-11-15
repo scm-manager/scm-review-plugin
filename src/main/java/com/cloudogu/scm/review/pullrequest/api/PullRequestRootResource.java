@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
@@ -65,7 +66,7 @@ public class PullRequestRootResource {
 
   @POST
   @Path("{namespace}/{name}")
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Consumes(PullRequestMediaType.PULL_REQUEST)
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) throws IOException {
 
     Repository repository = service.getRepository(namespace, name);
@@ -104,7 +105,7 @@ public class PullRequestRootResource {
 
   @GET
   @Path("{namespace}/{name}")
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces(PullRequestMediaType.PULL_REQUEST)
   public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("OPEN") PullRequestStatusDto pullRequestStatusDto) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
