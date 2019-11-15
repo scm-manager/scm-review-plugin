@@ -73,13 +73,6 @@ public class PullRequestResourceLinks {
         .href();
     }
 
-    public String approval(String namespace, String name, String pullRequestId) {
-      return pullRequestLinkBuilder
-        .method("getPullRequestResource").parameters()
-        .method("getApproval").parameters(namespace, name, pullRequestId)
-        .href();
-    }
-
     public String approve(String namespace, String name, String pullRequestId) {
       return pullRequestLinkBuilder
         .method("getPullRequestResource").parameters()
