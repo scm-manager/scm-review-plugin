@@ -204,6 +204,10 @@
     "DTRhFJFgU1": {
       "displayName": "Merge Konflikte",
       "description": "Die Branches konnten nicht gemerged werden, da Konflikte existieren."
+    },
+    "FTRhcI0To1": {
+      "displayName": "Pull-Request nicht offen",
+      "description": "Merges können nur auf offenen Pull-Requests ausgeführt werden."
     }
   }
 }

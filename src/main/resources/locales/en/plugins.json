@@ -204,6 +204,10 @@
     "DTRhFJFgU1": {
       "displayName": "Merge conflict",
       "description": "The branches could not be merged because there were merge conflicts."
+    },
+    "FTRhcI0To1": {
+      "displayName": "Pull reuqest not open",
+      "description": "Merges can only be performed for open pull requests."
     }
   }
 }
