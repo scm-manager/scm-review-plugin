@@ -52,8 +52,9 @@ public class DefaultPullRequestService implements PullRequestService {
     pullRequest.setCreationDate(Instant.now());
     pullRequest.setLastModified(null);
     computeSubscriberForNewPullRequest(pullRequest);
+    String id = getStore(repository).add(pullRequest);
     eventBus.post(new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE));
-    return getStore(repository).add(pullRequest);
+    return id;
   }
 
   private void verifyNewChangesetsOnSource(Repository repository, String source, String target) throws NoDifferenceException {
@@ -88,8 +89,8 @@ public class DefaultPullRequestService implements PullRequestService {
     pullRequest.setCreationDate(oldPullRequest.getCreationDate());
     pullRequest.setLastModified(Instant.now());
     computeSubscriberForChangedPullRequest(oldPullRequest, pullRequest);
-    eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
     store.update(pullRequest);
+    eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
   }
 
   private void computeSubscriberForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
