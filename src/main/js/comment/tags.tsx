@@ -35,12 +35,11 @@ const TranslatedTag = withTranslation("plugins")(({ label, title, t, ...restProp
       translatedTitle = title;
     }
   }
-  // $FlowFixMe Tag requires prop t, but t is injected by translate ...
   return <CustomTag label={t(`scm-review-plugin.comment.tag.${label}`)} title={translatedTitle} {...restProps} />;
 });
 
 type ClickableTagProps = {
-  onClick: () => void;
+  onClick?: () => void;
 };
 
 export const SystemTag = () => <TranslatedTag icon="bolt" label="system" />;
@@ -68,6 +67,5 @@ type FileProps = ClickableTagProps & {
 
 export const FileTag = ({ path, onClick }: FileProps) => {
   const file = path.replace(/^.+\//, "");
-  // $FlowFixMe Tag requires prop t, but t is injected by translate ...
   return <CustomTag icon="code" title={path} label={file} onClick={onClick} />;
 };

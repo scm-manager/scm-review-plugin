@@ -19,8 +19,10 @@ const CommentTags: FC<Props> = ({ comment, onOpenContext }) => {
     tags.push(<OutdatedTag key="outdated" onClick={onOpenContext} />);
   }
 
-  if (comment.location && comment.location.file) {
+  if (comment.location && comment.location.file && comment.context) {
     tags.push(<FileTag key="file" path={comment.location.file} onClick={onOpenContext} />);
+  } else if (comment.location && comment.location.file) {
+    tags.push(<FileTag key="file" path={comment.location.file} />);
   }
 
   if (comment.systemComment) {
