@@ -27,12 +27,9 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
     return <Loading />;
   } else if (error) {
     return <ErrorNotification error={error} />;
-  } else if (links) {
-    const createLink = links.create ? (links.create as Link).href : undefined;
-    return <Diff diffUrl={diffUrl} comments={comments} createLink={createLink} dispatch={dispatch} />;
   } else {
-    // TODO could this happen
-    return <Notification type="danger">{t("scm-review-plugin.diff.notSupported")}</Notification>;
+    const createLink = links && links.create ? (links.create as Link).href : undefined;
+    return <Diff diffUrl={diffUrl} comments={comments} createLink={createLink} dispatch={dispatch} />;
   }
 };
 
