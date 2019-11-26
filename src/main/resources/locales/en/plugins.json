@@ -205,6 +205,10 @@
       }
     }
   },
+  "branch": {
+    "header": "Pull Requests",
+    "createPullRequest": "Create new pull request"
+  },
   "errors": {
     "DTRhFJFgU1": {
       "displayName": "Merge conflict",

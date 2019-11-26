@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, withRouter } from "react-router-dom";
 import styled from "styled-components";
+import { Repository } from "@scm-manager/ui-types";
 import { DateFromNow, Tag } from "@scm-manager/ui-components";
 import { PullRequest } from "./../types/PullRequest";
 
@@ -11,6 +12,7 @@ const CellWithWordBreak = styled.td.attrs(props => ({
 `;
 
 type Props = {
+  repository: Repository;
   pullRequest: PullRequest;
 };
 
@@ -20,8 +22,8 @@ class PullRequestRow extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest } = this.props;
-    const to = `pull-request/${pullRequest.id}/comments/`;
+    const { repository, pullRequest } = this.props;
+    const to = `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`;
     return (
       <tr>
         <CellWithWordBreak>{this.renderLink(to, pullRequest.title)}</CellWithWordBreak>
