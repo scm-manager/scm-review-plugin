@@ -64,6 +64,7 @@ class PullRequestList extends React.Component<Props, State> {
   };
 
   renderPullRequestTable = () => {
+    const { repository } = this.props;
     const { pullRequests, status } = this.state;
 
     const availablePullRequests = pullRequests._embedded.pullRequests;
@@ -75,7 +76,7 @@ class PullRequestList extends React.Component<Props, State> {
         </div>
 
         <ScrollingTable className="panel-block">
-          <PullRequestTable pullRequests={availablePullRequests} />
+          <PullRequestTable repository={repository} pullRequests={availablePullRequests} />
         </ScrollingTable>
       </div>
     );

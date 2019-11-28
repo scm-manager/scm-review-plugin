@@ -181,6 +181,10 @@
       }
     }
   },
+  "branch": {
+    "header": "Pull Requests",
+    "createPullRequest": "Neuen Pull Request erstellen"
+  },
   "verbs": {
     "repository": {
       "createPullRequest": {

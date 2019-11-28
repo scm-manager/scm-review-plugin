@@ -1,15 +1,17 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestRow from "./PullRequestRow";
-import { PullRequest } from "./../types/PullRequest";
+import { PullRequest } from "../types/PullRequest";
+import { Repository } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
+  repository: Repository;
   pullRequests: PullRequest[];
 };
 
 class PullRequestTable extends React.Component<Props> {
   renderTable() {
-    const { pullRequests, t } = this.props;
+    const { repository, pullRequests, t } = this.props;
 
     return (
       <>
@@ -25,7 +27,7 @@ class PullRequestTable extends React.Component<Props> {
         </thead>
         <tbody>
           {pullRequests.map((pullRequest, index) => {
-            return <PullRequestRow key={index} pullRequest={pullRequest} />;
+            return <PullRequestRow key={index} repository={repository} pullRequest={pullRequest} />;
           })}
         </tbody>
       </>
