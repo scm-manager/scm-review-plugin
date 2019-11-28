@@ -3,82 +3,104 @@ package com.cloudogu.scm.review.update;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.PullRequestComments;
+import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.TempDirectory;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.xml.XmlRepositoryDAO;
-import sonia.scm.store.DataStore;
-import sonia.scm.store.DataStoreFactory;
-import sonia.scm.store.InMemoryDataStore;
-import sonia.scm.store.InMemoryDataStoreFactory;
+import sonia.scm.repository.RepositoryLocationResolver;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import javax.xml.bind.JAXB;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, TempDirectory.class})
 class AddTypeToCommentUpdateStepTest {
 
   @Mock
-  XmlRepositoryDAO repositoryDAO;
+  private RepositoryLocationResolver.RepositoryLocationResolverInstance<Path> resolverInstance;
 
   private AddTypeToCommentUpdateStep updateStep;
-  private DataStoreFactory dataStoreFactory = new InMemoryDataStoreFactory(new InMemoryDataStore());
-  private DataStore<PullRequestComments> dataStore;
-  private Repository repository = createHeartOfGold();
 
-  private final static String STORE_NAME = "pullRequestComment";
-
-  @BeforeEach
-  void init() {
-    dataStore = dataStoreFactory.withType(PullRequestComments.class).withName(STORE_NAME).forRepository(repository).build();
-    updateStep = new AddTypeToCommentUpdateStep(repositoryDAO, dataStoreFactory);
-  }
+  @Mock
+  private RepositoryLocationResolver resolver;
+  private Path store;
 
   @BeforeEach
-  void mockRepositories() {
-    when(repositoryDAO.getAll()).thenReturn(Collections.singletonList(repository));
+  void init(@TempDirectory.TempDir Path temp) throws IOException {
+    when(resolver.forClass(Path.class)).thenReturn(resolverInstance);
+    updateStep = new AddTypeToCommentUpdateStep(resolver);
+
+    store = createStore(temp);
+
+    doAnswer(ic -> {
+      BiConsumer<String, Path> consumer = ic.getArgument(0);
+      consumer.accept("repo", temp);
+      return null;
+    }).when(resolverInstance).forAllLocations(any());
   }
 
   @Test
-  void shouldUpdatePullRequestCommentData() {
-    Comment comment1 = new Comment();
-    comment1.setComment("comment1");
-    comment1.setAuthor("trillian");
-    comment1.setType(CommentType.COMMENT);
-    Comment comment2 = new Comment();
-    comment2.setAuthor("edi");
-    comment2.setComment("comment2");
-    comment2.setType(null);
-    PullRequestComments comments = new PullRequestComments();
-    comments.setComments(Arrays.asList(comment1, comment2));
-    dataStore.put(comments);
+  void shouldAddTypeToPullRequestComments() throws IOException {
+    Path one = copyResource(store, "1");
 
     updateStep.doUpdate();
 
-    List<Comment> storedComments = dataStore.getAll().values().iterator().next().getComments();
-
-    assertThat(storedComments.size()).isEqualTo(2);
-    assertThat(storedComments.get(0).getType()).isEqualTo(CommentType.COMMENT);
-    assertThat(storedComments.get(0).getAuthor()).isEqualTo("trillian");
-    assertThat(storedComments.get(0).getComment()).isEqualTo("comment1");
-    assertThat(storedComments.get(1).getType()).isEqualTo(CommentType.COMMENT);
-    assertThat(storedComments.get(1).getAuthor()).isEqualTo("edi");
-    assertThat(storedComments.get(1).getComment()).isEqualTo("comment2");
+    PullRequestComments commentsOfOne = JAXB.unmarshal(one.toFile(), PullRequestComments.class);
+    assertThat(commentsOfOne.getComments())
+      .hasSize(4)
+      .extracting(Comment::getType)
+      .containsExactly(CommentType.COMMENT, CommentType.COMMENT, CommentType.COMMENT, CommentType.COMMENT);
   }
 
   @Test
-  void shouldSkipIfNoDataAvailable() {
+  void shouldNotAddTypeToCommentTextContentNode() throws IOException {
+    Path one = copyResource(store, "1");
+
     updateStep.doUpdate();
 
-    assertThat(dataStore.getAll().size()).isEqualTo(0);
+    PullRequestComments commentsOfOne = JAXB.unmarshal(one.toFile(), PullRequestComments.class);
+    assertThat(commentsOfOne.getComments().get(0).getComment()).isEqualTo("Don't panic!");
+  }
+
+  @Test
+  void shouldNotOverwriteExistingTypeInPullRequestComments() throws IOException {
+    Path two = copyResource(store, "2");
+
+    updateStep.doUpdate();
+
+    PullRequestComments commentsOfTwo = JAXB.unmarshal(two.toFile(), PullRequestComments.class);
+    assertThat(commentsOfTwo.getComments())
+      .hasSize(3)
+      .extracting(Comment::getType)
+      .containsExactly(CommentType.COMMENT, CommentType.TASK_TODO, CommentType.TASK_DONE);
+  }
+
+  private Path createStore(Path temp) throws IOException {
+    Path store = temp.resolve("store").resolve("data").resolve("pullRequestComment");
+    Files.createDirectories(store);
+    return store;
+  }
+
+  private Path copyResource(Path store, String id) throws IOException {
+    String source = String.format("com/cloudogu/scm/review/update/comment-location-%s.xml", id);
+    URL resource = Resources.getResource(source);
+    Path target = store.resolve(id + ".xml");
+    try (OutputStream outputStream = Files.newOutputStream(target)) {
+      Resources.copy(resource, outputStream);
+    }
+    return target;
   }
 }
 
