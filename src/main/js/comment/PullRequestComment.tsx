@@ -51,16 +51,11 @@ class PullRequestComment extends React.Component<Props, State> {
       updatedComment: {
         ...props.comment
       },
-      collapsed: this.shouldCollapseComment(),
+      collapsed: this.props.comment.type === "TASK_DONE",
       edit: false,
       contextModalOpen: false
     };
   }
-
-  shouldCollapseComment = () => {
-    const { comment } = this.props;
-    return comment.type === "TASK_DONE" || comment.outdated;
-  };
 
   startUpdate = () => {
     this.setState({
