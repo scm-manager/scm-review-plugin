@@ -71,15 +71,20 @@ public class AddTypeToCommentUpdateStep implements UpdateStep {
 
     List<Node> nodes = extractCommentNodes(document);
     nodes.stream()
+      .filter(this::isNotTextOnlyNode)
       .filter(this::hasNoType)
       .forEach(node -> addCommentType(document, node));
     writeChangedNodes(storeFile, document, nodes);
   }
 
+  private boolean isNotTextOnlyNode(Node commentNode) {
+    return "pull-request-comments".equals(commentNode.getParentNode().getNodeName());
+  }
+
   private boolean hasNoType(Node commentNode) {
     NodeList childNodes = commentNode.getChildNodes();
     for (int i = 0; i < childNodes.getLength(); ++i) {
-      if (childNodes.item(i).getNodeName().equals("type")) {
+      if ("type".equals(childNodes.item(i).getNodeName())) {
         return false;
       }
     }

@@ -65,6 +65,16 @@ class AddTypeToCommentUpdateStepTest {
   }
 
   @Test
+  void shouldNotAddTypeToCommentTextContentNode() throws IOException {
+    Path one = copyResource(store, "1");
+
+    updateStep.doUpdate();
+
+    PullRequestComments commentsOfOne = JAXB.unmarshal(one.toFile(), PullRequestComments.class);
+    assertThat(commentsOfOne.getComments().get(0).getComment()).isEqualTo("Don't panic!");
+  }
+
+  @Test
   void shouldNotOverwriteExistingTypeInPullRequestComments() throws IOException {
     Path two = copyResource(store, "2");
 
