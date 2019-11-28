@@ -217,6 +217,10 @@
     "FTRhcI0To1": {
       "displayName": "Pull-Request nicht offen",
       "description": "Merges können nur auf offenen Pull-Requests ausgeführt werden."
+    },
+    "CVRj80D6z1": {
+      "displayName": "Keine Unterschiede gefunden.",
+      "description": "Es gibt keine Unterschiede zwischen Source und Target, die gemerged werden können  (oder der Source-Branch ist ein Vorgänger des Ziel-Branches)."
     }
   }
 }

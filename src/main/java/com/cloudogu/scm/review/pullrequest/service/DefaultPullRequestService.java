@@ -67,7 +67,7 @@ public class DefaultPullRequestService implements PullRequestService {
         .getChangesets();
 
       if (changesets.getChangesets().isEmpty()) {
-        throw new NoDifferenceException();
+        throw new NoDifferenceException(repository);
       }
     } catch (IOException e) {
       throw new InternalRepositoryException(repository, "error checking for diffs between branches", e);

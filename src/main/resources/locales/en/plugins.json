@@ -215,8 +215,12 @@
       "description": "The branches could not be merged because there were merge conflicts."
     },
     "FTRhcI0To1": {
-      "displayName": "Pull reuqest not open",
+      "displayName": "Pull request not open",
       "description": "Merges can only be performed for open pull requests."
+    },
+    "CVRj80D6z1": {
+      "displayName": "No differences found.",
+      "description": "There are no differences between the selected branches, that could be merged (or the source branch is a parent of the target branch)."
     }
   }
 }

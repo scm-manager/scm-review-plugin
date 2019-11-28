@@ -90,15 +90,7 @@ public class PullRequestRootResource {
     pullRequest.setAuthor(user.getId());
 
     String id = null;
-    try {
-      id = service.add(repository, pullRequest);
-    } catch (NoDifferenceException e) {
-      ScmConstraintViolationException.Builder
-        .doThrow()
-        .violation("there have to be new changesets on the source branch", "pullRequest", "source")
-        .violation("there have to be new changesets on the source branch", "pullRequest", "target")
-        .when(true);
-    }
+    id = service.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
   }
