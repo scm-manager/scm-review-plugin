@@ -51,7 +51,7 @@ class PullRequestComment extends React.Component<Props, State> {
       updatedComment: {
         ...props.comment
       },
-      collapsed: this.props.comment.type === "TASK_DONE",
+      collapsed: props.comment.type === "TASK_DONE",
       edit: false,
       contextModalOpen: false
     };
