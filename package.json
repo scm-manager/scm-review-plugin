@@ -1,7 +1,7 @@
 {
   "name": "@scm-manager/scm-review-plugin",
   "private": true,
-  "version": "2.0.0-SNAPSHOT",
+  "version": "2.0.0-rc1",
   "license": "BSD-3-Clause",
   "main": "./src/main/js/index.tsx",
   "scripts": {
@@ -9,7 +9,7 @@
     "watch": "ui-scripts plugin-watch"
   },
   "dependencies": {
-    "@scm-manager/ui-plugins": "latest",
+    "@scm-manager/ui-plugins": "2.0.0-rc1",
     "immer": "^5.0.0",
     "typescript": "^3.7.0"
   },
