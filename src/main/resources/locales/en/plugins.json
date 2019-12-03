@@ -20,6 +20,10 @@
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
       "title": "Title",
+      "validation": {
+        "sourceBranch": "The source branch does not contain a diff compared to target branch",
+        "title": "title is required"
+      },
       "description": "Description",
       "status": "Status",
       "id": "ID",

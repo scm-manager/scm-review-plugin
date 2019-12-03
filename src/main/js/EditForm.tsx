@@ -6,14 +6,14 @@ import { PullRequest } from "./types/PullRequest";
 
 type Props = WithTranslation & {
   handleFormChange: (value: string, name: string) => void;
-  title: string;
+  title: string | undefined;
   description: string;
   reviewer: DisplayedUser[];
   userAutocompleteLink: string;
 };
 
 type State = {
-  title: string;
+  title: string | undefined;
   reviewer: DisplayedUser[];
   description: string;
   selectedValue: SelectValue;
@@ -30,7 +30,7 @@ class EditForm extends React.Component<Props, State> {
   }
 
   onChange = (value: string, name: string) => {
-    this.setState({
+    this.setState({...this.state,
       [name]: value
     });
     this.props.handleFormChange(value, name);
@@ -82,6 +82,8 @@ class EditForm extends React.Component<Props, State> {
           name="title"
           value={title}
           label={t("scm-review-plugin.pullRequest.title")}
+          validationError={title === ""}
+          errorMessage={"scm-review-plugin.pullRequest.validation.title"}
           onChange={this.onChange}
         />
         <Textarea
