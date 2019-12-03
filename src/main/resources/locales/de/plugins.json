@@ -21,7 +21,7 @@
       "targetBranch": "Target Branch",
       "title": "Titel",
       "validation": {
-        "sourceBranch": "Der Source-Branch enthält keinen Unterschied zum Target-Branch.",
+        "sourceBranch": "Der Source-Branch und der Target-Branch unterscheiden sich nicht.",
         "title": "Titel erforderlich"
       },
       "description": "Beschreibung",

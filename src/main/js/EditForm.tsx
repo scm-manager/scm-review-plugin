@@ -30,9 +30,7 @@ class EditForm extends React.Component<Props, State> {
   }
 
   onChange = (value: string, name: string) => {
-    this.setState({...this.state,
-      [name]: value
-    });
+    this.setState({ ...this.state, [name]: value });
     this.props.handleFormChange(value, name);
   };
 
@@ -83,7 +81,7 @@ class EditForm extends React.Component<Props, State> {
           value={title}
           label={t("scm-review-plugin.pullRequest.title")}
           validationError={title === ""}
-          errorMessage={"scm-review-plugin.pullRequest.validation.title"}
+          errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
           onChange={this.onChange}
         />
         <Textarea

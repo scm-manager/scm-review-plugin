@@ -21,7 +21,7 @@ type Props = WithTranslation &
   };
 
 type State = {
-  pullRequest?: BasicPullRequest|undefined;
+  pullRequest?: BasicPullRequest | undefined;
   loading: boolean;
   error?: Error;
   disabled: boolean;
@@ -104,7 +104,7 @@ class Create extends React.Component<Props, State> {
       const valid = this.verify(pullRequest);
       this.setState({
         pullRequest,
-        disabled: !valid,
+        disabled: !valid
       });
     }
   };

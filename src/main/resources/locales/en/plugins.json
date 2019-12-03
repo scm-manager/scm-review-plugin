@@ -21,7 +21,7 @@
       "targetBranch": "Target Branch",
       "title": "Title",
       "validation": {
-        "sourceBranch": "The source branch does not contain a diff compared to target branch",
+        "sourceBranch": "The source branch and the target branch does not differ",
         "title": "title is required"
       },
       "description": "Description",

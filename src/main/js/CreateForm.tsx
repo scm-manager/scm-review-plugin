@@ -5,11 +5,13 @@ import { BasicPullRequest } from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import EditForm from "./EditForm";
-import styled from 'styled-components';
+import styled from "styled-components";
 
 const ValidationError = styled.p`
-  font-size: .75rem;
+  font-size: 0.75rem;
   color: #ff3860;
+  margin-top: -3em;
+  margin-bottom: 3em;
 `;
 
 type Props = WithTranslation & {
@@ -44,7 +46,7 @@ class CreateForm extends React.Component<Props, State> {
       ...this.state,
       loading: true
     });
-    getBranches((repository._links.branches as Link).href).then((result: Branch|any) => {
+    getBranches((repository._links.branches as Link).href).then((result: Branch | any) => {
       if (result.error) {
         this.setState({
           loading: false,
@@ -127,7 +129,9 @@ class CreateForm extends React.Component<Props, State> {
             />
           </div>
         </div>
-        {this.props.showBranchesValidationError && <ValidationError>{t("scm-review-plugin.pullRequest.validation.sourceBranch")}</ValidationError>}
+        {this.props.showBranchesValidationError && (
+          <ValidationError>{t("scm-review-plugin.pullRequest.validation.sourceBranch")}</ValidationError>
+        )}
         <EditForm
           description=""
           title={undefined}
