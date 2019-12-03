@@ -93,18 +93,16 @@ class Create extends React.Component<Props, State> {
   handleFormChange = (pullRequest: BasicPullRequest) => {
     if (this.shouldFetchChangesets(pullRequest)) {
       this.fetchChangesets(pullRequest).then(() => {
-        const valid = this.verify(pullRequest);
         this.setState({
           pullRequest,
-          disabled: !valid,
+          disabled: !this.verify(pullRequest),
           showBranchesValidationError: !(this.state.changesets.length > 0)
         });
       });
     } else {
-      const valid = this.verify(pullRequest);
       this.setState({
         pullRequest,
-        disabled: !valid
+        disabled: !this.verify(pullRequest),
       });
     }
   };
