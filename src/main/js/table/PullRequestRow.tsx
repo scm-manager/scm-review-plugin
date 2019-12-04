@@ -41,7 +41,7 @@ class PullRequestRow extends React.Component<Props> {
             label={pullRequest.status}
           />
         </td>
-        <td className="has-text-centered">
+        <td className="is-hidden-mobile has-text-centered">
           <ReviewerIcon reviewers={pullRequest.reviewer} />
         </td>
       </tr>
