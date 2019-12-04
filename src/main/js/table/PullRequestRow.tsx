@@ -2,13 +2,17 @@ import React from "react";
 import { Link, withRouter } from "react-router-dom";
 import styled from "styled-components";
 import { Repository } from "@scm-manager/ui-types";
-import { DateFromNow, Tag } from "@scm-manager/ui-components";
-import { PullRequest } from "./../types/PullRequest";
+import { DateFromNow, Icon, Tag } from "@scm-manager/ui-components";
+import { PullRequest } from "../types/PullRequest";
 
 const CellWithWordBreak = styled.td.attrs(props => ({
   className: "is-word-break"
 }))`
   min-width: 10em;
+`;
+
+const HCenteredTd = styled.td`
+  text-align: center !important;
 `;
 
 type Props = {
@@ -24,6 +28,21 @@ class PullRequestRow extends React.Component<Props> {
   render() {
     const { repository, pullRequest } = this.props;
     const to = `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`;
+    let icon;
+    switch (pullRequest.reviewer.length) {
+      case 0:
+        icon = null;
+        break;
+      case 1:
+        icon = <Icon title={pullRequest.reviewer[0].displayName} name="user" />;
+        break;
+      case 2:
+        icon = <Icon title={pullRequest.reviewer.map(r => r.displayName).join(", ")} name="user-friends" />;
+        break;
+      default:
+        icon = <Icon title={pullRequest.reviewer.map(r => r.displayName).join(", ")} name="users" />;
+        break;
+    }
     return (
       <tr>
         <CellWithWordBreak>{this.renderLink(to, pullRequest.title)}</CellWithWordBreak>
@@ -40,6 +59,7 @@ class PullRequestRow extends React.Component<Props> {
             label={pullRequest.status}
           />
         </td>
+        <HCenteredTd>{icon}</HCenteredTd>
       </tr>
     );
   }
