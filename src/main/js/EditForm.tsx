@@ -2,18 +2,17 @@ import React from "react";
 import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
-import { PullRequest } from "./types/PullRequest";
 
 type Props = WithTranslation & {
   handleFormChange: (value: string, name: string) => void;
-  title: string;
+  title?: string;
   description: string;
   reviewer: DisplayedUser[];
   userAutocompleteLink: string;
 };
 
 type State = {
-  title: string;
+  title: string | undefined;
   reviewer: DisplayedUser[];
   description: string;
   selectedValue: SelectValue;
@@ -29,10 +28,11 @@ class EditForm extends React.Component<Props, State> {
     };
   }
 
-  onChange = (value: string, name: string) => {
-    this.setState({
-      [name]: value
-    });
+  onChange = (value: string, name?: string) => {
+    if (!name) {
+      throw new Error("name is required");
+    }
+    this.setState({ ...this.state, [name]: value });
     this.props.handleFormChange(value, name);
   };
 
@@ -82,6 +82,8 @@ class EditForm extends React.Component<Props, State> {
           name="title"
           value={title}
           label={t("scm-review-plugin.pullRequest.title")}
+          validationError={title === ""}
+          errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
           onChange={this.onChange}
         />
         <Textarea

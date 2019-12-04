@@ -1,10 +1,18 @@
 import React from "react";
-import { Repository } from "@scm-manager/ui-types";
+import { Repository, Branch, Link } from "@scm-manager/ui-types";
 import { ErrorNotification, Select } from "@scm-manager/ui-components";
 import { BasicPullRequest } from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import EditForm from "./EditForm";
+import styled from "styled-components";
+
+const ValidationError = styled.p`
+  font-size: 0.75rem;
+  color: #ff3860;
+  margin-top: -3em;
+  margin-bottom: 3em;
+`;
 
 type Props = WithTranslation & {
   repository: Repository;
@@ -12,6 +20,7 @@ type Props = WithTranslation & {
   userAutocompleteLink: string;
   source?: string;
   target?: string;
+  showBranchesValidationError: boolean;
 };
 
 type State = {
@@ -37,7 +46,7 @@ class CreateForm extends React.Component<Props, State> {
       ...this.state,
       loading: true
     });
-    getBranches(repository._links.branches.href).then(result => {
+    getBranches((repository._links.branches as Link).href).then((result: Branch | any) => {
       if (result.error) {
         this.setState({
           loading: false,
@@ -61,7 +70,7 @@ class CreateForm extends React.Component<Props, State> {
     });
   }
 
-  handleFormChange = (value, name: string) => {
+  handleFormChange = (value: any, name: string) => {
     this.setState(
       {
         pullRequest: {
@@ -120,10 +129,12 @@ class CreateForm extends React.Component<Props, State> {
             />
           </div>
         </div>
-
+        {this.props.showBranchesValidationError && (
+          <ValidationError>{t("scm-review-plugin.pullRequest.validation.sourceBranch")}</ValidationError>
+        )}
         <EditForm
           description=""
-          title=""
+          title={undefined}
           reviewer={[]}
           userAutocompleteLink={this.props.userAutocompleteLink}
           handleFormChange={this.handleFormChange}

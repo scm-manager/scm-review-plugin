@@ -1,20 +1,11 @@
 import { BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest } from "./types/PullRequest";
-import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
+import { apiClient} from "@scm-manager/ui-components";
 import { Link, Repository } from "@scm-manager/ui-types";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
-  return apiClient
-    .post(url, pullRequest, CONTENT_TYPE_PULLREQUEST)
-    .then(response => {
-      return response;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.post(url, pullRequest, CONTENT_TYPE_PULLREQUEST);
 }
 
 export function updatePullRequest(url: string, pullRequest: PullRequest) {
