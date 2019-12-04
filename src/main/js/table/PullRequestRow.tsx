@@ -34,15 +34,15 @@ class PullRequestRow extends React.Component<Props> {
         <td className="is-hidden-mobile">
           {pullRequest.creationDate ? <DateFromNow date={pullRequest.creationDate} /> : ""}
         </td>
+        <td className="is-hidden-mobile has-text-centered">
+          <ReviewerIcon reviewers={pullRequest.reviewer} />
+        </td>
         <td className="is-hidden-mobile">
           <Tag
             className="is-medium"
             color={pullRequest.status === "MERGED" ? "success" : pullRequest.status === "REJECTED" ? "danger" : "light"}
             label={pullRequest.status}
           />
-        </td>
-        <td className="is-hidden-mobile has-text-centered">
-          <ReviewerIcon reviewers={pullRequest.reviewer} />
         </td>
       </tr>
     );
