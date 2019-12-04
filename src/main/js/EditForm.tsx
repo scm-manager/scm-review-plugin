@@ -2,11 +2,10 @@ import React from "react";
 import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
-import { PullRequest } from "./types/PullRequest";
 
 type Props = WithTranslation & {
   handleFormChange: (value: string, name: string) => void;
-  title: string | undefined;
+  title?: string;
   description: string;
   reviewer: DisplayedUser[];
   userAutocompleteLink: string;
@@ -29,7 +28,10 @@ class EditForm extends React.Component<Props, State> {
     };
   }
 
-  onChange = (value: string, name: string) => {
+  onChange = (value: string, name?: string) => {
+    if (!name) {
+      throw new Error("name is required");
+    }
     this.setState({ ...this.state, [name]: value });
     this.props.handleFormChange(value, name);
   };
