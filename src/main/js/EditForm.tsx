@@ -1,5 +1,5 @@
 import React from "react";
-import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
+import { apiClient, Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
 
@@ -42,7 +42,7 @@ class EditForm extends React.Component<Props, State> {
 
   loadAutocompletion = (url: string, inputValue: string) => {
     const link = url + "?q=";
-    return fetch(link + inputValue)
+    return apiClient.get(link + inputValue)
       .then(response => response.json())
       .then(json => {
         return json.map(element => {
