@@ -6,8 +6,6 @@ import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
-import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
-import com.cloudogu.scm.review.pullrequest.service.NoDifferenceException;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -28,10 +26,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Comparator;
@@ -67,7 +63,7 @@ public class PullRequestRootResource {
   @POST
   @Path("{namespace}/{name}")
   @Consumes(PullRequestMediaType.PULL_REQUEST)
-  public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) throws IOException {
+  public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
 
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
@@ -89,8 +85,7 @@ public class PullRequestRootResource {
     PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
     pullRequest.setAuthor(user.getId());
 
-    String id = null;
-    id = service.add(repository, pullRequest);
+    String id = service.add(repository, pullRequest);
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
   }
@@ -98,12 +93,12 @@ public class PullRequestRootResource {
   @GET
   @Path("{namespace}/{name}")
   @Produces(PullRequestMediaType.PULL_REQUEST)
-  public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("OPEN") PullRequestStatusDto pullRequestStatusDto) {
+  public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("OPEN") PullRequestSelector pullRequestSelector) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)
       .stream()
-      .filter(pullRequest -> pullRequestStatusDto == PullRequestStatusDto.ALL || pullRequest.getStatus().equals(PullRequestStatus.valueOf(pullRequestStatusDto.name())))
+      .filter(pullRequestSelector)
       .map(pr -> mapper.using(uriInfo).map(pr, repository))
       .sorted(Comparator.comparing(this::getLastModification).reversed())
       .collect(Collectors.toList());
