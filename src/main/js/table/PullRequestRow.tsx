@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, withRouter } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Repository } from "@scm-manager/ui-types";
 import { DateFromNow, Icon, Tag } from "@scm-manager/ui-components";
@@ -65,4 +65,4 @@ class PullRequestRow extends React.Component<Props> {
   }
 }
 
-export default withRouter(PullRequestRow);
+export default PullRequestRow;
