@@ -12,10 +12,6 @@ const CellWithWordBreak = styled.td.attrs(props => ({
   min-width: 10em;
 `;
 
-const HCenteredTd = styled.td`
-  text-align: center !important;
-`;
-
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
@@ -45,9 +41,9 @@ class PullRequestRow extends React.Component<Props> {
             label={pullRequest.status}
           />
         </td>
-        <HCenteredTd>
+        <td className="has-text-centered">
           <ReviewerIcon reviewers={pullRequest.reviewer} />
-        </HCenteredTd>
+        </td>
       </tr>
     );
   }
