@@ -1,6 +1,6 @@
 import { BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest } from "./types/PullRequest";
-import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
-import { Link, Repository } from "@scm-manager/ui-types";
+import { apiClient } from "@scm-manager/ui-components";
+import { Link, Repository, Branch } from "@scm-manager/ui-types";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
@@ -51,8 +51,8 @@ export function getBranches(url: string) {
     .then(response => response.json())
     .then(collection => collection._embedded.branches)
     .then(branches => {
-      const branchNames = branches.map(b => b.name);
-      const defaultBranch = branches.find(b => b.defaultBranch);
+      const branchNames = branches.map((b: Branch) => b.name);
+      const defaultBranch = branches.find((b: Branch) => b.defaultBranch);
       return {
         branchNames,
         defaultBranch
@@ -66,23 +66,11 @@ export function getBranches(url: string) {
 }
 
 export function getPullRequest(url: string): Promise<PullRequest> {
-  return apiClient
-    .get(url)
-    .then(response => response.json());
+  return apiClient.get(url).then(response => response.json());
 }
 
 export function getPullRequests(url: string) {
-  return apiClient
-    .get(url)
-    .then(response => response.json())
-    .then(pullRequests => {
-      return pullRequests;
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.get(url).then(response => response.json());
 }
 
 export function getReviewer(url: string) {
@@ -138,7 +126,7 @@ export function merge(url: string, mergeCommit: MergeCommit) {
 }
 
 export function dryRun(pullRequest: PullRequest) {
-  return apiClient.post((pullRequest._links.mergeDryRun as Link).href, {})
+  return apiClient.post((pullRequest._links.mergeDryRun as Link).href, {});
 }
 
 export function getDefaultCommitDefaultMessage(url: string) {
@@ -177,8 +165,10 @@ export function createDiffUrl(repository: Repository, source: string, target: st
 
 function createIncomingUrl(repository: Repository, linkName: string, source: string, target: string) {
   const link = repository._links[linkName];
-  if (link && link.templated) {
-    return link.href.replace("{source}", encodeURIComponent(source)).replace("{target}", encodeURIComponent(target));
+  if (link && (link as Link).templated) {
+    return (link as Link).href
+      .replace("{source}", encodeURIComponent(source))
+      .replace("{target}", encodeURIComponent(target));
   }
 }
 
