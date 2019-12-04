@@ -1,11 +1,11 @@
 import React from "react";
-import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
+import { apiClient, Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { DisplayedUser, SelectValue, AutocompleteObject } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
   handleFormChange: (value: any, name: string) => void;
-  title: string | undefined;
+  title?: string;
   description: string;
   reviewer: DisplayedUser[];
   userAutocompleteLink: string;
@@ -28,7 +28,10 @@ class EditForm extends React.Component<Props, State> {
     };
   }
 
-  onChange = (value: string|DisplayedUser[], name?: any) => {
+  onChange = (value: string|DisplayedUser[], name?: string) => {
+    if (!name) {
+      throw new Error("name is required");
+    }
     this.setState({ ...this.state, [name]: value });
     this.props.handleFormChange(value, name);
   };
@@ -39,7 +42,7 @@ class EditForm extends React.Component<Props, State> {
 
   loadAutocompletion = (url: string, inputValue: string) => {
     const link = url + "?q=";
-    return fetch(link + inputValue)
+    return apiClient.get(link + inputValue)
       .then(response => response.json())
       .then(json => {
         return json.map((element: AutocompleteObject) => {

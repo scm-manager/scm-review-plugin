@@ -6,12 +6,12 @@
   "main": "./src/main/js/index.tsx",
   "scripts": {
     "build": "ui-scripts plugin",
-    "watch": "ui-scripts plugin-watch"
+    "watch": "ui-scripts plugin-watch",
+    "test": "jest"
   },
   "dependencies": {
     "@scm-manager/ui-plugins": "latest",
-    "immer": "^5.0.0",
-    "typescript": "^3.7.0"
+    "immer": "^5.0.0"
   },
   "babel": {
     "presets": [
@@ -24,5 +24,9 @@
   "prettier": "@scm-manager/prettier-config",
   "eslintConfig": {
     "extends": "@scm-manager/eslint-config"
+  },
+  "devDependencies": {
+    "fetch-mock": "^8.0.0",
+    "node-fetch": "^2.6.0"
   }
 }

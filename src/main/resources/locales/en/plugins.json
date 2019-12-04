@@ -21,8 +21,8 @@
       "targetBranch": "Target Branch",
       "title": "Title",
       "validation": {
-        "sourceBranch": "No diff between source branch and target branch",
-        "title": "title is required"
+        "sourceBranch": "No differences between source branch and target branch",
+        "title": "Title is required"
       },
       "description": "Description",
       "status": "Status",
@@ -48,6 +48,14 @@
           "subscribe": "Subscribe",
           "unsubscribe": "Unsubscribe"
         }
+      },
+      "selector": {
+        "OPEN": "open",
+        "MINE": "mine",
+        "REVIEWER": "to be reviewed",
+        "ALL": "all",
+        "REJECTED": "rejected",
+        "MERGED": "merged"
       }
     },
     "showPullRequest": {

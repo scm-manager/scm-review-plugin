@@ -21,7 +21,7 @@ type Props = WithTranslation &
   };
 
 type State = {
-  pullRequest?: BasicPullRequest | undefined;
+  pullRequest?: BasicPullRequest;
   loading: boolean;
   error?: Error;
   disabled: boolean;
@@ -61,19 +61,25 @@ class Create extends React.Component<Props, State> {
       loading: true
     });
 
-    createPullRequest((repository._links.pullRequest as Link).href, pullRequest).then(result => {
-      if (result.error) {
+    if (!pullRequest) {
+      throw new Error("illegal state, no pull request defined");
+    }
+
+    createPullRequest((repository._links.pullRequest as Link).href, pullRequest)
+      .then(() => {
+        this.setState(
+          {
+            loading: false
+          },
+          this.pullRequestCreated
+        );
+      })
+      .catch(error => {
         this.setState({
           loading: false,
-          error: result.error
+          error
         });
-      } else {
-        this.setState({
-          loading: false
-        });
-        this.pullRequestCreated();
-      }
-    });
+      });
   };
 
   verify = (pullRequest: BasicPullRequest) => {
@@ -102,7 +108,7 @@ class Create extends React.Component<Props, State> {
     } else {
       this.setState({
         pullRequest,
-        disabled: !this.verify(pullRequest),
+        disabled: !this.verify(pullRequest)
       });
     }
   };
