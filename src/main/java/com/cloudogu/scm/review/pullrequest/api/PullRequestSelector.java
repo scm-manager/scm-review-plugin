@@ -1,4 +1,4 @@
-package com.cloudogu.scm.review.pullrequest.dto;
+package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -17,31 +17,36 @@ public enum PullRequestSelector implements Predicate<PullRequest> {
   OPEN {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return pullRequest.getStatus().equals(PullRequestStatus.valueOf(name()));
+      return PullRequestStatus.OPEN.equals(pullRequest.getStatus());
     }
   },
   MINE {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return pullRequest.getAuthor().equals(SecurityUtils.getSubject().getPrincipal());
+      return pullRequest.getAuthor().equals(currentUser());
     }
   },
   REVIEWER {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return pullRequest.getStatus().equals(PullRequestStatus.OPEN) && pullRequest.getReviewer().keySet().contains(SecurityUtils.getSubject().getPrincipal());
+      return PullRequestStatus.OPEN.equals(pullRequest.getStatus())
+        && pullRequest.getReviewer().containsKey(currentUser());
     }
   },
   MERGED {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return pullRequest.getStatus().equals(PullRequestStatus.valueOf(name()));
+      return PullRequestStatus.MERGED.equals(pullRequest.getStatus());
     }
   },
   REJECTED {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return pullRequest.getStatus().equals(PullRequestStatus.valueOf(name()));
+      return PullRequestStatus.REJECTED.equals(pullRequest.getStatus());
     }
+  };
+
+  private static String currentUser() {
+    return SecurityUtils.getSubject().getPrincipal().toString();
   }
 }
