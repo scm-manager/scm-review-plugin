@@ -28,9 +28,10 @@ class StatusSelector extends React.Component<Props> {
   }
 
   createSelectOptions(status: string[]) {
+    const { t } = this.props;
     return status.map(singleStatus => {
       return {
-        label: singleStatus,
+        label: t(`scm-review-plugin.pullRequest.selector.${singleStatus}`),
         value: singleStatus
       };
     });

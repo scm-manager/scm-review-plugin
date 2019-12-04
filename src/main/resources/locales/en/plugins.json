@@ -44,6 +44,14 @@
           "subscribe": "Subscribe",
           "unsubscribe": "Unsubscribe"
         }
+      },
+      "selector": {
+        "OPEN": "open",
+        "MINE": "mine",
+        "REVIEWER": "to be reviewed",
+        "ALL": "all",
+        "REJECTED": "rejected",
+        "MERGED": "merged"
       }
     },
     "showPullRequest": {
