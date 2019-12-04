@@ -1,9 +1,10 @@
 import React from "react";
-import { Link, withRouter } from "react-router-dom";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Repository } from "@scm-manager/ui-types";
 import { DateFromNow, Tag } from "@scm-manager/ui-components";
-import { PullRequest } from "./../types/PullRequest";
+import { PullRequest } from "../types/PullRequest";
+import ReviewerIcon from "./ReviewerIcon";
 
 const CellWithWordBreak = styled.td.attrs(props => ({
   className: "is-word-break"
@@ -33,6 +34,9 @@ class PullRequestRow extends React.Component<Props> {
         <td className="is-hidden-mobile">
           {pullRequest.creationDate ? <DateFromNow date={pullRequest.creationDate} /> : ""}
         </td>
+        <td className="is-hidden-mobile has-text-centered">
+          <ReviewerIcon reviewers={pullRequest.reviewer} />
+        </td>
         <td className="is-hidden-mobile">
           <Tag
             className="is-medium"
@@ -45,4 +49,4 @@ class PullRequestRow extends React.Component<Props> {
   }
 }
 
-export default withRouter(PullRequestRow);
+export default PullRequestRow;
