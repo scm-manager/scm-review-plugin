@@ -9,7 +9,7 @@
     "watch": "ui-scripts plugin-watch"
   },
   "dependencies": {
-    "@scm-manager/ui-plugins": "2.0.0-rc1",
+    "@scm-manager/ui-plugins": "latest",
     "immer": "^5.0.0",
     "typescript": "^3.7.0"
   },
