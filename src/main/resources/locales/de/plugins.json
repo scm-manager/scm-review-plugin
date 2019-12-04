@@ -48,6 +48,14 @@
           "subscribe": "Subscribe",
           "unsubscribe": "Unsubscribe"
         }
+      },
+      "selector": {
+        "OPEN": "offen",
+        "MINE": "meine",
+        "REVIEWER": "zu reviewen",
+        "ALL": "alle",
+        "REJECTED": "abgelehnt",
+        "MERGED": "gemerged"
       }
     },
     "showPullRequest": {

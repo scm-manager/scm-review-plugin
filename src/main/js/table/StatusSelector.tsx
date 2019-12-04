@@ -13,7 +13,7 @@ type Props = WithTranslation & {
 class StatusSelector extends React.Component<Props> {
   render() {
     const { status, handleTypeChange, loading, label, helpText } = this.props;
-    const types = ["OPEN", "ALL", "REJECTED", "MERGED"];
+    const types = ["OPEN", "MINE", "REVIEWER", "ALL", "REJECTED", "MERGED"];
 
     return (
       <Select
@@ -28,9 +28,10 @@ class StatusSelector extends React.Component<Props> {
   }
 
   createSelectOptions(status: string[]) {
+    const { t } = this.props;
     return status.map(singleStatus => {
       return {
-        label: singleStatus,
+        label: t(`scm-review-plugin.pullRequest.selector.${singleStatus}`),
         value: singleStatus
       };
     });
