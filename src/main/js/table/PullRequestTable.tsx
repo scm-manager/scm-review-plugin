@@ -18,9 +18,9 @@ class PullRequestTable extends React.Component<Props> {
 
   createComparator = (key: string) => {
     return (a: any, b: any) => {
-      if (a[key] > b[key]) {
+      if (a[key] < b[key]) {
         return -1;
-      } else if (a[key] < b[key]) {
+      } else if (a[key] > b[key]) {
         return 1;
       } else {
         return 0;
@@ -32,18 +32,36 @@ class PullRequestTable extends React.Component<Props> {
     const { pullRequests, t } = this.props;
     return (
       <Table data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
-        <Column header={t("scm-review-plugin.pullRequest.title")} createComparator={() => this.createComparator("title")}>
+        <Column
+          header={t("scm-review-plugin.pullRequest.title")}
+          createComparator={() => this.createComparator("title")}
+          ascendingIcon="sort-alpha-down-alt"
+          descendingIcon="sort-alpha-down"
+        >
           {(row: any) => <Link to={this.to(row)}>{row.title}</Link>}
         </Column>
         <TextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />
         <TextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
-        <Column header={t("scm-review-plugin.pullRequest.author")} createComparator={() => this.createComparator("author")}>
+        <Column
+          header={t("scm-review-plugin.pullRequest.author")}
+          createComparator={() => this.createComparator("author")}
+          ascendingIcon="sort-alpha-down-alt"
+          descendingIcon="sort-alpha-down"
+        >
           {(row: any) => <p>{row.author.displayName}</p>}
         </Column>
-        <Column header={t("scm-review-plugin.pullRequest.date")} createComparator={() => this.createComparator("creationDate")}>
+        <Column
+          header={t("scm-review-plugin.pullRequest.date")}
+          createComparator={() => this.createComparator("creationDate")}
+          ascendingIcon="sort-amount-down-alt"
+          descendingIcon="sort-amount-down"
+        >
           {(row: any) => (row.creationDate ? <DateFromNow date={row.creationDate} /> : "")}
         </Column>
-        <Column header={t("scm-review-plugin.pullRequest.status")} createComparator={() => this.createComparator("status")}>
+        <Column
+          header={t("scm-review-plugin.pullRequest.status")}
+          createComparator={() => this.createComparator("status")}
+        >
           {(row: any) => (
             <Tag
               className="is-medium"
