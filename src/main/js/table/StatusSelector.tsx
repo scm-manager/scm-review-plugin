@@ -13,7 +13,7 @@ type Props = WithTranslation & {
 class StatusSelector extends React.Component<Props> {
   render() {
     const { status, handleTypeChange, loading, label, helpText } = this.props;
-    const types = ["OPEN", "ALL", "REJECTED", "MERGED"];
+    const types = ["OPEN", "MINE", "REVIEWER", "ALL", "REJECTED", "MERGED"];
 
     return (
       <Select

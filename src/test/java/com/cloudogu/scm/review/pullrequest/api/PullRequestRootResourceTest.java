@@ -6,7 +6,7 @@ import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
-import com.cloudogu.scm.review.pullrequest.dto.PullRequestStatusDto;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestSelector;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -43,6 +43,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
@@ -54,12 +55,14 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -132,6 +135,7 @@ public class PullRequestRootResourceTest {
     dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
     dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
     lenient().when(repositoryServiceFactory.create(any(Repository.class))).thenReturn(repositoryService);
+    lenient().when(userDisplayManager.get("reviewer")).thenReturn(Optional.of(DisplayUser.from(new User("reviewer", "reviewer", ""))));
   }
 
   @Test
@@ -375,19 +379,50 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "rr", password = "secret")
   public void shouldGetOpenedPullRequests() throws URISyntaxException, IOException {
-    verifyFilteredPullRequests(PullRequestStatusDto.OPEN.name());
+    verifyFilteredPullRequests(PullRequestSelector.OPEN.name());
   }
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
   public void shouldGetRejectedPullRequests() throws URISyntaxException, IOException {
-    verifyFilteredPullRequests(PullRequestStatusDto.REJECTED.name());
+    verifyFilteredPullRequests(PullRequestSelector.REJECTED.name());
   }
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
   public void shouldGetMergedPullRequests() throws URISyntaxException, IOException {
-    verifyFilteredPullRequests(PullRequestStatusDto.MERGED.name());
+    verifyFilteredPullRequests(PullRequestSelector.MERGED.name());
+  }
+
+  @Test
+  @SubjectAware(username = "author", password = "secret")
+  public void shouldGetMinePullRequests() throws URISyntaxException, IOException {
+    initRepoWithPRs("ns", "repo");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=MINE");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    JsonNode jsonNode = new ObjectMapper().readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    assertThat(prNode.elements().hasNext()).isTrue();
+    prNode.elements().forEachRemaining(node -> assertThat(node.get("author").get("id").asText()).isEqualTo("author"));
+  }
+
+  @Test
+  @SubjectAware(username = "reviewer", password = "secret")
+  public void shouldGetReviewerPullRequests() throws URISyntaxException, IOException {
+    initRepoWithPRs("ns", "repo");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=REVIEWER");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    JsonNode jsonNode = new ObjectMapper().readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    assertThat(prNode.elements().hasNext()).isTrue();
+    prNode.elements().forEachRemaining(
+      node -> {
+        assertThat(node.get("reviewer").get(0).get("id").asText()).isEqualTo("reviewer");
+        assertThat(node.get("status").asText()).isEqualTo("OPEN");
+      }
+    );
   }
 
   @Test
@@ -601,6 +636,7 @@ public class PullRequestRootResourceTest {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    assertThat(prNode.elements().hasNext()).isTrue();
     prNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(status));
   }
 
@@ -614,6 +650,10 @@ public class PullRequestRootResourceTest {
     PullRequest mergedPR2 = createPullRequest("merged_2", PullRequestStatus.MERGED);
     PullRequest rejectedPR1 = createPullRequest("rejected_1", REJECTED);
     PullRequest rejectedPR2 = createPullRequest("rejected_2", REJECTED);
+    openedPR2.setAuthor("author");
+    mergedPR2.setAuthor("author");
+    openedPR1.setReviewer(singletonMap("reviewer", false));
+    mergedPR1.setReviewer(singletonMap("reviewer", true));
     when(store.getAll()).thenReturn(Lists.newArrayList(openedPR1, openedPR2, rejectedPR1, rejectedPR2, mergedPR1, mergedPR2));
   }
 
