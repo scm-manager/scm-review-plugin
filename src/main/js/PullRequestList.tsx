@@ -3,7 +3,7 @@ import { CreateButton, ErrorPage, Loading } from "@scm-manager/ui-components";
 import { Repository, Link } from "@scm-manager/ui-types";
 import { PullRequestCollection } from "./types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { withRouter } from "react-router-dom";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import { getPullRequests } from "./pullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
@@ -13,12 +13,12 @@ const ScrollingTable = styled.div`
   overflow-x: auto;
 `;
 
-type Props = WithTranslation & {
+type Props = RouteComponentProps & WithTranslation & {
   repository: Repository;
 };
 
 type State = {
-  pullRequests: PullRequestCollection;
+  pullRequests?: PullRequestCollection;
   error?: Error;
   loading: boolean;
   status: string;
@@ -28,6 +28,7 @@ class PullRequestList extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      pullRequests: undefined,
       loading: true,
       status: "OPEN"
     };
@@ -73,7 +74,7 @@ class PullRequestList extends React.Component<Props, State> {
         </div>
 
         <ScrollingTable className="panel-block">
-          <PullRequestTable repository={repository} pullRequests={pullRequests._embedded.pullRequests} />
+          <PullRequestTable repository={repository} pullRequests={pullRequests && pullRequests._embedded.pullRequests} />
         </ScrollingTable>
       </div>
     );

@@ -57,11 +57,6 @@ export function getBranches(url: string) {
         branchNames,
         defaultBranch
       };
-    })
-    .catch(err => {
-      return {
-        error: err
-      };
     });
 }
 

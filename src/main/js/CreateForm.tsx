@@ -27,7 +27,7 @@ type State = {
   pullRequest?: BasicPullRequest;
   branches: string[];
   loading: boolean;
-  error?: boolean;
+  error?: Error;
 };
 
 class CreateForm extends React.Component<Props, State> {
@@ -46,13 +46,8 @@ class CreateForm extends React.Component<Props, State> {
       ...this.state,
       loading: true
     });
-    getBranches((repository._links.branches as Link).href).then((result: Branch | any) => {
-      if (result.error) {
-        this.setState({
-          loading: false,
-          error: result.error
-        });
-      } else {
+    getBranches((repository._links.branches as Link).href)
+      .then((result: Branch | any) => {
         const initialSource = source ? source : result.branchNames[0];
         const initialTarget = target ? target : result.defaultBranch ? result.defaultBranch.name : result[0];
         this.setState(
@@ -60,36 +55,39 @@ class CreateForm extends React.Component<Props, State> {
             branches: result.branchNames,
             loading: false,
             pullRequest: {
+              title: "",
               source: initialSource,
               target: initialTarget
             }
           },
           this.notifyAboutChangedForm
         );
-      }
-    });
+      })
+      .catch(error => {
+        this.setState({ error, loading: false });
+      });
   }
 
-  handleFormChange = (value: any, name: string) => {
-    this.setState(
-      {
+  handleFormChange = (value: any, name?: any) => {
+    if (this.state.pullRequest) {
+      this.setState({
         pullRequest: {
           ...this.state.pullRequest,
           [name]: value
         }
-      },
-      this.notifyAboutChangedForm
-    );
+      });
+    }
+    this.notifyAboutChangedForm();
   };
 
   notifyAboutChangedForm = () => {
-    const pullRequest = {
-      ...this.state.pullRequest
-    };
-    this.props.onChange(pullRequest);
+    const { pullRequest } = this.state;
+    if (pullRequest) {
+      this.props.onChange(pullRequest);
+    }
   };
 
-  handleSubmit = (event: Event) => {
+  handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   };
 
