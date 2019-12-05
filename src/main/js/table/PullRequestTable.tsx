@@ -6,6 +6,7 @@ import { Table, TextColumn, Column, Tag, DateFromNow } from "@scm-manager/ui-com
 import { Link } from "react-router-dom";
 import ReviewerIcon from "./ReviewerIcon";
 import styled from "styled-components";
+import comparators from "./comparators";
 
 type Props = WithTranslation & {
   repository: Repository;
@@ -22,25 +23,13 @@ class PullRequestTable extends React.Component<Props> {
     return `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`;
   };
 
-  createComparator = (key: string) => {
-    return (a: any, b: any) => {
-      if (a[key] < b[key]) {
-        return -1;
-      } else if (a[key] > b[key]) {
-        return 1;
-      } else {
-        return 0;
-      }
-    };
-  };
-
   render() {
     const { pullRequests, t } = this.props;
     return (
       <Table data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
         <Column
           header={t("scm-review-plugin.pullRequest.title")}
-          createComparator={() => this.createComparator("title")}
+          createComparator={() => comparators.byKey("title")}
           ascendingIcon="sort-alpha-down-alt"
           descendingIcon="sort-alpha-down"
         >
@@ -50,17 +39,7 @@ class PullRequestTable extends React.Component<Props> {
         <TextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
         <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.author")}
-          createComparator={() => {
-            return (a: any, b: any) => {
-              if (a.author.displayName > b.author.displayName) {
-                return -1;
-              } else if (a.author.displayName < b.author.displayName) {
-                return 1;
-              } else {
-                return 0;
-              }
-            };
-          }}
+          createComparator={() => comparators.byNestedKeys("author", "displayName")}
           ascendingIcon="sort-alpha-down-alt"
           descendingIcon="sort-alpha-down"
         >
@@ -68,7 +47,7 @@ class PullRequestTable extends React.Component<Props> {
         </MobileHiddenColumn>
         <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.date")}
-          createComparator={() => this.createComparator("creationDate")}
+          createComparator={() => comparators.byKey("creationDate")}
           ascendingIcon="sort-amount-down-alt"
           descendingIcon="sort-amount-down"
         >
@@ -76,23 +55,13 @@ class PullRequestTable extends React.Component<Props> {
         </MobileHiddenColumn>
         <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.reviewer")}
-          createComparator={() => {
-            return (a: any, b: any) => {
-              if (a.reviewer.length > b.reviewer.length) {
-                return -1;
-              } else if (a.reviewer.length < b.reviewer.length) {
-                return 1;
-              } else {
-                return 0;
-              }
-            };
-          }}
+          createComparator={() => comparators.byValueLength("reviewer")}
         >
           {(row: any) => <ReviewerIcon reviewers={row.reviewer} />}
         </MobileHiddenColumn>
         <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.status")}
-          createComparator={() => this.createComparator("status")}
+          createComparator={() => comparators.byKey("status")}
         >
           {(row: any) => (
             <Tag
