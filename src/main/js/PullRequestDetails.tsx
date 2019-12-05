@@ -46,14 +46,14 @@ type State = {
   showNotification: boolean;
 };
 
-const MediaContent = styled.div.attrs(props => ({
+const MediaContent = styled.div.attrs(() => ({
   className: "media-content"
 }))`
   width: 100%;
   word-wrap: break-word;
 `;
 
-const UserLabel = styled.div.attrs(props => ({
+const UserLabel = styled.div.attrs(() => ({
   className: "field-label is-inline-flex"
 }))`
   text-align: left;
@@ -61,7 +61,7 @@ const UserLabel = styled.div.attrs(props => ({
   min-width: 5.5em;
 `;
 
-const UserField = styled.div.attrs(props => ({
+const UserField = styled.div.attrs(() => ({
   className: "field-body is-inline-flex"
 }))`
   flex-grow: 8;
@@ -79,14 +79,14 @@ const Container = styled.div`
   border-radius: 4px;
 `;
 
-const MediaWithTopBorder = styled.div.attrs(props => ({
+const MediaWithTopBorder = styled.div.attrs(() => ({
   className: "media"
 }))`
   padding: 0 !important;
   border-top: none !important;
 `;
 
-const ShortTag = styled(Tag).attrs(props => ({
+const ShortTag = styled(Tag).attrs(() => ({
   className: "is-medium",
   color: "light"
 }))`

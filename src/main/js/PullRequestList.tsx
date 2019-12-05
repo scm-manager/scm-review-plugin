@@ -13,9 +13,10 @@ const ScrollingTable = styled.div`
   overflow-x: auto;
 `;
 
-type Props = RouteComponentProps & WithTranslation & {
-  repository: Repository;
-};
+type Props = RouteComponentProps &
+  WithTranslation & {
+    repository: Repository;
+  };
 
 type State = {
   pullRequests?: PullRequestCollection;
@@ -74,7 +75,10 @@ class PullRequestList extends React.Component<Props, State> {
         </div>
 
         <ScrollingTable className="panel-block">
-          <PullRequestTable repository={repository} pullRequests={pullRequests && pullRequests._embedded.pullRequests} />
+          <PullRequestTable
+            repository={repository}
+            pullRequests={pullRequests && pullRequests._embedded.pullRequests}
+          />
         </ScrollingTable>
       </div>
     );

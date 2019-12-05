@@ -24,7 +24,7 @@ type Props = WithTranslation & {
 };
 
 type State = {
-  pullRequest?: BasicPullRequest;
+  pullRequest: BasicPullRequest;
   branches: string[];
   loading: boolean;
   error?: Error;
@@ -34,6 +34,11 @@ class CreateForm extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      pullRequest: {
+        source: "",
+        target: "",
+        title: ""
+      },
       branches: [],
       loading: false
     };
@@ -69,22 +74,20 @@ class CreateForm extends React.Component<Props, State> {
   }
 
   handleFormChange = (value: any, name?: any) => {
-    if (this.state.pullRequest) {
-      this.setState({
+    this.setState(
+      {
         pullRequest: {
           ...this.state.pullRequest,
           [name]: value
         }
-      });
-    }
-    this.notifyAboutChangedForm();
+      },
+      this.notifyAboutChangedForm
+    );
   };
 
   notifyAboutChangedForm = () => {
     const { pullRequest } = this.state;
-    if (pullRequest) {
-      this.props.onChange(pullRequest);
-    }
+    this.props.onChange(pullRequest);
   };
 
   handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

@@ -123,14 +123,7 @@ export function getDefaultCommitDefaultMessage(url: string) {
 }
 
 export function getChangesets(url: string) {
-  return apiClient
-    .get(url)
-    .then(response => response.json())
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+  return apiClient.get(url).then(response => response.json());
 }
 
 export function getPullRequestComments(url: string) {
@@ -156,6 +149,7 @@ function createIncomingUrl(repository: Repository, linkName: string, source: str
       .replace("{source}", encodeURIComponent(source))
       .replace("{target}", encodeURIComponent(target));
   }
+  return link && (link as Link).href;
 }
 
 export function reject(pullRequest: PullRequest) {

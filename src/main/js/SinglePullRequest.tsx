@@ -47,7 +47,7 @@ class SinglePullRequest extends React.Component<Props, State> {
           error,
           loading: false
         });
-    });
+      });
   };
 
   fetchReviewer = (): void => {
@@ -94,7 +94,12 @@ class SinglePullRequest extends React.Component<Props, State> {
         />
         <Route
           component={() => (
-            <PullRequestDetails repository={repository} pullRequest={pullRequest} fetchReviewer={this.fetchReviewer} fetchPullRequest={this.fetchPullRequest}/>
+            <PullRequestDetails
+              repository={repository}
+              pullRequest={pullRequest}
+              fetchReviewer={this.fetchReviewer}
+              fetchPullRequest={this.fetchPullRequest}
+            />
           )}
           path={`${match.url}`}
         />

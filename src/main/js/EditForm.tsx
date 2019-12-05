@@ -28,7 +28,7 @@ class EditForm extends React.Component<Props, State> {
     };
   }
 
-  onChange = (value: string|DisplayedUser[], name?: string) => {
+  onChange = (value: string | DisplayedUser[], name?: string) => {
     if (!name) {
       throw new Error("name is required");
     }
@@ -42,7 +42,8 @@ class EditForm extends React.Component<Props, State> {
 
   loadAutocompletion = (url: string, inputValue: string) => {
     const link = url + "?q=";
-    return apiClient.get(link + inputValue)
+    return apiClient
+      .get(link + inputValue)
       .then(response => response.json())
       .then(json => {
         return json.map((element: AutocompleteObject) => {
