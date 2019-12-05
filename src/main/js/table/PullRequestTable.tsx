@@ -5,11 +5,16 @@ import { Repository } from "@scm-manager/ui-types";
 import { Table, TextColumn, Column, Tag, DateFromNow } from "@scm-manager/ui-components";
 import { Link } from "react-router-dom";
 import ReviewerIcon from "./ReviewerIcon";
+import styled from "styled-components";
 
 type Props = WithTranslation & {
   repository: Repository;
   pullRequests: PullRequest[];
 };
+
+const MobileHiddenColumn = styled(Column).attrs(() => ({
+  className: "is-hidden-mobile"
+}))``;
 
 class PullRequestTable extends React.Component<Props> {
   to = (pullRequest: PullRequest) => {
@@ -43,26 +48,39 @@ class PullRequestTable extends React.Component<Props> {
         </Column>
         <TextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />
         <TextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
-        <Column
+        <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.author")}
           createComparator={() => this.createComparator("author")}
           ascendingIcon="sort-alpha-down-alt"
           descendingIcon="sort-alpha-down"
         >
           {(row: any) => <p>{row.author.displayName}</p>}
-        </Column>
-        <Column
+        </MobileHiddenColumn>
+        <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.date")}
           createComparator={() => this.createComparator("creationDate")}
           ascendingIcon="sort-amount-down-alt"
           descendingIcon="sort-amount-down"
         >
           {(row: any) => (row.creationDate ? <DateFromNow date={row.creationDate} /> : "")}
-        </Column>
-        <Column header={t("scm-review-plugin.pullRequest.reviewer")}>
-          {(row: any) => <ReviewerIcon reviewers={row.reviewer}/>}
-        </Column>
-        <Column
+        </MobileHiddenColumn>
+        <MobileHiddenColumn
+          header={t("scm-review-plugin.pullRequest.reviewer")}
+          createComparator={() => {
+            return (a: any, b: any) => {
+              if (a.reviewer.length > b.reviewer.length) {
+                return -1;
+              } else if (a.reviewer.length < b.reviewer.length) {
+                return 1;
+              } else {
+                return 0;
+              }
+            };
+          }}
+        >
+          {(row: any) => <ReviewerIcon reviewers={row.reviewer} />}
+        </MobileHiddenColumn>
+        <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.status")}
           createComparator={() => this.createComparator("status")}
         >
@@ -73,7 +91,7 @@ class PullRequestTable extends React.Component<Props> {
               label={row.status}
             />
           )}
-        </Column>
+        </MobileHiddenColumn>
       </Table>
     );
   }
