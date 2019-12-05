@@ -50,7 +50,17 @@ class PullRequestTable extends React.Component<Props> {
         <TextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
         <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.author")}
-          createComparator={() => this.createComparator("author")}
+          createComparator={() => {
+            return (a: any, b: any) => {
+              if (a.author.displayName > b.author.displayName) {
+                return -1;
+              } else if (a.author.displayName < b.author.displayName) {
+                return 1;
+              } else {
+                return 0;
+              }
+            };
+          }}
           ascendingIcon="sort-alpha-down-alt"
           descendingIcon="sort-alpha-down"
         >
