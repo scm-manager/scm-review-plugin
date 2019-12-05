@@ -4,6 +4,7 @@ import { PullRequest } from "../types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
 import { Table, TextColumn, Column, Tag, DateFromNow } from "@scm-manager/ui-components";
 import { Link } from "react-router-dom";
+import ReviewerIcon from "./ReviewerIcon";
 
 type Props = WithTranslation & {
   repository: Repository;
@@ -57,6 +58,9 @@ class PullRequestTable extends React.Component<Props> {
           descendingIcon="sort-amount-down"
         >
           {(row: any) => (row.creationDate ? <DateFromNow date={row.creationDate} /> : "")}
+        </Column>
+        <Column header={t("scm-review-plugin.pullRequest.reviewer")}>
+          {(row: any) => <ReviewerIcon reviewers={row.reviewer}/>}
         </Column>
         <Column
           header={t("scm-review-plugin.pullRequest.status")}
