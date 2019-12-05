@@ -149,7 +149,6 @@ function createIncomingUrl(repository: Repository, linkName: string, source: str
       .replace("{source}", encodeURIComponent(source))
       .replace("{target}", encodeURIComponent(target));
   }
-  return link && (link as Link).href;
 }
 
 export function reject(pullRequest: PullRequest) {
