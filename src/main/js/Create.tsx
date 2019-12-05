@@ -21,7 +21,7 @@ type Props = WithTranslation &
   };
 
 type State = {
-  pullRequest?: BasicPullRequest;
+  pullRequest: BasicPullRequest;
   loading: boolean;
   error?: Error;
   disabled: boolean;
@@ -33,6 +33,11 @@ class Create extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      pullRequest: {
+        title: "",
+        target: "",
+        source: ""
+      },
       loading: false,
       disabled: true,
       changesets: [],
@@ -41,11 +46,11 @@ class Create extends React.Component<Props, State> {
   }
 
   fetchChangesets = (pullRequest: BasicPullRequest) => {
-    return getChangesets(createChangesetUrl(this.props.repository, pullRequest.source, pullRequest.target)).then(
-      result => {
+    return getChangesets(createChangesetUrl(this.props.repository, pullRequest.source, pullRequest.target))
+      .then((result: Changeset) => {
         this.setState({ changesets: result._embedded.changesets });
-      }
-    );
+      })
+      .catch((error: Error) => this.setState({ error, loading: false }));
   };
 
   pullRequestCreated = () => {

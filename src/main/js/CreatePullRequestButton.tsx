@@ -39,19 +39,19 @@ class CreatePullRequestButton extends React.Component<Props, State> {
   }
 
   updatePullRequests = (url: string) => {
-    getPullRequests(url).then(response => {
-      if (response.error) {
-        this.setState({
-          error: response.error,
-          loading: false
-        });
-      } else {
+    getPullRequests(url)
+      .then(response => {
         this.setState({
           pullRequests: response,
           loading: false
         });
-      }
-    });
+      })
+      .catch(error => {
+        this.setState({
+          loading: false,
+          error
+        });
+      });
   };
 
   render() {

@@ -1,10 +1,10 @@
 import React from "react";
 import { apiClient, Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
+import { DisplayedUser, SelectValue, AutocompleteObject } from "@scm-manager/ui-types";
 
 type Props = WithTranslation & {
-  handleFormChange: (value: string, name: string) => void;
+  handleFormChange: (value: any, name: string) => void;
   title?: string;
   description: string;
   reviewer: DisplayedUser[];
@@ -15,7 +15,7 @@ type State = {
   title: string | undefined;
   reviewer: DisplayedUser[];
   description: string;
-  selectedValue: SelectValue;
+  selectedValue?: SelectValue;
 };
 
 class EditForm extends React.Component<Props, State> {
@@ -28,7 +28,7 @@ class EditForm extends React.Component<Props, State> {
     };
   }
 
-  onChange = (value: string, name?: string) => {
+  onChange = (value: string | DisplayedUser[], name?: string) => {
     if (!name) {
       throw new Error("name is required");
     }
@@ -42,10 +42,11 @@ class EditForm extends React.Component<Props, State> {
 
   loadAutocompletion = (url: string, inputValue: string) => {
     const link = url + "?q=";
-    return apiClient.get(link + inputValue)
+    return apiClient
+      .get(link + inputValue)
       .then(response => response.json())
       .then(json => {
-        return json.map(element => {
+        return json.map((element: AutocompleteObject) => {
           const label = element.displayName ? `${element.displayName} (${element.id})` : element.id;
           return {
             value: element,
@@ -67,7 +68,8 @@ class EditForm extends React.Component<Props, State> {
     ) {
       this.state.reviewer.push({
         id: selection.value.id,
-        displayName: selection.value.displayName
+        displayName: selection.value.displayName,
+        mail: ""
       });
       this.props.handleFormChange(this.state.reviewer, "reviewer");
     }

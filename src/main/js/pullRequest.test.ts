@@ -78,7 +78,6 @@ describe("API create pull request", () => {
           defaultBranch: true
         }
       });
-      expect(response.error).toBeUndefined();
       done();
     });
   });
@@ -88,8 +87,8 @@ describe("API create pull request", () => {
       status: 500
     });
 
-    getBranches(BRANCH_URL).then(response => {
-      expect(response.error).toBeDefined();
+    getBranches(BRANCH_URL).catch(error => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -294,8 +293,8 @@ describe("API get pull requests", () => {
       status: 500
     });
 
-    getPullRequests(PULLREQUEST_URL).then(response => {
-      expect(response.error).toBeDefined();
+    getPullRequests(PULLREQUEST_URL).catch((error: Error) => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -362,8 +361,8 @@ describe("API get comments", () => {
       status: 500
     });
 
-    getPullRequests(COMMENTS_URL).then(response => {
-      expect(response.error).toBeDefined();
+    getPullRequests(COMMENTS_URL).catch(error => {
+      expect(error).toBeDefined();
       done();
     });
   });
