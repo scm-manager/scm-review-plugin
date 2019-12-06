@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.comment.api;
 
-import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.Comment;
@@ -24,8 +23,6 @@ import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.inject.util.Providers;
-import org.jboss.resteasy.core.Dispatcher;
-import org.jboss.resteasy.mock.MockDispatcherFactory;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.Before;
@@ -37,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.UserDisplayManager;
+import sonia.scm.web.RestDispatcher;
 
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletResponse;
@@ -71,7 +69,7 @@ public class CommentRootResourceTest {
   private final Repository repository = new Repository(REPOSITORY_ID, "git", REPOSITORY_NAMESPACE, REPOSITORY_NAME);
   private final UriInfo uriInfo = mock(UriInfo.class);
 
-  private Dispatcher dispatcher;
+  private RestDispatcher dispatcher;
 
   private final MockHttpResponse response = new MockHttpResponse();
 
@@ -118,11 +116,10 @@ public class CommentRootResourceTest {
     replyMapper.setExecutedTransitionMapper(executedTransitionMapper);
     CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder, pullRequestService, branchRevisionResolver);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
-    dispatcher = MockDispatcherFactory.createDispatcher();
-    dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
+    dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource))));
-    dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
+    dispatcher.addSingletonResource(pullRequestRootResource);
     when(branchRevisionResolver.getRevisions(any(), any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
   }
@@ -160,7 +157,7 @@ public class CommentRootResourceTest {
 
     dispatcher.invoke(request, response);
     assertEquals(HttpServletResponse.SC_CONFLICT, response.getStatus());
-    assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+    assertThat(response.getContentAsString()).contains("modified concurrently");
   }
 
   @Test
@@ -178,7 +175,7 @@ public class CommentRootResourceTest {
 
     dispatcher.invoke(request, response);
     assertEquals(HttpServletResponse.SC_CONFLICT, response.getStatus());
-    assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+    assertThat(response.getContentAsString()).contains("modified concurrently");
   }
 
   @Test
@@ -230,7 +227,7 @@ public class CommentRootResourceTest {
 
     dispatcher.invoke(request, response);
     assertEquals(HttpServletResponse.SC_CONFLICT, response.getStatus());
-    assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+    assertThat(response.getContentAsString()).contains("modified concurrently");
   }
 
   @Test

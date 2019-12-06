@@ -1,10 +1,7 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
-import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.github.sdorra.shiro.SubjectAware;
-import org.jboss.resteasy.core.Dispatcher;
-import org.jboss.resteasy.mock.MockDispatcherFactory;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
+import sonia.scm.web.RestDispatcher;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -38,7 +36,7 @@ class MergeResourceTest {
 
   private final String MERGE_URL = "/" + MergeResource.MERGE_PATH_V2 + "/space/name/1";
 
-  private Dispatcher dispatcher;
+  private RestDispatcher dispatcher;
   private final MockHttpResponse response = new MockHttpResponse();
 
   @Mock
@@ -49,9 +47,8 @@ class MergeResourceTest {
 
   @BeforeEach
   void initDispatcher() {
-    dispatcher = MockDispatcherFactory.createDispatcher();
-    dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
-    dispatcher.getRegistry().addSingletonResource(mergeResource);
+    dispatcher = new RestDispatcher();
+    dispatcher.addSingletonResource(mergeResource);
   }
 
   @Test
@@ -89,16 +86,6 @@ class MergeResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(409);
-  }
-
-  @Test
-  void shouldReturnBadRequestIfMergeCommandDtoInvalid() throws IOException, URISyntaxException {
-    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand_invalid.json");
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
-    MockHttpResponse response = new MockHttpResponse();
-    dispatcher.invoke(request, response);
-
-    assertThat(response.getStatus()).isEqualTo(400);
   }
 
   @Test

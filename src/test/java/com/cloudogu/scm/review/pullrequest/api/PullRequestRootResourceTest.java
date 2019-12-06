@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.BranchResolver;
-import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
@@ -21,8 +20,6 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.assertj.core.util.Lists;
-import org.jboss.resteasy.core.Dispatcher;
-import org.jboss.resteasy.mock.MockDispatcherFactory;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.Before;
@@ -45,6 +42,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
+import sonia.scm.web.RestDispatcher;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -56,7 +54,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static com.cloudogu.scm.review.ExceptionMessageMapper.assertExceptionFrom;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
@@ -89,7 +86,7 @@ public class PullRequestRootResourceTest {
   private final Repository repository = mock(Repository.class);
   private final ArgumentCaptor<PullRequest> pullRequestStoreCaptor = ArgumentCaptor.forClass(PullRequest.class);
 
-  private Dispatcher dispatcher;
+  private RestDispatcher dispatcher;
 
   private final MockHttpResponse response = new MockHttpResponse();
   private final Subject subject = mock(Subject.class);
@@ -130,9 +127,8 @@ public class PullRequestRootResourceTest {
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
-    dispatcher = MockDispatcherFactory.createDispatcher();
-    dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
-    dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
+    dispatcher = new RestDispatcher();
+    dispatcher.addSingletonResource(pullRequestRootResource);
     lenient().when(repositoryServiceFactory.create(any(Repository.class))).thenReturn(repositoryService);
     lenient().when(userDisplayManager.get("reviewer")).thenReturn(Optional.of(DisplayUser.from(new User("reviewer", "reviewer", ""))));
   }
@@ -206,7 +202,7 @@ public class PullRequestRootResourceTest {
       .content(pullRequestJson)
       .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
-    assertExceptionFrom(response).hasMessageMatching("pull request with id id in repository with id .* already exists");
+    assertThat(response.getContentAsString()).containsPattern("pull request with id id in repository with id .* already exists");
   }
 
   @Test
@@ -221,7 +217,7 @@ public class PullRequestRootResourceTest {
 
     dispatcher.invoke(request, response);
 
-    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
+    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
     verify(store, never()).add(any());
   }
 
@@ -274,9 +270,7 @@ public class PullRequestRootResourceTest {
 
     dispatcher.invoke(request, response);
 
-    assertExceptionFrom(response)
-      .isOffClass(NotFoundException.class)
-      .hasMessageMatching("could not find.*");
+    assertThat(response.getContentAsString()).containsPattern("could not find.*");
   }
 
   @Test
@@ -292,9 +286,7 @@ public class PullRequestRootResourceTest {
 
     dispatcher.invoke(request, response);
 
-    assertExceptionFrom(response)
-      .isOffClass(NotFoundException.class)
-      .hasMessageMatching("could not find.*");
+    assertThat(response.getContentAsString()).containsPattern("could not find.*");
   }
 
   @Test
@@ -523,9 +515,7 @@ public class PullRequestRootResourceTest {
 
     dispatcher.invoke(request, response);
 
-    assertExceptionFrom(response)
-      .isOffClass(NotFoundException.class)
-      .hasMessageMatching("could not find.*");
+    assertThat(response.getContentAsString()).containsPattern("could not find.*");
     verify(store, never()).update(any());
   }
 
@@ -720,8 +710,6 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldApprove() throws URISyntaxException {
     initPullRequestRootResource();
-    mockSubject();
-    when(store.get(any())).thenReturn(new PullRequest());
 
     MockHttpRequest request = MockHttpRequest
       .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/approve");
@@ -735,8 +723,6 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldDisapprove() throws URISyntaxException {
     initPullRequestRootResource();
-    mockSubject();
-    when(store.get(any())).thenReturn(new PullRequest());
 
     MockHttpRequest request = MockHttpRequest
       .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/disapprove");
@@ -745,25 +731,12 @@ public class PullRequestRootResourceTest {
     assertThat(response.getStatus()).isEqualTo(204);
   }
 
-  private void mockSubject() {
-    Subject subject = mock(Subject.class);
-    shiroRule.setSubject(subject);
-
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(any(String.class))).thenReturn(true);
-
-    User user1 = new User("user1", "User1", "user@mail.com");
-    when(principals.oneByType(User.class)).thenReturn(user1);
-  }
-
   private void initPullRequestRootResource() {
     PullRequestRootResource rootResource =
       new PullRequestRootResource(mapper, pullRequestService, Providers.of(new PullRequestResource(mapper, pullRequestService, null)));
 
-    dispatcher = MockDispatcherFactory.createDispatcher();
-    dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
-    dispatcher.getRegistry().addSingletonResource(rootResource);
+    dispatcher = new RestDispatcher();
+    dispatcher.addSingletonResource(rootResource);
   }
 
   private void mockPrincipal() {
