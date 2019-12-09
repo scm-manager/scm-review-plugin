@@ -86,7 +86,7 @@ class SinglePullRequest extends React.Component<Props, State> {
               repository={repository}
               pullRequest={pullRequest}
               userAutocompleteLink={userAutocompleteLink}
-              fetchReviewer={this.fetchReviewer}
+              fetchReviewer={this.fetchPullRequest}
             />
           )}
           path={`${match.url}/edit`}
