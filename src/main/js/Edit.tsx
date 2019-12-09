@@ -47,20 +47,20 @@ class Edit extends React.Component<Props, State> {
       loading: true
     });
 
-    updatePullRequest(modifiedPullRequest._links.update.href, modifiedPullRequest).then(result => {
-      if (result.error) {
-        this.setState({
-          loading: false,
-          error: result.error
-        });
-      } else {
+    updatePullRequest(modifiedPullRequest._links.update.href, modifiedPullRequest)
+      .then(() => {
         this.setState({
           loading: false
         });
         this.props.fetchReviewer();
         this.pullRequestUpdated();
-      }
-    });
+      })
+      .catch(err => {
+        this.setState({
+          loading: false,
+          error: err
+        });
+      });
   };
 
   handleFormChange = (value, name: string) => {
@@ -73,7 +73,7 @@ class Edit extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, t, pullRequest, userAutocompleteLink, fetchReviewer } = this.props;
+    const { repository, t, pullRequest, userAutocompleteLink } = this.props;
     const { loading, error } = this.state;
 
     let notification = null;
