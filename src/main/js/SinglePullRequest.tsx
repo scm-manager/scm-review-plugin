@@ -1,11 +1,10 @@
 import React from "react";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
-import { Switch, Route, withRouter, RouteComponentProps } from "react-router-dom";
+import { Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
-import { Repository, Link } from "@scm-manager/ui-types";
-import { PullRequest, Reviewer } from "./types/PullRequest";
+import { Link, Repository } from "@scm-manager/ui-types";
+import { PullRequest } from "./types/PullRequest";
 import { getPullRequest, getReviewer } from "./pullRequest";
-import { History } from "history";
 import Edit from "./Edit";
 
 type Props = RouteComponentProps & {
@@ -86,7 +85,7 @@ class SinglePullRequest extends React.Component<Props, State> {
               repository={repository}
               pullRequest={pullRequest}
               userAutocompleteLink={userAutocompleteLink}
-              fetchReviewer={this.fetchReviewer}
+              fetchPullRequest={this.fetchPullRequest}
             />
           )}
           path={`${match.url}/edit`}

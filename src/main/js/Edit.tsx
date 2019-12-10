@@ -1,6 +1,6 @@
 import React from "react";
 import { ErrorNotification, Loading, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
-import { Repository } from "@scm-manager/ui-types";
+import { Repository, Link } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import { updatePullRequest } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
@@ -12,7 +12,7 @@ type Props = WithTranslation &
     repository: Repository;
     pullRequest: PullRequest;
     userAutocompleteLink: string;
-    fetchReviewer: () => void;
+    fetchPullRequest: () => void;
   };
 
 type State = {
@@ -47,12 +47,12 @@ class Edit extends React.Component<Props, State> {
       loading: true
     });
 
-    updatePullRequest(modifiedPullRequest._links.update.href, modifiedPullRequest)
+    updatePullRequest((modifiedPullRequest._links.update as Link).href, modifiedPullRequest)
       .then(() => {
         this.setState({
           loading: false
         });
-        this.props.fetchReviewer();
+        this.props.fetchPullRequest();
         this.pullRequestUpdated();
       })
       .catch(err => {
@@ -63,7 +63,7 @@ class Edit extends React.Component<Props, State> {
       });
   };
 
-  handleFormChange = (value, name: string) => {
+  handleFormChange = (value: any, name: string) => {
     this.setState({
       modifiedPullRequest: {
         ...this.state.modifiedPullRequest,
