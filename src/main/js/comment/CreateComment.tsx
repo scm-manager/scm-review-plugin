@@ -2,6 +2,7 @@ import React from "react";
 import {
   Button,
   Loading,
+  Level,
   SubmitButton,
   Radio,
   Textarea,
@@ -190,22 +191,26 @@ class CreateComment extends React.Component<Props, State> {
               {errorResult && <ErrorNotification error={errorResult} />}
               {toggleType}
               <div className="field">
-                <div className="level-left">
-                  <div className="level-item">
-                    <SubmitButton
-                      label={t(
-                        this.state.newComment.type === "TASK_TODO"
-                          ? "scm-review-plugin.comment.addTask"
-                          : "scm-review-plugin.comment.addComment"
-                      )}
-                      action={this.submit}
-                      disabled={!this.isValid()}
-                      loading={loading}
-                      scrollToTop={false}
-                    />
-                  </div>
-                  <div className="level-item">{cancelButton}</div>
-                </div>
+                <Level
+                  right={
+                    <>
+                      <div className="level-item">
+                        <SubmitButton
+                          label={t(
+                            this.state.newComment.type === "TASK_TODO"
+                              ? "scm-review-plugin.comment.addTask"
+                              : "scm-review-plugin.comment.addComment"
+                          )}
+                          action={this.submit}
+                          disabled={!this.isValid()}
+                          loading={loading}
+                          scrollToTop={false}
+                        />
+                      </div>
+                      <div className="level-item">{cancelButton}</div>
+                    </>
+                  }
+                />
               </div>
             </div>
           </article>

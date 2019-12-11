@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { SubmitButton, Button, confirmAlert } from "@scm-manager/ui-components";
+import { Level, SubmitButton, Button, confirmAlert } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { Comment } from "../types/PullRequest";
 
@@ -30,19 +30,23 @@ const EditButtons: FC<Props> = ({ comment, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="level-left">
-      <div className="level-item">
-        <SubmitButton
-          label={t("scm-review-plugin.comment.save")}
-          action={onSubmit}
-          disabled={comment.comment.trim() === ""}
-          scrollToTop={false}
-        />
-      </div>
-      <div className="level-item">
-        <Button label={t("scm-review-plugin.comment.cancel")} color="warning" action={confirmCancelUpdate} />
-      </div>
-    </div>
+    <Level
+      right={
+        <>
+          <div className="level-item">
+            <SubmitButton
+              label={t("scm-review-plugin.comment.save")}
+              action={onSubmit}
+              disabled={comment.comment.trim() === ""}
+              scrollToTop={false}
+            />
+          </div>
+          <div className="level-item">
+            <Button label={t("scm-review-plugin.comment.cancel")} color="warning" action={confirmCancelUpdate} />
+          </div>
+        </>
+      }
+    />
   );
 };
 
