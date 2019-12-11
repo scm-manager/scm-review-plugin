@@ -1,5 +1,5 @@
 import React from "react";
-import { ErrorNotification, Loading, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
+import { ErrorNotification, Loading, SubmitButton, Subtitle, Title, Level } from "@scm-manager/ui-components";
 import { Repository, Link } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import { updatePullRequest } from "./pullRequest";
@@ -100,7 +100,11 @@ class Edit extends React.Component<Props, State> {
             userAutocompleteLink={userAutocompleteLink}
             handleFormChange={this.handleFormChange}
           />
-          <SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={this.submit} loading={loading} />
+          <Level
+            right={
+              <SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={this.submit} loading={loading} />
+            }
+          />
         </div>
       </div>
     );
