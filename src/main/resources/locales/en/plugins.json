@@ -36,6 +36,10 @@
         "diff": "Diff",
         "comments": "Comments"
       },
+      "tasks": {
+        "done": "Tasks done",
+        "allDone": "All tasks done"
+      },
       "noChangesets": "No changesets found.",
       "details": {
         "notification": "Pull request merged successfully!",
