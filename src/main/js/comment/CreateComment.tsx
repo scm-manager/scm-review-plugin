@@ -70,7 +70,7 @@ class CreateComment extends React.Component<Props, State> {
 
   submit = () => {
     const { newComment } = this.state;
-    if (!newComment) {
+    if (!newComment || !this.isValid()) {
       return;
     }
 
@@ -184,6 +184,7 @@ class CreateComment extends React.Component<Props, State> {
                         : "scm-review-plugin.comment.addComment"
                     )}
                     onChange={this.handleChanges}
+                    onSubmit={this.submit}
                   />
                 </div>
               </div>
