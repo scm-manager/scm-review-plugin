@@ -4,12 +4,12 @@
     "create": {
       "title": "Pull Request",
       "subtitle": "Creates a new pull request for {{repositoryName}}",
-      "submitButton": "Submit"
+      "submitButton": "Create Pull Request"
     },
     "edit": {
       "title": "Pull Request",
       "subtitle": "Edit pull request for {{repositoryName}}",
-      "submitButton": "Save"
+      "submitButton": "Edit Pull Request"
     },
     "diff": {
       "notSupported": "Diffs for pull request are not supported by the type of repository",
