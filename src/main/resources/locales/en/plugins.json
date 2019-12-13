@@ -39,7 +39,7 @@
       "tasks": {
         "todo": "{{count}} task open",
         "todo_plural": "{{count}} tasks open",
-        "done": "tasks done",
+        "done": "{{done}} / {{total}} tasks done",
         "allDone": "All tasks done"
       },
       "noChangesets": "No changesets found.",
