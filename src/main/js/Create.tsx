@@ -1,5 +1,5 @@
 import React from "react";
-import { ErrorNotification, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
+import { ErrorNotification, SubmitButton, Subtitle, Title, Level } from "@scm-manager/ui-components";
 import { Repository, Changeset, Link } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
@@ -10,7 +10,7 @@ import PullRequestInformation from "./PullRequestInformation";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import queryString from "query-string";
 
-const ControlButtons = styled.div`
+const TopPaddingLevel = styled(Level)`
   padding-top: 1.5em;
 `;
 
@@ -161,14 +161,16 @@ class Create extends React.Component<Props, State> {
 
           {information}
 
-          <ControlButtons>
-            <SubmitButton
-              label={t("scm-review-plugin.create.submitButton")}
-              action={this.submit}
-              loading={loading}
-              disabled={disabled}
-            />
-          </ControlButtons>
+          <TopPaddingLevel
+            right={
+              <SubmitButton
+                label={t("scm-review-plugin.create.submitButton")}
+                action={this.submit}
+                loading={loading}
+                disabled={disabled}
+              />
+            }
+          />
         </div>
       </div>
     );
