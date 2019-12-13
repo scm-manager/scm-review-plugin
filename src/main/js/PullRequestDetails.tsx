@@ -345,11 +345,11 @@ class PullRequestDetails extends React.Component<Props, State> {
           <div className="media">
             <UserField className="media-content">
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
-              <TitleTag
+              {totalTasks > 0 && <TitleTag
                 label={titleTagText}
                 title={titleTagText}
                 color={pullRequest.tasks.done < totalTasks ? "light" : "success"}
-              />
+              />}
             </UserField>
             <div className="media-right">
               <ButtonGroup>

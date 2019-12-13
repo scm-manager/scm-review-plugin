@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { PullRequest } from "../types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
-import { Table, TextColumn, Column, Tag, DateFromNow, Level } from "@scm-manager/ui-components";
+import { Column, DateFromNow, Table, Tag, TextColumn } from "@scm-manager/ui-components";
 import { Link } from "react-router-dom";
 import ReviewerIcon from "./ReviewerIcon";
 import comparators from "./comparators";
@@ -46,13 +46,9 @@ class PullRequestTable extends React.Component<Props> {
           ascendingIcon="sort-alpha-down-alt"
           descendingIcon="sort-alpha-down"
         >
-          {(row: any) => (
-            <>
-              <Link to={this.to(row)}>{row.title}</Link>
-              {this.todoTag(row)}
-            </>
-          )}
+          {(row: any) => <Link to={this.to(row)}>{row.title}</Link>}
         </Column>
+        <Column header="">{(row: any) => <>{this.todoTag(row)}</>}</Column>
         <TextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />
         <TextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
         <MobileHiddenColumn
@@ -71,12 +67,7 @@ class PullRequestTable extends React.Component<Props> {
         >
           {(row: any) => (row.creationDate ? <DateFromNow date={row.creationDate} /> : "")}
         </MobileHiddenColumn>
-        <MobileHiddenColumn
-          header={t("scm-review-plugin.pullRequest.reviewer")}
-          createComparator={() => comparators.byValueLength("reviewer")}
-        >
-          {(row: any) => <ReviewerIcon reviewers={row.reviewer} />}
-        </MobileHiddenColumn>
+        <MobileHiddenColumn header="">{(row: any) => <ReviewerIcon reviewers={row.reviewer} />}</MobileHiddenColumn>
         <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.status")}
           createComparator={() => comparators.byKey("status")}

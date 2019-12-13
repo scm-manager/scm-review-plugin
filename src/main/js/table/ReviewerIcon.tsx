@@ -1,8 +1,9 @@
 import React, { FC } from "react";
 import { Icon, Tooltip } from "@scm-manager/ui-components";
 import { Reviewer } from "../types/PullRequest";
+import { WithTranslation, withTranslation } from "react-i18next";
 
-type Props = {
+type Props = WithTranslation & {
   reviewers?: Reviewer[];
 };
 
@@ -21,13 +22,13 @@ const createTooltipMessage = (reviewers: Reviewer[]) => {
   return reviewers.map(r => r.displayName).join(", ");
 };
 
-const ReviewerIcon: FC<Props> = ({ reviewers }) => {
+const ReviewerIcon: FC<Props> = ({ reviewers, t }) => {
   if (!reviewers || reviewers.length === 0) {
     return null;
   }
 
   const icon = chooseIcon(reviewers.length);
-  const message = createTooltipMessage(reviewers);
+  const message = t("scm-review-plugin.pullRequest.reviewer") + ": " + createTooltipMessage(reviewers);
   return (
     <Tooltip location="top" message={message}>
       <Icon name={icon} />
@@ -35,4 +36,4 @@ const ReviewerIcon: FC<Props> = ({ reviewers }) => {
   );
 };
 
-export default ReviewerIcon;
+export default withTranslation("plugins")(ReviewerIcon);
