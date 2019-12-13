@@ -305,7 +305,7 @@ public class PullRequestRootResourceTest {
     PullRequest pullRequest = createPullRequest();
     List<Comment> comments = new ArrayList<>();
     comments.add(createCommentWithType(CommentType.TASK_TODO));
-    when(commentService.getAll(any(), any(), any())).thenReturn(comments);
+    when(commentService.getAll(REPOSITORY_NAMESPACE, REPOSITORY_NAME, pullRequest.getId())).thenReturn(comments);
     when(store.get("123")).thenReturn(pullRequest);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
@@ -321,12 +321,10 @@ public class PullRequestRootResourceTest {
     return comment;
   }
 
-
   @Test
   @SubjectAware(username = "rr", password = "secret")
   public void shouldSortPullRequestsByLastModified() throws URISyntaxException, IOException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
-    when(commentService.getAll(any(), any(), any())).thenReturn(Collections.EMPTY_LIST);
     String firstPR = "first_PR";
     String toDayUpdatedPR = "to_day_updated_PR";
     String lastPR = "last_PR";
@@ -367,7 +365,6 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "rr", password = "secret")
   public void shouldGetAllPullRequests() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
-    when(commentService.getAll(any(), any(), any())).thenReturn(Collections.EMPTY_LIST);
     String id_1 = "id_1";
     String id_2 = "ABC ID 2";
     List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(id_1), createPullRequest(id_2));
@@ -641,7 +638,6 @@ public class PullRequestRootResourceTest {
 
   private void verifyFilteredPullRequests(String status) throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
-    when(commentService.getAll(any(), any(), any())).thenReturn(Collections.EMPTY_LIST);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=" + status);
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
@@ -667,6 +663,7 @@ public class PullRequestRootResourceTest {
     openedPR1.setReviewer(singletonMap("reviewer", false));
     mergedPR1.setReviewer(singletonMap("reviewer", true));
     when(store.getAll()).thenReturn(Lists.newArrayList(openedPR1, openedPR2, rejectedPR1, rejectedPR2, mergedPR1, mergedPR2));
+    when(commentService.getAll(any(), any(), any())).thenReturn(Collections.emptyList());
   }
 
   private byte[] loadJson(String s) throws IOException {
