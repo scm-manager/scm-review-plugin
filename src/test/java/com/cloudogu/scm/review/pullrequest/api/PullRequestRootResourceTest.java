@@ -3,6 +3,10 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.CommentType;
+import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -51,8 +55,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
@@ -109,6 +116,8 @@ public class PullRequestRootResourceTest {
   private BranchRevisionResolver branchRevisionResolver;
   @Mock
   private LogCommandBuilder logCommandBuilder;
+  @Mock
+  private CommentService commentService;
 
   @InjectMocks
   private PullRequestMapperImpl mapper;
@@ -294,11 +303,22 @@ public class PullRequestRootResourceTest {
   public void shouldGetPullRequest() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     PullRequest pullRequest = createPullRequest();
+    List<Comment> comments = new ArrayList<>();
+    comments.add(createCommentWithType(CommentType.TASK_TODO));
+    when(commentService.getAll(any(), any(), any())).thenReturn(comments);
     when(store.get("123")).thenReturn(pullRequest);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("_links");
+    assertThat(response.getContentAsString()).contains("\"tasks\":{\"todo\":1");
+    assertThat(response.getContentAsString()).contains("\"done\":0");
+  }
+
+  private Comment createCommentWithType(CommentType commentType) {
+    Comment comment = Comment.createComment("1", "trillian", "tricia", new Location());
+    comment.setType(commentType);
+    return comment;
   }
 
 
@@ -306,6 +326,7 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "rr", password = "secret")
   public void shouldSortPullRequestsByLastModified() throws URISyntaxException, IOException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    when(commentService.getAll(any(), any(), any())).thenReturn(Collections.EMPTY_LIST);
     String firstPR = "first_PR";
     String toDayUpdatedPR = "to_day_updated_PR";
     String lastPR = "last_PR";
@@ -346,6 +367,7 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "rr", password = "secret")
   public void shouldGetAllPullRequests() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    when(commentService.getAll(any(), any(), any())).thenReturn(Collections.EMPTY_LIST);
     String id_1 = "id_1";
     String id_2 = "ABC ID 2";
     List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(id_1), createPullRequest(id_2));
@@ -619,6 +641,7 @@ public class PullRequestRootResourceTest {
 
   private void verifyFilteredPullRequests(String status) throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
+    when(commentService.getAll(any(), any(), any())).thenReturn(Collections.EMPTY_LIST);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=" + status);
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
