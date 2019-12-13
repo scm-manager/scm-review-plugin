@@ -1,9 +1,12 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
+import com.github.sdorra.shiro.ShiroRule;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
+import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,6 +31,8 @@ import sonia.scm.user.User;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
@@ -36,6 +41,7 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJE
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,9 +54,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DefaultPullRequestServiceTest {
 
+  @Rule
+  public ShiroRule shiroRule = new ShiroRule();
+
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
   private static final User LOGGED_IN_USER = new User("user", "display", "user@example.com");
 
+  @Mock
+  RepositoryResolver repositoryResolver;
   @Mock
   PullRequestStoreFactory storeFactory;
   @Mock
@@ -85,13 +96,13 @@ class DefaultPullRequestServiceTest {
     void setUser() {
       ThreadContext.bind(subject);
       PrincipalCollection principalCollection = mock(PrincipalCollection.class);
-      when(subject.getPrincipals()).thenReturn(principalCollection);
-      when(principalCollection.oneByType(any())).thenReturn(LOGGED_IN_USER);
+      lenient().when(subject.getPrincipals()).thenReturn(principalCollection);
+      lenient().when(principalCollection.oneByType(any())).thenReturn(LOGGED_IN_USER);
     }
 
     @BeforeEach
     void initAddWithNewId() {
-      when(store.add(any())).thenReturn("new_id");
+      lenient().when(store.add(any())).thenReturn("new_id");
     }
 
     @BeforeEach
@@ -133,13 +144,67 @@ class DefaultPullRequestServiceTest {
     @Test
     void shouldStoreReviewerAsSubscriber() throws NoDifferenceException {
       PullRequest pullRequest = createPullRequest(null, null, null);
-      pullRequest.setReviewer(singleton("reviewer"));
-
+      pullRequest.setReviewer(singletonMap("reviewer", false));
       service.add(REPOSITORY, pullRequest);
 
       assertThat(pullRequest.getSubscriber())
         .hasSize(2)
         .anyMatch(r -> r.equals("reviewer"));
+    }
+
+    @Test
+    void shouldStoreApproverAsReviewer() {
+      Subject subject = mock(Subject.class);
+      shiroRule.setSubject(subject);
+
+      PrincipalCollection principals = mock(PrincipalCollection.class);
+      when(subject.getPrincipals()).thenReturn(principals);
+      when(subject.isPermitted(any(String.class))).thenReturn(true);
+      User user1 = new User("user", "User", "user@mail.com");
+      when(principals.oneByType(User.class)).thenReturn(user1);
+
+      when(repositoryResolver.resolve(any())).thenReturn(REPOSITORY);
+      PullRequest pullRequest = createPullRequest("1", null, null);
+      when(store.get("1")).thenReturn(pullRequest);
+
+      service.approve(REPOSITORY.getNamespaceAndName(), pullRequest.getId());
+
+      PullRequest storedPullRequest = service.get(REPOSITORY, "1");
+      assertThat(storedPullRequest.getReviewer().keySet())
+        .hasSize(1)
+        .allMatch(r -> r.equals(LOGGED_IN_USER.getId()));
+      assertThat(storedPullRequest.getReviewer().values())
+        .hasSize(1)
+        .allMatch(Boolean::booleanValue);
+    }
+
+    @Test
+    void shouldSetReviewerFlagFalseOnDisapprove() {
+      Subject subject = mock(Subject.class);
+      shiroRule.setSubject(subject);
+
+      PrincipalCollection principals = mock(PrincipalCollection.class);
+      when(subject.getPrincipals()).thenReturn(principals);
+      when(subject.isPermitted(any(String.class))).thenReturn(true);
+      User user1 = new User("user", "User", "user@mail.com");
+      when(principals.oneByType(User.class)).thenReturn(user1);
+
+      when(repositoryResolver.resolve(any())).thenReturn(REPOSITORY);
+      PullRequest pullRequest = createPullRequest("1", null, null);
+      Map<String, Boolean> reviewers = new HashMap<>();
+      reviewers.put(user1.getId(), Boolean.TRUE);
+      pullRequest.setReviewer(reviewers);
+      when(store.get("1")).thenReturn(pullRequest);
+
+      service.disapprove(REPOSITORY.getNamespaceAndName(), pullRequest.getId());
+
+      PullRequest storedPullRequest = service.get(REPOSITORY, "1");
+      assertThat(storedPullRequest.getReviewer().keySet())
+        .hasSize(1)
+        .allMatch(r -> r.equals(LOGGED_IN_USER.getId()));
+      assertThat(storedPullRequest.getReviewer().values())
+        .hasSize(1)
+        .noneMatch(Boolean::booleanValue);
     }
 
     @Test
@@ -176,10 +241,10 @@ class DefaultPullRequestServiceTest {
 
   private void mockChangesets(Changeset... changesets) throws IOException {
     RepositoryService service = mock(RepositoryService.class);
-    when(repositoryService.create(any(Repository.class))).thenReturn(service);
+    lenient().when(repositoryService.create(any(Repository.class))).thenReturn(service);
     LogCommandBuilder logCommandBuilder = mock(LogCommandBuilder.class, Mockito.RETURNS_SELF);
-    when(service.getLogCommand()).thenReturn(logCommandBuilder);
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(changesets.length, asList(changesets)));
+    lenient().when(service.getLogCommand()).thenReturn(logCommandBuilder);
+    lenient().when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(changesets.length, asList(changesets)));
   }
 
   @Nested
@@ -191,7 +256,7 @@ class DefaultPullRequestServiceTest {
     void mockOldPullRequest() {
       oldPullRequest = createPullRequest("changed", Instant.ofEpochSecond(1_000_000), null);
       oldPullRequest.setSubscriber(singleton("subscriber"));
-      oldPullRequest.setReviewer(singleton("reviewer"));
+      oldPullRequest.setReviewer(singletonMap("reviewer", false));
       when(store.get("changed")).thenReturn(oldPullRequest);
     }
 
@@ -230,7 +295,7 @@ class DefaultPullRequestServiceTest {
     @Test
     void shouldAddNewReviewerAsSubscriber() {
       PullRequest pullRequest = createPullRequest("changed", null, null);
-      pullRequest.setReviewer(singleton("new_reviewer"));
+      pullRequest.setReviewer(singletonMap("new_reviewer", false));
 
       service.update(REPOSITORY, "changed", pullRequest);
 
@@ -255,7 +320,7 @@ class DefaultPullRequestServiceTest {
   @Nested
   class WithExistingPullRequest {
 
-      PullRequest pullRequest = createPullRequest("id", null, null);
+    PullRequest pullRequest = createPullRequest("id", null, null);
 
     @BeforeEach
     void addExistingPullRequest() {
@@ -331,6 +396,6 @@ class DefaultPullRequestServiceTest {
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, null, emptySet(), emptySet());
+    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>());
   }
 }

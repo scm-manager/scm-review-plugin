@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.Link;
@@ -13,6 +14,7 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -28,8 +30,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,6 +48,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private UserDisplayManager userDisplayManager;
 
   @Inject
+  private PullRequestService pullRequestService;
+  @Inject
   private RepositoryServiceFactory serviceFactory;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
   @Inject
@@ -55,33 +60,42 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
+  @Mapping(target = "subscriber", ignore = true)
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewerFromDto")
   public abstract PullRequest map(PullRequestDto dto);
 
   @Named("mapReviewerFromDto")
-  Set<String> mapReviewerFromDto(Set<DisplayedUserDto> reviewer) {
-    if (reviewer.isEmpty()) {
-      return Collections.emptySet();
+  Map<String, Boolean> mapReviewerFromDto(Set<ReviewerDto> reviewer) {
+    Map<String, Boolean> reviewerMap = new HashMap<>();
+
+    for (ReviewerDto singleReviewer : reviewer) {
+      Optional<DisplayUser> displayUser = userDisplayManager.get(singleReviewer.getId());
+      if (!displayUser.isPresent()) {
+        continue;
+      }
+      reviewerMap.put(displayUser.get().getId(), singleReviewer.isApproved());
     }
-    return reviewer
-      .stream()
-      .map(DisplayedUserDto::getId)
-      .map(userDisplayManager::get)
-      .filter(Optional::isPresent)
-      .map(Optional::get)
-      .map(DisplayUser::getId)
-      .collect(Collectors.toSet());
+
+    return reviewerMap;
   }
 
   @Named("mapReviewer")
-  Set<DisplayedUserDto> mapReviewer(Set<String> reviewer) {
+  Set<ReviewerDto> mapReviewer(Map<String, Boolean> reviewer) {
     return reviewer
+      .entrySet()
       .stream()
-      .map(userDisplayManager::get)
-      .filter(Optional::isPresent)
-      .map(Optional::get)
-      .map(this::createDisplayedUserDto)
+      .map(entry -> this.createReviewerDto(getUserIfAvailable(entry), entry.getValue()))
       .collect(Collectors.toSet());
+  }
+
+  private DisplayUser getUserIfAvailable(Map.Entry<String, Boolean> entry) {
+    Optional<DisplayUser> getDisplayUser = userDisplayManager.get(entry.getKey());
+    DisplayUser user = getDisplayUser.orElse(null);
+
+    if (user == null) {
+      throw new NotFoundException(DisplayUser.class, String.format("User %s not found", entry.getKey()));
+    }
+    return user;
   }
 
   @Named("mapAuthor")
@@ -110,6 +124,14 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments()
       .all(repository.getNamespace(), repository.getName(), target.getId())));
     if (CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
+      if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
+        if (pullRequestService.hasUserApproved(repository, pullRequest.getId())) {
+          linksBuilder.single(link("disapprove", pullRequestResourceLinks.pullRequest().disapprove(repository.getNamespace(), repository.getName(), target.getId())));
+        } else {
+          linksBuilder.single(link("approve", pullRequestResourceLinks.pullRequest().approve(repository.getNamespace(), repository.getName(), target.getId())));
+        }
+      }
+
       linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest()
         .subscription(repository.getNamespace(), repository.getName(), target.getId())));
     }
@@ -149,6 +171,10 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   private DisplayedUserDto createDisplayedUserDto(DisplayUser user) {
     return new DisplayedUserDto(user.getId(), user.getDisplayName(), user.getMail());
+  }
+
+  private ReviewerDto createReviewerDto(DisplayUser user, Boolean approved) {
+    return new ReviewerDto(user.getId(), user.getDisplayName(), user.getMail(), approved);
   }
 
   private Link createStrategyLink(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {

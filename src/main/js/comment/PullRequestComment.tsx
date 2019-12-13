@@ -282,7 +282,13 @@ class PullRequestComment extends React.Component<Props, State> {
     const { updatedComment, error } = this.state;
     return (
       <>
-        <Textarea name="comment" value={updatedComment.comment} onChange={this.handleUpdateChange} />
+        <Textarea
+          name="comment"
+          value={updatedComment.comment}
+          onChange={this.handleUpdateChange}
+          onSubmit={this.update}
+          onCancel={this.cancelUpdate}
+        />
         {error && <ErrorNotification error={error} />}
       </>
     );

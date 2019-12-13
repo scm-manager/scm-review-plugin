@@ -10,7 +10,7 @@ const Wrapper = styled.div`
   }
 
   /* multiple comments on same file */
-  "& .comment-wrapper + .comment-wrapper": {
+  & .comment-wrapper + .comment-wrapper {
     border-top: 1px solid #dbdbdb; // $border
   }
 `;

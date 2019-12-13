@@ -4,15 +4,12 @@
     "create": {
       "title": "Pull Request",
       "subtitle": "Erstellt einen neuen Pull Request für {{repositoryName}}",
-      "submitButton": "Speichern"
+      "submitButton": "Pull Request erstellen"
     },
     "edit": {
-      "button": "Pull Request bearbeiten",
       "title": "Pull Request",
       "subtitle": "Pull Request ändern für {{repositoryName}}",
-      "submitButton": "Speichern",
-      "subscribe": "Subscribe",
-      "unsubscribe": "Unsubscribe"
+      "submitButton": "Pull Request ändern"
     },
     "diff": {
       "notSupported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt.",
@@ -23,6 +20,10 @@
       "sourceBranch": "Source Branch",
       "targetBranch": "Target Branch",
       "title": "Titel",
+      "validation": {
+        "sourceBranch": "Kein Unterschied zwischen Source-Branch und Target-Branch.",
+        "title": "Titel erforderlich"
+      },
       "description": "Beschreibung",
       "status": "Status",
       "id": "ID",
@@ -36,10 +37,29 @@
         "conflicts": "Konflikte",
         "comments": "Comments"
       },
-      "noChangesets": "Keine Changesets gefunden."
+      "noChangesets": "Keine Changesets gefunden.",
+      "details": {
+        "notification": "Pull Request erfolgreich gemerged!",
+        "targetDeleted": "Der Target Branch wurde gelöscht!",
+        "approved": "Freigegeben durch {{name}}",
+        "buttons": {
+          "edit": "Bearbeiten",
+          "approve": "Freigeben",
+          "disapprove": "Freigabe zurückziehen",
+          "subscribe": "Subscribe",
+          "unsubscribe": "Unsubscribe"
+        }
+      },
+      "selector": {
+        "OPEN": "offen",
+        "MINE": "meine",
+        "REVIEWER": "zu reviewen",
+        "ALL": "alle",
+        "REJECTED": "abgelehnt",
+        "MERGED": "gemerged"
+      }
     },
     "showPullRequest": {
-      "errorTitle": "Fehler",
       "mergeButton": {
         "buttonTitle": "Pull Request mergen",
         "mergeInformation": "Automatischer Merge nicht möglich."
@@ -74,14 +94,11 @@
           "submit": "Ja",
           "cancel": "Nein"
         }
-      },
-      "notification": "Pull Request erfolgreich gemerged!",
-      "targetDeleted": "Der Target Branch wurde gelöscht!",
+      }
     },
     "pullRequests": {
       "errorTitle": "Fehler",
       "errorSubtitle": "Unbekannter Pull Request Fehler",
-      "description": "Beschreibung",
       "createButton": "Pull Request erstellen"
     },
     "comment": {
@@ -177,6 +194,10 @@
       }
     }
   },
+  "branch": {
+    "header": "Pull Requests",
+    "createPullRequest": "Neuen Pull Request erstellen"
+  },
   "verbs": {
     "repository": {
       "createPullRequest": {
@@ -205,6 +226,14 @@
     "DTRhFJFgU1": {
       "displayName": "Merge Konflikte",
       "description": "Die Branches konnten nicht gemerged werden, da Konflikte existieren."
+    },
+    "FTRhcI0To1": {
+      "displayName": "Pull-Request nicht offen",
+      "description": "Merges können nur auf offenen Pull-Requests ausgeführt werden."
+    },
+    "CVRj80D6z1": {
+      "displayName": "Keine Unterschiede gefunden.",
+      "description": "Es gibt keine Unterschiede zwischen Source und Target, die gemerged werden können  (oder der Source-Branch ist ein Vorgänger des Ziel-Branches)."
     }
   }
 }

@@ -1,9 +1,9 @@
 import React from "react";
-import { ErrorNotification, Loading, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
-import { Repository } from "@scm-manager/ui-types";
+import { ErrorNotification, Loading, SubmitButton, Subtitle, Title, Level } from "@scm-manager/ui-components";
+import { Repository, Link } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import { updatePullRequest } from "./pullRequest";
-import { Trans, withTranslation, WithTranslation } from "react-i18next";
+import { WithTranslation, withTranslation } from "react-i18next";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import EditForm from "./EditForm";
 
@@ -12,6 +12,7 @@ type Props = WithTranslation &
     repository: Repository;
     pullRequest: PullRequest;
     userAutocompleteLink: string;
+    fetchPullRequest: () => void;
   };
 
 type State = {
@@ -46,22 +47,23 @@ class Edit extends React.Component<Props, State> {
       loading: true
     });
 
-    updatePullRequest(modifiedPullRequest._links.update.href, modifiedPullRequest).then(result => {
-      if (result.error) {
-        this.setState({
-          loading: false,
-          error: result.error
-        });
-      } else {
+    updatePullRequest((modifiedPullRequest._links.update as Link).href, modifiedPullRequest)
+      .then(() => {
         this.setState({
           loading: false
         });
+        this.props.fetchPullRequest();
         this.pullRequestUpdated();
-      }
-    });
+      })
+      .catch(err => {
+        this.setState({
+          loading: false,
+          error: err
+        });
+      });
   };
 
-  handleFormChange = (value, name: string) => {
+  handleFormChange = (value: any, name: string) => {
     this.setState({
       modifiedPullRequest: {
         ...this.state.modifiedPullRequest,
@@ -83,19 +85,11 @@ class Edit extends React.Component<Props, State> {
       return <Loading />;
     }
 
-    const subtitle = (
-      <Trans
-        i18nKey="scm-review-plugin.edit.subtitle"
-        values={{
-          repositoryName: repository.name
-        }}
-      />
-    );
     return (
       <div className="columns">
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.edit.title")} />
-          <Subtitle subtitle={subtitle} />
+          <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
 
           {notification}
 
@@ -106,7 +100,11 @@ class Edit extends React.Component<Props, State> {
             userAutocompleteLink={userAutocompleteLink}
             handleFormChange={this.handleFormChange}
           />
-          <SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={this.submit} loading={loading} />
+          <Level
+            right={
+              <SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={this.submit} loading={loading} />
+            }
+          />
         </div>
       </div>
     );

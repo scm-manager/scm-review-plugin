@@ -16,21 +16,25 @@ const useComments = (pullRequest: PullRequest, dispatch: Dispatch<any>): Respons
   const [links, setLinks] = useState();
 
   useEffect(() => {
-    const url = (pullRequest._links.comments as Link).href;
-    getPullRequestComments(url)
-      .then((commentResponse: Comments) => {
-        let comments = [];
-        if (commentResponse && commentResponse._embedded) {
-          comments = commentResponse._embedded.pullRequestComments;
-        }
-        setLinks(commentResponse._links);
-        setLoading(false);
-        dispatch(fetchAll(comments));
-      })
-      .catch(error => {
-        setLoading(false);
-        setError(error);
-      });
+    const url = pullRequest && pullRequest._links && (pullRequest._links.comments as Link).href;
+    if (url) {
+      getPullRequestComments(url)
+        .then((commentResponse: Comments) => {
+          let comments = [];
+          if (commentResponse && commentResponse._embedded) {
+            comments = commentResponse._embedded.pullRequestComments;
+          }
+          setLinks(commentResponse._links);
+          setLoading(false);
+          dispatch(fetchAll(comments));
+        })
+        .catch(error => {
+          setLoading(false);
+          setError(error);
+        });
+    } else {
+      setLoading(false);
+    }
   }, [dispatch, pullRequest]);
 
   return {

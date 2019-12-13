@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
@@ -51,8 +52,9 @@ public class DefaultPullRequestService implements PullRequestService {
     pullRequest.setCreationDate(Instant.now());
     pullRequest.setLastModified(null);
     computeSubscriberForNewPullRequest(pullRequest);
+    String id = getStore(repository).add(pullRequest);
     eventBus.post(new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE));
-    return getStore(repository).add(pullRequest);
+    return id;
   }
 
   private void verifyNewChangesetsOnSource(Repository repository, String source, String target) throws NoDifferenceException {
@@ -65,7 +67,7 @@ public class DefaultPullRequestService implements PullRequestService {
         .getChangesets();
 
       if (changesets.getChangesets().isEmpty()) {
-        throw new NoDifferenceException();
+        throw new NoDifferenceException(repository);
       }
     } catch (IOException e) {
       throw new InternalRepositoryException(repository, "error checking for diffs between branches", e);
@@ -75,7 +77,7 @@ public class DefaultPullRequestService implements PullRequestService {
   private void computeSubscriberForNewPullRequest(PullRequest pullRequest) {
     User user = CurrentUserResolver.getCurrentUser();
     Set<String> subscriber = new HashSet<>(pullRequest.getSubscriber());
-    subscriber.addAll(pullRequest.getReviewer());
+    subscriber.addAll(pullRequest.getReviewer().keySet());
     subscriber.add(user.getId());
     pullRequest.setSubscriber(subscriber);
   }
@@ -87,13 +89,13 @@ public class DefaultPullRequestService implements PullRequestService {
     pullRequest.setCreationDate(oldPullRequest.getCreationDate());
     pullRequest.setLastModified(Instant.now());
     computeSubscriberForChangedPullRequest(oldPullRequest, pullRequest);
-    eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
     store.update(pullRequest);
+    eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
   }
 
   private void computeSubscriberForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
     Set<String> newSubscriber = new HashSet<>(oldPullRequest.getSubscriber());
-    Set<String> addedReviewers = changedPullRequest.getReviewer().stream().filter(r -> !oldPullRequest.getReviewer().contains(r)).collect(Collectors.toSet());
+    Set<String> addedReviewers = changedPullRequest.getReviewer().keySet().stream().filter(r -> !oldPullRequest.getReviewer().keySet().contains(r)).collect(Collectors.toSet());
     newSubscriber.addAll(addedReviewers);
     changedPullRequest.setSubscriber(newSubscriber);
   }
@@ -159,6 +161,36 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
+  public boolean hasUserApproved(Repository repository, String pullRequestId, User user) {
+    return getStore(repository).get(pullRequestId).getReviewer().entrySet()
+      .stream()
+      .filter(Map.Entry::getValue)
+      .anyMatch(entry -> entry.getKey().equals(user.getId()));
+  }
+
+  @Override
+  public void approve(NamespaceAndName namespaceAndName, String pullRequestId, User user) {
+    Repository repository = getRepository(namespaceAndName.getNamespace(), namespaceAndName.getName());
+    PermissionCheck.mayComment(repository);
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
+    pullRequest.addApprover(user.getId());
+    getStore(repository).update(pullRequest);
+  }
+
+  @Override
+  public void disapprove(NamespaceAndName namespaceAndName, String pullRequestId, User user) {
+    Repository repository = getRepository(namespaceAndName.getNamespace(), namespaceAndName.getName());
+    PermissionCheck.mayComment(repository);
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
+    Set<String> approver = pullRequest.getReviewer().keySet();
+    approver.stream()
+      .filter(recipient -> user.getId().equals(recipient))
+      .findFirst()
+      .ifPresent(pullRequest::removeApprover);
+    getStore(repository).update(pullRequest);
+  }
+
+  @Override
   public boolean isUserSubscribed(Repository repository, String pullRequestId, User user) {
     return getStore(repository).get(pullRequestId).getSubscriber()
       .stream()
@@ -167,28 +199,30 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public void subscribe(Repository repository, String pullRequestId, User user) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     pullRequest.addSubscriber(user.getId());
-    store.update(pullRequest);
-
+    getStore(repository).update(pullRequest);
   }
 
   @Override
   public void unsubscribe(Repository repository, String pullRequestId, User user) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     Set<String> subscriber = pullRequest.getSubscriber();
     subscriber.stream()
       .filter(recipient -> user.getId().equals(recipient))
       .findFirst()
       .ifPresent(pullRequest::removeSubscriber);
-    store.update(pullRequest);
+    getStore(repository).update(pullRequest);
   }
 
   private void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
     pullRequest.setStatus(newStatus);
     getStore(repository).update(pullRequest);
+  }
+
+  private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {
+    PullRequestStore store = getStore(repository);
+    return store.get(pullRequestId);
   }
 
   private PullRequestStore getStore(String namespace, String name) {

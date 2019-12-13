@@ -52,7 +52,6 @@ describe("API create pull request", () => {
 
     createPullRequest(PULLREQUEST_URL, pullRequest).then(response => {
       expect(response.status).toBe(204);
-      expect(response.error).toBeUndefined();
       done();
     });
   });
@@ -62,8 +61,8 @@ describe("API create pull request", () => {
       status: 500
     });
 
-    createPullRequest(PULLREQUEST_URL, pullRequest).then(response => {
-      expect(response.error).toBeDefined();
+    createPullRequest(PULLREQUEST_URL, pullRequest).catch(error => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -79,7 +78,6 @@ describe("API create pull request", () => {
           defaultBranch: true
         }
       });
-      expect(response.error).toBeUndefined();
       done();
     });
   });
@@ -89,8 +87,8 @@ describe("API create pull request", () => {
       status: 500
     });
 
-    getBranches(BRANCH_URL).then(response => {
-      expect(response.error).toBeDefined();
+    getBranches(BRANCH_URL).catch(error => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -121,9 +119,8 @@ describe("API update pull request", () => {
       status: 204
     });
 
-    updatePullRequestComment(PULLREQUEST_URL, pullRequest).then(response => {
+    updatePullRequestComment(PULLREQUEST_URL, pullRequest).then((response: Response) => {
       expect(response.status).toBe(204);
-      expect(response.error).toBeUndefined();
       done();
     });
   });
@@ -133,8 +130,8 @@ describe("API update pull request", () => {
       status: 500
     });
 
-    updatePullRequestComment(PULLREQUEST_URL, pullRequest).then(response => {
-      expect(response.error).toBeDefined();
+    updatePullRequestComment(PULLREQUEST_URL, pullRequest).catch((error: Error) => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -159,7 +156,6 @@ describe("API create comment", () => {
 
     createPullRequestComment(COMMENTS_URL, comment).then(response => {
       expect(response.status).toBe(204);
-      expect(response.error).toBeUndefined();
       done();
     });
   });
@@ -169,8 +165,8 @@ describe("API create comment", () => {
       status: 500
     });
 
-    createPullRequestComment(COMMENTS_URL, comment).then(response => {
-      expect(response.error).toBeDefined();
+    createPullRequestComment(COMMENTS_URL, comment).catch(error => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -195,7 +191,6 @@ describe("API update comment", () => {
 
     updatePullRequestComment(COMMENTS_URL, comment).then(response => {
       expect(response.status).toBe(204);
-      expect(response.error).toBeUndefined();
       done();
     });
   });
@@ -205,8 +200,8 @@ describe("API update comment", () => {
       status: 500
     });
 
-    updatePullRequestComment(COMMENTS_URL, comment).then(response => {
-      expect(response.error).toBeDefined();
+    updatePullRequestComment(COMMENTS_URL, comment).catch(error => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -245,8 +240,8 @@ describe("API get pull request", () => {
       status: 500
     });
 
-    getPullRequest(PULLREQUEST_URL).then(response => {
-      expect(response.error).toBeDefined();
+    getPullRequest(PULLREQUEST_URL).catch(error => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -298,8 +293,8 @@ describe("API get pull requests", () => {
       status: 500
     });
 
-    getPullRequests(PULLREQUEST_URL).then(response => {
-      expect(response.error).toBeDefined();
+    getPullRequests(PULLREQUEST_URL).catch((error: Error) => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -366,8 +361,8 @@ describe("API get comments", () => {
       status: 500
     });
 
-    getPullRequests(COMMENTS_URL).then(response => {
-      expect(response.error).toBeDefined();
+    getPullRequests(COMMENTS_URL).catch(error => {
+      expect(error).toBeDefined();
       done();
     });
   });
@@ -398,8 +393,7 @@ describe("API merge pull request", () => {
       targetRevision: pullRequest.target
     });
 
-    merge(PULLREQUEST_URL, pullRequest).then(response => {
-      expect(response.error).toBeUndefined();
+    merge(PULLREQUEST_URL, pullRequest).then(() => {
       done();
     });
   });
@@ -409,8 +403,8 @@ describe("API merge pull request", () => {
       status: 500
     });
 
-    merge(PULLREQUEST_URL, pullRequest).then(response => {
-      expect(response.error).toBeDefined();
+    merge(PULLREQUEST_URL, pullRequest).catch((error: Error) => {
+      expect(error).toBeDefined();
       done();
     });
   });

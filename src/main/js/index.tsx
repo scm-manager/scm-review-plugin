@@ -5,6 +5,7 @@ import SinglePullRequest from "./SinglePullRequest";
 import PullRequestList from "./PullRequestList";
 import { Route } from "react-router-dom";
 import PullRequestsNavLink from "./PullRequestsNavLink";
+import CreatePullRequestButton from "./CreatePullRequestButton";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -71,3 +72,7 @@ const ShowPullRequestsRoute = ({ url, repository }) => {
 };
 
 binder.bind("repository.route", ShowPullRequestsRoute);
+
+binder.bind("repos.branch-details.information", ({ repository, branch }) => (
+  <CreatePullRequestButton repository={repository} branch={branch} />
+));

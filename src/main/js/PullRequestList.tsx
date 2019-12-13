@@ -1,9 +1,9 @@
 import React from "react";
 import { CreateButton, ErrorPage, Loading } from "@scm-manager/ui-components";
-import { Repository } from "@scm-manager/ui-types";
+import { Repository, Link } from "@scm-manager/ui-types";
 import { PullRequestCollection } from "./types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { withRouter } from "react-router-dom";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import { getPullRequests } from "./pullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
@@ -13,12 +13,13 @@ const ScrollingTable = styled.div`
   overflow-x: auto;
 `;
 
-type Props = WithTranslation & {
-  repository: Repository;
-};
+type Props = RouteComponentProps &
+  WithTranslation & {
+    repository: Repository;
+  };
 
 type State = {
-  pullRequests: PullRequestCollection;
+  pullRequests?: PullRequestCollection;
   error?: Error;
   loading: boolean;
   status: string;
@@ -28,45 +29,44 @@ class PullRequestList extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      pullRequests: null,
+      pullRequests: undefined,
       loading: true,
       status: "OPEN"
     };
   }
 
   componentDidMount(): void {
-    const url = this.props.repository._links.pullRequest.href;
+    const url = (this.props.repository._links.pullRequest as Link).href;
     this.updatePullRequests(url);
   }
 
   updatePullRequests = (url: string) => {
-    getPullRequests(url).then(response => {
-      if (response.error) {
+    getPullRequests(url)
+      .then(pullRequests => {
         this.setState({
-          error: response.error,
+          pullRequests,
           loading: false
         });
-      } else {
+      })
+      .catch(error => {
         this.setState({
-          pullRequests: response,
-          loading: false
+          loading: false,
+          error
         });
-      }
-    });
+      });
   };
 
   handleStatusChange = (status: string) => {
     this.setState({
       status: status
     });
-    const url = `${this.props.repository._links.pullRequest.href}?status=${status}`;
+    const url = `${(this.props.repository._links.pullRequest as Link).href}?status=${status}`;
     this.updatePullRequests(url);
   };
 
   renderPullRequestTable = () => {
+    const { repository } = this.props;
     const { pullRequests, status } = this.state;
-
-    const availablePullRequests = pullRequests._embedded.pullRequests;
 
     return (
       <div className="panel">
@@ -75,7 +75,10 @@ class PullRequestList extends React.Component<Props, State> {
         </div>
 
         <ScrollingTable className="panel-block">
-          <PullRequestTable pullRequests={availablePullRequests} />
+          <PullRequestTable
+            repository={repository}
+            pullRequests={pullRequests && pullRequests._embedded.pullRequests}
+          />
         </ScrollingTable>
       </div>
     );

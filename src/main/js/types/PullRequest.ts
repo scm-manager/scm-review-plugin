@@ -1,5 +1,9 @@
 import { Collection, DisplayedUser, Links } from "@scm-manager/ui-types";
 
+export type Reviewer = DisplayedUser & {
+  approved: boolean;
+};
+
 export type BasicPullRequest = {
   source: string;
   target: string;
@@ -11,7 +15,7 @@ export type PullRequest = BasicPullRequest & {
   author: DisplayedUser;
   id: string;
   creationDate: string;
-  reviewer: DisplayedUser[];
+  reviewer: Reviewer[];
   status: string;
   _links: Links;
 };
@@ -40,7 +44,7 @@ export type Comment = BasicComment & {
   replies: Comment[];
   context?: Context;
   _links: Links;
-  _embedded?: {[key: string]: any};
+  _embedded?: { [key: string]: any };
 };
 
 export type Context = {

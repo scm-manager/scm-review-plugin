@@ -1,16 +1,16 @@
 import React from "react";
-import { ErrorNotification, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
-import { Repository } from "@scm-manager/ui-types";
+import { ErrorNotification, SubmitButton, Subtitle, Title, Level } from "@scm-manager/ui-components";
+import { Repository, Changeset, Link } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
 import { BasicPullRequest } from "./types/PullRequest";
-import { createPullRequest } from "./pullRequest";
-import { Trans, WithTranslation, withTranslation } from "react-i18next";
+import { createChangesetUrl, createPullRequest, getChangesets } from "./pullRequest";
+import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import queryString from "query-string";
 
-const ControlButtons = styled.div`
+const TopPaddingLevel = styled(Level)`
   padding-top: 1.5em;
 `;
 
@@ -21,20 +21,37 @@ type Props = WithTranslation &
   };
 
 type State = {
-  pullRequest?: BasicPullRequest;
+  pullRequest: BasicPullRequest;
   loading: boolean;
   error?: Error;
   disabled: boolean;
+  changesets: Changeset[];
+  showBranchesValidationError: boolean;
 };
 
 class Create extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      pullRequest: {
+        title: "",
+        target: "",
+        source: ""
+      },
       loading: false,
-      disabled: true
+      disabled: true,
+      changesets: [],
+      showBranchesValidationError: false
     };
   }
+
+  fetchChangesets = (pullRequest: BasicPullRequest) => {
+    return getChangesets(createChangesetUrl(this.props.repository, pullRequest.source, pullRequest.target))
+      .then((result: Changeset) => {
+        this.setState({ changesets: result._embedded.changesets });
+      })
+      .catch((error: Error) => this.setState({ error, loading: false }));
+  };
 
   pullRequestCreated = () => {
     const { history, repository } = this.props;
@@ -49,34 +66,56 @@ class Create extends React.Component<Props, State> {
       loading: true
     });
 
-    createPullRequest(repository._links.pullRequest.href, pullRequest).then(result => {
-      if (result.error) {
+    if (!pullRequest) {
+      throw new Error("illegal state, no pull request defined");
+    }
+
+    createPullRequest((repository._links.pullRequest as Link).href, pullRequest)
+      .then(() => {
+        this.setState(
+          {
+            loading: false
+          },
+          this.pullRequestCreated
+        );
+      })
+      .catch(error => {
         this.setState({
           loading: false,
-          error: result.error
+          error
         });
-      } else {
-        this.setState({
-          loading: false
-        });
-        this.pullRequestCreated();
-      }
-    });
+      });
   };
 
   verify = (pullRequest: BasicPullRequest) => {
     const { source, target, title } = pullRequest;
-    if (source && target && title) {
-      return source !== target;
+    if (source && target && title && this.state.changesets) {
+      return source !== target && this.state.changesets.length > 0;
     }
     return false;
   };
 
+  shouldFetchChangesets = (pullRequest: BasicPullRequest) => {
+    return (
+      this.state.pullRequest?.source !== pullRequest.source || this.state.pullRequest.target !== pullRequest.target
+    );
+  };
+
   handleFormChange = (pullRequest: BasicPullRequest) => {
-    this.setState({
-      pullRequest,
-      disabled: !this.verify(pullRequest)
-    });
+    if (this.shouldFetchChangesets(pullRequest)) {
+      this.fetchChangesets(pullRequest).then(() => {
+        this.setState({
+          pullRequest,
+          disabled: !this.verify(pullRequest),
+          showBranchesValidationError: !(this.state.changesets.length > 0)
+        });
+      });
+    } else {
+      this.setState({
+        pullRequest,
+        disabled: !this.verify(pullRequest)
+      });
+    }
   };
 
   render() {
@@ -104,20 +143,11 @@ class Create extends React.Component<Props, State> {
         />
       );
     }
-    const subtitle = (
-      <Trans
-        i18nKey="scm-review-plugin.create.subtitle"
-        values={{
-          repositoryName: repository.name
-        }}
-      />
-    );
-
     return (
       <div className="columns">
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.create.title")} />
-          <Subtitle subtitle={subtitle} />
+          <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
 
           {notification}
 
@@ -127,18 +157,21 @@ class Create extends React.Component<Props, State> {
             onChange={this.handleFormChange}
             source={params.source}
             target={params.target}
+            showBranchesValidationError={this.state.showBranchesValidationError}
           />
 
           {information}
 
-          <ControlButtons>
-            <SubmitButton
-              label={t("scm-review-plugin.create.submitButton")}
-              action={this.submit}
-              loading={loading}
-              disabled={disabled}
-            />
-          </ControlButtons>
+          <TopPaddingLevel
+            right={
+              <SubmitButton
+                label={t("scm-review-plugin.create.submitButton")}
+                action={this.submit}
+                loading={loading}
+                disabled={disabled}
+              />
+            }
+          />
         </div>
       </div>
     );

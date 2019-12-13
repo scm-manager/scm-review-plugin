@@ -1,11 +1,10 @@
 import React from "react";
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
-import { Switch, Route, withRouter, RouteComponentProps } from "react-router-dom";
+import { Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
-import { Repository } from "@scm-manager/ui-types";
+import { Link, Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
-import { getPullRequest } from "./pullRequest";
-import { History } from "history";
+import { getPullRequest, getReviewer } from "./pullRequest";
 import Edit from "./Edit";
 
 type Props = RouteComponentProps & {
@@ -31,41 +30,39 @@ class SinglePullRequest extends React.Component<Props, State> {
     this.fetchPullRequest();
   }
 
-  /**
-   * update pull request only if needed
-   */
-  componentDidUpdate(): void {
-    const { history } = this.props;
-    // the /updated path is set from the sub components after an update of the pull request.
-    // this is a flag to perform fetching pull request
-    if (
-      history &&
-      history.location.state &&
-      history.location.state.from &&
-      history.location.state.from.indexOf("/updated") > -1
-    ) {
-      this.fetchPullRequest();
-      history.push();
-    }
-  }
-
-  fetchPullRequest = (): void => {
+  fetchPullRequest = () => {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
-    const url = repository._links.pullRequest.href + "/" + pullRequestNumber;
-    getPullRequest(url).then(response => {
-      if (response.error) {
+    const url = (repository._links.pullRequest as Link).href + "/" + pullRequestNumber;
+    getPullRequest(url)
+      .then(pullRequest => {
         this.setState({
-          error: response.error,
+          pullRequest,
           loading: false
         });
-      } else {
+      })
+      .catch(error => {
         this.setState({
-          pullRequest: response,
+          error,
           loading: false
         });
-      }
-    });
+      });
+  };
+
+  fetchReviewer = (): void => {
+    const { pullRequest } = this.state;
+    if (pullRequest && pullRequest._links && pullRequest._links.self && (pullRequest._links.self as Link).href) {
+      const url = (pullRequest._links.self as Link).href + "?fields=reviewer&fields=_links";
+      getReviewer(url).then(response => {
+        if (response.error) {
+          this.setState({
+            error: response.error
+          });
+        } else {
+          this.setState({ pullRequest: { ...pullRequest, reviewer: response.reviewer, _links: response._links } });
+        }
+      });
+    }
   };
 
   render() {
@@ -84,13 +81,25 @@ class SinglePullRequest extends React.Component<Props, State> {
       <Switch>
         <Route
           component={() => (
-            <Edit repository={repository} pullRequest={pullRequest} userAutocompleteLink={userAutocompleteLink} />
+            <Edit
+              repository={repository}
+              pullRequest={pullRequest}
+              userAutocompleteLink={userAutocompleteLink}
+              fetchPullRequest={this.fetchPullRequest}
+            />
           )}
           path={`${match.url}/edit`}
           exact
         />
         <Route
-          component={() => <PullRequestDetails repository={repository} pullRequest={pullRequest} />}
+          component={() => (
+            <PullRequestDetails
+              repository={repository}
+              pullRequest={pullRequest}
+              fetchReviewer={this.fetchReviewer}
+              fetchPullRequest={this.fetchPullRequest}
+            />
+          )}
           path={`${match.url}`}
         />
       </Switch>

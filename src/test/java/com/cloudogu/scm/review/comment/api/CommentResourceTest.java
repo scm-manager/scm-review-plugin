@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.comment.api;
 
-import com.cloudogu.scm.review.ExceptionMessageMapper;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
@@ -13,8 +12,6 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.inject.util.Providers;
 import org.assertj.core.api.Assertions;
-import org.jboss.resteasy.core.Dispatcher;
-import org.jboss.resteasy.mock.MockDispatcherFactory;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.Before;
@@ -23,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
+import sonia.scm.web.RestDispatcher;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
@@ -49,7 +47,7 @@ public class CommentResourceTest {
   private final Repository repository = mock(Repository.class);
   private final UriInfo uriInfo = mock(UriInfo.class);
 
-  private Dispatcher dispatcher;
+  private RestDispatcher dispatcher;
 
   private final MockHttpResponse response = new MockHttpResponse();
 
@@ -71,12 +69,11 @@ public class CommentResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     CommentResource resource = new CommentResource(service, repositoryResolver, new CommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new ExecutedTransitionMapperImpl(), branchRevisionResolver);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
-    dispatcher = MockDispatcherFactory.createDispatcher();
-    dispatcher.getProviderFactory().register(new ExceptionMessageMapper());
+    dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
       Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
         Providers.of(new CommentRootResource(new CommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder, pullRequestService, branchRevisionResolver)))));
-    dispatcher.getRegistry().addSingletonResource(pullRequestRootResource);
+    dispatcher.addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);
   }
@@ -117,7 +114,7 @@ public class CommentResourceTest {
     dispatcher.invoke(request, response);
 
     verify(service, never()).delete(any(), any(), any(), any());
-    Assertions.assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+    Assertions.assertThat(response.getContentAsString()).contains("modified concurrently");
   }
 
   @Test
@@ -150,7 +147,7 @@ public class CommentResourceTest {
     dispatcher.invoke(request, response);
 
     verify(service, never()).modifyComment(any(), any(), any(), any(), any());
-    Assertions.assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+    Assertions.assertThat(response.getContentAsString()).contains("modified concurrently");
   }
 
   @Test
@@ -183,7 +180,7 @@ public class CommentResourceTest {
     dispatcher.invoke(request, response);
 
     verify(service, never()).modifyReply(any(), any(), any(), any(), any());
-    Assertions.assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+    Assertions.assertThat(response.getContentAsString()).contains("modified concurrently");
   }
 
   @Test
@@ -220,6 +217,6 @@ public class CommentResourceTest {
     dispatcher.invoke(request, response);
 
     verify(service, never()).reply(any(), any(), any(), any(), any());
-    Assertions.assertThat(response.getContentAsString()).contains("ConcurrentModificationException");
+    Assertions.assertThat(response.getContentAsString()).contains("modified concurrently");
   }
 }

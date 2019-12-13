@@ -9,7 +9,7 @@ import MergeModal from "./MergeModal";
 type Props = WithTranslation & {
   merge: (strategy: string, commit: MergeCommit) => void;
   repository: Repository;
-  mergeHasNoConflict: boolean;
+  mergeHasNoConflict?: boolean;
   loading: boolean;
   pullRequest: PullRequest;
 };
