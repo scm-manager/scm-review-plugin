@@ -96,6 +96,17 @@ const ShortTag = styled(Tag).attrs(() => ({
   max-width: 25em;
 `;
 
+const TitleTag = styled(Tag).attrs((props: any) => ({
+  className: "is-medium",
+  color: props.color
+}))`
+  margin-left: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 25em;
+`;
+
 const UserList = styled.div`
   margin-bottom: 1.5em;
 `;
@@ -189,10 +200,6 @@ class PullRequestDetails extends React.Component<Props, State> {
             mergeHasNoConflict: true,
             mergeButtonLoading: false
           });
-          // } else if (err instanceof NotFoundError) {
-          //   return {
-          //     notFound: err
-          //   };
         } else {
           this.setState({
             error: err,
@@ -322,13 +329,31 @@ class PullRequestDetails extends React.Component<Props, State> {
         </UserField>
       </div>
     );
+
+    const totalTasks = pullRequest.tasks.todo + pullRequest.tasks.done;
+
+    const titleTagText =
+      pullRequest.tasks.done < totalTasks
+        ? t("scm-review-plugin.pullRequest.tasks.done", {
+            done: pullRequest.tasks.done,
+            total: totalTasks
+          })
+        : t("scm-review-plugin.pullRequest.tasks.allDone");
+
     return (
       <>
         <Container>
           <div className="media">
-            <div className="media-content">
-              <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
-            </div>
+            <UserField className="media-content">
+              <Title title={"#" + pullRequest.id + " " + pullRequest.title} />
+              {totalTasks > 0 && (
+                <TitleTag
+                  label={titleTagText}
+                  title={titleTagText}
+                  color={pullRequest.tasks.done < totalTasks ? "light" : "success"}
+                />
+              )}
+            </UserField>
             <div className="media-right">
               <ButtonGroup>
                 <SubscriptionContainer pullRequest={pullRequest} />

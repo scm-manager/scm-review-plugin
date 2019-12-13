@@ -3,6 +3,9 @@ package com.cloudogu.scm.review.pullrequest.dto;
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
+import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static de.otto.edison.hal.Link.link;
@@ -49,6 +53,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Inject
   private PullRequestService pullRequestService;
+  @Inject
+  private CommentService commentService;
   @Inject
   private RepositoryServiceFactory serviceFactory;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
@@ -117,6 +123,21 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   }
 
   @AfterMapping
+  void mapTasks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
+    List<Comment> comments = commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId());
+    target.setTasks(
+      new TasksDto(
+        countCommentsByFilter(comments, c -> c.getType() == CommentType.TASK_TODO),
+        countCommentsByFilter(comments, c -> c.getType() == CommentType.TASK_DONE)
+      )
+    );
+  }
+
+  private long countCommentsByFilter(List<Comment> comments, Predicate<Comment> filter) {
+    return comments.stream().filter(filter).count();
+  }
+
+  @AfterMapping
   protected void appendLinks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
 
     Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest()
@@ -143,7 +164,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest()
         .reject(repository.getNamespace(), repository.getName(), target.getId())));
 
-      if(RepositoryPermissions.push(repository).isPermitted() && target.getStatus() == PullRequestStatus.OPEN) {
+      if (RepositoryPermissions.push(repository).isPermitted() && target.getStatus() == PullRequestStatus.OPEN) {
         linksBuilder.single(link("mergeDryRun", pullRequestResourceLinks.mergeLinks()
           .dryRun(repository.getNamespace(), repository.getName(), pullRequest.getId())));
         linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
@@ -177,10 +198,10 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   private Link createStrategyLink(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
     return Link.linkBuilder("merge", pullRequestResourceLinks.mergeLinks().merge(
-        namespaceAndName.getNamespace(),
-        namespaceAndName.getName(),
-        pullRequest.getId(),
-        strategy
+      namespaceAndName.getNamespace(),
+      namespaceAndName.getName(),
+      pullRequest.getId(),
+      strategy
       )
     ).withName(strategy.name()).build();
   }
