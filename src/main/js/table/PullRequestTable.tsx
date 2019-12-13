@@ -47,14 +47,10 @@ class PullRequestTable extends React.Component<Props> {
           descendingIcon="sort-alpha-down"
         >
           {(row: any) => (
-            <Level
-              left={
-                <>
-                  <Link to={this.to(row)}>{row.title}</Link>
-                  {this.todoTag(row)}
-                </>
-              }
-            />
+            <>
+              <Link to={this.to(row)}>{row.title}</Link>
+              {this.todoTag(row)}
+            </>
           )}
         </Column>
         <TextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />
