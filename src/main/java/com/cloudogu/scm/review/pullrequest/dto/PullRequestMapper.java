@@ -127,14 +127,13 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     List<Comment> comments = commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId());
     target.setTasks(
       new TasksDto(
-        countByFilter(comments, c -> c.getType() == CommentType.TASK_TODO),
-        countByFilter(comments, c -> c.getType() == CommentType.TASK_DONE),
-        countByFilter(comments, c -> c.getType() == CommentType.TASK_TODO || c.getType() == CommentType.TASK_DONE)
+        countCommentsByFilter(comments, c -> c.getType() == CommentType.TASK_TODO),
+        countCommentsByFilter(comments, c -> c.getType() == CommentType.TASK_DONE)
       )
     );
   }
 
-  private long countByFilter(List<Comment> comments, Predicate<Comment> filter) {
+  private long countCommentsByFilter(List<Comment> comments, Predicate<Comment> filter) {
     return comments.stream().filter(filter).count();
   }
 

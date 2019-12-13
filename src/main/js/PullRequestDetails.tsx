@@ -330,9 +330,13 @@ class PullRequestDetails extends React.Component<Props, State> {
       </div>
     );
 
+    const totalTasks = pullRequest.tasks.todo + pullRequest.tasks.done;
+
     const titleTagText =
-      pullRequest.tasks.done < pullRequest.tasks.total
-        ? `${pullRequest.tasks.done} / ${pullRequest.tasks.total} ${t("scm-review-plugin.pullRequest.tasks.done")}`
+      pullRequest.tasks.done < totalTasks
+        ? `${pullRequest.tasks.done} / ${totalTasks} ${t(
+            "scm-review-plugin.pullRequest.tasks.done"
+          )}`
         : t("scm-review-plugin.pullRequest.tasks.allDone");
 
     return (
@@ -341,7 +345,11 @@ class PullRequestDetails extends React.Component<Props, State> {
           <div className="media">
             <UserField className="media-content">
               <Title title={" #" + pullRequest.id + " " + pullRequest.title} />
-              <TitleTag label={titleTagText}  title={titleTagText} color={pullRequest.tasks.done < pullRequest.tasks.total ? "light" : "success"} />
+              <TitleTag
+                label={titleTagText}
+                title={titleTagText}
+                color={pullRequest.tasks.done < totalTasks ? "light" : "success"}
+              />
             </UserField>
             <div className="media-right">
               <ButtonGroup>

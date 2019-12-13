@@ -12,5 +12,4 @@ import lombok.Setter;
 public class TasksDto {
   Long todo;
   Long done;
-  Long total;
 }
