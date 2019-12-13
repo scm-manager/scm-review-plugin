@@ -332,7 +332,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
     const titleTagText =
       pullRequest.tasks.done < pullRequest.tasks.total
-        ? `${pullRequest.tasks.done}/${pullRequest.tasks.total} ${t("scm-review-plugin.pullRequest.tasks.done")}`
+        ? `${pullRequest.tasks.done} / ${pullRequest.tasks.total} ${t("scm-review-plugin.pullRequest.tasks.done")}`
         : t("scm-review-plugin.pullRequest.tasks.allDone");
 
     return (

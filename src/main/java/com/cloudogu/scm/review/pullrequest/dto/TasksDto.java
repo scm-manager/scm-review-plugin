@@ -10,6 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TasksDto {
+  Long todo;
   Long done;
   Long total;
 }

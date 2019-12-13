@@ -95,6 +95,7 @@ export type MergeCommit = {
 };
 
 export type Tasks = {
+  todo: number;
   done: number;
   total: number;
 };

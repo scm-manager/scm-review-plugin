@@ -37,6 +37,8 @@
         "comments": "Comments"
       },
       "tasks": {
+        "todo": "{{count}} Aufgabe offen",
+        "todo_plural": "{{count}} Aufgaben offen",
         "done": "Aufgaben erledigt",
         "allDone": "Alle Aufgaben erledigt"
       },

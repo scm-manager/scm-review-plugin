@@ -37,7 +37,9 @@
         "comments": "Comments"
       },
       "tasks": {
-        "done": "Tasks done",
+        "todo": "{{count}} task open",
+        "todo_plural": "{{count}} tasks open",
+        "done": "tasks done",
         "allDone": "All tasks done"
       },
       "noChangesets": "No changesets found.",
