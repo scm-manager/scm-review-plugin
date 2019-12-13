@@ -19,7 +19,10 @@ const chooseIcon = (length: number): string => {
 };
 
 const createTooltipMessage = (reviewers: Reviewer[]) => {
-  return reviewers.map(r => r.displayName).join(", ");
+  return reviewers
+    .map(r => r.displayName)
+    .map(n => `- ${n}`)
+    .join("\n");
 };
 
 const ReviewerIcon: FC<Props> = ({ reviewers, t }) => {
@@ -28,7 +31,7 @@ const ReviewerIcon: FC<Props> = ({ reviewers, t }) => {
   }
 
   const icon = chooseIcon(reviewers.length);
-  const message = t("scm-review-plugin.pullRequest.reviewer") + ": " + createTooltipMessage(reviewers);
+  const message = t("scm-review-plugin.pullRequest.reviewer") + ":\n" + createTooltipMessage(reviewers);
   return (
     <Tooltip location="top" message={message}>
       <Icon name={icon} />
