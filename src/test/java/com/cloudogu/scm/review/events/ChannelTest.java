@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.security.SessionId;
 
 import static org.mockito.Mockito.*;
 
@@ -59,17 +60,27 @@ class ChannelTest {
 
   private Message broadcast(String sender) {
     Message message = new Message(Message.Type.PULL_REQUEST, "ka");
-    channel.broadcast(sender, message);
+    SessionId senderSession = sessionId(sender);
+    channel.broadcast(senderSession, message);
     return message;
   }
 
-  private Client register(String sessionId) {
+  private Client register(String sessionIdString) {
+    SessionId sessionId = sessionId(sessionIdString);
     Registration registration = new Registration(null, null, sessionId);
     Client client = mock(Client.class);
     lenient().when(client.getSessionId()).thenReturn(sessionId);
     when(clientFactory.create(registration)).thenReturn(client);
     channel.register(registration);
     return client;
+  }
+
+  private SessionId sessionId(String sessionIdString) {
+    SessionId sessionId = null;
+    if (sessionIdString != null) {
+      sessionId = SessionId.valueOf(sessionIdString);
+    }
+    return sessionId;
   }
 
 }

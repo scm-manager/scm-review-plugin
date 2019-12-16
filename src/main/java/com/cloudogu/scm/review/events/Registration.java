@@ -2,6 +2,8 @@ package com.cloudogu.scm.review.events;
 
 import lombok.Value;
 
+import sonia.scm.security.SessionId;
+
 import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 
@@ -9,5 +11,5 @@ import javax.ws.rs.sse.SseEventSink;
 public class Registration {
   private final Sse sse;
   private final SseEventSink eventSink;
-  private final String sessionId;
+  private final SessionId sessionId;
 }

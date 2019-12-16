@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import sonia.scm.security.SessionId;
 import javax.ws.rs.sse.OutboundSseEvent;
 import javax.ws.rs.sse.SseEventSink;
 
@@ -30,7 +30,7 @@ class ClientTest {
 
   @BeforeEach
   void createClient() {
-    client = new Client(adapter, eventSink, "1-2-3");
+    client = new Client(adapter, eventSink, SessionId.valueOf("1-2-3"));
 
     when(adapter.create(message)).thenReturn(event);
   }

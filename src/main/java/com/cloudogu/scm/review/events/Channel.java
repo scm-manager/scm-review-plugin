@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
+import sonia.scm.security.SessionId;
 
 public class Channel {
 
@@ -34,7 +35,7 @@ public class Channel {
     }
   }
 
-  public void broadcast(String senderId, Message message) {
+  public void broadcast(SessionId senderId, Message message) {
     lock.readLock().lock();
     try {
       clients.stream()
@@ -45,7 +46,7 @@ public class Channel {
     }
   }
 
-  private Predicate<? super Client> isNotSender(String senderId) {
+  private Predicate<? super Client> isNotSender(SessionId senderId) {
     return client -> {
       if (senderId != null) {
         return !senderId.equals(client.getSessionId());

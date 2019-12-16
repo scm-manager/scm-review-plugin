@@ -10,6 +10,7 @@ import com.cloudogu.scm.review.comment.service.InlineContext;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.MockedDiffLine;
 import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.events.ChannelRegistry;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
@@ -96,6 +97,9 @@ public class CommentRootResourceTest {
   @Mock
   private UserDisplayManager userDisplayManager;
 
+  @Mock
+  private ChannelRegistry channelRegistry;
+
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock();
 
   @InjectMocks
@@ -118,7 +122,7 @@ public class CommentRootResourceTest {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource))));
+      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), channelRegistry)));
     dispatcher.addSingletonResource(pullRequestRootResource);
     when(branchRevisionResolver.getRevisions(any(), any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));

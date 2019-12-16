@@ -7,6 +7,7 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Location;
+import com.cloudogu.scm.review.events.ChannelRegistry;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -118,6 +119,8 @@ public class PullRequestRootResourceTest {
   private LogCommandBuilder logCommandBuilder;
   @Mock
   private CommentService commentService;
+  @Mock
+  private ChannelRegistry channelRegistry;
 
   @InjectMocks
   private PullRequestMapperImpl mapper;
@@ -132,7 +135,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
-    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null)));
+    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, channelRegistry)));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -753,7 +756,7 @@ public class PullRequestRootResourceTest {
 
   private void initPullRequestRootResource() {
     PullRequestRootResource rootResource =
-      new PullRequestRootResource(mapper, pullRequestService, Providers.of(new PullRequestResource(mapper, pullRequestService, null)));
+      new PullRequestRootResource(mapper, pullRequestService, Providers.of(new PullRequestResource(mapper, pullRequestService, null, channelRegistry)));
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(rootResource);
