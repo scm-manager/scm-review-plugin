@@ -2,6 +2,7 @@ import React, { FC, useEffect, useState } from "react";
 import { Link } from "@scm-manager/ui-types";
 import { apiClient, Toast, ToastButtons, ToastButton } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
+import { useTranslation } from "react-i18next";
 
 type HandlerProps = {
   url: string;
@@ -15,14 +16,19 @@ const EventNotificationHandler: FC<HandlerProps> = ({ url, reload }) => {
       pullRequest: setEvent
     });
   }, [url]);
+  const { t } = useTranslation("plugins");
   if (event) {
     return (
-      <Toast type="warning" title="New Changes">
-        <p>The underlying Pull-Request has changed. Press reload to see the changes.</p>
-        <p>Warning: Non saved modification will be lost.</p>
+      <Toast type="warning" title={t("scm-review-plugin.changeNotification.title")}>
+        <p>{t("scm-review-plugin.changeNotification.description")}</p>
+        <p>{t("scm-review-plugin.changeNotification.modificationWarning")}</p>
         <ToastButtons>
-          <ToastButton icon="redo" onClick={reload}>Reload</ToastButton>
-          <ToastButton icon="times" onClick={() => setEvent(undefined)}>Ignore</ToastButton>
+          <ToastButton icon="redo" onClick={reload}>
+            {t("scm-review-plugin.changeNotification.buttons.reload")}
+          </ToastButton>
+          <ToastButton icon="times" onClick={() => setEvent(undefined)}>
+            {t("scm-review-plugin.changeNotification.buttons.ignore")}
+          </ToastButton>
         </ToastButtons>
       </Toast>
     );
