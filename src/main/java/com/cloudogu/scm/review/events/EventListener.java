@@ -1,7 +1,12 @@
 package com.cloudogu.scm.review.events;
 
+import com.cloudogu.scm.review.comment.service.BasicComment;
+import com.cloudogu.scm.review.comment.service.BasicCommentEvent;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
+import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.comment.service.ReplyEvent;
+import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.github.legman.Subscribe;
@@ -43,6 +48,12 @@ class EventListener {
     channel.broadcast(senderId(), message(event));
   }
 
+  @Subscribe
+  public void handle(ReplyEvent event) {
+    Channel channel = channel(event);
+    channel.broadcast(senderId(), message(event));
+  }
+
   private Message message(PullRequestEvent event) {
     PullRequestPayload payload = new PullRequestPayload();
     payload.setChangeType(event.getEventType());
@@ -57,13 +68,24 @@ class EventListener {
 
   private Message message(CommentEvent event) {
     CommentPayload payload = new CommentPayload();
+    fillPayload(payload, event);
+    return new Message(Message.Type.COMMENT, payload);
+  }
+
+  private Message message(ReplyEvent event) {
+    ReplyPayload payload = new ReplyPayload();
+    fillPayload(payload, event);
+    return new Message(Message.Type.REPLY, payload);
+  }
+
+  private <T extends BasicComment> void fillPayload(CommentPayload payload, BasicCommentEvent<T> event) {
     payload.setChangeType(event.getEventType());
-    Comment comment = changedItem(event);
+    T comment = changedItem(event);
     if (comment != null) {
       payload.setCommentId(comment.getId());
     }
-    return new Message(Message.Type.COMMENT, payload);
   }
+
 
   private Channel channel(PullRequestEvent event) {
     return channel(event.getRepository(), changedItem(event));
@@ -77,7 +99,7 @@ class EventListener {
     return item;
   }
 
-  private Channel channel(CommentEvent event) {
+  private Channel channel(BasicPullRequestEvent event) {
     return channel(event.getRepository(), event.getPullRequest());
   }
 
@@ -91,8 +113,11 @@ class EventListener {
   }
 
   @Data
-  static class CommentPayload {
-    private HandlerEventType changeType;
+  static class CommentPayload extends PullRequestPayload {
     private String commentId;
+  }
+
+  @Data
+  static class ReplyPayload extends CommentPayload {
   }
 }

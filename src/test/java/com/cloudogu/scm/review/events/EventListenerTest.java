@@ -3,6 +3,8 @@ package com.cloudogu.scm.review.events;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
+import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -94,6 +96,34 @@ class EventListenerTest {
       assertThat(payload.getChangeType()).isEqualTo(HandlerEventType.DELETE);
       assertThat(payload.getCommentId()).isEqualTo("c42");
     });
+  }
+
+  @Test
+  void shouldBroadcastMessageForReplyEvent() {
+    SessionId sessionId = bindSessionId("4-2");
+    ReplyEvent event = createReplyEvent();
+
+    listener.handle(event);
+
+    verify(channel).broadcast(eq(sessionId), captor.capture());
+    Message message = captor.getValue();
+
+    assertThat(message.getType()).isEqualTo(Message.Type.REPLY);
+    assertThat(message.getPayload()).isInstanceOfSatisfying(EventListener.ReplyPayload.class, (payload) -> {
+      assertThat(payload.getChangeType()).isEqualTo(HandlerEventType.MODIFY);
+      assertThat(payload.getCommentId()).isEqualTo("c42");
+    });
+  }
+
+  private ReplyEvent createReplyEvent() {
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    PullRequest pullRequest = TestData.createPullRequest();
+
+    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+
+    Reply reply = new Reply();
+    reply.setId("c42");
+    return new ReplyEvent(repository, pullRequest, reply, reply, HandlerEventType.MODIFY);
   }
 
   private CommentEvent createCommentEvent() {

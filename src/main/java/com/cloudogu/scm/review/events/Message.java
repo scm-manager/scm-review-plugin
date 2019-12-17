@@ -10,6 +10,7 @@ public class Message {
 
   public enum Type {
     PULL_REQUEST,
-    COMMENT
+    COMMENT,
+    REPLY
   }
 }

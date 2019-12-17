@@ -13,7 +13,8 @@ const EventNotificationHandler: FC<HandlerProps> = ({url, reload}) => {
   useEffect(() => {
     return apiClient.subscribe(url, {
       PULL_REQUEST: setEvent,
-      COMMENT: setEvent
+      COMMENT: setEvent,
+      REPLY: setEvent
     });
   }, [url]);
   if (event) {
