@@ -8,13 +8,11 @@ type HandlerProps = {
   reload: () => void;
 };
 
-const EventNotificationHandler: FC<HandlerProps> = ({url, reload}) => {
+const EventNotificationHandler: FC<HandlerProps> = ({ url, reload }) => {
   const [event, setEvent] = useState();
   useEffect(() => {
     return apiClient.subscribe(url, {
-      PULL_REQUEST: setEvent,
-      COMMENT: setEvent,
-      REPLY: setEvent
+      pullRequest: setEvent
     });
   }, [url]);
   if (event) {
@@ -40,7 +38,7 @@ type Props = {
 const ChangeNotification: FC<Props> = ({ pullRequest, reload }) => {
   if (pullRequest._links.events) {
     const link = pullRequest._links.events as Link;
-    return <EventNotificationHandler url={link.href} reload={reload} />
+    return <EventNotificationHandler url={link.href} reload={reload} />;
   }
   return null;
 };

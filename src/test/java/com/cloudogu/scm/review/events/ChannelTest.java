@@ -11,7 +11,6 @@ import sonia.scm.security.SessionId;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 
 import static org.mockito.Mockito.*;
 
@@ -89,7 +88,7 @@ class ChannelTest {
   }
 
   private Message broadcast(String sender) {
-    Message message = new Message(Message.Type.PULL_REQUEST, "ka");
+    Message message = new Message(String.class, "ka");
     SessionId senderSession = sessionId(sender);
     channel.broadcast(senderSession, message);
     return message;

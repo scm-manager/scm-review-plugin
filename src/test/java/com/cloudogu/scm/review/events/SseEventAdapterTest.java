@@ -17,10 +17,11 @@ class SseEventAdapterTest {
   @Test
   void shouldCreateOutboundSseEvent() {
     Payload payload = new Payload("hello");
-    Message message = new Message(Message.Type.COMMENT, payload);
+    Message message = new Message(Payload.class, payload);
 
     OutboundSseEvent event = adapter.create(message);
 
+    assertThat(event.getName()).isEqualTo(SseEventAdapter.NAME);
     assertThat(event.getMediaType()).isEqualTo(MediaType.APPLICATION_JSON_TYPE);
     assertThat(event.getData()).isEqualTo(payload);
     assertThat(event.getType()).isSameAs(Payload.class);

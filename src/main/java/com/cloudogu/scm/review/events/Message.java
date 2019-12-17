@@ -4,13 +4,6 @@ import lombok.Value;
 
 @Value
 public class Message {
-
-  private final Type type;
-  private final Object payload;
-
-  public enum Type {
-    PULL_REQUEST,
-    COMMENT,
-    REPLY
-  }
+  private final Class<?> type;
+  private final Object data;
 }

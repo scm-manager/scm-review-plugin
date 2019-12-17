@@ -5,8 +5,12 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.comment.service.ReplyEvent;
+import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -73,12 +77,51 @@ class EventListenerTest {
     listener.handle(event);
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
-    Message message = captor.getValue();
 
-    assertThat(message.getType()).isEqualTo(Message.Type.PULL_REQUEST);
-    assertThat(message.getPayload()).isInstanceOfSatisfying(EventListener.PullRequestPayload.class, (payload) -> {
-      assertThat(payload.getChangeType()).isEqualTo(HandlerEventType.CREATE);
-    });
+    assertMessage(PullRequestEvent.class);
+  }
+
+
+  @Test
+  void shouldBroadcastPullRequestMergedEvent() {
+    SessionId sessionId = bindSessionId("1-2-3");
+    PullRequestMergedEvent event = createPullRequestMergedEvent();
+
+    listener.handle(event);
+
+    verify(channel).broadcast(eq(sessionId), captor.capture());
+
+    assertMessage(PullRequestMergedEvent.class);
+  }
+
+  @Test
+  void shouldBroadcastPullRequestRejectedEvent() {
+    SessionId sessionId = bindSessionId("1-2-3");
+    PullRequestRejectedEvent event = createPullRequestRejectedEvent();
+
+    listener.handle(event);
+
+    verify(channel).broadcast(eq(sessionId), captor.capture());
+
+    assertMessage(PullRequestRejectedEvent.class);
+  }
+
+  @Test
+  void shouldBroadcastPullRequestUpdatedEvent() {
+    SessionId sessionId = bindSessionId("1-2-3");
+    PullRequestUpdatedEvent event = createPullRequestUpdatedEvent();
+
+    listener.handle(event);
+
+    verify(channel).broadcast(eq(sessionId), captor.capture());
+
+    assertMessage(PullRequestUpdatedEvent.class);
+  }
+
+  private void assertMessage(Class<? extends BasicPullRequestEvent> event) {
+    Message message = captor.getValue();
+    assertThat(message.getType()).isEqualTo(String.class);
+    assertThat(message.getData()).isEqualTo(event.getName());
   }
 
   @Test
@@ -89,13 +132,8 @@ class EventListenerTest {
     listener.handle(event);
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
-    Message message = captor.getValue();
 
-    assertThat(message.getType()).isEqualTo(Message.Type.COMMENT);
-    assertThat(message.getPayload()).isInstanceOfSatisfying(EventListener.CommentPayload.class, (payload) -> {
-      assertThat(payload.getChangeType()).isEqualTo(HandlerEventType.DELETE);
-      assertThat(payload.getCommentId()).isEqualTo("c42");
-    });
+    assertMessage(CommentEvent.class);
   }
 
   @Test
@@ -106,13 +144,8 @@ class EventListenerTest {
     listener.handle(event);
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
-    Message message = captor.getValue();
 
-    assertThat(message.getType()).isEqualTo(Message.Type.REPLY);
-    assertThat(message.getPayload()).isInstanceOfSatisfying(EventListener.ReplyPayload.class, (payload) -> {
-      assertThat(payload.getChangeType()).isEqualTo(HandlerEventType.MODIFY);
-      assertThat(payload.getCommentId()).isEqualTo("c42");
-    });
+    assertMessage(ReplyEvent.class);
   }
 
   private ReplyEvent createReplyEvent() {
@@ -144,6 +177,37 @@ class EventListenerTest {
     when(registry.channel(repository, pullRequest)).thenReturn(channel);
 
     return new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE);
+  }
+
+  private PullRequestUpdatedEvent createPullRequestUpdatedEvent() {
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    PullRequest pullRequest = TestData.createPullRequest();
+    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    return new PullRequestUpdatedEvent(
+      repository,
+      pullRequest
+    );
+  }
+
+  private PullRequestMergedEvent createPullRequestMergedEvent() {
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    PullRequest pullRequest = TestData.createPullRequest();
+    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    return new PullRequestMergedEvent(
+      repository,
+      pullRequest
+    );
+  }
+
+  private PullRequestRejectedEvent createPullRequestRejectedEvent() {
+    Repository repository = RepositoryTestData.createHeartOfGold();
+    PullRequest pullRequest = TestData.createPullRequest();
+    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    return new PullRequestRejectedEvent(
+      repository,
+      pullRequest,
+      PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED
+    );
   }
 
 }
