@@ -1,22 +1,21 @@
 import React, { FC, useEffect, useState } from "react";
-import { Repository } from "@scm-manager/ui-types";
+import { Link } from "@scm-manager/ui-types";
 import { apiClient, Toast, ToastButtons, ToastButton } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
 
-type Props = {
-  repository: Repository;
-  pullRequest: PullRequest;
+type HandlerProps = {
+  url: string;
   reload: () => void;
 };
 
-const ChangeNotification: FC<Props> = ({ repository, pullRequest, reload }) => {
+const EventNotificationHandler: FC<HandlerProps> = ({url, reload}) => {
   const [event, setEvent] = useState();
   useEffect(() => {
-    return apiClient.subscribe(`/pull-requests/${repository.namespace}/${repository.name}/${pullRequest.id}/events`, {
+    return apiClient.subscribe(url, {
       PULL_REQUEST: setEvent,
       COMMENT: setEvent
     });
-  }, [repository, pullRequest]);
+  }, [url]);
   if (event) {
     return (
       <Toast type="warning" title="New Changes">
@@ -28,6 +27,19 @@ const ChangeNotification: FC<Props> = ({ repository, pullRequest, reload }) => {
         </ToastButtons>
       </Toast>
     );
+  }
+  return null;
+};
+
+type Props = {
+  pullRequest: PullRequest;
+  reload: () => void;
+};
+
+const ChangeNotification: FC<Props> = ({ pullRequest, reload }) => {
+  if (pullRequest._links.events) {
+    const link = pullRequest._links.events as Link;
+    return <EventNotificationHandler url={link.href} reload={reload} />
   }
   return null;
 };
