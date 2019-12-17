@@ -2,9 +2,7 @@ package com.cloudogu.scm.review.events;
 
 import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.BasicCommentEvent;
-import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
-import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -18,8 +16,8 @@ import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
 import sonia.scm.event.HandlerEvent;
 import sonia.scm.plugin.Extension;
-import sonia.scm.security.SessionId;
 import sonia.scm.repository.Repository;
+import sonia.scm.security.SessionId;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -84,11 +82,6 @@ class EventListener {
     if (comment != null) {
       payload.setCommentId(comment.getId());
     }
-  }
-
-
-  private Channel channel(PullRequestEvent event) {
-    return channel(event.getRepository(), changedItem(event));
   }
 
   private <T> T changedItem(HandlerEvent<T> event) {

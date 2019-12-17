@@ -8,6 +8,7 @@ import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.time.Clock;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
@@ -19,7 +20,7 @@ public class ChannelRegistry {
 
   @Inject
   public ChannelRegistry(ClientFactory clientFactory) {
-    this.channelFactory = id -> new Channel(clientFactory);
+    this.channelFactory = id -> new Channel(clientFactory, Clock.systemUTC());
   }
 
   @VisibleForTesting
@@ -34,7 +35,7 @@ public class ChannelRegistry {
   }
 
   private void removeClosedClients() {
-    channels.values().forEach(Channel::removeClosedClients);
+    channels.values().forEach(Channel::removeClosedOrTimeoutClients);
   }
 
   @EqualsAndHashCode

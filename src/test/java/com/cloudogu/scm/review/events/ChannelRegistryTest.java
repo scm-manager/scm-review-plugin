@@ -10,6 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
+import java.time.Clock;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -37,10 +39,10 @@ class ChannelRegistryTest {
 
   @Test
   void shouldCallRemoveClosedClientsOnAllExistingChannels() {
-    registry.setChannelFactory(channelId -> spy(new Channel(clientFactory)));
+    registry.setChannelFactory(channelId -> spy(new Channel(clientFactory, Clock.systemUTC())));
     Channel one = channel("HoG", "42");
     channel("HoG", "42");
-    verify(one).removeClosedClients();
+    verify(one).removeClosedOrTimeoutClients();
   }
 
   private Channel channel(String repositoryId, String pullRequestId) {
