@@ -101,7 +101,7 @@ public class CommentServiceTest {
   private CommentService commentService;
 
   @Before
-  public void init() throws IOException {
+  public void init() {
     when(storeFactory.create(any())).thenReturn(store);
     doNothing().when(eventBus).post(eventCaptor.capture());
 
@@ -133,7 +133,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "createCommentUser")
   public void shouldAddComment() {
-    when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
     Comment comment = createComment("2", "2. comment", author, new Location());
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
@@ -147,7 +147,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "createCommentUser")
   public void shouldPostEventForNewRootComment() {
-    when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
     Comment comment = createComment("2", "2. comment", author, new Location());
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
@@ -392,8 +392,7 @@ public class CommentServiceTest {
   @Test(expected = ScmConstraintViolationException.class)
   @SubjectAware(username = "dent")
   public void shouldFailDeletingSystemComment() {
-    BasicComment systemComment = EXISTING_COMMENT;
-    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, systemComment.getId());
+    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_COMMENT.getId());
   }
 
   @Test
@@ -422,7 +421,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "trillian")
   public void shouldAddChangedStatusComment() {
-    when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
     commentService.addStatusChangedComment(REPOSITORY, PULL_REQUEST_ID, SystemCommentType.MERGED);
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
@@ -484,7 +483,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldAddCommentOnMergeEvent() {
-    when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
     commentService.addCommentOnMerge(new PullRequestMergedEvent(REPOSITORY, mockPullRequest()));
 
@@ -496,7 +495,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldAddCommentOnRejectEventByUser() {
-    when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
     commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER));
 
@@ -508,7 +507,7 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldAddCommentOnRejectEventByDeletedBranch() {
-    when(store.add(eq(REPOSITORY), eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
     commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED));
 
