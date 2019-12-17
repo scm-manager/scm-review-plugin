@@ -37,6 +37,12 @@
         "conflicts": "Conflicts",
         "comments": "Comments"
       },
+      "tasks": {
+        "todo": "{{count}} task open",
+        "todo_plural": "{{count}} tasks open",
+        "done": "{{done}} / {{total}} tasks done",
+        "allDone": "All tasks done"
+      },
       "noChangesets": "No changesets found.",
       "details": {
         "notification": "Pull request merged successfully!",

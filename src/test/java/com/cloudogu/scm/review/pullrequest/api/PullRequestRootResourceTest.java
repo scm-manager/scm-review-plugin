@@ -3,6 +3,10 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.CommentType;
+import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -51,8 +55,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
@@ -109,6 +116,8 @@ public class PullRequestRootResourceTest {
   private BranchRevisionResolver branchRevisionResolver;
   @Mock
   private LogCommandBuilder logCommandBuilder;
+  @Mock
+  private CommentService commentService;
 
   @InjectMocks
   private PullRequestMapperImpl mapper;
@@ -294,13 +303,23 @@ public class PullRequestRootResourceTest {
   public void shouldGetPullRequest() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     PullRequest pullRequest = createPullRequest();
+    List<Comment> comments = new ArrayList<>();
+    comments.add(createCommentWithType(CommentType.TASK_TODO));
+    when(commentService.getAll(REPOSITORY_NAMESPACE, REPOSITORY_NAME, pullRequest.getId())).thenReturn(comments);
     when(store.get("123")).thenReturn(pullRequest);
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("_links");
+    assertThat(response.getContentAsString()).contains("\"tasks\":{\"todo\":1");
+    assertThat(response.getContentAsString()).contains("\"done\":0");
   }
 
+  private Comment createCommentWithType(CommentType commentType) {
+    Comment comment = Comment.createComment("1", "trillian", "tricia", new Location());
+    comment.setType(commentType);
+    return comment;
+  }
 
   @Test
   @SubjectAware(username = "rr", password = "secret")
@@ -644,6 +663,7 @@ public class PullRequestRootResourceTest {
     openedPR1.setReviewer(singletonMap("reviewer", false));
     mergedPR1.setReviewer(singletonMap("reviewer", true));
     when(store.getAll()).thenReturn(Lists.newArrayList(openedPR1, openedPR2, rejectedPR1, rejectedPR2, mergedPR1, mergedPR2));
+    when(commentService.getAll(any(), any(), any())).thenReturn(Collections.emptyList());
   }
 
   private byte[] loadJson(String s) throws IOException {

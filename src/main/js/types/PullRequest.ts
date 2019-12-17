@@ -18,6 +18,7 @@ export type PullRequest = BasicPullRequest & {
   reviewer: Reviewer[];
   status: string;
   _links: Links;
+  tasks: Tasks;
 };
 
 export type Location = {
@@ -92,6 +93,7 @@ export type MergeCommit = {
   author: DisplayedUser;
   shouldDeleteSourceBranch: boolean;
 };
+
 export type Conflict = {
   type: string;
   path: string;
@@ -100,4 +102,9 @@ export type Conflict = {
 
 export type Conflicts = {
   conflicts: Conflict[];
+};
+
+export type Tasks = {
+  todo: number;
+  done: number;
 };
