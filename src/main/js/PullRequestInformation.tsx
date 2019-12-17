@@ -1,6 +1,6 @@
 import React from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { urls } from "@scm-manager/ui-components";
+import { urls, Icon } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, withRouter, RouteComponentProps } from "react-router-dom";
@@ -95,7 +95,10 @@ class PullRequestInformation extends React.Component<Props> {
       );
       conflictsTab = !mergeHasNoConflict && (
         <li className={this.navigationClass("conflicts")}>
-          <Link to={`${baseURL}/conflicts/`}>{t("scm-review-plugin.pullRequest.tabs.conflicts")}</Link>
+          <Link to={`${baseURL}/conflicts/`}>
+            {t("scm-review-plugin.pullRequest.tabs.conflicts")} &nbsp;{" "}
+            <Icon color={"warning"} name={"exclamation-triangle"} />
+          </Link>
         </li>
       );
     }
