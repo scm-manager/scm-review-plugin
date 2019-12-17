@@ -161,6 +161,15 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
+  public void updated(Repository repository, String pullRequestId) {
+    PullRequest pullRequest = get(repository, pullRequestId);
+
+    if (pullRequest.getStatus() == OPEN) {
+      eventBus.post(new PullRequestUpdatedEvent(repository, pullRequest));
+    }
+  }
+
+  @Override
   public boolean hasUserApproved(Repository repository, String pullRequestId, User user) {
     return getStore(repository).get(pullRequestId).getReviewer().entrySet()
       .stream()

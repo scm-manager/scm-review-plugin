@@ -42,7 +42,7 @@ import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class MergeCheckHookTest {
+class StatusCheckHookTest {
 
   private static final String NAMESPACE = "space";
   private static final String NAME = "name";
@@ -64,7 +64,7 @@ class MergeCheckHookTest {
   @InjectMocks
   private MessageSenderFactory messageSenderFactory;
 
-  private MergeCheckHook hook;
+  private StatusCheckHook hook;
 
   @Mock
   private PostReceiveRepositoryHookEvent event;
@@ -79,7 +79,7 @@ class MergeCheckHookTest {
 
   @BeforeEach
   void initRepositoryServiceFactory() {
-    hook = new MergeCheckHook(service, repositoryServiceFactory, messageSenderFactory);
+    hook = new StatusCheckHook(service, repositoryServiceFactory, messageSenderFactory);
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getRepository()).thenReturn(REPOSITORY);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
@@ -109,7 +109,7 @@ class MergeCheckHookTest {
     when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
     when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(0, emptyList()));
 
-    hook.checkForMerges(event);
+    hook.checkStatus(event);
 
     verify(service).setMerged(REPOSITORY, pullRequest.getId());
   }
@@ -120,9 +120,20 @@ class MergeCheckHookTest {
     when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
     when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, singletonList(new Changeset())));
 
-    hook.checkForMerges(event);
+    hook.checkStatus(event);
 
     verify(service, never()).setMerged(REPOSITORY, pullRequest.getId());
+  }
+
+  @Test
+  void shouldNotifyServiceThatPrWasUpdated() throws IOException {
+    PullRequest pullRequest = openPullRequest();
+    when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, singletonList(new Changeset())));
+
+    hook.checkStatus(event);
+
+    verify(service).updated(REPOSITORY, pullRequest.getId());
   }
 
   @Test
@@ -130,7 +141,7 @@ class MergeCheckHookTest {
     PullRequest pullRequest = rejectedPullRequest();
     when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
 
-    hook.checkForMerges(event);
+    hook.checkStatus(event);
 
     verify(logCommandBuilder, never()).getChangesets();
     verify(service, never()).reject(eq(REPOSITORY), eq(pullRequest.getId()), any());
@@ -141,7 +152,7 @@ class MergeCheckHookTest {
     when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
     PullRequest pullRequest = rejectedPullRequest();
 
-    hook.checkForMerges(event);
+    hook.checkStatus(event);
 
     verify(logCommandBuilder, never()).getChangesets();
     verify(service, never()).getAll(NAMESPACE, NAME);
@@ -154,7 +165,7 @@ class MergeCheckHookTest {
     pullRequest.setSource("other");
     when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
 
-    hook.checkForMerges(event);
+    hook.checkStatus(event);
 
     verify(logCommandBuilder, never()).getChangesets();
   }
@@ -167,7 +178,7 @@ class MergeCheckHookTest {
     when(branchProvider.getCreatedOrModified()).thenReturn(emptyList());
     when(branchProvider.getDeletedOrClosed()).thenReturn(singletonList("source"));
 
-    hook.checkForMerges(event);
+    hook.checkStatus(event);
 
     verify(service).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
   }
