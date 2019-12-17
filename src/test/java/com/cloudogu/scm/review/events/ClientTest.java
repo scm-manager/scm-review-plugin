@@ -7,19 +7,16 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.security.SessionId;
+
 import javax.ws.rs.sse.OutboundSseEvent;
 import javax.ws.rs.sse.SseEventSink;
-
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalField;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -83,7 +80,7 @@ class ClientTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void shouldCloseEventSinkOnFailure() throws InterruptedException {
+  void shouldCloseEventSinkOnFailure() {
     CompletionStage future = CompletableFuture.supplyAsync(() -> {
       throw new RuntimeException("failed to send message");
     });
@@ -91,9 +88,7 @@ class ClientTest {
 
     client.send(message);
 
-    Thread.sleep(50L);
-
-    verify(eventSink).close();
+    verify(eventSink, timeout(50L)).close();
   }
 
   @Test
