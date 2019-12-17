@@ -1,7 +1,7 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Conflict, Conflicts, PullRequest } from "./types/PullRequest";
-import { Loading, Diff } from "@scm-manager/ui-components";
+import { Loading, Diff, DiffFile } from "@scm-manager/ui-components";
 import { Repository, Link } from "@scm-manager/ui-types";
 import { fetchConflicts } from "./pullRequest";
 // @ts-ignore
@@ -56,9 +56,24 @@ class MergeConflicts extends React.Component<Props, State> {
     }
   };
 
+  getTypeLabel = (type: string) => {
+    return this.props.t("scm-review-plugin.conflicts.types." + type);
+  };
+
   createDiffComponent = (conflict: Conflict) => {
-    const parsedDiff = parser.parse(conflict.diff);
-    return <Diff diff={parsedDiff} {...this.props} />;
+    if (conflict.diff) {
+      const parsedDiff = parser.parse(conflict.diff);
+      return parsedDiff
+        .map(file => ({ ...file, type: this.getTypeLabel(conflict.type) }))
+        .map(file => <DiffFile file={file} sideBySide={false} />);
+    } else {
+      return (
+        <DiffFile
+          file={{ hunks: [], newPath: conflict.path, type: this.getTypeLabel(conflict.type) }}
+          sideBySide={false}
+        />
+      );
+    }
   };
 
   render() {
@@ -66,21 +81,9 @@ class MergeConflicts extends React.Component<Props, State> {
       return <Loading />;
     }
 
-    this.state.conflicts.conflicts.forEach;
-
     return (
       <div className={"content"}>
-        <dl>
-          {this.state.conflicts.conflicts.map(conflict => (
-            <>
-              <dt>{conflict.path}</dt>
-              <dd>
-                {conflict.type}
-                {conflict.diff && this.createDiffComponent(conflict)}
-              </dd>
-            </>
-          ))}
-        </dl>
+        {this.state.conflicts.conflicts.map(conflict => this.createDiffComponent(conflict))}
       </div>
     );
   }

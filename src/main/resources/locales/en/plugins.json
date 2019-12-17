@@ -182,6 +182,13 @@
           "titleClickable": "The comment is related to an older of the source or target branch. Click here to see the original context."
         }
       }
+    },
+    "conflicts": {
+      "types": {
+        "BOTH_MODIFIED": "conflicting change",
+        "DELETED_BY_US": "deleted by us",
+        "DELETED_BY_THEM": "deleted by them"
+      }
     }
   },
   "permissions": {

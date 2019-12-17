@@ -182,6 +182,13 @@
           "titleClickable": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
         }
       }
+    },
+    "conflicts": {
+      "types": {
+        "BOTH_MODIFIED": "Konflikt",
+        "DELETED_BY_US": "im Source gelöscht",
+        "DELETED_BY_THEM": "im Target gelöscht"
+      }
     }
   },
   "permissions": {
