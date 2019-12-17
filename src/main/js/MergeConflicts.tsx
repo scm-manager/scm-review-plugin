@@ -81,11 +81,7 @@ class MergeConflicts extends React.Component<Props, State> {
       return <Loading />;
     }
 
-    return (
-      <div className={"content"}>
-        {this.state.conflicts.conflicts.map(conflict => this.createDiffComponent(conflict))}
-      </div>
-    );
+    return this.state.conflicts.conflicts.map(conflict => this.createDiffComponent(conflict));
   }
 }
 
