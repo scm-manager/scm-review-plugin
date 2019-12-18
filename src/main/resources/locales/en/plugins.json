@@ -102,9 +102,9 @@
       }
     },
     "pullRequests": {
-      "errorTitle": "Fehler",
-      "errorSubtitle": "Unbekannter Pull Request Fehler",
-      "createButton": "Pull Request erstellen"
+      "errorTitle": "Error",
+      "errorSubtitle": "Unspecified pull request error",
+      "createButton": "Create Pull Request"
     },
     "comment": {
       "addComment": "Add comment",
