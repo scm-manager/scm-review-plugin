@@ -53,7 +53,7 @@ public class Channel {
     }
   }
 
-  private Predicate<? super Client> isNotSender(SessionId senderId) {
+  private Predicate<Client> isNotSender(SessionId senderId) {
     return client -> {
       if (senderId != null) {
         return !senderId.equals(client.getSessionId());
