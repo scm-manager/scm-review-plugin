@@ -393,6 +393,27 @@ class DefaultPullRequestServiceTest {
       assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
       assertThat(eventCaptor.getAllValues()).hasSize(0);
     }
+
+    @Test
+    void shouldSendPullRequestUpdatedEvent() {
+      pullRequest.setStatus(OPEN);
+
+      service.updated(REPOSITORY, pullRequest.getId());
+
+      assertThat(eventCaptor.getValue()).isInstanceOfSatisfying(PullRequestUpdatedEvent.class, (event) -> {
+        assertThat(event.getRepository()).isSameAs(REPOSITORY);
+        assertThat(event.getPullRequest()).isSameAs(pullRequest);
+      });
+    }
+
+    @Test
+    void shouldNotSendPullRequestUpdatedEventForNonOpenPRs() {
+      pullRequest.setStatus(MERGED);
+
+      service.updated(REPOSITORY, pullRequest.getId());
+
+      assertThat(eventCaptor.getAllValues()).isEmpty();
+    }
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {

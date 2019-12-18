@@ -181,6 +181,15 @@
           "titleClickable": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
         }
       }
+    },
+    "changeNotification": {
+      "title": "Neue Änderungen",
+      "description": "An diesem Pull Request wurden Änderungen vorgenommen. Laden Sie die Seite neu um diese anzuzeigen.",
+      "modificationWarning": "Warnung: Nicht gespeicherte Eingaben gehen verloren.",
+      "buttons": {
+        "reload": "Neu laden",
+        "ignore": "Ignorieren"
+      }
     }
   },
   "permissions": {

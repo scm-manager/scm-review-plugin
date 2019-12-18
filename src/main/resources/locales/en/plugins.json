@@ -181,6 +181,15 @@
           "titleClickable": "The comment is related to an older of the source or target branch. Click here to see the original context."
         }
       }
+    },
+    "changeNotification": {
+      "title": "New Changes",
+      "description": "The underlying pull request has changed. Press reload to see the changes.",
+      "modificationWarning": "Warning: Unsaved modifications will be lost.",
+      "buttons": {
+        "reload": "Reload",
+        "ignore": "Ignore"
+      }
     }
   },
   "permissions": {
