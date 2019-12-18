@@ -78,7 +78,7 @@ class EventListenerTest {
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
 
-    assertMessage(PullRequestEvent.class);
+    assertMessageHasCorrectTypeAndName(PullRequestEvent.class);
   }
 
 
@@ -91,7 +91,7 @@ class EventListenerTest {
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
 
-    assertMessage(PullRequestMergedEvent.class);
+    assertMessageHasCorrectTypeAndName(PullRequestMergedEvent.class);
   }
 
   @Test
@@ -103,7 +103,7 @@ class EventListenerTest {
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
 
-    assertMessage(PullRequestRejectedEvent.class);
+    assertMessageHasCorrectTypeAndName(PullRequestRejectedEvent.class);
   }
 
   @Test
@@ -115,13 +115,7 @@ class EventListenerTest {
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
 
-    assertMessage(PullRequestUpdatedEvent.class);
-  }
-
-  private void assertMessage(Class<? extends BasicPullRequestEvent> event) {
-    Message message = captor.getValue();
-    assertThat(message.getType()).isEqualTo(String.class);
-    assertThat(message.getData()).isEqualTo(event.getName());
+    assertMessageHasCorrectTypeAndName(PullRequestUpdatedEvent.class);
   }
 
   @Test
@@ -133,7 +127,7 @@ class EventListenerTest {
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
 
-    assertMessage(CommentEvent.class);
+    assertMessageHasCorrectTypeAndName(CommentEvent.class);
   }
 
   @Test
@@ -145,7 +139,13 @@ class EventListenerTest {
 
     verify(channel).broadcast(eq(sessionId), captor.capture());
 
-    assertMessage(ReplyEvent.class);
+    assertMessageHasCorrectTypeAndName(ReplyEvent.class);
+  }
+
+  private void assertMessageHasCorrectTypeAndName(Class<? extends BasicPullRequestEvent> event) {
+    Message message = captor.getValue();
+    assertThat(message.getType()).isEqualTo(String.class);
+    assertThat(message.getData()).isEqualTo(event.getName());
   }
 
   private ReplyEvent createReplyEvent() {
