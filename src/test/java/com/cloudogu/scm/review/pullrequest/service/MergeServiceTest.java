@@ -43,7 +43,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,7 +60,7 @@ public class MergeServiceTest {
 
   @Mock
   BranchCommandBuilder branchCommandBuilder;
-  @Mock (answer = Answers.RETURNS_DEEP_STUBS)
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   BranchesCommandBuilder branchesCommandBuilder;
   @Mock
   LogCommandBuilder logCommandBuilder;
@@ -96,10 +95,12 @@ public class MergeServiceTest {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(new MergeCommandResult(emptyList(), "123"));
     when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
-    mockPullRequest("squash", "master", "1");
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH);
+    assertThat(pullRequest.getTargetRevision()).isEqualTo("123");
+    assertThat(pullRequest.getSourceRevision()).isEqualTo("123");
   }
 
   @Test(expected = UnauthorizedException.class)
@@ -157,8 +158,7 @@ public class MergeServiceTest {
   public void shouldThrowExceptionWhenPullRequestIsNotOpen() {
     lenient().when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
-    when(pullRequest.getStatus()).thenReturn(REJECTED);
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1", REJECTED);
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
@@ -225,13 +225,17 @@ public class MergeServiceTest {
   }
 
   private PullRequest mockPullRequest(String source, String target, String pullRequestId) {
-    PullRequest pullRequest = mock(PullRequest.class);
-    lenient().when(pullRequest.getId()).thenReturn("1");
-    lenient().when(pullRequest.getSource()).thenReturn(source);
-    lenient().when(pullRequest.getTarget()).thenReturn(target);
-    lenient().when(pullRequest.getStatus()).thenReturn(OPEN);
-    when(pullRequestService.get(REPOSITORY, pullRequestId)).thenReturn(pullRequest);
-    return pullRequest;
+    return mockPullRequest(source, target, pullRequestId, OPEN);
+  }
+
+  private PullRequest mockPullRequest(String source, String target, String pullRequestId, PullRequestStatus status) {
+    PullRequest pr = new PullRequest();
+    pr.setId(pullRequestId);
+    pr.setSource(source);
+    pr.setTarget(target);
+    pr.setStatus(status);
+    when(pullRequestService.get(REPOSITORY, "1")).thenReturn(pr);
+    return pr;
   }
 
   private MergeCommitDto createMergeCommit(boolean deleteBranch) {
