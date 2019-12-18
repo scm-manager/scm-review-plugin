@@ -3,7 +3,7 @@ import { Repository } from "@scm-manager/ui-types";
 import { urls } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import Changesets from "./Changesets";
-import { Link, Redirect, Route, Switch, withRouter, RouteComponentProps } from "react-router-dom";
+import { Link, Redirect, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import RootComments from "./comment/RootComments";
 import { PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
@@ -48,7 +48,11 @@ class PullRequestInformation extends React.Component<Props> {
     let routeChangesetPagination = null;
     let routeDiff = null;
 
-    if (status && status === "OPEN") {
+    const isClosedPullRequest = () => {
+      return status && status === "MERGED" || status === "REJECTED";
+    };
+
+    if (!isClosedPullRequest() || (pullRequest?.sourceRevision && pullRequest?.targetRevision)) {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
           <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pullRequest.tabs.commits")}</Link>
@@ -57,21 +61,40 @@ class PullRequestInformation extends React.Component<Props> {
       routeChangeset = (
         <Route
           path={`${baseURL}/changesets`}
-          render={() => <Changesets repository={repository} source={source} target={target} />}
+          render={() => (
+            <Changesets
+              repository={repository}
+              source={isClosedPullRequest() && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source}
+              target={isClosedPullRequest() && pullRequest?.targetRevision ? pullRequest.targetRevision : target}
+            />
+          )}
           exact
         />
       );
       routeChangesetPagination = (
         <Route
           path={`${baseURL}/changesets/:page`}
-          render={() => <Changesets repository={repository} source={source} target={target} />}
+          render={() => (
+            <Changesets
+              repository={repository}
+              source={isClosedPullRequest() && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source}
+              target={isClosedPullRequest() && pullRequest?.targetRevision ? pullRequest.targetRevision : target}
+            />
+          )}
           exact
         />
       );
       routeDiff = (
         <Route
           path={`${baseURL}/diff`}
-          render={() => <DiffRoute repository={repository} pullRequest={pullRequest} source={source} target={target} />}
+          render={() => (
+            <DiffRoute
+              repository={repository}
+              pullRequest={pullRequest}
+              source={isClosedPullRequest() && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source}
+              target={isClosedPullRequest() && pullRequest?.targetRevision ? pullRequest.targetRevision : target}
+            />
+          )}
           exact
         />
       );

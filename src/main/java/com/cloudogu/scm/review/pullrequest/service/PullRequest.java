@@ -42,6 +42,8 @@ public class PullRequest {
   private PullRequestStatus status;
   private Set<String> subscriber = new HashSet<>();
   private Map<String, Boolean> reviewer = new HashMap<>();
+  private String sourceRevision;
+  private String targetRevision;
 
   public void addApprover(String recipient) {
     this.reviewer.put(recipient, true);

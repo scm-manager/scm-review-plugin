@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
@@ -95,7 +95,12 @@ public class DefaultPullRequestService implements PullRequestService {
 
   private void computeSubscriberForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
     Set<String> newSubscriber = new HashSet<>(oldPullRequest.getSubscriber());
-    Set<String> addedReviewers = changedPullRequest.getReviewer().keySet().stream().filter(r -> !oldPullRequest.getReviewer().keySet().contains(r)).collect(Collectors.toSet());
+    Set<String> addedReviewers = changedPullRequest
+      .getReviewer()
+      .keySet()
+      .stream()
+      .filter(r -> !oldPullRequest.getReviewer().containsKey(r))
+      .collect(Collectors.toSet());
     newSubscriber.addAll(addedReviewers);
     changedPullRequest.setSubscriber(newSubscriber);
   }
@@ -141,7 +146,9 @@ public class DefaultPullRequestService implements PullRequestService {
   public void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.getStatus() == OPEN) {
-      this.setStatus(repository, pullRequest, REJECTED);
+      setRevisions(repository, pullRequest);
+      pullRequest.setStatus(REJECTED);
+      getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause));
     } else if (pullRequest.getStatus() == MERGED) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
@@ -151,9 +158,10 @@ public class DefaultPullRequestService implements PullRequestService {
   @Override
   public void setMerged(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
-
     if (pullRequest.getStatus() == OPEN) {
-      setStatus(repository, pullRequest, MERGED);
+      setRevisions(repository, pullRequest);
+      pullRequest.setStatus(MERGED);
+      getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
     } else if (pullRequest.getStatus() == REJECTED) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
@@ -215,9 +223,13 @@ public class DefaultPullRequestService implements PullRequestService {
     getStore(repository).update(pullRequest);
   }
 
-  private void setStatus(Repository repository, PullRequest pullRequest, PullRequestStatus newStatus) {
-    pullRequest.setStatus(newStatus);
-    getStore(repository).update(pullRequest);
+  private void setRevisions(Repository repository, PullRequest pullRequest) {
+    if (pullRequest.getSourceRevision() == null) {
+      pullRequest.setSourceRevision(branchResolver.resolve(repository, pullRequest.getSource()).getRevision());
+    }
+    if (pullRequest.getTargetRevision() == null) {
+      pullRequest.setTargetRevision(branchResolver.resolve(repository, pullRequest.getTarget()).getRevision());
+    }
   }
 
   private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {
