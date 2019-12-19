@@ -1,11 +1,6 @@
 package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import com.google.common.util.concurrent.Striped;
-import sonia.scm.HandlerEventType;
-import sonia.scm.event.ScmEventBus;
-import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 import sonia.scm.store.DataStore;
 
@@ -21,27 +16,20 @@ public class CommentStore {
   private static final Striped<Lock> LOCKS = Striped.lock(10);
 
   private final DataStore<PullRequestComments> store;
-  private final PullRequestStoreFactory pullRequestStoreFactory;
-  private final ScmEventBus eventBus;
   private KeyGenerator keyGenerator;
 
-  CommentStore(DataStore<PullRequestComments> store, PullRequestStoreFactory pullRequestStoreFactory, ScmEventBus eventBus, KeyGenerator keyGenerator) {
+  CommentStore(DataStore<PullRequestComments> store, KeyGenerator keyGenerator) {
     this.store = store;
-    this.pullRequestStoreFactory = pullRequestStoreFactory;
-    this.eventBus = eventBus;
     this.keyGenerator = keyGenerator;
   }
 
-  public String add(Repository repository, String pullRequestId, Comment pullRequestComment) {
-
-    PullRequest pullRequest = pullRequestStoreFactory.create(repository).get(pullRequestId);
+  public String add(String pullRequestId, Comment pullRequestComment) {
     return withLockDo(pullRequestId, () -> {
       PullRequestComments pullRequestComments = ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
       String commentId = keyGenerator.createKey();
       pullRequestComment.setId(commentId);
       pullRequestComments.getComments().add(pullRequestComment);
       store.put(pullRequestId, pullRequestComments);
-      eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
       return commentId;
     });
   }

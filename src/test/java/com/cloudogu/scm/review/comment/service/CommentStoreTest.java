@@ -2,7 +2,6 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.assertj.core.util.Lists;
@@ -13,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 import sonia.scm.security.UUIDKeyGenerator;
@@ -24,12 +22,9 @@ import java.util.Map;
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.ContextLine.copy;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -41,21 +36,12 @@ class CommentStoreTest {
 
   private CommentStore store;
   private KeyGenerator keyGenerator = new UUIDKeyGenerator();
-  @Mock
-  private PullRequestStoreFactory pullRequestStoreFactory;
-
-  @Mock
-  private ScmEventBus eventBus;
-
-  @Mock
-  private Repository repository;
 
   @BeforeEach
   void init() {
     PullRequestStore prStore = mock(PullRequestStore.class);
     when(prStore.get(any())).thenReturn(TestData.createPullRequest());
-    when(pullRequestStoreFactory.create(repository)).thenReturn(prStore);
-    store = new CommentStore(dataStore, pullRequestStoreFactory, eventBus, keyGenerator);
+    store = new CommentStore(dataStore, keyGenerator);
     // delegate store methods to backing map
     when(dataStore.getAll()).thenReturn(backingMap);
 
@@ -72,7 +58,7 @@ class CommentStoreTest {
     String pullRequestId = "1";
     when(dataStore.get(pullRequestId)).thenReturn(null);
     Comment pullRequestComment = createComment("1", "my Comment", "author", new Location());
-    store.add(repository, pullRequestId, pullRequestComment);
+    store.add(pullRequestId, pullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
       .hasSize(1)
@@ -88,7 +74,7 @@ class CommentStoreTest {
     pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
 
     when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
-    store.add(repository, pullRequestId, newPullRequestComment);
+    store.add(pullRequestId, newPullRequestComment);
     assertThat(backingMap)
       .isNotEmpty()
       .hasSize(1)
@@ -186,7 +172,7 @@ class CommentStoreTest {
       copy(new MockedDiffLine.Builder().newLineNumber(3).get())
     )));
 
-    store.add(repository, pullRequestId, comment);
+    store.add(pullRequestId, comment);
 
     Comment storedComment = backingMap.get(pullRequestId).getComments().iterator().next();
     assertThat(storedComment).isEqualTo(comment);

@@ -80,6 +80,8 @@ public interface PullRequestService {
 
   void setMerged(Repository repository, String pullRequestId);
 
+  void updated(Repository repository, String pullRequestId);
+
   boolean hasUserApproved(Repository repository, String pullRequestId, User user);
 
   default boolean hasUserApproved(Repository repository, String pullRequestId) {

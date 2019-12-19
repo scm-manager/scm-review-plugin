@@ -27,6 +27,7 @@ import RejectButton from "./RejectButton";
 import ApprovalContainer from "./ApprovalContainer";
 import SubscriptionContainer from "./SubscriptionContainer";
 import ReviewerList from "./ReviewerList";
+import ChangeNotification from "./ChangeNotification";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -342,6 +343,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
     return (
       <>
+        <ChangeNotification pullRequest={pullRequest} reload={this.props.fetchPullRequest}/>
         <Container>
           <div className="media">
             <UserField className="media-content">
