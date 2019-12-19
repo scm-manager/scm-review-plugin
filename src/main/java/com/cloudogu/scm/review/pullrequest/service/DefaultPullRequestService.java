@@ -146,7 +146,8 @@ public class DefaultPullRequestService implements PullRequestService {
   public void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.getStatus() == OPEN) {
-      setRevisions(repository, pullRequest);
+      pullRequest.setSourceRevision(branchResolver.resolve(repository, pullRequest.getSource()).getRevision());
+      pullRequest.setTargetRevision(branchResolver.resolve(repository, pullRequest.getTarget()).getRevision());
       pullRequest.setStatus(REJECTED);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause));
@@ -156,10 +157,17 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
+  public void setRevisions(Repository repository, String pullRequestId, String targetRevision, String revisionToMerge) {
+    PullRequest pullRequest = get(repository, pullRequestId);
+    pullRequest.setTargetRevision(targetRevision);
+    pullRequest.setSourceRevision(revisionToMerge);
+    getStore(repository).update(pullRequest);
+  }
+
+  @Override
   public void setMerged(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.getStatus() == OPEN) {
-      setRevisions(repository, pullRequest);
       pullRequest.setStatus(MERGED);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
@@ -230,15 +238,6 @@ public class DefaultPullRequestService implements PullRequestService {
       .findFirst()
       .ifPresent(pullRequest::removeSubscriber);
     getStore(repository).update(pullRequest);
-  }
-
-  private void setRevisions(Repository repository, PullRequest pullRequest) {
-    if (pullRequest.getSourceRevision() == null) {
-      pullRequest.setSourceRevision(branchResolver.resolve(repository, pullRequest.getSource()).getRevision());
-    }
-    if (pullRequest.getTargetRevision() == null) {
-      pullRequest.setTargetRevision(branchResolver.resolve(repository, pullRequest.getTarget()).getRevision());
-    }
   }
 
   private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {

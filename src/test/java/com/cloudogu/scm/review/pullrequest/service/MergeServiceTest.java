@@ -38,7 +38,6 @@ import java.io.IOException;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,14 +71,12 @@ public class MergeServiceTest {
   private PullRequestService pullRequestService;
   @Mock
   private MergeCommandBuilder mergeCommandBuilder;
-  @Mock
-  private BranchResolver branchResolver;
 
   private MergeService service;
 
   @Before
   public void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, branchResolver);
+    service = new MergeService(serviceFactory, pullRequestService);
   }
 
   @Before
@@ -93,20 +90,17 @@ public class MergeServiceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldMergeSuccessfully() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("123"));
-    when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH);
-    assertThat(pullRequest.getTargetRevision()).isEqualTo("123");
-    assertThat(pullRequest.getSourceRevision()).isEqualTo("123");
+    verify(pullRequestService).setRevisions(REPOSITORY, "1", "1", "2");
   }
 
   @Test(expected = UnauthorizedException.class)
   @SubjectAware(username = "trillian")
   public void shouldNotMergeWithoutPermission() {
-    when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
     mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
@@ -117,8 +111,7 @@ public class MergeServiceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldDeleteBranchIfFlagIsSet() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("123"));
-    when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
     when(repositoryService.getBranchCommand()).thenReturn(branchCommandBuilder);
     when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);
@@ -145,7 +138,6 @@ public class MergeServiceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldThrowExceptionIfStrategyNotSupported() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(false);
-    when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
     mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
@@ -157,8 +149,7 @@ public class MergeServiceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldThrowExceptionWhenPullRequestIsNotOpen() {
     lenient().when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1", REJECTED);
+    mockPullRequest("squash", "master", "1", REJECTED);
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
@@ -249,7 +240,7 @@ public class MergeServiceTest {
     lenient().when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);
     lenient().when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("123"));
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     when(repositoryService.getBranchCommand()).thenReturn(branchCommandBuilder);
     Branches branches = new Branches();
     branches.setBranches(ImmutableList.of(Branch.normalBranch(branchName, "123")));

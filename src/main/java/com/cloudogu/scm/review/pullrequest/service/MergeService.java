@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
@@ -38,21 +37,16 @@ public class MergeService {
 
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
-  private final BranchResolver branchResolver;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, BranchResolver branchResolver) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
-    this.branchResolver = branchResolver;
   }
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
-      if (strategy == MergeStrategy.SQUASH) {
-        pullRequest.setTargetRevision(branchResolver.resolve(repositoryService.getRepository(), pullRequest.getTarget()).getRevision());
-      }
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
       isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
@@ -63,11 +57,8 @@ public class MergeService {
         throw new MergeConflictException(namespaceAndName, pullRequest.getSource(), pullRequest.getTarget(), mergeCommandResult);
       }
 
-      if (strategy == MergeStrategy.SQUASH && mergeCommandResult.getNewHeadRevision() != null) {
-        pullRequest.setSourceRevision(mergeCommandResult.getNewHeadRevision());
-        pullRequestService.update(namespaceAndName.getNamespace(), namespaceAndName.getName(), pullRequestId, pullRequest);
-      }
-      pullRequestService.setMerged(repositoryService.getRepository(), pullRequestId);
+      pullRequestService.setRevisions(repositoryService.getRepository(), pullRequest.getId(), mergeCommandResult.getTargetRevision(), mergeCommandResult.getRevisionToMerge());
+      pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId());
 
       if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
         repositoryService.getBranchCommand().delete(pullRequest.getSource());
