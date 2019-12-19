@@ -93,7 +93,7 @@ public class MergeServiceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldMergeSuccessfully() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(new MergeCommandResult(emptyList(), "123"));
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("123"));
     when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
 
@@ -117,7 +117,7 @@ public class MergeServiceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldDeleteBranchIfFlagIsSet() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(new MergeCommandResult(emptyList(), "123"));
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("123"));
     when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
     mockPullRequest("squash", "master", "1");
     when(repositoryService.getBranchCommand()).thenReturn(branchCommandBuilder);
@@ -249,7 +249,7 @@ public class MergeServiceTest {
     lenient().when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);
     lenient().when(repositoryService.isSupported(Command.BRANCHES)).thenReturn(true);
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(new MergeCommandResult(emptyList(), "123"));
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("123"));
     when(repositoryService.getBranchCommand()).thenReturn(branchCommandBuilder);
     Branches branches = new Branches();
     branches.setBranches(ImmutableList.of(Branch.normalBranch(branchName, "123")));
