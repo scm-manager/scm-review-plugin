@@ -42,7 +42,7 @@
         "done": "{{done}} / {{total}} Aufgaben erledigt",
         "allDone": "Alle Aufgaben erledigt"
       },
-      "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht wurden sein.",
+      "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein.",
       "details": {
         "notification": "Pull Request erfolgreich gemerged!",
         "targetDeleted": "Der Target Branch wurde gelöscht!",
