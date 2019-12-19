@@ -19,6 +19,8 @@ export type PullRequest = BasicPullRequest & {
   status: string;
   _links: Links;
   tasks: Tasks;
+  sourceRevision: string;
+  targetRevision: string;
 };
 
 export type Location = {

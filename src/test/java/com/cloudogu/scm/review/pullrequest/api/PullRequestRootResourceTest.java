@@ -37,6 +37,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.Branch;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
@@ -60,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
@@ -724,6 +724,7 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldSetPullRequestToStatusRejected() throws URISyntaxException {
     when(store.get("1")).thenReturn(createPullRequest("opened_1", PullRequestStatus.OPEN));
+    when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
     MockHttpRequest request = MockHttpRequest
       .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/reject");
     dispatcher.invoke(request, response);

@@ -35,6 +35,8 @@ public class PullRequestDto extends HalRepresentation {
   private PullRequestStatus status;
   private Set<ReviewerDto> reviewer = new HashSet<>();
   private TasksDto tasks;
+  private String sourceRevision;
+  private String targetRevision;
 
 
   @Override

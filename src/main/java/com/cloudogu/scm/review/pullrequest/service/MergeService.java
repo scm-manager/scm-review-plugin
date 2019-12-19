@@ -18,7 +18,6 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.text.MessageFormat;
 
@@ -58,7 +57,8 @@ public class MergeService {
         throw new MergeConflictException(namespaceAndName, pullRequest.getSource(), pullRequest.getTarget(), mergeCommandResult);
       }
 
-      pullRequestService.setMerged(repositoryService.getRepository(), pullRequestId);
+      pullRequestService.setRevisions(repositoryService.getRepository(), pullRequest.getId(), mergeCommandResult.getTargetRevision(), mergeCommandResult.getRevisionToMerge());
+      pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId());
 
       if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
         repositoryService.getBranchCommand().delete(pullRequest.getSource());

@@ -78,6 +78,8 @@ public interface PullRequestService {
 
   void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause);
 
+  void setRevisions(Repository repository, String id, String targetRevision, String revisionToMerge);
+
   void setMerged(Repository repository, String pullRequestId);
 
   void updated(Repository repository, String pullRequestId);
@@ -117,4 +119,5 @@ public interface PullRequestService {
   default void unsubscribe(Repository repository, String pullRequestId) {
     unsubscribe(repository, pullRequestId, getCurrentUser());
   }
+
 }
