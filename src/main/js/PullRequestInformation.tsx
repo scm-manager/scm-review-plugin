@@ -48,39 +48,27 @@ class PullRequestInformation extends React.Component<Props> {
     let routeChangesetPagination = null;
     let routeDiff = null;
 
-    const isClosedPullRequest = () => {
-      return status && status === "MERGED" || status === "REJECTED";
-    };
+    const isClosedPullRequest = status === "MERGED" || status === "REJECTED";
 
-    if (!isClosedPullRequest() || (pullRequest?.sourceRevision && pullRequest?.targetRevision)) {
+    if (!isClosedPullRequest || (pullRequest?.sourceRevision && pullRequest?.targetRevision)) {
       changesetTab = (
         <li className={this.navigationClass("changesets")}>
           <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pullRequest.tabs.commits")}</Link>
         </li>
       );
+      const sourceRevision = isClosedPullRequest && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source;
+      const targetRevision = isClosedPullRequest && pullRequest?.targetRevision ? pullRequest.targetRevision : target;
       routeChangeset = (
         <Route
           path={`${baseURL}/changesets`}
-          render={() => (
-            <Changesets
-              repository={repository}
-              source={isClosedPullRequest() && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source}
-              target={isClosedPullRequest() && pullRequest?.targetRevision ? pullRequest.targetRevision : target}
-            />
-          )}
+          render={() => <Changesets repository={repository} source={sourceRevision} target={targetRevision} />}
           exact
         />
       );
       routeChangesetPagination = (
         <Route
           path={`${baseURL}/changesets/:page`}
-          render={() => (
-            <Changesets
-              repository={repository}
-              source={isClosedPullRequest() && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source}
-              target={isClosedPullRequest() && pullRequest?.targetRevision ? pullRequest.targetRevision : target}
-            />
-          )}
+          render={() => <Changesets repository={repository} source={sourceRevision} target={targetRevision} />}
           exact
         />
       );
@@ -91,8 +79,8 @@ class PullRequestInformation extends React.Component<Props> {
             <DiffRoute
               repository={repository}
               pullRequest={pullRequest}
-              source={isClosedPullRequest() && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source}
-              target={isClosedPullRequest() && pullRequest?.targetRevision ? pullRequest.targetRevision : target}
+              source={sourceRevision}
+              target={targetRevision}
             />
           )}
           exact
