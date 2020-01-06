@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.emailnotification;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
@@ -55,6 +56,11 @@ public class EmailNotificationHook {
   @Subscribe
   public void handleRejectedPullRequest(PullRequestRejectedEvent event) {
     handleEvent(event, new PullRequestRejectedMailTextResolver(event));
+  }
+
+  @Subscribe
+  public void handlePullRequestApproval(PullRequestApprovalEvent event) {
+    handleEvent(event, new PullRequestApprovalMailTextResolver(event));
   }
 
   private void handleEvent(BasicPullRequestEvent event, MailTextResolver mailTextResolver) {
