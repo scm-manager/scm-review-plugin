@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
@@ -18,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
+import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.repository.Repository;
 
 import java.util.ArrayList;
@@ -131,6 +133,22 @@ class EmailNotificationHookTest {
     emailNotificationHook.handleRejectedPullRequest(event);
 
     verify(service).sendEmails(isA(PullRequestRejectedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
+  }
+
+  @Test
+  void shouldSendEmailAfterPullRequestGotApproved() throws MailSendBatchException {
+    PullRequestApprovalEvent event = new PullRequestApprovalEvent(repository, pullRequest, PullRequestApprovalEvent.ApprovalCause.APPROVED);
+    emailNotificationHook.handlePullRequestApproval(event);
+
+    verify(service).sendEmails(isA(PullRequestApprovalMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
+  }
+
+  @Test
+  void shouldSendEmailAfterPullRequestGotApprovalRemoved() throws MailSendBatchException {
+    PullRequestApprovalEvent event = new PullRequestApprovalEvent(repository, pullRequest, PullRequestApprovalEvent.ApprovalCause.APPROVAL_REMOVED);
+    emailNotificationHook.handlePullRequestApproval(event);
+
+    verify(service).sendEmails(isA(PullRequestApprovalMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
   }
 
 }
