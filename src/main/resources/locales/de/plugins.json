@@ -34,7 +34,7 @@
       "tabs": {
         "commits": "Commits",
         "diff": "Diff",
-        "comments": "Comments"
+        "comments": "Kommentare"
       },
       "tasks": {
         "todo": "{{count}} Aufgabe offen",
