@@ -195,6 +195,7 @@
     "conflicts": {
       "types": {
         "BOTH_MODIFIED": "conflicting change",
+        "ADDED_BY_BOTH": "added by both",
         "DELETED_BY_US": "deleted by us",
         "DELETED_BY_THEM": "deleted by them"
       }

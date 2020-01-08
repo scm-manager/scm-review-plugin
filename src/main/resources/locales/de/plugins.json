@@ -195,6 +195,7 @@
     "conflicts": {
       "types": {
         "BOTH_MODIFIED": "Konflikt",
+        "ADDED_BY_BOTH": "in Source und Target hinzugefügt",
         "DELETED_BY_US": "im Source gelöscht",
         "DELETED_BY_THEM": "im Target gelöscht"
       }
