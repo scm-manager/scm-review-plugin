@@ -26,23 +26,23 @@ import static java.lang.String.format;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
 @EagerSingleton @Extension
-public class MergeCheckHook {
+public class StatusCheckHook {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MergeCheckHook.class);
+  private static final Logger LOG = LoggerFactory.getLogger(StatusCheckHook.class);
 
   private final DefaultPullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
   private final MessageSenderFactory messageSenderFactory;
 
   @Inject
-  public MergeCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory) {
+  public StatusCheckHook(DefaultPullRequestService service, RepositoryServiceFactory serviceFactory, MessageSenderFactory messageSenderFactory) {
     this.service = service;
     this.serviceFactory = serviceFactory;
     this.messageSenderFactory = messageSenderFactory;
   }
 
   @Subscribe(async = false)
-  public void checkForMerges(PostReceiveRepositoryHookEvent event) {
+  public void checkStatus(PostReceiveRepositoryHookEvent event) {
     try (RepositoryService repositoryService = serviceFactory.create(event.getRepository())) {
       if (!repositoryService.isSupported(Command.MERGE)) {
         LOG.trace("ignoring post receive event for repository {}", event.getRepository().getNamespaceAndName());
@@ -67,30 +67,40 @@ public class MergeCheckHook {
     }
 
     private void process(List<PullRequest> pullRequests) {
-      pullRequests
-        .stream()
-        .filter(this::pullRequestHasStatusOpen)
-        .filter(this::pullRequestBranchesAreModified)
-        .filter(this::pullRequestIsMerged)
-        .forEach(this::setPullRequestMerged);
-      pullRequests
-        .stream()
-        .filter(this::pullRequestHasStatusOpen)
-        .filter(this::pullRequestSourceBranchIsDeleted)
-        .forEach(this::setPullRequestRejected);
+      pullRequests.forEach(this::process);
     }
 
-    private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
+    private void process(PullRequest pullRequest) {
+      if (hasStatusOpen(pullRequest)) {
+        processOpen(pullRequest);
+      } else {
+        LOG.debug("ignoring pull request {}, because it in status {}", pullRequest.getId(), pullRequest.getStatus());
+      }
+    }
+
+    private void processOpen(PullRequest pullRequest) {
+      if (branchesAreModified(pullRequest)){
+        if (isMerged(pullRequest)) {
+          setMerged(pullRequest);
+        } else {
+          updated(pullRequest);
+        }
+      } else if (sourceBranchIsDeleted(pullRequest)) {
+        setRejected(pullRequest);
+      }
+    }
+
+    private boolean hasStatusOpen(PullRequest pullRequest) {
       return pullRequest.getStatus() == PullRequestStatus.OPEN;
     }
 
-    private boolean pullRequestBranchesAreModified(PullRequest pullRequest) {
+    private boolean branchesAreModified(PullRequest pullRequest) {
       return
         branchProvider.getCreatedOrModified().contains(pullRequest.getSource()) ||
           branchProvider.getCreatedOrModified().contains(pullRequest.getTarget());
     }
 
-    private boolean pullRequestIsMerged(PullRequest pullRequest) {
+    private boolean isMerged(PullRequest pullRequest) {
       try {
         ChangesetPagingResult changesets = repositoryService
           .getLogCommand()
@@ -104,22 +114,27 @@ public class MergeCheckHook {
       }
     }
 
-    private void setPullRequestMerged(PullRequest pullRequest) {
+    private void setMerged(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
       String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setMerged(repository, pullRequest.getId());
     }
 
-    private boolean pullRequestSourceBranchIsDeleted(PullRequest pullRequest) {
+    private boolean sourceBranchIsDeleted(PullRequest pullRequest) {
       return branchProvider.getDeletedOrClosed().contains(pullRequest.getSource());
     }
 
-    private void setPullRequestRejected(PullRequest pullRequest) {
+    private void setRejected(PullRequest pullRequest) {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
       String message = format("Rejected pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
       service.setRejected(repository, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+    }
+
+    private void updated(PullRequest pullRequest) {
+      LOG.info("pull request {} was updated", pullRequest.getId());
+      service.updated(repository, pullRequest.getId());
     }
   }
 }

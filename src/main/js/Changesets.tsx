@@ -3,7 +3,14 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Changeset, PagedCollection, Repository } from "@scm-manager/ui-types";
 import { createChangesetUrl, getChangesets } from "./pullRequest";
-import { ChangesetList, ErrorNotification, LinkPaginator, Loading, Notification } from "@scm-manager/ui-components";
+import {
+  ChangesetList,
+  ErrorNotification,
+  LinkPaginator,
+  Loading,
+  Notification,
+  NotFoundError
+} from "@scm-manager/ui-components";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -21,8 +28,8 @@ type ChangesetCollection = PagedCollection & {
 type State = {
   changesets: ChangesetCollection;
   error?: Error;
-  loading: false;
-  page: 1;
+  loading: boolean;
+  page: number;
 };
 
 class Changesets extends React.Component<Props, State> {
@@ -30,7 +37,8 @@ class Changesets extends React.Component<Props, State> {
     super(props);
 
     this.state = {
-      loading: true
+      loading: true,
+      page: 1
     };
   }
 
@@ -44,7 +52,10 @@ class Changesets extends React.Component<Props, State> {
 
   createChangesetLink = () => {
     const { repository, source, target } = this.props;
-    return createChangesetUrl(repository, source, target);
+    if (source && target) {
+      return createChangesetUrl(repository, source, target);
+    }
+    return "";
   };
 
   fetchChangesets = (url: string) => {
@@ -66,14 +77,15 @@ class Changesets extends React.Component<Props, State> {
   };
 
   loadChangesets = () => {
+    const { source, target } = this.props;
     const url = this.createChangesetLink();
-    if (!url) {
+    if (!url && source && target) {
       this.setState({
         loading: false,
         error: new Error("incoming changesets are not supported")
       });
     } else {
-      this.fetchChangesets(url);
+      url && this.fetchChangesets(url);
     }
   };
 
@@ -110,6 +122,9 @@ class Changesets extends React.Component<Props, State> {
     const { changesets, error, loading } = this.state;
 
     if (error) {
+      if (error instanceof NotFoundError) {
+        return <Notification type="info">{t("scm-review-plugin.pullRequest.noChangesets")}</Notification>;
+      }
       return <ErrorNotification error={error} />;
     } else if (loading) {
       return <Loading />;

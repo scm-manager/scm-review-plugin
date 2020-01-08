@@ -5,6 +5,9 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
+import com.cloudogu.scm.review.events.Channel;
+import com.cloudogu.scm.review.events.ChannelRegistry;
+import com.cloudogu.scm.review.events.Registration;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -22,6 +25,7 @@ import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -33,6 +37,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.sse.Sse;
+import javax.ws.rs.sse.SseEventSink;
 
 import static de.otto.edison.hal.Links.linkingTo;
 
@@ -41,12 +47,14 @@ public class PullRequestResource {
   private final PullRequestMapper mapper;
   private final PullRequestService service;
   private final Provider<CommentRootResource> commentResourceProvider;
+  private final ChannelRegistry channelRegistry;
 
   @Inject
-  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider) {
+  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, ChannelRegistry channelRegistry) {
     this.mapper = mapper;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
+    this.channelRegistry = channelRegistry;
   }
 
   @Path("comments/")
@@ -197,5 +205,21 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     service.reject(repository, pullRequestId, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
     return Response.noContent().build();
+  }
+
+  @GET
+  @Path("events")
+  @Produces(MediaType.SERVER_SENT_EVENTS)
+  public void events(@Context Sse sse, @Context SseEventSink eventSink, @BeanParam EventSubscriptionRequest request) {
+    Repository repository = service.getRepository(request.getNamespace(), request.getName());
+    PermissionCheck.checkRead(repository);
+    PullRequest pullRequest = service.get(repository, request.getPullRequestId());
+
+    Channel channel = channelRegistry.channel(repository, pullRequest);
+    channel.register(new Registration(
+      sse,
+      eventSink,
+      request.getSessionId()
+    ));
   }
 }

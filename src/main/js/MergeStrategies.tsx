@@ -16,9 +16,6 @@ const RadioList = styled.div`
   > label:not(:last-child) {
     margin-bottom: 0.6em;
   }
-  > :first-child {
-    margin-left: 0.5em;
-  }
 `;
 
 class MergeStrategies extends React.Component<Props> {

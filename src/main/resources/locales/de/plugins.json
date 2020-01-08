@@ -35,7 +35,7 @@
         "commits": "Commits",
         "diff": "Diff",
         "conflicts": "Konflikte",
-        "comments": "Comments"
+        "comments": "Kommentare"
       },
       "tasks": {
         "todo": "{{count}} Aufgabe offen",
@@ -43,7 +43,7 @@
         "done": "{{done}} / {{total}} Aufgaben erledigt",
         "allDone": "Alle Aufgaben erledigt"
       },
-      "noChangesets": "Keine Changesets gefunden.",
+      "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein.",
       "details": {
         "notification": "Pull Request erfolgreich gemerged!",
         "targetDeleted": "Der Target Branch wurde gelöscht!",
@@ -181,6 +181,15 @@
           "title": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches",
           "titleClickable": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
         }
+      }
+    },
+    "changeNotification": {
+      "title": "Neue Änderungen",
+      "description": "An diesem Pull Request wurden Änderungen vorgenommen. Laden Sie die Seite neu um diese anzuzeigen.",
+      "modificationWarning": "Warnung: Nicht gespeicherte Eingaben gehen verloren.",
+      "buttons": {
+        "reload": "Neu laden",
+        "ignore": "Ignorieren"
       }
     },
     "conflicts": {

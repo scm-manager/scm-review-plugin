@@ -43,7 +43,7 @@
         "done": "{{done}} / {{total}} tasks done",
         "allDone": "All tasks done"
       },
-      "noChangesets": "No changesets found.",
+      "noChangesets": "No changesets found. The commits could have been removed.",
       "details": {
         "notification": "Pull request merged successfully!",
         "targetDeleted": "The target branch has been deleted!",
@@ -103,9 +103,9 @@
       }
     },
     "pullRequests": {
-      "errorTitle": "Fehler",
-      "errorSubtitle": "Unbekannter Pull Request Fehler",
-      "createButton": "Pull Request erstellen"
+      "errorTitle": "Error",
+      "errorSubtitle": "Unspecified pull request error",
+      "createButton": "Create Pull Request"
     },
     "comment": {
       "addComment": "Add comment",
@@ -181,6 +181,15 @@
           "title": "The comment is related to an older of the source or target branch",
           "titleClickable": "The comment is related to an older of the source or target branch. Click here to see the original context."
         }
+      }
+    },
+    "changeNotification": {
+      "title": "New Changes",
+      "description": "The underlying pull request has changed. Press reload to see the changes.",
+      "modificationWarning": "Warning: Unsaved modifications will be lost.",
+      "buttons": {
+        "reload": "Reload",
+        "ignore": "Ignore"
       }
     },
     "conflicts": {

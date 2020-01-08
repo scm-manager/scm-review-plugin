@@ -5,6 +5,7 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.events.ChannelRegistry;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
@@ -60,6 +61,8 @@ public class CommentResourceTest {
   private PullRequestService pullRequestService;
   @Mock
   private BranchRevisionResolver branchRevisionResolver;
+  @Mock
+  private ChannelRegistry channelRegistry;
 
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock("https://scm-manager.org/scm/api/v2");
 
@@ -70,9 +73,28 @@ public class CommentResourceTest {
     CommentResource resource = new CommentResource(service, repositoryResolver, new CommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new ExecutedTransitionMapperImpl(), branchRevisionResolver);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();
-    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null,
-        Providers.of(new CommentRootResource(new CommentMapperImpl(), repositoryResolver, service, Providers.of(resource), commentPathBuilder, pullRequestService, branchRevisionResolver)))));
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(
+      new PullRequestMapperImpl(),
+      null,
+      Providers.of(
+        new PullRequestResource(
+          new PullRequestMapperImpl(),
+          null,
+          Providers.of(
+            new CommentRootResource(
+              new CommentMapperImpl(),
+              repositoryResolver,
+              service,
+              Providers.of(resource),
+              commentPathBuilder,
+              pullRequestService,
+              branchRevisionResolver
+            )
+          ),
+          channelRegistry
+        )
+      )
+    );
     dispatcher.addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);

@@ -7,6 +7,7 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Location;
+import com.cloudogu.scm.review.events.ChannelRegistry;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -36,6 +37,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.Branch;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
@@ -59,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
@@ -118,6 +119,8 @@ public class PullRequestRootResourceTest {
   private LogCommandBuilder logCommandBuilder;
   @Mock
   private CommentService commentService;
+  @Mock
+  private ChannelRegistry channelRegistry;
 
   @InjectMocks
   private PullRequestMapperImpl mapper;
@@ -132,7 +135,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
-    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null)));
+    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, channelRegistry)));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -484,6 +487,22 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "slarti", password = "secret")
+  public void shouldGetEventsLink() throws URISyntaxException, IOException {
+    initRepoWithPRs("ns", "repo");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    prNode.elements().forEachRemaining(node -> {
+      String actualCollectionLink = node.path("_links").path("events").path("href").asText();
+      assertThat(actualCollectionLink).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText() + "/events");
+    });
+  }
+
+  @Test
+  @SubjectAware(username = "slarti", password = "secret")
   public void shouldGetUpdateLink() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
@@ -705,6 +724,7 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "slarti", password = "secret")
   public void shouldSetPullRequestToStatusRejected() throws URISyntaxException {
     when(store.get("1")).thenReturn(createPullRequest("opened_1", PullRequestStatus.OPEN));
+    when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
     MockHttpRequest request = MockHttpRequest
       .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/reject");
     dispatcher.invoke(request, response);
@@ -753,7 +773,7 @@ public class PullRequestRootResourceTest {
 
   private void initPullRequestRootResource() {
     PullRequestRootResource rootResource =
-      new PullRequestRootResource(mapper, pullRequestService, Providers.of(new PullRequestResource(mapper, pullRequestService, null)));
+      new PullRequestRootResource(mapper, pullRequestService, Providers.of(new PullRequestResource(mapper, pullRequestService, null, channelRegistry)));
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(rootResource);

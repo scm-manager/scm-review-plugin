@@ -121,6 +121,13 @@ public class PullRequestResourceLinks {
         .method("getSubscription").parameters(namespace, name, pullRequestId)
         .href();
     }
+
+    public String events(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("events").parameters(namespace, name, pullRequestId)
+        .href();
+    }
   }
 
   public PullRequestCommentsLinks pullRequestComments() {

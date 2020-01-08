@@ -65,7 +65,7 @@ public class CommentService {
   private String addWithoutPermissionCheck(Repository repository, String pullRequestId, Comment pullRequestComment) {
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
     initializeNewComment(pullRequestComment, pullRequest, repository.getId());
-    String newId = getCommentStore(repository).add(repository, pullRequestId, pullRequestComment);
+    String newId = getCommentStore(repository).add(pullRequestId, pullRequestComment);
     eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
     return newId;
   }

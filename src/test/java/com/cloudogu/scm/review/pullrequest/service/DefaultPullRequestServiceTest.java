@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.github.sdorra.shiro.ShiroRule;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.HandlerEventType;
 import sonia.scm.event.ScmEventBus;
+import sonia.scm.repository.Branch;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.Repository;
@@ -45,6 +47,7 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -72,6 +75,8 @@ class DefaultPullRequestServiceTest {
   Subject subject;
   @Mock
   RepositoryServiceFactory repositoryService;
+  @Mock
+  BranchResolver branchResolver;
 
   @Captor
   ArgumentCaptor<Object> eventCaptor;
@@ -81,7 +86,7 @@ class DefaultPullRequestServiceTest {
 
   @BeforeEach
   void initStore() {
-    when(storeFactory.create(REPOSITORY)).thenReturn(store);
+    lenient().when(storeFactory.create(REPOSITORY)).thenReturn(store);
   }
 
   @BeforeEach
@@ -329,11 +334,17 @@ class DefaultPullRequestServiceTest {
 
     @Test
     void shouldSetPullRequestRejectedAndSendEvent() {
+      doReturn(Branch.normalBranch("source", "1"))
+        .when(branchResolver).resolve(REPOSITORY, pullRequest.getSource());
+      doReturn(Branch.normalBranch("target", "2"))
+        .when(branchResolver).resolve(REPOSITORY, pullRequest.getTarget());
       pullRequest.setStatus(OPEN);
 
       service.setRejected(REPOSITORY, pullRequest.getId(), REJECTED_BY_USER);
 
       assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
+      assertThat(pullRequest.getSourceRevision()).isEqualTo("1");
+      assertThat(pullRequest.getTargetRevision()).isEqualTo("2");
       assertThat(eventCaptor.getAllValues()).hasSize(1);
       PullRequestRejectedEvent event = (PullRequestRejectedEvent) eventCaptor.getValue();
       assertThat(event.getCause()).isEqualTo(REJECTED_BY_USER);
@@ -393,9 +404,30 @@ class DefaultPullRequestServiceTest {
       assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
       assertThat(eventCaptor.getAllValues()).hasSize(0);
     }
+
+    @Test
+    void shouldSendPullRequestUpdatedEvent() {
+      pullRequest.setStatus(OPEN);
+
+      service.updated(REPOSITORY, pullRequest.getId());
+
+      assertThat(eventCaptor.getValue()).isInstanceOfSatisfying(PullRequestUpdatedEvent.class, (event) -> {
+        assertThat(event.getRepository()).isSameAs(REPOSITORY);
+        assertThat(event.getPullRequest()).isSameAs(pullRequest);
+      });
+    }
+
+    @Test
+    void shouldNotSendPullRequestUpdatedEventForNonOpenPRs() {
+      pullRequest.setStatus(MERGED);
+
+      service.updated(REPOSITORY, pullRequest.getId());
+
+      assertThat(eventCaptor.getAllValues()).isEmpty();
+    }
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>());
+    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "");
   }
 }
