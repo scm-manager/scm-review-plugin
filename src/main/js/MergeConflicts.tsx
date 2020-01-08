@@ -65,7 +65,7 @@ class MergeConflicts extends React.Component<Props, State> {
       const parsedDiff = parser.parse(conflict.diff);
       return parsedDiff
         .map(file => ({ ...file, type: this.getTypeLabel(conflict.type) }))
-        .map(file => <DiffFile file={file} sideBySide={false} />);
+        .map(file => <DiffFile markConflicts={true} file={file} sideBySide={false} />);
     } else {
       return (
         <DiffFile
