@@ -163,9 +163,9 @@
         "cancel": "Nein"
       },
       "systemMessage": {
-        "merged": "Der Pull-Request wurde gemerged.",
-        "rejected": "Der Pull-Request wurde abgelehnt.",
-        "sourceDeleted": "Der Quell-Branch des Pull-Requests wurde gelöscht."
+        "merged": "Der Pull Request wurde gemerged.",
+        "rejected": "Der Pull Request wurde abgelehnt.",
+        "sourceDeleted": "Der Quell-Branch des Pull Requests wurde gelöscht."
       },
       "type": {
         "comment": "Kommentar",
@@ -215,24 +215,24 @@
   "verbs": {
     "repository": {
       "createPullRequest": {
-        "displayName": "Pull-Request erstellen",
-        "description": "Darf neue Pull-Requests erstellen"
+        "displayName": "Pull Request erstellen",
+        "description": "Darf neue Pull Requests erstellen"
       },
       "readPullRequest": {
-        "displayName": "Pull-Requests lesen",
-        "description": "Darf Pull-Requests lesen"
+        "displayName": "Pull Requests lesen",
+        "description": "Darf Pull Requests lesen"
       },
       "commentPullRequest": {
-        "displayName": "Pull-Requests kommentieren",
-        "description": "Darf Pull-Requests kommentieren"
+        "displayName": "Pull Requests kommentieren",
+        "description": "Darf Pull Requests kommentieren"
       },
       "modifyPullRequest": {
-        "displayName": "Pull-Request bearbeiten",
+        "displayName": "Pull Request bearbeiten",
         "description": "Darf den Titel, die Beschreibung und die Reviewer des Pull Requests an sich sowie Kommentare von anderen Benutzern bearbeiten"
       },
       "mergePullRequest": {
-        "displayName": "Pull-Requests mergen/ablehnen",
-        "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
+        "displayName": "Pull Requests mergen/ablehnen",
+        "description": "Darf Pull Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
       }
     }
   },
@@ -242,8 +242,8 @@
       "description": "Die Branches konnten nicht gemerged werden, da Konflikte existieren."
     },
     "FTRhcI0To1": {
-      "displayName": "Pull-Request nicht offen",
-      "description": "Merges können nur auf offenen Pull-Requests ausgeführt werden."
+      "displayName": "Pull Request nicht offen",
+      "description": "Merges können nur auf offenen Pull Requests ausgeführt werden."
     },
     "CVRj80D6z1": {
       "displayName": "Keine Unterschiede gefunden.",
