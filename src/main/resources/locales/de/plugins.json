@@ -199,6 +199,10 @@
         "ADDED_BY_BOTH": "in Source und Target hinzugefügt",
         "DELETED_BY_US": "im Source gelöscht",
         "DELETED_BY_THEM": "im Target gelöscht"
+      },
+      "hint": {
+        "header": "Änderungen mit Konflikten gefunden",
+        "text": "Finden Sie heraus, wie Sie die Konflikte auflösen und den Branch mergen können."
       }
     }
   },

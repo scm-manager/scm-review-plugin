@@ -199,6 +199,10 @@
         "ADDED_BY_BOTH": "added by both",
         "DELETED_BY_US": "deleted by us",
         "DELETED_BY_THEM": "deleted by them"
+      },
+      "hint": {
+        "header": "Found conflicting changes",
+        "text": "Learn how to resolve the conflicts to merge this branch."
       }
     }
   },
