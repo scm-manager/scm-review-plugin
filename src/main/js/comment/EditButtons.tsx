@@ -7,26 +7,31 @@ type Props = {
   comment: Comment;
   onSubmit: () => void;
   onCancel: () => void;
+  changed: () => boolean;
 };
 
-const EditButtons: FC<Props> = ({ comment, onSubmit, onCancel }) => {
+const EditButtons: FC<Props> = ({ comment, onSubmit, onCancel, changed }) => {
   const { t } = useTranslation("plugins");
 
   const confirmCancelUpdate = () => {
-    confirmAlert({
-      title: t("scm-review-plugin.comment.confirmCancelUpdateAlert.title"),
-      message: t("scm-review-plugin.comment.confirmCancelUpdateAlert.message"),
-      buttons: [
-        {
-          label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.submit"),
-          onClick: onCancel
-        },
-        {
-          label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.cancel"),
-          onClick: () => null
-        }
-      ]
-    });
+    if (changed()) {
+      confirmAlert({
+        title: t("scm-review-plugin.comment.confirmCancelUpdateAlert.title"),
+        message: t("scm-review-plugin.comment.confirmCancelUpdateAlert.message"),
+        buttons: [
+          {
+            label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.submit"),
+            onClick: onCancel
+          },
+          {
+            label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.cancel"),
+            onClick: () => null
+          }
+        ]
+      });
+    } else {
+      onCancel();
+    }
   };
 
   return (

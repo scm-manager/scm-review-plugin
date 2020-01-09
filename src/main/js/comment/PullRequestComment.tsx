@@ -36,6 +36,7 @@ type Props = WithTranslation & {
 type State = {
   collapsed: boolean;
   edit: boolean;
+  changed: boolean;
   updatedComment: BasicComment;
   loading: boolean;
   contextModalOpen: boolean;
@@ -53,6 +54,7 @@ class PullRequestComment extends React.Component<Props, State> {
       },
       collapsed: props.comment.type === "TASK_DONE",
       edit: false,
+      changed: false,
       contextModalOpen: false
     };
   }
@@ -60,7 +62,8 @@ class PullRequestComment extends React.Component<Props, State> {
   startUpdate = () => {
     this.setState({
       loading: false,
-      edit: true
+      edit: true,
+      changed: false
     });
   };
 
@@ -75,7 +78,11 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   update = () => {
-    const { updatedComment } = this.state;
+    const { updatedComment, changed } = this.state;
+    if (!changed) {
+      this.setState({ edit: false });
+      return;
+    }
     const comment = {
       ...this.props.comment,
       comment: updatedComment.comment,
@@ -132,6 +139,7 @@ class PullRequestComment extends React.Component<Props, State> {
         this.setState({
           loading: false,
           edit: false,
+          changed: false,
           updatedComment: {
             ...c
           }
@@ -254,6 +262,7 @@ class PullRequestComment extends React.Component<Props, State> {
 
   handleUpdateChange = (comment: string) => {
     this.setState({
+      changed: true,
       updatedComment: {
         ...this.state.updatedComment,
         comment: comment
@@ -327,7 +336,14 @@ class PullRequestComment extends React.Component<Props, State> {
 
     if (edit) {
       message = this.createMessageEditor();
-      editButtons = <EditButtons comment={comment} onSubmit={this.update} onCancel={this.cancelUpdate} />;
+      editButtons = (
+        <EditButtons
+          comment={comment}
+          onSubmit={this.update}
+          onCancel={this.cancelUpdate}
+          changed={() => this.state.changed}
+        />
+      );
     } else {
       message = !collapsed ? <CommentContent comment={comment} /> : "";
       icons = this.createEditIcons();
