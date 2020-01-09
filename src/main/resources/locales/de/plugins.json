@@ -215,7 +215,7 @@
   "verbs": {
     "repository": {
       "createPullRequest": {
-        "displayName": "Pull Request erstellen",
+        "displayName": "Pull Requests erstellen",
         "description": "Darf neue Pull Requests erstellen"
       },
       "readPullRequest": {
@@ -227,8 +227,8 @@
         "description": "Darf Pull Requests kommentieren"
       },
       "modifyPullRequest": {
-        "displayName": "Pull Request bearbeiten",
-        "description": "Darf den Titel, die Beschreibung und die Reviewer des Pull Requests an sich sowie Kommentare von anderen Benutzern bearbeiten"
+        "displayName": "Pull Requests bearbeiten",
+        "description": "Darf den Titel, Beschreibung und Reviewer des Pull Requests, sowie Kommentare von anderen Benutzern bearbeiten"
       },
       "mergePullRequest": {
         "displayName": "Pull Requests mergen/ablehnen",
