@@ -25,6 +25,9 @@ class ManualMergeInformation extends React.Component<Props> {
 
     const body = (
       <div className="content">
+        <p>
+          <em>{t("scm-review-plugin.showPullRequest.mergeButton.conflictTabHint")}</em>
+        </p>
         <ExtensionPoint
           name="repos.repository-merge.information"
           renderAll={true}

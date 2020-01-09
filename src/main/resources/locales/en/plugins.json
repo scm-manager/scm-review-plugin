@@ -68,7 +68,8 @@
     "showPullRequest": {
       "mergeButton": {
         "buttonTitle": "Merge Pull Request",
-        "mergeInformation": "Cannot be merged automatically"
+        "mergeInformation": "Cannot be merged automatically",
+        "conflictTabHint": "Existing conflicts are shown in the tab 'Conflicts'."
       },
       "mergeModal": {
         "title": "Merge Pull Request",
