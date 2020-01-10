@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.PullRequestResourceLinks;
+import com.cloudogu.scm.review.pullrequest.dto.MergeCheckResultDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeConflictResultDto;
 import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
@@ -57,23 +58,22 @@ public class MergeResource {
   }
 
   @POST
-  @Path("{namespace}/{name}/{pullRequestId}/dry-run")
-  @StatusCodes({
-    @ResponseCode(code = 204, condition = "merge can be done automatically"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 409, condition = "The branches can not be merged automatically due to conflicts"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
-  public void dryRun(
+  @Path("{namespace}/{name}/{pullRequestId}/merge-check")
+  @Produces("application/vnd.scmm-mergeCheckResult+json")
+  public MergeCheckResultDto check(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @PathParam("pullRequestId") String pullRequestId
+    @PathParam("pullRequestId") String pullRequestId,
+    @Context UriInfo uriInfo
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
     MergeCheckResult mergeCheckResult = service.checkMerge(namespaceAndName, pullRequestId);
-    if (mergeCheckResult.hasConflicts()) {
-      throw new ConcurrentModificationException(entity(PullRequest.class, pullRequestId).in(namespaceAndName).build());
-    }
+    String checkLink = new PullRequestResourceLinks(uriInfo::getBaseUri).mergeLinks().check(namespace, name, pullRequestId);
+    return new MergeCheckResultDto(
+      Links.linkingTo().self(checkLink).build(),
+      mergeCheckResult.hasConflicts(),
+      mergeCheckResult.getMergeObstacles()
+    );
   }
 
   @POST

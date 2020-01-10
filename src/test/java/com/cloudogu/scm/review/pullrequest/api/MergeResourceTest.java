@@ -74,7 +74,8 @@ class MergeResourceTest {
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 
-    assertThat(response.getStatus()).isEqualTo(204);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"hasConflicts\":false");
   }
 
   @Test
@@ -86,7 +87,8 @@ class MergeResourceTest {
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 
-    assertThat(response.getStatus()).isEqualTo(409);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"hasConflicts\":true");
   }
 
   @Test
