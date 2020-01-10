@@ -81,7 +81,7 @@ public class MergeService {
       boolean isMergeable = dryRun(repositoryService, pullRequest)
         .map(MergeDryRunCommandResult::isMergeable)
         .orElse(false);
-      Collection<MergeObstacle> obstacles = getObstacles(pullRequest);
+      Collection<MergeObstacle> obstacles = getObstacles(repositoryService.getRepository(), pullRequest);
       return new MergeCheckResult(!isMergeable, obstacles);
     }
   }
@@ -104,9 +104,9 @@ public class MergeService {
     }
   }
 
-  private Collection<MergeObstacle> getObstacles(PullRequest pullRequest) {
+  private Collection<MergeObstacle> getObstacles(Repository repository, PullRequest pullRequest) {
     return mergeGuards.stream()
-      .map(guard -> guard.getObstacles(pullRequest))
+      .map(guard -> guard.getObstacles(repository, pullRequest))
       .flatMap(Collection::stream)
       .collect(Collectors.toList());
   }

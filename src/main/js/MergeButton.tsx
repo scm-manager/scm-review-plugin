@@ -51,7 +51,7 @@ class MergeButton extends React.Component<Props, State> {
     const { mergeInformation, showMergeModal } = this.state;
     const action = mergeCheck?.hasConflicts ? this.showInformation : this.toggleMergeModal;
     const color = mergeCheck?.hasConflicts ? "warning" : "primary";
-    const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map(o => o.key).join("\n") : "";
+    const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map(o => t(o.key)).join("\n") : "";
     const disabled = mergeCheck && mergeCheck.mergeObstacles.length > 0;
 
     if (showMergeModal) {

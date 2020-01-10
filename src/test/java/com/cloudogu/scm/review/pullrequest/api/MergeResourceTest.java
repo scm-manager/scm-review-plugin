@@ -69,7 +69,7 @@ class MergeResourceTest {
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
 
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/merge-check", mergeCommandJson);
 
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
@@ -83,7 +83,7 @@ class MergeResourceTest {
     when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(true, emptyList()));
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/merge-check", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 

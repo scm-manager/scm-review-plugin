@@ -224,8 +224,8 @@ public class MergeServiceTest {
 
     TestMergeObstacle obstacle1 = new TestMergeObstacle();
     TestMergeObstacle obstacle2 = new TestMergeObstacle();
-    when(mergeGuard1.getObstacles(pullRequest)).thenReturn(singleton(obstacle1));
-    when(mergeGuard2.getObstacles(pullRequest)).thenReturn(singleton(obstacle2));
+    when(mergeGuard1.getObstacles(REPOSITORY, pullRequest)).thenReturn(singleton(obstacle1));
+    when(mergeGuard2.getObstacles(REPOSITORY, pullRequest)).thenReturn(singleton(obstacle2));
 
     MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
