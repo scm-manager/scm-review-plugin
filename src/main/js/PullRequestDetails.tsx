@@ -19,8 +19,8 @@ import {
   ConflictError,
   NotFoundError
 } from "@scm-manager/ui-components";
-import { MergeCommit, PullRequest } from "./types/PullRequest";
-import { dryRun, merge, reject } from "./pullRequest";
+import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
+import { check, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -40,7 +40,7 @@ type Props = WithTranslation &
 type State = {
   error?: Error;
   loading: boolean;
-  mergeHasNoConflict?: boolean;
+  mergeCheck?: MergeCheck;
   targetBranchDeleted?: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
@@ -128,11 +128,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       loading: false,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
-      showNotification: false,
-      mergeHasNoConflict: true,
-      subscriptionIcon: "",
-      subscriptionLabel: "",
-      subscriptionLink: ""
+      showNotification: false
     };
   }
 
@@ -143,29 +139,23 @@ class PullRequestDetails extends React.Component<Props, State> {
 
   shouldRunDryMerge = (pullRequest: PullRequest) => {
     return (
-      pullRequest._links.mergeDryRun && (pullRequest._links.mergeDryRun as Link).href && pullRequest.status === "OPEN"
+      pullRequest._links.mergeCheck && (pullRequest._links.mergeCheck as Link).href && pullRequest.status === "OPEN"
     );
   };
 
   getMergeDryRun(pullRequest: PullRequest) {
     if (this.shouldRunDryMerge(pullRequest)) {
-      dryRun(pullRequest)
+      check(pullRequest)
         .then(response => {
           this.setState({
-            mergeHasNoConflict: true,
+            mergeCheck: response,
             targetBranchDeleted: false,
             loading: false,
             mergeButtonLoading: false
           });
         })
         .catch(err => {
-          if (err instanceof ConflictError) {
-            this.setState({
-              mergeButtonLoading: false,
-              loading: false,
-              mergeHasNoConflict: false
-            });
-          } else if (err instanceof NotFoundError) {
+          if (err instanceof NotFoundError) {
             this.setState({
               mergeButtonLoading: false,
               loading: false,
@@ -201,7 +191,10 @@ class PullRequestDetails extends React.Component<Props, State> {
       .catch(err => {
         if (err instanceof ConflictError) {
           this.setState({
-            mergeHasNoConflict: false,
+            mergeCheck: {
+              mergeObstacles: this.state.mergeCheck ? this.state.mergeCheck.mergeObstacles : [],
+              hasConflicts: true
+            },
             mergeButtonLoading: false
           });
         } else {
@@ -242,8 +235,7 @@ class PullRequestDetails extends React.Component<Props, State> {
   onClose = () => {
     this.setState({
       ...this.state,
-      showNotification: false,
-      mergeHasNoConflict: false
+      showNotification: false
     });
   };
 
@@ -253,7 +245,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       error,
       loading,
       mergeButtonLoading,
-      mergeHasNoConflict,
+      mergeCheck,
       targetBranchDeleted,
       rejectButtonLoading,
       showNotification
@@ -297,7 +289,7 @@ class PullRequestDetails extends React.Component<Props, State> {
         mergeButton = targetBranchDeleted ? null : (
           <MergeButton
             merge={(strategy: string, commit: MergeCommit) => this.performMerge(strategy, commit)}
-            mergeHasNoConflict={mergeHasNoConflict}
+            mergeCheck={mergeCheck}
             loading={mergeButtonLoading}
             repository={repository}
             pullRequest={pullRequest}
@@ -346,7 +338,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
     return (
       <>
-        <ChangeNotification pullRequest={pullRequest} reload={this.props.fetchPullRequest}/>
+        <ChangeNotification pullRequest={pullRequest} reload={this.props.fetchPullRequest} />
         <Container>
           <div className="media">
             <UserField className="media-content">
@@ -423,7 +415,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           source={pullRequest.source}
           target={pullRequest.target}
           status={pullRequest.status}
-          mergeHasNoConflict={mergeHasNoConflict}
+          mergeHasNoConflict={!mergeCheck?.hasConflicts}
         />
       </>
     );

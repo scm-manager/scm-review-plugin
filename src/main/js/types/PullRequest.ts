@@ -96,6 +96,16 @@ export type MergeCommit = {
   shouldDeleteSourceBranch: boolean;
 };
 
+export type MergeCheck = {
+  hasConflicts: boolean;
+  mergeObstacles: MergeObstacle[];
+};
+
+export type MergeObstacle = {
+  message: string;
+  key: string;
+};
+
 export type Conflict = {
   type: string;
   path: string;

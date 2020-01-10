@@ -2,14 +2,14 @@ import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Button } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
-import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
 import MergeModal from "./MergeModal";
 
 type Props = WithTranslation & {
   merge: (strategy: string, commit: MergeCommit) => void;
   repository: Repository;
-  mergeHasNoConflict?: boolean;
+  mergeCheck?: MergeCheck;
   loading: boolean;
   pullRequest: PullRequest;
 };
@@ -47,10 +47,10 @@ class MergeButton extends React.Component<Props, State> {
   };
 
   render() {
-    const { t, loading, mergeHasNoConflict, repository, pullRequest, merge } = this.props;
+    const { t, loading, mergeCheck, repository, pullRequest, merge } = this.props;
     const { mergeInformation, showMergeModal } = this.state;
-    const action = mergeHasNoConflict ? this.toggleMergeModal : this.showInformation;
-    const color = mergeHasNoConflict ? "primary" : "warning";
+    const action = mergeCheck?.hasConflicts ? this.showInformation : this.toggleMergeModal;
+    const color = mergeCheck?.hasConflicts ? "warning" : "primary";
 
     if (showMergeModal) {
       return (
