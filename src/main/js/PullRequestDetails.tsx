@@ -41,7 +41,7 @@ type State = {
   error?: Error;
   loading: boolean;
   mergeHasNoConflict?: boolean;
-  targetBranchDeleted?: boolean;
+  targetBranchDeleted: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
   showNotification: boolean;
@@ -125,10 +125,11 @@ class PullRequestDetails extends React.Component<Props, State> {
     super(props);
     this.state = {
       ...this.state,
-      loading: false,
+      loading: true,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
       showNotification: false,
+      targetBranchDeleted: false,
       mergeHasNoConflict: true,
       subscriptionIcon: "",
       subscriptionLabel: "",
@@ -424,6 +425,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           target={pullRequest.target}
           status={pullRequest.status}
           mergeHasNoConflict={mergeHasNoConflict}
+          targetBranchDeleted={targetBranchDeleted}
         />
       </>
     );
