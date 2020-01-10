@@ -1,10 +1,13 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
+import com.cloudogu.scm.review.pullrequest.dto.MergeConflictResultDto;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
 import com.webcohesion.enunciate.metadata.rs.StatusCodes;
+import de.otto.edison.hal.Links;
 import sonia.scm.ConcurrentModificationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
@@ -21,6 +24,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+
+import java.util.List;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
@@ -73,12 +80,18 @@ public class MergeResource {
   @POST
   @Path("{namespace}/{name}/{pullRequestId}/conflicts")
   @Produces("application/vnd.scmm-mergeConflictsResult+json")
-  public MergeConflictResult conflicts(
+  public MergeConflictResultDto conflicts(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @PathParam("pullRequestId") String pullRequestId
+    @PathParam("pullRequestId") String pullRequestId,
+    @Context UriInfo uriInfo
   ) {
-    return service.conflicts(new NamespaceAndName(namespace, name), pullRequestId);
+    String conflictsLink = new PullRequestResourceLinks(uriInfo::getBaseUri).mergeLinks().conflicts(namespace, name, pullRequestId);
+    List<MergeConflictResult.SingleMergeConflict> conflicts = service.conflicts(new NamespaceAndName(namespace, name), pullRequestId).getConflicts();
+    return new MergeConflictResultDto(
+      Links.linkingTo().self(conflictsLink).build(),
+      conflicts
+    );
   }
 
   @GET
