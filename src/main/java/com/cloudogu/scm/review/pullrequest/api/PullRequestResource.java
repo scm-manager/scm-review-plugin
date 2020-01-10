@@ -65,10 +65,10 @@ public class PullRequestResource {
   @GET
   @Path("")
   @Produces(PullRequestMediaType.PULL_REQUEST)
-  public Response get(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+  public PullRequestDto get(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
-    return Response.ok(mapper.using(uriInfo).map(service.get(namespace, name, pullRequestId), repository)).build();
+    return mapper.using(uriInfo).map(service.get(namespace, name, pullRequestId), repository);
   }
 
   @POST
@@ -82,9 +82,8 @@ public class PullRequestResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   @TypeHint(TypeHint.NO_CONTENT.class)
-  public Response approve(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+  public void approve(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     service.approve(new NamespaceAndName(namespace, name), pullRequestId);
-    return Response.noContent().build();
   }
 
   @POST
@@ -98,9 +97,8 @@ public class PullRequestResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   @TypeHint(TypeHint.NO_CONTENT.class)
-  public Response disapprove(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+  public void disapprove(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     service.disapprove(new NamespaceAndName(namespace, name), pullRequestId);
-    return Response.noContent().build();
   }
 
   @GET
@@ -148,11 +146,10 @@ public class PullRequestResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   @TypeHint(TypeHint.NO_CONTENT.class)
-  public Response subscribe(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+  public void subscribe(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     service.subscribe(repository, pullRequestId);
-    return Response.noContent().build();
   }
 
   @POST
@@ -166,11 +163,10 @@ public class PullRequestResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   @TypeHint(TypeHint.NO_CONTENT.class)
-  public Response unsubscribe(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+  public void unsubscribe(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     service.unsubscribe(repository, pullRequestId);
-    return Response.noContent().build();
   }
 
   @PUT
@@ -201,10 +197,9 @@ public class PullRequestResource {
 
   @POST
   @Path("reject")
-  public Response reject(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+  public void reject(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     service.reject(repository, pullRequestId, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
-    return Response.noContent().build();
   }
 
   @GET
