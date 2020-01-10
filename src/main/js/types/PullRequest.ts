@@ -96,6 +96,16 @@ export type MergeCommit = {
   shouldDeleteSourceBranch: boolean;
 };
 
+export type Conflict = {
+  type: string;
+  path: string;
+  diff: string;
+};
+
+export type Conflicts = {
+  conflicts: Conflict[];
+};
+
 export type Tasks = {
   todo: number;
   done: number;

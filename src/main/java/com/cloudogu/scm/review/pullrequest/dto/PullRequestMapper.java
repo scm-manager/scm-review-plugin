@@ -168,6 +168,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       if (RepositoryPermissions.push(repository).isPermitted() && target.getStatus() == PullRequestStatus.OPEN) {
         linksBuilder.single(link("mergeDryRun", pullRequestResourceLinks.mergeLinks()
           .dryRun(repository.getNamespace(), repository.getName(), pullRequest.getId())));
+        linksBuilder.single(link("mergeConflicts", pullRequestResourceLinks.mergeLinks()
+          .conflicts(repository.getNamespace(), repository.getName(), pullRequest.getId())));
         linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
           .createDefaultCommitMessage(repository.getNamespace(), repository.getName(), pullRequest.getId())));
         appendMergeStrategyLinks(linksBuilder, repository, pullRequest);

@@ -1,12 +1,13 @@
 import React from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { urls } from "@scm-manager/ui-components";
+import { urls, Icon } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import RootComments from "./comment/RootComments";
 import { PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
+import MergeConflicts from "./MergeConflicts";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -16,6 +17,7 @@ type Props = WithTranslation &
     source: string;
     target: string;
     status: string;
+    mergeHasNoConflict: boolean;
   };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
@@ -40,13 +42,15 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest, repository, baseURL, status, target, source, t } = this.props;
+    const { pullRequest, repository, baseURL, status, target, source, mergeHasNoConflict, t } = this.props;
 
     let changesetTab = null;
     let diffTab = null;
+    let conflictsTab = null;
     let routeChangeset = null;
     let routeChangesetPagination = null;
     let routeDiff = null;
+    let routeConflicts = null;
 
     const isClosedPullRequest = status === "MERGED" || status === "REJECTED";
 
@@ -91,6 +95,23 @@ class PullRequestInformation extends React.Component<Props> {
           <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pullRequest.tabs.diff")}</Link>
         </li>
       );
+      routeConflicts = !mergeHasNoConflict && (
+        <Route
+          path={`${baseURL}/conflicts`}
+          render={() => (
+            <MergeConflicts repository={repository} pullRequest={pullRequest} source={source} target={target} />
+          )}
+          exact
+        />
+      );
+      conflictsTab = !mergeHasNoConflict && (
+        <li className={this.navigationClass("conflicts")}>
+          <Link to={`${baseURL}/conflicts/`}>
+            {t("scm-review-plugin.pullRequest.tabs.conflicts")} &nbsp;{" "}
+            <Icon color={"warning"} name={"exclamation-triangle"} />
+          </Link>
+        </li>
+      );
     }
     const routes = (
       <Switch>
@@ -99,6 +120,7 @@ class PullRequestInformation extends React.Component<Props> {
         {routeChangeset}
         {routeChangesetPagination}
         {routeDiff}
+        {routeConflicts}
       </Switch>
     );
 
@@ -117,6 +139,7 @@ class PullRequestInformation extends React.Component<Props> {
             {commentTab}
             {changesetTab}
             {diffTab}
+            {conflictsTab}
           </ul>
         </div>
         {routes}

@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@scm-manager/ui-plugins": "latest",
-    "immer": "^5.0.0"
+    "immer": "^5.0.0",
+    "typescript": "^3.7.0",
+    "gitdiff-parser": "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982"
   },
   "babel": {
     "presets": [

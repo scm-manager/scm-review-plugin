@@ -145,3 +145,14 @@ function createIncomingUrl(repository: Repository, linkName: string, source: str
 export function reject(pullRequest: PullRequest) {
   return apiClient.post((pullRequest._links.reject as Link).href, {});
 }
+
+export function fetchConflicts(url: string, source: string, target: string) {
+  return apiClient
+    .post(url, { sourceRevision: source, targetRevision: target }, "application/vnd.scmm-mergeCommand+json")
+    .then(response => response.json())
+    .catch(err => {
+      return {
+        error: err
+      };
+    });
+}

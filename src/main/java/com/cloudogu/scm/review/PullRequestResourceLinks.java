@@ -180,6 +180,9 @@ public class PullRequestResourceLinks {
         .method("merge").parameters(namespace, name, pullRequestId).href() + "?strategy=" + strategy;
     }
 
+    public String conflicts(String namespace, String name, String pullRequestId) {
+      return mergeLinkBuilder.method("conflicts").parameters(namespace, name, pullRequestId).href();
+    }
     public String createDefaultCommitMessage(String namespace, String name, String pullRequestId) {
       return mergeLinkBuilder
         .method("createDefaultCommitMessage").parameters(namespace, name, pullRequestId).href();

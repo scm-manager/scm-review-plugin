@@ -9,6 +9,7 @@ import sonia.scm.ConcurrentModificationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
+import sonia.scm.repository.spi.MergeConflictResult;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -69,6 +70,17 @@ public class MergeResource {
     }
   }
 
+  @POST
+  @Path("{namespace}/{name}/{pullRequestId}/conflicts")
+  @Produces("application/vnd.scmm-mergeConflictsResult+json")
+  public MergeConflictResult conflicts(
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @PathParam("pullRequestId") String pullRequestId
+  ) {
+    MergeConflictResult mergeDryRunCommandResult = service.conflicts(new NamespaceAndName(namespace, name), pullRequestId);
+    return mergeDryRunCommandResult;
+  }
   @GET
   @Path("{namespace}/{name}/{pullRequestId}/commit-message")
   @Produces("text/plain")

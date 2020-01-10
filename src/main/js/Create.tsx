@@ -139,6 +139,7 @@ class Create extends React.Component<Props, State> {
           target={pullRequest.target}
           status="OPEN"
           baseURL={match.url}
+          mergeHasNoConflict={true}
         />
       );
     }

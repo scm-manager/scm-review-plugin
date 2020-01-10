@@ -16,6 +16,7 @@ import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.api.MergeStrategyNotSupportedException;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.repository.spi.MergeConflictResult;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -76,6 +77,15 @@ public class MergeService {
       }
     }
     return new MergeDryRunCommandResult(false);
+  }
+
+  public MergeConflictResult conflicts(NamespaceAndName namespaceAndName, String pullRequestId) {
+    try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
+      PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
+      RepositoryPermissions.push(repositoryService.getRepository()).check();
+      MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, pullRequest.getSource(), pullRequest.getTarget());
+      return mergeCommandBuilder.conflicts();
+    }
   }
 
   public String createDefaultCommitMessage(NamespaceAndName namespaceAndName, String pullRequestId, MergeStrategy strategy) {

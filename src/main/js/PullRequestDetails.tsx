@@ -129,7 +129,10 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeButtonLoading: true,
       rejectButtonLoading: false,
       showNotification: false,
-      mergeHasNoConflict: false
+      mergeHasNoConflict: true,
+      subscriptionIcon: "",
+      subscriptionLabel: "",
+      subscriptionLink: ""
     };
   }
 
@@ -198,7 +201,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       .catch(err => {
         if (err instanceof ConflictError) {
           this.setState({
-            mergeHasNoConflict: true,
+            mergeHasNoConflict: false,
             mergeButtonLoading: false
           });
         } else {
@@ -420,6 +423,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           source={pullRequest.source}
           target={pullRequest.target}
           status={pullRequest.status}
+          mergeHasNoConflict={mergeHasNoConflict}
         />
       </>
     );
