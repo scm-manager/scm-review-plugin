@@ -198,7 +198,7 @@ public class DefaultPullRequestService implements PullRequestService {
   @Override
   public void approve(NamespaceAndName namespaceAndName, String pullRequestId, User user) {
     Repository repository = getRepository(namespaceAndName.getNamespace(), namespaceAndName.getName());
-    PermissionCheck.mayComment(repository);
+    PermissionCheck.checkComment(repository);
     PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     pullRequest.addApprover(user.getId());
     getStore(repository).update(pullRequest);
@@ -208,7 +208,7 @@ public class DefaultPullRequestService implements PullRequestService {
   @Override
   public void disapprove(NamespaceAndName namespaceAndName, String pullRequestId, User user) {
     Repository repository = getRepository(namespaceAndName.getNamespace(), namespaceAndName.getName());
-    PermissionCheck.mayComment(repository);
+    PermissionCheck.checkComment(repository);
     PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     Set<String> approver = pullRequest.getReviewer().keySet();
     approver.stream()

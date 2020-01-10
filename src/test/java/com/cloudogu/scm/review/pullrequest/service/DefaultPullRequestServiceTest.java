@@ -164,7 +164,6 @@ class DefaultPullRequestServiceTest {
 
       PrincipalCollection principals = mock(PrincipalCollection.class);
       when(subject.getPrincipals()).thenReturn(principals);
-      when(subject.isPermitted(any(String.class))).thenReturn(true);
       User user1 = new User("user", "User", "user@mail.com");
       when(principals.oneByType(User.class)).thenReturn(user1);
 
@@ -190,7 +189,6 @@ class DefaultPullRequestServiceTest {
 
       PrincipalCollection principals = mock(PrincipalCollection.class);
       when(subject.getPrincipals()).thenReturn(principals);
-      when(subject.isPermitted(any(String.class))).thenReturn(true);
       User user1 = new User("user", "User", "user@mail.com");
       when(principals.oneByType(User.class)).thenReturn(user1);
 
