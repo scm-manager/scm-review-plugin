@@ -78,9 +78,9 @@ public class MergeResource {
     @PathParam("name") String name,
     @PathParam("pullRequestId") String pullRequestId
   ) {
-    MergeConflictResult mergeDryRunCommandResult = service.conflicts(new NamespaceAndName(namespace, name), pullRequestId);
-    return mergeDryRunCommandResult;
+    return service.conflicts(new NamespaceAndName(namespace, name), pullRequestId);
   }
+
   @GET
   @Path("{namespace}/{name}/{pullRequestId}/commit-message")
   @Produces("text/plain")
