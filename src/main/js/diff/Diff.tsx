@@ -185,8 +185,9 @@ class Diff extends React.Component<Props, State> {
     );
   };
 
-  onCreation = (comment: Comment) => {
+  onCreation = (location: Location, comment: Comment) => {
     const { dispatch } = this.props;
+    this.closeEditor(location);
     dispatch(createComment(comment));
   };
 
@@ -197,7 +198,7 @@ class Diff extends React.Component<Props, State> {
           <CreateComment
             url={this.props.createLink}
             location={location}
-            onCreation={this.onCreation}
+            onCreation={comment => this.onCreation(location, comment)}
             onCancel={() => this.closeEditor(location)}
             autofocus={true}
           />
