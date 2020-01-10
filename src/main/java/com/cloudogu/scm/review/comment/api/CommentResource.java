@@ -61,21 +61,21 @@ public class CommentResource {
   @GET
   @Path("")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getComment(@PathParam("namespace") String namespace,
-                             @PathParam("name") String name,
-                             @PathParam("pullRequestId") String pullRequestId,
-                             @PathParam("commentId") String commentId) {
+  public CommentDto getComment(@PathParam("namespace") String namespace,
+                               @PathParam("name") String name,
+                               @PathParam("pullRequestId") String pullRequestId,
+                               @PathParam("commentId") String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(namespace, name, pullRequestId);
     Comment comment = service.get(namespace, name, pullRequestId, commentId);
     Collection<CommentTransition> possibleTransitions = service.possibleTransitions(namespace, name, pullRequestId, comment.getId());
-    return Response.ok(commentMapper.map(comment, repository, pullRequestId, possibleTransitions, revisions)).build();
+    return commentMapper.map(comment, repository, pullRequestId, possibleTransitions, revisions);
   }
 
   @GET
   @Path("replies/{replyId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getReply(@PathParam("namespace") String namespace,
+  public ReplyDto getReply(@PathParam("namespace") String namespace,
                            @PathParam("name") String name,
                            @PathParam("pullRequestId") String pullRequestId,
                            @PathParam("commentId") String commentId,
@@ -84,7 +84,7 @@ public class CommentResource {
     BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(namespace, name, pullRequestId);
     Comment comment = service.get(namespace, name, pullRequestId, commentId);
     Reply reply = service.getReply(namespace, name, pullRequestId, commentId, replyId);
-    return Response.ok(replyMapper.map(reply, repository, pullRequestId, comment, revisions)).build();
+    return replyMapper.map(reply, repository, pullRequestId, comment, revisions);
   }
 
   @DELETE
@@ -96,16 +96,15 @@ public class CommentResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   @TypeHint(TypeHint.NO_CONTENT.class)
-  public Response deleteComment(@Context UriInfo uriInfo,
+  public void deleteComment(@Context UriInfo uriInfo,
                                 @PathParam("namespace") String namespace,
                                 @PathParam("name") String name,
                                 @PathParam("pullRequestId") String pullRequestId,
                                 @PathParam("commentId") String commentId) {
     try {
       service.delete(namespace, name, pullRequestId, commentId);
-      return Response.noContent().build();
     } catch (NotFoundException e) {
-      return Response.noContent().build();
+      // this is idempotent
     }
   }
 
@@ -118,7 +117,7 @@ public class CommentResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   @TypeHint(TypeHint.NO_CONTENT.class)
-  public Response deleteReply(@Context UriInfo uriInfo,
+  public void deleteReply(@Context UriInfo uriInfo,
                               @PathParam("namespace") String namespace,
                               @PathParam("name") String name,
                               @PathParam("pullRequestId") String pullRequestId,
@@ -126,9 +125,8 @@ public class CommentResource {
                               @PathParam("replyId") String replyId) {
     try {
       service.delete(namespace, name, pullRequestId, replyId);
-      return Response.noContent().build();
     } catch (NotFoundException e) {
-      return Response.noContent().build();
+      // this is idempotent
     }
   }
 
@@ -144,14 +142,13 @@ public class CommentResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   @TypeHint(TypeHint.NO_CONTENT.class)
-  public Response updateComment(@Context UriInfo uriInfo,
+  public void updateComment(@Context UriInfo uriInfo,
                                 @PathParam("namespace") String namespace,
                                 @PathParam("name") String name,
                                 @PathParam("pullRequestId") String pullRequestId,
                                 @PathParam("commentId") String commentId,
                                 @Valid CommentDto commentDto) {
     service.modifyComment(namespace, name, pullRequestId, commentId, commentMapper.map(commentDto));
-    return Response.noContent().build();
   }
 
   @PUT
@@ -166,7 +163,7 @@ public class CommentResource {
     @ResponseCode(code = 500, condition = "internal server error")
   })
   @TypeHint(TypeHint.NO_CONTENT.class)
-  public Response updateReply(@Context UriInfo uriInfo,
+  public void updateReply(@Context UriInfo uriInfo,
                               @PathParam("namespace") String namespace,
                               @PathParam("name") String name,
                               @PathParam("pullRequestId") String pullRequestId,
@@ -174,7 +171,6 @@ public class CommentResource {
                               @PathParam("replyId") String replyId,
                               @Valid ReplyDto replyDto) {
     service.modifyReply(namespace, name, pullRequestId, replyId, replyMapper.map(replyDto));
-    return Response.noContent().build();
   }
 
   @POST
@@ -197,12 +193,12 @@ public class CommentResource {
   @GET
   @Path("transitions/{transitionId}")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getExecutedTransition(@Context UriInfo uriInfo,
-                                 @PathParam("namespace") String namespace,
-                                 @PathParam("name") String name,
-                                 @PathParam("pullRequestId") String pullRequestId,
-                                 @PathParam("commentId") String commentId,
-                                 @PathParam("transitionId") String transitionId) {
+  public ExecutedTransitionDto getExecutedTransition(@Context UriInfo uriInfo,
+                                                     @PathParam("namespace") String namespace,
+                                                     @PathParam("name") String name,
+                                                     @PathParam("pullRequestId") String pullRequestId,
+                                                     @PathParam("commentId") String commentId,
+                                                     @PathParam("transitionId") String transitionId) {
     Comment comment = service.get(namespace, name, pullRequestId, commentId);
     ExecutedTransition<?> executedTransition = comment
       .getExecutedTransitions()
@@ -210,7 +206,7 @@ public class CommentResource {
       .filter(t -> transitionId.equals(t.getId()))
       .findFirst()
       .orElseThrow(() -> notFound(entity("transition", transitionId).in(Comment.class, commentId).in(PullRequest.class, pullRequestId).in(new NamespaceAndName(namespace, name))));
-    return Response.ok(executedTransitionMapper.map(executedTransition, new NamespaceAndName(namespace, name), pullRequestId, comment)).build();
+    return executedTransitionMapper.map(executedTransition, new NamespaceAndName(namespace, name), pullRequestId, comment);
   }
 
   @POST

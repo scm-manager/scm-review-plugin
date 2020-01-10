@@ -8,6 +8,7 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import de.otto.edison.hal.HalRepresentation;
 import org.apache.shiro.authz.AuthorizationException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -90,10 +91,10 @@ public class CommentRootResource {
   @GET
   @Path("")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getAll(@Context UriInfo uriInfo,
-                         @PathParam("namespace") String namespace,
-                         @PathParam("name") String name,
-                         @PathParam("pullRequestId") String pullRequestId) {
+  public HalRepresentation getAll(@Context UriInfo uriInfo,
+                                  @PathParam("namespace") String namespace,
+                                  @PathParam("name") String name,
+                                  @PathParam("pullRequestId") String pullRequestId) {
     PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PullRequest pullRequest = pullRequestService.get(namespace, name, pullRequestId);
@@ -104,13 +105,11 @@ public class CommentRootResource {
       .map(comment -> mapper.map(comment, repository, pullRequestId, service.possibleTransitions(namespace, name, pullRequestId, comment.getId()), revisions))
       .collect(Collectors.toList());
     boolean permission = PermissionCheck.mayComment(repository);
-    return Response.ok(
-      createCollection(
+    return createCollection(
         permission,
         resourceLinks.pullRequestComments().all(namespace, name, pullRequestId),
         resourceLinks.pullRequestComments().create(namespace, name, pullRequestId, revisions),
         dtoList,
-        "pullRequestComments")
-    ).build();
+        "pullRequestComments");
   }
 }

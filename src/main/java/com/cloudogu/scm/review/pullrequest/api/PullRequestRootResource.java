@@ -9,6 +9,7 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import de.otto.edison.hal.HalRepresentation;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
@@ -93,7 +94,7 @@ public class PullRequestRootResource {
   @GET
   @Path("{namespace}/{name}")
   @Produces(PullRequestMediaType.PULL_REQUEST)
-  public Response getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("OPEN") PullRequestSelector pullRequestSelector) {
+  public HalRepresentation getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("OPEN") PullRequestSelector pullRequestSelector) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)
@@ -105,8 +106,8 @@ public class PullRequestRootResource {
 
     PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
     boolean permission = PermissionCheck.mayCreate(repository);
-    return Response.ok(
-      createCollection(permission, resourceLinks.pullRequestCollection().all(namespace, name), resourceLinks.pullRequestCollection().create(namespace, name), pullRequestDtos, "pullRequests")).build();
+    return
+      createCollection(permission, resourceLinks.pullRequestCollection().all(namespace, name), resourceLinks.pullRequestCollection().create(namespace, name), pullRequestDtos, "pullRequests");
   }
 
   private Instant getLastModification(PullRequestDto pr) {
