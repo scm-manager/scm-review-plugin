@@ -3,6 +3,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeConflictResultDto;
+import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
@@ -10,7 +11,6 @@ import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import de.otto.edison.hal.Links;
 import sonia.scm.ConcurrentModificationException;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.api.MergeDryRunCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.spi.MergeConflictResult;
 
@@ -26,7 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.List;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
@@ -71,8 +70,8 @@ public class MergeResource {
     @PathParam("pullRequestId") String pullRequestId
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(namespaceAndName, pullRequestId);
-    if (!mergeDryRunCommandResult.isMergeable()) {
+    MergeCheckResult mergeCheckResult = service.checkMerge(namespaceAndName, pullRequestId);
+    if (mergeCheckResult.hasConflicts()) {
       throw new ConcurrentModificationException(entity(PullRequest.class, pullRequestId).in(namespaceAndName).build());
     }
   }

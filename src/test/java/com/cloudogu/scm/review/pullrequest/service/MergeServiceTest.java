@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.github.sdorra.shiro.ShiroRule;
@@ -162,9 +161,9 @@ public class MergeServiceTest {
     mockPullRequest("mergeable", "master", "1");
     when(mergeCommandBuilder.dryRun()).thenReturn(new MergeDryRunCommandResult(true));
 
-    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(REPOSITORY.getNamespaceAndName(), "1");
+    MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
-    assertThat(mergeDryRunCommandResult.isMergeable()).isTrue();
+    assertThat(mergeCheckResult.hasConflicts()).isFalse();
   }
 
   @Test
@@ -172,9 +171,9 @@ public class MergeServiceTest {
   public void shouldNotDoDryRunIfMissingPermission() {
     mockPullRequest("mergable", "master", "1");
 
-    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(REPOSITORY.getNamespaceAndName(), "1");
+    MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
-    assertThat(mergeDryRunCommandResult.isMergeable()).isFalse();
+    assertThat(mergeCheckResult.hasConflicts()).isTrue();
   }
 
   @Test
