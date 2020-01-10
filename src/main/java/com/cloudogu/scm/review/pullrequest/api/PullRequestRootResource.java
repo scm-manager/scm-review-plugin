@@ -29,7 +29,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -64,6 +63,7 @@ public class PullRequestRootResource {
   @POST
   @Path("{namespace}/{name}")
   @Consumes(PullRequestMediaType.PULL_REQUEST)
+  @Produces(PullRequestMediaType.PULL_REQUEST)
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
 
     Repository repository = service.getRepository(namespace, name);
@@ -86,9 +86,9 @@ public class PullRequestRootResource {
     PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
     pullRequest.setAuthor(user.getId());
 
-    String id = service.add(repository, pullRequest);
-    URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
-    return Response.created(location).build();
+    String createdPRId = service.add(repository, pullRequest);
+    PullRequest created = service.get(repository, createdPRId);
+    return Response.ok(mapper.map(created, repository)).build();
   }
 
   @GET
