@@ -33,14 +33,21 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,11 +78,13 @@ public class MergeServiceTest {
   @Mock
   private MergeCommandBuilder mergeCommandBuilder;
 
+  private Collection<MergeGuard> mergeGuards = new ArrayList<>();
+
   private MergeService service;
 
   @Before
   public void initService() {
-    service = new MergeService(serviceFactory, pullRequestService);
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards);
   }
 
   @Before
@@ -206,6 +215,26 @@ public class MergeServiceTest {
     );
   }
 
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldForwardObstaclesFromGuards() {
+    PullRequest pullRequest = mockPullRequest("mergeable", "master", "1");
+
+    MergeGuard mergeGuard1 = mock(MergeGuard.class);
+    MergeGuard mergeGuard2 = mock(MergeGuard.class);
+    mergeGuards.add(mergeGuard1);
+    mergeGuards.add(mergeGuard2);
+
+    TestMergeObstacle obstacle1 = new TestMergeObstacle();
+    TestMergeObstacle obstacle2 = new TestMergeObstacle();
+    when(mergeGuard1.getObstacles(pullRequest)).thenReturn(singleton(obstacle1));
+    when(mergeGuard2.getObstacles(pullRequest)).thenReturn(singleton(obstacle2));
+
+    MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
+
+    assertThat(mergeCheckResult.getMergeObstacles()).contains(obstacle1, obstacle2);
+  }
+
   private PullRequest createPullRequest() {
     PullRequest pullRequest = new PullRequest();
     pullRequest.setId("1");
@@ -244,5 +273,17 @@ public class MergeServiceTest {
     Branches branches = new Branches();
     branches.setBranches(ImmutableList.of(Branch.normalBranch(branchName, "123")));
     when(branchesCommandBuilder.getBranches()).thenReturn(branches);
+  }
+
+  private static class TestMergeObstacle implements MergeObstacle {
+    @Override
+    public String getMessage() {
+      return "not permitted";
+    }
+
+    @Override
+    public String getKey() {
+      return "key";
+    }
   }
 }

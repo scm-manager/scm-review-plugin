@@ -21,8 +21,10 @@ import sonia.scm.repository.spi.MergeConflictResult;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static java.util.Optional.empty;
@@ -42,11 +44,13 @@ public class MergeService {
 
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
+  private final Collection<MergeGuard> mergeGuards;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
+    this.mergeGuards = mergeGuards;
   }
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
@@ -72,20 +76,21 @@ public class MergeService {
   }
 
   public MergeCheckResult checkMerge(NamespaceAndName namespaceAndName, String pullRequestId) {
-    boolean isMergeable = dryRun(namespaceAndName, pullRequestId)
-      .map(MergeDryRunCommandResult::isMergeable)
-      .orElse(false);
-    return new MergeCheckResult(!isMergeable, Collections.emptyList());
-  }
-
-  private Optional<MergeDryRunCommandResult> dryRun(NamespaceAndName namespaceAndName, String pullRequestId) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
-      assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
-      if (RepositoryPermissions.push(repositoryService.getRepository()).isPermitted()) {
-        MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, pullRequest.getSource(), pullRequest.getTarget());
-        return of(mergeCommandBuilder.dryRun());
-      }
+      boolean isMergeable = dryRun(repositoryService, pullRequest)
+        .map(MergeDryRunCommandResult::isMergeable)
+        .orElse(false);
+      Collection<MergeObstacle> obstacles = getObstacles(pullRequest);
+      return new MergeCheckResult(!isMergeable, obstacles);
+    }
+  }
+
+  private Optional<MergeDryRunCommandResult> dryRun(RepositoryService repositoryService, PullRequest pullRequest) {
+    assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
+    if (RepositoryPermissions.push(repositoryService.getRepository()).isPermitted()) {
+      MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, pullRequest.getSource(), pullRequest.getTarget());
+      return of(mergeCommandBuilder.dryRun());
     }
     return empty();
   }
@@ -97,6 +102,13 @@ public class MergeService {
       MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, pullRequest.getSource(), pullRequest.getTarget());
       return mergeCommandBuilder.conflicts();
     }
+  }
+
+  private Collection<MergeObstacle> getObstacles(PullRequest pullRequest) {
+    return mergeGuards.stream()
+      .map(guard -> guard.getObstacles(pullRequest))
+      .flatMap(Collection::stream)
+      .collect(Collectors.toList());
   }
 
   public String createDefaultCommitMessage(NamespaceAndName namespaceAndName, String pullRequestId, MergeStrategy strategy) {
