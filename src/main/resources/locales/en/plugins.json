@@ -260,8 +260,12 @@
       "description": "Merges can only be performed for open pull requests."
     },
     "CVRj80D6z1": {
-      "displayName": "No differences found.",
+      "displayName": "No differences found",
       "description": "There are no differences between the selected branches, that could be merged (or the source branch is a parent of the target branch)."
+    },
+    "9nRnT3cjk1": {
+      "displayName": "Merge prevented",
+      "description": "The merge was prevented by other plugins."
     }
   }
 }

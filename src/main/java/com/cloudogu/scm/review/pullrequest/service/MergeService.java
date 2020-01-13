@@ -56,6 +56,10 @@ public class MergeService {
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
+      Collection<MergeObstacle> obstacles = getObstacles(repositoryService.getRepository(), pullRequest);
+      if (!obstacles.isEmpty()) {
+        throw new MergeNotAllowedException(repositoryService.getRepository(), pullRequest, obstacles);
+      }
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
       MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
       isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
