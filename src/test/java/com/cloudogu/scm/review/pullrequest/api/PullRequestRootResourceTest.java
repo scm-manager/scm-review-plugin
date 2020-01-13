@@ -160,7 +160,8 @@ public class PullRequestRootResourceTest {
 
     dispatcher.invoke(request, response);
 
-    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+    assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1");
     PullRequest pullRequest = pullRequestStoreCaptor.getValue();
     assertThat(pullRequest.getAuthor()).isEqualTo("user1");
   }
@@ -782,7 +783,6 @@ public class PullRequestRootResourceTest {
     ThreadContext.bind(subject);
     PrincipalCollection principals = mock(PrincipalCollection.class);
     when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn(new Object());
     User user1 = new User();
     user1.setName("user1");
     user1.setDisplayName("User 1");

@@ -53,9 +53,9 @@ class Create extends React.Component<Props, State> {
       .catch((error: Error) => this.setState({ error, loading: false }));
   };
 
-  pullRequestCreated = (pullRequest: PullRequest) => {
+  pullRequestCreated = (pullRequestId: string) => {
     const { history, repository } = this.props;
-    history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments`);
+    history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequestId}/comments`);
   };
 
   submit = () => {
@@ -71,13 +71,16 @@ class Create extends React.Component<Props, State> {
     }
 
     createPullRequest((repository._links.pullRequest as Link).href, pullRequest)
-      .then(response => response.json())
-      .then((pullRequest: PullRequest) => {
+      .then(response => {
+        const location = response?.headers?.get('Location');
+        return location?.substring(location.lastIndexOf('/') + 1);
+      })
+      .then((pullRequestId) => {
         this.setState(
           {
             loading: false
           },
-          () => this.pullRequestCreated(pullRequest)
+          pullRequestId ? () => this.pullRequestCreated(pullRequestId) : undefined
         );
       })
       .catch(error => {
