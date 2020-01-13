@@ -317,6 +317,11 @@ class PullRequestDetails extends React.Component<Props, State> {
       );
     }
 
+    let subscriptionButton = null;
+    if (pullRequest._links.subscription && (pullRequest._links.subscription as Link).href) {
+      subscriptionButton = <SubscriptionContainer pullRequest={pullRequest} />;
+    }
+
     const targetBranchDeletedWarning = targetBranchDeleted ? (
       <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
         <i className="fas fa-exclamation-triangle" />
@@ -346,7 +351,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
     return (
       <>
-        <ChangeNotification pullRequest={pullRequest} reload={this.props.fetchPullRequest}/>
+        <ChangeNotification pullRequest={pullRequest} reload={this.props.fetchPullRequest} />
         <Container>
           <div className="media">
             <UserField className="media-content">
@@ -361,7 +366,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             </UserField>
             <div className="media-right">
               <ButtonGroup>
-                <SubscriptionContainer pullRequest={pullRequest} />
+                {subscriptionButton}
                 {editButton}
               </ButtonGroup>
             </div>
