@@ -39,7 +39,7 @@ type Props = WithTranslation &
 
 type State = {
   error?: Error;
-  loading: boolean;
+  loadingDryRun: boolean;
   mergeHasNoConflict?: boolean;
   targetBranchDeleted: boolean;
   mergeButtonLoading: boolean;
@@ -125,7 +125,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     super(props);
     this.state = {
       ...this.state,
-      loading: true,
+      loadingDryRun: false,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
       showNotification: false,
@@ -155,7 +155,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           this.setState({
             mergeHasNoConflict: true,
             targetBranchDeleted: false,
-            loading: false,
+            loadingDryRun: false,
             mergeButtonLoading: false
           });
         })
@@ -163,19 +163,19 @@ class PullRequestDetails extends React.Component<Props, State> {
           if (err instanceof ConflictError) {
             this.setState({
               mergeButtonLoading: false,
-              loading: false,
+              loadingDryRun: false,
               mergeHasNoConflict: false
             });
           } else if (err instanceof NotFoundError) {
             this.setState({
               mergeButtonLoading: false,
-              loading: false,
+              loadingDryRun: false,
               targetBranchDeleted: true
             });
           } else {
             this.setState({
               error: err,
-              loading: false,
+              loadingDryRun: false,
               mergeButtonLoading: false
             });
           }
@@ -193,7 +193,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit)
       .then(response => {
         this.setState({
-          loading: true,
+          loadingDryRun: true,
           showNotification: true,
           mergeButtonLoading: false
         });
@@ -252,7 +252,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     const { repository, pullRequest, match, t } = this.props;
     const {
       error,
-      loading,
+      loadingDryRun,
       mergeButtonLoading,
       mergeHasNoConflict,
       targetBranchDeleted,
@@ -264,7 +264,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       return <ErrorNotification error={error} />;
     }
 
-    if (!pullRequest || loading) {
+    if (!pullRequest || loadingDryRun) {
       return <Loading />;
     }
 
