@@ -8,11 +8,11 @@ export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
   return apiClient
     .post(url, pullRequest, CONTENT_TYPE_PULLREQUEST)
     .then(response => {
-      const location = response.headers.get("Location") + "?fields=id";
+      const location = response.headers.get("Location");
       if (!location) {
         throw new Error("missing location header in response from create request");
       }
-      return apiClient.get(location);
+      return apiClient.get(location + "?fields=id");
     })
     .then(response => response.json())
     .then(pr => pr.id);
