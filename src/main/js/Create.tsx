@@ -1,9 +1,9 @@
 import React from "react";
-import { ErrorNotification, SubmitButton, Subtitle, Title, Level } from "@scm-manager/ui-components";
-import { Repository, Changeset, Link } from "@scm-manager/ui-types";
+import { ErrorNotification, Level, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
+import { Changeset, Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
-import { BasicPullRequest } from "./types/PullRequest";
+import { BasicPullRequest, PullRequest } from "./types/PullRequest";
 import { createChangesetUrl, createPullRequest, getChangesets } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
@@ -53,9 +53,9 @@ class Create extends React.Component<Props, State> {
       .catch((error: Error) => this.setState({ error, loading: false }));
   };
 
-  pullRequestCreated = () => {
+  pullRequestCreated = (pullRequestId: string) => {
     const { history, repository } = this.props;
-    history.push(`/repo/${repository.namespace}/${repository.name}/pull-requests`);
+    history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequestId}/comments`);
   };
 
   submit = () => {
@@ -71,12 +71,12 @@ class Create extends React.Component<Props, State> {
     }
 
     createPullRequest((repository._links.pullRequest as Link).href, pullRequest)
-      .then(() => {
+      .then(pullRequestId => {
         this.setState(
           {
             loading: false
           },
-          this.pullRequestCreated
+          pullRequestId ? () => this.pullRequestCreated(pullRequestId) : undefined
         );
       })
       .catch(error => {
