@@ -125,7 +125,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     super(props);
     this.state = {
       ...this.state,
-      loading: true,
+      loading: false,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
       showNotification: false,
