@@ -47,11 +47,16 @@ describe("API create pull request", () => {
 
   it("should create pull request successfully", done => {
     fetchMock.postOnce("/api/v2" + PULLREQUEST_URL, {
-      status: 204
+      status: 204,
+      headers: { Location: "pullrequest/1" }
+    });
+    fetchMock.getOnce("/api/v2/pullrequest/1?fields=id", {
+      status: 200,
+      body: { id: 1 }
     });
 
-    createPullRequest(PULLREQUEST_URL, pullRequest).then(response => {
-      expect(response.status).toBe(204);
+    createPullRequest(PULLREQUEST_URL, pullRequest).then(id => {
+      expect(id).toBe(1);
       done();
     });
   });

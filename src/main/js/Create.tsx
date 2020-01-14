@@ -71,11 +71,7 @@ class Create extends React.Component<Props, State> {
     }
 
     createPullRequest((repository._links.pullRequest as Link).href, pullRequest)
-      .then(response => {
-        const location = response?.headers?.get('Location');
-        return location?.substring(location.lastIndexOf('/') + 1);
-      })
-      .then((pullRequestId) => {
+      .then(pullRequestId => {
         this.setState(
           {
             loading: false

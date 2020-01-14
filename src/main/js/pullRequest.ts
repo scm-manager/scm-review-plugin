@@ -5,7 +5,17 @@ import { Link, Repository, Branch } from "@scm-manager/ui-types";
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
 export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
-  return apiClient.post(url, pullRequest, CONTENT_TYPE_PULLREQUEST);
+  return apiClient
+    .post(url, pullRequest, CONTENT_TYPE_PULLREQUEST)
+    .then(response => {
+      const location = response.headers.get("Location") + "?fields=id";
+      if (!location) {
+        throw new Error("missing location header in response from create request");
+      }
+      return apiClient.get(location);
+    })
+    .then(response => response.json())
+    .then(pr => pr.id);
 }
 
 export function updatePullRequest(url: string, pullRequest: PullRequest) {
