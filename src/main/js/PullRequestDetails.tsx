@@ -39,9 +39,9 @@ type Props = WithTranslation &
 
 type State = {
   error?: Error;
-  loading: boolean;
+  loadingDryRun: boolean;
   mergeCheck?: MergeCheck;
-  targetBranchDeleted?: boolean;
+  targetBranchDeleted: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
   showNotification: boolean;
@@ -125,9 +125,10 @@ class PullRequestDetails extends React.Component<Props, State> {
     super(props);
     this.state = {
       ...this.state,
-      loading: false,
+      loadingDryRun: false,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
+      targetBranchDeleted: false,
       showNotification: false
     };
   }
@@ -150,7 +151,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           this.setState({
             mergeCheck: response,
             targetBranchDeleted: false,
-            loading: false,
+            loadingDryRun: false,
             mergeButtonLoading: false
           });
         })
@@ -158,13 +159,13 @@ class PullRequestDetails extends React.Component<Props, State> {
           if (err instanceof NotFoundError) {
             this.setState({
               mergeButtonLoading: false,
-              loading: false,
+              loadingDryRun: false,
               targetBranchDeleted: true
             });
           } else {
             this.setState({
               error: err,
-              loading: false,
+              loadingDryRun: false,
               mergeButtonLoading: false
             });
           }
@@ -182,7 +183,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit)
       .then(response => {
         this.setState({
-          loading: true,
+          loadingDryRun: true,
           showNotification: true,
           mergeButtonLoading: false
         });
@@ -243,7 +244,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     const { repository, pullRequest, match, t } = this.props;
     const {
       error,
-      loading,
+      loadingDryRun,
       mergeButtonLoading,
       mergeCheck,
       targetBranchDeleted,
@@ -255,7 +256,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       return <ErrorNotification error={error} />;
     }
 
-    if (!pullRequest || loading) {
+    if (!pullRequest || loadingDryRun) {
       return <Loading />;
     }
 
@@ -309,6 +310,11 @@ class PullRequestDetails extends React.Component<Props, State> {
       );
     }
 
+    let subscriptionButton = null;
+    if (pullRequest._links.subscription && (pullRequest._links.subscription as Link).href) {
+      subscriptionButton = <SubscriptionContainer pullRequest={pullRequest} />;
+    }
+
     const targetBranchDeletedWarning = targetBranchDeleted ? (
       <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
         <i className="fas fa-exclamation-triangle" />
@@ -353,7 +359,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             </UserField>
             <div className="media-right">
               <ButtonGroup>
-                <SubscriptionContainer pullRequest={pullRequest} />
+                {subscriptionButton}
                 {editButton}
               </ButtonGroup>
             </div>
@@ -416,6 +422,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           target={pullRequest.target}
           status={pullRequest.status}
           mergeHasNoConflict={!mergeCheck?.hasConflicts}
+          targetBranchDeleted={targetBranchDeleted}
         />
       </>
     );

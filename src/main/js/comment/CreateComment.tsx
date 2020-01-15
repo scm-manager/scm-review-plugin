@@ -12,6 +12,7 @@ import {
 import { BasicComment, Comment, Location } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { createPullRequestComment } from "../pullRequest";
+import {createChangeIdFromLocation} from "../diff/locations";
 
 type Props = WithTranslation & {
   url: string;
@@ -126,6 +127,15 @@ class CreateComment extends React.Component<Props, State> {
     });
   };
 
+  createCommentEditorName = () => {
+    const { location } = this.props;
+    let name = "editor";
+    if (location) {
+      name += location.file + "_" + createChangeIdFromLocation(location)
+    }
+    return name;
+  };
+
   isValid() {
     const { newComment } = this.state;
     return newComment && newComment.comment && newComment.comment.trim() !== "";
@@ -146,18 +156,19 @@ class CreateComment extends React.Component<Props, State> {
 
     let toggleType = null;
     if (!reply) {
+      const editorName = this.createCommentEditorName();
       toggleType = (
         <div className="field is-grouped">
           <div className="control">
             <Radio
-              name="comment_type"
+              name={`comment_type_${editorName}`}
               value="COMMENT"
               checked={this.state.newComment.type === "COMMENT"}
               label={t("scm-review-plugin.comment.type.comment")}
               onChange={this.switchToCommentType}
             />
             <Radio
-              name="comment_type"
+              name={`comment_type_${editorName}`}
               value="TASK_TODO"
               checked={this.state.newComment.type === "TASK_TODO"}
               label={t("scm-review-plugin.comment.type.task")}

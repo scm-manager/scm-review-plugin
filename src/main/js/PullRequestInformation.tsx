@@ -18,6 +18,7 @@ type Props = WithTranslation &
     target: string;
     status: string;
     mergeHasNoConflict: boolean;
+    targetBranchDeleted: boolean;
   };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
@@ -42,7 +43,7 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest, repository, baseURL, status, target, source, mergeHasNoConflict, t } = this.props;
+    const { pullRequest, repository, baseURL, status, target, source, mergeHasNoConflict, targetBranchDeleted, t } = this.props;
 
     let changesetTab = null;
     let diffTab = null;
@@ -138,7 +139,7 @@ class PullRequestInformation extends React.Component<Props> {
           <ul>
             {commentTab}
             {changesetTab}
-            {diffTab}
+            {!targetBranchDeleted && diffTab}
             {conflictsTab}
           </ul>
         </div>
