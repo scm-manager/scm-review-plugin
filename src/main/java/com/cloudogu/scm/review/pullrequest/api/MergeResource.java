@@ -1,8 +1,10 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.PullRequestResourceLinks;
+import com.cloudogu.scm.review.pullrequest.dto.MergeCheckResultDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeConflictResultDto;
+import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.webcohesion.enunciate.metadata.rs.ResponseCode;
@@ -10,7 +12,6 @@ import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import de.otto.edison.hal.Links;
 import sonia.scm.ConcurrentModificationException;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.api.MergeDryRunCommandResult;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.spi.MergeConflictResult;
 
@@ -26,7 +27,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.List;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
@@ -58,23 +58,22 @@ public class MergeResource {
   }
 
   @POST
-  @Path("{namespace}/{name}/{pullRequestId}/dry-run")
-  @StatusCodes({
-    @ResponseCode(code = 204, condition = "merge can be done automatically"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 409, condition = "The branches can not be merged automatically due to conflicts"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
-  public void dryRun(
+  @Path("{namespace}/{name}/{pullRequestId}/merge-check")
+  @Produces("application/vnd.scmm-mergeCheckResult+json")
+  public MergeCheckResultDto check(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @PathParam("pullRequestId") String pullRequestId
+    @PathParam("pullRequestId") String pullRequestId,
+    @Context UriInfo uriInfo
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(namespaceAndName, pullRequestId);
-    if (!mergeDryRunCommandResult.isMergeable()) {
-      throw new ConcurrentModificationException(entity(PullRequest.class, pullRequestId).in(namespaceAndName).build());
-    }
+    MergeCheckResult mergeCheckResult = service.checkMerge(namespaceAndName, pullRequestId);
+    String checkLink = new PullRequestResourceLinks(uriInfo::getBaseUri).mergeLinks().check(namespace, name, pullRequestId);
+    return new MergeCheckResultDto(
+      Links.linkingTo().self(checkLink).build(),
+      mergeCheckResult.hasConflicts(),
+      mergeCheckResult.getMergeObstacles()
+    );
   }
 
   @POST

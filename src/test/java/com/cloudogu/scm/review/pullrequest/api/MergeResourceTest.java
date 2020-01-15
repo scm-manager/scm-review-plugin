@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.github.sdorra.shiro.SubjectAware;
 import org.jboss.resteasy.mock.MockHttpRequest;
@@ -11,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.api.MergeDryRunCommandResult;
 import sonia.scm.web.RestDispatcher;
 
 import java.io.IOException;
@@ -20,6 +20,7 @@ import java.net.URL;
 
 import static com.google.common.io.Resources.getResource;
 import static com.google.common.io.Resources.toByteArray;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -64,34 +65,35 @@ class MergeResourceTest {
 
   @Test
   void shouldHandleSuccessfulDryRun() throws IOException, URISyntaxException {
-    when(mergeService.dryRun(any(), any())).thenReturn(new MergeDryRunCommandResult(true));
+    when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(false, emptyList()));
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
 
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/merge-check", mergeCommandJson);
 
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 
-    assertThat(response.getStatus()).isEqualTo(204);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"hasConflicts\":false");
   }
 
   @Test
   void shouldHandleFailedDryRun() throws IOException, URISyntaxException {
-    when(mergeService.dryRun(any(), any())).thenReturn(new MergeDryRunCommandResult(false));
+    when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(true, emptyList()));
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
-    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/dry-run", mergeCommandJson);
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/merge-check", mergeCommandJson);
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
 
-    assertThat(response.getStatus()).isEqualTo(409);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"hasConflicts\":true");
   }
 
   @Test
   void shouldCreateSquashCommitMessage() throws IOException, URISyntaxException {
     when(mergeService.createDefaultCommitMessage(any(), any(), eq(SQUASH))).thenReturn("successful");
-    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
     MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/commit-message/?strategy=SQUASH");
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);

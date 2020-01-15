@@ -1,6 +1,5 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.github.sdorra.shiro.ShiroRule;
@@ -34,14 +33,18 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -72,11 +75,13 @@ public class MergeServiceTest {
   @Mock
   private MergeCommandBuilder mergeCommandBuilder;
 
+  private Set<MergeGuard> mergeGuards = new HashSet<>();
+
   private MergeService service;
 
   @Before
   public void initService() {
-    service = new MergeService(serviceFactory, pullRequestService);
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards);
   }
 
   @Before
@@ -162,9 +167,9 @@ public class MergeServiceTest {
     mockPullRequest("mergeable", "master", "1");
     when(mergeCommandBuilder.dryRun()).thenReturn(new MergeDryRunCommandResult(true));
 
-    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(REPOSITORY.getNamespaceAndName(), "1");
+    MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
-    assertThat(mergeDryRunCommandResult.isMergeable()).isTrue();
+    assertThat(mergeCheckResult.hasConflicts()).isFalse();
   }
 
   @Test
@@ -172,9 +177,9 @@ public class MergeServiceTest {
   public void shouldNotDoDryRunIfMissingPermission() {
     mockPullRequest("mergable", "master", "1");
 
-    MergeDryRunCommandResult mergeDryRunCommandResult = service.dryRun(REPOSITORY.getNamespaceAndName(), "1");
+    MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
-    assertThat(mergeDryRunCommandResult.isMergeable()).isFalse();
+    assertThat(mergeCheckResult.hasConflicts()).isTrue();
   }
 
   @Test
@@ -205,6 +210,26 @@ public class MergeServiceTest {
       "\n" +
       "- third commit\n"
     );
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldForwardObstaclesFromGuards() {
+    PullRequest pullRequest = mockPullRequest("mergeable", "master", "1");
+
+    MergeGuard mergeGuard1 = mock(MergeGuard.class);
+    MergeGuard mergeGuard2 = mock(MergeGuard.class);
+    mergeGuards.add(mergeGuard1);
+    mergeGuards.add(mergeGuard2);
+
+    TestMergeObstacle obstacle1 = new TestMergeObstacle();
+    TestMergeObstacle obstacle2 = new TestMergeObstacle();
+    when(mergeGuard1.getObstacles(REPOSITORY, pullRequest)).thenReturn(singleton(obstacle1));
+    when(mergeGuard2.getObstacles(REPOSITORY, pullRequest)).thenReturn(singleton(obstacle2));
+
+    MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
+
+    assertThat(mergeCheckResult.getMergeObstacles()).contains(obstacle1, obstacle2);
   }
 
   private PullRequest createPullRequest() {
@@ -245,5 +270,17 @@ public class MergeServiceTest {
     Branches branches = new Branches();
     branches.setBranches(ImmutableList.of(Branch.normalBranch(branchName, "123")));
     when(branchesCommandBuilder.getBranches()).thenReturn(branches);
+  }
+
+  private static class TestMergeObstacle implements MergeObstacle {
+    @Override
+    public String getMessage() {
+      return "not permitted";
+    }
+
+    @Override
+    public String getKey() {
+      return "key";
+    }
   }
 }

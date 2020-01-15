@@ -112,8 +112,10 @@ export function merge(url: string, mergeCommit: MergeCommit) {
   return apiClient.post(url, mergeCommit, "application/vnd.scmm-mergeCommand+json");
 }
 
-export function dryRun(pullRequest: PullRequest) {
-  return apiClient.post((pullRequest._links.mergeDryRun as Link).href, {});
+export function check(pullRequest: PullRequest) {
+  return apiClient
+    .post((pullRequest._links.mergeCheck as Link).href, {})
+    .then(response => response.json());
 }
 
 export function getDefaultCommitDefaultMessage(url: string) {

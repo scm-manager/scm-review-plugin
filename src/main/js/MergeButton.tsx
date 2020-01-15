@@ -1,15 +1,15 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Button } from "@scm-manager/ui-components";
+import { Button, Tooltip } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
-import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
 import MergeModal from "./MergeModal";
 
 type Props = WithTranslation & {
   merge: (strategy: string, commit: MergeCommit) => void;
   repository: Repository;
-  mergeHasNoConflict?: boolean;
+  mergeCheck?: MergeCheck;
   loading: boolean;
   pullRequest: PullRequest;
 };
@@ -46,11 +46,38 @@ class MergeButton extends React.Component<Props, State> {
     }));
   };
 
+  renderButton = () => {
+    const { t, loading, mergeCheck } = this.props;
+
+    const action = mergeCheck?.hasConflicts ? this.showInformation : this.toggleMergeModal;
+    const color = mergeCheck?.hasConflicts ? "warning" : "primary";
+    const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map(o => t(o.key)).join("\n") : "";
+    const disabled = mergeCheck && mergeCheck.mergeObstacles.length > 0;
+
+    const button = (
+      <Button
+        label={t("scm-review-plugin.showPullRequest.mergeButton.buttonTitle")}
+        loading={loading}
+        action={action}
+        color={color}
+        disabled={disabled}
+        icon={checkHints ? "exclamation-triangle" : ""}
+      />
+    );
+    if (checkHints) {
+      return (
+        <Tooltip message={checkHints} location={"top"}>
+          {button}
+        </Tooltip>
+      );
+    } else {
+      return button;
+    }
+  };
+
   render() {
-    const { t, loading, mergeHasNoConflict, repository, pullRequest, merge } = this.props;
+    const { repository, pullRequest, merge } = this.props;
     const { mergeInformation, showMergeModal } = this.state;
-    const action = mergeHasNoConflict ? this.toggleMergeModal : this.showInformation;
-    const color = mergeHasNoConflict ? "primary" : "warning";
 
     if (showMergeModal) {
       return (
@@ -64,12 +91,7 @@ class MergeButton extends React.Component<Props, State> {
 
     return (
       <p className="control">
-        <Button
-          label={t("scm-review-plugin.showPullRequest.mergeButton.buttonTitle")}
-          loading={loading}
-          action={action}
-          color={color}
-        />
+        {this.renderButton()}
         <ManualMergeInformation
           showMergeInformation={mergeInformation}
           repository={repository}

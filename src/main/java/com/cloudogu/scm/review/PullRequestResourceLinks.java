@@ -171,8 +171,8 @@ public class PullRequestResourceLinks {
       this.mergeLinkBuilder = new LinkBuilder(pathInfo, MergeResource.class);
     }
 
-    public String dryRun(String namespace, String name, String pullRequestId) {
-      return mergeLinkBuilder.method("dryRun").parameters(namespace, name, pullRequestId).href();
+    public String check(String namespace, String name, String pullRequestId) {
+      return mergeLinkBuilder.method("check").parameters(namespace, name, pullRequestId).href();
     }
 
     public String merge(String namespace, String name, String pullRequestId, MergeStrategy strategy) {
