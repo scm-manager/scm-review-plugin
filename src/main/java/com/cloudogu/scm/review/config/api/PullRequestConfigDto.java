@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter @Setter @NoArgsConstructor
 public class PullRequestConfigDto extends HalRepresentation {
@@ -16,5 +16,5 @@ public class PullRequestConfigDto extends HalRepresentation {
   }
 
   private boolean enabled;
-  private Set<String> protectedBranchPatterns;
+  private List<String> protectedBranchPatterns;
 }

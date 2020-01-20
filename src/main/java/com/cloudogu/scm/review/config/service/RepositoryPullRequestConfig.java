@@ -1,14 +1,14 @@
 package com.cloudogu.scm.review.config.service;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @XmlRootElement(name = "config")
 public class RepositoryPullRequestConfig {
 
   private boolean enabled = false;
-  private Set<String> protectedBranchPatterns = new HashSet<>();
+  private List<String> protectedBranchPatterns = new ArrayList<>();
 
   public boolean isEnabled() {
     return enabled;
@@ -18,11 +18,11 @@ public class RepositoryPullRequestConfig {
     this.enabled = enabled;
   }
 
-  public Set<String> getProtectedBranchPatterns() {
+  public List<String> getProtectedBranchPatterns() {
     return protectedBranchPatterns;
   }
 
-  public void setProtectedBranchPatterns(Set<String> protectedBranchPatterns) {
+  public void setProtectedBranchPatterns(List<String> protectedBranchPatterns) {
     this.protectedBranchPatterns = protectedBranchPatterns;
   }
 }
