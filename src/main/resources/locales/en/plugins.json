@@ -223,6 +223,12 @@
           "displayName": "Modify all pull requests",
           "description": "May create, comment and reject pull requests for all repositories"
         }
+      },
+      "configurePullRequest": {
+        "*": {
+          "displayName": "Configure all pull requests",
+          "description": "May configure pull requests for all repositories"
+        }
       }
     }
   },
@@ -247,6 +253,10 @@
       "mergePullRequest": {
         "displayName": "merge/reject pull requests",
         "description": "May merge or reject pull requests (merge needs additional permission to push the repository)"
+      },
+      "configurePullRequest": {
+        "displayName": "configure pull requests",
+        "description": "May configure pull requests for this repository"
       }
     }
   },

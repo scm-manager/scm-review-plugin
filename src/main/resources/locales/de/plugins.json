@@ -223,6 +223,12 @@
           "displayName": "Alle Pull Requests bearbeiten",
           "description": "Darf Pull Requests für alle Repositories erstellen, kommentieren und ablehnen"
         }
+      },
+      "configurePullRequest": {
+        "*": {
+          "displayName": "Configure all pull requests",
+          "description": "May configure pull requests for all repositories"
+        }
       }
     }
   },
@@ -247,6 +253,10 @@
       "mergePullRequest": {
         "displayName": "Pull Requests mergen/ablehnen",
         "description": "Darf Pull Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
+      },
+      "configurePullRequest": {
+        "displayName": "configure pull requests",
+        "description": "May configure pull requests for this repository"
       }
     }
   },

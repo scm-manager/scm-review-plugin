@@ -68,7 +68,8 @@ public class RepositoryLinkEnricherTest {
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
     enricher.enrich(context, appender);
-    verify(appender).appendLink(any(), any());
+    verify(appender).appendLink("pullRequest", "https://scm-manager.org/scm/api/v2/pull-requests/space/name");
+    verify(appender).appendLink("pullRequestConfig", "https://scm-manager.org/scm/api/v2/pull-requests/space/name/config");
   }
 
   @Test
@@ -92,6 +93,4 @@ public class RepositoryLinkEnricherTest {
     enricher.enrich(context, appender);
     verify(appender, never()).appendLink(any(), any());
   }
-
-
 }

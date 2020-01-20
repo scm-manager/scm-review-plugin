@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review;
 
+import com.cloudogu.scm.review.config.api.ConfigResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
@@ -16,6 +17,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import static com.cloudogu.scm.review.PermissionCheck.mayConfigure;
 import static com.cloudogu.scm.review.PermissionCheck.mayRead;
 
 @Extension
@@ -38,6 +40,10 @@ public class RepositoryLinkEnricher implements HalEnricher {
       if (mayRead(repository) && repositoryService.isSupported(Command.MERGE)) {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
         appender.appendLink("pullRequest", linkBuilder.method("getAll").parameters(repository.getNamespace(), repository.getName()).href());
+      }
+      if (mayConfigure(repository) && repositoryService.isSupported(Command.MERGE)) {
+        LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), ConfigResource.class);
+        appender.appendLink("pullRequestConfig", linkBuilder.method("getConfig").parameters(repository.getNamespace(), repository.getName()).href());
       }
     }
   }

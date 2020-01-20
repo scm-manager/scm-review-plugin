@@ -14,6 +14,7 @@ public final class PermissionCheck {
   public static final String READ_PULL_REQUEST = "readPullRequest";
   public static final String COMMENT_PULL_REQUEST = "commentPullRequest";
   public static final String MERGE_PULL_REQUEST = "mergePullRequest";
+  public static final String CONFIGURE_PULL_REQUEST = "configurePullRequest";
 
   private PermissionCheck() {
   }
@@ -93,4 +94,11 @@ public final class PermissionCheck {
     RepositoryPermissions.custom(MODIFY_PULL_REQUEST, repository).check();
   }
 
+  public static boolean mayConfigure(Repository repository) {
+    return RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).isPermitted();
+  }
+
+  public static void checkConfigure(Repository repository) {
+    RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).check();
+  }
 }
