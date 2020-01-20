@@ -208,6 +208,20 @@
     "branch": {
       "header": "Pull Requests",
       "createPullRequest": "Neuen Pull Request erstellen"
+    },
+    "config": {
+      "enabled": {
+        "label": "Aktiviert",
+        "helpText": "Aktiviert bzw. Deaktiviert den Schutz der Branches"
+      },
+      "newBranch": {
+        "label": "Pattern für Branches hinzufügen",
+        "helpText": "Fügt ein Pattern zu der Liste der geschützten Branches hinzu",
+        "add": {
+          "label": "Hinzufügen",
+          "helpText": "Fügt das gegebene Pattern zu der Liste der geschützten Branches hinzu"
+        }
+      }
     }
   },
   "permissions": {

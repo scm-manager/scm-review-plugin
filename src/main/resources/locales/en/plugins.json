@@ -208,6 +208,20 @@
     "branch": {
       "header": "Pull Requests",
       "createPullRequest": "Create new pull request"
+    },
+    "config": {
+      "enabled": {
+        "label": "Enabled",
+        "helpText": "Enabled or disabled the branch protection"
+      },
+      "newBranch": {
+        "label": "Add branch pattern",
+        "helpText": "Add a new branch pattern to the list of protected branches",
+        "add": {
+          "label": "Add",
+          "helpText": "Add the given branch to the list of protected branches"
+        }
+      }
     }
   },
   "permissions": {
