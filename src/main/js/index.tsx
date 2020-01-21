@@ -80,3 +80,4 @@ binder.bind("repos.branch-details.information", ({ repository, branch }) => (
 ));
 
 cfgBinder.bindRepositorySetting("/review", "scm-review-plugin.navLink", "pullRequestConfig", RepositoryConfig);
+cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink", "pullRequestConfig", RepositoryConfig);

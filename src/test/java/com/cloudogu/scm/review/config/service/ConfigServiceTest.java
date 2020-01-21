@@ -14,31 +14,51 @@ class ConfigServiceTest {
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
 
   ConfigService service;
-  ConfigurationStore<RepositoryPullRequestConfig> store;
+  ConfigurationStore<PullRequestConfig> repositoryStore;
+  ConfigurationStore<PullRequestConfig> globalStore;
 
   @BeforeEach
   public void init() {
     ConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
     service = new ConfigService(storeFactory);
-    store = storeFactory
-      .withType(RepositoryPullRequestConfig.class)
+    repositoryStore = storeFactory
+      .withType(PullRequestConfig.class)
       .withName("pullRequestConfig")
       .forRepository(REPOSITORY)
+      .build();
+    globalStore = storeFactory
+      .withType(PullRequestConfig.class)
+      .withName("pullRequestConfig")
       .build();
   }
 
   @Test
-  void initialConfigShouldBeDisabled() {
+  void initialRepositoryConfigShouldBeDisabled() {
     Assertions.assertThat(service.getRepositoryPullRequestConfig(REPOSITORY).isEnabled()).isFalse();
   }
 
   @Test
-  void shouldStoreChangedConfig() {
-    RepositoryPullRequestConfig config = new RepositoryPullRequestConfig();
+  void initialGlobalConfigShouldBeDisabled() {
+    Assertions.assertThat(service.getGlobalPullRequestConfig().isEnabled()).isFalse();
+  }
+
+  @Test
+  void shouldStoreChangedRepositoryConfig() {
+    PullRequestConfig config = new PullRequestConfig();
     config.setEnabled(true);
     service.setRepositoryPullRequestConfig(REPOSITORY, config);
 
     Assertions.assertThat(service.getRepositoryPullRequestConfig(REPOSITORY).isEnabled()).isTrue();
-    Assertions.assertThat(store.get().isEnabled()).isTrue();
+    Assertions.assertThat(repositoryStore.get().isEnabled()).isTrue();
+  }
+
+  @Test
+  void shouldStoreChangedGlobalConfig() {
+    PullRequestConfig config = new PullRequestConfig();
+    config.setEnabled(true);
+    service.setGlobalPullRequestConfig(config);
+
+    Assertions.assertThat(service.getGlobalPullRequestConfig().isEnabled()).isTrue();
+    Assertions.assertThat(globalStore.get().isEnabled()).isTrue();
   }
 }

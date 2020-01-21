@@ -11,22 +11,32 @@ public class ConfigService {
   private static final String STORE_NAME = "pullRequestConfig";
 
   private final ConfigurationStoreFactory storeFactory;
+  private final ConfigurationStore<PullRequestConfig> globalStore;
 
   @Inject
   public ConfigService(ConfigurationStoreFactory storeFactory) {
     this.storeFactory = storeFactory;
+    globalStore = storeFactory.withType(PullRequestConfig.class).withName(STORE_NAME).build();
   }
 
-  public RepositoryPullRequestConfig getRepositoryPullRequestConfig(Repository repository) {
-    ConfigurationStore<RepositoryPullRequestConfig> store = getStore(repository);
-    return store.getOptional().orElse(new RepositoryPullRequestConfig());
+  public PullRequestConfig getRepositoryPullRequestConfig(Repository repository) {
+    ConfigurationStore<PullRequestConfig> store = getStore(repository);
+    return store.getOptional().orElse(new PullRequestConfig());
   }
 
-  public void setRepositoryPullRequestConfig(Repository repository, RepositoryPullRequestConfig repositoryPullRequestConfig) {
-    getStore(repository).set(repositoryPullRequestConfig);
+  public void setRepositoryPullRequestConfig(Repository repository, PullRequestConfig pullRequestConfig) {
+    getStore(repository).set(pullRequestConfig);
   }
 
-  private ConfigurationStore<RepositoryPullRequestConfig> getStore(Repository repository) {
-    return storeFactory.withType(RepositoryPullRequestConfig.class).withName(STORE_NAME).forRepository(repository).build();
+  public PullRequestConfig getGlobalPullRequestConfig() {
+    return globalStore.getOptional().orElse(new PullRequestConfig());
+  }
+
+  public void setGlobalPullRequestConfig(PullRequestConfig pullRequestConfig) {
+    globalStore.set(pullRequestConfig);
+  }
+
+  private ConfigurationStore<PullRequestConfig> getStore(Repository repository) {
+    return storeFactory.withType(PullRequestConfig.class).withName(STORE_NAME).forRepository(repository).build();
   }
 }

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement(name = "config")
-public class RepositoryPullRequestConfig {
+public class PullRequestConfig {
 
   private boolean enabled = false;
   private List<String> protectedBranchPatterns = new ArrayList<>();

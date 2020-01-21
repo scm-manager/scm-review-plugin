@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import sonia.scm.repository.NamespaceAndName;
@@ -24,40 +23,40 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 
 @Path(PullRequestRootResource.PULL_REQUESTS_PATH_V2)
-public class ConfigResource {
+public class RepositoryConfigResource {
 
   private final ConfigService configService;
-  private final ConfigMapper configMapper;
+  private final RepositoryConfigMapper repositoryConfigMapper;
   private final RepositoryManager repositoryManager;
 
   @Inject
-  public ConfigResource(ConfigService configService, ConfigMapper configMapper, RepositoryManager repositoryManager) {
+  public RepositoryConfigResource(ConfigService configService, RepositoryConfigMapper repositoryConfigMapper, RepositoryManager repositoryManager) {
     this.configService = configService;
-    this.configMapper = configMapper;
+    this.repositoryConfigMapper = repositoryConfigMapper;
     this.repositoryManager = repositoryManager;
   }
 
   @GET
   @Path("{namespace}/{name}/config")
   @Produces(MediaType.APPLICATION_JSON)
-  public PullRequestConfigDto getConfig(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
+  public PullRequestConfigDto getRepositoryConfig(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
       throw notFound(entity(new NamespaceAndName(namespace, name)));
     }
     PermissionCheck.checkConfigure(repository);
-    return configMapper.map(configService.getRepositoryPullRequestConfig(repository), repository, uriInfo);
+    return repositoryConfigMapper.map(configService.getRepositoryPullRequestConfig(repository), repository, uriInfo);
   }
 
   @PUT
   @Path("{namespace}/{name}/config")
   @Consumes(MediaType.APPLICATION_JSON)
-  public void setConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid PullRequestConfigDto configDto) {
+  public void setRepositoryConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid PullRequestConfigDto configDto) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
       throw notFound(entity(new NamespaceAndName(namespace, name)));
     }
     PermissionCheck.checkConfigure(repository);
-    configService.setRepositoryPullRequestConfig(repository, configMapper.map(configDto));
+    configService.setRepositoryPullRequestConfig(repository, repositoryConfigMapper.map(configDto));
   }
 }

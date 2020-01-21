@@ -1,7 +1,7 @@
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.config.service.ConfigService;
-import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
+import com.cloudogu.scm.review.config.service.PullRequestConfig;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConfigResourceTest {
+class RepositoryConfigResourceTest {
 
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
 
@@ -51,18 +51,18 @@ class ConfigResourceTest {
   private RestDispatcher dispatcher;
   private final MockHttpResponse response = new MockHttpResponse();
 
-  private ConfigResource configResource;
+  private RepositoryConfigResource configResource;
 
   @BeforeEach
   void init() {
-    configResource = new ConfigResource(configService, new ConfigMapperImpl(), repositoryManager);
+    configResource = new RepositoryConfigResource(configService, new RepositoryConfigMapperImpl(), repositoryManager);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(configResource);
 
     lenient().when(uriInfo.getBaseUri()).thenReturn(URI.create("localhost/scm/api"));
 
-    lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new RepositoryPullRequestConfig());
+    lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new PullRequestConfig());
   }
 
   @Nested
@@ -156,7 +156,7 @@ class ConfigResourceTest {
     @BeforeEach
     void initRepositoryManager() {
       when(repositoryManager.get(new NamespaceAndName("space", "X"))).thenReturn(REPOSITORY);
-      lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new RepositoryPullRequestConfig());
+      lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new PullRequestConfig());
     }
 
     @AfterEach

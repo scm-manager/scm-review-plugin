@@ -4,6 +4,7 @@ import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
+import sonia.scm.config.ConfigurationPermissions;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 
@@ -15,6 +16,7 @@ public final class PermissionCheck {
   public static final String COMMENT_PULL_REQUEST = "commentPullRequest";
   public static final String MERGE_PULL_REQUEST = "mergePullRequest";
   public static final String CONFIGURE_PULL_REQUEST = "configurePullRequest";
+  public static final String CONFIGURE_PERMISSION = "pullRequest";
 
   private PermissionCheck() {
   }
@@ -98,7 +100,23 @@ public final class PermissionCheck {
     return RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).isPermitted();
   }
 
+  public static boolean mayReadGlobalConfig() {
+    return ConfigurationPermissions.read(CONFIGURE_PERMISSION).isPermitted();
+  }
+
+  public static boolean mayWriteGlobalConfig() {
+    return ConfigurationPermissions.write(CONFIGURE_PERMISSION).isPermitted();
+  }
+
   public static void checkConfigure(Repository repository) {
     RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).check();
+  }
+
+  public static void checkReadGlobalkConfig() {
+    ConfigurationPermissions.read(CONFIGURE_PERMISSION).check();
+  }
+
+  public static void checkWriteGlobalkConfig() {
+    ConfigurationPermissions.write(CONFIGURE_PERMISSION).check();
   }
 }
