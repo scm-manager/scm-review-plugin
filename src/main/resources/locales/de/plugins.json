@@ -214,12 +214,16 @@
         "label": "Aktiviert",
         "helpText": "Aktiviert bzw. Deaktiviert den Schutz der Branches"
       },
+      "disableRepositoryConfiguration": {
+        "label": "Pull Request Konfiguration nicht für einzelne Repositories erlauben",
+        "helpText": "Repository Owner dürfen Pull Requests nicht individuell konfigurieren."
+      },
       "newBranch": {
         "label": "Pattern für Branches hinzufügen",
-        "helpText": "Fügt ein Pattern zu der Liste der geschützten Branches hinzu",
+        "helpText": "Fügt ein Pattern zu der Liste der geschützten Branches hinzu.",
         "add": {
           "label": "Hinzufügen",
-          "helpText": "Fügt das gegebene Pattern zu der Liste der geschützten Branches hinzu"
+          "helpText": "Fügt das gegebene Pattern zu der Liste der geschützten Branches hinzu."
         }
       }
     }

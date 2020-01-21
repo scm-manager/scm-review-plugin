@@ -54,7 +54,7 @@ class ConfigServiceTest {
 
   @Test
   void shouldStoreChangedGlobalConfig() {
-    PullRequestConfig config = new PullRequestConfig();
+    GlobalPullRequestConfig config = new GlobalPullRequestConfig();
     config.setEnabled(true);
     service.setGlobalPullRequestConfig(config);
 

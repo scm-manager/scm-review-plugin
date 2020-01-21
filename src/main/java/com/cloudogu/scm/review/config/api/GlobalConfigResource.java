@@ -30,7 +30,7 @@ public class GlobalConfigResource {
   @GET
   @Path("config")
   @Produces(MediaType.APPLICATION_JSON)
-  public PullRequestConfigDto getGlobalConfig(@Context UriInfo uriInfo) {
+  public GlobalPullRequestConfigDto getGlobalConfig(@Context UriInfo uriInfo) {
     PermissionCheck.checkReadGlobalkConfig();
     return globalConfigMapper.map(configService.getGlobalPullRequestConfig(), uriInfo);
   }
@@ -38,7 +38,7 @@ public class GlobalConfigResource {
   @PUT
   @Path("config")
   @Consumes(MediaType.APPLICATION_JSON)
-  public void setGlobalConfig(@Valid PullRequestConfigDto configDto) {
+  public void setGlobalConfig(@Valid GlobalPullRequestConfigDto configDto) {
     PermissionCheck.checkWriteGlobalkConfig();
     configService.setGlobalPullRequestConfig(globalConfigMapper.map(configDto));
   }

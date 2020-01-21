@@ -214,12 +214,16 @@
         "label": "Enabled",
         "helpText": "Enabled or disabled the branch protection"
       },
+      "disableRepositoryConfiguration": {
+        "label": "Do not allow repository configuration",
+        "helpText": "Do not allow repository owners to configure pull requests."
+      },
       "newBranch": {
         "label": "Add branch pattern",
-        "helpText": "Add a new branch pattern to the list of protected branches",
+        "helpText": "Add a new branch pattern to the list of protected branches.",
         "add": {
           "label": "Add",
-          "helpText": "Add the given branch to the list of protected branches"
+          "helpText": "Add the given branch to the list of protected branches."
         }
       }
     }

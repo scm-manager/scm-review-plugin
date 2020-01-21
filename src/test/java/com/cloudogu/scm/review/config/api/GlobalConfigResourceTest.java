@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.config.service.ConfigService;
+import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
 import com.cloudogu.scm.review.config.service.PullRequestConfig;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
@@ -57,7 +58,7 @@ class GlobalConfigResourceTest {
 
     lenient().when(uriInfo.getBaseUri()).thenReturn(URI.create("localhost/scm/api"));
 
-    lenient().when(configService.getGlobalPullRequestConfig()).thenReturn(new PullRequestConfig());
+    lenient().when(configService.getGlobalPullRequestConfig()).thenReturn(new GlobalPullRequestConfig());
   }
 
   @Nested
@@ -117,7 +118,7 @@ class GlobalConfigResourceTest {
       }
 
       @Test
-      void shouldSetConfig() throws URISyntaxException, UnsupportedEncodingException {
+      void shouldSetConfig() throws URISyntaxException {
         MockHttpRequest request = MockHttpRequest.put("/v2/pull-requests/config")
           .content("{\"enabled\": true, \"protectedBranchPatterns\": [\"feature/*\"]}".getBytes())
           .contentType(MediaType.APPLICATION_JSON);
@@ -154,7 +155,7 @@ class GlobalConfigResourceTest {
       }
 
       @Test
-      void shouldSetConfig() throws URISyntaxException, UnsupportedEncodingException {
+      void shouldSetConfig() throws URISyntaxException {
         MockHttpRequest request = MockHttpRequest.put("/v2/pull-requests/config")
           .content("{\"enabled\": true, \"protectedBranchPatterns\": [\"feature/*\"]}".getBytes())
           .contentType(MediaType.APPLICATION_JSON);
@@ -182,7 +183,7 @@ class GlobalConfigResourceTest {
     }
 
     @Test
-    void shouldNotReturnConfig() throws URISyntaxException, UnsupportedEncodingException {
+    void shouldNotReturnConfig() throws URISyntaxException {
       MockHttpRequest request = MockHttpRequest.get("/v2/pull-requests/config");
 
       dispatcher.invoke(request, response);

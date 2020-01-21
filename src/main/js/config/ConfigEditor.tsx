@@ -7,6 +7,7 @@ import { Config } from "../types/Config";
 type Props = WithTranslation & {
   onConfigurationChange: (config: State, valid: boolean) => void;
   initialConfiguration: Config;
+  global: boolean;
 };
 
 type State = Config;
@@ -26,6 +27,15 @@ class ConfigEditor extends React.Component<Props, State> {
     );
   };
 
+  onChangeDisableRepositoryConfiguration = (isChangeDisableRepositoryConfiguration: boolean) => {
+    this.setState(
+      {
+        disableRepositoryConfiguration: isChangeDisableRepositoryConfiguration
+      },
+      () => this.props.onConfigurationChange(this.state, true)
+    );
+  };
+
   onChangeBranches = (newBranches: string[]) => {
     this.setState(
       {
@@ -36,10 +46,18 @@ class ConfigEditor extends React.Component<Props, State> {
   };
 
   render() {
-    const { t } = this.props;
-    const { enabled, protectedBranchPatterns } = this.state;
+    const { global, t } = this.props;
+    const { enabled, protectedBranchPatterns, disableRepositoryConfiguration } = this.state;
     return (
       <>
+        {global && (
+          <Checkbox
+            checked={!!disableRepositoryConfiguration}
+            onChange={this.onChangeDisableRepositoryConfiguration}
+            label={t("scm-review-plugin.config.disableRepositoryConfiguration.label")}
+            helpText={t("scm-review-plugin.config.disableRepositoryConfiguration.helpText")}
+          />
+        )}
         <Checkbox
           checked={enabled}
           onChange={this.onChangeEnabled}

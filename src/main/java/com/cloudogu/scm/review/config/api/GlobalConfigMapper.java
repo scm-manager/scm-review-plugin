@@ -1,7 +1,7 @@
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.config.service.PullRequestConfig;
+import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
@@ -14,12 +14,12 @@ import javax.ws.rs.core.UriInfo;
 @Mapper
 public abstract class GlobalConfigMapper {
 
-  public abstract PullRequestConfigDto map(PullRequestConfig globalPullRequestConfig, @Context UriInfo uriInfo);
+  public abstract GlobalPullRequestConfigDto map(GlobalPullRequestConfig globalPullRequestConfig, @Context UriInfo uriInfo);
 
-  public abstract PullRequestConfig map(PullRequestConfigDto configDto);
+  public abstract GlobalPullRequestConfig map(GlobalPullRequestConfigDto configDto);
 
   @ObjectFactory
-  PullRequestConfigDto createForGlobal(@Context UriInfo uriInfo) {
+  GlobalPullRequestConfigDto createForGlobal(@Context UriInfo uriInfo) {
     LinkBuilder linkBuilder = new LinkBuilder(uriInfo::getBaseUri, GlobalConfigResource.class);
     Links.Builder halLinks = new Links.Builder();
 
@@ -28,6 +28,6 @@ public abstract class GlobalConfigMapper {
     if (PermissionCheck.mayWriteGlobalConfig()) {
       halLinks.single(Link.link("update", linkBuilder.method("setGlobalConfig").parameters().href()));
     }
-    return new PullRequestConfigDto(halLinks.build());
+    return new GlobalPullRequestConfigDto(halLinks.build());
   }
 }
