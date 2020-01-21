@@ -294,6 +294,10 @@
     "9nRnT3cjk1": {
       "displayName": "Merge verhindert",
       "description": "Der Merge wurde von anderen Plugins verhindert."
+    },
+    "FuRoChFWt1": {
+      "displayName": "Nur durch PR änderbar",
+      "description": "Der Branch kann nur durch Pull Requests geschrieben werden."
     }
   }
 }

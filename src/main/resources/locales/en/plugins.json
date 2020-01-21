@@ -294,6 +294,10 @@
     "9nRnT3cjk1": {
       "displayName": "Merge prevented",
       "description": "The merge was prevented by other plugins."
+    },
+    "FuRoChFWt1": {
+      "displayName": "Branch only writable with pull requests",
+      "description": "The branch can only be changed by merging pull requests."
     }
   }
 }
