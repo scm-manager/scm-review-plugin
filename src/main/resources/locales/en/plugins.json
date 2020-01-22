@@ -225,7 +225,9 @@
           "label": "Add",
           "helpText": "Add the given branch to the list of protected branches."
         }
-      }
+      },
+      "noBranches": "No branch patterns defined.",
+      "subtitle": "Branches matching the following patterns will only be writable by pull requests:"
     },
     "obstacle": "This branch can only be modified by pull requests."
   },

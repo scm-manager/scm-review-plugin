@@ -1,6 +1,6 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Button, Icon, InputField } from "@scm-manager/ui-components";
+import { Button, Icon, InputField, Notification } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = WithTranslation & {
@@ -37,12 +37,14 @@ class BranchList extends React.Component<Props, State> {
   };
 
   render() {
-    const { t } = this.props;
+    const { branches, t } = this.props;
     const { newBranch } = this.state;
-    return (
-      <>
+    const table =
+      branches.length == 0 ? (
+        <Notification type={"info"}>{t("scm-review-plugin.config.noBranches")}</Notification>
+      ) : (
         <table className="card-table table is-hoverable is-fullwidth">
-          {this.props.branches.map(branch => (
+          {branches.map(branch => (
             <tr>
               <td>{branch}</td>
               <VCenteredTd className="is-darker">
@@ -59,6 +61,11 @@ class BranchList extends React.Component<Props, State> {
             </tr>
           ))}
         </table>
+      );
+
+    return (
+      <>
+        {table}
         <InputField
           label={t("scm-review-plugin.config.newBranch.label")}
           onChange={this.handleNewBranchChange}

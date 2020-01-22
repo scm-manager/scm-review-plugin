@@ -1,6 +1,6 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Checkbox } from "@scm-manager/ui-components";
+import { Checkbox, Subtitle } from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
 import { Config } from "../types/Config";
 
@@ -64,7 +64,12 @@ class ConfigEditor extends React.Component<Props, State> {
           label={t("scm-review-plugin.config.enabled.label")}
           helpText={t("scm-review-plugin.config.enabled.helpText")}
         />
-        {enabled && <BranchList branches={protectedBranchPatterns} onChange={this.onChangeBranches} />}
+        {enabled && (
+          <>
+            <Subtitle subtitle={t("scm-review-plugin.config.subtitle")} />
+            <BranchList branches={protectedBranchPatterns} onChange={this.onChangeBranches} />
+          </>
+        )}
       </>
     );
   }
