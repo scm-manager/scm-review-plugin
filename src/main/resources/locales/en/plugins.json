@@ -226,7 +226,8 @@
           "helpText": "Add the given branch to the list of protected branches."
         }
       }
-    }
+    },
+    "obstacle": "This branch can only be modified by pull requests."
   },
   "permissions": {
     "repository": {

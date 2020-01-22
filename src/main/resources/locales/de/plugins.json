@@ -226,7 +226,8 @@
           "helpText": "Fügt das gegebene Pattern zu der Liste der geschützten Branches hinzu."
         }
       }
-    }
+    },
+    "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden."
   },
   "permissions": {
     "repository": {
