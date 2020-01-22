@@ -8,6 +8,7 @@ import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
+import sonia.scm.NotFoundException;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
@@ -111,6 +112,9 @@ public class StatusCheckHook {
         return changesets.getTotal() == 0;
       } catch (IOException e) {
         throw new InternalRepositoryException(entity(PullRequest.class, pullRequest.getId()), "could not load changesets for pull request", e);
+      } catch (NotFoundException e) {
+        LOG.debug("target or source branch not found for pull request #{}", pullRequest.getId(), e);
+        return false;
       }
     }
 
