@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RepositoryHookTest {
+class BranchProtectionHookTest {
 
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
 
@@ -34,7 +34,7 @@ class RepositoryHookTest {
   @Mock
   PreReceiveRepositoryHookEvent event;
   @InjectMocks
-  RepositoryHook hook;
+  BranchProtectionHook hook;
 
   @Test
   void shouldNotFailOnEmptyContext() {

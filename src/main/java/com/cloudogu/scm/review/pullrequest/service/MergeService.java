@@ -1,7 +1,7 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.RepositoryHook;
+import com.cloudogu.scm.review.BranchProtectionHook;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import sonia.scm.repository.InternalRepositoryException;
@@ -46,14 +46,14 @@ public class MergeService {
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
   private final Collection<MergeGuard> mergeGuards;
-  private final RepositoryHook repositoryHook;
+  private final BranchProtectionHook branchProtectionHook;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, RepositoryHook repositoryHook) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, BranchProtectionHook branchProtectionHook) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
     this.mergeGuards = mergeGuards;
-    this.repositoryHook = repositoryHook;
+    this.branchProtectionHook = branchProtectionHook;
   }
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
@@ -65,7 +65,7 @@ public class MergeService {
       }
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
 
-      repositoryHook.runPrivileged(
+      branchProtectionHook.runPrivileged(
         () -> {
           MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
           isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);

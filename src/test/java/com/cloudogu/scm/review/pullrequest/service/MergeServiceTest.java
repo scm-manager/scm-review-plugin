@@ -1,6 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.RepositoryHook;
+import com.cloudogu.scm.review.BranchProtectionHook;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.github.sdorra.shiro.ShiroRule;
@@ -77,7 +77,7 @@ public class MergeServiceTest {
   @Mock
   private MergeCommandBuilder mergeCommandBuilder;
   @Mock
-  private RepositoryHook repositoryHook;
+  private BranchProtectionHook branchProtectionHook;
 
   private Set<MergeGuard> mergeGuards = new HashSet<>();
 
@@ -85,9 +85,9 @@ public class MergeServiceTest {
 
   @Before
   public void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, repositoryHook);
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, branchProtectionHook);
     doAnswer(invocation -> { invocation.<Runnable>getArgument(0).run(); return null; })
-      .when(repositoryHook).runPrivileged(any());
+      .when(branchProtectionHook).runPrivileged(any());
   }
 
   @Before

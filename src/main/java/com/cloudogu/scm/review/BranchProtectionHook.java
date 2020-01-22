@@ -15,14 +15,14 @@ import javax.inject.Inject;
 @Slf4j
 @Extension
 @EagerSingleton
-public class RepositoryHook {
+public class BranchProtectionHook {
 
   private ConfigService service;
 
   private final ThreadLocal<Object> mergeRunning = new InheritableThreadLocal<>();
 
   @Inject
-  public RepositoryHook(ConfigService service) {
+  public BranchProtectionHook(ConfigService service) {
     this.service = service;
   }
 
