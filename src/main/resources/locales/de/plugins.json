@@ -204,6 +204,10 @@
         "header": "Änderungen mit Konflikten gefunden",
         "text": "Finden Sie heraus, wie Sie die Konflikte auflösen und den Branch mergen können."
       }
+    },
+    "branch": {
+      "header": "Pull Requests",
+      "createPullRequest": "Neuen Pull Request erstellen"
     }
   },
   "permissions": {
@@ -221,10 +225,6 @@
         }
       }
     }
-  },
-  "branch": {
-    "header": "Pull Requests",
-    "createPullRequest": "Neuen Pull Request erstellen"
   },
   "verbs": {
     "repository": {

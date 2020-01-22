@@ -204,6 +204,10 @@
         "header": "Found conflicting changes",
         "text": "Learn how to resolve the conflicts to merge this branch."
       }
+    },
+    "branch": {
+      "header": "Pull Requests",
+      "createPullRequest": "Create new pull request"
     }
   },
   "permissions": {
@@ -245,10 +249,6 @@
         "description": "May merge or reject pull requests (merge needs additional permission to push the repository)"
       }
     }
-  },
-  "branch": {
-    "header": "Pull Requests",
-    "createPullRequest": "Create new pull request"
   },
   "errors": {
     "DTRhFJFgU1": {

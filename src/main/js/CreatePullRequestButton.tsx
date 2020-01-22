@@ -84,10 +84,10 @@ class CreatePullRequestButton extends React.Component<Props, State> {
     }
     return (
       <PullRequestInfo>
-        <h4>{t("branch.header")}</h4>
+        <h4>{t("scm-review-plugin.branch.header")}</h4>
         {existing}
         <AddButton
-          label={t("branch.createPullRequest")}
+          label={t("scm-review-plugin.branch.createPullRequest")}
           link={`/repo/${repository.namespace}/${repository.name}/pull-requests/add?source=${branch.name}`}
         />
       </PullRequestInfo>
