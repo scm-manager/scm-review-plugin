@@ -51,7 +51,7 @@ class BranchList extends React.Component<Props, State> {
                 <a
                   className="level-item"
                   onClick={() => this.deleteBranch(branch)}
-                  title={t("scm-review-plugin.config.deleteBranch.label")}
+                  title={t("scm-review-plugin.config.deleteBranch")}
                 >
                   <span className="icon is-small">
                     <Icon name="trash" color="inherit" />

@@ -210,9 +210,9 @@
       "createPullRequest": "Neuen Pull Request erstellen"
     },
     "config": {
-      "enabled": {
-        "label": "Aktiviert",
-        "helpText": "Aktiviert bzw. Deaktiviert den Schutz der Branches"
+      "restrictBranchWriteAccess": {
+        "label": "Branch-Schutz aktiviert",
+        "helpText": "Aktiviert den Branch-Schutz, so dass Branches nur durch Pull Requests geändert werden können."
       },
       "disableRepositoryConfiguration": {
         "label": "Pull Request Konfiguration nicht für einzelne Repositories erlauben",
@@ -227,7 +227,8 @@
         }
       },
       "noBranches": "Keine Muster für Branches definiert.",
-      "subtitle": "Branches, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:"
+      "subtitle": "Branches, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
+      "deleteBranch": "Dieses Muster löschen"
     },
     "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden."
   },

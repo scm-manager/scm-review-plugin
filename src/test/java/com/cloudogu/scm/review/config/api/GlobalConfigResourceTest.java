@@ -2,7 +2,6 @@ package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
-import com.cloudogu.scm.review.config.service.PullRequestConfig;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -95,7 +94,7 @@ class GlobalConfigResourceTest {
       dispatcher.invoke(request, response);
 
       assertThat(response.getStatus()).isEqualTo(200);
-      assertThat(response.getContentAsString()).contains("\"enabled\":false");
+      assertThat(response.getContentAsString()).contains("\"restrictBranchWriteAccess\":false");
     }
 
     @Nested
@@ -120,7 +119,7 @@ class GlobalConfigResourceTest {
       @Test
       void shouldSetConfig() throws URISyntaxException {
         MockHttpRequest request = MockHttpRequest.put("/v2/pull-requests/config")
-          .content("{\"enabled\": true, \"protectedBranchPatterns\": [\"feature/*\"]}".getBytes())
+          .content("{\"restrictBranchWriteAccess\": true, \"protectedBranchPatterns\": [\"feature/*\"]}".getBytes())
           .contentType(MediaType.APPLICATION_JSON);
 
         dispatcher.invoke(request, response);
@@ -128,7 +127,7 @@ class GlobalConfigResourceTest {
         assertThat(response.getStatus()).isEqualTo(204);
         verify(configService)
           .setGlobalPullRequestConfig(argThat(argument -> {
-            assertThat(argument.isEnabled()).isTrue();
+            assertThat(argument.isRestrictBranchWriteAccess()).isTrue();
             assertThat(argument.getProtectedBranchPatterns()).contains("feature/*");
             return true;
           }));

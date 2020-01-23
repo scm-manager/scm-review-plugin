@@ -43,7 +43,7 @@ public class ConfigService {
   }
 
   public boolean isEnabled(Repository repository) {
-    return getGlobalPullRequestConfig().isEnabled() || (!getGlobalPullRequestConfig().isDisableRepositoryConfiguration() && getRepositoryPullRequestConfig(repository).isEnabled());
+    return getGlobalPullRequestConfig().isRestrictBranchWriteAccess() || (!getGlobalPullRequestConfig().isDisableRepositoryConfiguration() && getRepositoryPullRequestConfig(repository).isRestrictBranchWriteAccess());
   }
 
   public boolean isBranchProtected(Repository repository, String branch) {
@@ -51,9 +51,9 @@ public class ConfigService {
   }
 
   private Collection<String> getProtectedBranches(Repository repository) {
-    if (getRepositoryPullRequestConfig(repository).isEnabled() && !getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
+    if (getRepositoryPullRequestConfig(repository).isRestrictBranchWriteAccess() && !getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
       return getRepositoryPullRequestConfig(repository).getProtectedBranchPatterns();
-    } else if (getGlobalPullRequestConfig().isEnabled()) {
+    } else if (getGlobalPullRequestConfig().isRestrictBranchWriteAccess()) {
       return getGlobalPullRequestConfig().getProtectedBranchPatterns();
     } else {
       return emptyList();

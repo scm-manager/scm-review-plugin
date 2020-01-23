@@ -11,16 +11,16 @@ import java.util.List;
 @XmlRootElement(name = "config")
 public class PullRequestConfig {
 
-  private boolean enabled = false;
+  private boolean restrictBranchWriteAccess = false;
   @XmlElement(name = "protected-branch-patterns")
   private List<String> protectedBranchPatterns = new ArrayList<>();
 
-  public boolean isEnabled() {
-    return enabled;
+  public boolean isRestrictBranchWriteAccess() {
+    return restrictBranchWriteAccess;
   }
 
-  public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
+  public void setRestrictBranchWriteAccess(boolean restrictBranchWriteAccess) {
+    this.restrictBranchWriteAccess = restrictBranchWriteAccess;
   }
 
   public List<String> getProtectedBranchPatterns() {

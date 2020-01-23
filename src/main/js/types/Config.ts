@@ -1,5 +1,5 @@
 export type Config = {
   disableRepositoryConfiguration?: boolean;
-  enabled: boolean;
+  restrictBranchWriteAccess: boolean;
   protectedBranchPatterns: string[];
 };

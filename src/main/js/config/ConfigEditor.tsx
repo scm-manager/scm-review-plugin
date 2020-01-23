@@ -18,10 +18,10 @@ class ConfigEditor extends React.Component<Props, State> {
     this.state = props.initialConfiguration;
   }
 
-  onChangeEnabled = (isEnabled: boolean) => {
+  onChangeRestrictBranchWriteAccess = (isRestrictBranchWriteAccess: boolean) => {
     this.setState(
       {
-        enabled: isEnabled
+        restrictBranchWriteAccess: isRestrictBranchWriteAccess
       },
       () => this.props.onConfigurationChange(this.state, true)
     );
@@ -47,7 +47,7 @@ class ConfigEditor extends React.Component<Props, State> {
 
   render() {
     const { global, t } = this.props;
-    const { enabled, protectedBranchPatterns, disableRepositoryConfiguration } = this.state;
+    const { restrictBranchWriteAccess, protectedBranchPatterns, disableRepositoryConfiguration } = this.state;
     return (
       <>
         {global && (
@@ -59,12 +59,12 @@ class ConfigEditor extends React.Component<Props, State> {
           />
         )}
         <Checkbox
-          checked={enabled}
-          onChange={this.onChangeEnabled}
-          label={t("scm-review-plugin.config.enabled.label")}
-          helpText={t("scm-review-plugin.config.enabled.helpText")}
+          checked={restrictBranchWriteAccess}
+          onChange={this.onChangeRestrictBranchWriteAccess}
+          label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
+          helpText={t("scm-review-plugin.config.restrictBranchWriteAccess.helpText")}
         />
-        {enabled && (
+        {restrictBranchWriteAccess && (
           <>
             <Subtitle subtitle={t("scm-review-plugin.config.subtitle")} />
             <BranchList branches={protectedBranchPatterns} onChange={this.onChangeBranches} />

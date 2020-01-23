@@ -113,13 +113,13 @@ class RepositoryConfigResourceTest {
         dispatcher.invoke(request, response);
 
         assertThat(response.getStatus()).isEqualTo(200);
-        assertThat(response.getContentAsString()).contains("\"enabled\":false");
+        assertThat(response.getContentAsString()).contains("\"restrictBranchWriteAccess\":false");
       }
 
       @Test
       void shouldSetConfig() throws URISyntaxException, UnsupportedEncodingException {
         MockHttpRequest request = MockHttpRequest.put("/v2/pull-requests/space/X/config")
-          .content("{\"enabled\": true, \"protectedBranchPatterns\": [\"feature/*\"]}".getBytes())
+          .content("{\"restrictBranchWriteAccess\": true, \"protectedBranchPatterns\": [\"feature/*\"]}".getBytes())
           .contentType(MediaType.APPLICATION_JSON);
 
         dispatcher.invoke(request, response);
@@ -127,7 +127,7 @@ class RepositoryConfigResourceTest {
         assertThat(response.getStatus()).isEqualTo(204);
         verify(configService)
           .setRepositoryPullRequestConfig(eq(REPOSITORY), argThat(argument -> {
-            assertThat(argument.isEnabled()).isTrue();
+            assertThat(argument.isRestrictBranchWriteAccess()).isTrue();
             assertThat(argument.getProtectedBranchPatterns()).contains("feature/*");
             return true;
           }));

@@ -36,32 +36,32 @@ class ConfigServiceTest {
 
   @Test
   void initialRepositoryConfigShouldBeDisabled() {
-    assertThat(service.getRepositoryPullRequestConfig(REPOSITORY).isEnabled()).isFalse();
+    assertThat(service.getRepositoryPullRequestConfig(REPOSITORY).isRestrictBranchWriteAccess()).isFalse();
   }
 
   @Test
   void initialGlobalConfigShouldBeDisabled() {
-    assertThat(service.getGlobalPullRequestConfig().isEnabled()).isFalse();
+    assertThat(service.getGlobalPullRequestConfig().isRestrictBranchWriteAccess()).isFalse();
   }
 
   @Test
   void shouldStoreChangedRepositoryConfig() {
     PullRequestConfig config = new PullRequestConfig();
-    config.setEnabled(true);
+    config.setRestrictBranchWriteAccess(true);
     service.setRepositoryPullRequestConfig(REPOSITORY, config);
 
-    assertThat(service.getRepositoryPullRequestConfig(REPOSITORY).isEnabled()).isTrue();
-    assertThat(repositoryStore.get().isEnabled()).isTrue();
+    assertThat(service.getRepositoryPullRequestConfig(REPOSITORY).isRestrictBranchWriteAccess()).isTrue();
+    assertThat(repositoryStore.get().isRestrictBranchWriteAccess()).isTrue();
   }
 
   @Test
   void shouldStoreChangedGlobalConfig() {
     GlobalPullRequestConfig globalConfig = new GlobalPullRequestConfig();
-    globalConfig.setEnabled(true);
+    globalConfig.setRestrictBranchWriteAccess(true);
     service.setGlobalPullRequestConfig(globalConfig);
 
-    assertThat(service.getGlobalPullRequestConfig().isEnabled()).isTrue();
-    assertThat(globalStore.get().isEnabled()).isTrue();
+    assertThat(service.getGlobalPullRequestConfig().isRestrictBranchWriteAccess()).isTrue();
+    assertThat(globalStore.get().isRestrictBranchWriteAccess()).isTrue();
   }
 
   @Test
@@ -136,7 +136,7 @@ class ConfigServiceTest {
 
   private void mockGlobalConfig(boolean enabled, boolean disableRepositoryConfig, String... protectedBranches) {
     GlobalPullRequestConfig globalConfig = new GlobalPullRequestConfig();
-    globalConfig.setEnabled(enabled);
+    globalConfig.setRestrictBranchWriteAccess(enabled);
     globalConfig.setDisableRepositoryConfiguration(disableRepositoryConfig);
     globalConfig.setProtectedBranchPatterns(asList(protectedBranches));
     service.setGlobalPullRequestConfig(globalConfig);
@@ -144,7 +144,7 @@ class ConfigServiceTest {
 
   private void mockRepoConfig(boolean enabled, String... protectedBranches) {
     PullRequestConfig config = new PullRequestConfig();
-    config.setEnabled(enabled);
+    config.setRestrictBranchWriteAccess(enabled);
     config.setProtectedBranchPatterns(asList(protectedBranches));
     service.setRepositoryPullRequestConfig(REPOSITORY, config);
   }
