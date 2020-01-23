@@ -3,6 +3,8 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.comment.api.CommentMapper;
 import com.cloudogu.scm.review.comment.api.ExecutedTransitionMapper;
 import com.cloudogu.scm.review.comment.api.ReplyMapper;
+import com.cloudogu.scm.review.config.api.GlobalConfigMapper;
+import com.cloudogu.scm.review.config.api.RepositoryConfigMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
@@ -20,5 +22,7 @@ public class ModuleBinder extends AbstractModule {
     bind(ReplyMapper.class).to(Mappers.getMapper(ReplyMapper.class).getClass());
     bind(ExecutedTransitionMapper.class).to(Mappers.getMapper(ExecutedTransitionMapper.class).getClass());
     bind(PullRequestService.class).to(DefaultPullRequestService.class);
+    bind(RepositoryConfigMapper.class).to(Mappers.getMapper(RepositoryConfigMapper.class).getClass());
+    bind(GlobalConfigMapper.class).to(Mappers.getMapper(GlobalConfigMapper.class).getClass());
   }
 }

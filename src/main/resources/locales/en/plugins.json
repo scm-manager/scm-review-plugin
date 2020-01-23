@@ -208,7 +208,29 @@
     "branch": {
       "header": "Pull Requests",
       "createPullRequest": "Create new pull request"
-    }
+    },
+    "config": {
+      "restrictBranchWriteAccess": {
+        "label": "Branch protection enabled",
+        "helpText": "Enables branch protection, so that branches are only modifiable with pull requests."
+      },
+      "disableRepositoryConfiguration": {
+        "label": "Do not allow repository configuration",
+        "helpText": "Do not allow repository owners to configure pull requests."
+      },
+      "newBranch": {
+        "label": "Add branch pattern",
+        "helpText": "Add a new branch pattern to the list of protected branches.",
+        "add": {
+          "label": "Add",
+          "helpText": "Add the given branch to the list of protected branches."
+        }
+      },
+      "noBranches": "No branch patterns defined.",
+      "subtitle": "Branches matching the following patterns will only be writable by pull requests:",
+      "deleteBranch": "Delete this branch pattern"
+    },
+    "obstacle": "This branch can only be modified by pull requests."
   },
   "permissions": {
     "repository": {
@@ -222,6 +244,12 @@
         "*": {
           "displayName": "Modify all pull requests",
           "description": "May create, comment and reject pull requests for all repositories"
+        }
+      },
+      "configurePullRequest": {
+        "*": {
+          "displayName": "Configure all pull requests",
+          "description": "May configure pull requests for all repositories"
         }
       }
     }
@@ -247,6 +275,10 @@
       "mergePullRequest": {
         "displayName": "merge/reject pull requests",
         "description": "May merge or reject pull requests (merge needs additional permission to push the repository)"
+      },
+      "configurePullRequest": {
+        "displayName": "configure pull requests",
+        "description": "May configure pull requests for this repository"
       }
     }
   },
@@ -266,6 +298,10 @@
     "9nRnT3cjk1": {
       "displayName": "Merge prevented",
       "description": "The merge was prevented by other plugins."
+    },
+    "FuRoChFWt1": {
+      "displayName": "Branch only writable with pull requests",
+      "description": "The branch can only be changed by merging pull requests."
     }
   }
 }

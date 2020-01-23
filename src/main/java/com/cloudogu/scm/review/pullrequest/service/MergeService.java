@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.BranchProtectionHook;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import sonia.scm.repository.InternalRepositoryException;
@@ -45,12 +46,14 @@ public class MergeService {
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
   private final Collection<MergeGuard> mergeGuards;
+  private final BranchProtectionHook branchProtectionHook;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, BranchProtectionHook branchProtectionHook) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
     this.mergeGuards = mergeGuards;
+    this.branchProtectionHook = branchProtectionHook;
   }
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
@@ -61,21 +64,26 @@ public class MergeService {
         throw new MergeNotAllowedException(repositoryService.getRepository(), pullRequest, obstacles);
       }
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
-      MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
-      isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
-      prepareMergeCommand(mergeCommand, pullRequest, mergeCommitDto, strategy);
-      MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
 
-      if (!mergeCommandResult.isSuccess()) {
-        throw new MergeConflictException(namespaceAndName, pullRequest.getSource(), pullRequest.getTarget(), mergeCommandResult);
-      }
+      branchProtectionHook.runPrivileged(
+        () -> {
+          MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
+          isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy);
+          prepareMergeCommand(mergeCommand, pullRequest, mergeCommitDto, strategy);
+          MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
 
-      pullRequestService.setRevisions(repositoryService.getRepository(), pullRequest.getId(), mergeCommandResult.getTargetRevision(), mergeCommandResult.getRevisionToMerge());
-      pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId());
+          if (!mergeCommandResult.isSuccess()) {
+            throw new MergeConflictException(namespaceAndName, pullRequest.getSource(), pullRequest.getTarget(), mergeCommandResult);
+          }
 
-      if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
-        repositoryService.getBranchCommand().delete(pullRequest.getSource());
-      }
+          pullRequestService.setRevisions(repositoryService.getRepository(), pullRequest.getId(), mergeCommandResult.getTargetRevision(), mergeCommandResult.getRevisionToMerge());
+          pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId());
+
+          if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
+            repositoryService.getBranchCommand().delete(pullRequest.getSource());
+          }
+        }
+      );
     }
   }
 

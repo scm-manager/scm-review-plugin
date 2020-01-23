@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.BranchProtectionHook;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.github.sdorra.shiro.ShiroRule;
@@ -43,6 +44,7 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -74,6 +76,8 @@ public class MergeServiceTest {
   private PullRequestService pullRequestService;
   @Mock
   private MergeCommandBuilder mergeCommandBuilder;
+  @Mock
+  private BranchProtectionHook branchProtectionHook;
 
   private Set<MergeGuard> mergeGuards = new HashSet<>();
 
@@ -81,7 +85,9 @@ public class MergeServiceTest {
 
   @Before
   public void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, mergeGuards);
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, branchProtectionHook);
+    doAnswer(invocation -> { invocation.<Runnable>getArgument(0).run(); return null; })
+      .when(branchProtectionHook).runPrivileged(any());
   }
 
   @Before

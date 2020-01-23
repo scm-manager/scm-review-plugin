@@ -5,6 +5,7 @@
     <verb>commentPullRequest</verb>
     <verb>modifyPullRequest</verb>
     <verb>mergePullRequest</verb>
+    <verb>configurePullRequest</verb>
   </verbs>
   <roles>
     <role>

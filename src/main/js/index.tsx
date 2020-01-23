@@ -1,4 +1,5 @@
 import React from "react";
+import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
 import { binder } from "@scm-manager/ui-extensions";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
@@ -6,6 +7,8 @@ import PullRequestList from "./PullRequestList";
 import { Route } from "react-router-dom";
 import PullRequestsNavLink from "./PullRequestsNavLink";
 import CreatePullRequestButton from "./CreatePullRequestButton";
+import RepositoryConfig from "./config/RepositoryConfig";
+import GlobalConfig from "./config/GlobalConfig";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -76,3 +79,6 @@ binder.bind("repository.route", ShowPullRequestsRoute);
 binder.bind("repos.branch-details.information", ({ repository, branch }) => (
   <CreatePullRequestButton repository={repository} branch={branch} />
 ));
+
+cfgBinder.bindRepositorySetting("/review", "scm-review-plugin.navLink", "pullRequestConfig", RepositoryConfig);
+cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink", "pullRequestConfig", GlobalConfig);
