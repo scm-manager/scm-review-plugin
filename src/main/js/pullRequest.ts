@@ -113,9 +113,7 @@ export function merge(url: string, mergeCommit: MergeCommit) {
 }
 
 export function check(pullRequest: PullRequest) {
-  return apiClient
-    .post((pullRequest._links.mergeCheck as Link).href, {})
-    .then(response => response.json());
+  return apiClient.post((pullRequest._links.mergeCheck as Link).href, {}).then(response => response.json());
 }
 
 export function getDefaultCommitDefaultMessage(url: string) {
@@ -142,7 +140,14 @@ export function createChangesetUrl(repository: Repository, source: string, targe
 }
 
 export function createDiffUrl(repository: Repository, source: string, target: string) {
-  return createIncomingUrl(repository, "incomingDiff", source, target);
+  console.log("checking for parsed diff link");
+  if (repository._links.incomingDiffParsed) {
+    console.log("using parsed diff link");
+    return createIncomingUrl(repository, "incomingDiffParsed", source, target);
+  } else {
+    console.log("using normal diff link");
+    return createIncomingUrl(repository, "incomingDiff", source, target);
+  }
 }
 
 function createIncomingUrl(repository: Repository, linkName: string, source: string, target: string) {
