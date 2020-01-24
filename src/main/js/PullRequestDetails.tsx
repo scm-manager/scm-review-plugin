@@ -44,7 +44,6 @@ type State = {
   targetBranchDeleted: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
-  showNotification: boolean;
 };
 
 const MediaContent = styled.div.attrs(() => ({
@@ -128,8 +127,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       loadingDryRun: false,
       mergeButtonLoading: true,
       rejectButtonLoading: false,
-      targetBranchDeleted: false,
-      showNotification: false
+      targetBranchDeleted: false
     };
   }
 
@@ -181,14 +179,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     const { pullRequest, fetchPullRequest } = this.props;
     this.setMergeButtonLoadingState();
     merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit)
-      .then(response => {
-        this.setState({
-          loadingDryRun: true,
-          showNotification: true,
-          mergeButtonLoading: false
-        });
-        fetchPullRequest();
-      })
+      .then(fetchPullRequest)
       .catch(err => {
         if (err instanceof ConflictError) {
           this.setState({
@@ -233,13 +224,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     });
   };
 
-  onClose = () => {
-    this.setState({
-      ...this.state,
-      showNotification: false
-    });
-  };
-
   render() {
     const { repository, pullRequest, match, t } = this.props;
     const {
@@ -248,8 +232,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeButtonLoading,
       mergeCheck,
       targetBranchDeleted,
-      rejectButtonLoading,
-      showNotification
+      rejectButtonLoading
     } = this.state;
 
     if (error) {
@@ -268,17 +251,6 @@ class PullRequestDetails extends React.Component<Props, State> {
             <MarkdownView className="content" content={pullRequest.description} />
           </MediaContent>
         </div>
-      );
-    }
-
-    let mergeNotification = null;
-    if (showNotification) {
-      mergeNotification = (
-        <Notification
-          type="info"
-          children={t("scm-review-plugin.pullRequest.details.notification")}
-          onClose={() => this.onClose()}
-        />
       );
     }
 
@@ -364,8 +336,6 @@ class PullRequestDetails extends React.Component<Props, State> {
               </ButtonGroup>
             </div>
           </div>
-
-          {mergeNotification}
 
           <MediaWithTopBorder>
             <div className="media-content">
