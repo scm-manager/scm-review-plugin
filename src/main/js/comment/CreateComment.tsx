@@ -12,7 +12,7 @@ import {
 import { BasicComment, Comment, Location } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { createPullRequestComment } from "../pullRequest";
-import {createChangeIdFromLocation} from "../diff/locations";
+import { createChangeIdFromLocation } from "../diff/locations";
 
 type Props = WithTranslation & {
   url: string;
@@ -131,7 +131,10 @@ class CreateComment extends React.Component<Props, State> {
     const { location } = this.props;
     let name = "editor";
     if (location) {
-      name += location.file + "_" + createChangeIdFromLocation(location)
+      name += location.file;
+      if (location.oldLineNumber || location.newLineNumber) {
+        name += "_" + createChangeIdFromLocation(location);
+      }
     }
     return name;
   };
