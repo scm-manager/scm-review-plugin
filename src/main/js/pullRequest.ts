@@ -140,12 +140,9 @@ export function createChangesetUrl(repository: Repository, source: string, targe
 }
 
 export function createDiffUrl(repository: Repository, source: string, target: string) {
-  console.log("checking for parsed diff link");
   if (repository._links.incomingDiffParsed) {
-    console.log("using parsed diff link");
     return createIncomingUrl(repository, "incomingDiffParsed", source, target);
   } else {
-    console.log("using normal diff link");
     return createIncomingUrl(repository, "incomingDiff", source, target);
   }
 }
