@@ -87,7 +87,7 @@ class Edit extends React.Component<Props, State> {
 
     return (
       <div className="columns">
-        <div className="column is-clipped">
+        <div className="column">
           <Title title={t("scm-review-plugin.edit.title")} />
           <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
 
