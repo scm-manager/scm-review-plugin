@@ -1,4 +1,5 @@
 import React from "react";
+import styled from "styled-components";
 import { ErrorNotification, Loading, SubmitButton, Subtitle, Title, Level } from "@scm-manager/ui-components";
 import { Repository, Link } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
@@ -6,6 +7,10 @@ import { updatePullRequest } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import EditForm from "./EditForm";
+
+const ClippedContainer = styled.div`
+    overflow-x: hidden;
+`;
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -87,7 +92,7 @@ class Edit extends React.Component<Props, State> {
 
     return (
       <div className="columns">
-        <div className="column is-clipped">
+        <ClippedContainer className="column">
           <Title title={t("scm-review-plugin.edit.title")} />
           <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
 
@@ -105,7 +110,7 @@ class Edit extends React.Component<Props, State> {
               <SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={this.submit} loading={loading} />
             }
           />
-        </div>
+        </ClippedContainer>
       </div>
     );
   }
