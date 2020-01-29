@@ -1,19 +1,30 @@
 {
   "name": "@scm-manager/scm-review-plugin",
   "private": true,
-  "version": "2.0.0-SNAPSHOT",
+  "version": "2.0.0-rc2",
   "license": "BSD-3-Clause",
   "main": "./src/main/js/index.tsx",
   "scripts": {
     "build": "ui-scripts plugin",
     "watch": "ui-scripts plugin-watch",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "ui-plugins postinstall"
   },
   "dependencies": {
-    "@scm-manager/ui-plugins": "latest",
+    "@scm-manager/ui-plugins": "2.0.0-rc2",
     "immer": "^5.0.0",
     "typescript": "^3.7.0",
-    "gitdiff-parser": "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982"
+    "gitdiff-parser": "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
+    "@scm-manager/ui-components": "^2.0.0-rc2",
+    "@scm-manager/ui-extensions": "^2.0.0-rc2",
+    "classnames": "^2.2.6",
+    "query-string": "^5.0.1",
+    "react": "^16.10.2",
+    "react-i18next": "^10.13.1",
+    "react-redux": "^5.0.7",
+    "react-router-dom": "^5.1.2",
+    "redux": "^4.0.0",
+    "styled-components": "^4.4.0"
   },
   "babel": {
     "presets": [
@@ -29,6 +40,25 @@
   },
   "devDependencies": {
     "fetch-mock": "^8.0.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "@scm-manager/babel-preset": "^2.0.0-rc2",
+    "@scm-manager/eslint-config": "^2.0.0-rc2",
+    "@scm-manager/jest-preset": "^2.0.0-rc2",
+    "@scm-manager/prettier-config": "^2.0.0-rc2",
+    "@scm-manager/tsconfig": "^2.0.0-rc2",
+    "@scm-manager/ui-scripts": "^2.0.0-rc2",
+    "@scm-manager/ui-tests": "^2.0.0-rc2",
+    "@scm-manager/ui-types": "^2.0.0-rc2",
+    "@types/classnames": "^2.2.9",
+    "@types/enzyme": "^3.10.3",
+    "@types/fetch-mock": "^7.3.1",
+    "@types/i18next": "^13.0.0",
+    "@types/jest": "^24.0.19",
+    "@types/query-string": "5",
+    "@types/react": "^16.9.9",
+    "@types/react-redux": "5.0.7",
+    "@types/react-router-dom": "^5.1.0",
+    "@types/styled-components": "^4.1.19",
+    "jest": "^24.9.0"
   }
 }
