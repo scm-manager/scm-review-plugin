@@ -25,16 +25,18 @@ type Props = {
 
 const MentionTextarea: FC<Props> = ({ value, placeholder, children, onChange, onSubmit, onCancel }) => {
   return (
-    <div className="textarea">
-      <StyledMentionsInput
-        value={value}
-        onChange={onChange}
-        onSubmit={onSubmit}
-        onCancel={onCancel}
-        placeholder={placeholder}
-      >
-        {children}
-      </StyledMentionsInput>
+    <div className="field control">
+      <div className="textarea">
+        <StyledMentionsInput
+          value={value}
+          onChange={onChange}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          placeholder={placeholder}
+        >
+          {children}
+        </StyledMentionsInput>
+      </div>
     </div>
   );
 };

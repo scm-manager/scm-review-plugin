@@ -361,6 +361,13 @@ class PullRequestComment extends React.Component<Props, State> {
                 {highlightedDisplay}
               </StyledSuggestion>
             )}
+            style={{
+              backgroundColor: "#33b2e8",
+              opacity: 0.2,
+              paddingRight: "2px",
+              paddingTop: "3px",
+              borderRadius: "5px"
+            }}
           />
         </MentionTextarea>
         {error && <ErrorNotification error={error} />}

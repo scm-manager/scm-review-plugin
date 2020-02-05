@@ -10,8 +10,7 @@ import styled from "styled-components";
 
 const StyledSuggestion = styled.div`
   color: ${props => props.focused && `#33b2e8`};
-  :hover,
-  & option:hover {
+  :hover {
     color: #33b2e8;
   }
 `;
@@ -255,6 +254,13 @@ class CreateComment extends React.Component<Props, State> {
                           {highlightedDisplay}
                         </StyledSuggestion>
                       )}
+                      style={{
+                        backgroundColor: "#33b2e8",
+                        opacity: 0.2,
+                        paddingRight: "2px",
+                        paddingTop: "3px",
+                        borderRadius: "5px"
+                      }}
                     />
                   </MentionTextarea>
                 </div>
