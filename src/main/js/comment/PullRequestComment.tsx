@@ -1,8 +1,9 @@
 import React, { Dispatch } from "react";
 import classNames from "classnames";
 import { WithTranslation, withTranslation } from "react-i18next";
+import { Mention, SuggestionDataItem } from "react-mentions";
 import styled from "styled-components";
-import { confirmAlert, DateFromNow, ErrorNotification, Loading, Textarea, apiClient } from "@scm-manager/ui-components";
+import { apiClient, confirmAlert, DateFromNow, ErrorNotification, Loading, Textarea } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import { BasicComment, Comment, PossibleTransition } from "../types/PullRequest";
 import { deletePullRequestComment, transformPullRequestComment, updatePullRequestComment } from "../pullRequest";
@@ -17,6 +18,7 @@ import EditButtons from "./EditButtons";
 import Replies from "./Replies";
 import ReplyEditor from "./ReplyEditor";
 import { createReply, deleteComment, deleteReply, updateComment, updateReply } from "./actiontypes";
+import MentionTextarea from "./MentionTextarea";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -24,6 +26,14 @@ const LinkWithInheritColor = styled.a`
 
 const AuthorName = styled.span`
   margin-left: 5px;
+`;
+
+const StyledSuggestion = styled.div`
+  color: ${props => props.focused && `#33b2e8`};
+  :hover,
+  & option:hover {
+    color: #33b2e8;
+  }
 `;
 
 type Props = WithTranslation & {
@@ -260,12 +270,12 @@ class PullRequestComment extends React.Component<Props, State> {
     }));
   };
 
-  handleUpdateChange = (comment: string) => {
+  handleChanges = (event: any) => {
     this.setState({
       changed: true,
       updatedComment: {
         ...this.state.updatedComment,
-        comment: comment
+        comment: event.target.value
       }
     });
   };
@@ -289,15 +299,70 @@ class PullRequestComment extends React.Component<Props, State> {
 
   createMessageEditor = () => {
     const { updatedComment, error } = this.state;
+
+    const users: SuggestionDataItem[] = [
+      {
+        id: "walter",
+        display: "Walter White"
+      },
+      {
+        id: "jesse",
+        display: "Jesse Pinkman"
+      },
+      {
+        id: "gus",
+        display: 'Gustavo "Gus" Fring'
+      },
+      {
+        id: "saul",
+        display: "Saul Goodman"
+      },
+      {
+        id: "hank",
+        display: "Hank Schrader"
+      },
+      {
+        id: "skyler",
+        display: "Skyler White"
+      },
+      {
+        id: "mike",
+        display: "Mike Ehrmantraut"
+      },
+      {
+        id: "lydia",
+        display: "Lydìã Rôdarté-Qüayle"
+      }
+    ];
+
     return (
       <>
-        <Textarea
-          name="comment"
-          value={updatedComment.comment}
-          onChange={this.handleUpdateChange}
+        <MentionTextarea
+          value={updatedComment?.comment ? updatedComment.comment : ""}
+          onChange={this.handleChanges}
           onSubmit={this.update}
           onCancel={this.cancelUpdate}
-        />
+        >
+          <Mention
+            markup="@[__id__]"
+            displayTransform={(id: string) => {
+              return `@${users.filter(entry => entry.id === id)[0]?.display}`;
+            }}
+            trigger="@"
+            data={users}
+            renderSuggestion={(
+              suggestion: SuggestionDataItem,
+              search: string,
+              highlightedDisplay: React.ReactNode,
+              index: number,
+              focused: boolean
+            ) => (
+              <StyledSuggestion className="user" focused={focused}>
+                {highlightedDisplay}
+              </StyledSuggestion>
+            )}
+          />
+        </MentionTextarea>
         {error && <ErrorNotification error={error} />}
       </>
     );

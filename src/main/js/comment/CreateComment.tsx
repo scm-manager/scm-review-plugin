@@ -1,18 +1,20 @@
 import React from "react";
-import {
-  Button,
-  Loading,
-  Level,
-  SubmitButton,
-  Radio,
-  Textarea,
-  ErrorNotification,
-  apiClient
-} from "@scm-manager/ui-components";
+import { Mention, SuggestionDataItem } from "react-mentions";
+import { Button, Loading, Level, SubmitButton, Radio, ErrorNotification, apiClient } from "@scm-manager/ui-components";
 import { BasicComment, Comment, Location } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { createPullRequestComment } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
+import MentionTextarea from "./MentionTextarea";
+import styled from "styled-components";
+
+const StyledSuggestion = styled.div`
+  color: ${props => props.focused && `#33b2e8`};
+  :hover,
+  & option:hover {
+    color: #33b2e8;
+  }
+`;
 
 type Props = WithTranslation & {
   url: string;
@@ -40,11 +42,11 @@ class CreateComment extends React.Component<Props, State> {
     };
   }
 
-  handleChanges = (value: string, name: string) => {
+  handleChanges = (event: any) => {
     this.setState({
       newComment: {
         ...this.state.newComment,
-        [name]: value
+        comment: event.target.value
       }
     });
   };
@@ -146,7 +148,7 @@ class CreateComment extends React.Component<Props, State> {
 
   render() {
     const { autofocus, onCancel, reply, t, url } = this.props;
-    const { loading, errorResult } = this.state;
+    const { loading, errorResult, newComment } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -166,14 +168,14 @@ class CreateComment extends React.Component<Props, State> {
             <Radio
               name={`comment_type_${editorName}`}
               value="COMMENT"
-              checked={this.state.newComment.type === "COMMENT"}
+              checked={newComment?.type === "COMMENT"}
               label={t("scm-review-plugin.comment.type.comment")}
               onChange={this.switchToCommentType}
             />
             <Radio
               name={`comment_type_${editorName}`}
               value="TASK_TODO"
-              checked={this.state.newComment.type === "TASK_TODO"}
+              checked={newComment?.type === "TASK_TODO"}
               label={t("scm-review-plugin.comment.type.task")}
               onChange={this.switchToTaskType}
             />
@@ -182,6 +184,41 @@ class CreateComment extends React.Component<Props, State> {
       );
     }
 
+    const users: SuggestionDataItem[] = [
+      {
+        id: "walter",
+        display: "Walter White"
+      },
+      {
+        id: "jesse",
+        display: "Jesse Pinkman"
+      },
+      {
+        id: "gus",
+        display: 'Gustavo "Gus" Fring'
+      },
+      {
+        id: "saul",
+        display: "Saul Goodman"
+      },
+      {
+        id: "hank",
+        display: "Hank Schrader"
+      },
+      {
+        id: "skyler",
+        display: "Skyler White"
+      },
+      {
+        id: "mike",
+        display: "Mike Ehrmantraut"
+      },
+      {
+        id: "lydia",
+        display: "Lydìã Rôdarté-Qüayle"
+      }
+    ];
+
     return (
       <>
         {url ? (
@@ -189,18 +226,37 @@ class CreateComment extends React.Component<Props, State> {
             <div className="media-content">
               <div className="field">
                 <div className="control">
-                  <Textarea
-                    name="comment"
-                    value={this.state.newComment.comment}
-                    autofocus={autofocus}
+                  <MentionTextarea
+                    value={newComment?.comment}
+                    onChange={this.handleChanges}
+                    onSubmit={this.submit}
                     placeholder={t(
-                      this.state.newComment.type === "TASK_TODO"
+                      newComment?.type === "TASK_TODO"
                         ? "scm-review-plugin.comment.addTask"
                         : "scm-review-plugin.comment.addComment"
                     )}
-                    onChange={this.handleChanges}
-                    onSubmit={this.submit}
-                  />
+                    autofocus={autofocus}
+                  >
+                    <Mention
+                      markup="@[__id__]"
+                      displayTransform={(id: string) => {
+                        return `@${users.filter(entry => entry.id === id)[0]?.display}`;
+                      }}
+                      trigger="@"
+                      data={users}
+                      renderSuggestion={(
+                        suggestion: SuggestionDataItem,
+                        search: string,
+                        highlightedDisplay: React.ReactNode,
+                        index: number,
+                        focused: boolean
+                      ) => (
+                        <StyledSuggestion className="user" focused={focused}>
+                          {highlightedDisplay}
+                        </StyledSuggestion>
+                      )}
+                    />
+                  </MentionTextarea>
                 </div>
               </div>
               {errorResult && <ErrorNotification error={errorResult} />}
@@ -212,7 +268,7 @@ class CreateComment extends React.Component<Props, State> {
                       <div className="level-item">
                         <SubmitButton
                           label={t(
-                            this.state.newComment.type === "TASK_TODO"
+                            newComment?.type === "TASK_TODO"
                               ? "scm-review-plugin.comment.addTask"
                               : "scm-review-plugin.comment.addComment"
                           )}
