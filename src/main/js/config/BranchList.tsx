@@ -1,6 +1,6 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Button, Icon, InputField, Notification } from "@scm-manager/ui-components";
+import { Icon, Level, InputField, AddButton, Notification } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = WithTranslation & {
@@ -15,6 +15,22 @@ type State = {
 const VCenteredTd = styled.td`
   display: table-cell;
   vertical-align: middle !important;
+`;
+
+const StyledLevel = styled(Level)`
+  align-items: stretch;
+  margin-bottom: 1rem !important; // same margin as field
+`;
+
+const FullWidthInputField = styled(InputField)`
+  width: 100%;
+  margin-right: 1.5rem;
+`;
+
+const FlexEndField = styled.div.attrs(() => ({
+  className: "field"
+}))`
+  align-self: flex-end;
 `;
 
 class BranchList extends React.Component<Props, State> {
@@ -40,43 +56,59 @@ class BranchList extends React.Component<Props, State> {
     const { branches, t } = this.props;
     const { newBranch } = this.state;
     const table =
-      branches.length == 0 ? (
+      branches.length === 0 ? (
         <Notification type={"info"}>{t("scm-review-plugin.config.noBranches")}</Notification>
       ) : (
         <table className="card-table table is-hoverable is-fullwidth">
-          {branches.map(branch => (
+          <thead>
             <tr>
-              <td>{branch}</td>
-              <VCenteredTd className="is-darker">
-                <a
-                  className="level-item"
-                  onClick={() => this.deleteBranch(branch)}
-                  title={t("scm-review-plugin.config.deleteBranch")}
-                >
-                  <span className="icon is-small">
-                    <Icon name="trash" color="inherit" />
-                  </span>
-                </a>
-              </VCenteredTd>
+              <th>{t("scm-review-plugin.config.newBranch.pattern")}</th>
+              <th />
             </tr>
-          ))}
+          </thead>
+          <tbody>
+            {branches.map(branch => (
+              <tr>
+                <td>{branch}</td>
+                <VCenteredTd className="is-darker">
+                  <a
+                    className="level-item"
+                    onClick={() => this.deleteBranch(branch)}
+                    title={t("scm-review-plugin.config.deleteBranch")}
+                  >
+                    <span className="icon is-small">
+                      <Icon name="trash" color="inherit" />
+                    </span>
+                  </a>
+                </VCenteredTd>
+              </tr>
+            ))}
+          </tbody>
         </table>
       );
 
     return (
       <>
         {table}
-        <InputField
-          label={t("scm-review-plugin.config.newBranch.label")}
-          onChange={this.handleNewBranchChange}
-          value={newBranch}
-          helpText={t("scm-review-plugin.config.newBranch.helpText")}
-        />
-        <Button
-          title={t("scm-review-plugin.config.newBranch.add.helpText")}
-          label={t("scm-review-plugin.config.newBranch.add.label")}
-          action={this.addBranch}
-          disabled={newBranch.trim().length === 0}
+        <StyledLevel
+          children={
+            <FullWidthInputField
+              label={t("scm-review-plugin.config.newBranch.label")}
+              onChange={this.handleNewBranchChange}
+              value={newBranch}
+              helpText={t("scm-review-plugin.config.newBranch.helpText")}
+            />
+          }
+          right={
+            <FlexEndField>
+              <AddButton
+                title={t("scm-review-plugin.config.newBranch.add.helpText")}
+                label={t("scm-review-plugin.config.newBranch.add.label")}
+                action={this.addBranch}
+                disabled={newBranch.trim().length === 0}
+              />
+            </FlexEndField>
+          }
         />
       </>
     );

@@ -1,8 +1,9 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Checkbox, Subtitle } from "@scm-manager/ui-components";
+import { Title, Checkbox, Subtitle } from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
 import { Config } from "../types/Config";
+import styled from "styled-components";
 
 type Props = WithTranslation & {
   onConfigurationChange: (config: State, valid: boolean) => void;
@@ -11,6 +12,10 @@ type Props = WithTranslation & {
 };
 
 type State = Config;
+
+const BottomMarginText = styled.p`
+  margin-bottom: 1rem;
+`;
 
 class ConfigEditor extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -51,12 +56,15 @@ class ConfigEditor extends React.Component<Props, State> {
     return (
       <>
         {global && (
-          <Checkbox
-            checked={!!disableRepositoryConfiguration}
-            onChange={this.onChangeDisableRepositoryConfiguration}
-            label={t("scm-review-plugin.config.disableRepositoryConfiguration.label")}
-            helpText={t("scm-review-plugin.config.disableRepositoryConfiguration.helpText")}
-          />
+          <>
+            <Title title={t("scm-review-plugin.config.title")} />
+            <Checkbox
+              checked={!!disableRepositoryConfiguration}
+              onChange={this.onChangeDisableRepositoryConfiguration}
+              label={t("scm-review-plugin.config.disableRepositoryConfiguration.label")}
+              helpText={t("scm-review-plugin.config.disableRepositoryConfiguration.helpText")}
+            />
+          </>
         )}
         <Checkbox
           checked={restrictBranchWriteAccess}
@@ -66,7 +74,9 @@ class ConfigEditor extends React.Component<Props, State> {
         />
         {restrictBranchWriteAccess && (
           <>
+            <hr />
             <Subtitle subtitle={t("scm-review-plugin.config.subtitle")} />
+            <BottomMarginText>{t("scm-review-plugin.config.note")}</BottomMarginText>
             <BranchList branches={protectedBranchPatterns} onChange={this.onChangeBranches} />
           </>
         )}
