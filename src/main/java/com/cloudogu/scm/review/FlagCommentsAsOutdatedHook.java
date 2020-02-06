@@ -48,6 +48,7 @@ public class FlagCommentsAsOutdatedHook {
       commentCollector.collectNonOutdated(repository, pullRequest)
         .filter(comment -> isGlobalComment(comment) || isAffectedFileComment(collector.collect(), comment))
         .forEach(comment -> flagAsOutdated(repository, pullRequest, comment));
+      pullRequest.getReviewMarks().removeIf(reviewMark -> collector.collect().contains(reviewMark.getFile()));
     }
   }
 
