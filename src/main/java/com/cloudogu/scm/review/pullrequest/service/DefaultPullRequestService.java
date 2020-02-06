@@ -269,6 +269,15 @@ public class DefaultPullRequestService implements PullRequestService {
     getStore(repository).update(pullRequest);
   }
 
+  @Override
+  public void markAsReviewed(Repository repository, String pullRequestId, String path, User user) {
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
+    Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
+    reviewMarks.add(new ReviewMark(path, user.getId()));
+    pullRequest.setReviewMarks(reviewMarks);
+    getStore(repository).update(pullRequest);
+  }
+
   private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {
     PullRequestStore store = getStore(repository);
     return store.get(pullRequestId);

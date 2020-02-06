@@ -492,6 +492,17 @@ class DefaultPullRequestServiceTest {
 
       assertThat(eventCaptor.getAllValues()).isEmpty();
     }
+
+    @Test
+    void shouldMarkAsReviewed() {
+      service.markAsReviewed(REPOSITORY, pullRequest.getId(), "some/file", new User("user"));
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewMarks())
+          .contains(new ReviewMark("some/file", "user"));
+        return true;
+      }));
+    }
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {

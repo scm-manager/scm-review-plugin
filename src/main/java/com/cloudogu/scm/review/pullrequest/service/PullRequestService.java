@@ -24,7 +24,7 @@ public interface PullRequestService {
    *
    * @return the id of the created pull request
    */
-  String add(Repository repository, PullRequest pullRequest) throws NoDifferenceException;
+  String add(Repository repository, PullRequest pullRequest);
 
 
   /**
@@ -120,4 +120,9 @@ public interface PullRequestService {
     unsubscribe(repository, pullRequestId, getCurrentUser());
   }
 
+  void markAsReviewed(Repository repository, String pullRequestId, String path, User user);
+
+  default void markAsReviewed(Repository repository, String pullRequestId, String path) {
+    markAsReviewed(repository, pullRequestId, path, getCurrentUser());
+  }
 }

@@ -169,6 +169,24 @@ public class PullRequestResource {
     service.unsubscribe(repository, pullRequestId);
   }
 
+  @POST
+  @Path("mark-reviewed/{path: .*}")
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 400, condition = "Invalid body"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
+    @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  @TypeHint(TypeHint.NO_CONTENT.class)
+  public void markAsReviewed(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId, @PathParam("path") String path) {
+    Repository repository = service.getRepository(namespace, name);
+    service.markAsReviewed(repository, pullRequestId, path);
+  }
+
+
+
   @PUT
   @Path("")
   @Consumes(PullRequestMediaType.PULL_REQUEST)

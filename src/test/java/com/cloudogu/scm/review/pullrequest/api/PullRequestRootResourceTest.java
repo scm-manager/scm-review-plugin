@@ -134,6 +134,7 @@ public class PullRequestRootResourceTest {
     when(repository.getNamespace()).thenReturn(REPOSITORY_NAMESPACE);
     when(repository.getNamespaceAndName()).thenReturn(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
+    when(pullRequestService.getRepository(repository.getNamespace(), repository.getName())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
     pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, channelRegistry)));
     when(storeFactory.create(null)).thenReturn(store);
@@ -464,9 +465,7 @@ public class PullRequestRootResourceTest {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
-    prNode.elements().forEachRemaining(node -> {
-      assertThat(node.path("_links").get("update")).isNull();
-    });
+    prNode.elements().forEachRemaining(node -> assertThat(node.path("_links").get("update")).isNull());
   }
 
   @Test
@@ -768,6 +767,18 @@ public class PullRequestRootResourceTest {
       .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/disapprove");
     dispatcher.invoke(request, response);
     verify(pullRequestService).disapprove(any(), any());
+    assertThat(response.getStatus()).isEqualTo(204);
+  }
+
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldMarkAsReviewed() throws URISyntaxException {
+    initPullRequestRootResource();
+
+    MockHttpRequest request = MockHttpRequest
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/mark-reviewed/some/file");
+    dispatcher.invoke(request, response);
+    verify(pullRequestService).markAsReviewed(repository, "1", "some/file");
     assertThat(response.getStatus()).isEqualTo(204);
   }
 
