@@ -7,6 +7,10 @@ import { createPullRequestComment } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
 import MentionTextarea from "./MentionTextarea";
 import styled from "styled-components";
+import { connect } from "react-redux";
+import { compose } from "redux";
+import { getUserAutoCompleteLink } from "../index";
+import { AutocompleteObject } from "@scm-manager/ui-types";
 
 const StyledSuggestion = styled.div`
   color: ${props => props.focused && `#33b2e8`};
@@ -22,6 +26,7 @@ type Props = WithTranslation & {
   onCreation: (comment: Comment) => void;
   autofocus?: boolean;
   reply?: boolean;
+  userAutocompleteLink: string;
 };
 
 type State = {
@@ -100,7 +105,7 @@ class CreateComment extends React.Component<Props, State> {
     if (commentHref) {
       return apiClient
         .get(commentHref)
-        .then(response => response.json())
+        .then(r => r.json())
         .then(comment => {
           if (this.props.onCreation) {
             this.props.onCreation(comment);
@@ -145,6 +150,21 @@ class CreateComment extends React.Component<Props, State> {
     return newComment && newComment.comment && newComment.comment.trim() !== "";
   }
 
+  mapAutocompleteToSuggestions = (prefix: string, callback: () => SuggestionDataItem[]) => {
+    if (prefix && prefix.length > 1) {
+      const link = this.props.userAutocompleteLink + "?q=";
+      return apiClient
+        .get(link + prefix)
+        .then(response => response.json())
+        .then(suggestions => {
+          return suggestions.map((s: AutocompleteObject) => {
+            return { id: s.id, display: s.displayName };
+          });
+        })
+        .then(callback);
+    }
+  };
+
   render() {
     const { autofocus, onCancel, reply, t, url } = this.props;
     const { loading, errorResult, newComment } = this.state;
@@ -183,41 +203,6 @@ class CreateComment extends React.Component<Props, State> {
       );
     }
 
-    const users: SuggestionDataItem[] = [
-      {
-        id: "walter",
-        display: "Walter White"
-      },
-      {
-        id: "jesse",
-        display: "Jesse Pinkman"
-      },
-      {
-        id: "gus",
-        display: 'Gustavo "Gus" Fring'
-      },
-      {
-        id: "saul",
-        display: "Saul Goodman"
-      },
-      {
-        id: "hank",
-        display: "Hank Schrader"
-      },
-      {
-        id: "skyler",
-        display: "Skyler White"
-      },
-      {
-        id: "mike",
-        display: "Mike Ehrmantraut"
-      },
-      {
-        id: "lydia",
-        display: "Lydìã Rôdarté-Qüayle"
-      }
-    ];
-
     return (
       <>
         {url ? (
@@ -239,10 +224,13 @@ class CreateComment extends React.Component<Props, State> {
                     <Mention
                       markup="@[__id__]"
                       displayTransform={(id: string) => {
-                        return `@${users.filter(entry => entry.id === id)[0]?.display}`;
+                        const { newComment } = this.state;
+                        return newComment?.mentions && newComment.mentions.length > 0
+                          ? `${newComment.mentions?.filter(entry => entry.id === id)[0]?.display}`
+                          : `${id}`;
                       }}
                       trigger="@"
-                      data={users}
+                      data={this.mapAutocompleteToSuggestions}
                       renderSuggestion={(
                         suggestion: SuggestionDataItem,
                         search: string,
@@ -250,10 +238,22 @@ class CreateComment extends React.Component<Props, State> {
                         index: number,
                         focused: boolean
                       ) => (
-                        <StyledSuggestion className="user" focused={focused}>
-                          {highlightedDisplay}
+                        <StyledSuggestion className="user" focused={focused} index={index}>
+                          {suggestion.display}
                         </StyledSuggestion>
                       )}
+                      onAdd={(id, display) => {
+                        const { newComment } = this.state;
+                        const updatedMentions = newComment?.mentions ? newComment.mentions : [];
+                        updatedMentions.push({ id, display });
+                        this.setState(prevState => ({
+                          ...prevState,
+                          newComment: {
+                            ...prevState.newComment,
+                            mentions: updatedMentions
+                          }
+                        }));
+                      }}
                       style={{
                         backgroundColor: "#33b2e8",
                         opacity: 0.2,
@@ -299,4 +299,13 @@ class CreateComment extends React.Component<Props, State> {
   }
 }
 
-export default withTranslation("plugins")(CreateComment);
+const mapStateToProps = (state: any) => {
+  const { indexResources } = state;
+  const userAutocompleteLink = getUserAutoCompleteLink(indexResources.links);
+
+  return {
+    userAutocompleteLink
+  };
+};
+
+export default compose(connect(mapStateToProps), withTranslation("plugins"))(CreateComment);

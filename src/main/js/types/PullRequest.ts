@@ -1,4 +1,5 @@
 import { Collection, DisplayedUser, Links } from "@scm-manager/ui-types";
+import {SuggestionDataItem} from "react-mentions";
 
 export type Reviewer = DisplayedUser & {
   approved: boolean;
@@ -35,6 +36,7 @@ export type BasicComment = {
   comment: string;
   id: string;
   type: string;
+  mentions: SuggestionDataItem[];
 };
 
 export type Comment = BasicComment & {

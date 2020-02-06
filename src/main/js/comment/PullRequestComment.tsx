@@ -30,8 +30,7 @@ const AuthorName = styled.span`
 
 const StyledSuggestion = styled.div`
   color: ${props => props.focused && `#33b2e8`};
-  :hover,
-  & option:hover {
+  :hover {
     color: #33b2e8;
   }
 `;
