@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -27,6 +28,7 @@ import static java.util.Collections.unmodifiableSet;
 @XmlRootElement(name = "pull-request")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Builder(toBuilder = true)
+@ToString
 public class PullRequest {
 
   private String id;
