@@ -23,6 +23,7 @@ import sonia.scm.repository.RepositoryTestData;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -131,7 +132,7 @@ class FlagCommentsAsOutdatedHookTest {
     List<String> branches = ImmutableList.of(pullRequest.getSource(), pullRequest.getTarget());
     PostReceiveRepositoryHookEvent event = createRepositoryHookEvent(branches);
     when(pullRequestCollector.collectAffectedPullRequests(repository, branches)).thenReturn(ImmutableList.of(pullRequest));
-    when(commentCollector.collectNonOutdated(repository, pullRequest)).thenReturn(ImmutableList.copyOf(comments));
+    when(commentCollector.collectNonOutdated(repository, pullRequest)).thenReturn(Stream.of(comments));
     return event;
   }
 

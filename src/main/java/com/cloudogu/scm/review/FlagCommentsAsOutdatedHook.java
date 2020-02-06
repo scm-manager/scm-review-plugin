@@ -46,7 +46,6 @@ public class FlagCommentsAsOutdatedHook {
     MemoizeModificationCollector collector = new MemoizeModificationCollector(repository, changesets);
     for (PullRequest pullRequest : pullRequests) {
       commentCollector.collectNonOutdated(repository, pullRequest)
-        .stream()
         .filter(comment -> isGlobalComment(comment) || isAffectedFileComment(collector.collect(), comment))
         .forEach(comment -> flagAsOutdated(repository, pullRequest, comment));
     }
