@@ -426,6 +426,6 @@ class DefaultPullRequestServiceTest {
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "");
+    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "", emptySet());
   }
 }

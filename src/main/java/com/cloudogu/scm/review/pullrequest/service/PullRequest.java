@@ -44,6 +44,7 @@ public class PullRequest {
   private Map<String, Boolean> reviewer = new HashMap<>();
   private String sourceRevision;
   private String targetRevision;
+  private Set<ReviewMark> reviewMarks = new HashSet<>();
 
   public void addApprover(String recipient) {
     this.reviewer.put(recipient, true);
