@@ -520,6 +520,18 @@ class DefaultPullRequestServiceTest {
         return true;
       }));
     }
+
+    @Test
+    void shouldDoNothingWhenReviewMarksToBeRemovedAreEmpty() {
+      pullRequest.setReviewMarks(of(
+        new ReviewMark("some/path", "dent"),
+        new ReviewMark("some/other/path", "dent")
+      ));
+
+      service.removeReviewMarks(REPOSITORY, pullRequest.getId(), of());
+
+      verify(store, never()).update(any());
+    }
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
