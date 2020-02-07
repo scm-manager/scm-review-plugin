@@ -24,10 +24,12 @@ public class MentionMapper {
 
   Set<Mention> mapMentions(Set<String> userIds) {
     Set<Mention> mentions = new HashSet<>();
-    for (String id : userIds) {
-      Optional<DisplayUser> displayUser = userDisplayManager.get(id);
-      displayUser.ifPresent(user -> mentions.add(new Mention(user.getId(), user.getDisplayName())));
+    if (userIds != null) {
+      for (String id : userIds) {
+        Optional<DisplayUser> displayUser = userDisplayManager.get(id);
+        displayUser.ifPresent(user -> mentions.add(new Mention(user.getId(), user.getDisplayName())));
 
+      }
     }
     return mentions;
   }

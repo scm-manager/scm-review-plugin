@@ -29,6 +29,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.util.HashSet;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static java.net.URI.create;
@@ -63,6 +64,8 @@ public class CommentResourceTest {
   private BranchRevisionResolver branchRevisionResolver;
   @Mock
   private ChannelRegistry channelRegistry;
+  @Mock
+  private MentionMapper mentionMapper;
 
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock("https://scm-manager.org/scm/api/v2");
 
@@ -70,6 +73,7 @@ public class CommentResourceTest {
   public void init() {
     when(branchRevisionResolver.getRevisions("space", "name", "1")).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
+    when(mentionMapper.extractMentionsFromComment("any")).thenReturn(new HashSet<>());
     CommentResource resource = new CommentResource(service, repositoryResolver, new CommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new ExecutedTransitionMapperImpl(), branchRevisionResolver);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();

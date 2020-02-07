@@ -7,6 +7,7 @@ import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.ContextLine;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
+import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
@@ -117,7 +118,9 @@ public abstract class CommentMapper {
 
   @AfterMapping
   void parseMentions(@MappingTarget Comment comment, CommentDto dto) {
-    comment.setMentionUserIds(mentionMapper.extractMentionsFromComment(dto.getComment()));
+    if (mentionMapper != null && !Strings.isNullOrEmpty(dto.getComment())) {
+      comment.setMentionUserIds(mentionMapper.extractMentionsFromComment(dto.getComment()));
+    }
   }
 
   Integer mapOptional(OptionalInt optionalInt) {
@@ -144,5 +147,9 @@ public abstract class CommentMapper {
 
   public void setPossibleTransitionMapper(PossibleTransitionMapper possibleTransitionMapper) {
     this.possibleTransitionMapper = possibleTransitionMapper;
+  }
+
+  public void setMentionMapper(MentionMapper mentionMapper) {
+    this.mentionMapper = mentionMapper;
   }
 }
