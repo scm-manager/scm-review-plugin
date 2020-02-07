@@ -1,7 +1,13 @@
 import React, { Dispatch } from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
-import { DiffEventContext, File, AnnotationFactoryContext, DefaultCollapsedFunction } from "@scm-manager/ui-components";
+import {
+  DiffEventContext,
+  File,
+  AnnotationFactoryContext,
+  DefaultCollapsedFunction,
+  ButtonGroup
+} from "@scm-manager/ui-components";
 import { Location, Comment, PullRequest } from "../types/PullRequest";
 import { Level, Button, LoadingDiff, diffs } from "@scm-manager/ui-components";
 import { createHunkId, createInlineLocation } from "./locations";
@@ -14,6 +20,7 @@ import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 import { DiffRelatedCommentCollection } from "./reducer";
 import { closeEditor, createComment, openEditor } from "../comment/actiontypes";
+import MarkReviewedButton from "./MarkReviewedButton";
 
 const LevelWithMargin = styled(Level)`
   margin-bottom: 1rem !important;
@@ -149,7 +156,12 @@ class Diff extends React.Component<Props, State> {
           file: path
         });
       };
-      return <AddCommentButton action={openFileEditor} />;
+      return (
+        <ButtonGroup>
+          <MarkReviewedButton pullRequest={this.props.pullRequest} path={file.newPath} />
+          <AddCommentButton action={openFileEditor} />
+        </ButtonGroup>
+      );
     }
   };
 
