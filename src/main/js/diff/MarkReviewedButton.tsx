@@ -10,25 +10,39 @@ type Props = WithTranslation & {
   setCollapse: (p: boolean) => void;
 };
 
-class MarkReviewedButton extends React.Component<Props> {
+type State = {
+  marked: boolean;
+};
+
+class MarkReviewedButton extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      marked: props.pullRequest.markedAsReviewed.some(mark => mark === props.path)
+    };
+  }
+
   mark = () => {
     const { pullRequest, path, setCollapse } = this.props;
     markAsReviewedOrNot(pullRequest._links.markAsReviewed.href, path);
     setCollapse(true);
+    this.setState({ marked: true });
   };
 
   unmark = () => {
     const { pullRequest, path, setCollapse } = this.props;
     markAsReviewedOrNot(pullRequest._links.markAsNotReviewed.href, path);
     setCollapse(false);
+    this.setState({ marked: false });
   };
 
   render() {
-    const { pullRequest, path, t } = this.props;
+    const { pullRequest, t } = this.props;
     if (!pullRequest?._links?.markAsReviewed) {
       return null;
     }
-    if (pullRequest.markedAsReviewed.some(mark => mark === path)) {
+    if (this.state.marked) {
       return (
         <Button
           action={this.unmark}
