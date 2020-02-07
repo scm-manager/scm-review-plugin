@@ -147,7 +147,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldCreateNewValidPullRequest() throws URISyntaxException, IOException {
     mockPrincipal();
     mockChangesets("sourceBranch", "targetBranch", new Changeset());
@@ -168,7 +168,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "trillian")
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetPR() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "/123");
     dispatcher.invoke(request, response);
@@ -177,7 +177,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "trillian")
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnGetAllPR() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "");
     dispatcher.invoke(request, response);
@@ -186,7 +186,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "trillian")
   public void shouldGetUnauthorizedExceptionWhenMissingPermissionOnCreatePR() throws URISyntaxException, IOException {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
     MockHttpRequest request = MockHttpRequest.post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
@@ -198,7 +198,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldGetAlreadyExistsExceptionOnCreatePR() throws URISyntaxException, IOException {
     PullRequest pr = new PullRequest();
     pr.setStatus(PullRequestStatus.OPEN);
@@ -219,7 +219,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "trillian")
   public void shouldRejectInvalidPullRequest() throws URISyntaxException, IOException {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest_invalid.json");
     MockHttpRequest request =
@@ -235,7 +235,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldRejectSameBranches() throws URISyntaxException, IOException {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest_sameBranches.json");
     MockHttpRequest request =
@@ -251,7 +251,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldRejectWithoutDiff() throws URISyntaxException, IOException {
     mockPrincipal();
     mockChangesets("sourceBranch", "targetBranch");
@@ -270,7 +270,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
+  @SubjectAware(username = "trillian")
   public void shouldHandleMissingRepository() throws URISyntaxException, IOException {
     when(repositoryResolver.resolve(new NamespaceAndName("space", "X")))
       .thenThrow(new NotFoundException("x", "y"));
@@ -287,7 +287,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldHandleMissingBranch() throws URISyntaxException, IOException {
     when(branchResolver.resolve(repository, "sourceBranch")).thenThrow(new NotFoundException("x", "y"));
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest.json");
@@ -303,7 +303,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldGetPullRequest() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     PullRequest pullRequest = createPullRequest();
@@ -326,7 +326,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldSortPullRequestsByLastModified() throws URISyntaxException, IOException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     String firstPR = "first_PR";
@@ -366,7 +366,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldGetAllPullRequests() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     String id_1 = "id_1";
@@ -391,25 +391,25 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldGetOpenedPullRequests() throws URISyntaxException, IOException {
     verifyFilteredPullRequests(PullRequestSelector.OPEN.name());
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldGetRejectedPullRequests() throws URISyntaxException, IOException {
     verifyFilteredPullRequests(PullRequestSelector.REJECTED.name());
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldGetMergedPullRequests() throws URISyntaxException, IOException {
     verifyFilteredPullRequests(PullRequestSelector.MERGED.name());
   }
 
   @Test
-  @SubjectAware(username = "author", password = "secret")
+  @SubjectAware(username = "author")
   public void shouldGetMinePullRequests() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=MINE");
@@ -422,7 +422,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "reviewer", password = "secret")
+  @SubjectAware(username = "reviewer")
   public void shouldGetReviewerPullRequests() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=REVIEWER");
@@ -440,7 +440,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldGetSelfLink() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
@@ -456,7 +456,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldNotGetUpdateLinkForUserWithoutPushPermission() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
@@ -469,7 +469,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldGetCommentLink() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
@@ -485,7 +485,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldGetEventsLink() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
@@ -501,7 +501,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldGetUpdateLink() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
@@ -520,7 +520,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldUpdatePullRequestSuccessfully() throws URISyntaxException {
     PullRequest existingPullRequest = new PullRequest();
     existingPullRequest.setAuthor("somebody");
@@ -541,7 +541,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldFailOnUpdatingNonExistingPullRequest() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     when(store.get("opened_1")).thenThrow(new NotFoundException("x", "y"));
@@ -557,7 +557,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldFailUpdatingOnMissingModifyPushPermission() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
@@ -580,7 +580,6 @@ public class PullRequestRootResourceTest {
     PullRequest pullRequest = createPullRequest();
 
     when(store.get("1")).thenReturn(pullRequest);
-//    Subject subject = mock(Subject.class);
     ThreadContext.bind(subject);
 
     PrincipalCollection principals = mock(PrincipalCollection.class);
@@ -690,7 +689,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "rr", password = "secret")
+  @SubjectAware(username = "rr")
   public void shouldReturnCollectionWithOnlySelfLink() throws URISyntaxException, IOException {
     JsonNode links = invokeAndReturnLinks();
 
@@ -699,7 +698,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldReturnCollectionWithCreateLink() throws URISyntaxException, IOException {
     JsonNode links = invokeAndReturnLinks();
 
@@ -720,7 +719,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldSetPullRequestToStatusRejected() throws URISyntaxException {
     when(store.get("1")).thenReturn(createPullRequest("opened_1", PullRequestStatus.OPEN));
     when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
@@ -735,7 +734,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti", password = "secret")
+  @SubjectAware(username = "slarti")
   public void shouldRejectChangingStatusOfMergedPullRequest() throws URISyntaxException {
     when(store.get("1")).thenReturn(createPullRequest("opened_1", PullRequestStatus.MERGED));
     MockHttpRequest request = MockHttpRequest
@@ -746,7 +745,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
+  @SubjectAware(username = "dent")
   public void shouldApprove() throws URISyntaxException {
     initPullRequestRootResource();
 
@@ -759,7 +758,7 @@ public class PullRequestRootResourceTest {
 
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
+  @SubjectAware(username = "dent")
   public void shouldDisapprove() throws URISyntaxException {
     initPullRequestRootResource();
 
@@ -771,15 +770,31 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
+  @SubjectAware(username = "dent")
   public void shouldMarkAsReviewed() throws URISyntaxException {
     initPullRequestRootResource();
 
     MockHttpRequest request = MockHttpRequest
-      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/mark-reviewed/some/file");
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/mark-as-reviewed/some/file");
     dispatcher.invoke(request, response);
     verify(pullRequestService).markAsReviewed(repository, "1", "some/file");
     assertThat(response.getStatus()).isEqualTo(204);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldGetMarkAsReviewedLink() throws URISyntaxException, IOException {
+    PullRequest pullRequest = createPullRequest();
+
+    when(store.get("1")).thenReturn(pullRequest);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    assertThat(jsonNode.path("_links").get("markAsReviewed")).isNotNull();
   }
 
   private void initPullRequestRootResource() {

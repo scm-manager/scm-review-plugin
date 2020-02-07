@@ -174,8 +174,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
           .createDefaultCommitMessage(repository.getNamespace(), repository.getName(), pullRequest.getId())));
         appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
-
     }
+    linksBuilder.single(link("markAsReviewed", pullRequestResourceLinks.pullRequest().markAsReviewed(repository.getNamespace(), repository.getName(), target.getId())));
     target.add(linksBuilder.build());
   }
 

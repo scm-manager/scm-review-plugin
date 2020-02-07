@@ -128,6 +128,14 @@ public class PullRequestResourceLinks {
         .method("events").parameters(namespace, name, pullRequestId)
         .href();
     }
+
+    public String markAsReviewed(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("markAsReviewed").parameters(namespace, name, pullRequestId, "PATH")
+        .href()
+        .replace("PATH", "{path}");
+    }
   }
 
   public PullRequestCommentsLinks pullRequestComments() {

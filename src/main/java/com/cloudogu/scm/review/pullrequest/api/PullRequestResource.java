@@ -170,7 +170,7 @@ public class PullRequestResource {
   }
 
   @POST
-  @Path("mark-reviewed/{path: .*}")
+  @Path("mark-as-reviewed/{path: .*}")
   @StatusCodes({
     @ResponseCode(code = 204, condition = "update success"),
     @ResponseCode(code = 400, condition = "Invalid body"),
