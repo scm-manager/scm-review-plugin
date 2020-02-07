@@ -18,6 +18,7 @@ import sonia.scm.user.User;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -271,10 +272,20 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public void markAsReviewed(Repository repository, String pullRequestId, String path, User user) {
-    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
+    PullRequestStore store = getStore(repository);
+    PullRequest pullRequest = store.get(pullRequestId);
     Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
     reviewMarks.add(new ReviewMark(path, user.getId()));
     pullRequest.setReviewMarks(reviewMarks);
+    store.update(pullRequest);
+  }
+
+  @Override
+  public void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved) {
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
+    Set<ReviewMark> newReviewMarks = new HashSet<>(pullRequest.getReviewMarks());
+    newReviewMarks.removeAll(marksToBeRemoved);
+    pullRequest.setReviewMarks(newReviewMarks);
     getStore(repository).update(pullRequest);
   }
 

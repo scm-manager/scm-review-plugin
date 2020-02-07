@@ -4,6 +4,7 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -125,4 +126,6 @@ public interface PullRequestService {
   default void markAsReviewed(Repository repository, String pullRequestId, String path) {
     markAsReviewed(repository, pullRequestId, path, getCurrentUser());
   }
+
+  void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved);
 }

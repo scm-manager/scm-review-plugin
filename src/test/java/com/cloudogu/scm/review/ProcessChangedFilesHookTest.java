@@ -6,6 +6,7 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestCollector;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,7 +37,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class FlagCommentsAsOutdatedHookTest {
+class ProcessChangedFilesHookTest {
 
   @Mock
   private PullRequestCollector pullRequestCollector;
@@ -45,12 +47,14 @@ class FlagCommentsAsOutdatedHookTest {
 
   @Mock
   private CommentService commentService;
+  @Mock
+  private PullRequestService pullRequestService;
 
   @Mock
   private ModificationCollector modificationCollector;
 
   @InjectMocks
-  private FlagCommentsAsOutdatedHook hook;
+  private ProcessChangedFilesHook hook;
 
   private Repository repository;
 
@@ -64,24 +68,20 @@ class FlagCommentsAsOutdatedHookTest {
 
   @Test
   void shouldMarkAllGlobalCommentsAsOutdated() {
-    Comment one = Comment.createSystemComment("awesome");
-    Comment two = Comment.createSystemComment("with-location");
+    Comment one = Comment.createComment("1", "awesome", null, null);
+    Comment two = Comment.createComment("2", "with-location", null, null);
     two.setLocation(new Location("pom.xml", null, null, null));
 
     flagAffectedComments(one, two);
 
-    assertThat(one.isOutdated()).isTrue();
-    assertThat(two.isOutdated()).isFalse();
-
-    verifyChanged(one);
+    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
+    verify(commentService, never()).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), two.getId());
   }
 
   @Test
   void shouldMarkAffectedFileCommentsAsOutdated() throws IOException {
-    Comment one = Comment.createSystemComment("awesome");
-    one.setLocation(new Location("some", null, null, null));
-    Comment two = Comment.createSystemComment("with-location");
-    two.setLocation(new Location("pom.xml", null, null, null));
+    Comment one = Comment.createComment("1", "awesome", null, new Location("some"));
+    Comment two = Comment.createComment("2", "with-location", null, new Location("pom.xml"));
 
     Set<String> modifications = ImmutableSet.of("pom.xml");
 
@@ -89,10 +89,8 @@ class FlagCommentsAsOutdatedHookTest {
 
     flagAffectedComments(one, two);
 
-    assertThat(one.isOutdated()).isFalse();
-    assertThat(two.isOutdated()).isTrue();
-
-    verifyChanged(two);
+    verify(commentService, never()).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
+    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), two.getId());
   }
 
   @Test
@@ -109,11 +107,12 @@ class FlagCommentsAsOutdatedHookTest {
     Set<String> modifications = ImmutableSet.of("pom.xml");
     when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
 
-    pullRequest.getReviewMarks().add(new ReviewMark("pom.xml", "dent"));
+    ReviewMark reviewMark = new ReviewMark("pom.xml", "dent");
+    pullRequest.getReviewMarks().add(reviewMark);
 
     flagAffectedComments();
 
-    assertThat(pullRequest.getReviewMarks()).isEmpty();
+    verify(pullRequestService).removeReviewMarks(repository, "id", asList(reviewMark));
   }
 
   @Test
@@ -132,11 +131,7 @@ class FlagCommentsAsOutdatedHookTest {
   private void flagAffectedComments(Comment... comments) {
     PostReceiveRepositoryHookEvent event = prepareEvent(comments);
 
-    hook.flagAffectedComments(event);
-  }
-
-  private void verifyChanged(Comment one) {
-    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
+    hook.checkChangedFiles(event);
   }
 
   private PostReceiveRepositoryHookEvent prepareEvent(Comment... comments) {

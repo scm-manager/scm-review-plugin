@@ -40,6 +40,7 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEve
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -500,6 +501,22 @@ class DefaultPullRequestServiceTest {
       verify(store).update(argThat(pr -> {
         assertThat(pr.getReviewMarks())
           .contains(new ReviewMark("some/file", "user"));
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldRemoveReviewMarks() {
+      pullRequest.setReviewMarks(of(
+        new ReviewMark("some/path", "dent"),
+        new ReviewMark("some/other/path", "dent")
+      ));
+
+      service.removeReviewMarks(REPOSITORY, pullRequest.getId(), of(new ReviewMark("some/path", "dent")));
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewMarks())
+          .contains(new ReviewMark("some/other/path", "dent"));
         return true;
       }));
     }
