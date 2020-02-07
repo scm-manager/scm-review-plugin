@@ -44,7 +44,7 @@ const RootCommentContainer: FC<Props> = ({ pullRequest }) => {
     <>
       {comments.map(rootComment => (
         <CommentWrapper key={rootComment.id} className="comment-wrapper">
-          <PullRequestComment comment={rootComment} dispatch={dispatch} createLink={createLink} />
+          <PullRequestComment comment={rootComment} dispatcher={dispatch} createLink={createLink} />
         </CommentWrapper>
       ))}
       {createLink && <CreateComment url={createLink} onCreation={c => dispatch(createComment(c))} />}

@@ -42,7 +42,7 @@ const StyledSuggestion = styled.div`
 type Props = WithTranslation & {
   parent?: Comment;
   comment: Comment;
-  dispatch: Dispatch<any>; // ???
+  dispatcher: Dispatch<any>; // ???
   createLink?: string;
   userAutocompleteLink: string;
 };
@@ -126,20 +126,20 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   dispatchUpdate = (comment: Comment) => {
-    const { parent, dispatch } = this.props;
+    const { parent, dispatcher } = this.props;
     if (parent) {
-      dispatch(updateReply(parent.id, comment));
+      dispatcher(updateReply(parent.id, comment));
     } else {
-      dispatch(updateComment(comment));
+      dispatcher(updateComment(comment));
     }
   };
 
   dispatchDelete = (comment: Comment) => {
-    const { parent, dispatch } = this.props;
+    const { parent, dispatcher } = this.props;
     if (parent) {
-      dispatch(deleteReply(parent.id, comment));
+      dispatcher(deleteReply(parent.id, comment));
     } else {
-      dispatch(deleteComment(comment));
+      dispatcher(deleteComment(comment));
     }
   };
 
@@ -175,7 +175,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   delete = () => {
-    const { parent, comment, dispatch } = this.props;
+    const { parent, comment, dispatcher } = this.props;
     if (comment._links.delete) {
       const href = (comment._links.delete as Link).href;
       this.setState({
@@ -186,7 +186,7 @@ class PullRequestComment extends React.Component<Props, State> {
         .then(response => {
           this.dispatchDelete(comment);
           if (parent && this.getChildCount(parent) === 1) {
-            return this.fetchRefreshed(parent, (c: Comment) => dispatch(updateComment(c))).then(() => {
+            return this.fetchRefreshed(parent, (c: Comment) => dispatcher(updateComment(c))).then(() => {
               this.setState({
                 loading: false
               });
@@ -380,7 +380,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   render() {
-    const { parent, comment, dispatch, t } = this.props;
+    const { parent, comment, dispatcher, t } = this.props;
     const { loading, collapsed, edit, contextModalOpen } = this.state;
 
     if (loading) {
@@ -436,7 +436,7 @@ class PullRequestComment extends React.Component<Props, State> {
             {icons}
           </article>
         </CommentSpacingWrapper>
-        {!collapsed && <Replies comment={comment} createLink={this.props.createLink} dispatch={dispatch} />}
+        {!collapsed && <Replies comment={comment} createLink={this.props.createLink} dispatch={dispatcher} />}
         {this.createReplyEditorIfNeeded(comment.id)}
       </>
     );
@@ -461,8 +461,8 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   onReplyCreated = (reply: Comment) => {
-    const { parent, comment, dispatch } = this.props;
-    dispatch(createReply(parent ? parent.id : comment.id, reply));
+    const { parent, comment, dispatcher } = this.props;
+    dispatcher(createReply(parent ? parent.id : comment.id, reply));
     this.closeReplyEditor();
   };
 

@@ -22,7 +22,7 @@ const Replies: FC<Props> = ({ comment, createLink, dispatch }) => {
           parent={comment}
           createLink={createLink}
           comment={reply}
-          dispatch={dispatch}
+          dispatcher={dispatch}
         />
       ))}
     </>

@@ -204,7 +204,7 @@ class Diff extends React.Component<Props, State> {
       <>
         {commentIds.map((commentId: string) => (
           <CommentWrapper key={commentId} className="comment-wrapper">
-            <PullRequestComment comment={this.findComment(commentId)} createLink={createLink} dispatch={dispatch} />
+            <PullRequestComment comment={this.findComment(commentId)} createLink={createLink} dispatcher={dispatch} />
           </CommentWrapper>
         ))}
       </>
