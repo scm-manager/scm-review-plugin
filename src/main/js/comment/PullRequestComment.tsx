@@ -19,6 +19,10 @@ import Replies from "./Replies";
 import ReplyEditor from "./ReplyEditor";
 import { createReply, deleteComment, deleteReply, updateComment, updateReply } from "./actiontypes";
 import MentionTextarea from "./MentionTextarea";
+import { mapAutocompleteToSuggestions } from "./mention";
+import { getUserAutoCompleteLink } from "../index";
+import { compose } from "redux";
+import { connect } from "react-redux";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -40,6 +44,7 @@ type Props = WithTranslation & {
   comment: Comment;
   dispatch: Dispatch<any>; // ???
   createLink?: string;
+  userAutocompleteLink: string;
 };
 
 type State = {
@@ -299,41 +304,6 @@ class PullRequestComment extends React.Component<Props, State> {
   createMessageEditor = () => {
     const { updatedComment, error } = this.state;
 
-    const users: SuggestionDataItem[] = [
-      {
-        id: "walter",
-        display: "Walter White"
-      },
-      {
-        id: "jesse",
-        display: "Jesse Pinkman"
-      },
-      {
-        id: "gus",
-        display: 'Gustavo "Gus" Fring'
-      },
-      {
-        id: "saul",
-        display: "Saul Goodman"
-      },
-      {
-        id: "hank",
-        display: "Hank Schrader"
-      },
-      {
-        id: "skyler",
-        display: "Skyler White"
-      },
-      {
-        id: "mike",
-        display: "Mike Ehrmantraut"
-      },
-      {
-        id: "lydia",
-        display: "Lydìã Rôdarté-Qüayle"
-      }
-    ];
-
     return (
       <>
         <MentionTextarea
@@ -341,14 +311,29 @@ class PullRequestComment extends React.Component<Props, State> {
           onChange={this.handleChanges}
           onSubmit={this.update}
           onCancel={this.cancelUpdate}
+          allowSpaceInQuery={true}
         >
           <Mention
             markup="@[__id__]"
             displayTransform={(id: string) => {
-              return `@${users.filter(entry => entry.id === id)[0]?.display}`;
+              const { updatedComment } = this.state;
+              return updatedComment?.mentions && updatedComment.mentions.length > 0
+                ? `@${updatedComment.mentions?.filter(entry => entry.id === id)[0]?.display}`
+                : `@${id}`;
             }}
             trigger="@"
-            data={users}
+            data={(query, callback) => mapAutocompleteToSuggestions(this.props.userAutocompleteLink, query, callback)}
+            onAdd={(id, display) => {
+              this.setState(
+                prevState => ({
+                  ...prevState,
+                  updatedComment: {
+                    ...prevState.updatedComment,
+                    mentions: [...prevState.updatedComment.mentions, { id, display }]
+                  }
+                })
+              );
+            }}
             renderSuggestion={(
               suggestion: SuggestionDataItem,
               search: string,
@@ -367,6 +352,7 @@ class PullRequestComment extends React.Component<Props, State> {
               paddingTop: "3px",
               borderRadius: "5px"
             }}
+            appendSpaceOnAdd={true}
           />
         </MentionTextarea>
         {error && <ErrorNotification error={error} />}
@@ -493,4 +479,13 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 }
 
-export default withTranslation("plugins")(PullRequestComment);
+const mapStateToProps = (state: any) => {
+  const { indexResources } = state;
+  const userAutocompleteLink = getUserAutoCompleteLink(indexResources.links);
+
+  return {
+    userAutocompleteLink
+  };
+};
+
+export default compose(connect(mapStateToProps), withTranslation("plugins"))(PullRequestComment);

@@ -1,5 +1,5 @@
 import React from "react";
-import { Mention, SuggestionDataItem } from "react-mentions";
+import {  Mention, SuggestionDataItem } from "react-mentions";
 import { Button, Loading, Level, SubmitButton, Radio, ErrorNotification, apiClient } from "@scm-manager/ui-components";
 import { BasicComment, Comment, Location } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
@@ -10,7 +10,7 @@ import styled from "styled-components";
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { getUserAutoCompleteLink } from "../index";
-import { AutocompleteObject } from "@scm-manager/ui-types";
+import { mapAutocompleteToSuggestions } from "./mention";
 
 const StyledSuggestion = styled.div`
   color: ${props => props.focused && `#33b2e8`};
@@ -41,7 +41,8 @@ class CreateComment extends React.Component<Props, State> {
     this.state = {
       loading: false,
       newComment: {
-        type: "COMMENT"
+        type: "COMMENT",
+        mentions: []
       }
     };
   }
@@ -150,21 +151,6 @@ class CreateComment extends React.Component<Props, State> {
     return newComment && newComment.comment && newComment.comment.trim() !== "";
   }
 
-  mapAutocompleteToSuggestions = (prefix: string, callback: () => SuggestionDataItem[]) => {
-    if (prefix && prefix.length > 1) {
-      const link = this.props.userAutocompleteLink + "?q=";
-      return apiClient
-        .get(link + prefix)
-        .then(response => response.json())
-        .then(suggestions => {
-          return suggestions.map((s: AutocompleteObject) => {
-            return { id: s.id, display: s.displayName };
-          });
-        })
-        .then(callback);
-    }
-  };
-
   render() {
     const { autofocus, onCancel, reply, t, url } = this.props;
     const { loading, errorResult, newComment } = this.state;
@@ -219,18 +205,31 @@ class CreateComment extends React.Component<Props, State> {
                         ? "scm-review-plugin.comment.addTask"
                         : "scm-review-plugin.comment.addComment"
                     )}
-                    autofocus={autofocus}
+                    allowSpaceInQuery={true}
                   >
                     <Mention
                       markup="@[__id__]"
                       displayTransform={(id: string) => {
                         const { newComment } = this.state;
                         return newComment?.mentions && newComment.mentions.length > 0
-                          ? `${newComment.mentions?.filter(entry => entry.id === id)[0]?.display}`
-                          : `${id}`;
+                          ? `@${newComment.mentions?.filter(entry => entry.id === id)[0]?.display}`
+                          : `@${id}`;
                       }}
                       trigger="@"
-                      data={this.mapAutocompleteToSuggestions}
+                      data={(query, callback) =>
+                        mapAutocompleteToSuggestions(this.props.userAutocompleteLink, query, callback)
+                      }
+                      onAdd={(id, display) => {
+                        this.setState(
+                          prevState => ({
+                            ...prevState,
+                            newComment: {
+                              ...prevState.newComment,
+                              mentions: [...prevState.newComment.mentions, { id, display }]
+                            }
+                          })
+                        );
+                      }}
                       renderSuggestion={(
                         suggestion: SuggestionDataItem,
                         search: string,
@@ -239,21 +238,9 @@ class CreateComment extends React.Component<Props, State> {
                         focused: boolean
                       ) => (
                         <StyledSuggestion className="user" focused={focused} index={index}>
-                          {suggestion.display}
+                          {highlightedDisplay}
                         </StyledSuggestion>
                       )}
-                      onAdd={(id, display) => {
-                        const { newComment } = this.state;
-                        const updatedMentions = newComment?.mentions ? newComment.mentions : [];
-                        updatedMentions.push({ id, display });
-                        this.setState(prevState => ({
-                          ...prevState,
-                          newComment: {
-                            ...prevState.newComment,
-                            mentions: updatedMentions
-                          }
-                        }));
-                      }}
                       style={{
                         backgroundColor: "#33b2e8",
                         opacity: 0.2,
@@ -261,6 +248,7 @@ class CreateComment extends React.Component<Props, State> {
                         paddingTop: "3px",
                         borderRadius: "5px"
                       }}
+                      appendSpaceOnAdd={true}
                     />
                   </MentionTextarea>
                 </div>
