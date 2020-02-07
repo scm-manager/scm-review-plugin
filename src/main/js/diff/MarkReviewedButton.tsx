@@ -6,7 +6,8 @@ import { markAsReviewedOrNot } from "../pullRequest";
 
 type Props = WithTranslation & {
   pullRequest: PullRequest;
-  path: string;
+  oldPath: string;
+  newPath: string;
   setCollapse: (p: boolean) => void;
 };
 
@@ -19,20 +20,29 @@ class MarkReviewedButton extends React.Component<Props, State> {
     super(props);
 
     this.state = {
-      marked: props.pullRequest.markedAsReviewed.some(mark => mark === props.path)
+      marked: props.pullRequest.markedAsReviewed.some(mark => mark === this.determinePath())
     };
   }
 
+  determinePath = () => {
+    const { oldPath, newPath } = this.props;
+    if (newPath) {
+      return newPath;
+    } else {
+      return oldPath;
+    }
+  };
+
   mark = () => {
-    const { pullRequest, path, setCollapse } = this.props;
-    markAsReviewedOrNot(pullRequest._links.markAsReviewed.href, path);
+    const { pullRequest, setCollapse } = this.props;
+    markAsReviewedOrNot(pullRequest._links.markAsReviewed.href, this.determinePath());
     setCollapse(true);
     this.setState({ marked: true });
   };
 
   unmark = () => {
-    const { pullRequest, path, setCollapse } = this.props;
-    markAsReviewedOrNot(pullRequest._links.markAsNotReviewed.href, path);
+    const { pullRequest, setCollapse } = this.props;
+    markAsReviewedOrNot(pullRequest._links.markAsNotReviewed.href, this.determinePath());
     setCollapse(false);
     this.setState({ marked: false });
   };

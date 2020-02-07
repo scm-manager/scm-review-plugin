@@ -158,7 +158,12 @@ class Diff extends React.Component<Props, State> {
       };
       return (
         <ButtonGroup>
-          <MarkReviewedButton pullRequest={this.props.pullRequest} path={file.newPath} setCollapse={setCollapse} />
+          <MarkReviewedButton
+            pullRequest={this.props.pullRequest}
+            newPath={file.newPath}
+            oldPath={file.oldPath}
+            setCollapse={setCollapse}
+          />
           <AddCommentButton action={openFileEditor} />
         </ButtonGroup>
       );
