@@ -111,7 +111,7 @@
     "comment": {
       "addComment": "Add comment",
       "markReviewed": "Reviewed",
-      "unmarkReviewed": "Not Reviewed",
+      "markNotReviewed": "Not Reviewed",
       "addTask": "Add task",
       "delete": "Delete",
       "update": "Update",

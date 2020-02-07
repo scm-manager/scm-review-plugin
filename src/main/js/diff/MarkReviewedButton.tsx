@@ -32,7 +32,7 @@ class MarkReviewedButton extends React.Component<Props> {
       return (
         <Button
           action={this.unmark}
-          label={t("scm-review-plugin.comment.unmarkReviewed")}
+          label={t("scm-review-plugin.comment.markNotReviewed")}
           icon="square"
           reducedMobile={true}
         />
