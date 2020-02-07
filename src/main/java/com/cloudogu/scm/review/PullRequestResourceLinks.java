@@ -136,6 +136,14 @@ public class PullRequestResourceLinks {
         .href()
         .replace("PATH", "{path}");
     }
+
+    public String markAsNotReviewed(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("markAsNotReviewed").parameters(namespace, name, pullRequestId, "PATH")
+        .href()
+        .replace("PATH", "{path}");
+    }
   }
 
   public PullRequestCommentsLinks pullRequestComments() {

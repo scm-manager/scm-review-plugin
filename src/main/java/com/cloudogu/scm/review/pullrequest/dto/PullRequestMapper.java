@@ -188,6 +188,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       }
     }
     linksBuilder.single(link("markAsReviewed", pullRequestResourceLinks.pullRequest().markAsReviewed(repository.getNamespace(), repository.getName(), target.getId())));
+    linksBuilder.single(link("markAsNotReviewed", pullRequestResourceLinks.pullRequest().markAsNotReviewed(repository.getNamespace(), repository.getName(), target.getId())));
     target.add(linksBuilder.build());
   }
 

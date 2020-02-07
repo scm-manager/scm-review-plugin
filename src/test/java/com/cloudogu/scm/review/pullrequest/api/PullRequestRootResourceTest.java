@@ -759,6 +759,18 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "dent")
+  public void shouldMarkAsNotReviewed() throws URISyntaxException {
+    initPullRequestRootResource();
+
+    MockHttpRequest request = MockHttpRequest
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/mark-as-not-reviewed/some/file");
+    dispatcher.invoke(request, response);
+    verify(pullRequestService).markAsNotReviewed(repository, "1", "some/file");
+    assertThat(response.getStatus()).isEqualTo(204);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
   public void shouldGetMarkAsReviewedLink() throws URISyntaxException, IOException {
     PullRequest pullRequest = createPullRequest();
 
@@ -771,6 +783,7 @@ public class PullRequestRootResourceTest {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
     assertThat(jsonNode.path("_links").get("markAsReviewed")).isNotNull();
+    assertThat(jsonNode.path("_links").get("markAsNotReviewed")).isNotNull();
   }
 
   @Test

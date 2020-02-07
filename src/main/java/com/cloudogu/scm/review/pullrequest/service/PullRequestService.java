@@ -127,5 +127,11 @@ public interface PullRequestService {
     markAsReviewed(repository, pullRequestId, path, getCurrentUser());
   }
 
+  void markAsNotReviewed(Repository repository, String pullRequestId, String path, User user);
+
+  default void markAsNotReviewed(Repository repository, String pullRequestId, String path) {
+    markAsNotReviewed(repository, pullRequestId, path, getCurrentUser());
+  }
+
   void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved);
 }

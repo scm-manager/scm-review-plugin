@@ -281,6 +281,16 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
+  public void markAsNotReviewed(Repository repository, String pullRequestId, String path, User user) {
+    PullRequestStore store = getStore(repository);
+    PullRequest pullRequest = store.get(pullRequestId);
+    Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
+    reviewMarks.remove(new ReviewMark(path, user.getId()));
+    pullRequest.setReviewMarks(reviewMarks);
+    store.update(pullRequest);
+  }
+
+  @Override
   public void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved) {
     if (marksToBeRemoved.isEmpty()) {
       return;

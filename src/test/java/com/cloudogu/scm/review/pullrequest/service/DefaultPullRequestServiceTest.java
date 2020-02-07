@@ -506,6 +506,18 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
+    void shouldMarkAsNotReviewed() {
+      pullRequest.setReviewMarks(of(new ReviewMark("some/file", "user")));
+
+      service.markAsNotReviewed(REPOSITORY, pullRequest.getId(), "some/file", new User("user"));
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewMarks()).isEmpty();
+        return true;
+      }));
+    }
+
+    @Test
     void shouldRemoveReviewMarks() {
       pullRequest.setReviewMarks(of(
         new ReviewMark("some/path", "dent"),
