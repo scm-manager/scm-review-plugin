@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.Size;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ public class PullRequestDto extends HalRepresentation {
   private TasksDto tasks;
   private String sourceRevision;
   private String targetRevision;
+  private Collection<String> markedAsReviewed;
 
 
   @Override

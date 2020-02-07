@@ -15,10 +15,12 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
+import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.google.inject.util.Providers;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -59,6 +61,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,6 +69,7 @@ import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -578,16 +582,8 @@ public class PullRequestRootResourceTest {
     PullRequest pullRequest = createPullRequest();
 
     when(store.get("1")).thenReturn(pullRequest);
-    ThreadContext.bind(subject);
 
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(any(String.class))).thenReturn(true);
-    User user1 = new User();
-    user1.setName("user1");
-    user1.setMail("user1@mail.de");
-    user1.setDisplayName("User 1");
-    when(principals.oneByType(User.class)).thenReturn(user1);
+    mockLoggedInUser(new User("user1", "User 1", "email@d.de"));
 
     MockHttpRequest request = MockHttpRequest
       .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/subscription");
@@ -602,16 +598,7 @@ public class PullRequestRootResourceTest {
   @Test
   public void shouldNotReturnAnySubscriptionLinkOnMissingUserMail() throws URISyntaxException, IOException {
     // the PR has no subscriber
-    Subject subject = mock(Subject.class);
-    ThreadContext.bind(subject);
-
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(any(String.class))).thenReturn(true);
-    User user1 = new User();
-    user1.setName("user1");
-    user1.setDisplayName("User 1");
-    when(principals.oneByType(User.class)).thenReturn(user1);
+    mockLoggedInUser(new User("user1", "User 1", null));
 
     MockHttpRequest request = MockHttpRequest
       .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/subscription");
@@ -627,17 +614,8 @@ public class PullRequestRootResourceTest {
     pullRequest.setSubscriber(singleton("user1"));
 
     when(store.get("1")).thenReturn(pullRequest);
-    Subject subject = mock(Subject.class);
-    ThreadContext.bind(subject);
 
-    PrincipalCollection principals = mock(PrincipalCollection.class);
-    when(subject.getPrincipals()).thenReturn(principals);
-    when(subject.isPermitted(any(String.class))).thenReturn(true);
-    User user1 = new User();
-    user1.setName("user1");
-    user1.setMail("email@d.de");
-    user1.setDisplayName("User 1");
-    when(principals.oneByType(User.class)).thenReturn(user1);
+    mockLoggedInUser(new User("user1", "User 1", "email@d.de"));
 
     MockHttpRequest request = MockHttpRequest
       .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/subscription");
@@ -793,6 +771,39 @@ public class PullRequestRootResourceTest {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
     assertThat(jsonNode.path("_links").get("markAsReviewed")).isNotNull();
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldGetMarkedAsReviewedPaths() throws URISyntaxException, IOException {
+    mockLoggedInUser(new User("dent"));
+
+    PullRequest pullRequest = createPullRequest();
+    pullRequest.setAuthor("slarti");
+    pullRequest.setReviewMarks(ImmutableSet.of(
+      new ReviewMark("/some/file", "dent"),
+      new ReviewMark("/some/other/file", "trillian")
+    ));
+
+    when(store.get("1")).thenReturn(pullRequest);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    assertThat(response.getContentAsString()).contains("\"markedAsReviewed\":[\"/some/file\"]");
+  }
+
+  private void mockLoggedInUser(User user1) {
+    Subject subject = mock(Subject.class);
+    ThreadContext.bind(subject);
+
+    PrincipalCollection principals = mock(PrincipalCollection.class);
+    when(subject.getPrincipals()).thenReturn(principals);
+    when(subject.isPermitted(any(String.class))).thenReturn(true);
+    when(principals.oneByType(User.class)).thenReturn(user1);
+    when(principals.getPrimaryPrincipal()).thenReturn(user1.getId());
   }
 
   private void initPullRequestRootResource() {
