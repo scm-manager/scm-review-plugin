@@ -8,7 +8,6 @@ import com.cloudogu.scm.review.comment.service.ContextLine;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -23,6 +22,7 @@ import javax.inject.Named;
 import java.util.Collection;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.Set;
 
 import static de.otto.edison.hal.Link.link;
 import static java.util.stream.Collectors.toList;
@@ -40,14 +40,19 @@ public abstract class CommentMapper {
   private ExecutedTransitionMapper executedTransitionMapper;
   @Inject
   private PossibleTransitionMapper possibleTransitionMapper;
+  @Inject
+  private MentionMapper mentionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
+  @Mapping(target = "mentions", source = "mentionUserIds", qualifiedByName = "mapMentions")
   abstract CommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions, @Context BranchRevisionResolver.RevisionResult revisions);
 
+  @Mapping(target = "mentionUserIds", ignore = true)
   abstract Comment map(CommentDto commentDto);
 
   abstract CommentDto.ContextLineDto map(ContextLine line);
+
   abstract ContextLine map(CommentDto.ContextLineDto line);
 
   @Named("mapAuthor")
@@ -103,6 +108,16 @@ public abstract class CommentMapper {
   @AfterMapping
   void appendPossibleTransitions(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions) {
     possibleTransitionMapper.appendTransitions(target, possibleTransitions, repository.getNamespace(), repository.getName(), pullRequestId, source.getId());
+  }
+
+  @Named("mapMentions")
+  Set<Mention> appendMentions(Set<String> userIds) {
+    return mentionMapper.mapMentions(userIds);
+  }
+
+  @AfterMapping
+  void parseMentions(@MappingTarget Comment comment, CommentDto dto) {
+    comment.setMentionUserIds(mentionMapper.extractMentionsFromComment(dto.getComment()));
   }
 
   Integer mapOptional(OptionalInt optionalInt) {

@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static com.cloudogu.scm.review.comment.service.CommentType.COMMENT;
 import static java.util.Collections.unmodifiableList;
@@ -37,6 +38,7 @@ public class Comment extends BasicComment {
   private CommentType type = COMMENT;
   private boolean outdated;
   private InlineContext context;
+  private Set<String> mentionUserIds;
 
   private List<Reply> replies = new ArrayList<>();
 
@@ -102,5 +104,13 @@ public class Comment extends BasicComment {
 
   public void setContext(InlineContext context) {
     this.context = context;
+  }
+
+  public Set<String> getMentionUserIds() {
+    return mentionUserIds;
+  }
+
+  public void setMentionUserIds(Set<String> mentionUserIds) {
+    this.mentionUserIds = mentionUserIds;
   }
 }

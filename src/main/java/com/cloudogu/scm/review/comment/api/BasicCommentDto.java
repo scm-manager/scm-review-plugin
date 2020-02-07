@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,6 +25,8 @@ abstract class BasicCommentDto extends HalRepresentation {
 
   @Valid
   private DisplayedUserDto author;
+
+  private Set<Mention> mentions;
 
   private Instant date;
 
