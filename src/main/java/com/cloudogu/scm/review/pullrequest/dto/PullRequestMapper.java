@@ -58,8 +58,6 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   @Inject
   private RepositoryServiceFactory serviceFactory;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
-  @Inject
-  private BranchRevisionResolver branchRevisionResolver;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")

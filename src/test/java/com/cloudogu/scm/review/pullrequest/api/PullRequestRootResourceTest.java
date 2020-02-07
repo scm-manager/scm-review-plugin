@@ -114,8 +114,6 @@ public class PullRequestRootResourceTest {
   @Mock
   private RepositoryService repositoryService;
   @Mock
-  private BranchRevisionResolver branchRevisionResolver;
-  @Mock
   private LogCommandBuilder logCommandBuilder;
   @Mock
   private CommentService commentService;
