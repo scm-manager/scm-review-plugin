@@ -110,6 +110,8 @@
     },
     "comment": {
       "addComment": "Add comment",
+      "markReviewed": "Reviewed",
+      "markNotReviewed": "Not Reviewed",
       "addTask": "Add task",
       "delete": "Delete",
       "update": "Update",

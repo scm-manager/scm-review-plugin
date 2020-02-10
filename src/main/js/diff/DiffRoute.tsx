@@ -29,7 +29,15 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
     return <ErrorNotification error={error} />;
   } else {
     const createLink = links && links.create ? (links.create as Link).href : undefined;
-    return <Diff diffUrl={diffUrl} comments={comments} createLink={createLink} dispatch={dispatch} />;
+    return (
+      <Diff
+        diffUrl={diffUrl}
+        comments={comments}
+        createLink={createLink}
+        dispatch={dispatch}
+        pullRequest={pullRequest}
+      />
+    );
   }
 };
 

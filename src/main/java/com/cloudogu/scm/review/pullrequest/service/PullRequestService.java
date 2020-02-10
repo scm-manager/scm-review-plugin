@@ -4,6 +4,7 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +25,7 @@ public interface PullRequestService {
    *
    * @return the id of the created pull request
    */
-  String add(Repository repository, PullRequest pullRequest) throws NoDifferenceException;
+  String add(Repository repository, PullRequest pullRequest);
 
 
   /**
@@ -120,4 +121,17 @@ public interface PullRequestService {
     unsubscribe(repository, pullRequestId, getCurrentUser());
   }
 
+  void markAsReviewed(Repository repository, String pullRequestId, String path, User user);
+
+  default void markAsReviewed(Repository repository, String pullRequestId, String path) {
+    markAsReviewed(repository, pullRequestId, path, getCurrentUser());
+  }
+
+  void markAsNotReviewed(Repository repository, String pullRequestId, String path, User user);
+
+  default void markAsNotReviewed(Repository repository, String pullRequestId, String path) {
+    markAsNotReviewed(repository, pullRequestId, path, getCurrentUser());
+  }
+
+  void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved);
 }

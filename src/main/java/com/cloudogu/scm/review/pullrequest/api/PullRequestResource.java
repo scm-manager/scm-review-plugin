@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -167,6 +168,36 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     service.unsubscribe(repository, pullRequestId);
+  }
+
+  @POST
+  @Path("review-mark/{path: .*}")
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
+    @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  @TypeHint(TypeHint.NO_CONTENT.class)
+  public void markAsReviewed(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId, @PathParam("path") String path) {
+    Repository repository = service.getRepository(namespace, name);
+    service.markAsReviewed(repository, pullRequestId, path);
+  }
+
+  @DELETE
+  @Path("review-mark/{path: .*}")
+  @StatusCodes({
+    @ResponseCode(code = 204, condition = "update success"),
+    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
+    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
+    @ResponseCode(code = 404, condition = "not found, no pull request with the specified id is available"),
+    @ResponseCode(code = 500, condition = "internal server error")
+  })
+  @TypeHint(TypeHint.NO_CONTENT.class)
+  public void markAsNotReviewed(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId, @PathParam("path") String path) {
+    Repository repository = service.getRepository(namespace, name);
+    service.markAsNotReviewed(repository, pullRequestId, path);
   }
 
   @PUT

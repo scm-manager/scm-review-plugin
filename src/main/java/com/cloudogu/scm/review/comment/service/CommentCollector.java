@@ -4,8 +4,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CommentCollector {
 
@@ -16,10 +15,9 @@ public class CommentCollector {
     this.commentService = commentService;
   }
 
-  public List<Comment> collectNonOutdated(Repository repository, PullRequest pullRequest) {
+  public Stream<Comment> collectNonOutdated(Repository repository, PullRequest pullRequest) {
     return commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId())
       .stream()
-      .filter(c -> !c.isOutdated())
-      .collect(Collectors.toList());
+      .filter(c -> !c.isOutdated());
   }
 }

@@ -21,6 +21,7 @@ export type PullRequest = BasicPullRequest & {
   tasks: Tasks;
   sourceRevision: string;
   targetRevision: string;
+  markedAsReviewed: string[];
 };
 
 export type Location = {

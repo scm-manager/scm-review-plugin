@@ -110,6 +110,8 @@
     },
     "comment": {
       "addComment": "Kommentar hinzufügen",
+      "markReviewed": "Abgeschlossen",
+      "markNotReviewed": "Nicht abgeschlossen",
       "addTask": "Aufgabe hinzufügen",
       "delete": "Löschen",
       "update": "Aktualisieren",

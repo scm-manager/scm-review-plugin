@@ -1,8 +1,14 @@
 import React, { Dispatch } from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
-import { DiffEventContext, File, AnnotationFactoryContext } from "@scm-manager/ui-components";
-import { Location, Comment } from "../types/PullRequest";
+import {
+  DiffEventContext,
+  File,
+  AnnotationFactoryContext,
+  DefaultCollapsedFunction,
+  ButtonGroup
+} from "@scm-manager/ui-components";
+import { Location, Comment, PullRequest } from "../types/PullRequest";
 import { Level, Button, LoadingDiff, diffs } from "@scm-manager/ui-components";
 import { createHunkId, createInlineLocation } from "./locations";
 import PullRequestComment from "../comment/PullRequestComment";
@@ -14,6 +20,7 @@ import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 import { DiffRelatedCommentCollection } from "./reducer";
 import { closeEditor, createComment, openEditor } from "../comment/actiontypes";
+import MarkReviewedButton from "./MarkReviewedButton";
 
 const LevelWithMargin = styled(Level)`
   margin-bottom: 1rem !important;
@@ -30,6 +37,7 @@ type Props = WithTranslation & {
   comments: DiffRelatedCommentCollection;
   createLink?: string;
   dispatch: Dispatch<any>;
+  pullRequest: PullRequest;
 };
 
 type State = {
@@ -45,8 +53,16 @@ class Diff extends React.Component<Props, State> {
   }
 
   render() {
-    const { diffUrl, t } = this.props;
+    const { diffUrl, pullRequest, t } = this.props;
     const { collapsed } = this.state;
+
+    let globalCollapsedOrByMarks: DefaultCollapsedFunction;
+    if (collapsed) {
+      globalCollapsedOrByMarks = () => true;
+    } else {
+      globalCollapsedOrByMarks = (oldPath: string, newPath: string) =>
+        pullRequest.markedAsReviewed.some(path => path === oldPath || path === newPath);
+    }
 
     return (
       <StyledDiffWrapper commentable={this.isPermittedToComment()}>
@@ -63,7 +79,7 @@ class Diff extends React.Component<Props, State> {
         />
         <LoadingDiff
           url={diffUrl}
-          defaultCollapse={collapsed}
+          defaultCollapse={globalCollapsedOrByMarks}
           fileControlFactory={this.createFileControls}
           fileAnnotationFactory={this.fileAnnotationFactory}
           annotationFactory={this.annotationFactory}
@@ -138,7 +154,17 @@ class Diff extends React.Component<Props, State> {
           file: path
         });
       };
-      return <AddCommentButton action={openFileEditor} />;
+      return (
+        <ButtonGroup>
+          <MarkReviewedButton
+            pullRequest={this.props.pullRequest}
+            newPath={file.newPath}
+            oldPath={file.oldPath}
+            setCollapse={setCollapse}
+          />
+          <AddCommentButton action={openFileEditor} />
+        </ButtonGroup>
+      );
     }
   };
 

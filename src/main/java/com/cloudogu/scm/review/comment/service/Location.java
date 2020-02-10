@@ -15,6 +15,10 @@ import lombok.ToString;
 @ToString
 public class Location {
 
+  public Location(String file) {
+    this.file = file;
+  }
+
   private String file;
   private String hunk;
   private Integer oldLineNumber;

@@ -40,13 +40,16 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEve
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -266,10 +269,43 @@ class DefaultPullRequestServiceTest {
     @Test
     void shouldStoreChangedPullRequest() {
       PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setDescription("new description");
+      pullRequest.setTitle("new title");
 
       service.update(REPOSITORY, "changed", pullRequest);
 
-      verify(store).update(pullRequest);
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getDescription()).isEqualTo("new description");
+        assertThat(pr.getTitle()).isEqualTo("new title");
+        assertThat(pr.getCreationDate()).isEqualTo(oldPullRequest.getCreationDate());
+        assertThat(pr.getLastModified()).isNotNull();
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldNotChangeCreationDate() {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getCreationDate()).isEqualTo(oldPullRequest.getCreationDate());
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldNotChangeApprovalOfExistingReviewers() {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setReviewer(singletonMap("reviewer", true));
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewer().get("reviewer")).isFalse();
+        return true;
+      }));
     }
 
     @Test
@@ -278,9 +314,10 @@ class DefaultPullRequestServiceTest {
 
       service.update(REPOSITORY, "changed", pullRequest);
 
-      assertThat(pullRequest.getCreationDate().getEpochSecond()).isEqualTo(1_000_000);
-      assertThat(pullRequest.getLastModified()).isNotNull();
-      assertThat(pullRequest.getLastModified().getEpochSecond()).isNotEqualTo(0);
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getLastModified()).isNotNull();
+        return true;
+      }));
     }
 
     @Test
@@ -289,10 +326,38 @@ class DefaultPullRequestServiceTest {
 
       service.update(REPOSITORY, "changed", pullRequest);
 
-      assertThat(pullRequest.getSubscriber())
-        .hasSize(1)
-        .allMatch(r -> r.equals("subscriber"));
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getSubscriber()).contains("subscriber");
+        return true;
+      }));
+    }
 
+    @Test
+    void shouldAddReviewers() {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setReviewer(singletonMap("new_reviewer", false));
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewer())
+          .containsKeys("new_reviewer");
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldRemoveReviewers() {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setReviewer(emptyMap());
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewer())
+          .isEmpty();
+        return true;
+      }));
     }
 
     @Test
@@ -302,9 +367,11 @@ class DefaultPullRequestServiceTest {
 
       service.update(REPOSITORY, "changed", pullRequest);
 
-      assertThat(pullRequest.getSubscriber())
-        .hasSize(2)
-        .anyMatch(r -> r.equals("new_reviewer"));
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getSubscriber())
+          .contains("subscriber", "new_reviewer");
+        return true;
+      }));
     }
 
     @Test
@@ -314,9 +381,12 @@ class DefaultPullRequestServiceTest {
       service.update(REPOSITORY, "changed", pullRequest);
 
       assertThat(eventCaptor.getValue())
-        .isInstanceOf(PullRequestEvent.class)
-        .extracting("item", "oldItem", "eventType")
-        .containsExactly(pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+        .isInstanceOf(PullRequestEvent.class);
+      PullRequestEvent event = (PullRequestEvent) eventCaptor.getValue();
+
+      assertThat(event.getItem()).matches(pr -> pr.getId().equals("changed"));
+      assertThat(event.getOldItem()).isEqualTo(oldPullRequest);
+      assertThat(event.getEventType()).isEqualTo(HandlerEventType.MODIFY);
     }
   }
 
@@ -423,9 +493,60 @@ class DefaultPullRequestServiceTest {
 
       assertThat(eventCaptor.getAllValues()).isEmpty();
     }
+
+    @Test
+    void shouldMarkAsReviewed() {
+      service.markAsReviewed(REPOSITORY, pullRequest.getId(), "some/file", new User("user"));
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewMarks())
+          .contains(new ReviewMark("some/file", "user"));
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldMarkAsNotReviewed() {
+      pullRequest.setReviewMarks(of(new ReviewMark("some/file", "user")));
+
+      service.markAsNotReviewed(REPOSITORY, pullRequest.getId(), "some/file", new User("user"));
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewMarks()).isEmpty();
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldRemoveReviewMarks() {
+      pullRequest.setReviewMarks(of(
+        new ReviewMark("some/path", "dent"),
+        new ReviewMark("some/other/path", "dent")
+      ));
+
+      service.removeReviewMarks(REPOSITORY, pullRequest.getId(), of(new ReviewMark("some/path", "dent")));
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewMarks())
+          .contains(new ReviewMark("some/other/path", "dent"));
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldDoNothingWhenReviewMarksToBeRemovedAreEmpty() {
+      pullRequest.setReviewMarks(of(
+        new ReviewMark("some/path", "dent"),
+        new ReviewMark("some/other/path", "dent")
+      ));
+
+      service.removeReviewMarks(REPOSITORY, pullRequest.getId(), of());
+
+      verify(store, never()).update(any());
+    }
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "");
+    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "", emptySet());
   }
 }
