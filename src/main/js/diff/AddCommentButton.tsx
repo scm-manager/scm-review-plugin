@@ -1,18 +1,14 @@
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Button } from "@scm-manager/ui-components";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
+import { DiffButton } from "@scm-manager/ui-components";
 
-type Props = WithTranslation & {
+type Props = {
   action: () => void;
 };
 
-class AddCommentButton extends React.Component<Props> {
-  render() {
-    const { action, t } = this.props;
-    return (
-      <Button action={action} label={t("scm-review-plugin.comment.addComment")} icon="comment" reducedMobile={true} />
-    );
-  }
-}
+const AddCommentButton: FC<Props> = ({ action }) => {
+  const { t } = useTranslation("plugins");
+  return <DiffButton onClick={action} title={t("scm-review-plugin.comment.addComment")} icon="comment" />;
+};
 
-export default withTranslation("plugins")(AddCommentButton);
+export default AddCommentButton;

@@ -1,6 +1,6 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Button } from "@scm-manager/ui-components";
+import { DiffButton } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import { deleteReviewMark, postReviewMark } from "../pullRequest";
@@ -54,23 +54,9 @@ class MarkReviewedButton extends React.Component<Props, State> {
       return null;
     }
     if (this.state.marked) {
-      return (
-        <Button
-          action={this.unmark}
-          label={t("scm-review-plugin.comment.markNotReviewed")}
-          icon="square"
-          reducedMobile={true}
-        />
-      );
+      return <DiffButton onClick={this.unmark} title={t("scm-review-plugin.comment.markNotReviewed")} icon="square" />;
     } else {
-      return (
-        <Button
-          action={this.mark}
-          label={t("scm-review-plugin.comment.markReviewed")}
-          icon="check-square"
-          reducedMobile={true}
-        />
-      );
+      return <DiffButton onClick={this.mark} title={t("scm-review-plugin.comment.markReviewed")} icon="check-square" />;
     }
   }
 }
