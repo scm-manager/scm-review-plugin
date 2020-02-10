@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.comment.service;
 
 import java.time.Instant;
+import java.util.Collections;
 
 public class Reply extends BasicComment {
 
@@ -10,6 +11,7 @@ public class Reply extends BasicComment {
     comment.setComment(text);
     comment.setAuthor(author);
     comment.setDate(Instant.now());
+    comment.setMentionUserIds(Collections.emptySet());
     return comment;
   }
 

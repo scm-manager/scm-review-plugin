@@ -36,7 +36,8 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
-@EagerSingleton @Extension
+@EagerSingleton
+@Extension
 public class CommentService {
 
   private final RepositoryResolver repositoryResolver;
@@ -84,6 +85,9 @@ public class CommentService {
 
     getCommentStore(repository).update(pullRequestId, originalRootComment);
 
+    if (!reply.getMentionUserIds().isEmpty()) {
+      eventBus.post(new MentionEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
+    }
     eventBus.post(new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
     return reply.getId();
   }

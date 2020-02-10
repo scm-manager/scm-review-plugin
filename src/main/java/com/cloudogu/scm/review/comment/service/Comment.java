@@ -5,8 +5,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static com.cloudogu.scm.review.comment.service.CommentType.COMMENT;
 import static java.util.Collections.unmodifiableList;
@@ -20,6 +20,7 @@ public class Comment extends BasicComment {
     comment.setDate(Instant.now());
     comment.setSystemComment(true);
     comment.setComment(key);
+    comment.setMentionUserIds(Collections.emptySet());
     return comment;
   }
 
@@ -30,6 +31,8 @@ public class Comment extends BasicComment {
     comment.setAuthor(author);
     comment.setLocation(location);
     comment.setDate(Instant.now());
+    comment.setMentionUserIds(Collections.emptySet());
+
     return comment;
   }
 
@@ -38,7 +41,6 @@ public class Comment extends BasicComment {
   private CommentType type = COMMENT;
   private boolean outdated;
   private InlineContext context;
-  private Set<String> mentionUserIds;
 
   private List<Reply> replies = new ArrayList<>();
 
@@ -59,7 +61,9 @@ public class Comment extends BasicComment {
     return systemComment;
   }
 
-  public boolean isOutdated() { return outdated; }
+  public boolean isOutdated() {
+    return outdated;
+  }
 
   public List<Reply> getReplies() {
     return unmodifiableList(replies);
@@ -104,13 +108,5 @@ public class Comment extends BasicComment {
 
   public void setContext(InlineContext context) {
     this.context = context;
-  }
-
-  public Set<String> getMentionUserIds() {
-    return mentionUserIds;
-  }
-
-  public void setMentionUserIds(Set<String> mentionUserIds) {
-    this.mentionUserIds = mentionUserIds;
   }
 }
