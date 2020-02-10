@@ -3,11 +3,13 @@ package com.cloudogu.scm.review.emailnotification;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
+import com.cloudogu.scm.review.comment.service.MentionEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.repository.Repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +36,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 
@@ -151,4 +155,43 @@ class EmailNotificationHookTest {
     verify(service).sendEmails(isA(PullRequestApprovalMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
   }
 
+  @Test
+  void shouldSendEmailAfterUserGotMentionedInComment() throws MailSendBatchException {
+    comment.setComment("@[_anonymous] But why? @[scmadmin]");
+    comment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
+    oldComment.setMentionUserIds(Collections.emptySet());
+
+    ImmutableSet<String> newMentions = ImmutableSet.of("scmadmin", "_anonymous");
+
+    MentionEvent event = new MentionEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
+    emailNotificationHook.handleMentionEvents(event);
+
+    verify(service).sendEmails(isA(MentionEventMailTextResolver.class), eq(newMentions), eq(Collections.emptySet()));
+  }
+
+  @Test
+  void shouldNotSendEmailIfUserWasAlreadyMentionedOnEditingComment() throws MailSendBatchException {
+    oldComment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
+    comment.setComment("@[_anonymous] But why? @[scmadmin]");
+    comment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
+    oldComment.setMentionUserIds(Collections.emptySet());
+    MentionEvent event = new MentionEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
+    emailNotificationHook.handleMentionEvents(event);
+
+    verify(service, never()).sendEmails(isA(MentionEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(Collections.emptySet()));
+  }
+
+  @Test
+  void shouldSendEmailOnlyToNewMentionsOnEditingComment() throws MailSendBatchException {
+    oldComment.setMentionUserIds(ImmutableSet.of("scmadmin"));
+    comment.setComment("@[_anonymous] But why? @[scmadmin]");
+    comment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
+
+    ImmutableSet<String> newMentions = ImmutableSet.of("_anonymous");
+
+    MentionEvent event = new MentionEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
+    emailNotificationHook.handleMentionEvents(event);
+
+    verify(service).sendEmails(isA(MentionEventMailTextResolver.class), eq(newMentions), eq(Collections.emptySet()));
+  }
 }

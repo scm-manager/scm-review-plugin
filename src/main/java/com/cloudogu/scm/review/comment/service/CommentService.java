@@ -66,6 +66,9 @@ public class CommentService {
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
     initializeNewComment(pullRequestComment, pullRequest, repository.getId());
     String newId = getCommentStore(repository).add(pullRequestId, pullRequestComment);
+    if (!pullRequestComment.getMentionUserIds().isEmpty()) {
+      eventBus.post(new MentionEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
+    }
     eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
     return newId;
   }
@@ -126,7 +129,21 @@ public class CommentService {
     rootComment.setMentionUserIds(changedComment.getMentionUserIds());
     rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
     getCommentStore(repository).update(pullRequestId, rootComment);
+    postMentionEventIfNewMentionWasAdded(repository, pullRequest, rootComment, clone);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
+  }
+
+  private void postMentionEventIfNewMentionWasAdded(Repository repository, PullRequest pullRequest, Comment rootComment, Comment clone) {
+    boolean newMention = false;
+    for (String userId : rootComment.getMentionUserIds()) {
+      if (!clone.getMentionUserIds().contains(userId)) {
+        newMention = true;
+        break;
+      }
+    }
+    if (newMention) {
+      eventBus.post(new MentionEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
+    }
   }
 
   public Collection<CommentTransition> possibleTransitions(String namespace, String name, String pullRequestId, String commentId) {

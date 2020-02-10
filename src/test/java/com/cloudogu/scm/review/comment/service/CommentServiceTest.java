@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Collections;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
@@ -36,6 +37,7 @@ import static com.cloudogu.scm.review.comment.service.CommentType.TASK_DONE;
 import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.time.Instant.now;
 import static java.time.Instant.ofEpochMilli;
+import static java.util.Collections.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -207,6 +209,7 @@ public class CommentServiceTest {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
     Comment changedRootComment = EXISTING_COMMENT.clone();
     changedRootComment.setComment("new comment");
+    changedRootComment.setMentionUserIds(EMPTY_SET);
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_COMMENT.getId(), changedRootComment);
 
@@ -247,6 +250,7 @@ public class CommentServiceTest {
     Comment changedRootComment = EXISTING_COMMENT.clone();
     changedRootComment.setAuthor("new author");
     changedRootComment.setDate(ofEpochMilli(123));
+    changedRootComment.setMentionUserIds(EMPTY_SET);
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_COMMENT.getId(), changedRootComment);
 
@@ -262,6 +266,7 @@ public class CommentServiceTest {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
     EXISTING_COMMENT.setAuthor("createCommentUser");
     Comment changedRootComment = EXISTING_COMMENT.clone();
+    changedRootComment.setMentionUserIds(EMPTY_SET);
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_COMMENT.getId(), changedRootComment);
 
