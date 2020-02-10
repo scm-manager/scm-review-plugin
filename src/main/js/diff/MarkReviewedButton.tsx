@@ -26,7 +26,7 @@ class MarkReviewedButton extends React.Component<Props, State> {
 
   determinePath = () => {
     const { oldPath, newPath } = this.props;
-    if (newPath) {
+    if (newPath !== "/dev/null") {
       return newPath;
     } else {
       return oldPath;
