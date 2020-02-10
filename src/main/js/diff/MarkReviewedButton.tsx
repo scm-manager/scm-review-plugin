@@ -1,6 +1,7 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Button } from "@scm-manager/ui-components";
+import { Link } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import { markAsReviewedOrNot } from "../pullRequest";
 
@@ -35,14 +36,14 @@ class MarkReviewedButton extends React.Component<Props, State> {
 
   mark = () => {
     const { pullRequest, setCollapse } = this.props;
-    markAsReviewedOrNot(pullRequest._links.markAsReviewed.href, this.determinePath());
+    markAsReviewedOrNot((pullRequest._links.markAsReviewed as Link).href, this.determinePath());
     setCollapse(true);
     this.setState({ marked: true });
   };
 
   unmark = () => {
     const { pullRequest, setCollapse } = this.props;
-    markAsReviewedOrNot(pullRequest._links.markAsNotReviewed.href, this.determinePath());
+    markAsReviewedOrNot((pullRequest._links.markAsNotReviewed as Link).href, this.determinePath());
     setCollapse(false);
     this.setState({ marked: false });
   };
