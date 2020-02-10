@@ -11,9 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -49,7 +46,7 @@ class RemoveReviewMarksOnChangedCommentsHookTest {
 
   @Test
   void shouldIgnoreCommentDeletion() {
-    CommentEvent event = new CommentEvent(repository, pullRequest, comment, null, HandlerEventType.DELETE);
+    CommentEvent event = new CommentEvent(repository, pullRequest, null, comment, HandlerEventType.DELETE);
 
     hook.handleCommentEvents(event);
 

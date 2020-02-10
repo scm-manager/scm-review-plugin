@@ -1,7 +1,6 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.comment.service.CommentEvent;
-import com.cloudogu.scm.review.comment.service.Location;
 import com.github.legman.Subscribe;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
@@ -24,15 +23,14 @@ public class RemoveReviewMarksOnChangedCommentsHook {
 
   @Subscribe
   public void handleCommentEvents(CommentEvent event) {
-    Location location = event.getItem().getLocation();
-    if (event.getEventType() == HandlerEventType.DELETE || location == null) {
+    if (event.getEventType() == HandlerEventType.DELETE || event.getItem().getLocation() == null) {
       return;
     }
 
     Collection<ReviewMark> reviewMarksToBeRemoved = event.getPullRequest()
       .getReviewMarks()
       .stream()
-      .filter(mark -> mark.getFile().equals(location.getFile()))
+      .filter(mark -> mark.getFile().equals(event.getItem().getLocation().getFile()))
       .collect(Collectors.toList());
 
     service.removeReviewMarks(event.getRepository(), event.getPullRequest().getId(), reviewMarksToBeRemoved);
