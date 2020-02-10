@@ -137,19 +137,6 @@ public class CommentService {
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
   }
 
-  private void postMentionEventIfNewMentionWasAdded(Repository repository, PullRequest pullRequest, Comment rootComment, Comment clone) {
-    boolean newMention = false;
-    for (String userId : rootComment.getMentionUserIds()) {
-      if (!clone.getMentionUserIds().contains(userId)) {
-        newMention = true;
-        break;
-      }
-    }
-    if (newMention) {
-      eventBus.post(new MentionEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
-    }
-  }
-
   public Collection<CommentTransition> possibleTransitions(String namespace, String name, String pullRequestId, String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     if (!PermissionCheck.mayComment(repository)) {
@@ -198,7 +185,9 @@ public class CommentService {
         Reply clone = reply.clone();
         reply.setComment(changedReply.getComment());
         reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
+        reply.setMentionUserIds(changedReply.getMentionUserIds());
         getCommentStore(repository).update(pullRequestId, parent);
+        postMentionEventIfNewMentionWasAdded(repository, pullRequest, reply, clone);
         eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
       }
     );
@@ -260,6 +249,20 @@ public class CommentService {
         .in(Comment.class, commentId)
         .in(PullRequest.class, pullRequestId)
         .in(new NamespaceAndName(namespace, name))));
+  }
+
+
+  private void postMentionEventIfNewMentionWasAdded(Repository repository, PullRequest pullRequest, BasicComment rootComment, BasicComment clone) {
+    boolean newMention = false;
+    for (String userId : rootComment.getMentionUserIds()) {
+      if (!clone.getMentionUserIds().contains(userId)) {
+        newMention = true;
+        break;
+      }
+    }
+    if (newMention) {
+      eventBus.post(new MentionEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
+    }
   }
 
   private CommentStore getCommentStore(Repository repository) {
