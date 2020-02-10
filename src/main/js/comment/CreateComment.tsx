@@ -1,5 +1,5 @@
 import React from "react";
-import {  Mention, SuggestionDataItem } from "react-mentions";
+import { Mention, SuggestionDataItem } from "react-mentions";
 import { Button, Loading, Level, SubmitButton, Radio, ErrorNotification, apiClient } from "@scm-manager/ui-components";
 import { BasicComment, Comment, Location } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
@@ -13,9 +13,9 @@ import { getUserAutoCompleteLink } from "../index";
 import { mapAutocompleteToSuggestions } from "./mention";
 
 const StyledSuggestion = styled.div`
-  color: ${props => props.focused && `#33b2e8`};
+  background-color: ${props => props.focused && `#ccecf9`};
   :hover {
-    color: #33b2e8;
+    background-color: #ccecf9;
   }
 `;
 
@@ -152,7 +152,7 @@ class CreateComment extends React.Component<Props, State> {
   }
 
   render() {
-    const { autofocus, onCancel, reply, t, url } = this.props;
+    const { onCancel, reply, t, url } = this.props;
     const { loading, errorResult, newComment } = this.state;
 
     if (loading) {
@@ -205,7 +205,6 @@ class CreateComment extends React.Component<Props, State> {
                         ? "scm-review-plugin.comment.addTask"
                         : "scm-review-plugin.comment.addComment"
                     )}
-                    allowSpaceInQuery={true}
                   >
                     <Mention
                       markup="@[__id__]"
@@ -220,15 +219,13 @@ class CreateComment extends React.Component<Props, State> {
                         mapAutocompleteToSuggestions(this.props.userAutocompleteLink, query, callback)
                       }
                       onAdd={(id, display) => {
-                        this.setState(
-                          prevState => ({
-                            ...prevState,
-                            newComment: {
-                              ...prevState.newComment,
-                              mentions: [...prevState.newComment.mentions, { id, display }]
-                            }
-                          })
-                        );
+                        this.setState(prevState => ({
+                          ...prevState,
+                          newComment: {
+                            ...prevState.newComment,
+                            mentions: [...prevState.newComment.mentions, { id, display }]
+                          }
+                        }));
                       }}
                       renderSuggestion={(
                         suggestion: SuggestionDataItem,
@@ -242,11 +239,7 @@ class CreateComment extends React.Component<Props, State> {
                         </StyledSuggestion>
                       )}
                       style={{
-                        backgroundColor: "#33b2e8",
-                        opacity: 0.2,
-                        paddingRight: "2px",
-                        paddingTop: "3px",
-                        borderRadius: "5px"
+                        color: "transparent"
                       }}
                       appendSpaceOnAdd={true}
                     />

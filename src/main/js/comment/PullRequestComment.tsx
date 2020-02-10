@@ -33,9 +33,9 @@ const AuthorName = styled.span`
 `;
 
 const StyledSuggestion = styled.div`
-  color: ${props => props.focused && `#33b2e8`};
+  background-color: ${props => props.focused && `#ccecf9`};
   :hover {
-    color: #33b2e8;
+    background-color: #ccecf9;
   }
 `;
 
@@ -311,7 +311,6 @@ class PullRequestComment extends React.Component<Props, State> {
           onChange={this.handleChanges}
           onSubmit={this.update}
           onCancel={this.cancelUpdate}
-          allowSpaceInQuery={true}
         >
           <Mention
             markup="@[__id__]"
@@ -324,15 +323,13 @@ class PullRequestComment extends React.Component<Props, State> {
             trigger="@"
             data={(query, callback) => mapAutocompleteToSuggestions(this.props.userAutocompleteLink, query, callback)}
             onAdd={(id, display) => {
-              this.setState(
-                prevState => ({
-                  ...prevState,
-                  updatedComment: {
-                    ...prevState.updatedComment,
-                    mentions: [...prevState.updatedComment.mentions, { id, display }]
-                  }
-                })
-              );
+              this.setState(prevState => ({
+                ...prevState,
+                updatedComment: {
+                  ...prevState.updatedComment,
+                  mentions: [...prevState.updatedComment.mentions, { id, display }]
+                }
+              }));
             }}
             renderSuggestion={(
               suggestion: SuggestionDataItem,
@@ -346,11 +343,7 @@ class PullRequestComment extends React.Component<Props, State> {
               </StyledSuggestion>
             )}
             style={{
-              backgroundColor: "#33b2e8",
-              opacity: 0.2,
-              paddingRight: "2px",
-              paddingTop: "3px",
-              borderRadius: "5px"
+              color: "transparent"
             }}
             appendSpaceOnAdd={true}
           />

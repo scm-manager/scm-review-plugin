@@ -7,48 +7,78 @@ const StyledMentionsInput = styled(MentionsInput)`
   & * {
     border: none;
   }
-  & strong {
-    color: transparent;
+  > div [class*="__control"] {
+    background-color: white;
+    font-size: 14px;
+    font-weight: normal;
+    font-family: "monospace";
+    border: 1px solid silver;
   }
-  & > div [class*="suggestions__list"] {
-    max-height: 120px;
+  > div [class*="__input"] {
+    padding: 9px;
+    overflow: auto;
+    min-height: 63px;
+    height: 70px;
+    outline: 0;
+  }
+  > div [class*="__highlighter"] {
     overflow: hidden;
+    padding: 9px;
+  }
+  > div.sc-emmjRN__suggestions {
+    position: absolute;
+    top: 20px !important;
+  }
+  > div [class*="suggestions__list"] {
+    background-color: white;
+    width: max-content;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+  }
+  > div [class*="suggestions__item"] {
+    padding: 4px;
+    borderbottom: 1px solid rgba(0, 0, 0, 0.15);
+    :focus {
+      backgroundcolor: #cee4e5;
+    }
   }
 `;
 
 type Props = {
   value?: string;
   placeholder?: string;
-  autofocus?: boolean;
   children: any;
   onChange: (event: any) => void;
   onSubmit: () => void;
   onCancel?: () => void;
-  allowSpaceInQuery: boolean;
 };
 
-const MentionTextarea: FC<Props> = ({
-  value,
-  placeholder,
-  children,
-  onChange,
-  onSubmit,
-  onCancel,
-  allowSpaceInQuery
-}) => {
+const MentionTextarea: FC<Props> = ({ value, placeholder, children, onChange, onSubmit, onCancel }) => {
+  const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (onCancel && event.key === "Escape") {
+      onCancel();
+      return;
+    }
+
+    if (onSubmit && event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      onSubmit();
+    }
+  };
+
   return (
-    <div className="textarea is-clipped">
-      <StyledMentionsInput
-        value={value}
-        onChange={onChange}
-        onSubmit={onSubmit}
-        onCancel={onCancel}
-        placeholder={placeholder}
-        allowSpaceInQuery={allowSpaceInQuery}
-      >
-        {children}
-      </StyledMentionsInput>
-    </div>
+    <StyledMentionsInput
+      className="textarea"
+      value={value}
+      onKeyDown={onKeyDown}
+      onChange={onChange}
+      onSubmit={onSubmit}
+      onCancel={onCancel}
+      placeholder={placeholder}
+      allowSpaceInQuery={true}
+      allowSuggestionsAboveCursor={true}
+    >
+      {children}
+    </StyledMentionsInput>
   );
 };
 

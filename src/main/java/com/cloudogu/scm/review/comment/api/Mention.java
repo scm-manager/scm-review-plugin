@@ -1,19 +1,13 @@
 package com.cloudogu.scm.review.comment.api;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Setter;
 
 import javax.validation.constraints.Size;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
 public class Mention {
 
   @NonNull
