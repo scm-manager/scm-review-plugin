@@ -175,10 +175,11 @@ class EmailNotificationHookTest {
     comment.setComment("@[_anonymous] But why? @[scmadmin]");
     comment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
     oldComment.setMentionUserIds(Collections.emptySet());
+
     MentionEvent event = new MentionEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleMentionEvents(event);
 
-    verify(service, never()).sendEmails(isA(MentionEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(Collections.emptySet()));
+    verify(service, never()).sendEmails(isA(MentionEventMailTextResolver.class), eq(Collections.emptySet()), eq(Collections.emptySet()));
   }
 
   @Test
