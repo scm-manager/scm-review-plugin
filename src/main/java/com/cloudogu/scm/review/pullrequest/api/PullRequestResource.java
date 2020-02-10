@@ -27,6 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -170,7 +171,7 @@ public class PullRequestResource {
   }
 
   @POST
-  @Path("mark-as-reviewed/{path: .*}")
+  @Path("review-mark/{path: .*}")
   @StatusCodes({
     @ResponseCode(code = 204, condition = "update success"),
     @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
@@ -184,8 +185,8 @@ public class PullRequestResource {
     service.markAsReviewed(repository, pullRequestId, path);
   }
 
-  @POST
-  @Path("mark-as-not-reviewed/{path: .*}")
+  @DELETE
+  @Path("review-mark/{path: .*}")
   @StatusCodes({
     @ResponseCode(code = 204, condition = "update success"),
     @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),

@@ -751,7 +751,7 @@ public class PullRequestRootResourceTest {
     initPullRequestRootResource();
 
     MockHttpRequest request = MockHttpRequest
-      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/mark-as-reviewed/some/file");
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/review-mark/some/file");
     dispatcher.invoke(request, response);
     verify(pullRequestService).markAsReviewed(repository, "1", "some/file");
     assertThat(response.getStatus()).isEqualTo(204);
@@ -763,7 +763,7 @@ public class PullRequestRootResourceTest {
     initPullRequestRootResource();
 
     MockHttpRequest request = MockHttpRequest
-      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/mark-as-not-reviewed/some/file");
+      .delete("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/review-mark/some/file");
     dispatcher.invoke(request, response);
     verify(pullRequestService).markAsNotReviewed(repository, "1", "some/file");
     assertThat(response.getStatus()).isEqualTo(204);
@@ -782,8 +782,7 @@ public class PullRequestRootResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
-    assertThat(jsonNode.path("_links").get("markAsReviewed")).isNotNull();
-    assertThat(jsonNode.path("_links").get("markAsNotReviewed")).isNotNull();
+    assertThat(jsonNode.path("_links").get("reviewMark")).isNotNull();
   }
 
   @Test
