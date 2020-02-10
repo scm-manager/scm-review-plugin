@@ -95,7 +95,6 @@ public class CommentService {
 
   public void markAsOutdated(String namespace, String name, String pullRequestId, String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    PermissionCheck.checkComment(repository);
     Comment rootComment = findRootComment(repository, pullRequestId, commentId)
       .<NotFoundException>orElseThrow(() -> {
           throw notFound(entity(BasicComment.class, commentId)
@@ -104,7 +103,6 @@ public class CommentService {
         }
       );
 
-    PermissionCheck.checkModifyComment(repository, rootComment);
     if (!rootComment.isOutdated()) {
       rootComment.setOutdated(true);
       getCommentStore(repository).update(pullRequestId, rootComment);

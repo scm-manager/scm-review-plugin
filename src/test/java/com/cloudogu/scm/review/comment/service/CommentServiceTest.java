@@ -455,7 +455,7 @@ public class CommentServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "dent")
+  @SubjectAware(username = "trillian")
   public void shouldMarkCommentAsOutdated() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
 
