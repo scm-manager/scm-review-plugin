@@ -322,12 +322,12 @@ class PullRequestComment extends React.Component<Props, State> {
             }}
             trigger="@"
             data={(query, callback) => mapAutocompleteToSuggestions(this.props.userAutocompleteLink, query, callback)}
-            onAdd={(id, display) => {
+            onAdd={(id, displayName) => {
               this.setState(prevState => ({
                 ...prevState,
                 updatedComment: {
                   ...prevState.updatedComment,
-                  mentions: [...prevState.updatedComment.mentions, { id, display }]
+                  mentions: [...prevState.updatedComment.mentions, { id, displayName }]
                 }
               }));
             }}

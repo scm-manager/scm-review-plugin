@@ -211,19 +211,19 @@ class CreateComment extends React.Component<Props, State> {
                       displayTransform={(id: string) => {
                         const { newComment } = this.state;
                         return newComment?.mentions && newComment.mentions.length > 0
-                          ? `@${newComment.mentions?.filter(entry => entry.id === id)[0]?.display}`
+                          ? `@${newComment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
                           : `@${id}`;
                       }}
                       trigger="@"
                       data={(query, callback) =>
                         mapAutocompleteToSuggestions(this.props.userAutocompleteLink, query, callback)
                       }
-                      onAdd={(id, display) => {
+                      onAdd={(id, displayName) => {
                         this.setState(prevState => ({
                           ...prevState,
                           newComment: {
                             ...prevState.newComment,
-                            mentions: [...prevState.newComment.mentions, { id, display }]
+                            mentions: [...prevState.newComment.mentions, { id, displayName }]
                           }
                         }));
                       }}
