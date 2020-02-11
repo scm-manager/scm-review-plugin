@@ -317,7 +317,7 @@ class PullRequestComment extends React.Component<Props, State> {
             displayTransform={(id: string) => {
               const { updatedComment } = this.state;
               return updatedComment?.mentions && updatedComment.mentions.length > 0
-                ? `@${updatedComment.mentions?.filter(entry => entry.id === id)[0]?.display}`
+                ? `@${updatedComment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
                 : `@${id}`;
             }}
             trigger="@"
