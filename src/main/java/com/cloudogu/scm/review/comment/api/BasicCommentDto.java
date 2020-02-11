@@ -27,7 +27,7 @@ abstract class BasicCommentDto extends HalRepresentation {
   @Valid
   private DisplayedUserDto author;
 
-  private Set<DisplayUser> mentions;
+  private Set<DisplayedUserDto> mentions;
 
   private Instant date;
 
