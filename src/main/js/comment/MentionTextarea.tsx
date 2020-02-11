@@ -15,7 +15,7 @@ const StyledMentionsInput = styled(MentionsInput)`
   }
   > div [class*="__input"] {
     padding: 9px;
-    overflow: auto;
+    overflow-y: scroll !important;
     min-height: 63px;
     height: 70px;
     outline: 0;
@@ -64,20 +64,22 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, children, onChange, on
   };
 
   return (
-    <div className="scrollable">
-      <StyledMentionsInput
-        className="textarea"
-        value={value}
-        onKeyDown={onKeyDown}
-        onChange={onChange}
-        onSubmit={onSubmit}
-        onCancel={onCancel}
-        placeholder={placeholder}
-        allowSpaceInQuery={true}
-        allowSuggestionsAboveCursor={true}
-      >
-        {children}
-      </StyledMentionsInput>
+    <div className="field">
+      <div className="control">
+        <StyledMentionsInput
+          className="textarea"
+          value={value}
+          onKeyDown={onKeyDown}
+          onChange={onChange}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          placeholder={placeholder}
+          allowSpaceInQuery={true}
+          allowSuggestionsAboveCursor={true}
+        >
+          {children}
+        </StyledMentionsInput>
+      </div>
     </div>
   );
 };
