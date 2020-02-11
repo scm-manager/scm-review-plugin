@@ -8,7 +8,7 @@ type Props = {
 
 const AddCommentButton: FC<Props> = ({ action }) => {
   const { t } = useTranslation("plugins");
-  return <DiffButton onClick={action} title={t("scm-review-plugin.comment.addComment")} icon="comment" />;
+  return <DiffButton onClick={action} tooltip={t("scm-review-plugin.diff.addComment")} icon="comment" />;
 };
 
 export default AddCommentButton;

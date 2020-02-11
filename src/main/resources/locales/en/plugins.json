@@ -13,7 +13,10 @@
     },
     "diff": {
       "notSupported": "Diffs for pull request are not supported by the type of repository",
-      "collapseDiffs": "Collapse"
+      "collapseDiffs": "Collapse",
+      "markReviewed": "Mark file as reviewed. This is for convenience only. Marked files are collapsed by default.",
+      "markNotReviewed": "Remove review mark from file.",
+      "addComment": "Add comment for file"
     },
     "noRequests": "No pull requests matching the selected criteria found",
     "pullRequest": {
@@ -110,8 +113,6 @@
     },
     "comment": {
       "addComment": "Add comment",
-      "markReviewed": "Reviewed",
-      "markNotReviewed": "Not Reviewed",
       "addTask": "Add task",
       "delete": "Delete",
       "update": "Update",

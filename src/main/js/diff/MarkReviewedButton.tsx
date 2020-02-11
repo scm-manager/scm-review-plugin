@@ -54,9 +54,15 @@ class MarkReviewedButton extends React.Component<Props, State> {
       return null;
     }
     if (this.state.marked) {
-      return <DiffButton onClick={this.unmark} title={t("scm-review-plugin.comment.markNotReviewed")} icon="square" />;
+      return (
+        <DiffButton
+          onClick={this.unmark}
+          tooltip={t("scm-review-plugin.diff.markNotReviewed")}
+          icon="clipboard-check"
+        />
+      );
     } else {
-      return <DiffButton onClick={this.mark} title={t("scm-review-plugin.comment.markReviewed")} icon="check-square" />;
+      return <DiffButton onClick={this.mark} tooltip={t("scm-review-plugin.diff.markReviewed")} icon="clipboard" />;
     }
   }
 }

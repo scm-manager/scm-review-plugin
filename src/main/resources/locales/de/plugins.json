@@ -13,7 +13,10 @@
     },
     "diff": {
       "notSupported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt.",
-      "collapseDiffs": "Auf-/Zuklappen"
+      "collapseDiffs": "Auf-/Zuklappen",
+      "markReviewed": "Markiere Datei als reviewed. Diese Markierung sorgt dafür, dass diese Datei standardmäßig eingeklappt dargestellt wird.",
+      "markNotReviewed": "Entferne Review-Markierung",
+      "addComment": "Kommentar für Datei hinzufügen"
     },
     "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
     "pullRequest": {
