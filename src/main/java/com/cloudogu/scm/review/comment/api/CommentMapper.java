@@ -16,6 +16,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
@@ -112,7 +113,7 @@ public abstract class CommentMapper {
   }
 
   @Named("mapMentions")
-  Set<Mention> appendMentions(Set<String> userIds) {
+  Set<DisplayUser> appendMentions(Set<String> userIds) {
     return mentionMapper.mapMentions(userIds);
   }
 

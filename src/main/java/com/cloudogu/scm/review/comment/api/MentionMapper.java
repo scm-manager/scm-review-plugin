@@ -22,13 +22,12 @@ public class MentionMapper {
     this.userDisplayManager = userDisplayManager;
   }
 
-  Set<Mention> mapMentions(Set<String> userIds) {
-    Set<Mention> mentions = new HashSet<>();
+  Set<DisplayUser> mapMentions(Set<String> userIds) {
+    Set<DisplayUser> mentions = new HashSet<>();
     if (userIds != null) {
       for (String id : userIds) {
         Optional<DisplayUser> displayUser = userDisplayManager.get(id);
-        displayUser.ifPresent(user -> mentions.add(new Mention(user.getId(), user.getDisplayName())));
-
+        displayUser.ifPresent(mentions::add);
       }
     }
     return mentions;

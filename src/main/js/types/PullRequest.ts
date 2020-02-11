@@ -36,7 +36,7 @@ export type BasicComment = {
   comment: string;
   id: string;
   type: string;
-  mentions: SuggestionDataItem[];
+  mentions: Mention[];
 };
 
 export type Comment = BasicComment & {
@@ -52,6 +52,12 @@ export type Comment = BasicComment & {
   _links: Links;
   _embedded?: { [key: string]: any };
 };
+
+export type Mention = {
+  id: string;
+  displayName: string;
+  mail: string;
+}
 
 export type Context = {
   lines: ContextLine[];

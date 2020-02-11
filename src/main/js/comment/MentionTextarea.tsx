@@ -12,7 +12,6 @@ const StyledMentionsInput = styled(MentionsInput)`
     font-size: 14px;
     font-weight: normal;
     font-family: "monospace";
-    border: 1px solid silver;
   }
   > div [class*="__input"] {
     padding: 9px;
@@ -25,8 +24,7 @@ const StyledMentionsInput = styled(MentionsInput)`
     overflow: hidden;
     padding: 9px;
   }
-  > div.sc-emmjRN__suggestions {
-    position: absolute;
+  div:nth-child(2) {
     top: 20px !important;
   }
   > div [class*="suggestions__list"] {
@@ -66,19 +64,21 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, children, onChange, on
   };
 
   return (
-    <StyledMentionsInput
-      className="textarea"
-      value={value}
-      onKeyDown={onKeyDown}
-      onChange={onChange}
-      onSubmit={onSubmit}
-      onCancel={onCancel}
-      placeholder={placeholder}
-      allowSpaceInQuery={true}
-      allowSuggestionsAboveCursor={true}
-    >
-      {children}
-    </StyledMentionsInput>
+    <div className="scrollable">
+      <StyledMentionsInput
+        className="textarea"
+        value={value}
+        onKeyDown={onKeyDown}
+        onChange={onChange}
+        onSubmit={onSubmit}
+        onCancel={onCancel}
+        placeholder={placeholder}
+        allowSpaceInQuery={true}
+        allowSuggestionsAboveCursor={true}
+      >
+        {children}
+      </StyledMentionsInput>
+    </div>
   );
 };
 

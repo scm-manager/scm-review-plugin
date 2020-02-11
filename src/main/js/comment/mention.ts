@@ -1,6 +1,6 @@
 import {SuggestionDataItem} from "react-mentions";
 import { apiClient } from "@scm-manager/ui-components";
-import { AutocompleteObject } from "@scm-manager/ui-types";
+import {Mention} from "../types/PullRequest";
 
 export function mapAutocompleteToSuggestions(link: string, query: string, callback: (data: SuggestionDataItem[]) => void) {
   if (query && query.length > 1) {
@@ -9,8 +9,8 @@ export function mapAutocompleteToSuggestions(link: string, query: string, callba
       .get(url + query)
       .then(response => response.json())
       .then(suggestions => {
-        return suggestions.map((s: AutocompleteObject) => {
-          return { id: s.id, display: s.displayName };
+        return suggestions.map((s: Mention) => {
+          return { id: s.id, display: s.displayName, mail: s.mail };
         });
       })
       .then(callback);

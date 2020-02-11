@@ -38,26 +38,26 @@ class MentionMapperTest {
 
   @Test
   void shouldAppendMentionForMentionedUser() {
-    setupExistingUserMock("dent");
+    DisplayUser user = setupExistingUserMock("dent", "dent@hitchhiker.org");
 
     Set<String> userIds = ImmutableSet.of("dent");
-    Set<Mention> mentions = mentionMapper.mapMentions(userIds);
+    Set<DisplayUser> mentions = mentionMapper.mapMentions(userIds);
 
-    assertThat(mentions).contains(new Mention("dent", "dent"));
+    assertThat(mentions.iterator().next()).isEqualTo(user);
   }
 
 
   @Test
   void shouldAppendMultipleMentionsForMentionedUser() {
-    setupExistingUserMock("dent");
-    setupExistingUserMock("_anonymous");
+    DisplayUser user1 = setupExistingUserMock("dent", "dent@hitchhiker.org");
+    DisplayUser user2 = setupExistingUserMock("_anonymous", "anonymous@hitchhiker.org");
 
     Set<String> userIds = ImmutableSet.of("dent", "_anonymous");
-    Set<Mention> mentions = mentionMapper.mapMentions(userIds);
+    Set<DisplayUser> mentions = mentionMapper.mapMentions(userIds);
 
     assertThat(mentions).hasSize(2);
-    assertThat(mentions).contains(new Mention("dent", "dent"));
-    assertThat(mentions).contains(new Mention("_anonymous", "_anonymous"));
+    assertThat(mentions).contains(user1);
+    assertThat(mentions).contains(user2);
   }
 
   @Test
@@ -65,15 +65,15 @@ class MentionMapperTest {
     doReturn(Optional.empty()).when(displayManager).get("trillian");
 
     Set<String> userIds = ImmutableSet.of("trillian");
-    Set<Mention> mentions = mentionMapper.mapMentions(userIds);
+    Set<DisplayUser> mentions = mentionMapper.mapMentions(userIds);
 
     assertThat(mentions).hasSize(0);
   }
 
   @Test
   void shouldExtractMentionsFromComment() {
-    setupExistingUserMock("dent");
-    setupExistingUserMock("_anonymous");
+    setupExistingUserMock("dent", "dent@hitchhiker.org");
+    setupExistingUserMock("_anonymous", "anonymous@hitchhiker.org");
 
     Set<String> mentions = mentionMapper.extractMentionsFromComment(comment.getComment());
     assertThat(mentions).hasSize(2);
@@ -88,9 +88,10 @@ class MentionMapperTest {
   }
 
 
-  private void setupExistingUserMock(String name) {
-    Optional<DisplayUser> user = Optional.of(DisplayUser.from(new User(name)));
+  private DisplayUser setupExistingUserMock(String name, String email) {
+    Optional<DisplayUser> user = Optional.of(DisplayUser.from(new User(name, name, email)));
     doReturn(user).when(displayManager).get(name);
+    return user.get();
   }
 
 }

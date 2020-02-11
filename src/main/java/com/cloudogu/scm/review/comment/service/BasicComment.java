@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -72,6 +73,9 @@ public abstract class BasicComment implements Cloneable {
 
 
   public Set<String> getMentionUserIds() {
+    if (mentionUserIds == null) {
+      return new HashSet<>();
+    }
     return mentionUserIds;
   }
 
