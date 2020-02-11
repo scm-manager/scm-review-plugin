@@ -61,7 +61,7 @@ class Diff extends React.Component<Props, State> {
       globalCollapsedOrByMarks = () => true;
     } else {
       globalCollapsedOrByMarks = (oldPath: string, newPath: string) =>
-        pullRequest.markedAsReviewed.some(path => path === oldPath || path === newPath);
+        pullRequest ? pullRequest.markedAsReviewed.some(path => path === oldPath || path === newPath) : false;
     }
 
     return (
