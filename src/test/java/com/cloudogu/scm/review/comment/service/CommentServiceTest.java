@@ -25,9 +25,6 @@ import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
-import sonia.scm.user.DisplayUser;
-import sonia.scm.user.User;
-import sonia.scm.user.UserDisplayManager;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -103,9 +100,6 @@ public class CommentServiceTest {
   @Mock
   private MentionMapper mentionMapper;
 
-  @Mock
-  private UserDisplayManager userDisplayManager;
-
   @Captor
   private ArgumentCaptor<Comment> rootCommentCaptor;
   @Captor
@@ -119,7 +113,7 @@ public class CommentServiceTest {
     doNothing().when(eventBus).post(eventCaptor.capture());
 
     when(repositoryResolver.resolve(REPOSITORY.getNamespaceAndName())).thenReturn(REPOSITORY);
-    commentService = new CommentService(repositoryResolver, pullRequestService, storeFactory, keyGenerator, eventBus, commentInitializer, mentionMapper, userDisplayManager);
+    commentService = new CommentService(repositoryResolver, pullRequestService, storeFactory, keyGenerator, eventBus, commentInitializer, mentionMapper);
 
     lenient().when(store.getAll(PULL_REQUEST_ID)).thenReturn(singletonList(EXISTING_COMMENT));
 
@@ -175,14 +169,18 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldTriggerMentionEventIfNewMentionAddedOnCreateComment() {
     when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
-    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("dent"));
-    mockDisplayUser("dent", "Arthur Dent", "dent@hitchhiker.com");
+    when(mentionMapper.extractMentionsFromComment("2. comment @[dent]")).thenReturn(ImmutableSet.of("dent"));
 
     Comment comment = createComment("2", "2. comment @[dent]", author, new Location());
+
+    String parsedCommentText = "2. comment @Arthur Dent";
+    Comment parsedComment = createComment("2", parsedCommentText, author, new Location());
+    when(mentionMapper.parseMentionsUserIdsToDisplayNames(comment)).thenReturn(parsedComment);
+
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
 
     assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
-    assertMentionEventFiredAndMentionsParsedToDisplayNames("2. comment @Arthur Dent");
+    assertMentionEventFiredAndMentionsParsedToDisplayNames(parsedCommentText);
   }
 
   @Test
@@ -241,15 +239,18 @@ public class CommentServiceTest {
   @SubjectAware(username = "createCommentUser")
   public void shouldTriggerMentionEventIfNewMentionAddedOnCreateReply() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("dent"));
-    mockDisplayUser("dent", "Arthur Dent", "dent@hitchhiker.com");
+    when(mentionMapper.extractMentionsFromComment("1. comment @[dent]")).thenReturn(ImmutableSet.of("dent"));
 
     Reply reply = createReply("new reply", "1. comment @[dent]", author);
+
+    String parsedCommentText = "2. comment @Arthur Dent";
+    Reply parsedReply = createReply("2", parsedCommentText, author);
+    when(mentionMapper.parseMentionsUserIdsToDisplayNames(reply)).thenReturn(parsedReply);
 
     commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
 
     assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
-    assertMentionEventFiredAndMentionsParsedToDisplayNames("1. comment @Arthur Dent");
+    assertMentionEventFiredAndMentionsParsedToDisplayNames(parsedCommentText);
   }
 
 
@@ -310,17 +311,21 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldTriggerMentionEventIfNewMentionAddedOnModify() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("dent"));
-    mockDisplayUser("dent", "Arthur Dent", "dent@hitchhiker.com");
+    when(mentionMapper.extractMentionsFromComment("new comment @[dent]")).thenReturn(ImmutableSet.of("dent"));
 
     Comment changedRootComment = EXISTING_COMMENT.clone();
     changedRootComment.setComment("new comment @[dent]");
     changedRootComment.setMentionUserIds(EMPTY_SET);
 
-    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_COMMENT.getId(), changedRootComment);
+    String parsedCommentText = "2. comment @Arthur Dent";
+    Comment parsedComment = EXISTING_COMMENT.clone();
+    parsedComment.setComment(parsedCommentText);
+    when(mentionMapper.parseMentionsUserIdsToDisplayNames(any(Comment.class))).thenReturn(parsedComment);
+
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, changedRootComment.getId(), changedRootComment);
 
     assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
-    assertMentionEventFiredAndMentionsParsedToDisplayNames("new comment @Arthur Dent");
+    assertMentionEventFiredAndMentionsParsedToDisplayNames(parsedCommentText);
   }
 
   @Test
@@ -476,16 +481,20 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldTriggerMentionEventOnModifyReplyText() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
-    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("dent"));
-    mockDisplayUser("dent", "Arthur Dent", "dent@hitchhiker.com");
+    when(mentionMapper.extractMentionsFromComment("new comment @[dent]")).thenReturn(ImmutableSet.of("dent"));
 
     Reply changedReply = EXISTING_REPLY.clone();
+    changedReply.setMentionUserIds(ImmutableSet.of("dent"));
     changedReply.setComment("new comment @[dent]");
+
+    String parsedCommentText = "2. comment @Arthur Dent";
+    Reply parsedReply = createReply("2", parsedCommentText, author);
+    when(mentionMapper.parseMentionsUserIdsToDisplayNames(any(Reply.class))).thenReturn(parsedReply);
 
     commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
     assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
-    assertMentionEventFiredAndMentionsParsedToDisplayNames("new comment @Arthur Dent");
+    assertMentionEventFiredAndMentionsParsedToDisplayNames(parsedCommentText);
   }
 
   @Test
@@ -666,13 +675,9 @@ public class CommentServiceTest {
     return mock;
   }
 
-  private void mockDisplayUser(String id, String displayName, String mail) {
-    when(userDisplayManager.get(id)).thenReturn(Optional.of(DisplayUser.from(new User(id, displayName, mail))));
-  }
-
-  private void assertMentionEventFiredAndMentionsParsedToDisplayNames(String s) {
+  private void assertMentionEventFiredAndMentionsParsedToDisplayNames(String expected) {
     Optional<BasicCommentEvent> mentionEvent = eventCaptor.getAllValues().stream().filter(event -> event instanceof MentionEvent).findFirst();
     assertThat(mentionEvent.isPresent()).isTrue();
-    assertThat(mentionEvent.get().getItem().getComment()).isEqualTo(s);
+    assertThat(mentionEvent.get().getItem().getComment()).isEqualTo(expected);
   }
 }

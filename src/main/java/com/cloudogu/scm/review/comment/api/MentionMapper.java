@@ -1,5 +1,6 @@
 package com.cloudogu.scm.review.comment.api;
 
+import com.cloudogu.scm.review.comment.service.BasicComment;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
@@ -45,5 +46,13 @@ public class MentionMapper {
       }
     }
     return mentions;
+  }
+
+  public BasicComment parseMentionsUserIdsToDisplayNames(BasicComment rootComment) {
+    for (String mentionUserId : rootComment.getMentionUserIds()) {
+      Optional<DisplayUser> user = userDisplayManager.get(mentionUserId);
+      user.ifPresent(displayUser -> rootComment.setComment(rootComment.getComment().replaceAll("\\[" + mentionUserId + "]", displayUser.getDisplayName())));
+    }
+    return rootComment;
   }
 }

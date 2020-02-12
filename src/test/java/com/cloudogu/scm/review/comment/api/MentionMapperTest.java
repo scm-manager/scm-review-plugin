@@ -1,7 +1,8 @@
 package com.cloudogu.scm.review.comment.api;
 
-import com.cloudogu.scm.review.TestData;
+import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.Location;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import sonia.scm.user.UserDisplayManager;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.cloudogu.scm.review.TestData.createComment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
@@ -32,13 +34,13 @@ class MentionMapperTest {
 
   @BeforeEach
   void initComment() {
-    comment = TestData.createComment();
+    comment = createComment();
     comment.setComment("@[dent] Did you test this? Please report to @[_anonymous] @[trillian] ");
   }
 
   @Test
   void shouldAppendMentionForMentionedUser() {
-    DisplayUser user = setupExistingUserMock("dent", "dent@hitchhiker.org");
+    DisplayUser user = setupExistingUserMock("dent", "Arthur Dent", "dent@hitchhiker.org");
 
     Set<String> userIds = ImmutableSet.of("dent");
     Set<DisplayUser> mentions = mentionMapper.mapMentions(userIds);
@@ -49,8 +51,8 @@ class MentionMapperTest {
 
   @Test
   void shouldAppendMultipleMentionsForMentionedUser() {
-    DisplayUser user1 = setupExistingUserMock("dent", "dent@hitchhiker.org");
-    DisplayUser user2 = setupExistingUserMock("_anonymous", "anonymous@hitchhiker.org");
+    DisplayUser user1 = setupExistingUserMock("dent", "Arthur Dent", "dent@hitchhiker.org");
+    DisplayUser user2 = setupExistingUserMock("_anonymous", "SCM Anonymous", "anonymous@hitchhiker.org");
 
     Set<String> userIds = ImmutableSet.of("dent", "_anonymous");
     Set<DisplayUser> mentions = mentionMapper.mapMentions(userIds);
@@ -72,13 +74,26 @@ class MentionMapperTest {
 
   @Test
   void shouldExtractMentionsFromComment() {
-    setupExistingUserMock("dent", "dent@hitchhiker.org");
-    setupExistingUserMock("_anonymous", "anonymous@hitchhiker.org");
+    setupExistingUserMock("dent", "Arthur Dent", "dent@hitchhiker.org");
+    setupExistingUserMock("_anonymous", "SCM Anonymous", "anonymous@hitchhiker.org");
 
     Set<String> mentions = mentionMapper.extractMentionsFromComment(comment.getComment());
     assertThat(mentions).hasSize(2);
     assertThat(mentions).contains("dent");
     assertThat(mentions).contains("_anonymous");
+  }
+
+  @Test
+  void shouldParseUserIdsToDisplayNames() {
+    setupExistingUserMock("dent", "Arthur Dent", "dent@hitchhiker.org");
+    setupExistingUserMock("_anonymous", "SCM Anonymous", "anonymous@hitchhiker.org");
+
+    BasicComment unparsedComment = Comment.createComment("1", "new comment @[dent] @[_anonymous]", "author", new Location());
+    unparsedComment.setMentionUserIds(ImmutableSet.of("dent", "_anonymous"));
+
+    BasicComment parsedComment = mentionMapper.parseMentionsUserIdsToDisplayNames(unparsedComment);
+
+    assertThat(parsedComment.getComment()).isEqualTo("new comment @Arthur Dent @SCM Anonymous");
   }
 
   @Test
@@ -88,8 +103,8 @@ class MentionMapperTest {
   }
 
 
-  private DisplayUser setupExistingUserMock(String name, String email) {
-    Optional<DisplayUser> user = Optional.of(DisplayUser.from(new User(name, name, email)));
+  private DisplayUser setupExistingUserMock(String name, String displayName, String email) {
+    Optional<DisplayUser> user = Optional.of(DisplayUser.from(new User(name, displayName, email)));
     doReturn(user).when(displayManager).get(name);
     return user.get();
   }
