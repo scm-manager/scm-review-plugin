@@ -119,7 +119,6 @@ public class CommentRootResourceTest {
     commentMapper.setReplyMapper(replyMapper);
     commentMapper.setExecutedTransitionMapper(executedTransitionMapper);
     commentMapper.setPossibleTransitionMapper(possibleTransitionMapper);
-    commentMapper.setMentionMapper(mentionMapper);
     replyMapper.setExecutedTransitionMapper(executedTransitionMapper);
     CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder, pullRequestService, branchRevisionResolver);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));

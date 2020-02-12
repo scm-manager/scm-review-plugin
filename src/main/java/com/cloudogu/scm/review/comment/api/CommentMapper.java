@@ -141,8 +141,4 @@ public abstract class CommentMapper {
   public void setPossibleTransitionMapper(PossibleTransitionMapper possibleTransitionMapper) {
     this.possibleTransitionMapper = possibleTransitionMapper;
   }
-
-  public void setMentionMapper(MentionMapper mentionMapper) {
-    this.mentionMapper = mentionMapper;
-  }
 }

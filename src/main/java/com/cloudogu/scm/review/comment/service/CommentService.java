@@ -17,8 +17,6 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
-import sonia.scm.user.DisplayUser;
-import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import java.util.Collection;
@@ -72,10 +70,7 @@ public class CommentService {
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
     initializeNewComment(pullRequestComment, pullRequest, repository.getId());
     String newId = getCommentStore(repository).add(pullRequestId, pullRequestComment);
-    if (!pullRequestComment.getMentionUserIds().isEmpty()) {
-      BasicComment parsedComment = mentionMapper.parseMentionsUserIdsToDisplayNames(pullRequestComment);
-      eventBus.post(new MentionEvent(repository, pullRequest, parsedComment, null, HandlerEventType.CREATE));
-    }
+    fireMentionEventIfMentionsExist(repository, pullRequest, pullRequestComment);
     eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
     return newId;
   }
@@ -91,12 +86,16 @@ public class CommentService {
 
     getCommentStore(repository).update(pullRequestId, originalRootComment);
 
-    if (!reply.getMentionUserIds().isEmpty()) {
-      BasicComment parsedReply = mentionMapper.parseMentionsUserIdsToDisplayNames(reply);
-      eventBus.post(new MentionEvent(repository, pullRequest, parsedReply, null, HandlerEventType.CREATE));
-    }
+    fireMentionEventIfMentionsExist(repository, pullRequest, reply);
     eventBus.post(new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
     return reply.getId();
+  }
+
+  private void fireMentionEventIfMentionsExist(Repository repository, PullRequest pullRequest, BasicComment comment) {
+    if (!comment.getMentionUserIds().isEmpty()) {
+      BasicComment parsedReply = mentionMapper.parseMentionsUserIdsToDisplayNames(comment);
+      eventBus.post(new MentionEvent(repository, pullRequest, parsedReply, null, HandlerEventType.CREATE));
+    }
   }
 
   private void initializeNewComment(BasicComment comment, PullRequest pullRequest, String repositoryId) {
@@ -138,11 +137,15 @@ public class CommentService {
     PermissionCheck.checkModifyComment(repository, rootComment);
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
-    rootComment.setMentionUserIds(mentionMapper.extractMentionsFromComment(changedComment.getComment()));
+    handleMentions(repository, pullRequest, rootComment, clone);
     rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
     getCommentStore(repository).update(pullRequestId, rootComment);
-    postMentionEventIfNewMentionWasAdded(repository, pullRequest, rootComment, clone);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
+  }
+
+  private void handleMentions(Repository repository, PullRequest pullRequest, BasicComment rootComment, BasicComment clone) {
+    rootComment.setMentionUserIds(mentionMapper.extractMentionsFromComment(rootComment.getComment()));
+    postMentionEventIfNewMentionWasAdded(repository, pullRequest, rootComment, clone);
   }
 
   public Collection<CommentTransition> possibleTransitions(String namespace, String name, String pullRequestId, String commentId) {
@@ -193,9 +196,8 @@ public class CommentService {
         Reply clone = reply.clone();
         reply.setComment(changedReply.getComment());
         reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
-        reply.setMentionUserIds(mentionMapper.extractMentionsFromComment(changedReply.getComment()));
+        handleMentions(repository, pullRequest, reply, clone);
         getCommentStore(repository).update(pullRequestId, parent);
-        postMentionEventIfNewMentionWasAdded(repository, pullRequest, reply, clone);
         eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
       }
     );

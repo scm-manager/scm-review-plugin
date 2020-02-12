@@ -20,7 +20,6 @@ public class Comment extends BasicComment {
     comment.setDate(Instant.now());
     comment.setSystemComment(true);
     comment.setComment(key);
-    comment.setMentionUserIds(Collections.emptySet());
     return comment;
   }
 
@@ -31,7 +30,6 @@ public class Comment extends BasicComment {
     comment.setAuthor(author);
     comment.setLocation(location);
     comment.setDate(Instant.now());
-    comment.setMentionUserIds(Collections.emptySet());
 
     return comment;
   }

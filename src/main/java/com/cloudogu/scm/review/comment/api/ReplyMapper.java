@@ -73,13 +73,6 @@ public abstract class ReplyMapper {
   }
 
   @AfterMapping
-  void parseMentions(@MappingTarget Reply reply, ReplyDto dto) {
-    if (mentionMapper != null && !Strings.isNullOrEmpty(dto.getComment())) {
-      reply.setMentionUserIds(mentionMapper.extractMentionsFromComment(dto.getComment()));
-    }
-  }
-
-  @AfterMapping
   void appendTransitions(@MappingTarget ReplyDto target, Reply source, @Context Repository repository, @Context String pullRequestId) {
     executedTransitionMapper.appendTransitions(target, source, repository.getNamespaceAndName(), pullRequestId);
   }

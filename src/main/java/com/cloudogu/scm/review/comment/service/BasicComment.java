@@ -12,7 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -74,9 +76,9 @@ public abstract class BasicComment implements Cloneable {
 
   public Set<String> getMentionUserIds() {
     if (mentionUserIds == null) {
-      return new HashSet<>();
+      return emptySet();
     }
-    return mentionUserIds;
+    return unmodifiableSet(mentionUserIds);
   }
 
   public void setMentionUserIds(Set<String> mentionUserIds) {

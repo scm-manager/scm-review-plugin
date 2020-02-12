@@ -39,11 +39,9 @@ public class MentionMapper {
     Matcher matcher = mentionPattern.matcher(comment);
 
     while (matcher.find()) {
-      for (int j = 0; j <= matcher.groupCount(); j++) {
         String matchingId = matcher.group(1);
         Optional<DisplayUser> displayUser = userDisplayManager.get(matchingId);
         displayUser.ifPresent(user -> mentions.add(user.getId()));
-      }
     }
     return mentions;
   }
