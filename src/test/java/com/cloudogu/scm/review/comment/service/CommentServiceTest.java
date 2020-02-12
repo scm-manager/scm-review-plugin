@@ -8,6 +8,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
+import com.google.common.collect.ImmutableSet;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,7 +41,9 @@ import static java.util.Collections.*;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
@@ -150,6 +153,33 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "createCommentUser")
+  public void shouldExtractMentionsOnAddComment() {
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("trillian"));
+
+    Comment comment = createComment("2", "2. comment @[trillian]", author, new Location());
+    commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getMentionUserIds()).contains("trillian");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldTriggerMentionEventIfNewMentionAdded() {
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("trillian"));
+
+    Comment comment = createComment("2", "2. comment @[trillian]", author, new Location());
+    commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
+
+    assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
+    assertTrue(eventCaptor.getAllValues().stream().anyMatch(event -> event instanceof MentionEvent));
+  }
+
+  @Test
+  @SubjectAware(username = "createCommentUser")
   public void shouldPostEventForNewRootComment() {
     when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
@@ -186,6 +216,35 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "createCommentUser")
+  public void shouldExtractMentionsOnCreateReply() {
+    doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
+    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("dent"));
+    Reply reply = createReply("new reply", "1. comment @[dent]", author);
+
+    commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getReplies()).hasSize(2);
+    assertThat(storedComment.getReplies()).contains(reply);
+    assertThat(storedComment.getReplies().get(1).getId()).isNotEqualTo("new reply @[dent]");
+  }
+
+  @Test
+  @SubjectAware(username = "createCommentUser")
+  public void shouldTriggerMentionEventIfNewMentionAddedOnCreateReply() {
+    doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
+    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("dent"));
+    Reply reply = createReply("new reply", "1. comment @[dent]", author);
+
+    commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
+
+    assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
+    assertTrue(eventCaptor.getAllValues().stream().anyMatch(event -> event instanceof MentionEvent));
+  }
+
+  @Test
+  @SubjectAware(username = "createCommentUser")
   public void shouldPostEventForNewReply() {
     doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
 
@@ -218,6 +277,38 @@ public class CommentServiceTest {
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getComment()).isEqualTo("new comment");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldExtractMentionsOnModifyRootCommentText() {
+    doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
+    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("trillian"));
+    Comment changedRootComment = EXISTING_COMMENT.clone();
+    changedRootComment.setComment("new comment @[trillian]");
+    changedRootComment.setMentionUserIds(EMPTY_SET);
+
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_COMMENT.getId(), changedRootComment);
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getComment()).isEqualTo("new comment @[trillian]");
+    assertThat(storedComment.getMentionUserIds()).contains("trillian");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldTriggerMentionEventIfNewMentionAddedOnModify() {
+    doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
+    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("trillian"));
+    Comment changedRootComment = EXISTING_COMMENT.clone();
+    changedRootComment.setComment("new comment @[trillian]");
+    changedRootComment.setMentionUserIds(EMPTY_SET);
+
+    commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_COMMENT.getId(), changedRootComment);
+
+    assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
+    assertTrue(eventCaptor.getAllValues().stream().anyMatch(event -> event instanceof MentionEvent));
   }
 
   @Test
@@ -349,6 +440,39 @@ public class CommentServiceTest {
     Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getReplies()).hasSize(1);
     assertThat(storedComment.getReplies().get(0).getComment()).isEqualTo("new comment");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldExtractMentionsOnModifyReplyText() {
+    doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
+    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("trillian", "dent"));
+
+    Reply changedReply = EXISTING_REPLY.clone();
+    changedReply.setComment("new comment @[trillian] @[dent]");
+
+    commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getReplies()).hasSize(1);
+    assertThat(storedComment.getReplies().get(0).getComment()).isEqualTo("new comment @[trillian] @[dent]");
+    assertThat(storedComment.getReplies().get(0).getMentionUserIds()).contains("trillian", "dent");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldTriggerMentionEventOnModifyReplyText() {
+    doNothing().when(store).update(eq(PULL_REQUEST_ID), rootCommentCaptor.capture());
+    when(mentionMapper.extractMentionsFromComment(anyString())).thenReturn(ImmutableSet.of("trillian", "dent"));
+
+    Reply changedReply = EXISTING_REPLY.clone();
+    changedReply.setComment("new comment @[trillian] @[dent]");
+
+    commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
+
+    assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
+    assertTrue(eventCaptor.getAllValues().stream().anyMatch(event -> event instanceof MentionEvent));
   }
 
   @Test
