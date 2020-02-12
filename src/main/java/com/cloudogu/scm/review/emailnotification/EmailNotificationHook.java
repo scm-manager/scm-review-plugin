@@ -18,8 +18,8 @@ import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @EagerSingleton
@@ -49,12 +49,8 @@ public class EmailNotificationHook {
   public void handleMentionEvents(MentionEvent event) throws MailSendBatchException {
     Set<String> newMentions;
     if (event.getOldItem() != null) {
-      newMentions = event
-        .getItem()
-        .getMentionUserIds()
-        .stream()
-        .filter(user -> !event.getOldItem().getMentionUserIds().contains(user))
-        .collect(Collectors.toSet());
+      newMentions = new HashSet<>(event.getItem().getMentionUserIds());
+      newMentions.removeAll(event.getOldItem().getMentionUserIds());
     } else {
       newMentions = event.getItem().getMentionUserIds();
     }

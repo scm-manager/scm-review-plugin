@@ -17,6 +17,8 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
+import sonia.scm.user.DisplayUser;
+import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import java.util.Collection;
@@ -48,9 +50,10 @@ public class CommentService {
   private final ScmEventBus eventBus;
   private final CommentInitializer commentInitializer;
   private final MentionMapper mentionMapper;
+  private final UserDisplayManager userDisplayManager;
 
   @Inject
-  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper) {
+  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper, UserDisplayManager userDisplayManager) {
     this.repositoryResolver = repositoryResolver;
     this.pullRequestService = pullRequestService;
     this.storeFactory = storeFactory;
@@ -58,6 +61,7 @@ public class CommentService {
     this.eventBus = eventBus;
     this.commentInitializer = commentInitializer;
     this.mentionMapper = mentionMapper;
+    this.userDisplayManager = userDisplayManager;
   }
 
   public String add(String namespace, String name, String pullRequestId, Comment pullRequestComment) {
@@ -71,6 +75,7 @@ public class CommentService {
     initializeNewComment(pullRequestComment, pullRequest, repository.getId());
     String newId = getCommentStore(repository).add(pullRequestId, pullRequestComment);
     if (!pullRequestComment.getMentionUserIds().isEmpty()) {
+      parseMentionsUserIdsToDisplayNames(pullRequestComment);
       eventBus.post(new MentionEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
     }
     eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
@@ -89,6 +94,7 @@ public class CommentService {
     getCommentStore(repository).update(pullRequestId, originalRootComment);
 
     if (!reply.getMentionUserIds().isEmpty()) {
+      parseMentionsUserIdsToDisplayNames(reply);
       eventBus.post(new MentionEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
     }
     eventBus.post(new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
@@ -265,7 +271,15 @@ public class CommentService {
       }
     }
     if (newMention) {
+      parseMentionsUserIdsToDisplayNames(rootComment);
       eventBus.post(new MentionEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
+    }
+  }
+
+  private void parseMentionsUserIdsToDisplayNames(BasicComment rootComment) {
+    for (String mentionUserId : rootComment.getMentionUserIds()) {
+      Optional<DisplayUser> user = userDisplayManager.get(mentionUserId);
+      user.ifPresent(displayUser -> rootComment.setComment(rootComment.getComment().replaceAll("\\[" + mentionUserId + "]", displayUser.getDisplayName())));
     }
   }
 
