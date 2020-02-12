@@ -1,23 +1,10 @@
 import React from "react";
-import { Mention, SuggestionDataItem } from "react-mentions";
-import { Button, Loading, Level, SubmitButton, Radio, ErrorNotification, apiClient } from "@scm-manager/ui-components";
+import { apiClient, Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
 import { BasicComment, Comment, Location } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { createPullRequestComment } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
 import MentionTextarea from "./MentionTextarea";
-import styled from "styled-components";
-import { connect } from "react-redux";
-import { compose } from "redux";
-import { getUserAutoCompleteLink } from "../index";
-import { mapAutocompleteToSuggestions } from "./mention";
-
-const StyledSuggestion = styled.div`
-  background-color: ${props => props.focused && `#ccecf9`};
-  :hover {
-    background-color: #ccecf9;
-  }
-`;
 
 type Props = WithTranslation & {
   url: string;
@@ -26,7 +13,6 @@ type Props = WithTranslation & {
   onCreation: (comment: Comment) => void;
   autofocus?: boolean;
   reply?: boolean;
-  userAutocompleteLink: string;
 };
 
 type State = {
@@ -198,52 +184,24 @@ class CreateComment extends React.Component<Props, State> {
                 <div className="control">
                   <MentionTextarea
                     value={newComment?.comment}
-                    onChange={this.handleChanges}
-                    onSubmit={this.submit}
+                    comment={newComment}
                     placeholder={t(
                       newComment?.type === "TASK_TODO"
                         ? "scm-review-plugin.comment.addTask"
                         : "scm-review-plugin.comment.addComment"
                     )}
-                  >
-                    <Mention
-                      markup="@[__id__]"
-                      displayTransform={(id: string) => {
-                        const { newComment } = this.state;
-                        return newComment?.mentions && newComment.mentions.length > 0
-                          ? `@${newComment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
-                          : `@${id}`;
-                      }}
-                      trigger="@"
-                      data={(query, callback) =>
-                        mapAutocompleteToSuggestions(this.props.userAutocompleteLink, query, callback)
-                      }
-                      onAdd={(id, displayName) => {
-                        this.setState(prevState => ({
-                          ...prevState,
-                          newComment: {
-                            ...prevState.newComment,
-                            mentions: [...prevState.newComment.mentions, { id, displayName }]
-                          }
-                        }));
-                      }}
-                      renderSuggestion={(
-                        suggestion: SuggestionDataItem,
-                        search: string,
-                        highlightedDisplay: React.ReactNode,
-                        index: number,
-                        focused: boolean
-                      ) => (
-                        <StyledSuggestion className="user" focused={focused} index={index}>
-                          {highlightedDisplay}
-                        </StyledSuggestion>
-                      )}
-                      style={{
-                        color: "transparent"
-                      }}
-                      appendSpaceOnAdd={true}
-                    />
-                  </MentionTextarea>
+                    onAddMention={(id, displayName) => {
+                      this.setState(prevState => ({
+                        ...prevState,
+                        newComment: {
+                          ...prevState.newComment,
+                          mentions: [...prevState.newComment.mentions, { id, displayName }]
+                        }
+                      }));
+                    }}
+                    onChange={this.handleChanges}
+                    onSubmit={this.submit}
+                  />
                 </div>
               </div>
               {errorResult && <ErrorNotification error={errorResult} />}
@@ -280,13 +238,4 @@ class CreateComment extends React.Component<Props, State> {
   }
 }
 
-const mapStateToProps = (state: any) => {
-  const { indexResources } = state;
-  const userAutocompleteLink = getUserAutoCompleteLink(indexResources.links);
-
-  return {
-    userAutocompleteLink
-  };
-};
-
-export default compose(connect(mapStateToProps), withTranslation("plugins"))(CreateComment);
+export default withTranslation("plugins")(CreateComment);

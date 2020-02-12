@@ -1,6 +1,19 @@
 import React, { FC } from "react";
 import styled from "styled-components";
-import { MentionsInput } from "react-mentions";
+import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
+import { mapAutocompleteToSuggestions } from "./mention";
+import { BasicComment } from "../types/PullRequest";
+import { getUserAutoCompleteLink } from "../index";
+import { compose } from "redux";
+import { connect } from "react-redux";
+import { withTranslation } from "react-i18next";
+
+const StyledSuggestion = styled.div`
+  background-color: ${props => props.focused && `#ccecf9`};
+  :hover {
+    background-color: #ccecf9;
+  }
+`;
 
 const StyledMentionsInput = styled(MentionsInput)`
   min-height: 110px;
@@ -45,13 +58,24 @@ const StyledMentionsInput = styled(MentionsInput)`
 type Props = {
   value?: string;
   placeholder?: string;
-  children: any;
+  userAutocompleteLink: string;
+  comment?: BasicComment;
+  onAddMention: (id: string, displayName: string) => void;
   onChange: (event: any) => void;
   onSubmit: () => void;
   onCancel?: () => void;
 };
 
-const MentionTextarea: FC<Props> = ({ value, placeholder, children, onChange, onSubmit, onCancel }) => {
+const MentionTextarea: FC<Props> = ({
+  value,
+  placeholder,
+  userAutocompleteLink,
+  comment,
+  onAddMention,
+  onChange,
+  onSubmit,
+  onCancel
+}) => {
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (onCancel && event.key === "Escape") {
       onCancel();
@@ -77,11 +101,45 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, children, onChange, on
           allowSpaceInQuery={true}
           allowSuggestionsAboveCursor={true}
         >
-          {children}
+          <Mention
+            markup="@[__id__]"
+            displayTransform={(id: string) => {
+              return comment?.mentions && comment.mentions.length > 0
+                ? `@${comment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
+                : `@${id}`;
+            }}
+            trigger="@"
+            data={(query, callback) => mapAutocompleteToSuggestions(userAutocompleteLink, query, callback)}
+            onAdd={onAddMention}
+            renderSuggestion={(
+              suggestion: SuggestionDataItem,
+              search: string,
+              highlightedDisplay: React.ReactNode,
+              index: number,
+              focused: boolean
+            ) => (
+              <StyledSuggestion className="user" focused={focused} index={index}>
+                {highlightedDisplay}
+              </StyledSuggestion>
+            )}
+            style={{
+              color: "transparent"
+            }}
+            appendSpaceOnAdd={true}
+          />
         </StyledMentionsInput>
       </div>
     </div>
   );
 };
 
-export default MentionTextarea;
+const mapStateToProps = (state: any) => {
+  const { indexResources } = state;
+  const userAutocompleteLink = getUserAutoCompleteLink(indexResources.links);
+
+  return {
+    userAutocompleteLink
+  };
+};
+
+export default compose(connect(mapStateToProps), withTranslation("plugins"))(MentionTextarea);

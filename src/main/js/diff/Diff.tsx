@@ -2,14 +2,17 @@ import React, { Dispatch } from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
 import {
-  DiffEventContext,
-  File,
   AnnotationFactoryContext,
+  Button,
+  ButtonGroup,
   DefaultCollapsedFunction,
-  ButtonGroup
+  DiffEventContext,
+  diffs,
+  File,
+  Level,
+  LoadingDiff
 } from "@scm-manager/ui-components";
-import { Location, Comment, PullRequest } from "../types/PullRequest";
-import { Level, Button, LoadingDiff, diffs } from "@scm-manager/ui-components";
+import { Comment, Location, PullRequest } from "../types/PullRequest";
 import { createHunkId, createInlineLocation } from "./locations";
 import PullRequestComment from "../comment/PullRequestComment";
 import CreateComment from "../comment/CreateComment";
@@ -204,7 +207,7 @@ class Diff extends React.Component<Props, State> {
       <>
         {commentIds.map((commentId: string) => (
           <CommentWrapper key={commentId} className="comment-wrapper">
-            <PullRequestComment comment={this.findComment(commentId)} createLink={createLink} dispatcher={dispatch} />
+            <PullRequestComment comment={this.findComment(commentId)} createLink={createLink} dispatch={dispatch} />
           </CommentWrapper>
         ))}
       </>

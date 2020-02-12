@@ -39,18 +39,19 @@ public class MentionMapper {
     Matcher matcher = mentionPattern.matcher(comment);
 
     while (matcher.find()) {
-        String matchingId = matcher.group(1);
-        Optional<DisplayUser> displayUser = userDisplayManager.get(matchingId);
-        displayUser.ifPresent(user -> mentions.add(user.getId()));
+      String matchingId = matcher.group(1);
+      Optional<DisplayUser> displayUser = userDisplayManager.get(matchingId);
+      displayUser.ifPresent(user -> mentions.add(user.getId()));
     }
     return mentions;
   }
 
   public BasicComment parseMentionsUserIdsToDisplayNames(BasicComment rootComment) {
+    BasicComment comment = rootComment.clone();
     for (String mentionUserId : rootComment.getMentionUserIds()) {
       Optional<DisplayUser> user = userDisplayManager.get(mentionUserId);
-      user.ifPresent(displayUser -> rootComment.setComment(rootComment.getComment().replaceAll("\\[" + mentionUserId + "]", displayUser.getDisplayName())));
+      user.ifPresent(displayUser -> comment.setComment(comment.getComment().replaceAll("\\[" + mentionUserId + "]", displayUser.getDisplayName())));
     }
-    return rootComment;
+    return comment;
   }
 }

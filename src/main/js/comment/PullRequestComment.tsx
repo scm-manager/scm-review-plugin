@@ -1,9 +1,8 @@
 import React, { Dispatch } from "react";
 import classNames from "classnames";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Mention, SuggestionDataItem } from "react-mentions";
 import styled from "styled-components";
-import { apiClient, confirmAlert, DateFromNow, ErrorNotification, Loading, Textarea } from "@scm-manager/ui-components";
+import { apiClient, confirmAlert, DateFromNow, ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import { BasicComment, Comment, PossibleTransition } from "../types/PullRequest";
 import { deletePullRequestComment, transformPullRequestComment, updatePullRequestComment } from "../pullRequest";
@@ -19,10 +18,6 @@ import Replies from "./Replies";
 import ReplyEditor from "./ReplyEditor";
 import { createReply, deleteComment, deleteReply, updateComment, updateReply } from "./actiontypes";
 import MentionTextarea from "./MentionTextarea";
-import { mapAutocompleteToSuggestions } from "./mention";
-import { getUserAutoCompleteLink } from "../index";
-import { compose } from "redux";
-import { connect } from "react-redux";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -32,19 +27,11 @@ const AuthorName = styled.span`
   margin-left: 5px;
 `;
 
-const StyledSuggestion = styled.div`
-  background-color: ${props => props.focused && `#ccecf9`};
-  :hover {
-    background-color: #ccecf9;
-  }
-`;
-
 type Props = WithTranslation & {
   parent?: Comment;
   comment: Comment;
-  dispatcher: Dispatch<any>; // ???
+  dispatch: Dispatch<any>; // ???
   createLink?: string;
-  userAutocompleteLink: string;
 };
 
 type State = {
@@ -126,20 +113,20 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   dispatchUpdate = (comment: Comment) => {
-    const { parent, dispatcher } = this.props;
+    const { parent, dispatch } = this.props;
     if (parent) {
-      dispatcher(updateReply(parent.id, comment));
+      dispatch(updateReply(parent.id, comment));
     } else {
-      dispatcher(updateComment(comment));
+      dispatch(updateComment(comment));
     }
   };
 
   dispatchDelete = (comment: Comment) => {
-    const { parent, dispatcher } = this.props;
+    const { parent, dispatch } = this.props;
     if (parent) {
-      dispatcher(deleteReply(parent.id, comment));
+      dispatch(deleteReply(parent.id, comment));
     } else {
-      dispatcher(deleteComment(comment));
+      dispatch(deleteComment(comment));
     }
   };
 
@@ -175,7 +162,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   delete = () => {
-    const { parent, comment, dispatcher } = this.props;
+    const { parent, comment, dispatch } = this.props;
     if (comment._links.delete) {
       const href = (comment._links.delete as Link).href;
       this.setState({
@@ -186,7 +173,7 @@ class PullRequestComment extends React.Component<Props, State> {
         .then(response => {
           this.dispatchDelete(comment);
           if (parent && this.getChildCount(parent) === 1) {
-            return this.fetchRefreshed(parent, (c: Comment) => dispatcher(updateComment(c))).then(() => {
+            return this.fetchRefreshed(parent, (c: Comment) => dispatch(updateComment(c))).then(() => {
               this.setState({
                 loading: false
               });
@@ -308,46 +295,20 @@ class PullRequestComment extends React.Component<Props, State> {
       <>
         <MentionTextarea
           value={updatedComment?.comment ? updatedComment.comment : ""}
+          comment={updatedComment}
+          onAddMention={(id, displayName) => {
+            this.setState(prevState => ({
+              ...prevState,
+              updatedComment: {
+                ...prevState.updatedComment,
+                mentions: [...prevState.updatedComment.mentions, { id, displayName }]
+              }
+            }));
+          }}
           onChange={this.handleChanges}
           onSubmit={this.update}
           onCancel={this.cancelUpdate}
-        >
-          <Mention
-            markup="@[__id__]"
-            displayTransform={(id: string) => {
-              const { updatedComment } = this.state;
-              return updatedComment?.mentions && updatedComment.mentions.length > 0
-                ? `@${updatedComment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
-                : `@${id}`;
-            }}
-            trigger="@"
-            data={(query, callback) => mapAutocompleteToSuggestions(this.props.userAutocompleteLink, query, callback)}
-            onAdd={(id, displayName) => {
-              this.setState(prevState => ({
-                ...prevState,
-                updatedComment: {
-                  ...prevState.updatedComment,
-                  mentions: [...prevState.updatedComment.mentions, { id, displayName }]
-                }
-              }));
-            }}
-            renderSuggestion={(
-              suggestion: SuggestionDataItem,
-              search: string,
-              highlightedDisplay: React.ReactNode,
-              index: number,
-              focused: boolean
-            ) => (
-              <StyledSuggestion className="user" focused={focused}>
-                {highlightedDisplay}
-              </StyledSuggestion>
-            )}
-            style={{
-              color: "transparent"
-            }}
-            appendSpaceOnAdd={true}
-          />
-        </MentionTextarea>
+        />
         {error && <ErrorNotification error={error} />}
       </>
     );
@@ -373,7 +334,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   render() {
-    const { parent, comment, dispatcher, t } = this.props;
+    const { parent, comment, dispatch, t } = this.props;
     const { loading, collapsed, edit, contextModalOpen } = this.state;
 
     if (loading) {
@@ -429,7 +390,7 @@ class PullRequestComment extends React.Component<Props, State> {
             {icons}
           </article>
         </CommentSpacingWrapper>
-        {!collapsed && <Replies comment={comment} createLink={this.props.createLink} dispatch={dispatcher} />}
+        {!collapsed && <Replies comment={comment} createLink={this.props.createLink} dispatch={dispatch} />}
         {this.createReplyEditorIfNeeded(comment.id)}
       </>
     );
@@ -454,8 +415,8 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   onReplyCreated = (reply: Comment) => {
-    const { parent, comment, dispatcher } = this.props;
-    dispatcher(createReply(parent ? parent.id : comment.id, reply));
+    const { parent, comment, dispatch } = this.props;
+    dispatch(createReply(parent ? parent.id : comment.id, reply));
     this.closeReplyEditor();
   };
 
@@ -472,13 +433,4 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 }
 
-const mapStateToProps = (state: any) => {
-  const { indexResources } = state;
-  const userAutocompleteLink = getUserAutoCompleteLink(indexResources.links);
-
-  return {
-    userAutocompleteLink
-  };
-};
-
-export default compose(connect(mapStateToProps), withTranslation("plugins"))(PullRequestComment);
+export default withTranslation("plugins")(PullRequestComment);
