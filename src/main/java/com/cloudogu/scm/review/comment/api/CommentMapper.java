@@ -96,7 +96,6 @@ public abstract class CommentMapper {
         .map(reply -> replyMapper.map(reply, repository, pullRequestId, source, revisions))
         .collect(toList())
     );
-    List<HalRepresentation> replies = target.getEmbedded().getItemsBy("replies");
     if (!source.getType().equals(CommentType.TASK_DONE)) {
       appendReplyLink(target, repository, pullRequestId, source.getId(), revisions);
     }
@@ -115,13 +114,6 @@ public abstract class CommentMapper {
   @Named("mapMentions")
   Set<DisplayUser> appendMentions(Set<String> userIds) {
     return mentionMapper.mapMentions(userIds);
-  }
-
-  @AfterMapping
-  void parseMentions(@MappingTarget Comment comment, CommentDto dto) {
-    if (mentionMapper != null && !Strings.isNullOrEmpty(dto.getComment())) {
-      comment.setMentionUserIds(mentionMapper.extractMentionsFromComment(dto.getComment()));
-    }
   }
 
   Integer mapOptional(OptionalInt optionalInt) {

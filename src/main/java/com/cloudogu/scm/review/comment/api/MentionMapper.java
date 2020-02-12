@@ -33,7 +33,7 @@ public class MentionMapper {
     return mentions;
   }
 
-  Set<String> extractMentionsFromComment(String comment) {
+  public Set<String> extractMentionsFromComment(String comment) {
     Set<String> mentions = new HashSet<>();
     Matcher matcher = mentionPattern.matcher(comment);
 

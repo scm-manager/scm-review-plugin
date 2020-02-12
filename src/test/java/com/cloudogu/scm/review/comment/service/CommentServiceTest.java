@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
@@ -24,11 +25,9 @@ import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
-import java.util.Collections;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
@@ -95,6 +94,9 @@ public class CommentServiceTest {
   @Mock
   private CommentInitializer commentInitializer;
 
+  @Mock
+  private MentionMapper mentionMapper;
+
   @Captor
   private ArgumentCaptor<Comment> rootCommentCaptor;
   @Captor
@@ -108,7 +110,7 @@ public class CommentServiceTest {
     doNothing().when(eventBus).post(eventCaptor.capture());
 
     when(repositoryResolver.resolve(REPOSITORY.getNamespaceAndName())).thenReturn(REPOSITORY);
-    commentService = new CommentService(repositoryResolver, pullRequestService, storeFactory, keyGenerator, eventBus, commentInitializer);
+    commentService = new CommentService(repositoryResolver, pullRequestService, storeFactory, keyGenerator, eventBus, commentInitializer, mentionMapper);
 
     lenient().when(store.getAll(PULL_REQUEST_ID)).thenReturn(singletonList(EXISTING_COMMENT));
 

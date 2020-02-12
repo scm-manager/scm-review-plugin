@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
@@ -46,15 +47,17 @@ public class CommentService {
   private final KeyGenerator keyGenerator;
   private final ScmEventBus eventBus;
   private final CommentInitializer commentInitializer;
+  private final MentionMapper mentionMapper;
 
   @Inject
-  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer) {
+  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper) {
     this.repositoryResolver = repositoryResolver;
     this.pullRequestService = pullRequestService;
     this.storeFactory = storeFactory;
     this.keyGenerator = keyGenerator;
     this.eventBus = eventBus;
     this.commentInitializer = commentInitializer;
+    this.mentionMapper = mentionMapper;
   }
 
   public String add(String namespace, String name, String pullRequestId, Comment pullRequestComment) {
@@ -92,8 +95,9 @@ public class CommentService {
     return reply.getId();
   }
 
-  private void initializeNewComment(BasicComment pullRequestComment, PullRequest pullRequest, String repositoryId) {
-    commentInitializer.initialize(pullRequestComment, pullRequest, repositoryId);
+  private void initializeNewComment(BasicComment comment, PullRequest pullRequest, String repositoryId) {
+    comment.setMentionUserIds(mentionMapper.extractMentionsFromComment(comment.getComment()));
+    commentInitializer.initialize(comment, pullRequest, repositoryId);
   }
 
   private String getCurrentUserId() {
@@ -130,7 +134,7 @@ public class CommentService {
     PermissionCheck.checkModifyComment(repository, rootComment);
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
-    rootComment.setMentionUserIds(changedComment.getMentionUserIds());
+    rootComment.setMentionUserIds(mentionMapper.extractMentionsFromComment(changedComment.getComment()));
     rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
     getCommentStore(repository).update(pullRequestId, rootComment);
     postMentionEventIfNewMentionWasAdded(repository, pullRequest, rootComment, clone);
@@ -185,7 +189,7 @@ public class CommentService {
         Reply clone = reply.clone();
         reply.setComment(changedReply.getComment());
         reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
-        reply.setMentionUserIds(changedReply.getMentionUserIds());
+        reply.setMentionUserIds(mentionMapper.extractMentionsFromComment(changedReply.getComment()));
         getCommentStore(repository).update(pullRequestId, parent);
         postMentionEventIfNewMentionWasAdded(repository, pullRequest, reply, clone);
         eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
