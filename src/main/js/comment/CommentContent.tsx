@@ -15,9 +15,8 @@ const CommentContent: FC<Props> = ({ comment }) => {
   useEffect(() => {
     let content = message;
     comment.mentions.forEach(m => {
-      let userId = m.id;
-      let re = new RegExp("@\\[" + userId + "\\]", 'g');
-      content = content.replace(re, `[${m.displayName}](mailto:${m.mail})`);
+      const matcher = new RegExp("@\\[" + m.id + "\\]", 'g');
+      content = content.replace(matcher, `[${m.displayName}](mailto:${m.mail})`);
     });
     setMessage(content);
   }, [comment]);

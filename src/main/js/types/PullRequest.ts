@@ -1,5 +1,5 @@
 import { Collection, DisplayedUser, Links } from "@scm-manager/ui-types";
-import {SuggestionDataItem} from "react-mentions";
+import { SuggestionDataItem } from "react-mentions";
 
 export type Reviewer = DisplayedUser & {
   approved: boolean;
@@ -57,7 +57,7 @@ export type Mention = {
   id: string;
   displayName: string;
   mail: string;
-}
+};
 
 export type Context = {
   lines: ContextLine[];
