@@ -7,16 +7,16 @@ import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   Button,
   ButtonGroup,
+  ConflictError,
   DateFromNow,
   ErrorNotification,
   Icon,
   Loading,
   MarkdownView,
+  NotFoundError,
   Tag,
   Title,
-  Tooltip,
-  ConflictError,
-  NotFoundError
+  Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import { check, merge, reject } from "./pullRequest";
@@ -43,7 +43,6 @@ type State = {
   targetBranchDeleted: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
-  renderedMarkdown: string;
 };
 
 const MediaContent = styled.div.attrs(() => ({
@@ -232,8 +231,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeButtonLoading,
       mergeCheck,
       targetBranchDeleted,
-      rejectButtonLoading,
-      renderedMarkdown
+      rejectButtonLoading
     } = this.state;
 
     if (error) {
@@ -245,11 +243,11 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
 
     let description = null;
-    if (renderedMarkdown) {
+    if (pullRequest.description) {
       description = (
         <div className="media">
           <MediaContent>
-            <MarkdownView className="content" content={renderedMarkdown} />
+            <MarkdownView className="content" content={pullRequest.description} />
           </MediaContent>
         </div>
       );
