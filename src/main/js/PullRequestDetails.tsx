@@ -12,7 +12,6 @@ import {
   Icon,
   Loading,
   MarkdownView,
-  Notification,
   Tag,
   Title,
   Tooltip,
@@ -44,6 +43,7 @@ type State = {
   targetBranchDeleted: boolean;
   mergeButtonLoading: boolean;
   rejectButtonLoading: boolean;
+  renderedMarkdown: string;
 };
 
 const MediaContent = styled.div.attrs(() => ({
@@ -232,7 +232,8 @@ class PullRequestDetails extends React.Component<Props, State> {
       mergeButtonLoading,
       mergeCheck,
       targetBranchDeleted,
-      rejectButtonLoading
+      rejectButtonLoading,
+      renderedMarkdown
     } = this.state;
 
     if (error) {
@@ -244,11 +245,11 @@ class PullRequestDetails extends React.Component<Props, State> {
     }
 
     let description = null;
-    if (pullRequest.description) {
+    if (renderedMarkdown) {
       description = (
         <div className="media">
           <MediaContent>
-            <MarkdownView className="content" content={pullRequest.description} />
+            <MarkdownView className="content" content={renderedMarkdown} />
           </MediaContent>
         </div>
       );

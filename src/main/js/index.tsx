@@ -31,7 +31,7 @@ binder.bind("repository.route", NewPullRequestRoute);
 
 //  show single pullRequest
 
-function getUserAutoCompleteLink(indexLinks) {
+export function getUserAutoCompleteLink(indexLinks) {
   if (indexLinks && indexLinks.autocomplete) {
     const link = indexLinks.autocomplete.find(i => i.name === "users");
     if (link) {

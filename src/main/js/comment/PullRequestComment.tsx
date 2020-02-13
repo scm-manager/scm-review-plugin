@@ -2,7 +2,7 @@ import React, { Dispatch } from "react";
 import classNames from "classnames";
 import { WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
-import { confirmAlert, DateFromNow, ErrorNotification, Loading, Textarea, apiClient } from "@scm-manager/ui-components";
+import { apiClient, confirmAlert, DateFromNow, ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import { BasicComment, Comment, PossibleTransition } from "../types/PullRequest";
 import { deletePullRequestComment, transformPullRequestComment, updatePullRequestComment } from "../pullRequest";
@@ -17,6 +17,7 @@ import EditButtons from "./EditButtons";
 import Replies from "./Replies";
 import ReplyEditor from "./ReplyEditor";
 import { createReply, deleteComment, deleteReply, updateComment, updateReply } from "./actiontypes";
+import MentionTextarea from "./MentionTextarea";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -260,12 +261,12 @@ class PullRequestComment extends React.Component<Props, State> {
     }));
   };
 
-  handleUpdateChange = (comment: string) => {
+  handleChanges = (event: any) => {
     this.setState({
       changed: true,
       updatedComment: {
         ...this.state.updatedComment,
-        comment: comment
+        comment: event.target.value
       }
     });
   };
@@ -289,12 +290,22 @@ class PullRequestComment extends React.Component<Props, State> {
 
   createMessageEditor = () => {
     const { updatedComment, error } = this.state;
+
     return (
       <>
-        <Textarea
-          name="comment"
-          value={updatedComment.comment}
-          onChange={this.handleUpdateChange}
+        <MentionTextarea
+          value={updatedComment?.comment ? updatedComment.comment : ""}
+          comment={updatedComment}
+          onAddMention={(id, displayName) => {
+            this.setState(prevState => ({
+              ...prevState,
+              updatedComment: {
+                ...prevState.updatedComment,
+                mentions: [...prevState.updatedComment.mentions, { id, displayName }]
+              }
+            }));
+          }}
+          onChange={this.handleChanges}
           onSubmit={this.update}
           onCancel={this.cancelUpdate}
         />
