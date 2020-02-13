@@ -12,7 +12,6 @@ import {
   ErrorNotification,
   Icon,
   Loading,
-  MarkdownView,
   NotFoundError,
   Tag,
   Title,
@@ -27,6 +26,7 @@ import ApprovalContainer from "./ApprovalContainer";
 import SubscriptionContainer from "./SubscriptionContainer";
 import ReviewerList from "./ReviewerList";
 import ChangeNotification from "./ChangeNotification";
+import ReducedMarkdownView from "./ReducedMarkdownView";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -247,7 +247,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       description = (
         <div className="media">
           <MediaContent>
-            <MarkdownView className="content" content={pullRequest.description} />
+            <ReducedMarkdownView content={pullRequest.description} />
           </MediaContent>
         </div>
       );
