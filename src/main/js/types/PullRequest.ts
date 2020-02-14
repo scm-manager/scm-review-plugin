@@ -1,5 +1,4 @@
 import { Collection, DisplayedUser, Links } from "@scm-manager/ui-types";
-import { SuggestionDataItem } from "react-mentions";
 
 export type Reviewer = DisplayedUser & {
   approved: boolean;
@@ -101,7 +100,6 @@ export type PossibleTransition = {
 
 export type MergeCommit = {
   commitMessage: string;
-  author: DisplayedUser;
   shouldDeleteSourceBranch: boolean;
 };
 

@@ -2,11 +2,9 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.BranchProtectionHook;
-import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.api.Command;
@@ -187,8 +185,6 @@ public class MergeService {
     mergeCommand.setTargetBranch(pullRequest.getTarget());
     mergeCommand.setMessageTemplate(mergeCommitDto.getCommitMessage());
     mergeCommand.setMergeStrategy(strategy);
-    DisplayedUserDto author = mergeCommitDto.getAuthor();
-    mergeCommand.setAuthor(new Person(author.getDisplayName(), author.getMail()));
   }
 
   private MergeCommandBuilder prepareDryRun(RepositoryService repositoryService, String sourceBranch, String targetBranch) {

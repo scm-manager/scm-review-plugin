@@ -262,7 +262,6 @@ public class MergeServiceTest {
 
   private MergeCommitDto createMergeCommit(boolean deleteBranch) {
     MergeCommitDto mergeCommit = new MergeCommitDto();
-    mergeCommit.setAuthor(new DisplayedUserDto("philip", "Philip J Fry", "philip@fry.com"));
     mergeCommit.setShouldDeleteSourceBranch(deleteBranch);
     return mergeCommit;
   }
