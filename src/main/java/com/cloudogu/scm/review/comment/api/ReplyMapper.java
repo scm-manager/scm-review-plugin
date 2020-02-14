@@ -5,6 +5,7 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
+import com.google.common.base.Strings;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -12,9 +13,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+
+import java.util.Set;
 
 import static de.otto.edison.hal.Link.link;
 
@@ -27,10 +32,14 @@ public abstract class ReplyMapper {
   private CommentPathBuilder commentPathBuilder;
   @Inject
   private ExecutedTransitionMapper executedTransitionMapper;
+  @Inject
+  private MentionMapper mentionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
+  @Mapping(target = "mentions", source = "mentionUserIds", qualifiedByName = "mapMentions")
   abstract ReplyDto map(Reply reply, @Context Repository repository, @Context String pullRequestId, @Context Comment comment, @Context BranchRevisionResolver.RevisionResult revisions);
 
+  @Mapping(target = "mentionUserIds", ignore = true)
   abstract Reply map(ReplyDto replyDto);
 
   DisplayedUserDto mapAuthor(String authorId) {
@@ -56,6 +65,11 @@ public abstract class ReplyMapper {
       linksBuilder.single(link("delete", commentPathBuilder.createDeleteReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId(), revisions)));
     }
     target.add(linksBuilder.build());
+  }
+
+  @Named("mapMentions")
+  Set<DisplayUser> appendMentions(Set<String> userIds) {
+    return mentionMapper.mapMentions(userIds);
   }
 
   @AfterMapping

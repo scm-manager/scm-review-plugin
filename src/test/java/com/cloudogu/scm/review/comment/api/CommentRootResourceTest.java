@@ -93,6 +93,8 @@ public class CommentRootResourceTest {
   private PullRequestService pullRequestService;
   @Mock
   private BranchRevisionResolver branchRevisionResolver;
+  @Mock
+  private MentionMapper mentionMapper;
 
   @Mock
   private UserDisplayManager userDisplayManager;

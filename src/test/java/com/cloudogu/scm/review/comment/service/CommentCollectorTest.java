@@ -12,6 +12,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -36,7 +37,7 @@ class CommentCollectorTest {
     List<Comment> prcs = ImmutableList.of(one, two);
     when(commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId())).thenReturn(prcs);
 
-    List<Comment> comments = collector.collectNonOutdated(repository, pullRequest);
+    Stream<Comment> comments = collector.collectNonOutdated(repository, pullRequest);
     assertThat(comments).containsOnly(one);
   }
 }

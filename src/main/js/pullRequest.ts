@@ -147,6 +147,14 @@ export function createDiffUrl(repository: Repository, source: string, target: st
   }
 }
 
+export function postReviewMark(url: string, path: string) {
+  return apiClient.post(url.replace("{path}", path), {});
+}
+
+export function deleteReviewMark(url: string, path: string) {
+  return apiClient.delete(url.replace("{path}", path));
+}
+
 function createIncomingUrl(repository: Repository, linkName: string, source: string, target: string) {
   const link = repository._links[linkName];
   if (link && (link as Link).templated) {

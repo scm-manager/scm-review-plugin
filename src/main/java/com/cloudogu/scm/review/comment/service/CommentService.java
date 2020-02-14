@@ -2,6 +2,7 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
+import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
@@ -36,7 +37,8 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
-@EagerSingleton @Extension
+@EagerSingleton
+@Extension
 public class CommentService {
 
   private final RepositoryResolver repositoryResolver;
@@ -45,15 +47,17 @@ public class CommentService {
   private final KeyGenerator keyGenerator;
   private final ScmEventBus eventBus;
   private final CommentInitializer commentInitializer;
+  private final MentionMapper mentionMapper;
 
   @Inject
-  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer) {
+  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper) {
     this.repositoryResolver = repositoryResolver;
     this.pullRequestService = pullRequestService;
     this.storeFactory = storeFactory;
     this.keyGenerator = keyGenerator;
     this.eventBus = eventBus;
     this.commentInitializer = commentInitializer;
+    this.mentionMapper = mentionMapper;
   }
 
   public String add(String namespace, String name, String pullRequestId, Comment pullRequestComment) {
@@ -66,6 +70,7 @@ public class CommentService {
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
     initializeNewComment(pullRequestComment, pullRequest, repository.getId());
     String newId = getCommentStore(repository).add(pullRequestId, pullRequestComment);
+    fireMentionEventIfMentionsExist(repository, pullRequest, pullRequestComment);
     eventBus.post(new CommentEvent(repository, pullRequest, pullRequestComment, null, HandlerEventType.CREATE));
     return newId;
   }
@@ -81,12 +86,21 @@ public class CommentService {
 
     getCommentStore(repository).update(pullRequestId, originalRootComment);
 
+    fireMentionEventIfMentionsExist(repository, pullRequest, reply);
     eventBus.post(new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
     return reply.getId();
   }
 
-  private void initializeNewComment(BasicComment pullRequestComment, PullRequest pullRequest, String repositoryId) {
-    commentInitializer.initialize(pullRequestComment, pullRequest, repositoryId);
+  private void fireMentionEventIfMentionsExist(Repository repository, PullRequest pullRequest, BasicComment comment) {
+    if (!comment.getMentionUserIds().isEmpty()) {
+      BasicComment parsedReply = mentionMapper.parseMentionsUserIdsToDisplayNames(comment);
+      eventBus.post(new MentionEvent(repository, pullRequest, parsedReply, null, HandlerEventType.CREATE));
+    }
+  }
+
+  private void initializeNewComment(BasicComment comment, PullRequest pullRequest, String repositoryId) {
+    comment.setMentionUserIds(mentionMapper.extractMentionsFromComment(comment.getComment()));
+    commentInitializer.initialize(comment, pullRequest, repositoryId);
   }
 
   private String getCurrentUserId() {
@@ -95,7 +109,6 @@ public class CommentService {
 
   public void markAsOutdated(String namespace, String name, String pullRequestId, String commentId) {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
-    PermissionCheck.checkComment(repository);
     Comment rootComment = findRootComment(repository, pullRequestId, commentId)
       .<NotFoundException>orElseThrow(() -> {
           throw notFound(entity(BasicComment.class, commentId)
@@ -104,7 +117,6 @@ public class CommentService {
         }
       );
 
-    PermissionCheck.checkModifyComment(repository, rootComment);
     if (!rootComment.isOutdated()) {
       rootComment.setOutdated(true);
       getCommentStore(repository).update(pullRequestId, rootComment);
@@ -125,9 +137,15 @@ public class CommentService {
     PermissionCheck.checkModifyComment(repository, rootComment);
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
+    handleMentions(repository, pullRequest, rootComment, clone);
     rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
     getCommentStore(repository).update(pullRequestId, rootComment);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
+  }
+
+  private void handleMentions(Repository repository, PullRequest pullRequest, BasicComment rootComment, BasicComment clone) {
+    rootComment.setMentionUserIds(mentionMapper.extractMentionsFromComment(rootComment.getComment()));
+    postMentionEventIfNewMentionWasAdded(repository, pullRequest, rootComment, clone);
   }
 
   public Collection<CommentTransition> possibleTransitions(String namespace, String name, String pullRequestId, String commentId) {
@@ -178,6 +196,7 @@ public class CommentService {
         Reply clone = reply.clone();
         reply.setComment(changedReply.getComment());
         reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
+        handleMentions(repository, pullRequest, reply, clone);
         getCommentStore(repository).update(pullRequestId, parent);
         eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
       }
@@ -240,6 +259,21 @@ public class CommentService {
         .in(Comment.class, commentId)
         .in(PullRequest.class, pullRequestId)
         .in(new NamespaceAndName(namespace, name))));
+  }
+
+
+  private void postMentionEventIfNewMentionWasAdded(Repository repository, PullRequest pullRequest, BasicComment rootComment, BasicComment clone) {
+    boolean newMention = false;
+    for (String userId : rootComment.getMentionUserIds()) {
+      if (!clone.getMentionUserIds().contains(userId)) {
+        newMention = true;
+        break;
+      }
+    }
+    if (newMention) {
+      BasicComment parsedComment = mentionMapper.parseMentionsUserIdsToDisplayNames(rootComment);
+      eventBus.post(new MentionEvent(repository, pullRequest, parsedComment, clone, HandlerEventType.MODIFY));
+    }
   }
 
   private CommentStore getCommentStore(Repository repository) {

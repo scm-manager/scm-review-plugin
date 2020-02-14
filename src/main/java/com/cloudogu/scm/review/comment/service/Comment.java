@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.cloudogu.scm.review.comment.service.CommentType.COMMENT;
@@ -29,6 +30,7 @@ public class Comment extends BasicComment {
     comment.setAuthor(author);
     comment.setLocation(location);
     comment.setDate(Instant.now());
+
     return comment;
   }
 
@@ -57,7 +59,9 @@ public class Comment extends BasicComment {
     return systemComment;
   }
 
-  public boolean isOutdated() { return outdated; }
+  public boolean isOutdated() {
+    return outdated;
+  }
 
   public List<Reply> getReplies() {
     return unmodifiableList(replies);

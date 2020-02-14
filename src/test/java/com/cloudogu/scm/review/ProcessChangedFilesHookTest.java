@@ -6,6 +6,8 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestCollector;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,16 +25,19 @@ import sonia.scm.repository.RepositoryTestData;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class FlagCommentsAsOutdatedHookTest {
+class ProcessChangedFilesHookTest {
 
   @Mock
   private PullRequestCollector pullRequestCollector;
@@ -42,12 +47,14 @@ class FlagCommentsAsOutdatedHookTest {
 
   @Mock
   private CommentService commentService;
+  @Mock
+  private PullRequestService pullRequestService;
 
   @Mock
   private ModificationCollector modificationCollector;
 
   @InjectMocks
-  private FlagCommentsAsOutdatedHook hook;
+  private ProcessChangedFilesHook hook;
 
   private Repository repository;
 
@@ -60,78 +67,83 @@ class FlagCommentsAsOutdatedHookTest {
   }
 
   @Test
-  void shouldMarkAllGlobalCommentsAsOutdated() throws IOException {
-    Comment one = Comment.createSystemComment("awesome");
-    Comment two = Comment.createSystemComment("with-location");
+  void shouldMarkAllGlobalCommentsAsOutdated() {
+    Comment one = Comment.createComment("1", "awesome", null, null);
+    Comment two = Comment.createComment("2", "with-location", null, null);
     two.setLocation(new Location("pom.xml", null, null, null));
 
     flagAffectedComments(one, two);
 
-    assertThat(one.isOutdated()).isTrue();
-    assertThat(two.isOutdated()).isFalse();
-
-    verifyChanged(one);
+    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
+    verify(commentService, never()).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), two.getId());
   }
 
   @Test
   void shouldMarkAffectedFileCommentsAsOutdated() throws IOException {
-    Comment one = Comment.createSystemComment("awesome");
-    one.setLocation(new Location("some", null, null, null));
-    Comment two = Comment.createSystemComment("with-location");
-    two.setLocation(new Location("pom.xml", null, null, null));
-
-    List<Changeset> changesets = ImmutableList.of(
-      new Changeset(),
-      new Changeset()
-    );
-
-    PostReceiveRepositoryHookEvent event = prepareEvent(one, two);
-    when(event.getContext().getChangesetProvider().getChangesets()).thenReturn(changesets);
+    Comment one = Comment.createComment("1", "awesome", null, new Location("some"));
+    Comment two = Comment.createComment("2", "with-location", null, new Location("pom.xml"));
 
     Set<String> modifications = ImmutableSet.of("pom.xml");
 
-    when(modificationCollector.collect(any(), any())).thenReturn(modifications);
+    when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
 
     flagAffectedComments(one, two);
 
-    assertThat(one.isOutdated()).isFalse();
-    assertThat(two.isOutdated()).isTrue();
-
-    verifyChanged(two);
+    verify(commentService, never()).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
+    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), two.getId());
   }
 
   @Test
   void shouldNotCollectModificationWithoutFileComments() throws IOException {
     Comment one = Comment.createSystemComment("awesome");
 
-    List<Changeset> changesets = ImmutableList.of(
-      new Changeset(),
-      new Changeset()
-    );
-
-    PostReceiveRepositoryHookEvent event = prepareEvent(one);
-    when(event.getContext().getChangesetProvider().getChangesets()).thenReturn(changesets);
-
-    hook.flagAffectedComments(event);
+    flagAffectedComments(one);
 
     verify(modificationCollector, never()).collect(any(), any());
   }
 
-  private void flagAffectedComments(Comment one, Comment two) throws IOException {
-    PostReceiveRepositoryHookEvent event = prepareEvent(one, two);
+  @Test
+  void shouldRemoveReviewMarksForAffectedFiles() throws IOException {
+    Set<String> modifications = ImmutableSet.of("pom.xml");
+    when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
 
-    hook.flagAffectedComments(event);
+    ReviewMark reviewMark = new ReviewMark("pom.xml", "dent");
+    pullRequest.getReviewMarks().add(reviewMark);
+
+    flagAffectedComments();
+
+    verify(pullRequestService).removeReviewMarks(repository, "id", asList(reviewMark));
   }
 
-  private void verifyChanged(Comment one) {
-    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
+  @Test
+  void shouldNotTouchReviewMarksForUnaffectedFiles() throws IOException {
+    Set<String> modifications = ImmutableSet.of("pom.xml");
+    when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
+
+    ReviewMark reviewMark = new ReviewMark("other.txt", "dent");
+    pullRequest.getReviewMarks().add(reviewMark);
+
+    flagAffectedComments();
+
+    assertThat(pullRequest.getReviewMarks()).contains(reviewMark);
+  }
+
+  private void flagAffectedComments(Comment... comments) {
+    PostReceiveRepositoryHookEvent event = prepareEvent(comments);
+
+    hook.checkChangedFiles(event);
   }
 
   private PostReceiveRepositoryHookEvent prepareEvent(Comment... comments) {
+    when(commentCollector.collectNonOutdated(repository, pullRequest)).thenReturn(Stream.of(comments));
     List<String> branches = ImmutableList.of(pullRequest.getSource(), pullRequest.getTarget());
     PostReceiveRepositoryHookEvent event = createRepositoryHookEvent(branches);
     when(pullRequestCollector.collectAffectedPullRequests(repository, branches)).thenReturn(ImmutableList.of(pullRequest));
-    when(commentCollector.collectNonOutdated(repository, pullRequest)).thenReturn(ImmutableList.copyOf(comments));
+    List<Changeset> changesets = ImmutableList.of(
+      new Changeset(),
+      new Changeset()
+    );
+    when(event.getContext().getChangesetProvider().getChangesets()).thenReturn(changesets);
     return event;
   }
 

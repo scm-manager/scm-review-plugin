@@ -8,9 +8,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -21,6 +25,7 @@ public abstract class BasicComment implements Cloneable {
   private String author;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant date;
+  private Set<String> mentionUserIds;
 
   private List<ExecutedTransition> executedTransitions = new ArrayList<>();
 
@@ -66,6 +71,18 @@ public abstract class BasicComment implements Cloneable {
 
   void addTransition(ExecutedTransition<?> transition) {
     this.executedTransitions.add(transition);
+  }
+
+
+  public Set<String> getMentionUserIds() {
+    if (mentionUserIds == null) {
+      return emptySet();
+    }
+    return unmodifiableSet(mentionUserIds);
+  }
+
+  public void setMentionUserIds(Set<String> mentionUserIds) {
+    this.mentionUserIds = mentionUserIds;
   }
 
   public BasicComment clone() {

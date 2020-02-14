@@ -13,7 +13,10 @@
     },
     "diff": {
       "notSupported": "Diffs for pull request are not supported by the type of repository",
-      "collapseDiffs": "Collapse"
+      "collapseDiffs": "Collapse",
+      "markReviewed": "Mark file as reviewed. This is for convenience only. Marked files are collapsed by default.",
+      "markNotReviewed": "Remove review mark from file.",
+      "addComment": "Add comment for file"
     },
     "noRequests": "No pull requests matching the selected criteria found",
     "pullRequest": {
@@ -210,6 +213,9 @@
       "createPullRequest": "Create new pull request"
     },
     "config": {
+      "title": "Pull Requests Configuration",
+      "subtitle": "Restrictions on branches",
+      "note": "Branches matching the following patterns will only be writable by pull requests:",
       "restrictBranchWriteAccess": {
         "label": "Branch protection enabled",
         "helpText": "Enables branch protection, so that branches are only modifiable with pull requests."
@@ -221,13 +227,13 @@
       "newBranch": {
         "label": "Add branch pattern",
         "helpText": "Add a new branch pattern to the list of protected branches.",
+        "pattern": "Pattern",
         "add": {
           "label": "Add",
           "helpText": "Add the given branch to the list of protected branches."
         }
       },
       "noBranches": "No branch patterns defined.",
-      "subtitle": "Branches matching the following patterns will only be writable by pull requests:",
       "deleteBranch": "Delete this branch pattern"
     },
     "obstacle": "This branch can only be modified by pull requests."

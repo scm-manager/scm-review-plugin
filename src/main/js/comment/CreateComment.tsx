@@ -1,18 +1,10 @@
 import React from "react";
-import {
-  Button,
-  Loading,
-  Level,
-  SubmitButton,
-  Radio,
-  Textarea,
-  ErrorNotification,
-  apiClient
-} from "@scm-manager/ui-components";
+import { apiClient, Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
 import { BasicComment, Comment, Location } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { createPullRequestComment } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
+import MentionTextarea from "./MentionTextarea";
 
 type Props = WithTranslation & {
   url: string;
@@ -35,16 +27,17 @@ class CreateComment extends React.Component<Props, State> {
     this.state = {
       loading: false,
       newComment: {
-        type: "COMMENT"
+        type: "COMMENT",
+        mentions: []
       }
     };
   }
 
-  handleChanges = (value: string, name: string) => {
+  handleChanges = (event: any) => {
     this.setState({
       newComment: {
         ...this.state.newComment,
-        [name]: value
+        comment: event.target.value
       }
     });
   };
@@ -99,7 +92,7 @@ class CreateComment extends React.Component<Props, State> {
     if (commentHref) {
       return apiClient
         .get(commentHref)
-        .then(response => response.json())
+        .then(r => r.json())
         .then(comment => {
           if (this.props.onCreation) {
             this.props.onCreation(comment);
@@ -145,8 +138,8 @@ class CreateComment extends React.Component<Props, State> {
   }
 
   render() {
-    const { autofocus, onCancel, reply, t, url } = this.props;
-    const { loading, errorResult } = this.state;
+    const { onCancel, reply, t, url } = this.props;
+    const { loading, errorResult, newComment } = this.state;
 
     if (loading) {
       return <Loading />;
@@ -166,14 +159,14 @@ class CreateComment extends React.Component<Props, State> {
             <Radio
               name={`comment_type_${editorName}`}
               value="COMMENT"
-              checked={this.state.newComment.type === "COMMENT"}
+              checked={newComment?.type === "COMMENT"}
               label={t("scm-review-plugin.comment.type.comment")}
               onChange={this.switchToCommentType}
             />
             <Radio
               name={`comment_type_${editorName}`}
               value="TASK_TODO"
-              checked={this.state.newComment.type === "TASK_TODO"}
+              checked={newComment?.type === "TASK_TODO"}
               label={t("scm-review-plugin.comment.type.task")}
               onChange={this.switchToTaskType}
             />
@@ -189,15 +182,23 @@ class CreateComment extends React.Component<Props, State> {
             <div className="media-content">
               <div className="field">
                 <div className="control">
-                  <Textarea
-                    name="comment"
-                    value={this.state.newComment.comment}
-                    autofocus={autofocus}
+                  <MentionTextarea
+                    value={newComment?.comment}
+                    comment={newComment}
                     placeholder={t(
-                      this.state.newComment.type === "TASK_TODO"
+                      newComment?.type === "TASK_TODO"
                         ? "scm-review-plugin.comment.addTask"
                         : "scm-review-plugin.comment.addComment"
                     )}
+                    onAddMention={(id, displayName) => {
+                      this.setState(prevState => ({
+                        ...prevState,
+                        newComment: {
+                          ...prevState.newComment,
+                          mentions: [...prevState.newComment.mentions, { id, displayName }]
+                        }
+                      }));
+                    }}
                     onChange={this.handleChanges}
                     onSubmit={this.submit}
                   />
@@ -212,7 +213,7 @@ class CreateComment extends React.Component<Props, State> {
                       <div className="level-item">
                         <SubmitButton
                           label={t(
-                            this.state.newComment.type === "TASK_TODO"
+                            newComment?.type === "TASK_TODO"
                               ? "scm-review-plugin.comment.addTask"
                               : "scm-review-plugin.comment.addComment"
                           )}
