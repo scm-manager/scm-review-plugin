@@ -92,7 +92,6 @@ export type PossibleTransition = {
 
 export type MergeCommit = {
   commitMessage: string;
-  author: DisplayedUser;
   shouldDeleteSourceBranch: boolean;
 };
 
