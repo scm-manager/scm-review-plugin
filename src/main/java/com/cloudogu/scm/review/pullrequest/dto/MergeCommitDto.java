@@ -11,6 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class MergeCommitDto {
   private String commitMessage;
-  private DisplayedUserDto author;
   private boolean shouldDeleteSourceBranch;
 }

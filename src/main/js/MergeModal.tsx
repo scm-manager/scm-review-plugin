@@ -28,7 +28,6 @@ class MergeModal extends React.Component<Props, State> {
       mergeStrategy: this.extractFirstMergeStrategy(props.pullRequest._links.merge as Link[]),
       mergeCommit: {
         commitMessage: "",
-        author: this.props.pullRequest.author,
         shouldDeleteSourceBranch: false
       },
       defaultCommitMessages: {},

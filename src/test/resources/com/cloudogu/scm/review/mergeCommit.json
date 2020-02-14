@@ -1,8 +1,3 @@
 {
-  "commitMessage": "best commit ever",
-  "author": {
-    "id": "fry",
-    "displayName": "Philip J Fry",
-    "mail": "philip@fry.com"
-  }
+  "commitMessage": "best commit ever"
 }
