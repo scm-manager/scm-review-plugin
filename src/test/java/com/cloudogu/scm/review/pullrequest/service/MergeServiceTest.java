@@ -198,7 +198,7 @@ public class MergeServiceTest {
     PullRequest pullRequest = createPullRequest();
     when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
-    Person author = new Person("Philip");
+    Person author = new Person("Philip", "phil@groundhog.com");
 
     ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
       new Changeset("1", 1L, author, "first commit"),
@@ -211,10 +211,14 @@ public class MergeServiceTest {
     assertThat(message).isEqualTo("Squash commits of branch squash:\n" +
       "\n" +
       "- first commit\n" +
+      "  Author: Philip <phil@groundhog.com>\n" +
       "- second commit\n" +
       "with multiple lines\n" +
       "\n" +
-      "- third commit\n"
+      "Author: Philip <phil@groundhog.com>\n" +
+      "\n" +
+      "- third commit\n" +
+      "  Author: Philip <phil@groundhog.com>\n"
     );
   }
 

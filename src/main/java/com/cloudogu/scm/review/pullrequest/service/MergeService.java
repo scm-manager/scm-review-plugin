@@ -154,6 +154,12 @@ public class MergeService {
               builder.append("- ").append(c.getDescription()).append('\n');
               if (c.getDescription().contains("\n")) {
                 builder.append('\n');
+              } else {
+                builder.append("  ");
+              }
+              builder.append("Author: ").append(c.getAuthor().getName()).append(" <").append(c.getAuthor().getMail()).append(">\n");
+              if (c.getDescription().contains("\n")) {
+                builder.append('\n');
               }
             });
           return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString());
