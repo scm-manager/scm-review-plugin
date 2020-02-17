@@ -18,6 +18,7 @@ import sonia.scm.user.User;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -88,23 +89,44 @@ public class DefaultPullRequestService implements PullRequestService {
   public void update(Repository repository, String pullRequestId, PullRequest pullRequest) {
     PullRequestStore store = getStore(repository);
     PullRequest oldPullRequest = store.get(pullRequestId);
-    pullRequest.setCreationDate(oldPullRequest.getCreationDate());
-    pullRequest.setLastModified(Instant.now());
-    computeSubscriberForChangedPullRequest(oldPullRequest, pullRequest);
-    store.update(pullRequest);
-    eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
+    Set<String> addedReviewers = computeAddedReviewersForChangedPullRequest(oldPullRequest, pullRequest);
+    Set<String> removedReviewers = computeRemovedReviewersForChangedPullRequest(oldPullRequest, pullRequest);
+
+    Set<String> newSubscriber = new HashSet<>(oldPullRequest.getSubscriber());
+    newSubscriber.addAll(addedReviewers);
+
+    Map<String, Boolean> newReviewers = new HashMap<>(oldPullRequest.getReviewer());
+    addedReviewers.forEach(reviewer -> newReviewers.putIfAbsent(reviewer, false));
+    removedReviewers.forEach(newReviewers::remove);
+
+    PullRequest newPullRequest = oldPullRequest.toBuilder()
+      .targetRevision(pullRequest.getTargetRevision())
+      .title(pullRequest.getTitle())
+      .description(pullRequest.getDescription())
+      .lastModified(Instant.now())
+      .reviewer(newReviewers)
+      .build();
+    newPullRequest.setSubscriber(newSubscriber);
+    store.update(newPullRequest);
+    eventBus.post(new PullRequestEvent(repository, newPullRequest, oldPullRequest, HandlerEventType.MODIFY));
   }
 
-  private void computeSubscriberForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
-    Set<String> newSubscriber = new HashSet<>(oldPullRequest.getSubscriber());
-    Set<String> addedReviewers = changedPullRequest
+  private Set<String> computeAddedReviewersForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
+    return changedPullRequest
       .getReviewer()
       .keySet()
       .stream()
       .filter(r -> !oldPullRequest.getReviewer().containsKey(r))
       .collect(Collectors.toSet());
-    newSubscriber.addAll(addedReviewers);
-    changedPullRequest.setSubscriber(newSubscriber);
+  }
+
+  private Set<String> computeRemovedReviewersForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
+    return oldPullRequest
+      .getReviewer()
+      .keySet()
+      .stream()
+      .filter(r -> !changedPullRequest.getReviewer().containsKey(r))
+      .collect(Collectors.toSet());
   }
 
   @Override
