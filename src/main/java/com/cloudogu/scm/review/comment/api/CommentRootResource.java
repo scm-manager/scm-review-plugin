@@ -120,7 +120,6 @@ public class CommentRootResource {
       schema = @Schema(implementation = HalRepresentation.class)
     )
   )
-  @ApiResponse(responseCode = "400", description = "Invalid body, e.g. illegal change of namespace or name")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
   @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
   @ApiResponse(
