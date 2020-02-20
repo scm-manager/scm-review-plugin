@@ -36,7 +36,9 @@ public class RepositoryConfigResource {
   private final RepositoryManager repositoryManager;
 
   @Inject
-  public RepositoryConfigResource(ConfigService configService, RepositoryConfigMapper repositoryConfigMapper, RepositoryManager repositoryManager) {
+  public RepositoryConfigResource(ConfigService configService,
+                                  RepositoryConfigMapper repositoryConfigMapper,
+                                  RepositoryManager repositoryManager) {
     this.configService = configService;
     this.repositoryConfigMapper = repositoryConfigMapper;
     this.repositoryManager = repositoryManager;
@@ -45,7 +47,11 @@ public class RepositoryConfigResource {
   @GET
   @Path("{namespace}/{name}/config")
   @Produces(MediaType.APPLICATION_JSON)
-  @Operation(summary = "Repository pull request configuration", description = "Returns the repository-specific pull request configuration.", tags = "Pull Request Configuration")
+  @Operation(
+    summary = "Repository pull request configuration",
+    description = "Returns the repository-specific pull request configuration.",
+    tags = "Pull Request Configuration"
+  )
   @ApiResponse(
     responseCode = "200",
     description = "success",
@@ -76,7 +82,11 @@ public class RepositoryConfigResource {
   @PUT
   @Path("{namespace}/{name}/config")
   @Consumes(MediaType.APPLICATION_JSON)
-  @Operation(summary = "Update Repository pull request configuration", description = "Modifies the repository-specific pull request configuration.", tags = "Pull Request Configuration")
+  @Operation(
+    summary = "Update Repository pull request configuration",
+    description = "Modifies the repository-specific pull request configuration.",
+    tags = "Pull Request Configuration"
+  )
   @ApiResponse(responseCode = "204", description = "update success")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
   @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"configurePullRequest\" privilege")
