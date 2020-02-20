@@ -24,7 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 @OpenAPIDefinition(tags = {
-  @Tag(name = "Pull Request Configuration", description = "Pull request configuration endpoints")
+  @Tag(name = "Pull Request Configuration", description = "Pull request configuration endpoints provided by review-plugin")
 })
 @Path(PullRequestRootResource.PULL_REQUESTS_PATH_V2)
 public class GlobalConfigResource {
