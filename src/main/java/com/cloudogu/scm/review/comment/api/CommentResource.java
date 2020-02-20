@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.comment.api;
 
 
+import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
@@ -9,12 +10,17 @@ import com.cloudogu.scm.review.comment.service.ExecutedTransition;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.webcohesion.enunciate.metadata.rs.ResponseCode;
-import com.webcohesion.enunciate.metadata.rs.StatusCodes;
-import com.webcohesion.enunciate.metadata.rs.TypeHint;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import sonia.scm.NotFoundException;
+import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -37,6 +43,9 @@ import static java.net.URI.create;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 
+@OpenAPIDefinition(tags = {
+  @Tag(name = "Pull Request Comment", description = "Pull request comment endpoints provided by the review-plugin")
+})
 public class CommentResource {
 
   private final CommentService service;
@@ -48,7 +57,13 @@ public class CommentResource {
   private BranchRevisionResolver branchRevisionResolver;
 
   @Inject
-  public CommentResource(CommentService service, RepositoryResolver repositoryResolver, CommentMapper commentMapper, ReplyMapper replyMapper, CommentPathBuilder commentPathBuilder, ExecutedTransitionMapper executedTransitionMapper, BranchRevisionResolver branchRevisionResolver) {
+  public CommentResource(CommentService service,
+                         RepositoryResolver repositoryResolver,
+                         CommentMapper commentMapper,
+                         ReplyMapper replyMapper,
+                         CommentPathBuilder commentPathBuilder,
+                         ExecutedTransitionMapper executedTransitionMapper,
+                         BranchRevisionResolver branchRevisionResolver) {
     this.repositoryResolver = repositoryResolver;
     this.service = service;
     this.commentMapper = commentMapper;
@@ -61,6 +76,27 @@ public class CommentResource {
   @GET
   @Path("")
   @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(PullRequestMediaType.PULL_REQUEST)
+  @Operation(summary = "Pull request comment", description = "Returns a single pull request comment.", tags = "Pull Request Comment")
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = MediaType.APPLICATION_JSON,
+      schema = @Schema(implementation = CommentDto.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, a comment with the given id is not available for this pull request")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public CommentDto getComment(@PathParam("namespace") String namespace,
                                @PathParam("name") String name,
                                @PathParam("pullRequestId") String pullRequestId,
@@ -75,6 +111,26 @@ public class CommentResource {
   @GET
   @Path("replies/{replyId}")
   @Produces(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Pull request comment reply", description = "Returns a single pull request comment reply.", tags = "Pull Request Comment")
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = MediaType.APPLICATION_JSON,
+      schema = @Schema(implementation = ReplyDto.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, a reply with the given id is not available for this pull request")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public ReplyDto getReply(@PathParam("namespace") String namespace,
                            @PathParam("name") String name,
                            @PathParam("pullRequestId") String pullRequestId,
@@ -89,18 +145,23 @@ public class CommentResource {
 
   @DELETE
   @Path("")
-  @StatusCodes({
-    @ResponseCode(code = 204, condition = "delete success or nothing to delete"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 403, condition = "not authorized, the current user is not allowed to delete the comment"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
-  @TypeHint(TypeHint.NO_CONTENT.class)
+  @Operation(summary = "Delete pull request comment", description = "Deletes a pull request comment.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "delete success or nothing to delete")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public void deleteComment(@Context UriInfo uriInfo,
-                                @PathParam("namespace") String namespace,
-                                @PathParam("name") String name,
-                                @PathParam("pullRequestId") String pullRequestId,
-                                @PathParam("commentId") String commentId) {
+                            @PathParam("namespace") String namespace,
+                            @PathParam("name") String name,
+                            @PathParam("pullRequestId") String pullRequestId,
+                            @PathParam("commentId") String commentId) {
     try {
       service.delete(namespace, name, pullRequestId, commentId);
     } catch (NotFoundException e) {
@@ -110,19 +171,24 @@ public class CommentResource {
 
   @DELETE
   @Path("replies/{replyId}")
-  @StatusCodes({
-    @ResponseCode(code = 204, condition = "delete success or nothing to delete"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 403, condition = "not authorized, the current user is not allowed to delete the comment"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
-  @TypeHint(TypeHint.NO_CONTENT.class)
+  @Operation(summary = "Delete pull request comment reply", description = "Deletes a pull request comment reply.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "delete success or nothing to delete")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public void deleteReply(@Context UriInfo uriInfo,
-                              @PathParam("namespace") String namespace,
-                              @PathParam("name") String name,
-                              @PathParam("pullRequestId") String pullRequestId,
-                              @PathParam("commentId") String commentId,
-                              @PathParam("replyId") String replyId) {
+                          @PathParam("namespace") String namespace,
+                          @PathParam("name") String name,
+                          @PathParam("pullRequestId") String pullRequestId,
+                          @PathParam("commentId") String commentId,
+                          @PathParam("replyId") String replyId) {
     try {
       service.delete(namespace, name, pullRequestId, replyId);
     } catch (NotFoundException e) {
@@ -133,49 +199,73 @@ public class CommentResource {
   @PUT
   @Path("")
   @Consumes(MediaType.APPLICATION_JSON)
-  @StatusCodes({
-    @ResponseCode(code = 204, condition = "update success"),
-    @ResponseCode(code = 400, condition = "Invalid body, e.g. illegal change of namespace or name"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
-    @ResponseCode(code = 404, condition = "not found, no comment with the specified id is available"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
-  @TypeHint(TypeHint.NO_CONTENT.class)
+  @Operation(summary = "Update pull request comment", description = "Modifies a pull request comment.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "400", description = "Invalid body, e.g. illegal change of namespace or name")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no comment with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public void updateComment(@Context UriInfo uriInfo,
-                                @PathParam("namespace") String namespace,
-                                @PathParam("name") String name,
-                                @PathParam("pullRequestId") String pullRequestId,
-                                @PathParam("commentId") String commentId,
-                                @Valid CommentDto commentDto) {
+                            @PathParam("namespace") String namespace,
+                            @PathParam("name") String name,
+                            @PathParam("pullRequestId") String pullRequestId,
+                            @PathParam("commentId") String commentId,
+                            @Valid CommentDto commentDto) {
     service.modifyComment(namespace, name, pullRequestId, commentId, commentMapper.map(commentDto));
   }
 
   @PUT
   @Path("replies/{replyId}")
   @Consumes(MediaType.APPLICATION_JSON)
-  @StatusCodes({
-    @ResponseCode(code = 204, condition = "update success"),
-    @ResponseCode(code = 400, condition = "Invalid body, e.g. illegal change of namespace or name"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 403, condition = "not authorized, the current user does not have the privilege to update"),
-    @ResponseCode(code = 404, condition = "not found, no comment with the specified id is available"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
-  @TypeHint(TypeHint.NO_CONTENT.class)
+  @Operation(summary = "Update pull request comment reply", description = "Modifies a pull request comment reply.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "400", description = "Invalid body, e.g. illegal change of namespace or name")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no comment with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public void updateReply(@Context UriInfo uriInfo,
-                              @PathParam("namespace") String namespace,
-                              @PathParam("name") String name,
-                              @PathParam("pullRequestId") String pullRequestId,
-                              @PathParam("commentId") String commentId,
-                              @PathParam("replyId") String replyId,
-                              @Valid ReplyDto replyDto) {
+                          @PathParam("namespace") String namespace,
+                          @PathParam("name") String name,
+                          @PathParam("pullRequestId") String pullRequestId,
+                          @PathParam("commentId") String commentId,
+                          @PathParam("replyId") String replyId,
+                          @Valid ReplyDto replyDto) {
     service.modifyReply(namespace, name, pullRequestId, replyId, replyMapper.map(replyDto));
   }
 
   @POST
   @Path("replies")
   @Consumes(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Reply to pull request comment", description = "Creates a new pull request comment reply.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "success")
+  @ApiResponse(responseCode = "400", description = "Invalid body, e.g. illegal change of namespace or name")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no comment with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public Response reply(@Context UriInfo uriInfo,
                         @PathParam("namespace") String namespace,
                         @PathParam("name") String name,
@@ -193,6 +283,19 @@ public class CommentResource {
   @GET
   @Path("transitions/{transitionId}")
   @Produces(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Get pull request comment transition", description = "Returns a single pull request comment transition.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "200", description = "success")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no comment transition with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public ExecutedTransitionDto getExecutedTransition(@Context UriInfo uriInfo,
                                                      @PathParam("namespace") String namespace,
                                                      @PathParam("name") String name,
@@ -205,13 +308,30 @@ public class CommentResource {
       .stream()
       .filter(t -> transitionId.equals(t.getId()))
       .findFirst()
-      .orElseThrow(() -> notFound(entity("transition", transitionId).in(Comment.class, commentId).in(PullRequest.class, pullRequestId).in(new NamespaceAndName(namespace, name))));
+      .orElseThrow(() -> notFound(
+        entity("transition", transitionId)
+          .in(Comment.class, commentId)
+          .in(PullRequest.class, pullRequestId)
+          .in(new NamespaceAndName(namespace, name)))
+      );
     return executedTransitionMapper.map(executedTransition, new NamespaceAndName(namespace, name), pullRequestId, comment);
   }
 
   @POST
   @Path("transitions")
   @Consumes(MediaType.APPLICATION_JSON)
+  @Operation(summary = "Transform pull request comment", description = "Transforms a pull request comment.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public Response transform(@Context UriInfo uriInfo,
                             @PathParam("namespace") String namespace,
                             @PathParam("name") String name,
