@@ -25,18 +25,11 @@
     <plugins>
 
       <plugin>
-        <groupId>sonia.scm.maven</groupId>
-        <artifactId>smp-maven-plugin</artifactId>
-        <version>1.0.0-rc2</version>
-      </plugin>
-
-      <plugin>
         <groupId>io.openapitools.swagger</groupId>
         <artifactId>swagger-maven-plugin</artifactId>
         <configuration>
           <resourcePackages>
             <resourcePackage>com.cloudogu.scm.review.pullrequest.api</resourcePackage>
-            <resourcePackage>com.cloudogu.scm.review.comment.api</resourcePackage>
             <resourcePackage>com.cloudogu.scm.review.config.api</resourcePackage>
           </resourcePackages>
         </configuration>
