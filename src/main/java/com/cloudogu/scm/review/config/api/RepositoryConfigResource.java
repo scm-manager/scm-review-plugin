@@ -3,9 +3,15 @@ package com.cloudogu.scm.review.config.api;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
+import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -30,7 +36,9 @@ public class RepositoryConfigResource {
   private final RepositoryManager repositoryManager;
 
   @Inject
-  public RepositoryConfigResource(ConfigService configService, RepositoryConfigMapper repositoryConfigMapper, RepositoryManager repositoryManager) {
+  public RepositoryConfigResource(ConfigService configService,
+                                  RepositoryConfigMapper repositoryConfigMapper,
+                                  RepositoryManager repositoryManager) {
     this.configService = configService;
     this.repositoryConfigMapper = repositoryConfigMapper;
     this.repositoryManager = repositoryManager;
@@ -39,6 +47,29 @@ public class RepositoryConfigResource {
   @GET
   @Path("{namespace}/{name}/config")
   @Produces(MediaType.APPLICATION_JSON)
+  @Operation(
+    summary = "Repository pull request configuration",
+    description = "Returns the repository-specific pull request configuration.",
+    tags = "Pull Request Configuration"
+  )
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = MediaType.APPLICATION_JSON,
+      schema = @Schema(implementation = PullRequestConfigDto.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"configurePullRequest\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public PullRequestConfigDto getRepositoryConfig(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
@@ -51,6 +82,22 @@ public class RepositoryConfigResource {
   @PUT
   @Path("{namespace}/{name}/config")
   @Consumes(MediaType.APPLICATION_JSON)
+  @Operation(
+    summary = "Update Repository pull request configuration",
+    description = "Modifies the repository-specific pull request configuration.",
+    tags = "Pull Request Configuration"
+  )
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"configurePullRequest\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public void setRepositoryConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid PullRequestConfigDto configDto) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
