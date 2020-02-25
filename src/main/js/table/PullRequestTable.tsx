@@ -3,10 +3,9 @@ import styled from "styled-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { PullRequest } from "../types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
-import { Column, DateFromNow, Table, Tag, TextColumn } from "@scm-manager/ui-components";
+import { Column, DateFromNow, Table, Tag, TextColumn, comparators } from "@scm-manager/ui-components";
 import { Link } from "react-router-dom";
 import ReviewerIcon from "./ReviewerIcon";
-import comparators from "./comparators";
 
 type Props = WithTranslation & {
   repository: Repository;
