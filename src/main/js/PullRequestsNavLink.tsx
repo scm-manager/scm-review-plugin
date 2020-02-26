@@ -5,11 +5,12 @@ import { WithTranslation, withTranslation } from "react-i18next";
 type Props = WithTranslation & {
   url: string;
   activeWhenMatch: (route: any) => boolean;
+  collapsed?: boolean;
 };
 
 class PullRequestsNavLink extends React.Component<Props> {
   render() {
-    const { url, activeWhenMatch, t } = this.props;
+    const { url, activeWhenMatch, collapsed, t } = this.props;
 
     return (
       <NavLink
@@ -17,6 +18,7 @@ class PullRequestsNavLink extends React.Component<Props> {
         icon="fas fa-code-branch fa-rotate-180"
         label={t("scm-review-plugin.navLink")}
         activeWhenMatch={activeWhenMatch}
+        collapsed={collapsed}
       />
     );
   }
