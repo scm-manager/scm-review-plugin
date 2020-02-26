@@ -18,6 +18,7 @@ class PullRequestsNavLink extends React.Component<Props> {
         icon="fas fa-code-branch fa-rotate-180"
         label={t("scm-review-plugin.navLink")}
         activeWhenMatch={activeWhenMatch}
+        title={t("scm-review-plugin.navLink")}
         collapsed={collapsed}
       />
     );
