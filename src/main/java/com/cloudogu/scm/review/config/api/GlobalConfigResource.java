@@ -41,7 +41,12 @@ public class GlobalConfigResource {
   @GET
   @Path("config")
   @Produces(MediaType.APPLICATION_JSON)
-  @Operation(summary = "Global pull request configuration", description = "Returns the global pull request configuration.", tags = "Pull Request Configuration")
+  @Operation(
+    summary = "Global pull request configuration",
+    description = "Returns the global pull request configuration.",
+    tags = "Pull Request Configuration",
+    operationId = "review_get_global_config"
+  )
   @ApiResponse(
     responseCode = "200",
     description = "success",
@@ -68,7 +73,13 @@ public class GlobalConfigResource {
   @PUT
   @Path("config")
   @Consumes(MediaType.APPLICATION_JSON)
-  @Operation(summary = "Update global pull request configuration", description = "Modifies the global pull request configuration.", tags = "Pull Request Configuration")
+  @Operation(
+    summary = "Update global pull request configuration",
+    description = "Modifies the global pull request configuration.",
+    tags = "Pull Request Configuration",
+    operationId = "review_put_global_config"
+
+  )
   @ApiResponse(responseCode = "204", description = "update success")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
   @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"configurePullRequest\" privilege")

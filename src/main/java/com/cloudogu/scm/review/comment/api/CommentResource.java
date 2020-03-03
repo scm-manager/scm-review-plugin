@@ -39,6 +39,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Collection;
 
+import static com.cloudogu.scm.review.comment.api.RevisionChecker.checkRevision;
 import static java.net.URI.create;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
@@ -100,7 +101,10 @@ public class CommentResource {
   public CommentDto getComment(@PathParam("namespace") String namespace,
                                @PathParam("name") String name,
                                @PathParam("pullRequestId") String pullRequestId,
-                               @PathParam("commentId") String commentId) {
+                               @PathParam("commentId") String commentId,
+                               @QueryParam("sourceRevision") String expectedSourceRevision,
+                               @QueryParam("targetRevision") String expectedTargetRevision) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(namespace, name, pullRequestId);
     Comment comment = service.get(namespace, name, pullRequestId, commentId);
@@ -135,7 +139,10 @@ public class CommentResource {
                            @PathParam("name") String name,
                            @PathParam("pullRequestId") String pullRequestId,
                            @PathParam("commentId") String commentId,
-                           @PathParam("replyId") String replyId) {
+                           @PathParam("replyId") String replyId,
+                           @QueryParam("sourceRevision") String expectedSourceRevision,
+                           @QueryParam("targetRevision") String expectedTargetRevision) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     BranchRevisionResolver.RevisionResult revisions = branchRevisionResolver.getRevisions(namespace, name, pullRequestId);
     Comment comment = service.get(namespace, name, pullRequestId, commentId);
@@ -161,7 +168,10 @@ public class CommentResource {
                             @PathParam("namespace") String namespace,
                             @PathParam("name") String name,
                             @PathParam("pullRequestId") String pullRequestId,
-                            @PathParam("commentId") String commentId) {
+                            @PathParam("commentId") String commentId,
+                            @QueryParam("sourceRevision") String expectedSourceRevision,
+                            @QueryParam("targetRevision") String expectedTargetRevision) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     try {
       service.delete(namespace, name, pullRequestId, commentId);
     } catch (NotFoundException e) {
@@ -188,7 +198,10 @@ public class CommentResource {
                           @PathParam("name") String name,
                           @PathParam("pullRequestId") String pullRequestId,
                           @PathParam("commentId") String commentId,
-                          @PathParam("replyId") String replyId) {
+                          @PathParam("replyId") String replyId,
+                          @QueryParam("sourceRevision") String expectedSourceRevision,
+                          @QueryParam("targetRevision") String expectedTargetRevision) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     try {
       service.delete(namespace, name, pullRequestId, replyId);
     } catch (NotFoundException e) {
@@ -218,7 +231,10 @@ public class CommentResource {
                             @PathParam("name") String name,
                             @PathParam("pullRequestId") String pullRequestId,
                             @PathParam("commentId") String commentId,
+                            @QueryParam("sourceRevision") String expectedSourceRevision,
+                            @QueryParam("targetRevision") String expectedTargetRevision,
                             @Valid CommentDto commentDto) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     service.modifyComment(namespace, name, pullRequestId, commentId, commentMapper.map(commentDto));
   }
 
@@ -245,7 +261,10 @@ public class CommentResource {
                           @PathParam("pullRequestId") String pullRequestId,
                           @PathParam("commentId") String commentId,
                           @PathParam("replyId") String replyId,
+                          @QueryParam("sourceRevision") String expectedSourceRevision,
+                          @QueryParam("targetRevision") String expectedTargetRevision,
                           @Valid ReplyDto replyDto) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     service.modifyReply(namespace, name, pullRequestId, replyId, replyMapper.map(replyDto));
   }
 
@@ -274,7 +293,7 @@ public class CommentResource {
                         @QueryParam("sourceRevision") String expectedSourceRevision,
                         @QueryParam("targetRevision") String expectedTargetRevision,
                         @Valid ReplyDto replyDto) {
-    RevisionChecker.checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     String newId = service.reply(namespace, name, pullRequestId, commentId, replyMapper.map(replyDto));
     String newLocation = commentPathBuilder.createReplySelfUri(namespace, name, pullRequestId, commentId, newId);
     return Response.created(create(newLocation)).build();
@@ -301,7 +320,10 @@ public class CommentResource {
                                                      @PathParam("name") String name,
                                                      @PathParam("pullRequestId") String pullRequestId,
                                                      @PathParam("commentId") String commentId,
-                                                     @PathParam("transitionId") String transitionId) {
+                                                     @PathParam("transitionId") String transitionId,
+                                                     @QueryParam("sourceRevision") String expectedSourceRevision,
+                                                     @QueryParam("targetRevision") String expectedTargetRevision) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     Comment comment = service.get(namespace, name, pullRequestId, commentId);
     ExecutedTransition<?> executedTransition = comment
       .getExecutedTransitions()
@@ -337,7 +359,10 @@ public class CommentResource {
                             @PathParam("name") String name,
                             @PathParam("pullRequestId") String pullRequestId,
                             @PathParam("commentId") String commentId,
+                            @QueryParam("sourceRevision") String expectedSourceRevision,
+                            @QueryParam("targetRevision") String expectedTargetRevision,
                             @Valid TransitionDto transitionDto) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
     ExecutedTransition<CommentTransition> executedTransition = service.transform(namespace, name, pullRequestId, commentId, CommentTransition.valueOf(transitionDto.getName()));
     return Response.created(create(commentPathBuilder.createExecutedTransitionUri(namespace, name, pullRequestId, commentId, executedTransition.getId()))).build();
   }

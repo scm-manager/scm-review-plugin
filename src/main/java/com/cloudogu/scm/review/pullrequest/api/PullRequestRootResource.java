@@ -75,7 +75,12 @@ public class PullRequestRootResource {
   @POST
   @Path("{namespace}/{name}")
   @Consumes(PullRequestMediaType.PULL_REQUEST)
-  @Operation(summary = "Create pull request", description = "Creates a new pull request.", tags = "Pull Request")
+  @Operation(
+    summary = "Create pull request",
+    description = "Creates a new pull request.",
+    tags = "Pull Request",
+    operationId = "review_create_pull_request"
+  )
   @ApiResponse(responseCode = "201", description = "create success")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
   @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"createPullRequest\" privilege")
@@ -118,7 +123,12 @@ public class PullRequestRootResource {
   @GET
   @Path("{namespace}/{name}")
   @Produces(PullRequestMediaType.PULL_REQUEST)
-  @Operation(summary = "Collection of pull requests", description = "Returns a list of pull requests by status.", tags = "Pull Request")
+  @Operation(
+    summary = "Collection of pull requests",
+    description = "Returns a list of pull requests by status.",
+    tags = "Pull Request",
+    operationId = "review_get_pull_request_collection"
+  )
   @ApiResponse(
     responseCode = "200",
     description = "success",
