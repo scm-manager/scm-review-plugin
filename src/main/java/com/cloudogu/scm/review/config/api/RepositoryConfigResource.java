@@ -50,7 +50,8 @@ public class RepositoryConfigResource {
   @Operation(
     summary = "Repository pull request configuration",
     description = "Returns the repository-specific pull request configuration.",
-    tags = "Pull Request Configuration"
+    tags = "Pull Request Configuration",
+    operationId = "review_get_repo_config"
   )
   @ApiResponse(
     responseCode = "200",
@@ -85,7 +86,8 @@ public class RepositoryConfigResource {
   @Operation(
     summary = "Update Repository pull request configuration",
     description = "Modifies the repository-specific pull request configuration.",
-    tags = "Pull Request Configuration"
+    tags = "Pull Request Configuration",
+    operationId = "review_put_repo_config"
   )
   @ApiResponse(responseCode = "204", description = "update success")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")

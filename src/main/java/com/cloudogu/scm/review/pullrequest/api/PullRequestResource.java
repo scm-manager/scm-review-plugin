@@ -69,7 +69,12 @@ public class PullRequestResource {
   @GET
   @Path("")
   @Produces(PullRequestMediaType.PULL_REQUEST)
-  @Operation(summary = "Get pull requests", description = "Returns a single pull request by id.", tags = "Pull Request")
+  @Operation(
+    summary = "Get pull requests",
+    description = "Returns a single pull request by id.",
+    tags = "Pull Request",
+    operationId = "review_get_pull_requests"
+  )
   @ApiResponse(
     responseCode = "200",
     description = "success",
@@ -277,7 +282,12 @@ public class PullRequestResource {
   @PUT
   @Path("")
   @Consumes(PullRequestMediaType.PULL_REQUEST)
-  @Operation(summary = "Update pull request", description = "Modifies a pull request.", tags = "Pull Request")
+  @Operation(
+    summary = "Update pull request",
+    description = "Modifies a pull request.",
+    tags = "Pull Request",
+    operationId = "review_put_pull_request"
+  )
   @ApiResponse(responseCode = "204", description = "update success")
   @ApiResponse(responseCode = "400", description = "Invalid body")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")

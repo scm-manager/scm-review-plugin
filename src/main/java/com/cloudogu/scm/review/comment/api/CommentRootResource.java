@@ -65,19 +65,19 @@ public class CommentRootResource {
   }
 
   @Path("{commentId}")
-  public CommentResource getCommentResource(@PathParam("namespace") String namespace,
-                                            @PathParam("name") String name,
-                                            @PathParam("pullRequestId") String pullRequestId,
-                                            @QueryParam("sourceRevision") String expectedSourceRevision,
-                                            @QueryParam("targetRevision") String expectedTargetRevision) {
-    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
+  public CommentResource getCommentResource() {
     return commentResourceProvider.get();
   }
 
   @POST
   @Path("")
   @Consumes(MediaType.APPLICATION_JSON)
-  @Operation(summary = "Create pull request comment", description = "Creates a new pull request comment.", tags = "Pull Request Comment")
+  @Operation(
+    summary = "Create pull request comment",
+    description = "Creates a new pull request comment.",
+    tags = "Pull Request Comment",
+    operationId = "review_create_comment"
+  )
   @ApiResponse(responseCode = "201", description = "create success")
   @ApiResponse(responseCode = "400", description = "Invalid body, e.g. illegal change of namespace or name")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
@@ -93,6 +93,7 @@ public class CommentRootResource {
   public Response create(@PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
+                         @PathParam("commentId") String commentId,
                          @QueryParam("sourceRevision") String expectedSourceRevision,
                          @QueryParam("targetRevision") String expectedTargetRevision,
                          @Valid @NotNull CommentDto commentDto) {
@@ -111,7 +112,12 @@ public class CommentRootResource {
   @GET
   @Path("")
   @Produces(MediaType.APPLICATION_JSON)
-  @Operation(summary = "Get all pull request comments", description = "Returns all pull request comments.", tags = "Pull Request Comment")
+  @Operation(
+    summary = "Get all pull request comments",
+    description = "Returns all pull request comments.",
+    tags = "Pull Request Comment",
+    operationId = "review_get_comments"
+  )
   @ApiResponse(
     responseCode = "200",
     description = "success",
