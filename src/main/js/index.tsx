@@ -64,8 +64,8 @@ function matches(route: any) {
   return route.location.pathname.match(regex) || route.location.pathname.match(".*(pull-requests)/.*");
 }
 
-const PullRequestNavLink = ({ url, collapsedRepositoryMenu }) => {
-  return <PullRequestsNavLink url={url} activeWhenMatch={matches} collapsed={collapsedRepositoryMenu} />;
+const PullRequestNavLink = ({ url }) => {
+  return <PullRequestsNavLink url={url} activeWhenMatch={matches} />;
 };
 
 binder.bind("repository.navigation", PullRequestNavLink, reviewSupportedPredicate);
