@@ -30,6 +30,10 @@ class SinglePullRequest extends React.Component<Props, State> {
     this.fetchPullRequest();
   }
 
+  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+    return nextState.pullRequest !== this.state.pullRequest;
+  }
+
   fetchPullRequest = () => {
     const { repository } = this.props;
     const pullRequestNumber = this.props.match.params.pullRequestNumber;
