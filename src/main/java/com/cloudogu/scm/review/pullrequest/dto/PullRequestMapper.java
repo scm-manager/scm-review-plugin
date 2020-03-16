@@ -143,8 +143,6 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .self(repository.getNamespace(), repository.getName(), target.getId()));
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments()
       .all(repository.getNamespace(), repository.getName(), target.getId())));
-    linksBuilder.single(link("events", pullRequestResourceLinks.pullRequest()
-      .events(repository.getNamespace(), repository.getName(), target.getId())));
     if (PermissionCheck.mayComment(repository) && CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
       if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
         if (pullRequestService.hasUserApproved(repository, pullRequest.getId())) {
