@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.scm-manager.org/">
-    <img alt="SCM-Manager" src="https://raw.githubusercontent.com/scm-manager/scm-manager/eefcbad4660c46f4490adf8b637fd3354aaf2aa3/docs/screenshots/logo_transparent.png" width="100" />
+    <img alt="SCM-Manager" src="https://download.scm-manager.org/images/logo/scm-manager_logo.png" width="500" />
   </a>
 </p>
 <h1 align="center">
