@@ -15,16 +15,11 @@ const PointerEventsLink = styled(Link)`
 
 class RepositoryPullRequestCardLink extends React.Component<Props> {
   render() {
-    const { repository, repositoryLink } = this.props;
-    if (repository._links["pullRequest"]) {
-      return (
-        <PointerEventsLink className="level-item" to={repositoryLink + "/pull-requests"}>
-          <Icon className="fa-lg" name="fas fa-code-branch fa-rotate-180 fa-fw" color="inherit" />
-        </PointerEventsLink>
-      );
-    } else {
-      return null;
-    }
+    return (
+      <PointerEventsLink className="level-item" to={this.props.repositoryLink + "/pull-requests"}>
+        <Icon className="fa-lg" name="fas fa-code-branch fa-rotate-180 fa-fw" color="inherit" />
+      </PointerEventsLink>
+    );
   }
 }
 
