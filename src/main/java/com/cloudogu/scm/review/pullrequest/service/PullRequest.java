@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,6 +55,9 @@ public class PullRequest {
   }
 
   public Set<String> getSubscriber() {
+    if (subscriber == null) {
+      return Collections.emptySet();
+    }
     return unmodifiableSet(subscriber);
   }
 
