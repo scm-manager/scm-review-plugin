@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 
@@ -80,6 +81,9 @@ public class PullRequest {
   }
 
   public Set<String> getSubscriber() {
+    if (subscriber == null) {
+      return emptySet();
+    }
     return unmodifiableSet(subscriber);
   }
 

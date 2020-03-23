@@ -82,11 +82,11 @@ class ChannelTest {
   }
 
   @Test
-  void shouldRemoveClientsWhichAreNotUsedWithinAnHour() {
+  void shouldRemoveClientsWhichAreNotUsedWithin30Seconds() {
     Client timedOutClient = register("1-2-3");
-    when(timedOutClient.getLastUsed()).thenReturn(Instant.now().minus(61L, ChronoUnit.MINUTES));
+    when(timedOutClient.getLastUsed()).thenReturn(Instant.now().minus(31L, ChronoUnit.SECONDS));
     Client activeClient = register("1-2-4");
-    when(activeClient.getLastUsed()).thenReturn(Instant.now().minus(59L, ChronoUnit.MINUTES));
+    when(activeClient.getLastUsed()).thenReturn(Instant.now().minus(29L, ChronoUnit.SECONDS));
 
     channel.removeClosedOrTimeoutClients();
 

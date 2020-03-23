@@ -28,6 +28,7 @@ import sonia.scm.security.SessionId;
 
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 
 @Getter
 public class EventSubscriptionRequest {
@@ -41,6 +42,15 @@ public class EventSubscriptionRequest {
   @PathParam("pullRequestId")
   private String pullRequestId;
 
-  @HeaderParam("X-SCM-Session-ID")
-  private SessionId sessionId;
+  @HeaderParam(SessionId.PARAMETER)
+  private SessionId sessionIdFromHeader;
+
+  @QueryParam(SessionId.PARAMETER)
+  private SessionId sessionIdFromQueryParam;
+
+  public SessionId getSessionId() {
+    // we support both, because version prior 2.0.0-rc6 send the session id as header
+    // and versions after rc6 send it as query param
+    return sessionIdFromHeader != null ? sessionIdFromHeader : sessionIdFromQueryParam;
+  }
 }
