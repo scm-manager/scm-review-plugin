@@ -34,7 +34,7 @@ public class ChannelRegistry {
     return channels.computeIfAbsent(channelId, channelFactory);
   }
 
-  private void removeClosedClients() {
+  void removeClosedClients() {
     channels.values().forEach(Channel::removeClosedOrTimeoutClients);
   }
 

@@ -5,8 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- Notification channel are now cleaned every 30 seconds
+- Every notifcation client is closed after 30 seconds
 ### Added
 - Add a link to the pull requests inside the repository card overview ([#57](https://github.com/scm-manager/scm-review-plugin/pull/57))
+### Fixed
+- Threads for toast navigation could be in blocking state up to 1 hour
+
 ## 2.0.0-rc8 - 2020-03-16
 ### Fixed
 - Removed toast messages, as these are not closed correctly on the server

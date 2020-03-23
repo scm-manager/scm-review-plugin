@@ -10,7 +10,7 @@ type HandlerProps = {
 };
 
 const EventNotificationHandler: FC<HandlerProps> = ({ url, reload }) => {
-  const [event, setEvent] = useState();
+  const [event, setEvent] = useState<any>();
   useEffect(() => {
     return apiClient.subscribe(url, {
       pullRequest: setEvent

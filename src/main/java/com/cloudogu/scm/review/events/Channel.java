@@ -63,7 +63,7 @@ public class Channel {
   }
 
   void removeClosedOrTimeoutClients() {
-    Instant timeoutLimit = Instant.now(clock).minus(1, ChronoUnit.HOURS);
+    Instant timeoutLimit = Instant.now(clock).minus(30, ChronoUnit.SECONDS);
     lock.writeLock().lock();
     try {
       int removeCounter = 0;
