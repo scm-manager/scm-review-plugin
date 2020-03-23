@@ -1,19 +1,22 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCheckResultDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeConflictResultDto;
 import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
-import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.webcohesion.enunciate.metadata.rs.ResponseCode;
-import com.webcohesion.enunciate.metadata.rs.StatusCodes;
 import de.otto.edison.hal.Links;
-import sonia.scm.ConcurrentModificationException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.spi.MergeConflictResult;
+import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -29,8 +32,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
-import static sonia.scm.ContextEntry.ContextBuilder.entity;
-
 @Path(MergeResource.MERGE_PATH_V2)
 public class MergeResource {
 
@@ -44,8 +45,20 @@ public class MergeResource {
 
   @POST
   @Path("{namespace}/{name}/{pullRequestId}")
-  @Consumes("application/vnd.scmm-mergeCommand+json")
-  @Produces("application/json")
+  @Consumes(PullRequestMediaType.MERGE_COMMAND)
+  @Operation(summary = "Merge pull request", description = "Merges pull request with selected strategy.", tags = "Pull Request")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"mergePullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no pull request with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public void merge(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
@@ -59,7 +72,27 @@ public class MergeResource {
 
   @POST
   @Path("{namespace}/{name}/{pullRequestId}/merge-check")
-  @Produces("application/vnd.scmm-mergeCheckResult+json")
+  @Produces(PullRequestMediaType.MERGE_CHECK_RESULT)
+  @Operation(summary = "Check pull request merge", description = "Checks if the pull request can be merged.", tags = "Pull Request")
+  @ApiResponse(
+    responseCode = "200",
+    description = "update success",
+    content = @Content(
+      mediaType = PullRequestMediaType.MERGE_CHECK_RESULT,
+      schema = @Schema(implementation = MergeCheckResultDto.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"readPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no pull request with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public MergeCheckResultDto check(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
@@ -78,7 +111,27 @@ public class MergeResource {
 
   @POST
   @Path("{namespace}/{name}/{pullRequestId}/conflicts")
-  @Produces("application/vnd.scmm-mergeConflictsResult+json")
+  @Produces(PullRequestMediaType.MERGE_CONFLICT_RESULT)
+  @Operation(summary = "Get merge conflicts", description = "Returns merge conflicts for pull request.", tags = "Pull Request")
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = PullRequestMediaType.MERGE_CONFLICT_RESULT,
+      schema = @Schema(implementation = MergeConflictResultDto.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"readPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no pull request with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public MergeConflictResultDto conflicts(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
@@ -96,11 +149,27 @@ public class MergeResource {
   @GET
   @Path("{namespace}/{name}/{pullRequestId}/commit-message")
   @Produces("text/plain")
-  @StatusCodes({
-    @ResponseCode(code = 200, condition = "squash commit message was created"),
-    @ResponseCode(code = 401, condition = "not authenticated / invalid credentials"),
-    @ResponseCode(code = 500, condition = "internal server error")
-  })
+  @Operation(
+    summary = "Get default merge message",
+    description = "Returns the default merge commit message by the selected strategy.",
+    tags = "Pull Request"
+  )
+  @ApiResponse(
+    responseCode = "200",
+    description = "commit message was created",
+    content = @Content(
+      schema = @Schema(type = "string")
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
   public String createDefaultCommitMessage(
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,

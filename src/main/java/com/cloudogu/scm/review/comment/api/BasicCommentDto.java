@@ -6,11 +6,13 @@ import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import sonia.scm.user.DisplayUser;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,6 +26,8 @@ abstract class BasicCommentDto extends HalRepresentation {
 
   @Valid
   private DisplayedUserDto author;
+
+  private Set<DisplayedUserDto> mentions;
 
   private Instant date;
 

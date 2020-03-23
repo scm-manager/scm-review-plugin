@@ -13,7 +13,10 @@
     },
     "diff": {
       "notSupported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt.",
-      "collapseDiffs": "Auf-/Zuklappen"
+      "collapseDiffs": "Auf-/Zuklappen",
+      "markReviewed": "Markiere Datei als reviewed. Diese Markierung sorgt dafür, dass diese Datei standardmäßig eingeklappt dargestellt wird.",
+      "markNotReviewed": "Entferne Review-Markierung",
+      "addComment": "Kommentar für Datei hinzufügen"
     },
     "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
     "pullRequest": {
@@ -110,6 +113,8 @@
     },
     "comment": {
       "addComment": "Kommentar hinzufügen",
+      "markReviewed": "Abgeschlossen",
+      "markNotReviewed": "Nicht abgeschlossen",
       "addTask": "Aufgabe hinzufügen",
       "delete": "Löschen",
       "update": "Aktualisieren",
@@ -210,6 +215,9 @@
       "createPullRequest": "Neuen Pull Request erstellen"
     },
     "config": {
+      "title": "Pull Requests Konfiguration",
+      "subtitle": "Beschränkungen für Branches",
+      "note": "Branches, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
       "restrictBranchWriteAccess": {
         "label": "Branch-Schutz aktiviert",
         "helpText": "Aktiviert den Branch-Schutz, so dass Branches nur durch Pull Requests geändert werden können."
@@ -221,13 +229,13 @@
       "newBranch": {
         "label": "Muster für Branches hinzufügen",
         "helpText": "Fügt ein Muster zu der Liste der geschützten Branches hinzu.",
+        "pattern": "Muster",
         "add": {
           "label": "Hinzufügen",
           "helpText": "Fügt das gegebene Muster zu der Liste der geschützten Branches hinzu."
         }
       },
       "noBranches": "Keine Muster für Branches definiert.",
-      "subtitle": "Branches, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
       "deleteBranch": "Dieses Muster löschen"
     },
     "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden."

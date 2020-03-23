@@ -6,18 +6,19 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
 
@@ -28,6 +29,7 @@ import static java.util.Collections.unmodifiableSet;
 @XmlRootElement(name = "pull-request")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Builder(toBuilder = true)
+@ToString
 public class PullRequest {
 
   private String id;
@@ -45,6 +47,7 @@ public class PullRequest {
   private Map<String, Boolean> reviewer = new HashMap<>();
   private String sourceRevision;
   private String targetRevision;
+  private Set<ReviewMark> reviewMarks = new HashSet<>();
 
   public void addApprover(String recipient) {
     this.reviewer.put(recipient, true);
@@ -56,7 +59,7 @@ public class PullRequest {
 
   public Set<String> getSubscriber() {
     if (subscriber == null) {
-      return Collections.emptySet();
+      return emptySet();
     }
     return unmodifiableSet(subscriber);
   }

@@ -1,4 +1,4 @@
-import React, { FC, Dispatch, useState } from "react";
+import React, { Dispatch, FC } from "react";
 import { Comment } from "../types/PullRequest";
 import PullRequestComment from "./PullRequestComment";
 

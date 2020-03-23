@@ -8,16 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Notification channel are now cleaned every 30 seconds
 - Every notifcation client is closed after 30 seconds
-
+### Added
+- Add a link to the pull requests inside the repository card overview ([#57](https://github.com/scm-manager/scm-review-plugin/pull/57))
 ### Fixed
 - Threads for toast navigation could be in blocking state up to 1 hour
 
-## 2.0.0-rc7 - 2020-03-16
+## 2.0.0-rc8 - 2020-03-16
 ### Fixed
 - Removed toast messages, as these are not closed correctly on the server
 
-## 2.0.0-rc4 - 2020-02-17
+## 2.0.0-rc7 - 2020-03-16
 ### Fixed
+- rc4 with removed toast messages, as these are not closed correctly on the server
+
+## 2.0.0-rc6
+### Added
+- Add swagger rest annotations to generate openAPI specs for the scm-openapi-plugin. ([#54](https://github.com/scm-manager/scm-review-plugin/pull/54))
+- Make navigation item collapsable ([#55](https://github.com/scm-manager/scm-review-plugin/pull/55))
+
+## 2.0.0-rc5 - 2020-02-18
+Re-release of 2.0.0-rc3
+
+## 2.0.0-rc4 - 2020-02-18
+Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and [#53](https://github.com/scm-manager/scm-review-plugin/pull/53) to 2.0.0-rc2
+
+## 2.0.0-rc3 - 2020-02-14
+### Added
+- Mark files as reviewed in diff view ([#48](https://github.com/scm-manager/scm-review-plugin/pull/48))
+- Add @-Mentionings for User in Comments ([#50](https://github.com/scm-manager/scm-review-plugin/pull/50))
+
+### Changed
+- Use icon only buttons for diff file controls
+
+### Fixed
+- Comments are marked as outdated on commits without root permissions ([#49](https://github.com/scm-manager/scm-review-plugin/pull/49))
 - Merge commits are created with the current user as author ([#53](https://github.com/scm-manager/scm-review-plugin/pull/53))
 
 ### Security

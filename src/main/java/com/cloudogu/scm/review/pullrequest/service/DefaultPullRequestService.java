@@ -18,6 +18,7 @@ import sonia.scm.user.User;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,7 +51,7 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public String add(Repository repository, PullRequest pullRequest) throws NoDifferenceException {
+  public String add(Repository repository, PullRequest pullRequest) {
     verifyNewChangesetsOnSource(repository, pullRequest.getSource(), pullRequest.getTarget());
     pullRequest.setCreationDate(Instant.now());
     pullRequest.setLastModified(null);
@@ -60,7 +61,7 @@ public class DefaultPullRequestService implements PullRequestService {
     return id;
   }
 
-  private void verifyNewChangesetsOnSource(Repository repository, String source, String target) throws NoDifferenceException {
+  private void verifyNewChangesetsOnSource(Repository repository, String source, String target) {
     try (RepositoryService repositoryService = this.repositoryServiceFactory.create(repository)) {
       ChangesetPagingResult changesets = repositoryService.getLogCommand()
         .setStartChangeset(source)
@@ -266,6 +267,38 @@ public class DefaultPullRequestService implements PullRequestService {
       .filter(recipient -> user.getId().equals(recipient))
       .findFirst()
       .ifPresent(pullRequest::removeSubscriber);
+    getStore(repository).update(pullRequest);
+  }
+
+  @Override
+  public void markAsReviewed(Repository repository, String pullRequestId, String path, User user) {
+    PullRequestStore store = getStore(repository);
+    PullRequest pullRequest = store.get(pullRequestId);
+    Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
+    reviewMarks.add(new ReviewMark(path, user.getId()));
+    pullRequest.setReviewMarks(reviewMarks);
+    store.update(pullRequest);
+  }
+
+  @Override
+  public void markAsNotReviewed(Repository repository, String pullRequestId, String path, User user) {
+    PullRequestStore store = getStore(repository);
+    PullRequest pullRequest = store.get(pullRequestId);
+    Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
+    reviewMarks.remove(new ReviewMark(path, user.getId()));
+    pullRequest.setReviewMarks(reviewMarks);
+    store.update(pullRequest);
+  }
+
+  @Override
+  public void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved) {
+    if (marksToBeRemoved.isEmpty()) {
+      return;
+    }
+    PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
+    Set<ReviewMark> newReviewMarks = new HashSet<>(pullRequest.getReviewMarks());
+    newReviewMarks.removeAll(marksToBeRemoved);
+    pullRequest.setReviewMarks(newReviewMarks);
     getStore(repository).update(pullRequest);
   }
 

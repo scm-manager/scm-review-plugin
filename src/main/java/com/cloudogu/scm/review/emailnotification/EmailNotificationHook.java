@@ -1,6 +1,7 @@
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.comment.service.CommentEvent;
+import com.cloudogu.scm.review.comment.service.MentionEvent;
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
@@ -11,10 +12,14 @@ import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
+import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 @EagerSingleton
@@ -40,8 +45,20 @@ public class EmailNotificationHook {
     }
   }
 
+  @Subscribe
+  public void handleMentionEvents(MentionEvent event) throws MailSendBatchException {
+    Set<String> newMentions;
+    if (event.getOldItem() != null) {
+      newMentions = new HashSet<>(event.getItem().getMentionUserIds());
+      newMentions.removeAll(event.getOldItem().getMentionUserIds());
+    } else {
+      newMentions = event.getItem().getMentionUserIds();
+    }
+    service.sendEmails(new MentionEventMailTextResolver(event), newMentions, Collections.emptySet());
+  }
+
   private boolean isSystemComment(CommentEvent event) {
-    if (event.getEventType() == HandlerEventType.DELETE){
+    if (event.getEventType() == HandlerEventType.DELETE) {
       return event.getOldItem().isSystemComment();
     } else {
       return event.getItem().isSystemComment();

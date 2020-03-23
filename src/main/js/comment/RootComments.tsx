@@ -1,9 +1,8 @@
-import React, { FC, useState, useReducer, useEffect } from "react";
+import React, { FC, useReducer } from "react";
 import reducer, { initialState } from "./reducer";
-import { createComment, fetchAll } from "./actiontypes";
+import { createComment } from "./actiontypes";
 
-import { Comments, PullRequest } from "../types/PullRequest";
-import { getPullRequestComments } from "../pullRequest";
+import { PullRequest } from "../types/PullRequest";
 
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";

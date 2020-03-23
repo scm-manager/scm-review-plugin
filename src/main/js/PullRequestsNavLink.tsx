@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "@scm-manager/ui-components";
+import { SecondaryNavigationItem } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 
 type Props = WithTranslation & {
@@ -12,11 +12,12 @@ class PullRequestsNavLink extends React.Component<Props> {
     const { url, activeWhenMatch, t } = this.props;
 
     return (
-      <NavLink
+      <SecondaryNavigationItem
         to={`${url}/pull-requests`}
         icon="fas fa-code-branch fa-rotate-180"
         label={t("scm-review-plugin.navLink")}
         activeWhenMatch={activeWhenMatch}
+        title={t("scm-review-plugin.navLink")}
       />
     );
   }

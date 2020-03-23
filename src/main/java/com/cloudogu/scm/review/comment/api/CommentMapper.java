@@ -7,8 +7,8 @@ import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.ContextLine;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
+import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
@@ -16,6 +16,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
@@ -23,6 +24,7 @@ import javax.inject.Named;
 import java.util.Collection;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.Set;
 
 import static de.otto.edison.hal.Link.link;
 import static java.util.stream.Collectors.toList;
@@ -40,14 +42,19 @@ public abstract class CommentMapper {
   private ExecutedTransitionMapper executedTransitionMapper;
   @Inject
   private PossibleTransitionMapper possibleTransitionMapper;
+  @Inject
+  private MentionMapper mentionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
+  @Mapping(target = "mentions", source = "mentionUserIds", qualifiedByName = "mapMentions")
   abstract CommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions, @Context BranchRevisionResolver.RevisionResult revisions);
 
+  @Mapping(target = "mentionUserIds", ignore = true)
   abstract Comment map(CommentDto commentDto);
 
   abstract CommentDto.ContextLineDto map(ContextLine line);
+
   abstract ContextLine map(CommentDto.ContextLineDto line);
 
   @Named("mapAuthor")
@@ -89,7 +96,6 @@ public abstract class CommentMapper {
         .map(reply -> replyMapper.map(reply, repository, pullRequestId, source, revisions))
         .collect(toList())
     );
-    List<HalRepresentation> replies = target.getEmbedded().getItemsBy("replies");
     if (!source.getType().equals(CommentType.TASK_DONE)) {
       appendReplyLink(target, repository, pullRequestId, source.getId(), revisions);
     }
@@ -103,6 +109,11 @@ public abstract class CommentMapper {
   @AfterMapping
   void appendPossibleTransitions(@MappingTarget CommentDto target, Comment source, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions) {
     possibleTransitionMapper.appendTransitions(target, possibleTransitions, repository.getNamespace(), repository.getName(), pullRequestId, source.getId());
+  }
+
+  @Named("mapMentions")
+  Set<DisplayUser> appendMentions(Set<String> userIds) {
+    return mentionMapper.mapMentions(userIds);
   }
 
   Integer mapOptional(OptionalInt optionalInt) {

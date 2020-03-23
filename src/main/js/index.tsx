@@ -9,6 +9,7 @@ import PullRequestsNavLink from "./PullRequestsNavLink";
 import CreatePullRequestButton from "./CreatePullRequestButton";
 import RepositoryConfig from "./config/RepositoryConfig";
 import GlobalConfig from "./config/GlobalConfig";
+import RepositoryPullRequestCardLink from "./RepositoryPullRequestCardLink";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -31,7 +32,7 @@ binder.bind("repository.route", NewPullRequestRoute);
 
 //  show single pullRequest
 
-function getUserAutoCompleteLink(indexLinks) {
+export function getUserAutoCompleteLink(indexLinks) {
   if (indexLinks && indexLinks.autocomplete) {
     const link = indexLinks.autocomplete.find(i => i.name === "users");
     if (link) {
@@ -79,6 +80,8 @@ binder.bind("repository.route", ShowPullRequestsRoute);
 binder.bind("repos.branch-details.information", ({ repository, branch }) => (
   <CreatePullRequestButton repository={repository} branch={branch} />
 ));
+
+binder.bind("repository.card.quickLink", RepositoryPullRequestCardLink, reviewSupportedPredicate);
 
 cfgBinder.bindRepositorySetting("/review", "scm-review-plugin.navLink", "pullRequestConfig", RepositoryConfig);
 cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink", "pullRequestConfig", GlobalConfig);

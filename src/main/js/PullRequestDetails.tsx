@@ -7,17 +7,15 @@ import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   Button,
   ButtonGroup,
+  ConflictError,
   DateFromNow,
   ErrorNotification,
   Icon,
   Loading,
-  MarkdownView,
-  Notification,
+  NotFoundError,
   Tag,
   Title,
-  Tooltip,
-  ConflictError,
-  NotFoundError
+  Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import { check, merge, reject } from "./pullRequest";
@@ -28,6 +26,7 @@ import ApprovalContainer from "./ApprovalContainer";
 import SubscriptionContainer from "./SubscriptionContainer";
 import ReviewerList from "./ReviewerList";
 import ChangeNotification from "./ChangeNotification";
+import ReducedMarkdownView from "./ReducedMarkdownView";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -248,7 +247,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       description = (
         <div className="media">
           <MediaContent>
-            <MarkdownView className="content" content={pullRequest.description} />
+            <ReducedMarkdownView content={pullRequest.description} />
           </MediaContent>
         </div>
       );

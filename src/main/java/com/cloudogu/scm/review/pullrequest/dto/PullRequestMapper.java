@@ -9,6 +9,7 @@ import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
@@ -41,6 +42,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.stream.Collectors.toList;
@@ -58,16 +60,16 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   @Inject
   private RepositoryServiceFactory serviceFactory;
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
-  @Inject
-  private BranchRevisionResolver branchRevisionResolver;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")
   @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
+  @Mapping(target = "markedAsReviewed", ignore = true)
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
   @Mapping(target = "subscriber", ignore = true)
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewerFromDto")
+  @Mapping(target = "reviewMarks", ignore = true)
   public abstract PullRequest map(PullRequestDto dto);
 
   @Named("mapReviewerFromDto")
@@ -133,6 +135,16 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     );
   }
 
+  @AfterMapping
+  void mapReviewMarks(@MappingTarget PullRequestDto target, PullRequest pullRequest) {
+    List<String> filesMarkedAsReviewed = pullRequest.getReviewMarks()
+      .stream()
+      .filter(mark -> mark.getUser().equals(getCurrentUser().getId()))
+      .map(ReviewMark::getFile)
+      .collect(toList());
+    target.setMarkedAsReviewed(filesMarkedAsReviewed);
+  }
+
   private long countCommentsByFilter(List<Comment> comments, Predicate<Comment> filter) {
     return comments.stream().filter(filter).count();
   }
@@ -172,8 +184,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
           .createDefaultCommitMessage(repository.getNamespace(), repository.getName(), pullRequest.getId())));
         appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
-
     }
+    linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(repository.getNamespace(), repository.getName(), target.getId())));
     target.add(linksBuilder.build());
   }
 
