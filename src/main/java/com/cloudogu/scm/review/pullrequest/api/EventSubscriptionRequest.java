@@ -19,10 +19,10 @@ public class EventSubscriptionRequest {
   @PathParam("pullRequestId")
   private String pullRequestId;
 
-  @HeaderParam("X-SCM-Session-ID")
+  @HeaderParam(SessionId.PARAMETER)
   private SessionId sessionIdFromHeader;
 
-  @QueryParam("X-SCM-Session-ID")
+  @QueryParam(SessionId.PARAMETER)
   private SessionId sessionIdFromQueryParam;
 
   public SessionId getSessionId() {
