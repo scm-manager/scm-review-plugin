@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - rc4 with removed toast messages, as these are not closed correctly on the server
 
+### Changed
+- Changeover to MIT license ([#58](https://github.com/scm-manager/scm-review-plugin/pull/58))
+
 ## 2.0.0-rc6
 ### Added
 - Add swagger rest annotations to generate openAPI specs for the scm-openapi-plugin. ([#54](https://github.com/scm-manager/scm-review-plugin/pull/54))
