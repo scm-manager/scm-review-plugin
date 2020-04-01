@@ -238,7 +238,13 @@
       "noBranches": "Keine Muster für Branches definiert.",
       "deleteBranch": "Dieses Muster löschen"
     },
-    "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden."
+    "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden.",
+    "landingpage": {
+      "myPullRequests": {
+        "title": "Meine Pull Requests",
+        "cardSubtitle": "in {{namespace}}/{{name}}"
+      }
+    }
   },
   "permissions": {
     "repository": {

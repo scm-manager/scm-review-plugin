@@ -236,7 +236,13 @@
       "noBranches": "No branch patterns defined.",
       "deleteBranch": "Delete this branch pattern"
     },
-    "obstacle": "This branch can only be modified by pull requests."
+    "obstacle": "This branch can only be modified by pull requests.",
+    "landingpage": {
+      "myPullRequests": {
+        "title": "My pull requests",
+        "cardSubtitle": "in {{namespace}}/{{name}}"
+      }
+    }
   },
   "permissions": {
     "repository": {
