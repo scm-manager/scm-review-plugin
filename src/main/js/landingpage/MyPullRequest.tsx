@@ -25,7 +25,7 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { AvatarImage, CardColumn, Icon, Tag } from "@scm-manager/ui-components";
-import ReviewerIcon from "../../table/ReviewerIcon";
+import ReviewerIcon from "../table/ReviewerIcon";
 
 const PullRequestEntryWrapper = styled.div`
   .overlay-column {

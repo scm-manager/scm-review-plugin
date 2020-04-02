@@ -241,6 +241,11 @@
       "myPullRequests": {
         "title": "My pull requests",
         "cardSubtitle": "in {{namespace}}/{{name}}"
+      },
+      "created": {
+        "repository": "New pull request in {{namespace}}/{{name}}",
+        "title": "#{{id}}: {{title}}",
+        "author": "Created by {{author}}"
       }
     }
   },

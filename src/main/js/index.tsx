@@ -33,7 +33,8 @@ import CreatePullRequestButton from "./CreatePullRequestButton";
 import RepositoryConfig from "./config/RepositoryConfig";
 import GlobalConfig from "./config/GlobalConfig";
 import RepositoryPullRequestCardLink from "./RepositoryPullRequestCardLink";
-import MyPullRequest from "./landingpage/data/MyPullRequest";
+import MyPullRequest from "./landingpage/MyPullRequest";
+import PullRequestCreatedEvent from "./landingpage/PullRequestCreatedEvent";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -116,3 +117,4 @@ binder.bind("landingpage.mydata", {
   separatedEntries: true,
   type: "MyPullRequestData"
 });
+binder.bind("landingpage.myevents", PullRequestCreatedEvent);
