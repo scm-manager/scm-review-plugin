@@ -242,7 +242,7 @@
     "landingpage": {
       "myPullRequests": {
         "title": "Meine Pull Requests",
-        "cardSubtitle": "in {{namespace}}/{{name}}"
+        "cardSubtitle": "im Repository {{namespace}}/{{name}}"
       },
       "created": {
         "repository": "Neuer Pull Request in {{namespace}}/{{name}}",
