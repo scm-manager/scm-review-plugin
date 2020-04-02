@@ -248,6 +248,12 @@
         "repository": "Neuer Pull Request in {{namespace}}/{{name}}",
         "title": "#{{id}}: {{title}}",
         "author": "Erstellt von {{author}}"
+      },
+      "todo": {
+        "todo": "{{open}}/{{count}} Aufgaben",
+        "todoTitle": "{{open}} von {{count}} Aufgaben sind noch nicht als erledigt markiert",
+        "title": "#{{id}} {{title}}",
+        "subtitle": "in Repository {{namespace}}/{{name}}"
       }
     }
   },

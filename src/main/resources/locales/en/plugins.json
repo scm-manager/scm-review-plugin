@@ -246,6 +246,12 @@
         "repository": "New pull request in {{namespace}}/{{name}}",
         "title": "#{{id}}: {{title}}",
         "author": "Created by {{author}}"
+      },
+      "todo": {
+        "todo": "{{open}}/{{count}} tasks",
+        "todoTitle": "{{open}} of {{count}} tasks are not marked as done, yet",
+        "title": "#{{id}} {{title}}",
+        "subtitle": "in repository {{namespace}}/{{name}}"
       }
     }
   },
