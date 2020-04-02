@@ -26,7 +26,9 @@ package com.cloudogu.scm.review.pullrequest.landingpage;
 import com.cloudogu.scm.landingpage.mydata.MyData;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import lombok.Getter;
+import sonia.scm.repository.Repository;
 
 @Getter
 public class MyPullRequestData extends MyData {
@@ -34,8 +36,8 @@ public class MyPullRequestData extends MyData {
   private final String name;
   private final PullRequestDto pullRequest;
 
-  MyPullRequestData(PullRequestWithRepository prWithRepo, PullRequestMapper mapper) {
-    this(prWithRepo.getRepository().getNamespace(), prWithRepo.getRepository().getName(), mapper.map(prWithRepo.getPullRequest(), prWithRepo.getRepository()));
+  MyPullRequestData(Repository repository, PullRequest pullRequest, PullRequestMapper mapper) {
+    this(repository.getNamespace(), repository.getName(), mapper.map(pullRequest, repository));
   }
 
   MyPullRequestData(String namespace, String name, PullRequestDto pullRequest) {
