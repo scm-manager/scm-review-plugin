@@ -22,48 +22,25 @@
  * SOFTWARE.
  */
 import React from "react";
-import { Icon, DateFromNow } from "@scm-manager/ui-components";
-import styled from "styled-components";
-import { Link as ReactLink } from "react-router-dom";
+import { Icon } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
-import classNames from "classnames";
-
-const FlexFullHeight = styled.div`
-  flex-direction: column;
-  justify-content: space-around;
-  align-self: stretch;
-`;
-
-const ContentLeft = styled.div`
-  margin-bottom: 0 !important;
-  overflow: hidden;
-`;
-
-const ContentRight = styled.div`
-  margin-left: auto;
-  align-items: start;
-`;
-
-const CenteredItems = styled.div`
-  align-items: center;
-`;
-
-const StyledLink = styled(ReactLink)`
-  color: inherit;
-  :hover {
-    color: #33b2e8 !important;
-  }
-`;
+import MyEventEntry from "./MyEventEntry";
 
 const PullRequestCreatedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
   const link = `/repo/${event.namespace}/${event.name}/pull-request/${event.id}`;
+  const footerLeft = (
+    <>
+      {t("scm-review-plugin.landingpage.created.author")}&nbsp;<span className="has-text-info">{event.author}</span>
+    </>
+  );
   return (
-    <StyledLink to={link}>
-      <div className={"media"}>
-        <i className="fas fa-code-branch fa-rotate-180 fa-3x media-left" />
-        <FlexFullHeight className={classNames("media-content", "text-box", "is-flex")}>
-          <strong className="is-marginless">{t("scm-review-plugin.landingpage.created.repository", event)}</strong>
+    <MyEventEntry
+      link={link}
+      icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
+      content={
+        <>
+          <strong>{t("scm-review-plugin.landingpage.created.repository", event)}</strong>
           <p>
             {t("scm-review-plugin.landingpage.created.title", event)}
             <br />
@@ -71,17 +48,11 @@ const PullRequestCreatedEvent = ({ event }) => {
             <Icon name={"fas fa-long-arrow-alt-right"} />
             &nbsp;{event.target}
           </p>
-          <CenteredItems className="is-flex">
-            <ContentLeft className="content">
-              {t("scm-review-plugin.landingpage.created.author")} <span className="has-text-info">{event.author}</span>
-            </ContentLeft>
-            <ContentRight>
-              <DateFromNow date={event.date} />
-            </ContentRight>
-          </CenteredItems>
-        </FlexFullHeight>
-      </div>
-    </StyledLink>
+        </>
+      }
+      footerLeft={footerLeft}
+      date={event.date}
+    />
   );
 };
 

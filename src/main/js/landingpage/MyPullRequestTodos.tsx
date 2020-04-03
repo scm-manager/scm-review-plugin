@@ -22,38 +22,9 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { DateFromNow, Tag } from "@scm-manager/ui-components";
-import styled from "styled-components";
-import { Link as ReactLink } from "react-router-dom";
+import { Tag } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
-import classNames from "classnames";
-
-const FlexFullHeight = styled.div`
-  flex-direction: column;
-  justify-content: space-around;
-  align-self: stretch;
-`;
-
-const StyledLink = styled(ReactLink)`
-  color: inherit;
-  :hover {
-    color: #33b2e8 !important;
-  }
-`;
-
-const ContentLeft = styled.strong`
-  margin-bottom: 0 !important;
-  overflow: hidden;
-`;
-
-const ContentRight = styled.div`
-  margin-left: auto;
-  align-items: start;
-`;
-
-const CenteredItems = styled.div`
-  align-items: center;
-`;
+import MyEventEntry from "./MyEventEntry";
 
 type Props = {
   task: any;
@@ -62,38 +33,32 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
   const [t] = useTranslation("plugins");
   const { pullRequest } = task;
   const link = `/repo/${task.namespace}/${task.name}/pull-request/${task.pullRequest.id}`;
+  const content = (
+    <>
+      <Tag
+        color={"info"}
+        label={t("scm-review-plugin.landingpage.todo.todo", {
+          open: pullRequest.tasks.done,
+          count: pullRequest.tasks.todo + pullRequest.tasks.done
+        })}
+        title={t("scm-review-plugin.landingpage.todo.todoTitle", {
+          open: pullRequest.tasks.done,
+          count: pullRequest.tasks.todo + pullRequest.tasks.done
+        })}
+      />{" "}
+      {t("scm-review-plugin.landingpage.todo.title", pullRequest)}
+    </>
+  );
+  const footer = t("scm-review-plugin.landingpage.todo.subtitle", task);
+
   return (
-    <StyledLink to={link}>
-      <div className={"media"}>
-        <i className="fas fa-code-branch fa-rotate-180 fa-3x media-left" />
-        <FlexFullHeight className={classNames("media-content", "text-box", "is-flex")}>
-          <CenteredItems className="is-flex">
-            <ContentLeft>
-              {/*<strong className="is-marginless">*/}
-              <Tag
-                color={"info"}
-                label={t("scm-review-plugin.landingpage.todo.todo", {
-                  open: pullRequest.tasks.done,
-                  count: pullRequest.tasks.todo + pullRequest.tasks.done
-                })}
-                title={t("scm-review-plugin.landingpage.todo.todoTitle", {
-                  open: pullRequest.tasks.done,
-                  count: pullRequest.tasks.todo + pullRequest.tasks.done
-                })}
-              />{" "}
-              {t("scm-review-plugin.landingpage.todo.title", pullRequest)}
-              {/*</strong>*/}
-            </ContentLeft>
-            <ContentRight>
-              <small>
-                <DateFromNow date={pullRequest.creationDate} />
-              </small>
-            </ContentRight>
-          </CenteredItems>
-          <p>{t("scm-review-plugin.landingpage.todo.subtitle", task)}</p>
-        </FlexFullHeight>
-      </div>
-    </StyledLink>
+    <MyEventEntry
+      link={link}
+      icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
+      content={content}
+      footerLeft={footer}
+      date={pullRequest.creationDate}
+    />
   );
 };
 

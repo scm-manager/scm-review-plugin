@@ -44,7 +44,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import java.time.Instant;
 import java.util.Optional;
 
 import static com.cloudogu.scm.review.PermissionCheck.READ_PULL_REQUEST;
@@ -82,13 +81,12 @@ public class PullRequestCreatedEventMapper {
     private String source;
     private String target;
     private String author;
-    private Instant date;
 
     public PullRequestCreatedEvent() {
     }
 
     public PullRequestCreatedEvent(Repository repository, PullRequest pullRequest, Optional<DisplayUser> displayUser) {
-      super("PullRequestCreatedEvent", RepositoryPermissions.custom(READ_PULL_REQUEST, repository.getId()).asShiroString());
+      super("PullRequestCreatedEvent", RepositoryPermissions.custom(READ_PULL_REQUEST, repository.getId()).asShiroString(), pullRequest.getCreationDate());
       this.namespace = repository.getNamespace();
       this.name = repository.getName();
       this.id = pullRequest.getId();
@@ -96,7 +94,6 @@ public class PullRequestCreatedEventMapper {
       this.source = pullRequest.getSource();
       this.target = pullRequest.getTarget();
       this.author = displayUser.map(DisplayUser::getDisplayName).orElse(null);
-      this.date = pullRequest.getCreationDate();
     }
   }
 }
