@@ -22,36 +22,21 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { Tag } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import MyEventEntry from "./MyEventEntry";
 
 type Props = {
   task: any;
 };
-const PullRequestTodos: FC<Props> = ({ task }) => {
+const PullRequestReview: FC<Props> = ({ task }) => {
   const [t] = useTranslation("plugins");
   const { pullRequest } = task;
   const link = `/repo/${task.namespace}/${task.name}/pull-request/${task.pullRequest.id}`;
-  const content = (
-    <>
-      <Tag
-        color={"info"}
-        label={t("scm-review-plugin.landingpage.todo.todo", {
-          open: pullRequest.tasks.done,
-          count: pullRequest.tasks.todo + pullRequest.tasks.done
-        })}
-        title={t("scm-review-plugin.landingpage.todo.todoTitle", {
-          open: pullRequest.tasks.done,
-          count: pullRequest.tasks.todo + pullRequest.tasks.done
-        })}
-      />{" "}
-      {t("scm-review-plugin.landingpage.todo.title", pullRequest)}
-    </>
-  );
+  const content = t("scm-review-plugin.landingpage.review.title", pullRequest);
   const footer = (
     <>
-      {t("scm-review-plugin.landingpage.todo.footer")} <span className="has-text-info">{task.namespace + "/" + task.name}</span>
+      {t("scm-review-plugin.landingpage.review.footer")}{" "}
+      <span className="has-text-info">{task.namespace + "/" + task.name}</span>
     </>
   );
 
@@ -66,6 +51,6 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
   );
 };
 
-PullRequestTodos.type = "MyPullRequestTodos";
+PullRequestReview.type = "MyPullRequestReview";
 
-export default PullRequestTodos;
+export default PullRequestReview;

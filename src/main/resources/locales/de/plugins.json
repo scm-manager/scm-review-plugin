@@ -255,7 +255,11 @@
         "todo": "{{open}}/{{count}} Aufgaben",
         "todoTitle": "{{open}} von {{count}} Aufgaben sind noch nicht als erledigt markiert",
         "title": "#{{id}} {{title}}",
-        "subtitle": "in Repository {{namespace}}/{{name}}"
+        "footer": "im Repository"
+      },
+      "review": {
+        "title": "Review: #{{id}} {{title}}",
+        "footer": "im Repository"
       }
     }
   },

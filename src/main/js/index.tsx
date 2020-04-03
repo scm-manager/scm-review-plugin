@@ -36,6 +36,7 @@ import RepositoryPullRequestCardLink from "./RepositoryPullRequestCardLink";
 import MyPullRequest from "./landingpage/MyPullRequest";
 import PullRequestCreatedEvent from "./landingpage/PullRequestCreatedEvent";
 import PullRequestTodos from "./landingpage/MyPullRequestTodos";
+import PullRequestReview from "./landingpage/MyPullRequestReview";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -120,3 +121,4 @@ binder.bind("landingpage.mydata", {
 });
 binder.bind("landingpage.myevents", PullRequestCreatedEvent);
 binder.bind("landingpage.mytask", PullRequestTodos);
+binder.bind("landingpage.mytask", PullRequestReview);
