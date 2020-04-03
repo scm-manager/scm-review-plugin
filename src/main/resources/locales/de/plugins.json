@@ -245,9 +245,11 @@
         "cardSubtitle": "im Repository {{namespace}}/{{name}}"
       },
       "created": {
-        "repository": "Neuer Pull Request in {{namespace}}/{{name}}",
+        "header": "Neuer Pull Request: #{{id}} {{title}}",
         "title": "#{{id}}: {{title}}",
-        "author": "Erstellt von {{author}}"
+        "footerStart": "Erstellt von",
+        "footerMiddle": "im Repository",
+        "footerEnd": ""
       },
       "todo": {
         "todo": "{{open}}/{{count}} Aufgaben",

@@ -243,9 +243,10 @@
         "cardSubtitle": "in repository {{namespace}}/{{name}}"
       },
       "created": {
-        "repository": "New pull request in {{namespace}}/{{name}}",
-        "title": "#{{id}}: {{title}}",
-        "author": "Created by {{author}}"
+        "header": "New pull request: #{{id}} {{title}}",
+        "footerStart": "Created by",
+        "footerMiddle": "in repository",
+        "footerEnd": ""
       },
       "todo": {
         "todo": "{{open}}/{{count}} tasks",

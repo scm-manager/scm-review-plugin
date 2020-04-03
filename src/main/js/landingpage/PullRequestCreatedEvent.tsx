@@ -22,35 +22,34 @@
  * SOFTWARE.
  */
 import React from "react";
-import { Icon } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import MyEventEntry from "./MyEventEntry";
 
 const PullRequestCreatedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
   const link = `/repo/${event.namespace}/${event.name}/pull-request/${event.id}`;
-  const footerLeft = (
+  const footer = (
     <>
-      {t("scm-review-plugin.landingpage.created.author")}&nbsp;<span className="has-text-info">{event.author}</span>
+      {t("scm-review-plugin.landingpage.created.footerStart")} <span className="has-text-info">{event.author}</span>{" "}
+      {t("scm-review-plugin.landingpage.created.footerMiddle")}{" "}
+      <span className="has-text-info">{event.namespace + "/" + event.name}</span>{" "}
+      {t("scm-review-plugin.landingpage.created.footerEnd")}
     </>
   );
+
   return (
     <MyEventEntry
       link={link}
       icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
-      content={
-        <>
-          <strong>{t("scm-review-plugin.landingpage.created.repository", event)}</strong>
-          <p>
-            {t("scm-review-plugin.landingpage.created.title", event)}
-            <br />
-            {event.source}&nbsp;
-            <Icon name={"fas fa-long-arrow-alt-right"} />
-            &nbsp;{event.target}
-          </p>
-        </>
+      header={
+        <strong>
+          {t("scm-review-plugin.landingpage.created.header", {
+            ...event,
+            author: <span className="has-text-info">{event.author}</span>
+          })}
+        </strong>
       }
-      footerLeft={footerLeft}
+      footer={footer}
       date={event.date}
     />
   );

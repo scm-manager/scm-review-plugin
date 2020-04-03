@@ -58,24 +58,24 @@ const StyledLink = styled(ReactLink)`
 type Props = {
   link: string;
   icon: ReactNode;
-  content: ReactNode;
-  footerLeft?: ReactNode;
+  header: ReactNode;
+  footer?: ReactNode;
   date: Date;
 };
 
-const MyEventEntry: FC<Props> = ({ link, icon, content, footerLeft, date }) => {
+const MyEventEntry: FC<Props> = ({ link, icon, header, footer, date }) => {
   return (
     <StyledLink to={link}>
       <div className={"media"}>
         {icon}
         <FlexFullHeight className={classNames("media-content", "text-box", "is-flex")}>
-          {content}
           <CenteredItems className="is-flex">
-            <ContentLeft className="content">{footerLeft}</ContentLeft>
+            <ContentLeft className="content">{header}</ContentLeft>
             <ContentRight>
               <DateFromNow date={date} />
             </ContentRight>
           </CenteredItems>
+          <small>{footer}</small>
         </FlexFullHeight>
       </div>
     </StyledLink>

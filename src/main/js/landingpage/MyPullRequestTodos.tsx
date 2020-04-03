@@ -55,8 +55,8 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
     <MyEventEntry
       link={link}
       icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
-      content={content}
-      footerLeft={footer}
+      header={content}
+      footer={footer}
       date={pullRequest.creationDate}
     />
   );
