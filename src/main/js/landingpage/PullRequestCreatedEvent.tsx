@@ -23,7 +23,7 @@
  */
 import React from "react";
 import { useTranslation } from "react-i18next";
-import MyEventEntry from "./MyEventEntry";
+import { CardColumnSmall } from "@scm-manager/ui-components";
 
 const PullRequestCreatedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
@@ -38,10 +38,10 @@ const PullRequestCreatedEvent = ({ event }) => {
   );
 
   return (
-    <MyEventEntry
+    <CardColumnSmall
       link={link}
       icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
-      header={
+      contentLeft={
         <strong>
           {t("scm-review-plugin.landingpage.created.header", {
             ...event,
@@ -50,7 +50,7 @@ const PullRequestCreatedEvent = ({ event }) => {
         </strong>
       }
       footer={footer}
-      date={event.date}
+      contentRight={event.date}
     />
   );
 };
