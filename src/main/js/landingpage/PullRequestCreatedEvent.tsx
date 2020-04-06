@@ -23,7 +23,7 @@
  */
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall } from "@scm-manager/ui-components";
+import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
 
 const PullRequestCreatedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
@@ -50,7 +50,7 @@ const PullRequestCreatedEvent = ({ event }) => {
         </strong>
       }
       footer={footer}
-      contentRight={event.date}
+      contentRight={<DateFromNow date={event.date} />}
     />
   );
 };

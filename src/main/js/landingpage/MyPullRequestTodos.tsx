@@ -24,7 +24,7 @@
 import React, { FC } from "react";
 import { Tag } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall } from "@scm-manager/ui-components";
+import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
 
 type Props = {
   task: any;
@@ -61,7 +61,7 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
       icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
       contentLeft={content}
       footer={footer}
-      contentRight={pullRequest.creationDate}
+      contentRight={<DateFromNow date={pullRequest.creationDate} />}
     />
   );
 };
