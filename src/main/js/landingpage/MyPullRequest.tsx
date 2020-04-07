@@ -37,12 +37,12 @@ const PullRequestEntryWrapper = styled.div`
   }
 `;
 
-const TodoTag = styled(Tag).attrs(props => ({}))`
+const TodoTag = styled(Tag)`
   margin-left: 0.5em;
   pointer-events: all;
 `;
 
-const ReviewerIconWithPointer = styled(ReviewerIcon).attrs(props => ({}))`
+const ReviewerIconWithPointer = styled(ReviewerIcon)`
   pointer-events: all;
 `;
 
