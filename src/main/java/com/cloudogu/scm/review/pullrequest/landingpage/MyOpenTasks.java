@@ -32,7 +32,6 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import org.apache.shiro.SecurityUtils;
-import sonia.scm.EagerSingleton;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
@@ -48,7 +47,6 @@ import java.util.List;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 
 @Extension(requires = "scm-landingpage-plugin")
-@EagerSingleton
 public class MyOpenTasks implements MyTaskProvider {
   private final RepositoryServiceFactory serviceFactory;
   private final RepositoryManager repositoryManager;
