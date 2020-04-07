@@ -238,7 +238,30 @@
       "noBranches": "Keine Muster für Branches definiert.",
       "deleteBranch": "Dieses Muster löschen"
     },
-    "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden."
+    "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden.",
+    "landingpage": {
+      "myPullRequests": {
+        "title": "Meine Pull Requests",
+        "cardSubtitle": "im Repository {{namespace}}/{{name}}"
+      },
+      "created": {
+        "header": "Neuer Pull Request: #{{id}} {{title}}",
+        "title": "#{{id}}: {{title}}",
+        "footerStart": "Erstellt von",
+        "footerMiddle": "im Repository",
+        "footerEnd": ""
+      },
+      "todo": {
+        "todo": "{{open}}/{{count}} Aufgaben",
+        "todoTitle": "{{open}} von {{count}} Aufgaben sind noch nicht als erledigt markiert",
+        "title": "#{{id}} {{title}}",
+        "footer": "im Repository"
+      },
+      "review": {
+        "title": "Review: #{{id}} {{title}}",
+        "footer": "im Repository"
+      }
+    }
   },
   "permissions": {
     "repository": {

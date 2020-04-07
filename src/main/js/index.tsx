@@ -33,6 +33,10 @@ import CreatePullRequestButton from "./CreatePullRequestButton";
 import RepositoryConfig from "./config/RepositoryConfig";
 import GlobalConfig from "./config/GlobalConfig";
 import RepositoryPullRequestCardLink from "./RepositoryPullRequestCardLink";
+import MyPullRequest from "./landingpage/MyPullRequest";
+import PullRequestCreatedEvent from "./landingpage/PullRequestCreatedEvent";
+import PullRequestTodos from "./landingpage/MyPullRequestTodos";
+import PullRequestReview from "./landingpage/MyPullRequestReview";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -108,3 +112,13 @@ binder.bind("repository.card.quickLink", RepositoryPullRequestCardLink, reviewSu
 
 cfgBinder.bindRepositorySetting("/review", "scm-review-plugin.navLink", "pullRequestConfig", RepositoryConfig);
 cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink", "pullRequestConfig", GlobalConfig);
+
+binder.bind("landingpage.mydata", {
+  render: (data: any, key: any) => <MyPullRequest key={key} data={data} />,
+  title: "scm-review-plugin.landingpage.myPullRequests.title",
+  separatedEntries: true,
+  type: "MyPullRequestData"
+});
+binder.bind("landingpage.myevents", PullRequestCreatedEvent);
+binder.bind("landingpage.mytask", PullRequestTodos);
+binder.bind("landingpage.mytask", PullRequestReview);

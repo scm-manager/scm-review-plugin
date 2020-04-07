@@ -236,7 +236,29 @@
       "noBranches": "No branch patterns defined.",
       "deleteBranch": "Delete this branch pattern"
     },
-    "obstacle": "This branch can only be modified by pull requests."
+    "obstacle": "This branch can only be modified by pull requests.",
+    "landingpage": {
+      "myPullRequests": {
+        "title": "My pull requests",
+        "cardSubtitle": "in repository {{namespace}}/{{name}}"
+      },
+      "created": {
+        "header": "New pull request: #{{id}} {{title}}",
+        "footerStart": "Created by",
+        "footerMiddle": "in repository",
+        "footerEnd": ""
+      },
+      "todo": {
+        "todo": "{{open}}/{{count}} tasks",
+        "todoTitle": "{{open}} of {{count}} tasks are not marked as done, yet",
+        "title": "#{{id}} {{title}}",
+        "footer": "in repository"
+      },
+      "review": {
+        "title": "Review: #{{id}} {{title}}",
+        "footer": "in repository"
+      }
+    }
   },
   "permissions": {
     "repository": {
