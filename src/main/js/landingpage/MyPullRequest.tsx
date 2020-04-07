@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { AvatarImage, CardColumn, Icon, Tag } from "@scm-manager/ui-components";
 import ReviewerIcon from "../table/ReviewerIcon";
+import { DataType } from "./DataType";
 
 const PullRequestEntryWrapper = styled.div`
   .overlay-column {
@@ -47,8 +48,9 @@ const ReviewerIconWithPointer = styled(ReviewerIcon)`
 `;
 
 type Props = {
-  data: any;
+  data: DataType;
 };
+
 const MyPullRequest: FC<Props> = ({ data }) => {
   const [t] = useTranslation("plugins");
   const { namespace, name, pullRequest } = data;

@@ -21,37 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
-import { DataType } from "./DataType";
 
-type Props = {
-  task: DataType;
+import { PullRequest } from "../types/PullRequest";
+
+export type DataType = {
+  namespace: string;
+  name: string;
+  pullRequest: PullRequest;
 };
-const PullRequestReview: FC<Props> = ({ task }) => {
-  const [t] = useTranslation("plugins");
-  const { pullRequest } = task;
-  const link = `/repo/${task.namespace}/${task.name}/pull-request/${task.pullRequest.id}`;
-  const content = t("scm-review-plugin.landingpage.review.title", pullRequest);
-  const footer = (
-    <>
-      {t("scm-review-plugin.landingpage.review.footer")}{" "}
-      <span className="has-text-info">{task.namespace + "/" + task.name}</span>
-    </>
-  );
-
-  return (
-    <CardColumnSmall
-      link={link}
-      icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
-      contentLeft={content}
-      footer={footer}
-      contentRight={<DateFromNow date={pullRequest.creationDate} />}
-    />
-  );
-};
-
-PullRequestReview.type = "MyPullRequestReview";
-
-export default PullRequestReview;

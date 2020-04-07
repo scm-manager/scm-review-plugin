@@ -25,9 +25,10 @@ import React, { FC } from "react";
 import { Tag } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
+import { DataType } from "./DataType";
 
 type Props = {
-  task: any;
+  task: DataType;
 };
 const PullRequestTodos: FC<Props> = ({ task }) => {
   const [t] = useTranslation("plugins");
