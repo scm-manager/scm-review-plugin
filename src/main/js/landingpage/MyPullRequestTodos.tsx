@@ -26,6 +26,7 @@ import { Tag } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
 import { DataType } from "./DataType";
+import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 
 type Props = {
   task: DataType;
@@ -52,14 +53,15 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
   );
   const footer = (
     <>
-      {t("scm-review-plugin.landingpage.todo.footer")} <span className="has-text-info">{task.namespace + "/" + task.name}</span>
+      {t("scm-review-plugin.landingpage.todo.footer")}{" "}
+      <span className="has-text-info">{task.namespace + "/" + task.name}</span>
     </>
   );
 
   return (
     <CardColumnSmall
       link={link}
-      icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
+      icon={<SmallPullRequestIcon />}
       contentLeft={content}
       footer={footer}
       contentRight={<DateFromNow date={pullRequest.creationDate} />}

@@ -24,6 +24,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
+import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 
 const PullRequestCreatedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
@@ -40,7 +41,7 @@ const PullRequestCreatedEvent = ({ event }) => {
   return (
     <CardColumnSmall
       link={link}
-      icon={<i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />}
+      icon={<SmallPullRequestIcon />}
       contentLeft={
         <strong>
           {t("scm-review-plugin.landingpage.created.header", {

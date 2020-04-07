@@ -22,37 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
-import { DataType } from "./DataType";
-import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 
-type Props = {
-  task: DataType;
+export const SmallPullRequestIcon: FC = () => {
+  return <i className="fas fa-code-branch fa-rotate-180 fa-2x media-left" />;
 };
-const PullRequestReview: FC<Props> = ({ task }) => {
-  const [t] = useTranslation("plugins");
-  const { pullRequest } = task;
-  const link = `/repo/${task.namespace}/${task.name}/pull-request/${task.pullRequest.id}`;
-  const content = t("scm-review-plugin.landingpage.review.title", pullRequest);
-  const footer = (
-    <>
-      {t("scm-review-plugin.landingpage.review.footer")}{" "}
-      <span className="has-text-info">{task.namespace + "/" + task.name}</span>
-    </>
-  );
-
-  return (
-    <CardColumnSmall
-      link={link}
-      icon={<SmallPullRequestIcon />}
-      contentLeft={content}
-      footer={footer}
-      contentRight={<DateFromNow date={pullRequest.creationDate} />}
-    />
-  );
-};
-
-PullRequestReview.type = "MyPullRequestReview";
-
-export default PullRequestReview;
