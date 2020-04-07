@@ -26,36 +26,22 @@ package com.cloudogu.scm.review.pullrequest.landingpage;
 import com.cloudogu.scm.landingpage.mydata.MyData;
 import com.cloudogu.scm.landingpage.mydata.MyDataProvider;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
-import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.plugin.Extension;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryManager;
-import sonia.scm.repository.api.Command;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 
 @Extension(requires = "scm-landingpage-plugin")
 public class MyPullRequests implements MyDataProvider {
 
-  private final RepositoryServiceFactory serviceFactory;
-  private final RepositoryManager repositoryManager;
-  private final PullRequestService pullRequestService;
+  private final OpenPullRequestProvider pullRequestProvider;
   private final PullRequestMapper mapper;
 
   @Inject
-  public MyPullRequests(RepositoryServiceFactory serviceFactory, RepositoryManager repositoryManager, PullRequestService pullRequestService, PullRequestMapper mapper) {
-    this.serviceFactory = serviceFactory;
-    this.repositoryManager = repositoryManager;
-    this.pullRequestService = pullRequestService;
+  public MyPullRequests(OpenPullRequestProvider pullRequestProvider, PullRequestMapper mapper) {
+    this.pullRequestProvider = pullRequestProvider;
     this.mapper = mapper;
   }
 
@@ -63,22 +49,10 @@ public class MyPullRequests implements MyDataProvider {
   public Iterable<MyData> getData() {
     String subject = SecurityUtils.getSubject().getPrincipal().toString();
     Collection<MyData> result = new ArrayList<>();
-    repositoryManager.getAll().stream().filter(this::supportsPullRequests).forEach(
-      repository -> allPullRequestsFor(repository).stream()
-        .filter(pr -> pr.getStatus() == OPEN)
+    pullRequestProvider.findOpenPullRequests((repository, stream) -> stream
         .filter(pr -> pr.getAuthor().equals(subject))
         .forEach(pr -> result.add(new MyPullRequestData(repository, pr, mapper)))
     );
     return result;
-  }
-
-  private List<PullRequest> allPullRequestsFor(Repository repository) {
-    return pullRequestService.getAll(repository.getNamespace(), repository.getName());
-  }
-
-  private boolean supportsPullRequests(Repository repository) {
-    try (RepositoryService repositoryService = serviceFactory.create(repository)) {
-      return repositoryService.isSupported(Command.MERGE);
-    }
   }
 }

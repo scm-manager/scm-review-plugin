@@ -26,12 +26,12 @@ package com.cloudogu.scm.review.pullrequest.landingpage;
 
 import com.cloudogu.scm.landingpage.mytasks.MyTask;
 import com.cloudogu.scm.review.comment.service.Comment;
-import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.google.common.collect.ImmutableMap;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
@@ -43,9 +43,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 
-import static com.cloudogu.scm.review.comment.service.CommentType.COMMENT;
-import static com.cloudogu.scm.review.comment.service.CommentType.TASK_DONE;
-import static com.cloudogu.scm.review.comment.service.CommentType.TASK_TODO;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,23 +51,21 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MyOpenTasksTest {
+class MyOpenReviewsTest {
 
   static final Repository PR_REPOSITORY = new Repository("1", "git", "space", "X");
 
-  static final PullRequest OPEN_PR_FOR_USER_WITHOUT_TASK = createPullRequest("open_dent", OPEN, "dent");
-  static final PullRequest OPEN_PR_FOR_USER_WITH_TASK = createPullRequest("open_dent_tasks", OPEN, "dent");
-  static final PullRequest OPEN_PR_FOR_OTHER = createPullRequest("open_tricia", OPEN, "tricia");
+  static final PullRequest OPEN_PR_WITH_USER_AS_REVIEWER_NOT_REVIEWED = createPullRequest("open_dent_not_reviewed", OPEN, "trillian", false);
+  static final PullRequest OPEN_PR_WITH_USER_AS_REVIEWER_REVIEWED = createPullRequest("open_dent_reviewed", OPEN, "trillian", true);
+  static final PullRequest OPEN_PR_WITHOUT_USER_AS_REVIEWER = createPullRequest("open_dent", OPEN, "ziltoid", false);
 
   @Mock
   OpenPullRequestProvider pullRequestProvider;
   @Mock
-  CommentService commentService;
-  @Mock
   PullRequestMapper mapper;
 
   @InjectMocks
-  MyOpenTasks myOpenTasks;
+  MyOpenReviews myOpenReviews;
 
   @Mock
   Subject subject;
@@ -78,7 +73,7 @@ class MyOpenTasksTest {
   @BeforeEach
   void mockUser() {
     ThreadContext.bind(subject);
-    when(subject.getPrincipal()).thenReturn("dent");
+    when(subject.getPrincipal()).thenReturn("trillian");
   }
 
   @AfterEach
@@ -95,34 +90,27 @@ class MyOpenTasksTest {
     });
   }
 
-  @BeforeEach
-  void mockTasks() {
-    when(commentService.getAll("space", "X", "open_dent_tasks"))
-      .thenReturn(asList(createComment(COMMENT), createComment(TASK_TODO)));
-    when(commentService.getAll("space", "X", "open_dent"))
-      .thenReturn(asList(createComment(COMMENT), createComment(TASK_DONE)));
-  }
-
   @Test
   void shouldFindMyPullRequests() {
     doAnswer(invocationOnMock -> {
         invocationOnMock.getArgument(0, OpenPullRequestProvider.RepositoryAndPullRequestConsumer.class)
-          .accept(PR_REPOSITORY, asList(OPEN_PR_FOR_USER_WITHOUT_TASK, OPEN_PR_FOR_USER_WITH_TASK, OPEN_PR_FOR_OTHER).stream());
+          .accept(PR_REPOSITORY, asList(OPEN_PR_WITH_USER_AS_REVIEWER_NOT_REVIEWED, OPEN_PR_WITH_USER_AS_REVIEWER_REVIEWED, OPEN_PR_WITHOUT_USER_AS_REVIEWER).stream());
         return null;
       }
     ).when(pullRequestProvider).findOpenPullRequests(any());
-    Iterable<MyTask> data = myOpenTasks.getTasks();
-    assertThat(data).extracting("pullRequest").extracting("id").containsExactly("open_dent_tasks");
+    Iterable<MyTask> data = myOpenReviews.getTasks();
+    assertThat(data).extracting("pullRequest").extracting("id").containsExactly("open_dent_not_reviewed");
   }
 
-  private static PullRequest createPullRequest(String id, PullRequestStatus status, String author) {
+  private static PullRequest createPullRequest(String id, PullRequestStatus status, String reviewer, boolean reviewStatus) {
     PullRequest existingPullRequest = new PullRequest();
     existingPullRequest.setId(id);
     existingPullRequest.setTitle("title " + id);
     existingPullRequest.setSource("source");
     existingPullRequest.setTarget("target");
     existingPullRequest.setStatus(status);
-    existingPullRequest.setAuthor(author);
+    existingPullRequest.setAuthor("dent");
+    existingPullRequest.setReviewer(ImmutableMap.of("someone", false, reviewer, reviewStatus));
     return existingPullRequest;
   }
 
