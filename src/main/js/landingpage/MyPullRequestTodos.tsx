@@ -61,7 +61,7 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
   return (
     <CardColumnSmall
       link={link}
-      icon={<SmallPullRequestIcon />}
+      avatar={<SmallPullRequestIcon />}
       contentLeft={content}
       footer={footer}
       contentRight={<DateFromNow date={pullRequest.creationDate} />}

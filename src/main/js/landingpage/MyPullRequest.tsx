@@ -23,14 +23,16 @@
  */
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
+import classNames from "classnames";
 import styled from "styled-components";
+import { binder } from "@scm-manager/ui-extensions";
 import { AvatarImage, CardColumn, Icon, Tag } from "@scm-manager/ui-components";
 import ReviewerIcon from "../table/ReviewerIcon";
 import { DataType } from "./DataType";
 
 const PullRequestEntryWrapper = styled.div`
   .overlay-column {
-    width: calc(50% - 3rem);
+    width: calc(50% - 2.25rem);
 
     @media screen and (max-width: 768px) {
       width: calc(100% - 1.5rem);
@@ -57,7 +59,9 @@ const MyPullRequest: FC<Props> = ({ data }) => {
 
   const link = `/repo/${namespace}/${name}/pull-request/${pullRequest.id}`;
 
-  const avatar = <AvatarImage className="level-item" person={data.pullRequest.author} />;
+  const avatar = binder.hasExtension("avatar.factory") ? (
+    <AvatarImage className="level-item" person={data.pullRequest.author} />
+  ) : null;
 
   const title = (
     <b>
@@ -70,7 +74,7 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   const branches = (
     <div className="level-item">
       {pullRequest.source}&nbsp;
-      <Icon name={"fas fa-long-arrow-alt-right"} />
+      <Icon name="long-arrow-alt-right" />
       &nbsp;{pullRequest.target}
       {todos > 0 && (
         <TodoTag label={`${todos}`} title={t("scm-review-plugin.pullRequest.tasks.todo", { count: todos })} />
@@ -79,13 +83,13 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   );
 
   return (
-    <div className={"card-columns is-multiline"}>
-      <PullRequestEntryWrapper className="box box-link-shadow column is-clipped">
+    <div className="card-columns">
+      <PullRequestEntryWrapper className={classNames("box", "box-link-shadow", "column", "is-clipped")}>
         <CardColumn
+          link={link}
           avatar={avatar}
           title={title}
           description={subtitle}
-          link={link}
           footerLeft={branches}
           footerRight={<ReviewerIconWithPointer reviewers={pullRequest.reviewer} />}
         />

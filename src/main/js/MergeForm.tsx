@@ -83,7 +83,7 @@ class MergeForm extends React.Component<Props> {
         {this.isShowMessageHint() && (
           <CommitMessageInfo className="is-size-7">
             <span className="icon is-small has-text-info">
-              <i className={"fas fa-info-circle"} />
+              <i className="fas fa-info-circle" />
             </span>{" "}
             <span>{t("scm-review-plugin.showPullRequest.mergeModal.fallbackMessageInfo")}</span>
           </CommitMessageInfo>

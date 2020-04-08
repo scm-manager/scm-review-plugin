@@ -113,7 +113,7 @@ class MergeConflicts extends React.Component<Props, State> {
     return (
       <>
         <Notification type={"warning"}>
-          <div className={"content"}>
+          <div className="content">
             <b>{this.props.t("scm-review-plugin.conflicts.hint.header")}</b>
             <p>
               <a onClick={() => this.setState({ mergeInformation: true })}>

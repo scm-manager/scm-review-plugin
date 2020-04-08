@@ -41,7 +41,7 @@ const PullRequestCreatedEvent = ({ event }) => {
   return (
     <CardColumnSmall
       link={link}
-      icon={<SmallPullRequestIcon />}
+      avatar={<SmallPullRequestIcon />}
       contentLeft={
         <strong>
           {t("scm-review-plugin.landingpage.created.header", {
