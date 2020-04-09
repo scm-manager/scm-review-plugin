@@ -30,6 +30,10 @@ import { AvatarImage, CardColumn, Icon, Tag } from "@scm-manager/ui-components";
 import ReviewerIcon from "../table/ReviewerIcon";
 import { DataType } from "./DataType";
 
+type Props = {
+  data: DataType;
+};
+
 const PullRequestEntryWrapper = styled.div`
   .overlay-column {
     width: calc(50% - 2.25rem);
@@ -55,6 +59,16 @@ const StyledCardColumn = styled(CardColumn)`
   }
 `;
 
+const FixedSizedIcon = styled(Icon)`
+  width: 64px;
+  height: 64px;
+`;
+
+const TodoTag = styled(Tag)`
+  margin-left: 0.5em;
+  pointer-events: all;
+`;
+
 const ReviewerIconWrapper = styled.div`
   position: absolute;
   margin-top: -0.75rem;
@@ -63,22 +77,7 @@ const ReviewerIconWrapper = styled.div`
 
 const ReviewerIconWithPointer = styled(ReviewerIcon)`
   pointer-events: all;
-  
 `;
-
-const TodoTag = styled(Tag)`
-  margin-left: 0.5em;
-  pointer-events: all;
-`;
-
-const FixedSizedIcon = styled(Icon)`
-  width: 64px;
-  height: 64px;
-`;
-
-type Props = {
-  data: DataType;
-};
 
 const MyPullRequest: FC<Props> = ({ data }) => {
   const [t] = useTranslation("plugins");
