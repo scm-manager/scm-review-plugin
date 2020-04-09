@@ -85,7 +85,7 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   );
 
   return (
-    <div className="card-columns">
+    <div className={classNames("card-columns", "content")}>
       <PullRequestEntryWrapper className={classNames("box", "box-link-shadow", "column", "is-clipped")}>
         <CardColumn
           link={link}
