@@ -61,7 +61,9 @@ const MyPullRequest: FC<Props> = ({ data }) => {
 
   const avatar = binder.hasExtension("avatar.factory") ? (
     <AvatarImage className="level-item" person={data.pullRequest.author} />
-  ) : null;
+  ) : (
+    <Icon name="code-branch fa-rotate-180 fa-fw fa-3x" color="inherit" />
+  );
 
   const title = (
     <b>
