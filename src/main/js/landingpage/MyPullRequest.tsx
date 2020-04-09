@@ -50,7 +50,7 @@ const ReviewerIconWithPointer = styled(ReviewerIcon)`
 `;
 
 const ReviewerIconWrapper = styled.div`
-  position: absolute !important;
+  position: absolute;
   margin-left: -1rem;
 `;
 
