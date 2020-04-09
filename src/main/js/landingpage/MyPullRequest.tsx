@@ -49,6 +49,11 @@ const ReviewerIconWithPointer = styled(ReviewerIcon)`
   pointer-events: all;
 `;
 
+const ReviewerIconWrapper = styled.div`
+  position: absolute !important;
+  margin-left: -1rem;
+`;
+
 const FixedSizedIcon = styled(Icon)`
   width: 64px;
   height: 64px;
@@ -89,16 +94,18 @@ const MyPullRequest: FC<Props> = ({ data }) => {
     </div>
   );
 
+  const footerRight = <ReviewerIconWrapper><ReviewerIconWithPointer reviewers={pullRequest.reviewer} /></ReviewerIconWrapper>;
+
   return (
     <div className={classNames("card-columns", "content")}>
-      <PullRequestEntryWrapper className={classNames("box", "box-link-shadow", "column", "is-clipped")}>
+      <PullRequestEntryWrapper className={classNames("box", "box-link-shadow", "column")}>
         <CardColumn
           link={link}
           avatar={avatar}
           title={title}
           description={subtitle}
           footerLeft={branches}
-          footerRight={<ReviewerIconWithPointer reviewers={pullRequest.reviewer} />}
+          footerRight={footerRight}
         />
       </PullRequestEntryWrapper>
     </div>
