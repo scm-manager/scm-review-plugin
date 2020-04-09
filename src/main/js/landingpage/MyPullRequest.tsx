@@ -49,6 +49,11 @@ const ReviewerIconWithPointer = styled(ReviewerIcon)`
   pointer-events: all;
 `;
 
+const FixedSizedIcon = styled(Icon)`
+  width: 64px;
+  height: 64px;
+`;
+
 type Props = {
   data: DataType;
 };
@@ -62,7 +67,7 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   const avatar = binder.hasExtension("avatar.factory") ? (
     <AvatarImage className="level-item" person={data.pullRequest.author} />
   ) : (
-    <Icon name="code-branch fa-rotate-180 fa-fw fa-3x" color="inherit" />
+    <FixedSizedIcon name="code-branch fa-rotate-180 fa-fw fa-3x" color="inherit" />
   );
 
   const title = (
