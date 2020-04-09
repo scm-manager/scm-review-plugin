@@ -40,18 +40,35 @@ const PullRequestEntryWrapper = styled.div`
   }
 `;
 
-const TodoTag = styled(Tag)`
-  margin-left: 0.5em;
-  pointer-events: all;
-`;
+const StyledCardColumn = styled(CardColumn)`
+  .level-left {
+    display: block !important;
+    overflow: hidden;
+    flex-shrink: unset;
 
-const ReviewerIconWithPointer = styled(ReviewerIcon)`
-  pointer-events: all;
+    .level-item {
+      display: block !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 `;
 
 const ReviewerIconWrapper = styled.div`
   position: absolute;
+  margin-top: -0.75rem;
   margin-left: -1rem;
+`;
+
+const ReviewerIconWithPointer = styled(ReviewerIcon)`
+  pointer-events: all;
+  
+`;
+
+const TodoTag = styled(Tag)`
+  margin-left: 0.5em;
+  pointer-events: all;
 `;
 
 const FixedSizedIcon = styled(Icon)`
@@ -93,13 +110,16 @@ const MyPullRequest: FC<Props> = ({ data }) => {
       )}
     </div>
   );
-
-  const footerRight = <ReviewerIconWrapper><ReviewerIconWithPointer reviewers={pullRequest.reviewer} /></ReviewerIconWrapper>;
+  const footerRight = (
+    <ReviewerIconWrapper>
+      <ReviewerIconWithPointer reviewers={pullRequest.reviewer} />
+    </ReviewerIconWrapper>
+  );
 
   return (
     <div className={classNames("card-columns", "content")}>
       <PullRequestEntryWrapper className={classNames("box", "box-link-shadow", "column")}>
-        <CardColumn
+        <StyledCardColumn
           link={link}
           avatar={avatar}
           title={title}
