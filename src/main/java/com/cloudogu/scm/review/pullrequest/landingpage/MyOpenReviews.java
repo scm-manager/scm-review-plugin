@@ -29,12 +29,14 @@ import com.cloudogu.scm.landingpage.mytasks.MyTaskProvider;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.plugin.Extension;
+import sonia.scm.plugin.Requires;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 
-@Extension(requires = "scm-landingpage-plugin")
+@Extension
+@Requires("scm-landingpage-plugin")
 public class MyOpenReviews implements MyTaskProvider {
   private final OpenPullRequestProvider pullRequestProvider;
   private final PullRequestMapper mapper;

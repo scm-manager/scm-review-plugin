@@ -34,6 +34,7 @@ import sonia.scm.HandlerEventType;
 import sonia.scm.event.Event;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.plugin.Extension;
+import sonia.scm.plugin.Requires;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.user.DisplayUser;
@@ -48,8 +49,9 @@ import java.util.Optional;
 
 import static com.cloudogu.scm.review.PermissionCheck.READ_PULL_REQUEST;
 
-@Extension(requires = "scm-landingpage-plugin")
+@Extension
 @EagerSingleton
+@Requires("scm-landingpage-plugin")
 public class PullRequestCreatedEventMapper {
 
   private final ScmEventBus eventBus;

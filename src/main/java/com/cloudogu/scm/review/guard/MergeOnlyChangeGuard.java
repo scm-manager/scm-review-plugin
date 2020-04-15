@@ -27,6 +27,7 @@ import com.cloudogu.scm.editor.ChangeGuard;
 import com.cloudogu.scm.editor.ChangeObstacle;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import sonia.scm.plugin.Extension;
+import sonia.scm.plugin.Requires;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
@@ -35,7 +36,8 @@ import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Collections;
 
-@Extension(requires = "scm-editor-plugin")
+@Extension
+@Requires("scm-editor-plugin")
 public class MergeOnlyChangeGuard implements ChangeGuard {
 
   private final RepositoryManager repositoryManager;
