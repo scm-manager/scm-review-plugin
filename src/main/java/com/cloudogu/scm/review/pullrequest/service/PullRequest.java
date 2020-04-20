@@ -76,6 +76,10 @@ public class PullRequest {
     this.reviewer.put(recipient, true);
   }
 
+  public void addReviewer(String recipient) {
+    this.reviewer.putIfAbsent(recipient, false);
+  }
+
   public void removeApprover(String recipient) {
     this.reviewer.put(recipient, false);
   }
