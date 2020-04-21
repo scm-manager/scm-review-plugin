@@ -23,30 +23,50 @@
  */
 package com.cloudogu.scm.review.workflow;
 
+import com.google.inject.Injector;
 import sonia.scm.store.ConfigurationStore;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class EngineConfigurator {
 
+  private final Injector injector;
   private final ConfigurationStore<EngineConfiguration> store;
 
-  EngineConfigurator(ConfigurationStore<EngineConfiguration> store) {
+  EngineConfigurator(Injector injector, ConfigurationStore<EngineConfiguration> store) {
+    this.injector = injector;
     this.store = store;
   }
 
-  public void addRule(Rule rule) {
+  public void addRule(Class<? extends Rule> rule) {
     EngineConfiguration engineConfiguration = store.getOptional().orElse(new EngineConfiguration());
     engineConfiguration.getRules().add(rule);
     store.set(engineConfiguration);
   }
 
   public List<Rule> getRules() {
-    return store.getOptional().orElse(new EngineConfiguration()).getRules();
+    Optional<EngineConfiguration> configuration = store.getOptional();
+
+    return configuration
+      .map(engineConfiguration -> engineConfiguration.getRules()
+        .stream()
+        .map(this::createRuleInstance)
+        .collect(Collectors.toList()))
+      .orElse(Collections.emptyList());
+
   }
 
-  public void removeRule(Rule rule) {
+  private Rule createRuleInstance(Class<? extends Rule> aClass) {
+
+    return injector.getInstance(aClass);
+  }
+
+  public void removeRule(Class<? extends Rule> rule) {
 
   }
 }

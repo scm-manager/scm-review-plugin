@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.google.inject.Guice;
 import org.junit.jupiter.api.Test;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
@@ -41,9 +42,9 @@ class EngineTest {
   void shouldReturnSuccess() {
     final InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
 
-    Engine engine = new Engine(storeFactory);
+    Engine engine = new Engine(Guice.createInjector(), storeFactory);
     EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.addRule(new SimpleRule(Result.success()));
+    configurator.addRule(SuccessRule.class);
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
@@ -54,26 +55,28 @@ class EngineTest {
   void shouldReturnFailed() {
     InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
 
-    Engine engine = new Engine(storeFactory);
+    Engine engine = new Engine(Guice.createInjector(), storeFactory);
     EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.addRule(new SimpleRule(Result.failed("failure")));
+    configurator.addRule(FailedRule.class);
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
     assertThat(result.isValid()).isFalse();
   }
 
-  static class SimpleRule implements Rule {
-
-    private final Result result;
-
-    SimpleRule(Result result) {
-      this.result = result;
-    }
+  public static class SuccessRule implements Rule {
 
     @Override
     public Result validate(Context context) {
-      return result;
+      return Result.success();
+    }
+  }
+
+  public static class FailedRule implements Rule {
+
+    @Override
+    public Result validate(Context context) {
+      return Result.failed("failure");
     }
   }
 

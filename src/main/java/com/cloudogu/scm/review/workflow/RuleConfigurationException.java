@@ -20,20 +20,13 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
+
 package com.cloudogu.scm.review.workflow;
 
-import lombok.Getter;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
-import java.util.List;
-
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
-@Getter
-public class EngineConfiguration {
-  private List<Class<? extends Rule>> rules = new ArrayList<>();
+public class RuleConfigurationException extends RuntimeException {
+  public RuleConfigurationException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 }

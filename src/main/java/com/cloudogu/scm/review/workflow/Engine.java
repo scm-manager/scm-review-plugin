@@ -24,6 +24,7 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.google.inject.Injector;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
@@ -36,10 +37,12 @@ public final class Engine {
 
   private static final String STORE_NAME = "workflow-engine";
 
+  private final Injector injector;
   private final ConfigurationStoreFactory storeFactory;
 
   @Inject
-  public Engine(ConfigurationStoreFactory storeFactory) {
+  public Engine(Injector injector, ConfigurationStoreFactory storeFactory) {
+    this.injector = injector;
     this.storeFactory = storeFactory;
   }
 
@@ -60,7 +63,7 @@ public final class Engine {
         .withName(STORE_NAME)
         .forRepository(repository)
         .build();
-    return new EngineConfigurator(store);
+    return new EngineConfigurator(injector, store);
   }
 
 }

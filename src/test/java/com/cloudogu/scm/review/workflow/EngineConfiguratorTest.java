@@ -20,20 +20,54 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
+
 package com.cloudogu.scm.review.workflow;
 
-import lombok.Getter;
+import com.google.inject.Guice;
+import org.junit.jupiter.api.Test;
+import sonia.scm.store.InMemoryConfigurationStore;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
+import javax.inject.Inject;
 import java.util.List;
 
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
-@Getter
-public class EngineConfiguration {
-  private List<Class<? extends Rule>> rules = new ArrayList<>();
+import static org.assertj.core.api.Assertions.assertThat;
+
+class EngineConfiguratorTest {
+
+
+  @Test
+  void shouldCreateRuleWithInjection() {
+    EngineConfigurator configurator = new EngineConfigurator(Guice.createInjector(), new InMemoryConfigurationStore<>());
+
+    configurator.addRule(RuleWithInjection.class);
+    List<Rule> rules = configurator.getRules();
+
+    assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
+  }
+
+  public static class RuleWithInjection implements Rule {
+
+    private final ResultService service;
+
+    @Inject
+    public RuleWithInjection(ResultService service) {
+      this.service = service;
+    }
+
+    @Override
+    public Result validate(Context context) {
+      return service.getResult();
+    }
+  }
+
+  public static class ResultService {
+
+    public Result getResult() {
+      return Result.success();
+    }
+
+  }
+
 }
