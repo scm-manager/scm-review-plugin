@@ -43,6 +43,18 @@ public class EngineConfigurator {
     this.store = store;
   }
 
+  public void enable() {
+    EngineConfiguration engineConfiguration = store.getOptional().orElse(new EngineConfiguration());
+    engineConfiguration.setEnabled(true);
+    store.set(engineConfiguration);
+  }
+
+  public void disable() {
+    EngineConfiguration engineConfiguration = store.getOptional().orElse(new EngineConfiguration());
+    engineConfiguration.setEnabled(false);
+    store.set(engineConfiguration);
+  }
+
   public void addRule(Class<? extends Rule> rule) {
     EngineConfiguration engineConfiguration = store.getOptional().orElse(new EngineConfiguration());
     engineConfiguration.getRules().add(rule);
@@ -51,6 +63,10 @@ public class EngineConfigurator {
 
   public List<Rule> getRules() {
     Optional<EngineConfiguration> configuration = store.getOptional();
+
+    if (configuration.isPresent() && !configuration.get().isEnabled()) {
+      return Collections.emptyList();
+    }
 
     return configuration
       .map(engineConfiguration -> engineConfiguration.getRules()

@@ -44,6 +44,7 @@ class EngineTest {
 
     Engine engine = new Engine(Guice.createInjector(), storeFactory);
     EngineConfigurator configurator = engine.configure(REPOSITORY);
+    configurator.enable();
     configurator.addRule(SuccessRule.class);
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
@@ -57,6 +58,7 @@ class EngineTest {
 
     Engine engine = new Engine(Guice.createInjector(), storeFactory);
     EngineConfigurator configurator = engine.configure(REPOSITORY);
+    configurator.enable();
     configurator.addRule(FailedRule.class);
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);

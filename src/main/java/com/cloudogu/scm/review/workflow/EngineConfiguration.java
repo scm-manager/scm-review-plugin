@@ -24,6 +24,7 @@
 package com.cloudogu.scm.review.workflow;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -36,4 +37,7 @@ import java.util.List;
 @Getter
 public class EngineConfiguration {
   private List<Class<? extends Rule>> rules = new ArrayList<>();
+
+  @Setter
+  private boolean enabled;
 }

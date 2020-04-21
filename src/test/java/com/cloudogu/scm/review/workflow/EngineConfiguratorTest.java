@@ -20,7 +20,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package com.cloudogu.scm.review.workflow;
@@ -40,11 +39,21 @@ class EngineConfiguratorTest {
   @Test
   void shouldCreateRuleWithInjection() {
     EngineConfigurator configurator = new EngineConfigurator(Guice.createInjector(), new InMemoryConfigurationStore<>());
-
+    configurator.enable();
     configurator.addRule(RuleWithInjection.class);
     List<Rule> rules = configurator.getRules();
 
     assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
+  }
+
+  @Test
+  void shouldReturnEmptyListIfEngineDisabled() {
+    EngineConfigurator configurator = new EngineConfigurator(Guice.createInjector(), new InMemoryConfigurationStore<>());
+    configurator.disable();
+    configurator.addRule(RuleWithInjection.class);
+    List<Rule> rules = configurator.getRules();
+
+    assertThat(rules.isEmpty()).isTrue();
   }
 
   public static class RuleWithInjection implements Rule {
