@@ -28,18 +28,27 @@ import com.cloudogu.scm.review.PermissionCheck;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.repository.Repository;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static de.otto.edison.hal.Link.link;
 
 @Mapper
 public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConfiguration, RepositoryEngineConfigDto> {
 
+  @Inject
+  AvailableRules availableRules;
+
+  @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   public abstract RepositoryEngineConfigDto map(EngineConfiguration engineConfiguration, @Context Repository repository, @Context UriInfo uriInfo);
 
   @ObjectFactory
@@ -49,9 +58,19 @@ public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConf
     linksBuilder.self(linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
     if (PermissionCheck.mayConfigureWorkflowEngine(repository)) {
       linksBuilder.single(link("update", linkBuilder.method("setRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href()));
+      linksBuilder.single(link("availableRules", linkBuilder.method("getAvailableRules").parameters().href()));
     }
     return new RepositoryEngineConfigDto(linksBuilder.build());
   }
 
   public abstract EngineConfiguration map(RepositoryEngineConfigDto engineConfigurationDto);
+
+  List<String> mapClassToName(List<Class<? extends Rule>> classes) {
+    return classes.stream().filter(Objects::nonNull).map(availableRules::nameOf).collect(Collectors.toList());
+  }
+
+  List<Class<? extends Rule>> mapNameToClass(List<String> ruleNames) {
+    return ruleNames.stream().map(availableRules::classOf).collect(Collectors.toList());
+  }
+
 }

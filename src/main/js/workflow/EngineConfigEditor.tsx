@@ -25,8 +25,18 @@
 import React, { FC, useEffect, useState } from "react";
 import { EngineConfiguration } from "../types/EngineConfig";
 import { useTranslation } from "react-i18next";
-import { Checkbox, Title, Select, apiClient, Notification, AddButton } from "@scm-manager/ui-components";
+import {
+  Checkbox,
+  Title,
+  Select,
+  apiClient,
+  Notification,
+  AddButton,
+  ErrorNotification,
+  Loading
+} from "@scm-manager/ui-components";
 import EngineConfigTable from "./EngineConfigTable";
+import { Link } from "@scm-manager/ui-types";
 
 type Props = {
   onConfigurationChange: (config: EngineConfiguration, valid: boolean) => void;
@@ -40,28 +50,39 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
   const [config, setConfig] = useState(initialConfiguration);
   const [rules, setRules] = useState<string[]>([]);
   const [selectedRule, setSelectedRule] = useState("");
+  const [error, setError] = useState<Error | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+
+  const availableRulesHref = (config._links.availableRules as Link).href;
 
   useEffect(() => {
-    //TODO add link to configuration
-    //TODO fetch available rules
-    setRules(["AllReviewerApprovedRule"]);
-  }, []);
+    setLoading(true);
+    apiClient
+      .get(availableRulesHref)
+      .then(r => r.json())
+      .then(setRules)
+      .then(() => setLoading(false))
+      .catch(setError);
+  }, [availableRulesHref]);
 
   const onChangeDisableRepositoryConfiguration = () => {
-    setConfig({ ...config, disableRepositoryConfiguration: !config.disableRepositoryConfiguration });
-    onConfigurationChange(config, true);
+    const newConfig ={ ...config, disableRepositoryConfiguration: !config.disableRepositoryConfiguration };
+    setConfig(newConfig);
+    onConfigurationChange(newConfig, true);
   };
 
   const onChangeToggleEnableEngine = () => {
-    setConfig({ ...config, enabled: !config.enabled });
-    onConfigurationChange(config, true);
-  }
+    const newConfig = { ...config, enabled: !config.enabled };
+    setConfig(newConfig);
+    onConfigurationChange(newConfig, true);
+  };
 
   const addRuleToConfig = (value: string) => {
     if (value) {
-      setConfig({ ...config, rules: [...config.rules, value] });
+      const newConfig = { ...config, rules: [...config.rules, value] };
+      setConfig(newConfig);
       setSelectedRule("");
-      onConfigurationChange(config, true);
+      onConfigurationChange(newConfig, true);
     }
   };
 
@@ -69,7 +90,9 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
     const newRules = [...config.rules];
     const index = newRules.indexOf(rule);
     newRules.splice(index, 1);
-    setConfig({ ...config, rules: newRules });
+    const newConfig = { ...config, rules: newRules };
+    setConfig(newConfig);
+    onConfigurationChange(newConfig, true);
   };
 
   const selectRule = (value: string) => {
@@ -80,8 +103,31 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
     { label: "", value: "" },
     ...rules
       .filter(rule => !config.rules.includes(rule))
-      .map(rule => ({ label: t("scm-review-plugin.workflow.rule.name." + rule), value: rule }))
+      .map(rule => ({ label: t("scm-review-plugin.workflow.rule." + rule + ".name"), value: rule }))
   ];
+
+  const renderAddRuleForm = () => {
+    if (loading) {
+      return <Loading />;
+    }
+
+    if (options.length > 1) {
+      return (
+        <Select
+          label={t("scm-review-plugin.workflow.newRule.label")}
+          helpText={t("scm-review-plugin.workflow.newRule.helpText")}
+          onChange={selectRule}
+          options={options}
+        />
+      );
+    }
+
+    return <Notification type={"info"}>{t("scm-review-plugin.workflow.noMoreRulesAvailable")}</Notification>;
+  };
+
+  if (error) {
+    return <ErrorNotification error={error} />;
+  }
 
   return (
     <>
@@ -105,21 +151,12 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
       {config.enabled && (
         <>
           <EngineConfigTable configuration={config} deleteRule={deleteRule} />
-          {options.length > 1 ? (
-            <Select
-              label={"scm-review-plugin.workflow.addNewRule.label"}
-              helpText={"scm-review-plugin.workflow.addNewRule.helpText"}
-              onChange={selectRule}
-              options={options}
-            />
-          ) : (
-            <Notification type={"info"}>{t("scm-review-plugin.workflow.noMoreRulesAvailable")}</Notification>
-          )}
+          {renderAddRuleForm()}
           {selectedRule && (
             <div>
-              {t("scm-review-plugin.workflow.rule.description." + selectedRule)}
+              {t("scm-review-plugin.workflow.rule." + selectedRule + ".description")}
               <AddButton
-                label={t("scm-review-plugin.workflow.addRule.title")}
+                label={t("scm-review-plugin.workflow.addRule.label")}
                 action={() => addRuleToConfig(selectedRule)}
               />
             </div>

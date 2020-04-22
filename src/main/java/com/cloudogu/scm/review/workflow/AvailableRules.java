@@ -24,30 +24,39 @@
 
 package com.cloudogu.scm.review.workflow;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import javax.inject.Inject;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class RepositoryEngineConfigDto extends HalRepresentation {
-  private List<String> rules;
-  private boolean enabled;
+public class AvailableRules {
 
-  public RepositoryEngineConfigDto(Links links) {
-    super(links);
+  private final Set<Rule> availableRules;
+
+  @Inject
+  public AvailableRules(Set<Rule> availableRules) {
+    this.availableRules = availableRules;
   }
 
-  public RepositoryEngineConfigDto(Links links, List<String> rules, boolean enabled) {
-    this(links);
-    this.rules = rules;
-    this.enabled = enabled;
+  public List<String> getRuleNames() {
+    return availableRules.stream().map(this::nameOf).collect(Collectors.toList());
   }
+
+  public Class<? extends Rule> classOf(String name) {
+    // TODO create UnknownRuleException or something ...
+    return availableRules.stream()
+      .map(Rule::getClass)
+      .filter(ruleClass -> ruleClass.getSimpleName().equals(name))
+      .findFirst()
+      .orElseThrow(() -> new RuleConfigurationException("unknown rule: " + name));
+  }
+
+  public String nameOf(Rule rule) {
+    return nameOf(rule.getClass());
+  }
+
+  public String nameOf(Class<? extends Rule> ruleClass) {
+    return ruleClass.getSimpleName();
+  }
+
 }

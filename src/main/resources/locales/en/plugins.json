@@ -268,18 +268,24 @@
         "helpText": "Activates the workflow engine and validates all pull requests by the defined rules."
       },
       "rule": {
-        "name": {
-          "AllReviewerApproved": "All reviewers approved"
+        "AllReviewerApprovedRule": {
+          "name": "All reviewers approved",
+          "description": "All selected reviewers have to approve the pull request ."
         },
         "column": {
           "name": "Name",
           "description": "Rule description"
         }
       },
-      "addNewRule": {
+      "newRule": {
         "label": "Add new rule",
         "helpText": "Adds a new rule to validate pull requests."
-      }
+      },
+      "addRule": {
+        "label": "Add rule"
+      },
+      "deleteRule": "Delete rule",
+      "noMoreRulesAvailable": "No more rules available"
     }
   },
   "permissions": {

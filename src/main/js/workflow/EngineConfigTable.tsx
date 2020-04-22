@@ -47,8 +47,8 @@ const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
       <tbody>
         {configuration.rules?.map(rule => (
           <tr>
-            <td>{t("scm-review-plugin.workflow.rule.name." + rule)}</td>
-            <td>{t("scm-review-plugin.workflow.rule.description." + rule)}</td>
+            <td>{t("scm-review-plugin.workflow.rule." + rule + ".name")}</td>
+            <td>{t("scm-review-plugin.workflow.rule." + rule + ".description")}</td>
             <td>
               <a
                 className="level-item"

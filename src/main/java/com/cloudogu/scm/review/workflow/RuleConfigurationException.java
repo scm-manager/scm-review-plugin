@@ -28,4 +28,8 @@ public class RuleConfigurationException extends RuntimeException {
   public RuleConfigurationException(String message, Throwable throwable) {
     super(message, throwable);
   }
+
+  public RuleConfigurationException(String message) {
+    super(message);
+  }
 }

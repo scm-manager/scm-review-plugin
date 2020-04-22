@@ -22,8 +22,11 @@
  * SOFTWARE.
  */
 
+import { Links } from "@scm-manager/ui-types";
+
 export type EngineConfiguration = {
   disableRepositoryConfiguration?: boolean;
   enabled: boolean;
   rules: string[];
+  _links: Links;
 };

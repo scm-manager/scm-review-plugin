@@ -271,18 +271,24 @@
         "helpText": "Aktiviert die Workflow Engine und validiert damit alle Pull Requests gegen die definierten Regeln."
       },
       "rule": {
-        "name": {
-          "AllReviewerApproved": "Alle Reviewer zugestimmt"
+        "AllReviewerApprovedRule": {
+          "name": "Alle Reviewer zugestimmt",
+          "description": "Es müssen alle eingetragenen Reviewer dem Pull Request zustimmen."
         },
         "column": {
           "name": "Name",
           "description": "Regelbeschreibung"
         }
       },
-      "addNewRule": {
+      "newRule": {
         "label": "Neue Regel hinzufügen",
         "helpText": "Fügt eine Regel zum Validieren des Pull Requests hinzu."
-      }
+      },
+      "addRule": {
+        "label": "Regel hinzufügen"
+      },
+      "deleteRule": "Regel entfernen",
+      "noMoreRulesAvailable": "Keine weiteren Regeln verfügbar."
     }
   },
   "permissions": {

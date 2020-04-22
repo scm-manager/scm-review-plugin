@@ -50,6 +50,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -173,7 +174,7 @@ public class RepositoryEngineConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Object getAvailableRules() {
+  public List<String> getAvailableRules() {
     return availableRules.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
   }
 }
