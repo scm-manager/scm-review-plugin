@@ -107,6 +107,11 @@
           "submit": "Ja",
           "cancel": "Nein"
         }
+      },
+      "overrideModal": {
+        "title": "Workflow Engine",
+        "cancel": "Abbrechen",
+        "continue": "Pull Request mergen"
       }
     },
     "pullRequests": {
