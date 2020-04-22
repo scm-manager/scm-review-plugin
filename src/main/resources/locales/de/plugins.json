@@ -288,7 +288,8 @@
         "label": "Regel hinzufügen"
       },
       "deleteRule": "Regel entfernen",
-      "noMoreRulesAvailable": "Keine weiteren Regeln verfügbar."
+      "noMoreRulesAvailable": "Keine weiteren Regeln verfügbar.",
+      "noRulesConfigured": "Es wurden noch keine Regeln definiert."
     }
   },
   "permissions": {

@@ -285,7 +285,8 @@
         "label": "Add rule"
       },
       "deleteRule": "Delete rule",
-      "noMoreRulesAvailable": "No more rules available"
+      "noMoreRulesAvailable": "No more rules available.",
+      "noRulesConfigured": "No rules configured yet."
     }
   },
   "permissions": {

@@ -26,17 +26,29 @@ import React, { FC } from "react";
 import { EngineConfiguration } from "../types/EngineConfig";
 import { useTranslation } from "react-i18next";
 import { Icon } from "@scm-manager/ui-components";
+import styled from "styled-components";
 
 type Props = {
   configuration: EngineConfiguration;
   deleteRule: (rule: string) => void;
 };
 
+const VCenteredTd = styled.td`
+  display: table-cell;
+  vertical-align: middle !important;
+`;
+
+const NoBorderLeft = styled.table`
+  & td:first-child {
+    border-left: none;
+  }
+`;
+
 const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
   const [t] = useTranslation("plugins");
 
   return (
-    <table className="card-table table is-hoverable is-fullwidth">
+    <NoBorderLeft className="card-table table is-hoverable is-fullwidth">
       <thead>
         <tr>
           <th>{t("scm-review-plugin.workflow.rule.column.name")}</th>
@@ -47,9 +59,11 @@ const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
       <tbody>
         {configuration.rules?.map(rule => (
           <tr>
-            <td>{t("scm-review-plugin.workflow.rule." + rule + ".name")}</td>
-            <td>{t("scm-review-plugin.workflow.rule." + rule + ".description")}</td>
             <td>
+              <strong>{t("scm-review-plugin.workflow.rule." + rule + ".name")}</strong>
+            </td>
+            <td>{t("scm-review-plugin.workflow.rule." + rule + ".description")}</td>
+            <VCenteredTd>
               <a
                 className="level-item"
                 onClick={() => deleteRule(rule)}
@@ -59,11 +73,11 @@ const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
                   <Icon name="trash" color="inherit" />
                 </span>
               </a>
-            </td>
+            </VCenteredTd>
           </tr>
         ))}
       </tbody>
-    </table>
+    </NoBorderLeft>
   );
 };
 

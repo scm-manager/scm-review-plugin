@@ -37,12 +37,27 @@ import {
 } from "@scm-manager/ui-components";
 import EngineConfigTable from "./EngineConfigTable";
 import { Link } from "@scm-manager/ui-types";
+import styled from "styled-components";
 
 type Props = {
   onConfigurationChange: (config: EngineConfiguration, valid: boolean) => void;
   initialConfiguration: EngineConfiguration;
   global: boolean;
 };
+
+const AddRuleLevel = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const RuleDetails = styled.p`
+  flex: 1;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin-right: 2rem;
+`;
 
 const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, global }) => {
   const [t] = useTranslation("plugins");
@@ -66,7 +81,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
   }, [availableRulesHref]);
 
   const onChangeDisableRepositoryConfiguration = () => {
-    const newConfig ={ ...config, disableRepositoryConfiguration: !config.disableRepositoryConfiguration };
+    const newConfig = { ...config, disableRepositoryConfiguration: !config.disableRepositoryConfiguration };
     setConfig(newConfig);
     onConfigurationChange(newConfig, true);
   };
@@ -150,16 +165,21 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
       />
       {config.enabled && (
         <>
-          <EngineConfigTable configuration={config} deleteRule={deleteRule} />
+          {config.rules.length > 0 ? (
+            <EngineConfigTable configuration={config} deleteRule={deleteRule} />
+          ) : (
+            <Notification type="info">{t("scm-review-plugin.workflow.noRulesConfigured")}</Notification>
+          )}
+
           {renderAddRuleForm()}
           {selectedRule && (
-            <div>
-              {t("scm-review-plugin.workflow.rule." + selectedRule + ".description")}
+            <AddRuleLevel>
+              <RuleDetails>{t("scm-review-plugin.workflow.rule." + selectedRule + ".description")}</RuleDetails>
               <AddButton
                 label={t("scm-review-plugin.workflow.addRule.label")}
                 action={() => addRuleToConfig(selectedRule)}
               />
-            </div>
+            </AddRuleLevel>
           )}
         </>
       )}
