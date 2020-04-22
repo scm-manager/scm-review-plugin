@@ -23,6 +23,9 @@
  */
 package com.cloudogu.scm.review.workflow;
 
+import sonia.scm.plugin.Extension;
+
+@Extension
 public class AllReviewerApprovedRule implements Rule {
 
   @Override

@@ -25,7 +25,6 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.google.common.collect.ImmutableList;
-import de.otto.edison.hal.Links;
 import lombok.Getter;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
@@ -47,10 +46,13 @@ import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource.WORKFLOW_MEDIA_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -77,9 +79,11 @@ class RepositoryEngineConfigResourceTest {
   private RestDispatcher dispatcher;
   private final MockHttpResponse response = new MockHttpResponse();
 
+  private final Set<Rule> availableRules = new HashSet<>();
+
   @BeforeEach
   void init() {
-    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, engine, new RepositoryEngineConfigMapperImpl());
+    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, engine, new RepositoryEngineConfigMapperImpl(), availableRules);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(repositoryEngineConfigResource);
@@ -104,7 +108,8 @@ class RepositoryEngineConfigResourceTest {
 
   @BeforeEach
   void initRepositoryManager() {
-    when(repositoryManager.get(new NamespaceAndName("space", "X"))).thenReturn(REPOSITORY);
+    lenient().doReturn(REPOSITORY).when(repositoryManager).get(new NamespaceAndName("space", "X"));
+    lenient().doReturn(null).when(repositoryManager).get(new NamespaceAndName("unknown", "repository"));
   }
 
   @Test
@@ -133,6 +138,15 @@ class RepositoryEngineConfigResourceTest {
   }
 
   @Test
+  void shouldFailForUnknownRepositoryInGet() throws URISyntaxException, UnsupportedEncodingException {
+    MockHttpRequest request = MockHttpRequest.get("/v2/workflow/unknown/repository/config");
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(404);
+  }
+
+  @Test
   void shouldReturnConfigurationForRepositoryWithUpdateLink() throws URISyntaxException, UnsupportedEncodingException {
     when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration(ImmutableList.of(SimpleRule.class), true));
     when(subject.isPermitted("repository:writeWorkflowConfig:1")).thenReturn(true);
@@ -157,6 +171,17 @@ class RepositoryEngineConfigResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(403);
     verify(configurator, never()).setEngineConfiguration(any(EngineConfiguration.class));
+  }
+
+  @Test
+  void shouldFailForUnknownRepositoryInSet() throws URISyntaxException, UnsupportedEncodingException {
+    MockHttpRequest request = MockHttpRequest.put("/v2/workflow/unnkown/repository/config")
+      .content("{\"rules\":[\"com.cloudogu.scm.review.workflow.RepositoryEngineConfigResourceTest$SimpleRule\"],\"enabled\":true}".getBytes())
+      .contentType(WORKFLOW_MEDIA_TYPE);
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(404);
   }
 
   @Test

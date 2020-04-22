@@ -50,6 +50,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 
@@ -65,12 +69,14 @@ public class RepositoryEngineConfigResource {
   private final RepositoryManager repositoryManager;
   private final Engine engine;
   private final RepositoryEngineConfigMapper mapper;
+  private final Set<Rule> availableRules;
 
   @Inject
-  public RepositoryEngineConfigResource(RepositoryManager repositoryManager, Engine engine, RepositoryEngineConfigMapper mapper) {
+  public RepositoryEngineConfigResource(RepositoryManager repositoryManager, Engine engine, RepositoryEngineConfigMapper mapper, Set<Rule> availableRules) {
     this.repositoryManager = repositoryManager;
     this.engine = engine;
     this.mapper = mapper;
+    this.availableRules = availableRules;
   }
 
   @GET
@@ -103,7 +109,7 @@ public class RepositoryEngineConfigResource {
   public RepositoryEngineConfigDto getRepositoryEngineConfig(@Context UriInfo uriInfo,
                                                              @PathParam("namespace") String namespace,
                                                              @PathParam("name") String name) {
-    Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
+    Repository repository = loadRepository(namespace, name);
     PermissionCheck.checkReadEngineConfiguration(repository);
     return mapper.map(engine.configure(repository).getEngineConfiguration(), repository, uriInfo);
   }
@@ -129,11 +135,45 @@ public class RepositoryEngineConfigResource {
     )
   )
   public void setRepositoryEngineConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
+    Repository repository = loadRepository(namespace, name);
+    PermissionCheck.checkWriteEngineConfiguration(repository);
+    engine.configure(repository).setEngineConfiguration(mapper.map(configDto));
+  }
+
+  private Repository loadRepository(String namespace, String name) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
       throw notFound(entity(new NamespaceAndName(namespace, name)));
     }
-    PermissionCheck.checkWriteEngineConfiguration(repository);
-    engine.configure(repository).setEngineConfiguration(mapper.map(configDto));
+    return repository;
+  }
+
+  @GET
+  @Path("rules")
+  @Produces(WORKFLOW_MEDIA_TYPE)
+  @Operation(
+    summary = "Worflow engine rules",
+    description = "Returns available rules for the workflow engine.",
+    tags = "Workflow Engine",
+    operationId = "review_get_workflow_rules"
+  )
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = MediaType.APPLICATION_JSON,
+      schema = @Schema(implementation = HalRepresentation.class)
+    )
+  )
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public Object getAvailableRules() {
+    return availableRules.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
   }
 }

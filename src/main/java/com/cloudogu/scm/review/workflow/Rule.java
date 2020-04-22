@@ -30,4 +30,7 @@ public interface Rule {
 
   Result validate(Context context);
 
+  default boolean isApplicableMultipleTimes() {
+    return false;
+  }
 }
