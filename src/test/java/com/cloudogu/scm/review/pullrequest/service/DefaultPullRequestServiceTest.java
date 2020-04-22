@@ -467,9 +467,10 @@ class DefaultPullRequestServiceTest {
     void shouldSetPullRequestMergedAndSendEvent() {
       pullRequest.setStatus(OPEN);
 
-      service.setMerged(REPOSITORY, pullRequest.getId());
+      service.setMerged(REPOSITORY, pullRequest.getId(), "had to be this way");
 
       assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
+      assertThat(pullRequest.getOverrideMessage()).isEqualTo("had to be this way");
       assertThat(eventCaptor.getAllValues()).hasSize(1);
       PullRequestMergedEvent event = (PullRequestMergedEvent) eventCaptor.getValue();
       assertThat(event.getRepository()).isSameAs(REPOSITORY);
@@ -480,7 +481,7 @@ class DefaultPullRequestServiceTest {
     void shouldNotSetPullRequestMergedMultipleTimes() {
       pullRequest.setStatus(MERGED);
 
-      service.setMerged(REPOSITORY, pullRequest.getId());
+      service.setMerged(REPOSITORY, pullRequest.getId(), null);
 
       assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
       assertThat(eventCaptor.getAllValues()).hasSize(0);
@@ -490,7 +491,7 @@ class DefaultPullRequestServiceTest {
     void shouldNotSetRejectedPullRequestMerged() {
       pullRequest.setStatus(REJECTED);
 
-      assertThrows(StatusChangeNotAllowedException.class, () -> service.setMerged(REPOSITORY, pullRequest.getId()));
+      assertThrows(StatusChangeNotAllowedException.class, () -> service.setMerged(REPOSITORY, pullRequest.getId(), null));
 
       assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
       assertThat(eventCaptor.getAllValues()).hasSize(0);
@@ -570,6 +571,6 @@ class DefaultPullRequestServiceTest {
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "", emptySet());
+    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "", emptySet(), null);
   }
 }

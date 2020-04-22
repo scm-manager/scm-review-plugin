@@ -145,7 +145,7 @@ public class StatusCheckHook {
       LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
       String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
-      service.setMerged(repository, pullRequest.getId());
+      service.setMerged(repository, pullRequest.getId(), null);
     }
 
     private boolean sourceBranchIsDeleted(PullRequest pullRequest) {

@@ -81,7 +81,7 @@ public class MergeService {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
       Collection<MergeObstacle> obstacles = getObstacles(repositoryService.getRepository(), pullRequest);
-      if (!obstacles.isEmpty()) {
+      if (!obstacles.stream().allMatch(MergeObstacle::isOverrideable)) {
         throw new MergeNotAllowedException(repositoryService.getRepository(), pullRequest, obstacles);
       }
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
@@ -98,7 +98,7 @@ public class MergeService {
           }
 
           pullRequestService.setRevisions(repositoryService.getRepository(), pullRequest.getId(), mergeCommandResult.getTargetRevision(), mergeCommandResult.getRevisionToMerge());
-          pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId());
+          pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage());
 
           if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
             repositoryService.getBranchCommand().delete(pullRequest.getSource());

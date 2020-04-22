@@ -56,6 +56,7 @@ import java.io.IOException;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -134,7 +135,7 @@ class StatusCheckHookTest {
 
     hook.checkStatus(event);
 
-    verify(service).setMerged(REPOSITORY, pullRequest.getId());
+    verify(service).setMerged(REPOSITORY, pullRequest.getId(), null);
   }
 
   @Test
@@ -145,7 +146,7 @@ class StatusCheckHookTest {
 
     hook.checkStatus(event);
 
-    verify(service, never()).setMerged(REPOSITORY, pullRequest.getId());
+    verify(service, never()).setMerged(any(), anyString(), anyString());
   }
 
   @Test
@@ -178,8 +179,8 @@ class StatusCheckHookTest {
     hook.checkStatus(event);
 
     verify(logCommandBuilder, never()).getChangesets();
-    verify(service, never()).getAll(NAMESPACE, NAME);
-    verify(service, never()).setMerged(REPOSITORY, pullRequest.getId());
+    verify(service, never()).getAll(anyString(), anyString());
+    verify(service, never()).setMerged(any(), anyString(), anyString());
   }
 
   @Test

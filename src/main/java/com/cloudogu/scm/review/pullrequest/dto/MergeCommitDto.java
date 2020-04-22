@@ -35,4 +35,5 @@ import lombok.Setter;
 public class MergeCommitDto {
   private String commitMessage;
   private boolean shouldDeleteSourceBranch;
+  private String overrideMessage;
 }

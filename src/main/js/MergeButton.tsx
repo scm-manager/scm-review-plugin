@@ -42,7 +42,7 @@ type State = {
   mergeInformation: boolean;
   showMergeModal: boolean;
   showOverrideModal: boolean;
-  overrideMessage: string;
+  overrideMessage?: string;
 };
 
 class MergeButton extends React.Component<Props, State> {
@@ -51,8 +51,7 @@ class MergeButton extends React.Component<Props, State> {
     this.state = {
       mergeInformation: false,
       showMergeModal: false,
-      showOverrideModal: false,
-      overrideMessage: ""
+      showOverrideModal: false
     };
   }
 
@@ -128,6 +127,18 @@ class MergeButton extends React.Component<Props, State> {
     }
   };
 
+  addOverrideMessageToMergeCommit = (mergeCommit: MergeCommit) => {
+    const { overrideMessage } = this.state;
+    if (overrideMessage) {
+      return {
+        ...mergeCommit,
+        overrideMessage: overrideMessage
+      };
+    } else {
+      return mergeCommit;
+    }
+  };
+
   render() {
     const { repository, pullRequest, merge } = this.props;
     const { mergeInformation, showOverrideModal, showMergeModal } = this.state;
@@ -135,7 +146,7 @@ class MergeButton extends React.Component<Props, State> {
     if (showOverrideModal) {
       return (
         <OverrideModal
-          proceed={(overrideMessage: string) => this.mergeWithOverride(overrideMessage)}
+          proceed={(message: string) => this.mergeWithOverride(message)}
           close={this.toggleOverrideModal}
           pullRequest={pullRequest}
         />
@@ -145,7 +156,9 @@ class MergeButton extends React.Component<Props, State> {
     if (showMergeModal) {
       return (
         <MergeModal
-          merge={(strategy: string, mergeCommit: MergeCommit) => merge(strategy, mergeCommit)}
+          merge={(strategy: string, mergeCommit: MergeCommit) =>
+            merge(strategy, this.addOverrideMessageToMergeCommit(mergeCommit))
+          }
           close={this.toggleMergeModal}
           pullRequest={pullRequest}
         />

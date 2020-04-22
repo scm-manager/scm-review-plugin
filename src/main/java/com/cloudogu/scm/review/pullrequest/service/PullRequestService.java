@@ -104,7 +104,7 @@ public interface PullRequestService {
 
   void setRevisions(Repository repository, String id, String targetRevision, String revisionToMerge);
 
-  void setMerged(Repository repository, String pullRequestId);
+  void setMerged(Repository repository, String pullRequestId, String overrideMessage);
 
   void updated(Repository repository, String pullRequestId);
 

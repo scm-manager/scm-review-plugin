@@ -24,7 +24,6 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.BranchProtectionHook;
-import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
@@ -165,7 +164,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(true);
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT);
 
-    verify(pullRequestService).setMerged(REPOSITORY, "1");
+    verify(pullRequestService).setMerged(REPOSITORY, "1", "override");
   }
 
   @Test
@@ -177,6 +176,31 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
     assertThrows(MergeStrategyNotSupportedException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH));
+  }
+
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldThrowExceptionIfObstacleExists() {
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+
+    mockMergeGuard(pullRequest, false);
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+
+    assertThrows(MergeNotAllowedException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH));
+  }
+
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldNotThrowExceptionIfObstacleIsOverrideable() throws IOException {
+    mocksForPullRequestUpdate("master");
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+    TestMergeObstacle obstacle = mockMergeGuard(pullRequest, true);
+
+    MergeCommitDto mergeCommit = createMergeCommit(true);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT);
+
+    verify(pullRequestService).setMerged(REPOSITORY, "1", "override");
   }
 
   @Test
@@ -250,19 +274,20 @@ public class MergeServiceTest {
   public void shouldForwardObstaclesFromGuards() {
     PullRequest pullRequest = mockPullRequest("mergeable", "master", "1");
 
-    MergeGuard mergeGuard1 = mock(MergeGuard.class);
-    MergeGuard mergeGuard2 = mock(MergeGuard.class);
-    mergeGuards.add(mergeGuard1);
-    mergeGuards.add(mergeGuard2);
-
-    TestMergeObstacle obstacle1 = new TestMergeObstacle();
-    TestMergeObstacle obstacle2 = new TestMergeObstacle();
-    when(mergeGuard1.getObstacles(REPOSITORY, pullRequest)).thenReturn(singleton(obstacle1));
-    when(mergeGuard2.getObstacles(REPOSITORY, pullRequest)).thenReturn(singleton(obstacle2));
+    TestMergeObstacle obstacle1 = mockMergeGuard(pullRequest, false);
+    TestMergeObstacle obstacle2 = mockMergeGuard(pullRequest, false);
 
     MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
     assertThat(mergeCheckResult.getMergeObstacles()).contains(obstacle1, obstacle2);
+  }
+
+  private TestMergeObstacle mockMergeGuard(PullRequest pullRequest, boolean overrideable) {
+    MergeGuard mergeGuard = mock(MergeGuard.class);
+    mergeGuards.add(mergeGuard);
+    TestMergeObstacle obstacle = new TestMergeObstacle(overrideable);
+    when(mergeGuard.getObstacles(REPOSITORY, pullRequest)).thenReturn(singleton(obstacle));
+    return obstacle;
   }
 
   private PullRequest createPullRequest() {
@@ -290,6 +315,7 @@ public class MergeServiceTest {
   private MergeCommitDto createMergeCommit(boolean deleteBranch) {
     MergeCommitDto mergeCommit = new MergeCommitDto();
     mergeCommit.setShouldDeleteSourceBranch(deleteBranch);
+    mergeCommit.setOverrideMessage("override");
     return mergeCommit;
   }
 
@@ -305,7 +331,15 @@ public class MergeServiceTest {
   }
 
   private static class TestMergeObstacle implements MergeObstacle {
+
+    private final boolean overridable;
+
+    private TestMergeObstacle(boolean overridable) {
+      this.overridable = overridable;
+    }
+
     @Override
+
     public String getMessage() {
       return "not permitted";
     }
@@ -313,6 +347,11 @@ public class MergeServiceTest {
     @Override
     public String getKey() {
       return "key";
+    }
+
+    @Override
+    public boolean isOverrideable() {
+      return overridable;
     }
   }
 }

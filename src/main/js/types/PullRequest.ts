@@ -125,6 +125,7 @@ export type PossibleTransition = {
 export type MergeCommit = {
   commitMessage: string;
   shouldDeleteSourceBranch: boolean;
+  overrideMessage?: string;
 };
 
 export type MergeCheck = {

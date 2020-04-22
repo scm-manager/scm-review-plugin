@@ -71,6 +71,7 @@ public class PullRequest {
   private String sourceRevision;
   private String targetRevision;
   private Set<ReviewMark> reviewMarks = new HashSet<>();
+  private String overrideMessage;
 
   public PullRequest(String id, String source, String target) {
     this.id = id;
