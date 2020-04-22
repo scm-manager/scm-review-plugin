@@ -90,11 +90,22 @@ class MergeButton extends React.Component<Props, State> {
   renderButton = () => {
     const { t, loading, mergeCheck } = this.props;
 
-    const color = mergeCheck?.hasConflicts ? "warning" : "primary";
     const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map(o => t(o.key)).join("\n") : "";
     const obstaclesPresent = mergeCheck && mergeCheck.mergeObstacles.length > 0;
     const obstaclesNotOverrideable =
       mergeCheck && mergeCheck.mergeObstacles.filter(obstacle => !obstacle.overrideable).length > 0;
+    let color;
+    if (mergeCheck?.hasConflicts) {
+      color = "warning";
+    } else if (obstaclesPresent) {
+      if (obstaclesNotOverrideable) {
+        color = "warning";
+      } else {
+        color = "danger";
+      }
+    } else {
+      color = "primary";
+    }
     const disabled = obstaclesPresent && obstaclesNotOverrideable;
 
     let action;
@@ -140,7 +151,7 @@ class MergeButton extends React.Component<Props, State> {
   };
 
   render() {
-    const { repository, pullRequest, merge } = this.props;
+    const { repository, mergeCheck, merge, pullRequest } = this.props;
     const { mergeInformation, showOverrideModal, showMergeModal } = this.state;
 
     if (showOverrideModal) {
@@ -148,7 +159,7 @@ class MergeButton extends React.Component<Props, State> {
         <OverrideModal
           proceed={(message: string) => this.mergeWithOverride(message)}
           close={this.toggleOverrideModal}
-          pullRequest={pullRequest}
+          mergeCheck={mergeCheck}
         />
       );
     }

@@ -111,7 +111,9 @@
       "overrideModal": {
         "title": "Workflow Engine",
         "cancel": "Cancel",
-        "continue": "Merge pull request"
+        "continue": "Merge pull request",
+        "introduction": "Some rules are broken:",
+        "addMessageText": "Additionally to the merge message in the next step you should add a comment, why you want to performe the emergency merge:"
       }
     },
     "pullRequests": {

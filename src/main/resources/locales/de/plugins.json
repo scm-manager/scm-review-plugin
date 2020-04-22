@@ -111,7 +111,9 @@
       "overrideModal": {
         "title": "Workflow Engine",
         "cancel": "Abbrechen",
-        "continue": "Pull Request mergen"
+        "continue": "Pull Request mergen",
+        "introduction": "Einige Regeln wurden nicht eingehalten:",
+        "addMessageText": "Zusätzlich zu der Merge Nachricht im nächsten Schritt sollten Sie hier einen Kommentar zum Emergency Merge erfassen:"
       }
     },
     "pullRequests": {

@@ -24,12 +24,12 @@
 import React from "react";
 import { Button, Modal, SubmitButton, Textarea } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { MergeCheck } from "./types/PullRequest";
 
 type Props = WithTranslation & {
   close: () => void;
   proceed: (overrideMessage: string) => void;
-  pullRequest: PullRequest;
+  mergeCheck: MergeCheck;
 };
 
 type State = {
@@ -49,7 +49,7 @@ class OverrideModal extends React.Component<Props, State> {
   };
 
   render() {
-    const { pullRequest, close, proceed, t } = this.props;
+    const { mergeCheck, close, proceed, t } = this.props;
     const { overrideMessage } = this.state;
 
     const footer = (
@@ -60,13 +60,32 @@ class OverrideModal extends React.Component<Props, State> {
           color="grey"
         />
         <SubmitButton
+          color={"danger"}
+          icon={"exclamation-triangle"}
           label={t("scm-review-plugin.showPullRequest.overrideModal.continue")}
           action={() => proceed(overrideMessage)}
         />
       </>
     );
 
-    const body = <Textarea />;
+    const obstacles = (
+      <ul>
+        {mergeCheck.mergeObstacles.map(obstacle => (
+          <li>{t(obstacle.key)}</li>
+        ))}
+      </ul>
+    );
+
+    const body = (
+      <>
+        <div className={"content"}>
+          {t("scm-review-plugin.showPullRequest.overrideModal.introduction")}
+          {obstacles}
+          <p>{t("scm-review-plugin.showPullRequest.overrideModal.addMessageText")}</p>
+        </div>
+        <Textarea onChange={this.onChangeOverrideMessage} />
+      </>
+    );
 
     return (
       <Modal
@@ -75,6 +94,7 @@ class OverrideModal extends React.Component<Props, State> {
         body={body}
         closeFunction={close}
         footer={footer}
+        headColor={"danger"}
       />
     );
   }
