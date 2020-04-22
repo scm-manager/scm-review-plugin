@@ -24,17 +24,13 @@
 
 package com.cloudogu.scm.review.workflow;
 
-import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import sonia.scm.api.v2.resources.BaseMapper;
-import sonia.scm.repository.Repository;
-
-import javax.ws.rs.core.UriInfo;
 
 @Mapper
 public abstract class RepositoryEngineConfigMapper extends BaseMapper {
 
-  public abstract RepositoryEngineConfigDto map(EngineConfiguration engineConfiguration, @Context Repository repository, @Context UriInfo uriInfo);
+  public abstract RepositoryEngineConfigDto map(EngineConfiguration engineConfiguration);
 
   public abstract EngineConfiguration map(RepositoryEngineConfigDto engineConfigurationDto);
 

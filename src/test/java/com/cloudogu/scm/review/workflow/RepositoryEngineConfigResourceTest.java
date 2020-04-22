@@ -27,6 +27,7 @@ package com.cloudogu.scm.review.workflow;
 import com.google.common.collect.ImmutableList;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.jboss.resteasy.mock.MockHttpRequest;
@@ -50,7 +51,9 @@ import java.net.URISyntaxException;
 import static com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource.WORKFLOW_MEDIA_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -91,6 +94,11 @@ class RepositoryEngineConfigResourceTest {
     ThreadContext.bind(subject);
   }
 
+  @BeforeEach
+  void initEngine() {
+    lenient().when(engine.configure(REPOSITORY)).thenReturn(configurator);
+  }
+
   @AfterEach
   void unbindSubject() {
     ThreadContext.unbindSubject();
@@ -104,15 +112,15 @@ class RepositoryEngineConfigResourceTest {
   @Test
   void shouldCheckRepositoryPermissionReadWorkflowConfig() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
+    doThrow(new AuthorizationException()).when(subject).checkPermission("repository:readWorkflowConfig:1");
 
     dispatcher.invoke(request, response);
 
-    verify(subject).checkPermission("repository:readWorkflowConfig:1");
+    assertThat(response.getStatus()).isEqualTo(403);
   }
 
   @Test
   void shouldReturnConfigurationForRepository() throws URISyntaxException, UnsupportedEncodingException {
-    when(engine.configure(REPOSITORY)).thenReturn(configurator);
     when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration());
     when(mapper.map(any(EngineConfiguration.class)))
       .thenReturn(new RepositoryEngineConfigDto(Links.emptyLinks(), ImmutableList.of(SimpleRule.class), true));
@@ -128,18 +136,19 @@ class RepositoryEngineConfigResourceTest {
 
   @Test
   void shouldCheckRepositoryPermissionWriteWorkflowConfig() throws URISyntaxException {
+    doThrow(new AuthorizationException()).when(subject).checkPermission("repository:writeWorkflowConfig:1");
     MockHttpRequest request = MockHttpRequest.put("/v2/workflow/space/X/config")
       .content("{\"rules\":[\"com.cloudogu.scm.review.workflow.RepositoryEngineConfigResourceTest$SimpleRule\"],\"enabled\":true}".getBytes())
       .contentType(WORKFLOW_MEDIA_TYPE);
 
     dispatcher.invoke(request, response);
 
-    verify(subject).checkPermission("repository:writeWorkflowConfig:1");
+    assertThat(response.getStatus()).isEqualTo(403);
+    verify(configurator, never()).setEngineConfiguration(any(EngineConfiguration.class));
   }
 
   @Test
   void shouldSetEngineConfiguration() throws URISyntaxException {
-    when(engine.configure(REPOSITORY)).thenReturn(configurator);
     when(mapper.map(any(RepositoryEngineConfigDto.class))).thenReturn(new EngineConfiguration());
 
     MockHttpRequest request = MockHttpRequest.put("/v2/workflow/space/X/config")
@@ -149,6 +158,7 @@ class RepositoryEngineConfigResourceTest {
     dispatcher.invoke(request, response);
 
     verify(configurator).setEngineConfiguration(any(EngineConfiguration.class));
+    assertThat(response.getStatus()).isEqualTo(204);
   }
 
   @Getter

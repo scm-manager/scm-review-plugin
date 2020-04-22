@@ -48,7 +48,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
@@ -101,12 +100,12 @@ public class RepositoryEngineConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response getRepositoryEngineConfig(@Context UriInfo uriInfo,
-                                            @PathParam("namespace") String namespace,
-                                            @PathParam("name") String name) {
+  public RepositoryEngineConfigDto getRepositoryEngineConfig(@Context UriInfo uriInfo,
+                                                             @PathParam("namespace") String namespace,
+                                                             @PathParam("name") String name) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     PermissionCheck.checkReadEngineConfiguration(repository);
-    return Response.ok(mapper.map(engine.configure(repository).getEngineConfiguration())).build();
+    return mapper.map(engine.configure(repository).getEngineConfiguration());
   }
 
   @PUT
@@ -129,13 +128,12 @@ public class RepositoryEngineConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response setRepositoryConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
+  public void setRepositoryConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
       throw notFound(entity(new NamespaceAndName(namespace, name)));
     }
     PermissionCheck.checkWriteEngineConfiguration(repository);
     engine.configure(repository).setEngineConfiguration(mapper.map(configDto));
-    return Response.ok().build();
   }
 }
