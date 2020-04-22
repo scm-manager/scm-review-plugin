@@ -30,6 +30,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,7 @@ public class WorkflowMergeGuard implements MergeGuard {
 
   private final Engine engine;
 
+  @Inject
   public WorkflowMergeGuard(Engine engine) {
     this.engine = engine;
   }
@@ -51,7 +53,8 @@ public class WorkflowMergeGuard implements MergeGuard {
         .getRuleResults()
         .stream()
         .filter(Result::isFailed)
-        .map(Result::getMessage)
+        .map(Result::getRule)
+        .map(Class::getSimpleName)
         .map(this::createObstacle)
         .collect(Collectors.toList());
     }

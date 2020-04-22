@@ -33,4 +33,12 @@ public interface Rule {
   default boolean isApplicableMultipleTimes() {
     return false;
   }
+
+  default Result success() {
+    return Result.success();
+  }
+
+  default Result failed() {
+    return Result.failed(getClass());
+  }
 }

@@ -34,10 +34,9 @@ public class AllReviewerApprovedRule implements Rule {
     boolean allReviewerApproved = context.getPullRequest().getReviewer().values().stream().allMatch(approved -> approved);
 
     if (allReviewerApproved) {
-      return Result.success();
+      return success();
     }
-    //TODO add Message
-    return Result.failed("");
+    return failed();
   }
 
 }
