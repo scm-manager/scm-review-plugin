@@ -31,6 +31,7 @@ import com.cloudogu.scm.review.config.api.RepositoryConfigMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.workflow.RepositoryEngineConfigMapper;
 import com.google.inject.AbstractModule;
 import org.mapstruct.factory.Mappers;
 import sonia.scm.plugin.Extension;
@@ -47,5 +48,6 @@ public class ModuleBinder extends AbstractModule {
     bind(PullRequestService.class).to(DefaultPullRequestService.class);
     bind(RepositoryConfigMapper.class).to(Mappers.getMapper(RepositoryConfigMapper.class).getClass());
     bind(GlobalConfigMapper.class).to(Mappers.getMapper(GlobalConfigMapper.class).getClass());
+    bind(RepositoryEngineConfigMapper.class).to(Mappers.getMapper(RepositoryEngineConfigMapper.class).getClass());
   }
 }
