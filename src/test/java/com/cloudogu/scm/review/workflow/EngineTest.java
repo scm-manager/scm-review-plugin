@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import org.junit.jupiter.api.Test;
 import sonia.scm.repository.Repository;
@@ -44,8 +45,7 @@ class EngineTest {
 
     Engine engine = new Engine(Guice.createInjector(), storeFactory);
     EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.enable();
-    configurator.addRule(SuccessRule.class);
+    configurator.setEngineConfiguration(new EngineConfiguration(ImmutableList.of(SuccessRule.class), true));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
@@ -58,8 +58,7 @@ class EngineTest {
 
     Engine engine = new Engine(Guice.createInjector(), storeFactory);
     EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.enable();
-    configurator.addRule(FailedRule.class);
+    configurator.setEngineConfiguration(new EngineConfiguration(ImmutableList.of(FailedRule.class), true));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 

@@ -40,6 +40,8 @@ public final class PermissionCheck {
   public static final String MERGE_PULL_REQUEST = "mergePullRequest";
   public static final String CONFIGURE_PULL_REQUEST = "configurePullRequest";
   public static final String CONFIGURE_PERMISSION = "pullRequest";
+  public static final String READ_WORKFLOW_ENGINE_CONFIG = "readWorkflowConfig";
+  public static final String WRITE_WORKFLOW_ENGINE_CONFIG = "writeWorkflowConfig";
 
   private PermissionCheck() {
   }
@@ -84,13 +86,13 @@ public final class PermissionCheck {
   /**
    * A User can modify a comment if he is the author or he has a modify permission
    *
-   *  @return true if the user can update/delete a comment
+   * @return true if the user can update/delete a comment
    */
-  public static boolean mayModifyComment(Repository repository, BasicComment requestComment ) {
+  public static boolean mayModifyComment(Repository repository, BasicComment requestComment) {
     return currentUserIsAuthor(requestComment.getAuthor()) || mayModify(repository);
   }
 
-  public static void checkModifyComment(Repository repository, BasicComment requestComment ) {
+  public static void checkModifyComment(Repository repository, BasicComment requestComment) {
     if (currentUserIsAuthor(requestComment.getAuthor())) {
       return;
     }
@@ -100,7 +102,7 @@ public final class PermissionCheck {
   /**
    * A User can modify a pull request if he is the author or he has a modify permission
    *
-   *  @return true if the user can update/delete a comment
+   * @return true if the user can update/delete a comment
    */
   public static boolean mayModifyPullRequest(Repository repository, PullRequest request) {
 
@@ -141,5 +143,17 @@ public final class PermissionCheck {
 
   public static void checkWriteGlobalkConfig() {
     ConfigurationPermissions.write(CONFIGURE_PERMISSION).check();
+  }
+
+  public static void checkReadEngineConfiguration(Repository repository) {
+    RepositoryPermissions.custom(READ_WORKFLOW_ENGINE_CONFIG, repository).check();
+  }
+
+  public static void checkWriteEngineConfiguration(Repository repository) {
+    RepositoryPermissions.custom(WRITE_WORKFLOW_ENGINE_CONFIG, repository).check();
+  }
+
+  public static boolean mayConfigureWorkflowEngine(Repository repository) {
+    return RepositoryPermissions.custom(WRITE_WORKFLOW_ENGINE_CONFIG, repository).isPermitted();
   }
 }

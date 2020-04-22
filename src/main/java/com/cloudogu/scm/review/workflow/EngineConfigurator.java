@@ -26,7 +26,6 @@ package com.cloudogu.scm.review.workflow;
 import com.google.inject.Injector;
 import sonia.scm.store.ConfigurationStore;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -43,21 +42,11 @@ public class EngineConfigurator {
     this.store = store;
   }
 
-  public void enable() {
-    EngineConfiguration engineConfiguration = store.getOptional().orElse(new EngineConfiguration());
-    engineConfiguration.setEnabled(true);
-    store.set(engineConfiguration);
+  public EngineConfiguration getEngineConfiguration() {
+    return store.getOptional().orElse(new EngineConfiguration());
   }
 
-  public void disable() {
-    EngineConfiguration engineConfiguration = store.getOptional().orElse(new EngineConfiguration());
-    engineConfiguration.setEnabled(false);
-    store.set(engineConfiguration);
-  }
-
-  public void addRule(Class<? extends Rule> rule) {
-    EngineConfiguration engineConfiguration = store.getOptional().orElse(new EngineConfiguration());
-    engineConfiguration.getRules().add(rule);
+  public void setEngineConfiguration(EngineConfiguration engineConfiguration) {
     store.set(engineConfiguration);
   }
 
@@ -78,11 +67,6 @@ public class EngineConfigurator {
   }
 
   private Rule createRuleInstance(Class<? extends Rule> aClass) {
-
     return injector.getInstance(aClass);
-  }
-
-  public void removeRule(Class<? extends Rule> rule) {
-
   }
 }

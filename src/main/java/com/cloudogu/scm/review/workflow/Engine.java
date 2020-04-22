@@ -48,9 +48,7 @@ public final class Engine {
 
   public Results validate(Repository repository, PullRequest pullRequest) {
     List<Rule> rules = configure(repository).getRules();
-
     Context context = new Context(repository, pullRequest);
-
     List<Result> results = rules.stream().map(rule -> rule.validate(context)).collect(Collectors.toList());
 
     return new Results(results);

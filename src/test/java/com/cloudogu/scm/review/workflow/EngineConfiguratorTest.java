@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import org.junit.jupiter.api.Test;
 import sonia.scm.store.InMemoryConfigurationStore;
@@ -35,12 +36,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class EngineConfiguratorTest {
 
-
   @Test
   void shouldCreateRuleWithInjection() {
     EngineConfigurator configurator = new EngineConfigurator(Guice.createInjector(), new InMemoryConfigurationStore<>());
-    configurator.enable();
-    configurator.addRule(RuleWithInjection.class);
+    configurator.setEngineConfiguration(new EngineConfiguration(ImmutableList.of(RuleWithInjection.class), true));
     List<Rule> rules = configurator.getRules();
 
     assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
@@ -49,8 +48,7 @@ class EngineConfiguratorTest {
   @Test
   void shouldReturnEmptyListIfEngineDisabled() {
     EngineConfigurator configurator = new EngineConfigurator(Guice.createInjector(), new InMemoryConfigurationStore<>());
-    configurator.disable();
-    configurator.addRule(RuleWithInjection.class);
+    configurator.setEngineConfiguration(new EngineConfiguration(ImmutableList.of(RuleWithInjection.class), false));
     List<Rule> rules = configurator.getRules();
 
     assertThat(rules.isEmpty()).isTrue();
@@ -76,7 +74,5 @@ class EngineConfiguratorTest {
     public Result getResult() {
       return Result.success();
     }
-
   }
-
 }

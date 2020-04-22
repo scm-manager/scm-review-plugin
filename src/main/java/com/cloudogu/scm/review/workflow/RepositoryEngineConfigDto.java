@@ -21,27 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.workflow;
 
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
-public class EngineConfiguration {
-  private List<Class<? extends Rule>> rules = new ArrayList<>();
-
-  @Setter
+@AllArgsConstructor
+public class RepositoryEngineConfigDto extends HalRepresentation {
+  private List<Class<? extends Rule>> rules;
   private boolean enabled;
+
+  public RepositoryEngineConfigDto(Links links, List<Class<? extends Rule>> rules, boolean enabled) {
+    super(links);
+    this.rules = rules;
+    this.enabled = enabled;
+  }
 }

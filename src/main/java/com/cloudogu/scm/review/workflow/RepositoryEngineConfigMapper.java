@@ -21,27 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.workflow;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import sonia.scm.api.v2.resources.BaseMapper;
+import sonia.scm.repository.Repository;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
-import java.util.List;
+import javax.ws.rs.core.UriInfo;
 
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class EngineConfiguration {
-  private List<Class<? extends Rule>> rules = new ArrayList<>();
+@Mapper
+public abstract class RepositoryEngineConfigMapper extends BaseMapper {
 
-  @Setter
-  private boolean enabled;
+  public abstract RepositoryEngineConfigDto map(EngineConfiguration engineConfiguration, @Context Repository repository, @Context UriInfo uriInfo);
+
+  public abstract EngineConfiguration map(RepositoryEngineConfigDto engineConfigurationDto);
+
 }
