@@ -1,6 +1,9 @@
 {
   "scm-review-plugin": {
-    "navLink": "Pull Requests",
+    "navLink": {
+      "pullRequest": "Pull Requests",
+      "workflow": "Workflow Engine"
+    },
     "create": {
       "title": "Pull Request",
       "subtitle": "Creates a new pull request for {{repositoryName}}",
@@ -257,6 +260,25 @@
       "review": {
         "title": "Review: #{{id}} {{title}}",
         "footer": "in repository"
+      }
+    },
+    "workflow": {
+      "enableEngine": {
+        "label": "Activates workflow engine",
+        "helpText": "Activates the workflow engine and validates all pull requests by the defined rules."
+      },
+      "rule": {
+        "name": {
+          "AllReviewerApproved": "All reviewers approved"
+        },
+        "column": {
+          "name": "Name",
+          "description": "Rule description"
+        }
+      },
+      "addNewRule": {
+        "label": "Add new rule",
+        "helpText": "Adds a new rule to validate pull requests."
       }
     }
   },

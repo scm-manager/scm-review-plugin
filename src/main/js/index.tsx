@@ -37,6 +37,8 @@ import MyPullRequest from "./landingpage/MyPullRequest";
 import PullRequestCreatedEvent from "./landingpage/PullRequestCreatedEvent";
 import PullRequestTodos from "./landingpage/MyPullRequestTodos";
 import PullRequestReview from "./landingpage/MyPullRequestReview";
+import RepoEngineConfig from "./workflow/RepoEngineConfig";
+import GlobalEngineConfig from "./workflow/GlobalEngineConfig";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -110,8 +112,11 @@ binder.bind("repos.branch-details.information", ({ repository, branch }) => (
 
 binder.bind("repository.card.quickLink", RepositoryPullRequestCardLink, reviewSupportedPredicate);
 
-cfgBinder.bindRepositorySetting("/review", "scm-review-plugin.navLink", "pullRequestConfig", RepositoryConfig);
-cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink", "pullRequestConfig", GlobalConfig);
+cfgBinder.bindRepositorySetting("/review", "scm-review-plugin.navLink.pullRequest", "pullRequestConfig", RepositoryConfig);
+cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink.pullRequest", "pullRequestConfig", GlobalConfig);
+
+cfgBinder.bindRepositorySetting("/workflow", "scm-review-plugin.navLink.workflow", "workflowConfig", RepoEngineConfig);
+cfgBinder.bindGlobal("/workflow", "scm-review-plugin.navLink.workflow", "workflowConfig", GlobalEngineConfig);
 
 binder.bind("landingpage.mydata", {
   render: (data: any, key: any) => <MyPullRequest key={key} data={data} />,

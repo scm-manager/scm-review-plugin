@@ -21,29 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { SecondaryNavigationItem } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
 
-type Props = WithTranslation & {
-  url: string;
-  activeWhenMatch: (route: any) => boolean;
+import React, { FC } from "react";
+import { Configuration } from "@scm-manager/ui-components";
+import EngineConfigEditor from "./EngineConfigEditor";
+
+type Props = {
+  link: string;
 };
 
-class PullRequestsNavLink extends React.Component<Props> {
-  render() {
-    const { url, activeWhenMatch, t } = this.props;
+const GlobalEngineConfig: FC<Props> = ({ link }) => {
+  return <Configuration link={link} render={props => <EngineConfigEditor {...props} global={true} />} />;
+};
 
-    return (
-      <SecondaryNavigationItem
-        to={`${url}/pull-requests`}
-        icon="fas fa-code-branch fa-rotate-180"
-        label={t("scm-review-plugin.navLink.pullRequest")}
-        activeWhenMatch={activeWhenMatch}
-        title={t("scm-review-plugin.navLink.pullRequest")}
-      />
-    );
-  }
-}
-
-export default withTranslation("plugins")(PullRequestsNavLink);
+export default GlobalEngineConfig;

@@ -56,6 +56,7 @@
           <resourcePackages>
             <resourcePackage>com.cloudogu.scm.review.pullrequest.api</resourcePackage>
             <resourcePackage>com.cloudogu.scm.review.config.api</resourcePackage>
+            <resourcePackage>com.cloudogu.scm.review.workflow</resourcePackage>
           </resourcePackages>
         </configuration>
       </plugin>

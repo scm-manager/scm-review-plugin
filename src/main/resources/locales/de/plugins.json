@@ -1,6 +1,9 @@
 {
   "scm-review-plugin": {
-    "navLink": "Pull Requests",
+    "navLink": {
+      "pullRequest": "Pull Requests",
+      "workflow": "Workflow Engine"
+    },
     "create": {
       "title": "Pull Request",
       "subtitle": "Erstellt einen neuen Pull Request für {{repositoryName}}",
@@ -253,13 +256,32 @@
       },
       "todo": {
         "todo": "{{open}}/{{count}} Aufgaben",
-        "todoTitle": "{{open}} von {{count}} Aufgaben sind noch nicht als erledigt markiert",
+        "todoTitle": "{{open}} von {{count}} Aufgaben sind noch nicht als erledigt markiert.",
         "title": "#{{id}} {{title}}",
         "footer": "im Repository"
       },
       "review": {
         "title": "Review: #{{id}} {{title}}",
         "footer": "im Repository"
+      }
+    },
+    "workflow": {
+      "enableEngine": {
+        "label": "Workflow Engine aktivieren",
+        "helpText": "Aktiviert die Workflow Engine und validiert damit alle Pull Requests gegen die definierten Regeln."
+      },
+      "rule": {
+        "name": {
+          "AllReviewerApproved": "Alle Reviewer zugestimmt"
+        },
+        "column": {
+          "name": "Name",
+          "description": "Regelbeschreibung"
+        }
+      },
+      "addNewRule": {
+        "label": "Neue Regel hinzufügen",
+        "helpText": "Fügt eine Regel zum Validieren des Pull Requests hinzu."
       }
     }
   },
