@@ -46,13 +46,13 @@ import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import static com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource.WORKFLOW_MEDIA_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -83,7 +83,9 @@ class RepositoryEngineConfigResourceTest {
 
   @BeforeEach
   void init() {
-    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, engine, new RepositoryEngineConfigMapperImpl(), availableRules);
+    RepositoryEngineConfigMapperImpl mapper = new RepositoryEngineConfigMapperImpl();
+    mapper.availableRules = new AvailableRules(Collections.singleton(new SimpleRule(1)));
+    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, engine, mapper, availableRules);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(repositoryEngineConfigResource);
@@ -132,7 +134,7 @@ class RepositoryEngineConfigResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString())
-      .contains("\"rules\":[\"com.cloudogu.scm.review.workflow.RepositoryEngineConfigResourceTest$SimpleRule\"]")
+      .contains("\"rules\":[\"SimpleRule\"]")
       .contains("\"enabled\":true")
       .contains("\"self\":{\"href\":\"/v2/workflow/space/X/config\"}");
   }
@@ -188,7 +190,7 @@ class RepositoryEngineConfigResourceTest {
   void shouldSetEngineConfiguration() throws URISyntaxException {
 
     MockHttpRequest request = MockHttpRequest.put("/v2/workflow/space/X/config")
-      .content("{\"rules\":[\"com.cloudogu.scm.review.workflow.RepositoryEngineConfigResourceTest$SimpleRule\"],\"enabled\":true}".getBytes())
+      .content("{\"rules\":[\"SimpleRule\"],\"enabled\":true}".getBytes())
       .contentType(WORKFLOW_MEDIA_TYPE);
 
     dispatcher.invoke(request, response);
