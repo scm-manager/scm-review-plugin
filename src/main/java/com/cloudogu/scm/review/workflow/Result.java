@@ -28,20 +28,19 @@ import lombok.Getter;
 @Getter
 public final class Result {
   private final boolean failed;
-  //TODO Messagekey?
-  private final String message;
+  private final Class<? extends Rule> rule;
 
-  private Result(boolean failed, String message) {
+  private Result(boolean failed, Class<? extends Rule> rule) {
     this.failed = failed;
-    this.message = message;
+    this.rule = rule;
   }
 
   public static Result success() {
     return new Result(false, null);
   }
 
-  public static Result failed(String message) {
-    return new Result(true, message);
+  public static Result failed(Class<? extends Rule> rule) {
+    return new Result(true, rule);
   }
 
   public boolean isSuccess() {

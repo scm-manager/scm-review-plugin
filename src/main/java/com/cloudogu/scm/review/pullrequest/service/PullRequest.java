@@ -72,6 +72,12 @@ public class PullRequest {
   private String targetRevision;
   private Set<ReviewMark> reviewMarks = new HashSet<>();
 
+  public PullRequest(String id, String source, String target) {
+    this.id = id;
+    this.source = source;
+    this.target = target;
+  }
+
   public void addApprover(String recipient) {
     this.reviewer.put(recipient, true);
   }

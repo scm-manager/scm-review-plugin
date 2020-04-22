@@ -135,6 +135,7 @@ export type MergeCheck = {
 export type MergeObstacle = {
   message: string;
   key: string;
+  overrideable: boolean;
 };
 
 export type Conflict = {

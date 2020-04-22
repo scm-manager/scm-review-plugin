@@ -28,4 +28,8 @@ public interface MergeObstacle {
   String getMessage();
 
   String getKey();
+
+  default boolean isOverrideable() {
+    return false;
+  }
 }

@@ -77,7 +77,7 @@ class EngineTest {
 
     @Override
     public Result validate(Context context) {
-      return Result.failed("failure");
+      return failed();
     }
   }
 
