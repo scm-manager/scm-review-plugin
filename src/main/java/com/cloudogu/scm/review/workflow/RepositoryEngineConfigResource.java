@@ -105,7 +105,7 @@ public class RepositoryEngineConfigResource {
                                                              @PathParam("name") String name) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     PermissionCheck.checkReadEngineConfiguration(repository);
-    return mapper.map(engine.configure(repository).getEngineConfiguration());
+    return mapper.map(engine.configure(repository).getEngineConfiguration(), repository, uriInfo);
   }
 
   @PUT
@@ -128,7 +128,7 @@ public class RepositoryEngineConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public void setRepositoryConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
+  public void setRepositoryEngineConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
       throw notFound(entity(new NamespaceAndName(namespace, name)));

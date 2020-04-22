@@ -70,8 +70,6 @@ class RepositoryEngineConfigResourceTest {
   private UriInfo uriInfo;
   @Mock
   private Engine engine;
-  @Mock
-  private RepositoryEngineConfigMapper mapper;
 
   @Mock
   private Subject subject;
@@ -81,7 +79,7 @@ class RepositoryEngineConfigResourceTest {
 
   @BeforeEach
   void init() {
-    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, engine, mapper);
+    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, engine, new RepositoryEngineConfigMapperImpl());
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(repositoryEngineConfigResource);
@@ -121,9 +119,7 @@ class RepositoryEngineConfigResourceTest {
 
   @Test
   void shouldReturnConfigurationForRepository() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration());
-    when(mapper.map(any(EngineConfiguration.class)))
-      .thenReturn(new RepositoryEngineConfigDto(Links.emptyLinks(), ImmutableList.of(SimpleRule.class), true));
+    when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration(ImmutableList.of(SimpleRule.class), true));
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
 
@@ -131,7 +127,23 @@ class RepositoryEngineConfigResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString())
-      .contains("{\"rules\":[\"com.cloudogu.scm.review.workflow.RepositoryEngineConfigResourceTest$SimpleRule\"],\"enabled\":true}");
+      .contains("\"rules\":[\"com.cloudogu.scm.review.workflow.RepositoryEngineConfigResourceTest$SimpleRule\"]")
+      .contains("\"enabled\":true")
+      .contains("\"self\":{\"href\":\"/v2/workflow/space/X/config\"}");
+  }
+
+  @Test
+  void shouldReturnConfigurationForRepositoryWithUpdateLink() throws URISyntaxException, UnsupportedEncodingException {
+    when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration(ImmutableList.of(SimpleRule.class), true));
+    when(subject.isPermitted("repository:writeWorkflowConfig:1")).thenReturn(true);
+
+    MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString())
+      .contains("\"update\":{\"href\":\"/v2/workflow/space/X/config\"}");
   }
 
   @Test
@@ -149,7 +161,6 @@ class RepositoryEngineConfigResourceTest {
 
   @Test
   void shouldSetEngineConfiguration() throws URISyntaxException {
-    when(mapper.map(any(RepositoryEngineConfigDto.class))).thenReturn(new EngineConfiguration());
 
     MockHttpRequest request = MockHttpRequest.put("/v2/workflow/space/X/config")
       .content("{\"rules\":[\"com.cloudogu.scm.review.workflow.RepositoryEngineConfigResourceTest$SimpleRule\"],\"enabled\":true}".getBytes())

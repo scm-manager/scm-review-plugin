@@ -41,8 +41,12 @@ public class RepositoryEngineConfigDto extends HalRepresentation {
   private List<Class<? extends Rule>> rules;
   private boolean enabled;
 
-  public RepositoryEngineConfigDto(Links links, List<Class<? extends Rule>> rules, boolean enabled) {
+  public RepositoryEngineConfigDto(Links links) {
     super(links);
+  }
+
+  public RepositoryEngineConfigDto(Links links, List<Class<? extends Rule>> rules, boolean enabled) {
+    this(links);
     this.rules = rules;
     this.enabled = enabled;
   }
