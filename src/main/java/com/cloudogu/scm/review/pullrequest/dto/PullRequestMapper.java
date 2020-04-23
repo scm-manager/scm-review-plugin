@@ -174,43 +174,47 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @AfterMapping
   protected void appendLinks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
+    String namespace = repository.getNamespace();
+    String name = repository.getName();
+    String pullRequestId = target.getId();
     Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest()
-      .self(repository.getNamespace(), repository.getName(), target.getId()));
+      .self(namespace, name, pullRequestId));
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments()
-      .all(repository.getNamespace(), repository.getName(), target.getId())));
+      .all(namespace, name, pullRequestId)));
     linksBuilder.single(link("events", pullRequestResourceLinks.pullRequest()
-      .events(repository.getNamespace(), repository.getName(), target.getId())));
+      .events(namespace, name, pullRequestId)));
     if (PermissionCheck.mayComment(repository) && CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
       if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
         if (pullRequestService.hasUserApproved(repository, pullRequest.getId())) {
-          linksBuilder.single(link("disapprove", pullRequestResourceLinks.pullRequest().disapprove(repository.getNamespace(), repository.getName(), target.getId())));
+          linksBuilder.single(link("disapprove", pullRequestResourceLinks.pullRequest().disapprove(namespace, name, pullRequestId)));
         } else {
-          linksBuilder.single(link("approve", pullRequestResourceLinks.pullRequest().approve(repository.getNamespace(), repository.getName(), target.getId())));
+          linksBuilder.single(link("approve", pullRequestResourceLinks.pullRequest().approve(namespace, name, pullRequestId)));
         }
       }
 
       linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest()
-        .subscription(repository.getNamespace(), repository.getName(), target.getId())));
+        .subscription(namespace, name, pullRequestId)));
     }
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest()
-        .update(repository.getNamespace(), repository.getName(), target.getId())));
+        .update(namespace, name, pullRequestId)));
     }
     if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest()
-        .reject(repository.getNamespace(), repository.getName(), target.getId())));
+        .reject(namespace, name, pullRequestId)));
 
       if (RepositoryPermissions.push(repository).isPermitted() && target.getStatus() == PullRequestStatus.OPEN) {
         linksBuilder.single(link("mergeCheck", pullRequestResourceLinks.mergeLinks()
-          .check(repository.getNamespace(), repository.getName(), pullRequest.getId())));
+          .check(namespace, name, pullRequest.getId())));
         linksBuilder.single(link("mergeConflicts", pullRequestResourceLinks.mergeLinks()
-          .conflicts(repository.getNamespace(), repository.getName(), pullRequest.getId())));
+          .conflicts(namespace, name, pullRequest.getId())));
         linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
-          .createDefaultCommitMessage(repository.getNamespace(), repository.getName(), pullRequest.getId())));
+          .createDefaultCommitMessage(namespace, name, pullRequest.getId())));
         appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
     }
-    linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(repository.getNamespace(), repository.getName(), target.getId())));
+    linksBuilder.single(link("workflowResult", pullRequestResourceLinks.engineLinks().results(namespace, name, pullRequest.getId())));
+    linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
     target.add(linksBuilder.build());
   }
 

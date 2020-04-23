@@ -114,6 +114,7 @@ public class CommentResourceTest {
               branchRevisionResolver
             )
           ),
+          null,
           channelRegistry
         )
       )

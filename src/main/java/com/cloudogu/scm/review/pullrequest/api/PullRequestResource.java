@@ -36,6 +36,7 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.workflow.EngineResultResource;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
@@ -74,19 +75,26 @@ public class PullRequestResource {
   private final PullRequestMapper mapper;
   private final PullRequestService service;
   private final Provider<CommentRootResource> commentResourceProvider;
+  private final Provider<EngineResultResource> engineResultResourceProvider;
   private final ChannelRegistry channelRegistry;
 
   @Inject
-  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, ChannelRegistry channelRegistry) {
+  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, Provider<EngineResultResource> engineResultResourceProvider, ChannelRegistry channelRegistry) {
     this.mapper = mapper;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
+    this.engineResultResourceProvider = engineResultResourceProvider;
     this.channelRegistry = channelRegistry;
   }
 
   @Path("comments/")
   public CommentRootResource comments() {
     return commentResourceProvider.get();
+  }
+
+  @Path("workflow/")
+  public EngineResultResource workflowResults() {
+    return engineResultResourceProvider.get();
   }
 
   @GET

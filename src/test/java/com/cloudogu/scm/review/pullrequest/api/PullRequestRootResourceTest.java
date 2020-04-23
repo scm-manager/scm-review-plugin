@@ -31,7 +31,6 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.events.ChannelRegistry;
-import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -84,7 +83,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,7 +90,6 @@ import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -161,7 +158,7 @@ public class PullRequestRootResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     when(pullRequestService.getRepository(repository.getNamespace(), repository.getName())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
-    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, channelRegistry)));
+    pullRequestRootResource = new PullRequestRootResource(mapper, service, Providers.of(new PullRequestResource(mapper, service, null, null, channelRegistry)));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -843,7 +840,7 @@ public class PullRequestRootResourceTest {
 
   private void initPullRequestRootResource() {
     PullRequestRootResource rootResource =
-      new PullRequestRootResource(mapper, pullRequestService, Providers.of(new PullRequestResource(mapper, pullRequestService, null, channelRegistry)));
+      new PullRequestRootResource(mapper, pullRequestService, Providers.of(new PullRequestResource(mapper, pullRequestService, null, null, channelRegistry)));
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(rootResource);

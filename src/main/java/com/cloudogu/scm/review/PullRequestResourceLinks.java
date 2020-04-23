@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.pullrequest.api.MergeResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
+import com.cloudogu.scm.review.workflow.EngineResultResource;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfo;
 import sonia.scm.repository.api.MergeStrategy;
@@ -217,6 +218,25 @@ public class PullRequestResourceLinks {
     public String createDefaultCommitMessage(String namespace, String name, String pullRequestId) {
       return mergeLinkBuilder
         .method("createDefaultCommitMessage").parameters(namespace, name, pullRequestId).href();
+    }
+  }
+
+  public EngineLinks engineLinks() {
+    return new EngineLinks(scmPathInfo);
+  }
+
+  public static class EngineLinks {
+    private final LinkBuilder engineLinkBuilder;
+
+    public EngineLinks(ScmPathInfo pathInfo) {
+      this.engineLinkBuilder = new LinkBuilder(pathInfo, PullRequestRootResource.class, PullRequestResource.class, EngineResultResource.class);
+    }
+
+    public String results(String namespace, String name, String pullRequestId) {
+      return engineLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("workflowResults").parameters()
+        .method("getResult").parameters(namespace, name, pullRequestId).href();
     }
   }
 }
