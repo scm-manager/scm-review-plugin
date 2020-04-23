@@ -201,7 +201,7 @@ class RepositoryEngineConfigResourceTest {
 
     @Override
     public Result validate(Context context) {
-      return Result.success(Rule.class);
+      return success();
     }
   }
 }

@@ -39,7 +39,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-import static com.cloudogu.scm.review.workflow.Result.success;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(TempDirectory.class)
@@ -113,7 +112,7 @@ class EngineConfiguratorTest {
   public static class ResultService {
 
     public Result getResult() {
-      return success(Rule.class);
+      return Result.success(RuleWithInjection.class);
     }
   }
 }

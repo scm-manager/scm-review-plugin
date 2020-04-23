@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.workflow.EngineResultResource;
+import com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfo;
 import sonia.scm.repository.api.MergeStrategy;
@@ -221,22 +222,49 @@ public class PullRequestResourceLinks {
     }
   }
 
-  public EngineLinks engineLinks() {
-    return new EngineLinks(scmPathInfo);
+  public WorkflowEngineLinks workflowEngineLinks() {
+    return new WorkflowEngineLinks(scmPathInfo);
   }
 
-  public static class EngineLinks {
-    private final LinkBuilder engineLinkBuilder;
+  public static class WorkflowEngineLinks {
+    private final LinkBuilder workflowEngineLinkBuilder;
 
-    public EngineLinks(ScmPathInfo pathInfo) {
-      this.engineLinkBuilder = new LinkBuilder(pathInfo, PullRequestRootResource.class, PullRequestResource.class, EngineResultResource.class);
+    public WorkflowEngineLinks(ScmPathInfo pathInfo) {
+      this.workflowEngineLinkBuilder = new LinkBuilder(pathInfo, PullRequestRootResource.class, PullRequestResource.class, EngineResultResource.class);
     }
 
     public String results(String namespace, String name, String pullRequestId) {
-      return engineLinkBuilder
+      return workflowEngineLinkBuilder
         .method("getPullRequestResource").parameters()
         .method("workflowResults").parameters()
         .method("getResult").parameters(namespace, name, pullRequestId).href();
+    }
+  }
+
+  public WorkflowEngineConfigLinks workflowEngineConfigLinks() {
+    return new WorkflowEngineConfigLinks(scmPathInfo);
+  }
+
+  public static class WorkflowEngineConfigLinks {
+    private final LinkBuilder workflowEngineConfigLinkBuilder;
+
+    public WorkflowEngineConfigLinks(ScmPathInfo pathInfo) {
+      this.workflowEngineConfigLinkBuilder = new LinkBuilder(pathInfo, RepositoryEngineConfigResource.class);
+    }
+
+    public String getConfig(String namespace, String name) {
+      return workflowEngineConfigLinkBuilder
+        .method("getRepositoryEngineConfig").parameters(namespace, name).href();
+    }
+
+    public String setConfig(String namespace, String name) {
+      return workflowEngineConfigLinkBuilder
+        .method("setRepositoryEngineConfig").parameters(namespace, name).href();
+    }
+
+    public String availableRules() {
+      return workflowEngineConfigLinkBuilder
+        .method("getAvailableRules").parameters().href();
     }
   }
 }
