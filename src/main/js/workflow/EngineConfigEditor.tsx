@@ -77,7 +77,10 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
       .then(r => r.json())
       .then(setRules)
       .then(() => setLoading(false))
-      .catch(setError);
+      .catch(err => {
+        setError(err);
+        setLoading(false);
+      });
   }, [availableRulesHref]);
 
   const onChangeDisableRepositoryConfiguration = () => {

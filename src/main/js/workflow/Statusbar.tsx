@@ -59,15 +59,23 @@ const Statusbar: FC<Props> = ({ pullRequest }) => {
   const [result, setResult] = useState<Result[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const workflowResultHref = (pullRequest._links.workflowResult as Link).href;
+
   useEffect(() => {
     apiClient
-      .get((pullRequest._links.workflowResult as Link).href)
+      .get(workflowResultHref)
       .then(r => r.json())
-      .then(r => setResult(r.results))
-      .catch(setError);
-    setLoading(false);
-  }, []);
+      .then(r => {
+        setResult(r.results);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err);
+        setLoading(false);
+      });
+  }, [workflowResultHref]);
 
+  // no workflow rules configured
   if (!loading && result?.length === 0) {
     return null;
   }
