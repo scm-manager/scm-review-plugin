@@ -92,8 +92,8 @@ class MergeButton extends React.Component<Props, State> {
 
     const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map(o => t(o.key)).join("\n") : "";
     const obstaclesPresent = mergeCheck && mergeCheck.mergeObstacles.length > 0;
-    const obstaclesNotOverrideable =
-      mergeCheck && mergeCheck.mergeObstacles.filter(obstacle => !obstacle.overrideable).length > 0;
+    // TODO enabled with Emergency Merge Feature
+    const obstaclesNotOverrideable = true; // mergeCheck && mergeCheck.mergeObstacles.filter(obstacle => !obstacle.overrideable).length > 0;
     let color;
     if (mergeCheck?.hasConflicts) {
       color = "warning";
