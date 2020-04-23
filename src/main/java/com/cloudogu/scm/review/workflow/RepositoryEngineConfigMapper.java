@@ -25,13 +25,13 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.PullRequestResourceLinks;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.BaseMapper;
-import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
@@ -51,11 +51,11 @@ public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConf
   @ObjectFactory
   RepositoryEngineConfigDto create(@Context Repository repository, @Context UriInfo uriInfo) {
     final Links.Builder linksBuilder = new Links.Builder();
-    LinkBuilder linkBuilder = new LinkBuilder(uriInfo::getBaseUri, RepositoryEngineConfigResource.class);
-    linksBuilder.self(linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
+    PullRequestResourceLinks.WorkflowEngineConfigLinks workflowEngineConfigLinks = new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineConfigLinks();
+    linksBuilder.self(workflowEngineConfigLinks.getConfig(repository.getNamespace(), repository.getName()));
     if (PermissionCheck.mayConfigureWorkflowEngine(repository)) {
-      linksBuilder.single(link("update", linkBuilder.method("setRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href()));
-      linksBuilder.single(link("availableRules", linkBuilder.method("getAvailableRules").parameters().href()));
+      linksBuilder.single(link("update", workflowEngineConfigLinks.setConfig(repository.getNamespace(), repository.getName())));
+      linksBuilder.single(link("availableRules", workflowEngineConfigLinks.availableRules()));
     }
     return new RepositoryEngineConfigDto(linksBuilder.build());
   }

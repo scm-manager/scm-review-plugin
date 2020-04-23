@@ -116,7 +116,7 @@ class EngineConfiguratorTest {
   public static class ResultService {
 
     public Result getResult() {
-      return Result.success();
+      return Result.success(RuleWithInjection.class);
     }
   }
 }

@@ -68,7 +68,7 @@ class WorkflowMergeGuardTest {
 
   @Test
   void shouldReturnEmptyListWithoutFailingRules() {
-    when(engine.validate(REPOSITORY, PULL_REQUEST)).thenReturn(new Results(asList(Result.success())));
+    when(engine.validate(REPOSITORY, PULL_REQUEST)).thenReturn(new Results(asList(Result.success(Rule.class))));
 
     Collection<MergeObstacle> obstacles = guard.getObstacles(REPOSITORY, PULL_REQUEST);
 
@@ -77,7 +77,7 @@ class WorkflowMergeGuardTest {
 
   @Test
   void shouldReturnListWithObstacleForFailingRules() {
-    when(engine.validate(REPOSITORY, PULL_REQUEST)).thenReturn(new Results(asList(Result.success(), Result.failed(Rule.class))));
+    when(engine.validate(REPOSITORY, PULL_REQUEST)).thenReturn(new Results(asList(Result.success(Rule.class), Result.failed(Rule.class))));
 
     Collection<MergeObstacle> obstacles = guard.getObstacles(REPOSITORY, PULL_REQUEST);
 

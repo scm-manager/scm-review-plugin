@@ -35,7 +35,7 @@ public interface Rule {
   }
 
   default Result success() {
-    return Result.success();
+    return Result.success(getClass());
   }
 
   default Result failed() {

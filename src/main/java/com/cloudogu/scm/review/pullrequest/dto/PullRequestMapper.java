@@ -213,7 +213,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
         appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
     }
-    linksBuilder.single(link("workflowResult", pullRequestResourceLinks.engineLinks().results(namespace, name, pullRequest.getId())));
+    linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
     target.add(linksBuilder.build());
   }

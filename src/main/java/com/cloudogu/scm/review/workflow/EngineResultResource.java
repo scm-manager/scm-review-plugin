@@ -46,6 +46,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @OpenAPIDefinition(tags = {
@@ -101,8 +102,9 @@ public class EngineResultResource {
     PullRequest pullRequest = pullRequestService.get(namespace, name, pullRequestId);
 
     final Links.Builder linksBuilder = new Links.Builder();
-    linksBuilder.self(new PullRequestResourceLinks(uriInfo::getBaseUri).engineLinks().results(repository.getNamespace(), repository.getName(), pullRequestId));
-    return new ResultListDto(linksBuilder.build(), engine.validate(repository, pullRequest).getRuleResults().stream().map(this::createDto).collect(Collectors.toList()));
+    linksBuilder.self(new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineLinks().results(repository.getNamespace(), repository.getName(), pullRequestId));
+    List<Result> ruleResults = engine.validate(repository, pullRequest).getRuleResults();
+    return new ResultListDto(linksBuilder.build(), ruleResults.stream().map(this::createDto).collect(Collectors.toList()));
   }
 
   private ResultDto createDto(Result result) {
