@@ -295,7 +295,7 @@
       "noRulesConfigured": "Es wurden noch keine Regeln definiert.",
       "statusbar": {
         "rules": "{{count}} Regeln definiert",
-        "rules_plural": "{{count}} Regel definiert",
+        "rules_plural": "{{count}} Regeln definiert",
         "failedRules": "{{count}} Regel nicht erfüllt",
         "failedRules_plural": "{{count}} Regeln nicht erfüllt",
         "noFailedRules": "Alle Regeln erfüllt"
