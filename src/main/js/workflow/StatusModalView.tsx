@@ -45,7 +45,7 @@ const StatusModalView: FC<Props> = ({ result, failed, onClose }) => {
     </>
   );
   const errors = result && result.length > 0 ? result.filter(r => r.failed).length : 0;
-  const color = failed ? "warning" : "secondary";
+  const color = failed ? "warning" : "success";
 
   const modalTitle = failed
     ? t("scm-review-plugin.workflow.modal.failedTitle", {
@@ -57,7 +57,7 @@ const StatusModalView: FC<Props> = ({ result, failed, onClose }) => {
     <Modal
       title={
         <strong
-          className={`has-text-${color === "warning" ? "warning-invert" : color === "secondary" ? "default" : "white"}`}
+          className={`has-text-${color === "warning" ? "warning-invert" : color === "success" ? "white" : "default"}`}
         >
           {modalTitle}
         </strong>
