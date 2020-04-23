@@ -60,9 +60,9 @@ const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
         {configuration.rules?.map(rule => (
           <tr>
             <td>
-              <strong>{t("scm-review-plugin.workflow.rule." + rule + ".name")}</strong>
+              <strong>{t("workflow.rule." + rule + ".name")}</strong>
             </td>
-            <td>{t("scm-review-plugin.workflow.rule." + rule + ".description")}</td>
+            <td>{t("workflow.rule." + rule + ".description")}</td>
             <VCenteredTd>
               <a
                 className="level-item"

@@ -118,7 +118,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
     { label: "", value: "" },
     ...rules
       .filter(rule => !config.rules.includes(rule))
-      .map(rule => ({ label: t("scm-review-plugin.workflow.rule." + rule + ".name"), value: rule }))
+      .map(rule => ({ label: t("workflow.rule." + rule + ".name"), value: rule }))
   ];
 
   const renderAddRuleForm = () => {
@@ -174,7 +174,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
           {renderAddRuleForm()}
           {selectedRule && (
             <AddRuleLevel>
-              <RuleDetails>{t("scm-review-plugin.workflow.rule." + selectedRule + ".description")}</RuleDetails>
+              <RuleDetails>{t("workflow.rule." + selectedRule + ".description")}</RuleDetails>
               <AddButton
                 label={t("scm-review-plugin.workflow.addRule.label")}
                 action={() => addRuleToConfig(selectedRule)}

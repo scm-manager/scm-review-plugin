@@ -278,10 +278,6 @@
         "helpText": "Aktiviert die Workflow Engine und validiert damit alle Pull Requests gegen die definierten Regeln."
       },
       "rule": {
-        "AllReviewerApprovedRule": {
-          "name": "Alle Reviewer zugestimmt",
-          "description": "Es müssen alle eingetragenen Reviewer dem Pull Request zustimmen."
-        },
         "column": {
           "name": "Name",
           "description": "Regelbeschreibung"
@@ -369,6 +365,18 @@
     "FuRoChFWt1": {
       "displayName": "Nur durch PR änderbar",
       "description": "Der Branch kann nur durch Pull Requests geschrieben werden."
+    }
+  },
+  "workflow": {
+    "rule": {
+      "AllReviewerApprovedRule": {
+        "name": "Alle Reviewer zugestimmt",
+        "description": "Es müssen alle eingetragenen Reviewer dem Pull Request zustimmen."
+      },
+      "AllTasksDoneRule": {
+        "name": "Alle Aufgaben erledigt",
+        "description": "Es müssen alle Aufgaben des Pull Requests erledigt sein."
+      }
     }
   }
 }

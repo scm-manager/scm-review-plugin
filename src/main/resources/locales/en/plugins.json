@@ -275,10 +275,6 @@
         "helpText": "Activates the workflow engine and validates all pull requests by the defined rules."
       },
       "rule": {
-        "AllReviewerApprovedRule": {
-          "name": "All reviewers approved",
-          "description": "All selected reviewers have to approve the pull request ."
-        },
         "column": {
           "name": "Name",
           "description": "Rule description"
@@ -366,6 +362,18 @@
     "FuRoChFWt1": {
       "displayName": "Branch only writable with pull requests",
       "description": "The branch can only be changed by merging pull requests."
+    }
+  },
+  "workflow": {
+    "rule": {
+      "AllReviewerApprovedRule": {
+        "name": "All reviewers approved",
+        "description": "All selected reviewers have to approve the pull request ."
+      },
+      "AllTasksDoneRule": {
+        "name": "All tasks done",
+        "description": "All tasks of the pull requests have to be done."
+      }
     }
   }
 }
