@@ -35,7 +35,7 @@ type Props = WithTranslation & {
 const Entry = styled.div`
   display: flex;
   flex-direction: row;
-  padding: 1rem 0rem 0rem;
+  padding: 1rem 0rem;
   justify-content: space-between;
 
   // css adjacent with same component

@@ -92,7 +92,7 @@ const Statusbar: FC<Props> = ({ pullRequest }) => {
         className={classNames("media", `notification is-grey-lighter`, "has-cursor-pointer")}
         onClick={() => toggleModal()}
       >
-        <PaddingRightIcon className={`fa-lg has-text-${color}`} name={icon} />
+        <PaddingRightIcon className="fa-lg" color={color} name={icon} />
         <span className="has-text-weight-bold">
           {t("scm-review-plugin.workflow.statusbar.rules", {
             count: result && result.length
@@ -100,7 +100,7 @@ const Statusbar: FC<Props> = ({ pullRequest }) => {
         </span>
         <AngleRight className="fas fa-angle-right" />
         <span>
-          {t("scm-review-plugin.workflow.statusbar.failedRules", {
+          {failedRules === 0 ? t("scm-review-plugin.workflow.statusbar.noFailedRules") : t("scm-review-plugin.workflow.statusbar.failedRules", {
             count: failedRules
           })}
         </span>
