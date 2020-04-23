@@ -30,3 +30,8 @@ export type EngineConfiguration = {
   rules: string[];
   _links: Links;
 };
+
+export type Result = {
+  rule: string;
+  failed: boolean;
+};

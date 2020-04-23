@@ -289,7 +289,18 @@
       },
       "deleteRule": "Delete rule",
       "noMoreRulesAvailable": "No more rules available.",
-      "noRulesConfigured": "No rules configured yet."
+      "noRulesConfigured": "No rules configured yet.",
+      "statusbar": {
+        "rules": "{{count}} rule",
+        "rules_plural": "{{count}} rules",
+        "failedRules": "{{count}} rule not fulfilled",
+        "failedRules_plural": "{{count}} rules not fulfilled"
+      },
+      "modal": {
+        "failedTitle": "{{count}} rule not fulfilled",
+        "failedTitle_plural": "{{count}} rules not fulfilled",
+        "successTitle": "All rules fulfilled"
+      }
     }
   },
   "permissions": {
@@ -368,11 +379,15 @@
     "rule": {
       "AllReviewerApprovedRule": {
         "name": "All reviewers approved",
-        "description": "All selected reviewers have to approve the pull request ."
+        "description": "All selected reviewers have to approve the pull request .",
+        "failed": "This pull request was not approved by all reviewers.",
+        "success": "This pull request was approved by all reviewers."
       },
       "AllTasksDoneRule": {
         "name": "All tasks done",
-        "description": "All tasks of the pull requests have to be done."
+        "description": "All tasks of the pull requests have to be done.",
+        "failed": "There are open tasks for this pull request.",
+        "success": "All tasks for this pull request are done."
       }
     }
   }

@@ -27,7 +27,6 @@ import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
-import org.assertj.core.api.Fail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import sonia.scm.repository.Repository;
@@ -78,7 +77,7 @@ class EngineTest {
 
     @Override
     public Result validate(Context context) {
-      return Result.success();
+      return success();
     }
   }
 

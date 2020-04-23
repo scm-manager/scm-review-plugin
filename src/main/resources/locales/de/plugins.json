@@ -292,7 +292,15 @@
       },
       "deleteRule": "Regel entfernen",
       "noMoreRulesAvailable": "Keine weiteren Regeln verfügbar.",
-      "noRulesConfigured": "Es wurden noch keine Regeln definiert."
+      "noRulesConfigured": "Es wurden noch keine Regeln definiert.",
+      "statusbar": {
+        "rules": "{{count}} Regeln definiert",
+        "failedRules": "{{count}} Regeln nicht erfüllt"
+      },
+      "modal": {
+        "failedTitle": "{{count}} Regeln nicht erfüllt",
+        "successTitle": "Alle Regeln erfüllt"
+      }
     }
   },
   "permissions": {
@@ -371,11 +379,15 @@
     "rule": {
       "AllReviewerApprovedRule": {
         "name": "Alle Reviewer zugestimmt",
-        "description": "Es müssen alle eingetragenen Reviewer dem Pull Request zustimmen."
+        "description": "Es müssen alle eingetragenen Reviewer dem Pull Request zustimmen.",
+        "failed": "Es stimmen nicht alle eingetragenen Reviewer dem Pull Request zu.",
+        "success": "Alle eingetragenen Reviewer stimmen dem Pull Request zu."
       },
       "AllTasksDoneRule": {
         "name": "Alle Aufgaben erledigt",
-        "description": "Es müssen alle Aufgaben des Pull Requests erledigt sein."
+        "description": "Es müssen alle Aufgaben des Pull Requests erledigt sein.",
+        "failed": "Es gibt noch offene Aufgaben am Pull Request.",
+        "success": "Alle Aufgaben am Pull Request wurden erledigt."
       }
     }
   }

@@ -79,7 +79,7 @@ public class WorkflowMergeGuard implements MergeGuard {
 
     @Override
     public String getKey() {
-      return "workflow.rule." + ruleMessageKey + ".failureMessage";
+      return "workflow.rule." + ruleMessageKey + ".failed";
     }
 
     @Override

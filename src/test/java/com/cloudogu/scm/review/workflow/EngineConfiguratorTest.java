@@ -25,16 +25,13 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.TempDirectory;
-import sonia.scm.store.ConfigurationEntryStore;
 import sonia.scm.store.ConfigurationStore;
-import sonia.scm.store.InMemoryConfigurationStore;
 
 import javax.inject.Inject;
 import javax.xml.bind.JAXB;
@@ -42,8 +39,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
+import static com.cloudogu.scm.review.workflow.Result.success;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.in;
 
 @ExtendWith(TempDirectory.class)
 class EngineConfiguratorTest {
@@ -116,7 +113,7 @@ class EngineConfiguratorTest {
   public static class ResultService {
 
     public Result getResult() {
-      return Result.success();
+      return success(Rule.class);
     }
   }
 }

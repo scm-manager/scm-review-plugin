@@ -35,8 +35,8 @@ public final class Result {
     this.rule = rule;
   }
 
-  public static Result success() {
-    return new Result(false, null);
+  public static Result success(Class<? extends Rule> rule) {
+    return new Result(false, rule);
   }
 
   public static Result failed(Class<? extends Rule> rule) {

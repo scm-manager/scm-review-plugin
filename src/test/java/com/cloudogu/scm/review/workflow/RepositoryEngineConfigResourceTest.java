@@ -25,7 +25,6 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.google.common.collect.ImmutableList;
-import lombok.Getter;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -46,7 +45,6 @@ import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -203,7 +201,7 @@ class RepositoryEngineConfigResourceTest {
 
     @Override
     public Result validate(Context context) {
-      return Result.success();
+      return Result.success(Rule.class);
     }
   }
 }

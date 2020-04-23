@@ -50,6 +50,7 @@ import SubscriptionContainer from "./SubscriptionContainer";
 import ReviewerList from "./ReviewerList";
 import ChangeNotification from "./ChangeNotification";
 import ReducedMarkdownView from "./ReducedMarkdownView";
+import Statusbar from "./workflow/Statusbar";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -384,6 +385,7 @@ class PullRequestDetails extends React.Component<Props, State> {
               pullRequest
             }}
           />
+          <Statusbar pullRequest={pullRequest} />
           {description}
 
           <UserList className="media">
