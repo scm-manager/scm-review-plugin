@@ -24,6 +24,10 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import sonia.scm.plugin.PluginLoader;
+
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Set;
@@ -31,31 +35,40 @@ import java.util.stream.Collectors;
 
 public class AvailableRules {
 
-  private final Set<Rule> availableRules;
+  private final Set<Class<? extends Rule>> rules;
 
   @Inject
-  public AvailableRules(Set<Rule> availableRules) {
-    this.availableRules = availableRules;
+  public AvailableRules(PluginLoader pluginLoader) {
+    this(pluginLoader.getExtensionProcessor().byExtensionPoint(Rule.class));
+  }
+
+  private AvailableRules(Iterable<Class<? extends Rule>> rules) {
+    this.rules = ImmutableSet.copyOf(rules);
+  }
+
+  @SafeVarargs
+  @VisibleForTesting
+  static AvailableRules of(Class<? extends Rule>... rules) {
+    return new AvailableRules(ImmutableSet.copyOf(rules));
   }
 
   public List<String> getRuleNames() {
-    return availableRules.stream().map(this::nameOf).collect(Collectors.toList());
+    return rules.stream().map(AvailableRules::nameOf).collect(Collectors.toList());
   }
 
   public Class<? extends Rule> classOf(String name) {
     // TODO create UnknownRuleException or something ...
-    return availableRules.stream()
-      .map(Rule::getClass)
+    return rules.stream()
       .filter(ruleClass -> ruleClass.getSimpleName().equals(name))
       .findFirst()
       .orElseThrow(() -> new RuleConfigurationException("unknown rule: " + name));
   }
 
-  public String nameOf(Rule rule) {
+  public static String nameOf(Rule rule) {
     return nameOf(rule.getClass());
   }
 
-  public String nameOf(Class<? extends Rule> ruleClass) {
+  public static String nameOf(Class<? extends Rule> ruleClass) {
     return ruleClass.getSimpleName();
   }
 

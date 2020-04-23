@@ -27,6 +27,8 @@ import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
+import org.assertj.core.api.Fail;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
@@ -39,26 +41,33 @@ class EngineTest {
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
   private static final PullRequest PULL_REQUEST = TestData.createPullRequest();
 
+  private Engine engine;
+
+  @BeforeEach
+  void setupEngine() {
+    InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
+    AvailableRules rules = AvailableRules.of(SuccessRule.class, FailedRule.class);
+    engine = new Engine(Guice.createInjector(), rules, storeFactory);
+  }
+
   @Test
   void shouldReturnSuccess() {
-    final InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
-
-    Engine engine = new Engine(Guice.createInjector(), storeFactory);
     EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.setEngineConfiguration(new EngineConfiguration(ImmutableList.of(SuccessRule.class), true));
+    configurator.setEngineConfiguration(config(SuccessRule.class));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
     assertThat(result.isValid()).isTrue();
   }
 
+  private EngineConfiguration config(Class<? extends Rule> rule) {
+    return new EngineConfiguration(ImmutableList.of(rule.getSimpleName()), true);
+  }
+
   @Test
   void shouldReturnFailed() {
-    InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
-
-    Engine engine = new Engine(Guice.createInjector(), storeFactory);
     EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.setEngineConfiguration(new EngineConfiguration(ImmutableList.of(FailedRule.class), true));
+    configurator.setEngineConfiguration(config(FailedRule.class));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 

@@ -25,33 +25,77 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.TempDirectory;
+import sonia.scm.store.ConfigurationEntryStore;
+import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.InMemoryConfigurationStore;
 
 import javax.inject.Inject;
+import javax.xml.bind.JAXB;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 
+@ExtendWith(TempDirectory.class)
 class EngineConfiguratorTest {
+
+  private EngineConfigurator configurator;
+
+  @BeforeEach
+  void setupStore(@TempDirectory.TempDir Path directory) {
+    Injector injector = Guice.createInjector();
+    AvailableRules availableRules = AvailableRules.of(RuleWithInjection.class);
+    ConfigurationStore<EngineConfiguration> store = new SimpleJaxbStore(directory.resolve("store.xml").toFile());
+
+    configurator = new EngineConfigurator(injector, availableRules, store);
+  }
 
   @Test
   void shouldCreateRuleWithInjection() {
-    EngineConfigurator configurator = new EngineConfigurator(Guice.createInjector(), new InMemoryConfigurationStore<>());
-    configurator.setEngineConfiguration(new EngineConfiguration(ImmutableList.of(RuleWithInjection.class), true));
+    configurator.setEngineConfiguration(config(true));
     List<Rule> rules = configurator.getRules();
 
     assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
   }
 
+  private EngineConfiguration config(boolean enabled) {
+    return new EngineConfiguration(ImmutableList.of(RuleWithInjection.class.getSimpleName()), enabled);
+  }
+
   @Test
   void shouldReturnEmptyListIfEngineDisabled() {
-    EngineConfigurator configurator = new EngineConfigurator(Guice.createInjector(), new InMemoryConfigurationStore<>());
-    configurator.setEngineConfiguration(new EngineConfiguration(ImmutableList.of(RuleWithInjection.class), false));
+    configurator.setEngineConfiguration(config(false));
     List<Rule> rules = configurator.getRules();
 
     assertThat(rules.isEmpty()).isTrue();
+  }
+
+  public static class SimpleJaxbStore implements ConfigurationStore<EngineConfiguration> {
+
+    private final File file;
+
+    public SimpleJaxbStore(File file) {
+      this.file = file;
+    }
+
+    @Override
+    public EngineConfiguration get() {
+      return JAXB.unmarshal(file, EngineConfiguration.class);
+    }
+
+    @Override
+    public void set(EngineConfiguration object) {
+      JAXB.marshal(object, file);
+    }
   }
 
   public static class RuleWithInjection implements Rule {

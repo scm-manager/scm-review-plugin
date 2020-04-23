@@ -84,7 +84,7 @@ class RepositoryEngineConfigResourceTest {
   @BeforeEach
   void init() {
     RepositoryEngineConfigMapperImpl mapper = new RepositoryEngineConfigMapperImpl();
-    mapper.availableRules = new AvailableRules(Collections.singleton(new SimpleRule(1)));
+    mapper.availableRules = AvailableRules.of(SimpleRule.class);
     RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, engine, mapper, availableRules);
 
     dispatcher = new RestDispatcher();
@@ -126,7 +126,7 @@ class RepositoryEngineConfigResourceTest {
 
   @Test
   void shouldReturnConfigurationForRepository() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration(ImmutableList.of(SimpleRule.class), true));
+    when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SimpleRule.class)), true));
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
 
@@ -150,7 +150,7 @@ class RepositoryEngineConfigResourceTest {
 
   @Test
   void shouldReturnConfigurationForRepositoryWithUpdateLink() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration(ImmutableList.of(SimpleRule.class), true));
+    when(configurator.getEngineConfiguration()).thenReturn(new EngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SimpleRule.class)), true));
     when(subject.isPermitted("repository:writeWorkflowConfig:1")).thenReturn(true);
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
@@ -199,14 +199,7 @@ class RepositoryEngineConfigResourceTest {
     assertThat(response.getStatus()).isEqualTo(204);
   }
 
-  @Getter
   public static class SimpleRule implements Rule {
-
-    private final int count;
-
-    public SimpleRule(int count) {
-      this.count = count;
-    }
 
     @Override
     public Result validate(Context context) {

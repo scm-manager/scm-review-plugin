@@ -36,9 +36,6 @@ import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static de.otto.edison.hal.Link.link;
 
@@ -64,13 +61,5 @@ public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConf
   }
 
   public abstract EngineConfiguration map(RepositoryEngineConfigDto engineConfigurationDto);
-
-  List<String> mapClassToName(List<Class<? extends Rule>> classes) {
-    return classes.stream().filter(Objects::nonNull).map(availableRules::nameOf).collect(Collectors.toList());
-  }
-
-  List<Class<? extends Rule>> mapNameToClass(List<String> ruleNames) {
-    return ruleNames.stream().map(availableRules::classOf).collect(Collectors.toList());
-  }
 
 }

@@ -35,10 +35,12 @@ import java.util.stream.Collectors;
 public class EngineConfigurator {
 
   private final Injector injector;
+  private final AvailableRules availableRules;
   private final ConfigurationStore<EngineConfiguration> store;
 
-  EngineConfigurator(Injector injector, ConfigurationStore<EngineConfiguration> store) {
+  EngineConfigurator(Injector injector, AvailableRules availableRules, ConfigurationStore<EngineConfiguration> store) {
     this.injector = injector;
+    this.availableRules = availableRules;
     this.store = store;
   }
 
@@ -63,10 +65,10 @@ public class EngineConfigurator {
         .map(this::createRuleInstance)
         .collect(Collectors.toList()))
       .orElse(Collections.emptyList());
-
   }
 
-  private Rule createRuleInstance(Class<? extends Rule> aClass) {
-    return injector.getInstance(aClass);
+  private Rule createRuleInstance(String ruleName) {
+      Class<? extends Rule> ruleClass = availableRules.classOf(ruleName);
+      return injector.getInstance(ruleClass);
   }
 }

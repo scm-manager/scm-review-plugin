@@ -38,11 +38,13 @@ public final class Engine {
   private static final String STORE_NAME = "workflow-engine";
 
   private final Injector injector;
+  private final AvailableRules availableRules;
   private final ConfigurationStoreFactory storeFactory;
 
   @Inject
-  public Engine(Injector injector, ConfigurationStoreFactory storeFactory) {
+  public Engine(Injector injector, AvailableRules availableRules, ConfigurationStoreFactory storeFactory) {
     this.injector = injector;
+    this.availableRules = availableRules;
     this.storeFactory = storeFactory;
   }
 
@@ -61,7 +63,7 @@ public final class Engine {
         .withName(STORE_NAME)
         .forRepository(repository)
         .build();
-    return new EngineConfigurator(injector, store);
+    return new EngineConfigurator(injector, availableRules, store);
   }
 
 }
