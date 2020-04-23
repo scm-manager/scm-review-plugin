@@ -294,7 +294,8 @@
         "rules": "{{count}} rule",
         "rules_plural": "{{count}} rules",
         "failedRules": "{{count}} rule not fulfilled",
-        "failedRules_plural": "{{count}} rules not fulfilled"
+        "failedRules_plural": "{{count}} rules not fulfilled",
+        "noFailedRules": "All rules fulfilled"
       },
       "modal": {
         "failedTitle": "{{count}} rule not fulfilled",
