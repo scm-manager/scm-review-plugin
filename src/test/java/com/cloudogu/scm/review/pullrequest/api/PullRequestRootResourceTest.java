@@ -38,6 +38,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
+import com.cloudogu.scm.review.workflow.Engine;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
@@ -55,6 +56,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -143,6 +145,8 @@ public class PullRequestRootResourceTest {
   private CommentService commentService;
   @Mock
   private ChannelRegistry channelRegistry;
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private Engine engine;
 
   @InjectMocks
   private PullRequestMapperImpl mapper;
@@ -166,6 +170,7 @@ public class PullRequestRootResourceTest {
     dispatcher.addSingletonResource(pullRequestRootResource);
     lenient().when(repositoryServiceFactory.create(any(Repository.class))).thenReturn(repositoryService);
     lenient().when(userDisplayManager.get("reviewer")).thenReturn(Optional.of(DisplayUser.from(new User("reviewer", "reviewer", ""))));
+    lenient().when(engine.configure(repository).getEngineConfiguration().isEnabled()).thenReturn(false);
   }
 
   @Test

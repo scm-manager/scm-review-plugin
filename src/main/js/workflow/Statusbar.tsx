@@ -52,32 +52,60 @@ const PaddingRightIcon = styled(Icon)`
   padding-right: 0.5rem;
 `;
 
+const LoadingText = styled.span`
+  margin-left: 0.5rem;
+`;
+
+const LoadingStatusBar = () => {
+  const [t] = useTranslation("plugins");
+  return (
+    <Notification className={classNames("media", "notification is-grey-lighter")}>
+      <Icon className="fa-lg fa-spin" name="circle-notch" />
+      <LoadingText className="has-text-weight-bold">{t("scm-review-plugin.workflow.statusbar.loading")}</LoadingText>
+    </Notification>
+  );
+};
+
+const workflowLink = (pullRequest: PullRequest) => {
+  const link = pullRequest._links.workflowResult;
+  if (link) {
+    return (link as Link).href;
+  }
+};
+
 const Statusbar: FC<Props> = ({ pullRequest }) => {
   const [t] = useTranslation("plugins");
   const [error, setError] = useState<undefined | Error>(undefined);
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<Result[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-
-  const workflowResultHref = (pullRequest._links.workflowResult as Link).href;
+  const workflowResultHref = workflowLink(pullRequest);
 
   useEffect(() => {
-    apiClient
-      .get(workflowResultHref)
-      .then(r => r.json())
-      .then(r => {
-        setResult(r.results);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err);
-        setLoading(false);
-      });
+    // we need to check the link existence inside the hook,
+    // because hooks must be used unconditionally
+    if (workflowResultHref) {
+      apiClient
+        .get(workflowResultHref)
+        .then(r => r.json())
+        .then(r => {
+          setResult(r.results);
+          setLoading(false);
+        })
+        .catch(err => {
+          setError(err);
+          setLoading(false);
+        });
+    }
   }, [workflowResultHref]);
 
-  // no workflow rules configured
-  if (!loading && result?.length === 0) {
+  // engine not enabled or no rules defined
+  if (!workflowResultHref) {
     return null;
+  }
+
+  if (loading) {
+    return <LoadingStatusBar />;
   }
 
   if (error) {
@@ -108,9 +136,11 @@ const Statusbar: FC<Props> = ({ pullRequest }) => {
         </span>
         <AngleRight className="fas fa-angle-right" />
         <span>
-          {failedRules === 0 ? t("scm-review-plugin.workflow.statusbar.noFailedRules") : t("scm-review-plugin.workflow.statusbar.failedRules", {
-            count: failedRules
-          })}
+          {failedRules === 0
+            ? t("scm-review-plugin.workflow.statusbar.noFailedRules")
+            : t("scm-review-plugin.workflow.statusbar.failedRules", {
+                count: failedRules
+              })}
         </span>
       </Notification>
     </>

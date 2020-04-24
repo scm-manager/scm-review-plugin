@@ -298,7 +298,8 @@
         "rules_plural": "{{count}} Regeln definiert",
         "failedRules": "{{count}} Regel nicht erfüllt",
         "failedRules_plural": "{{count}} Regeln nicht erfüllt",
-        "noFailedRules": "Alle Regeln erfüllt"
+        "noFailedRules": "Alle Regeln erfüllt",
+        "loading": "Lade Workflow Engine Ergebnisse ..."
       },
       "modal": {
         "failedTitle": "{{count}} Regeln nicht erfüllt",
