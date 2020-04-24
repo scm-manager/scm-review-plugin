@@ -141,11 +141,15 @@ const MobileFlexButtonGroup = styled(ButtonGroup)`
 `;
 
 const UserList = styled.div`
-  margin-bottom: 1.5em;
+  margin-bottom: 1rem;
 `;
 
 const LevelWrapper = styled.div`
   flex-flow: row wrap;
+
+  & > * {
+    margin-top: 0.5rem;
+  }
 
   & > .level-right {
     margin-left: auto;
