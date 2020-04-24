@@ -295,7 +295,8 @@
         "rules_plural": "{{count}} rules",
         "failedRules": "{{count}} rule not fulfilled",
         "failedRules_plural": "{{count}} rules not fulfilled",
-        "noFailedRules": "All rules fulfilled"
+        "noFailedRules": "All rules fulfilled",
+        "loading": "Loading workflow engine results ..."
       },
       "modal": {
         "failedTitle": "{{count}} rule not fulfilled",
