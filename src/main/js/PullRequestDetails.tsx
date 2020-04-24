@@ -118,15 +118,26 @@ const ShortTag = styled(Tag).attrs(() => ({
   max-width: 25em;
 `;
 
+const RightMarginTitle = styled(Title)`
+  margin-right: 0.5rem !important;
+`;
+
 const TitleTag = styled(Tag).attrs((props: any) => ({
   className: "is-medium",
   color: props.color
 }))`
-  margin-left: 1em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 25em;
+  margin-top: 0.25rem;
+`;
+
+const MobileFlexButtonGroup = styled(ButtonGroup)`
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+
+    > .control:not(:last-child) {
+      margin-right: 0 !important;
+      margin-bottom: 0.75rem !important;
+    }
+  }
 `;
 
 const UserList = styled.div`
@@ -341,8 +352,11 @@ class PullRequestDetails extends React.Component<Props, State> {
         <ChangeNotification pullRequest={pullRequest} reload={this.props.fetchPullRequest} />
         <Container>
           <div className="media">
-            <UserField className="media-content">
-              <Title title={"#" + pullRequest.id + " " + pullRequest.title} />
+            <div className="media-content">
+              <RightMarginTitle
+                className="is-inline is-marginless"
+                title={"#" + pullRequest.id + " " + pullRequest.title}
+              />
               {totalTasks > 0 && (
                 <TitleTag
                   label={titleTagText}
@@ -350,12 +364,12 @@ class PullRequestDetails extends React.Component<Props, State> {
                   color={pullRequest.tasks.done < totalTasks ? "light" : "success"}
                 />
               )}
-            </UserField>
+            </div>
             <div className="media-right">
-              <ButtonGroup>
+              <MobileFlexButtonGroup>
                 {subscriptionButton}
                 {editButton}
-              </ButtonGroup>
+              </MobileFlexButtonGroup>
             </div>
           </div>
 
