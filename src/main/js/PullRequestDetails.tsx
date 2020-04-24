@@ -299,7 +299,7 @@ class PullRequestDetails extends React.Component<Props, State> {
         "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
       editButton = (
         <Button link={toEdit} title={t("scm-review-plugin.pullRequest.details.buttons.edit")} color="link is-outlined">
-          <Icon name="edit" color="inherit" />
+          <Icon name="edit fa-fw" color="inherit" />
         </Button>
       );
     }
