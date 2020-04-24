@@ -33,6 +33,8 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
+import com.cloudogu.scm.review.workflow.Engine;
+import com.cloudogu.scm.review.workflow.EngineConfiguration;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
@@ -78,10 +80,16 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Inject
   private PullRequestService pullRequestService;
+
   @Inject
   private CommentService commentService;
+
   @Inject
   private RepositoryServiceFactory serviceFactory;
+
+  @Inject
+  private Engine engine;
+
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
@@ -213,8 +221,13 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
         appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
     }
-    linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
+
+    EngineConfiguration configuration = engine.configure(repository).getEngineConfiguration();
+    if (configuration.isEnabled()) {
+      linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
+    }
+
     target.add(linksBuilder.build());
   }
 
