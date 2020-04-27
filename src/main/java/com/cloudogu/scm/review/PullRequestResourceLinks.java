@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.workflow.EngineResultResource;
+import com.cloudogu.scm.review.workflow.GlobalEngineConfigResource;
 import com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfo;
@@ -264,6 +265,33 @@ public class PullRequestResourceLinks {
 
     public String availableRules() {
       return workflowEngineConfigLinkBuilder
+        .method("getAvailableRules").parameters().href();
+    }
+  }
+
+  public WorkflowEngineGlobalConfigLinks workflowEngineGlobalConfigLinks() {
+    return new WorkflowEngineGlobalConfigLinks(scmPathInfo);
+  }
+
+  public static class WorkflowEngineGlobalConfigLinks {
+    private final LinkBuilder workflowEngineGlobalConfigLinkBuilder;
+
+    public WorkflowEngineGlobalConfigLinks(ScmPathInfo pathInfo) {
+      this.workflowEngineGlobalConfigLinkBuilder = new LinkBuilder(pathInfo, GlobalEngineConfigResource.class);
+    }
+
+    public String getConfig() {
+      return workflowEngineGlobalConfigLinkBuilder
+        .method("getGlobalEngineConfig").parameters().href();
+    }
+
+    public String setConfig() {
+      return workflowEngineGlobalConfigLinkBuilder
+        .method("setGlobalEngineConfig").parameters().href();
+    }
+
+    public String availableRules() {
+      return workflowEngineGlobalConfigLinkBuilder
         .method("getAvailableRules").parameters().href();
     }
   }

@@ -23,34 +23,33 @@
  */
 package com.cloudogu.scm.review.workflow;
 
-import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import sonia.scm.repository.Repository;
+import com.google.inject.Injector;
 
-import javax.inject.Inject;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public final class Engine {
+ public class EngineConfigurators {
 
-  private final RepositoryEngineConfigurator repositoryEngineConfigurator;
-  private final GlobalEngineConfigurator globalEngineConfigurator;
+   private EngineConfigurators() {
+   }
 
-  @Inject
-  public Engine(RepositoryEngineConfigurator repositoryEngineConfigurator, GlobalEngineConfigurator globalEngineConfigurator) {
-    this.repositoryEngineConfigurator = repositoryEngineConfigurator;
-    this.globalEngineConfigurator = globalEngineConfigurator;
+  public static List<Rule> getRules(Injector injector, AvailableRules availableRules, Optional<EngineConfiguration> configuration) {
+    if (configuration.isPresent() && !configuration.get().isEnabled()) {
+      return Collections.emptyList();
+    }
+
+    return configuration
+      .map(engineConfiguration -> engineConfiguration.getRules()
+        .stream()
+        .map(rule -> createRuleInstance(injector, availableRules, rule))
+        .collect(Collectors.toList()))
+      .orElse(Collections.emptyList());
   }
 
-  public Results validate(Repository repository, PullRequest pullRequest) {
-    List<Rule> rules;
-    if (repositoryEngineConfigurator.getEngineConfiguration(repository).isEnabled()) {
-      rules = repositoryEngineConfigurator.getRules(repository);
-    } else {
-      rules = globalEngineConfigurator.getRules();
-    }
-    Context context = new Context(repository, pullRequest);
-    List<Result> results = rules.stream().map(rule -> rule.validate(context)).collect(Collectors.toList());
-
-    return new Results(results);
+  private static Rule createRuleInstance(Injector injector, AvailableRules availableRules, String ruleName) {
+    Class<? extends Rule> ruleClass = availableRules.classOf(ruleName);
+    return injector.getInstance(ruleClass);
   }
 }

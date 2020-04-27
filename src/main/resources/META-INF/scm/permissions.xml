@@ -30,4 +30,10 @@
   <permission>
     <value>repository:readPullRequest,createPullRequest,commentPullRequest,mergePullRequest:*</value>
   </permission>
+  <permission>
+    <value>repository:readWorkflowConfig:*</value>
+  </permission>
+  <permission>
+    <value>repository:writeWorkflowConfig:*</value>
+  </permission>
 </permissions>

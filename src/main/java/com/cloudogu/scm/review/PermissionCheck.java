@@ -40,8 +40,8 @@ public final class PermissionCheck {
   public static final String MERGE_PULL_REQUEST = "mergePullRequest";
   public static final String CONFIGURE_PULL_REQUEST = "configurePullRequest";
   public static final String CONFIGURE_PERMISSION = "pullRequest";
-  public static final String READ_WORKFLOW_ENGINE_CONFIG = "readWorkflowConfig";
-  public static final String WRITE_WORKFLOW_ENGINE_CONFIG = "writeWorkflowConfig";
+  public static final String READ_WORKFLOW_CONFIG = "readWorkflowConfig";
+  public static final String WRITE_WORKFLOW_CONFIG = "writeWorkflowConfig";
 
   private PermissionCheck() {
   }
@@ -146,14 +146,34 @@ public final class PermissionCheck {
   }
 
   public static void checkReadEngineConfiguration(Repository repository) {
-    RepositoryPermissions.custom(READ_WORKFLOW_ENGINE_CONFIG, repository).check();
+    RepositoryPermissions.custom(READ_WORKFLOW_CONFIG, repository).check();
   }
 
   public static void checkWriteEngineConfiguration(Repository repository) {
-    RepositoryPermissions.custom(WRITE_WORKFLOW_ENGINE_CONFIG, repository).check();
+    RepositoryPermissions.custom(WRITE_WORKFLOW_CONFIG, repository).check();
+  }
+
+  public static boolean mayReadWorkflowEngine(Repository repository) {
+    return RepositoryPermissions.custom(READ_WORKFLOW_CONFIG, repository).isPermitted();
   }
 
   public static boolean mayConfigureWorkflowEngine(Repository repository) {
-    return RepositoryPermissions.custom(WRITE_WORKFLOW_ENGINE_CONFIG, repository).isPermitted();
+    return RepositoryPermissions.custom(WRITE_WORKFLOW_CONFIG, repository).isPermitted();
+  }
+
+  public static boolean mayReadGlobalWorkflowEngine() {
+    return ConfigurationPermissions.custom(READ_WORKFLOW_CONFIG).isPermitted();
+  }
+
+  public static boolean mayConfigureGlobalWorkflowEngine() {
+    return ConfigurationPermissions.custom(WRITE_WORKFLOW_CONFIG).isPermitted();
+  }
+
+  public static void checkReadWorkflowEngineGlobalConfig() {
+    ConfigurationPermissions.read(READ_WORKFLOW_CONFIG).check();
+  }
+
+  public static void checkWriteWorkflowEngineGlobalConfig() {
+    ConfigurationPermissions.write(WRITE_WORKFLOW_CONFIG).check();
   }
 }

@@ -24,6 +24,7 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.config.api.GlobalConfigResource;
+import com.cloudogu.scm.review.workflow.GlobalEngineConfigResource;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -56,6 +57,14 @@ public class IndexLinkEnricher implements HalEnricher {
         .href();
 
       appender.appendLink("pullRequestConfig", globalConfigUrl);
+    }
+    if (PermissionCheck.mayReadGlobalWorkflowEngine()) {
+      String globalEngineConfigUrl = new LinkBuilder(scmPathInfoStore.get().get(), GlobalEngineConfigResource.class)
+        .method("getGlobalEngineConfig")
+        .parameters()
+        .href();
+
+      appender.appendLink("workflowConfig", globalEngineConfigUrl);
     }
   }
 }

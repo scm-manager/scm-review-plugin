@@ -150,7 +150,6 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldEnrichWorkflowConfigLink() {
-    when(engine.configure(any(Repository.class)).getEngineConfiguration().isEnabled()).thenReturn(true);
     when(service.isSupported(Command.MERGE)).thenReturn(true);
     mockGlobalConfig(true);
 

@@ -31,7 +31,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.TempDirectory;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.ConfigurationStore;
+import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
 import javax.inject.Inject;
 import javax.xml.bind.JAXB;
@@ -42,23 +45,24 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(TempDirectory.class)
-class EngineConfiguratorTest {
+class RepositoryEngineConfiguratorTest {
 
-  private EngineConfigurator configurator;
+  private final Repository repository = RepositoryTestData.createHeartOfGold();
+
+  private RepositoryEngineConfigurator configurator;
 
   @BeforeEach
-  void setupStore(@TempDirectory.TempDir Path directory) {
+  void setupStore() {
     Injector injector = Guice.createInjector();
     AvailableRules availableRules = AvailableRules.of(RuleWithInjection.class);
-    ConfigurationStore<EngineConfiguration> store = new SimpleJaxbStore(directory.resolve("store.xml").toFile());
 
-    configurator = new EngineConfigurator(injector, availableRules, store);
+    configurator = new RepositoryEngineConfigurator(injector, availableRules, new InMemoryConfigurationStoreFactory());
   }
 
   @Test
   void shouldCreateRuleWithInjection() {
-    configurator.setEngineConfiguration(config(true));
-    List<Rule> rules = configurator.getRules();
+    configurator.setEngineConfiguration(repository, config(true));
+    List<Rule> rules = configurator.getRules(repository);
 
     assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
   }
@@ -69,29 +73,10 @@ class EngineConfiguratorTest {
 
   @Test
   void shouldReturnEmptyListIfEngineDisabled() {
-    configurator.setEngineConfiguration(config(false));
-    List<Rule> rules = configurator.getRules();
+    configurator.setEngineConfiguration(repository, config(false));
+    List<Rule> rules = configurator.getRules(repository);
 
     assertThat(rules.isEmpty()).isTrue();
-  }
-
-  public static class SimpleJaxbStore implements ConfigurationStore<EngineConfiguration> {
-
-    private final File file;
-
-    public SimpleJaxbStore(File file) {
-      this.file = file;
-    }
-
-    @Override
-    public EngineConfiguration get() {
-      return JAXB.unmarshal(file, EngineConfiguration.class);
-    }
-
-    @Override
-    public void set(EngineConfiguration object) {
-      JAXB.marshal(object, file);
-    }
   }
 
   public static class RuleWithInjection implements Rule {

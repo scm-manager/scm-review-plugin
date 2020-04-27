@@ -301,6 +301,13 @@
         "failedTitle": "{{count}} rule not fulfilled",
         "failedTitle_plural": "{{count}} rules not fulfilled",
         "successTitle": "All rules fulfilled"
+      },
+      "disableRepositoryConfiguration": {
+        "label": "Do not allow repository configuration",
+        "helpText": "Do not allow repository owners to configure the workflow engine."
+      },
+      "globalConfig": {
+        "title": "Workflow Engine"
       }
     }
   },
@@ -322,6 +329,18 @@
         "*": {
           "displayName": "Configure all pull requests",
           "description": "May configure pull requests for all repositories"
+        }
+      },
+      "readWorkflowConfig": {
+        "*": {
+          "displayName": "Read workflow engine configuration",
+          "description": "May see workflow engine configuration for all repositories"
+        }
+      },
+      "writeWorkflowConfig": {
+        "*": {
+          "displayName": "Configure workflow engine configuration",
+          "description": "May configure workflow engine configuration for all repositories"
         }
       }
     }
@@ -351,6 +370,14 @@
       "configurePullRequest": {
         "displayName": "configure pull requests",
         "description": "May configure pull requests for this repository"
+      },
+      "readWorkflowConfig": {
+        "displayName": "read workflow engine configuration",
+        "description": "May read the workflow engine for this repository"
+      },
+      "writeWorkflowConfig": {
+        "displayName": "write workflow engine configuration",
+        "description": "May configure the workflow engine for this repository"
       }
     }
   },

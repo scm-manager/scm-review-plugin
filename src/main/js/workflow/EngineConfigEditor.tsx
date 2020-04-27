@@ -151,7 +151,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
     <>
       {global && (
         <>
-          <Title title={t("scm-review-plugin.engineConfig.title")} />
+          <Title title={t("scm-review-plugin.workflow.globalConfig.title")} />
           <Checkbox
             checked={!!config.disableRepositoryConfiguration}
             onChange={onChangeDisableRepositoryConfiguration}

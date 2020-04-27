@@ -26,47 +26,52 @@ package com.cloudogu.scm.review.workflow;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Guice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
-import sonia.scm.store.InMemoryConfigurationStoreFactory;
+
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EngineTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
   private static final PullRequest PULL_REQUEST = TestData.createPullRequest();
 
-  private Engine engine;
+  @Mock
+  private RepositoryEngineConfigurator repositoryEngineConfigurator;
 
-  @BeforeEach
-  void setupEngine() {
-    InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
-    AvailableRules rules = AvailableRules.of(SuccessRule.class, FailedRule.class);
-    engine = new Engine(Guice.createInjector(), rules, storeFactory);
-  }
+  @InjectMocks
+  private Engine engine;
 
   @Test
   void shouldReturnSuccess() {
-    EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.setEngineConfiguration(config(SuccessRule.class));
+    EngineConfiguration config = createConfig();
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(config);
+    when(repositoryEngineConfigurator.getRules(REPOSITORY)).thenReturn(ImmutableList.of(new SuccessRule()));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
     assertThat(result.isValid()).isTrue();
   }
 
-  private EngineConfiguration config(Class<? extends Rule> rule) {
-    return new EngineConfiguration(ImmutableList.of(rule.getSimpleName()), true);
+  private EngineConfiguration createConfig() {
+    return new EngineConfiguration(Collections.emptyList(), true);
   }
 
   @Test
   void shouldReturnFailed() {
-    EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.setEngineConfiguration(config(FailedRule.class));
+    EngineConfiguration config = createConfig();
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(config);
+    when(repositoryEngineConfigurator.getRules(REPOSITORY)).thenReturn(ImmutableList.of(new FailedRule()));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
@@ -88,5 +93,4 @@ class EngineTest {
       return failed();
     }
   }
-
 }
