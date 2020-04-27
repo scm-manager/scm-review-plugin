@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.inject.Injector;
+import sonia.scm.plugin.PluginLoader;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
@@ -40,18 +41,25 @@ public final class Engine {
   private final Injector injector;
   private final AvailableRules availableRules;
   private final ConfigurationStoreFactory storeFactory;
+  private final ClassLoader uberClassLoader;
 
   @Inject
-  public Engine(Injector injector, AvailableRules availableRules, ConfigurationStoreFactory storeFactory) {
+  public Engine(Injector injector, AvailableRules availableRules, ConfigurationStoreFactory storeFactory, PluginLoader pluginLoader) {
     this.injector = injector;
     this.availableRules = availableRules;
     this.storeFactory = storeFactory;
+    this.uberClassLoader = pluginLoader.getUberClassLoader();
   }
 
   public Results validate(Repository repository, PullRequest pullRequest) {
-    List<Rule> rules = configure(repository).getRules();
-    Context context = new Context(repository, pullRequest);
-    List<Result> results = rules.stream().map(rule -> rule.validate(context)).collect(Collectors.toList());
+    List<EngineConfigurator.RuleInstance> rules = configure(repository).getRules();
+    List<Result> results = rules
+      .stream()
+      .map(ruleInstance -> {
+        Context context = new Context(repository, pullRequest, ruleInstance.getConfiguration());
+        return ruleInstance.getRule().validate(context);
+      })
+      .collect(Collectors.toList());
 
     return new Results(results);
   }
@@ -63,7 +71,7 @@ public final class Engine {
         .withName(STORE_NAME)
         .forRepository(repository)
         .build();
-    return new EngineConfigurator(injector, availableRules, store);
+    return new EngineConfigurator(injector, availableRules, store, uberClassLoader);
   }
 
 }

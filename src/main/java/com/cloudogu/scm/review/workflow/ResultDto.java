@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,4 +35,10 @@ import lombok.NoArgsConstructor;
 public class ResultDto {
   private String rule;
   private boolean failed;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private Object context;
+
+  ResultDto(String rule, boolean failed) {
+    this(rule, failed, null);
+  }
 }

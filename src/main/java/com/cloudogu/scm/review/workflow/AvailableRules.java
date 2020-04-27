@@ -35,20 +35,16 @@ import java.util.stream.Collectors;
 
 public class AvailableRules {
 
-  private final Set<Class<? extends Rule>> rules;
+  private final Set<Rule> rules;
 
   @Inject
-  public AvailableRules(PluginLoader pluginLoader) {
-    this(pluginLoader.getExtensionProcessor().byExtensionPoint(Rule.class));
-  }
-
-  private AvailableRules(Iterable<Class<? extends Rule>> rules) {
-    this.rules = ImmutableSet.copyOf(rules);
+  public AvailableRules(Set<Rule> rules) {
+    this.rules = rules;
   }
 
   @SafeVarargs
   @VisibleForTesting
-  static AvailableRules of(Class<? extends Rule>... rules) {
+  static AvailableRules of(Rule... rules) {
     return new AvailableRules(ImmutableSet.copyOf(rules));
   }
 
@@ -59,7 +55,15 @@ public class AvailableRules {
   public Class<? extends Rule> classOf(String name) {
     // TODO create UnknownRuleException or something ...
     return rules.stream()
+      .map(Rule::getClass)
       .filter(ruleClass -> ruleClass.getSimpleName().equals(name))
+      .findFirst()
+      .orElseThrow(() -> new RuleConfigurationException("unknown rule: " + name));
+  }
+
+  public Rule ruleOf(String name) {
+    return rules.stream()
+      .filter(rule -> rule.getClass().getSimpleName().equals(name))
       .findFirst()
       .orElseThrow(() -> new RuleConfigurationException("unknown rule: " + name));
   }

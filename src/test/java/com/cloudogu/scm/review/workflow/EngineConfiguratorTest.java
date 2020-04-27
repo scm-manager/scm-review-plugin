@@ -27,6 +27,9 @@ package com.cloudogu.scm.review.workflow;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,9 +38,11 @@ import sonia.scm.store.ConfigurationStore;
 
 import javax.inject.Inject;
 import javax.xml.bind.JAXB;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,28 +54,45 @@ class EngineConfiguratorTest {
   @BeforeEach
   void setupStore(@TempDirectory.TempDir Path directory) {
     Injector injector = Guice.createInjector();
-    AvailableRules availableRules = AvailableRules.of(RuleWithInjection.class);
+    AvailableRules availableRules = AvailableRules.of(new RuleWithInjection(new ResultService()), new RuleWithConfiguration());
     ConfigurationStore<EngineConfiguration> store = new SimpleJaxbStore(directory.resolve("store.xml").toFile());
 
-    configurator = new EngineConfigurator(injector, availableRules, store);
+    configurator = new EngineConfigurator(injector, availableRules, store, getClass().getClassLoader());
   }
 
   @Test
-  void shouldCreateRuleWithInjection() {
+  void shouldCreateRule() {
     configurator.setEngineConfiguration(config(true));
-    List<Rule> rules = configurator.getRules();
+    List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
 
-    assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
+    final Rule ruleWithInjection = rules.get(0).getRule();
+    assertThat(ruleWithInjection.getClass()).isEqualTo(RuleWithInjection.class);
+    assertThat(ruleWithInjection.validate(null).isSuccess()).isTrue();
+  }
+
+  @Test
+  void shouldCreateConfiguredRule() {
+    configurator.setEngineConfiguration(config(true));
+    List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
+
+    final EngineConfigurator.RuleInstance ruleInstance = rules.get(1);
+    final Rule ruleWithConfiguration = ruleInstance.getRule();
+    assertThat(ruleWithConfiguration.getClass()).isEqualTo(RuleWithConfiguration.class);
+    assertThat(ruleWithConfiguration.validate(new Context(null, null, ruleInstance.getConfiguration())).isSuccess()).isTrue();
   }
 
   private EngineConfiguration config(boolean enabled) {
-    return new EngineConfiguration(ImmutableList.of(RuleWithInjection.class.getSimpleName()), enabled);
+    return new EngineConfiguration(
+      ImmutableList.of(
+        new AppliedRule(RuleWithInjection.class.getSimpleName()),
+        new AppliedRule(RuleWithConfiguration.class.getSimpleName(), new TestConfiguration(42))
+      ), enabled);
   }
 
   @Test
   void shouldReturnEmptyListIfEngineDisabled() {
     configurator.setEngineConfiguration(config(false));
-    List<Rule> rules = configurator.getRules();
+    List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
 
     assertThat(rules.isEmpty()).isTrue();
   }
@@ -92,6 +114,26 @@ class EngineConfiguratorTest {
     public void set(EngineConfiguration object) {
       JAXB.marshal(object, file);
     }
+  }
+
+  public static class RuleWithConfiguration implements Rule {
+    @Override
+    public Optional<Class<?>> getConfigurationType() {
+      return Optional.of(TestConfiguration.class);
+    }
+
+    @Override
+    public Result validate(Context context) {
+      return ((TestConfiguration) context.getConfiguration()).number == 42 ? success() : failed();
+    }
+  }
+
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @XmlRootElement
+  public static class TestConfiguration {
+    int number;
   }
 
   public static class RuleWithInjection implements Rule {

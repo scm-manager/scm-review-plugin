@@ -70,7 +70,7 @@ const ModalRow: FC<Props> = ({ result }) => {
         <strong>{t("workflow.rule." + result?.rule + ".name")}</strong>
       </Left>
       <Right>
-        <p>{t("workflow.rule." + result?.rule + (result.failed ? ".failed" : ".success"))}</p>
+        <p>{t("workflow.rule." + result?.rule + (result.failed ? ".failed" : ".success"), result?.context)}</p>
       </Right>
     </Entry>
   );

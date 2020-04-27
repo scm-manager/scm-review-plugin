@@ -22,31 +22,22 @@
  * SOFTWARE.
  */
 
-import { Links } from "@scm-manager/ui-types";
+package com.cloudogu.scm.review.workflow;
 
-export type EngineConfiguration = {
-  disableRepositoryConfiguration?: boolean;
-  enabled: boolean;
-  rules: AppliedRule[];
-  _links: Links;
-};
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import java.util.Set;
 
-export type Result = {
-  rule: string;
-  failed: boolean;
-  context?: any;
-};
-
-export type AppliedRule = {
-  rule: string;
-  configuration: any;
-};
-
-export type AvailableRules = {
-  rules: Rule[];
-}
-
-export type Rule = {
-  name: string;
-  applicableMultipleTimes: boolean;
+public class ConfigurationValidator {
+  void validate(Object configuration) {
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    Validator validator = factory.getValidator();
+    Set<ConstraintViolation<Object>> violations = validator.validate(configuration);
+    if (!violations.isEmpty()) {
+      throw new ConstraintViolationException(violations);
+    }
+  }
 }

@@ -40,7 +40,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EngineConfiguration {
-  private List<String> rules = new ArrayList<>();
+  private List<AppliedRule> rules = new ArrayList<>();
   @Setter
   private boolean enabled;
+
 }

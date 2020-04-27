@@ -22,31 +22,28 @@
  * SOFTWARE.
  */
 
-import { Links } from "@scm-manager/ui-types";
+package com.cloudogu.scm.review.workflow;
 
-export type EngineConfiguration = {
-  disableRepositoryConfiguration?: boolean;
-  enabled: boolean;
-  rules: AppliedRule[];
-  _links: Links;
-};
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-export type Result = {
-  rule: string;
-  failed: boolean;
-  context?: any;
-};
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-export type AppliedRule = {
-  rule: string;
-  configuration: any;
-};
+@XmlAccessorType(XmlAccessType.FIELD)
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+public class AppliedRule {
+  String rule;
+  @XmlJavaTypeAdapter(XmlConfiguration.RuleConfigurationXmlAdapter.class)
+  Object configuration;
 
-export type AvailableRules = {
-  rules: Rule[];
-}
-
-export type Rule = {
-  name: string;
-  applicableMultipleTimes: boolean;
+  public AppliedRule(String rule) {
+    this(rule, null);
+  }
 }

@@ -46,19 +46,32 @@ public class AllTasksDoneRule implements Rule {
 
   @Override
   public Result validate(Context context) {
-    if (hasOpenTasks(context)) {
-      return failed();
+    int openTaskCount = countOpenTasks(context);
+    if (openTaskCount > 0) {
+      return failed(new ResultContext(openTaskCount));
     }
     return success();
   }
 
-  private boolean hasOpenTasks(Context context) {
-    return getComments(context).stream().anyMatch(c -> c.getType() == CommentType.TASK_TODO);
+  private int countOpenTasks(Context context) {
+    return (int) getComments(context).stream().filter(c -> c.getType() == CommentType.TASK_TODO).count();
   }
 
   private List<Comment> getComments(Context context) {
     Repository repository = context.getRepository();
     PullRequest pullRequest = context.getPullRequest();
     return commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId());
+  }
+
+  private static class ResultContext {
+    private final int count;
+
+    private ResultContext(int count) {
+      this.count = count;
+    }
+
+    public int getCount() {
+      return count;
+    }
   }
 }

@@ -29,11 +29,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import sonia.scm.plugin.PluginLoader;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class EngineTest {
 
@@ -45,8 +47,9 @@ class EngineTest {
   @BeforeEach
   void setupEngine() {
     InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
-    AvailableRules rules = AvailableRules.of(SuccessRule.class, FailedRule.class);
-    engine = new Engine(Guice.createInjector(), rules, storeFactory);
+    AvailableRules rules = AvailableRules.of(new SuccessRule(), new FailedRule());
+    PluginLoader pluginLoader = mock(PluginLoader.class);
+    engine = new Engine(Guice.createInjector(), rules, storeFactory, pluginLoader);
   }
 
   @Test
@@ -60,7 +63,7 @@ class EngineTest {
   }
 
   private EngineConfiguration config(Class<? extends Rule> rule) {
-    return new EngineConfiguration(ImmutableList.of(rule.getSimpleName()), true);
+    return new EngineConfiguration(ImmutableList.of(new AppliedRule(rule.getSimpleName(), null)), true);
   }
 
   @Test

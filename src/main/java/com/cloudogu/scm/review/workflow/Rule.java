@@ -25,14 +25,38 @@ package com.cloudogu.scm.review.workflow;
 
 import sonia.scm.plugin.ExtensionPoint;
 
+import java.util.Optional;
+
+/**
+ * Each {@link Rule} class implementation defines a type of workflow rule.<br>
+ * <br>
+ * Rules applied to your repositories are represented by {@link AppliedRule}s<br>
+ * to support multiple {@link Rule}s of the same type with distinct configuration.
+ */
 @ExtensionPoint
 public interface Rule {
 
-  Result validate(Context context);
-
+  /**
+   * Whether this {@link Rule} allows multiple {@link AppliedRule}s to be created or only one.
+   */
   default boolean isApplicableMultipleTimes() {
     return false;
   }
+
+  /**
+   * If a {@link Rule} is configurable, {@link #getConfigurationType()} describes the type of configuration.
+   * The returned class has to be a serializable {@link javax.xml.bind.annotation.XmlRootElement}.
+   */
+  default Optional<Class<?>> getConfigurationType() {
+    return Optional.empty();
+  }
+
+  /**
+   * Implement this method to describe the concrete logic of your {@link Rule}.
+   *
+   * If the {@link Rule} is configurable, the {@link AppliedRule}'s configuration is passed as part of the context.
+   */
+  Result validate(Context context);
 
   default Result success() {
     return Result.success(getClass());
@@ -41,4 +65,9 @@ public interface Rule {
   default Result failed() {
     return Result.failed(getClass());
   }
+
+  default Result failed(Object context) {
+    return Result.failed(getClass(), context);
+  }
+
 }

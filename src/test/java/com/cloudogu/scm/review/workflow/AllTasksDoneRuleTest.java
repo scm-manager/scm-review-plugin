@@ -59,14 +59,14 @@ class AllTasksDoneRuleTest {
   @Test
   void shouldReturnSuccess() {
     setUpCommentService(CommentType.COMMENT, CommentType.TASK_DONE);
-    Result result = rule.validate(new Context(repository, pullRequest));
+    Result result = rule.validate(new Context(repository, pullRequest, null));
     assertThat(result.isFailed()).isFalse();
   }
 
   @Test
   void shouldReturnFailed() {
     setUpCommentService(CommentType.COMMENT, CommentType.TASK_TODO, CommentType.TASK_DONE);
-    Result result = rule.validate(new Context(repository, pullRequest));
+    Result result = rule.validate(new Context(repository, pullRequest, null));
     assertThat(result.isFailed()).isTrue();
   }
 

@@ -29,10 +29,16 @@ import lombok.Getter;
 public final class Result {
   private final boolean failed;
   private final Class<? extends Rule> rule;
+  private final Object context;
 
   private Result(boolean failed, Class<? extends Rule> rule) {
+    this(failed, rule, null);
+  }
+
+  private Result(boolean failed, Class<? extends Rule> rule, Object context) {
     this.failed = failed;
     this.rule = rule;
+    this.context = context;
   }
 
   public static Result success(Class<? extends Rule> rule) {
@@ -41,6 +47,10 @@ public final class Result {
 
   public static Result failed(Class<? extends Rule> rule) {
     return new Result(true, rule);
+  }
+
+  public static Result failed(Class<? extends Rule> rule, Object context) {
+    return new Result(true, rule, context);
   }
 
   public boolean isSuccess() {

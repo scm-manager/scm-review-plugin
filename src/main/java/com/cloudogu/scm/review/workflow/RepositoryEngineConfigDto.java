@@ -38,14 +38,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RepositoryEngineConfigDto extends HalRepresentation {
-  private List<String> rules;
+  private List<AppliedRuleDto> rules;
   private boolean enabled;
 
   public RepositoryEngineConfigDto(Links links) {
     super(links);
   }
 
-  public RepositoryEngineConfigDto(Links links, List<String> rules, boolean enabled) {
+  public RepositoryEngineConfigDto(Links links, List<AppliedRuleDto> rules, boolean enabled) {
     this(links);
     this.rules = rules;
     this.enabled = enabled;

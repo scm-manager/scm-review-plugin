@@ -22,31 +22,28 @@
  * SOFTWARE.
  */
 
-import { Links } from "@scm-manager/ui-types";
+package com.cloudogu.scm.review.workflow;
 
-export type EngineConfiguration = {
-  disableRepositoryConfiguration?: boolean;
-  enabled: boolean;
-  rules: AppliedRule[];
-  _links: Links;
-};
+public enum RuleFieldType {
+  STRING {
+    @Override
+    boolean validate(String input) {
+      return false;
+    }
+  },
+  FLOAT {
+    @Override
+    boolean validate(String input) {
+      return false;
+    }
+  },
+  INT {
+    @Override
+    boolean validate(String input) {
+      return false;
+    }
+  };
 
-export type Result = {
-  rule: string;
-  failed: boolean;
-  context?: any;
-};
+  abstract boolean validate(String input);
 
-export type AppliedRule = {
-  rule: string;
-  configuration: any;
-};
-
-export type AvailableRules = {
-  rules: Rule[];
-}
-
-export type Rule = {
-  name: string;
-  applicableMultipleTimes: boolean;
 }
