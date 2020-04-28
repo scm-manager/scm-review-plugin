@@ -51,8 +51,10 @@ public abstract class GlobalEngineConfigMapper extends BaseMapper<GlobalEngineCo
     final Links.Builder linksBuilder = new Links.Builder();
     PullRequestResourceLinks.WorkflowEngineGlobalConfigLinks workflowEngineGlobalConfigLinks = new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineGlobalConfigLinks();
     linksBuilder.self(workflowEngineGlobalConfigLinks.getConfig());
-    if (PermissionCheck.mayConfigureGlobalWorkflowEngine()) {
+    if (PermissionCheck.mayConfigureGlobalWorkflowConfig()) {
       linksBuilder.single(link("update", workflowEngineGlobalConfigLinks.setConfig()));
+    }
+    if (PermissionCheck.mayReadGlobalWorkflowConfig() || PermissionCheck.mayConfigureGlobalWorkflowConfig()) {
       linksBuilder.single(link("availableRules", workflowEngineGlobalConfigLinks.availableRules()));
     }
     return new GlobalEngineConfigDto(linksBuilder.build());

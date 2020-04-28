@@ -333,6 +333,14 @@
           "description": "May configure pull requests for all repositories"
         }
       }
+    },
+    "configuration": {
+      "read,write": {
+        "workflowConfig": {
+          "displayName": "Workflow Engine konfigurieren",
+          "description": "Darf die globale Workflow Engine für alle Repositorys konfigurieren"
+        }
+      }
     }
   },
   "verbs": {

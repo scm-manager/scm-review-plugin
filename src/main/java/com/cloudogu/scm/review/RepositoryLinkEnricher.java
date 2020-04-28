@@ -44,8 +44,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import static com.cloudogu.scm.review.PermissionCheck.mayConfigure;
+import static com.cloudogu.scm.review.PermissionCheck.mayConfigureWorkflowConfig;
 import static com.cloudogu.scm.review.PermissionCheck.mayRead;
-import static com.cloudogu.scm.review.PermissionCheck.mayReadWorkflowEngine;
+import static com.cloudogu.scm.review.PermissionCheck.mayReadWorkflowConfig;
 
 @Extension
 @Enrich(Repository.class)
@@ -77,7 +78,7 @@ public class RepositoryLinkEnricher implements HalEnricher {
           LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryConfigResource.class);
           appender.appendLink("pullRequestConfig", linkBuilder.method("getRepositoryConfig").parameters(repository.getNamespace(), repository.getName()).href());
         }
-        if (mayReadWorkflowEngine(repository) && !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()) {
+        if ((mayReadWorkflowConfig(repository) || mayConfigureWorkflowConfig(repository)) && !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()) {
           LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
           appender.appendLink("workflowConfig", linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
         }

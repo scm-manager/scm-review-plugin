@@ -58,7 +58,7 @@ public class IndexLinkEnricher implements HalEnricher {
 
       appender.appendLink("pullRequestConfig", globalConfigUrl);
     }
-    if (PermissionCheck.mayReadGlobalWorkflowEngine()) {
+    if (PermissionCheck.mayReadGlobalWorkflowConfig()) {
       String globalEngineConfigUrl = new LinkBuilder(scmPathInfoStore.get().get(), GlobalEngineConfigResource.class)
         .method("getGlobalEngineConfig")
         .parameters()

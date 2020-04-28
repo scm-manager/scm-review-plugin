@@ -31,9 +31,6 @@
     <value>repository:readPullRequest,createPullRequest,commentPullRequest,mergePullRequest:*</value>
   </permission>
   <permission>
-    <value>repository:readWorkflowConfig:*</value>
-  </permission>
-  <permission>
-    <value>repository:writeWorkflowConfig:*</value>
+    <value>configuration:read,write:workflowConfig</value>
   </permission>
 </permissions>

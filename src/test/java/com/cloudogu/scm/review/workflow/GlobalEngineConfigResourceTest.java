@@ -95,7 +95,7 @@ class GlobalEngineConfigResourceTest {
   @Test
   void shouldCheckPermissionReadWorkflowConfig() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/config");
-    doThrow(new AuthorizationException()).when(subject).checkPermission("configuration:read:readWorkflowConfig");
+    doThrow(new AuthorizationException()).when(subject).checkPermission("configuration:read:workflowConfig");
 
     dispatcher.invoke(request, response);
 
@@ -105,7 +105,7 @@ class GlobalEngineConfigResourceTest {
   @Test
   void shouldReturnConfiguration() throws URISyntaxException, UnsupportedEncodingException {
     when(configurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SuccessRule.class)), true, false));
-    when(subject.isPermitted("configuration:writeWorkflowConfig")).thenReturn(true);
+    when(subject.isPermitted("configuration:write:workflowConfig")).thenReturn(true);
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/config");
 
@@ -121,7 +121,7 @@ class GlobalEngineConfigResourceTest {
   @Test
   void shouldReturnConfigurationWithUpdateLink() throws URISyntaxException, UnsupportedEncodingException {
     when(configurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SuccessRule.class)), true, false));
-    when(subject.isPermitted("configuration:writeWorkflowConfig")).thenReturn(true);
+    when(subject.isPermitted("configuration:write:workflowConfig")).thenReturn(true);
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/config");
 
@@ -129,12 +129,13 @@ class GlobalEngineConfigResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString())
-      .contains("\"update\":{\"href\":\"/v2/workflow/config\"}");
+      .contains("\"update\":{\"href\":\"/v2/workflow/config\"}")
+      .contains("\"availableRules\":{\"href\":\"/v2/workflow/rules\"}");
   }
 
   @Test
   void shouldCheckPermissionWriteWorkflowConfig() throws URISyntaxException {
-    doThrow(new AuthorizationException()).when(subject).checkPermission("configuration:write:writeWorkflowConfig");
+    doThrow(new AuthorizationException()).when(subject).checkPermission("configuration:write:workflowConfig");
     MockHttpRequest request = MockHttpRequest.put("/v2/workflow/config")
       .content("{\"rules\":[\"com.cloudogu.scm.review.workflow.RepositoryEngineConfigResourceTest$SimpleRule\"],\"enabled\":true, \"disableRepositoryConfiguration\":false}".getBytes())
       .contentType(WORKFLOW_MEDIA_TYPE);

@@ -330,15 +330,11 @@
           "displayName": "Configure all pull requests",
           "description": "May configure pull requests for all repositories"
         }
-      },
-      "readWorkflowConfig": {
-        "*": {
-          "displayName": "Read workflow engine configuration",
-          "description": "May see workflow engine configuration for all repositories"
-        }
-      },
-      "writeWorkflowConfig": {
-        "*": {
+      }
+    },
+    "configuration": {
+      "read,write": {
+        "workflowConfig": {
           "displayName": "Configure workflow engine configuration",
           "description": "May configure workflow engine configuration for all repositories"
         }

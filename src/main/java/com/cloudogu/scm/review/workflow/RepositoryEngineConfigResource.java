@@ -109,7 +109,7 @@ public class RepositoryEngineConfigResource {
                                                              @PathParam("namespace") String namespace,
                                                              @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
-    PermissionCheck.checkReadEngineConfiguration(repository);
+    PermissionCheck.checkReadWorkflowConfig(repository);
     return mapper.map(configurator.getEngineConfiguration(repository), repository, uriInfo);
   }
 
@@ -135,7 +135,7 @@ public class RepositoryEngineConfigResource {
   )
   public void setRepositoryEngineConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
     Repository repository = loadRepository(namespace, name);
-    PermissionCheck.checkWriteEngineConfiguration(repository);
+    PermissionCheck.checkWriteWorkflowConfig(repository);
     configurator.setEngineConfiguration(repository, mapper.map(configDto));
   }
 

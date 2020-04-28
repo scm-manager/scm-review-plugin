@@ -55,9 +55,13 @@ public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConf
     final Links.Builder linksBuilder = new Links.Builder();
     PullRequestResourceLinks.WorkflowEngineConfigLinks workflowEngineConfigLinks = new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineConfigLinks();
     linksBuilder.self(workflowEngineConfigLinks.getConfig(repository.getNamespace(), repository.getName()));
-    if (PermissionCheck.mayConfigureWorkflowEngine(repository) && !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()) {
-      linksBuilder.single(link("update", workflowEngineConfigLinks.setConfig(repository.getNamespace(), repository.getName())));
-      linksBuilder.single(link("availableRules", workflowEngineConfigLinks.availableRules()));
+    if (!globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()) {
+     if (PermissionCheck.mayConfigureWorkflowConfig(repository)) {
+       linksBuilder.single(link("update", workflowEngineConfigLinks.setConfig(repository.getNamespace(), repository.getName())));
+     }
+     if (PermissionCheck.mayReadWorkflowConfig(repository) || PermissionCheck.mayConfigureWorkflowConfig(repository)) {
+       linksBuilder.single(link("availableRules", workflowEngineConfigLinks.availableRules()));
+     }
     }
     return new RepositoryEngineConfigDto(linksBuilder.build());
   }

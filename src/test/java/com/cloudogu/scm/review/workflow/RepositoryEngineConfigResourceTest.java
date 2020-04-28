@@ -155,7 +155,8 @@ class RepositoryEngineConfigResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString())
-      .contains("\"update\":{\"href\":\"/v2/workflow/space/X/config\"}");
+      .contains("\"update\":{\"href\":\"/v2/workflow/space/X/config\"}")
+      .contains("\"availableRules\":{\"href\":\"/v2/workflow/rules\"}");
   }
 
   @Test
