@@ -78,11 +78,23 @@ public class RepositoryLinkEnricher implements HalEnricher {
           LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryConfigResource.class);
           appender.appendLink("pullRequestConfig", linkBuilder.method("getRepositoryConfig").parameters(repository.getNamespace(), repository.getName()).href());
         }
-        if ((mayReadWorkflowConfig(repository) || mayConfigureWorkflowConfig(repository)) && !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()) {
+        if (isWorkflowEngineConfigurable(repository)) {
           LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
           appender.appendLink("workflowConfig", linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
         }
       }
     }
+  }
+
+  private boolean isWorkflowEngineConfigurable(Repository repository) {
+    return isWorkflowRepositoryConfigurationEnabled() && isPermittedToConfigureWorkflow(repository);
+  }
+
+  private boolean isPermittedToConfigureWorkflow(Repository repository) {
+    return mayReadWorkflowConfig(repository) || mayConfigureWorkflowConfig(repository);
+  }
+
+  private boolean isWorkflowRepositoryConfigurationEnabled() {
+    return !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration();
   }
 }
