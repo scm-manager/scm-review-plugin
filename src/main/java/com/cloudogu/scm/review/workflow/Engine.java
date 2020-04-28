@@ -27,6 +27,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,14 +44,20 @@ public final class Engine {
 
   public Results validate(Repository repository, PullRequest pullRequest) {
     List<Rule> rules;
-    if (repositoryEngineConfigurator.getEngineConfiguration(repository).isEnabled()) {
+    if (shouldUseLocalRules(repository)) {
       rules = repositoryEngineConfigurator.getRules(repository);
-    } else {
+    } else if (globalEngineConfigurator.getEngineConfiguration().isEnabled()) {
       rules = globalEngineConfigurator.getRules();
+    } else {
+      rules = new ArrayList<>();
     }
     Context context = new Context(repository, pullRequest);
     List<Result> results = rules.stream().map(rule -> rule.validate(context)).collect(Collectors.toList());
 
     return new Results(results);
+  }
+
+  private boolean shouldUseLocalRules(Repository repository) {
+    return repositoryEngineConfigurator.getEngineConfiguration(repository).isEnabled() && !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration();
   }
 }

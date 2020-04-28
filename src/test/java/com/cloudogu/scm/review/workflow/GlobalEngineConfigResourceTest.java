@@ -42,7 +42,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource.WORKFLOW_MEDIA_TYPE;
@@ -68,12 +68,12 @@ class GlobalEngineConfigResourceTest {
   private RestDispatcher dispatcher;
   private final MockHttpResponse response = new MockHttpResponse();
 
-  private final Set<Rule> availableRules = new HashSet<>();
+  private final Set<Rule> availableRules = new LinkedHashSet<>();
 
   @BeforeEach
   void init() {
     GlobalEngineConfigMapperImpl mapper = new GlobalEngineConfigMapperImpl();
-    mapper.availableRules = AvailableRules.of(RepositoryEngineConfigResourceTest.SimpleRule.class);
+    mapper.availableRules = AvailableRules.of(RepositoryEngineConfigResourceTest.SuccessRule.class);
     GlobalEngineConfigResource globalEngineConfigResource = new GlobalEngineConfigResource(mapper, configurator, availableRules);
 
     dispatcher = new RestDispatcher();
@@ -104,7 +104,7 @@ class GlobalEngineConfigResourceTest {
 
   @Test
   void shouldReturnConfiguration() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SimpleRule.class)), true, false));
+    when(configurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SuccessRule.class)), true, false));
     when(subject.isPermitted("configuration:writeWorkflowConfig")).thenReturn(true);
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/config");
@@ -113,14 +113,14 @@ class GlobalEngineConfigResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString())
-      .contains("\"rules\":[\"SimpleRule\"]")
+      .contains("\"rules\":[\"SuccessRule\"]")
       .contains("\"enabled\":true")
       .contains("\"self\":{\"href\":\"/v2/workflow/config\"}");
   }
 
   @Test
   void shouldReturnConfigurationWithUpdateLink() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SimpleRule.class)), true, false));
+    when(configurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SuccessRule.class)), true, false));
     when(subject.isPermitted("configuration:writeWorkflowConfig")).thenReturn(true);
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/config");
@@ -157,7 +157,27 @@ class GlobalEngineConfigResourceTest {
     assertThat(response.getStatus()).isEqualTo(204);
   }
 
-  public static class SimpleRule implements Rule {
+  @Test
+  void shouldReturnAvailableRules() throws URISyntaxException, UnsupportedEncodingException {
+    availableRules.add(new SuccessRule());
+    availableRules.add(new FailureRule());
+    MockHttpRequest request = MockHttpRequest.get("/v2/workflow/rules");
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).isEqualTo("[\"SuccessRule\",\"FailureRule\"]");
+  }
+
+  public static class SuccessRule implements Rule {
+
+    @Override
+    public Result validate(Context context) {
+      return success();
+    }
+  }
+
+  public static class FailureRule implements Rule {
 
     @Override
     public Result validate(Context context) {

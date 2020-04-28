@@ -26,9 +26,9 @@ package com.cloudogu.scm.review.workflow;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,6 +38,8 @@ import sonia.scm.repository.RepositoryTestData;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,11 +48,55 @@ class EngineTest {
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
   private static final PullRequest PULL_REQUEST = TestData.createPullRequest();
 
-  @Mock
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private RepositoryEngineConfigurator repositoryEngineConfigurator;
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private GlobalEngineConfigurator globalEngineConfigurator;
 
   @InjectMocks
   private Engine engine;
+
+  @Test
+  void shouldUseLocalConfig() {
+    when(globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()).thenReturn(false);
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY).isEnabled()).thenReturn(true);
+
+    engine.validate(REPOSITORY, PULL_REQUEST);
+
+    verify(repositoryEngineConfigurator).getRules(REPOSITORY);
+  }
+
+  @Test
+  void shouldUseGlobalConfigIfLocalConfigDisabled() {
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY).isEnabled()).thenReturn(false);
+    when(globalEngineConfigurator.getEngineConfiguration().isEnabled()).thenReturn(true);
+
+    engine.validate(REPOSITORY, PULL_REQUEST);
+
+    verify(globalEngineConfigurator).getRules();
+  }
+
+  @Test
+  void shouldUseGlobalConfigIfLocalConfigNotPermitted() {
+    when(globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()).thenReturn(true);
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY).isEnabled()).thenReturn(true);
+    when(globalEngineConfigurator.getEngineConfiguration().isEnabled()).thenReturn(true);
+
+    engine.validate(REPOSITORY, PULL_REQUEST);
+
+    verify(globalEngineConfigurator).getRules();
+  }
+
+  @Test
+  void shouldReturnEmptyListIfBothConfigsNotEnabled() {
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY).isEnabled()).thenReturn(false);
+    when(globalEngineConfigurator.getEngineConfiguration().isEnabled()).thenReturn(false);
+
+    engine.validate(REPOSITORY, PULL_REQUEST);
+
+    verify(repositoryEngineConfigurator, never()).getRules(REPOSITORY);
+    verify(globalEngineConfigurator, never()).getRules();
+  }
 
   @Test
   void shouldReturnSuccess() {

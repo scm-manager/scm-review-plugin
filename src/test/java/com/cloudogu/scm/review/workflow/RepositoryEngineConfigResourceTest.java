@@ -34,6 +34,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
@@ -45,7 +46,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource.WORKFLOW_MEDIA_TYPE;
@@ -63,13 +64,13 @@ class RepositoryEngineConfigResourceTest {
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
 
   @Mock
-  private RepositoryEngineConfigurator configurator;
+  private RepositoryEngineConfigurator repositoryEngineConfigurator;
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private GlobalEngineConfigurator globalEngineConfigurator;
   @Mock
   private RepositoryManager repositoryManager;
   @Mock
   private UriInfo uriInfo;
-  @Mock
-  private Engine engine;
 
   @Mock
   private Subject subject;
@@ -77,13 +78,14 @@ class RepositoryEngineConfigResourceTest {
   private RestDispatcher dispatcher;
   private final MockHttpResponse response = new MockHttpResponse();
 
-  private final Set<Rule> availableRules = new HashSet<>();
+  private final Set<Rule> availableRules = new LinkedHashSet<>();
 
   @BeforeEach
   void init() {
     RepositoryEngineConfigMapperImpl mapper = new RepositoryEngineConfigMapperImpl();
-    mapper.availableRules = AvailableRules.of(SimpleRule.class);
-    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, configurator, mapper, availableRules);
+    mapper.availableRules = AvailableRules.of(SuccessRule.class);
+    mapper.globalEngineConfigurator = globalEngineConfigurator;
+    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, repositoryEngineConfigurator, mapper, availableRules);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(repositoryEngineConfigResource);
@@ -119,7 +121,7 @@ class RepositoryEngineConfigResourceTest {
 
   @Test
   void shouldReturnConfigurationForRepository() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration(REPOSITORY)).thenReturn(new EngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SimpleRule.class)), true));
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(new EngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SuccessRule.class)), true));
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
 
@@ -127,13 +129,13 @@ class RepositoryEngineConfigResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString())
-      .contains("\"rules\":[\"SimpleRule\"]")
+      .contains("\"rules\":[\"SuccessRule\"]")
       .contains("\"enabled\":true")
       .contains("\"self\":{\"href\":\"/v2/workflow/space/X/config\"}");
   }
 
   @Test
-  void shouldFailForUnknownRepositoryInGet() throws URISyntaxException, UnsupportedEncodingException {
+  void shouldFailForUnknownRepositoryInGet() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/unknown/repository/config");
 
     dispatcher.invoke(request, response);
@@ -143,7 +145,8 @@ class RepositoryEngineConfigResourceTest {
 
   @Test
   void shouldReturnConfigurationForRepositoryWithUpdateLink() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration(REPOSITORY)).thenReturn(new EngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SimpleRule.class)), true));
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(new EngineConfiguration(ImmutableList.of(AvailableRules.nameOf(SuccessRule.class)), true));
+    when(globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()).thenReturn(false);
     when(subject.isPermitted("repository:writeWorkflowConfig:1")).thenReturn(true);
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
@@ -165,7 +168,7 @@ class RepositoryEngineConfigResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(403);
-    verify(configurator, never()).setEngineConfiguration(any(Repository.class), any(EngineConfiguration.class));
+    verify(repositoryEngineConfigurator, never()).setEngineConfiguration(any(Repository.class), any(EngineConfiguration.class));
   }
 
   @Test
@@ -188,11 +191,31 @@ class RepositoryEngineConfigResourceTest {
 
     dispatcher.invoke(request, response);
 
-    verify(configurator).setEngineConfiguration(any(Repository.class), any(EngineConfiguration.class));
+    verify(repositoryEngineConfigurator).setEngineConfiguration(any(Repository.class), any(EngineConfiguration.class));
     assertThat(response.getStatus()).isEqualTo(204);
   }
 
-  public static class SimpleRule implements Rule {
+  @Test
+  void shouldReturnAvailableRules() throws URISyntaxException, UnsupportedEncodingException {
+    availableRules.add(new SuccessRule());
+    availableRules.add(new FailureRule());
+    MockHttpRequest request = MockHttpRequest.get("/v2/workflow/rules");
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).isEqualTo("[\"SuccessRule\",\"FailureRule\"]");
+  }
+
+  public static class SuccessRule implements Rule {
+
+    @Override
+    public Result validate(Context context) {
+      return success();
+    }
+  }
+
+  public static class FailureRule implements Rule {
 
     @Override
     public Result validate(Context context) {

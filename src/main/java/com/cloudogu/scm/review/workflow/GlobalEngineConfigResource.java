@@ -95,7 +95,7 @@ public class GlobalEngineConfigResource {
   )
   public GlobalEngineConfigDto getGlobalEngineConfig(@Context UriInfo uriInfo) {
     PermissionCheck.checkReadWorkflowEngineGlobalConfig();
-    return mapper.map((GlobalEngineConfiguration) configurator.getEngineConfiguration(), uriInfo);
+    return mapper.map(configurator.getEngineConfiguration(), uriInfo);
   }
 
   @PUT
@@ -128,7 +128,7 @@ public class GlobalEngineConfigResource {
   @Path("rules")
   @Produces(WORKFLOW_MEDIA_TYPE)
   @Operation(
-    summary = "Worflow engine rules",
+    summary = "Workflow engine rules",
     description = "Returns available rules for the workflow engine.",
     tags = "Workflow Engine",
     operationId = "review_get_workflow_rules"

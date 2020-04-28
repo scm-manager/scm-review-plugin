@@ -24,12 +24,12 @@
 
 package com.cloudogu.scm.review.workflow;
 
-public class RuleConfigurationException extends RuntimeException {
-  public RuleConfigurationException(String message, Throwable throwable) {
+public class UnknownRuleException extends RuntimeException {
+  public UnknownRuleException(String message, Throwable throwable) {
     super(message, throwable);
   }
 
-  public RuleConfigurationException(String message) {
+  public UnknownRuleException(String message) {
     super(message);
   }
 }

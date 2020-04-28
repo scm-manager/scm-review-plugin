@@ -29,68 +29,58 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junitpioneer.jupiter.TempDirectory;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryTestData;
-import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
 import javax.inject.Inject;
-import javax.xml.bind.JAXB;
-import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class RepositoryEngineConfiguratorTest {
+class GlobalEngineConfiguratorTest {
 
-  private final Repository repository = RepositoryTestData.createHeartOfGold();
-
-  private RepositoryEngineConfigurator configurator;
+  private GlobalEngineConfigurator configurator;
 
   @BeforeEach
   void setupStore() {
     Injector injector = Guice.createInjector();
-    AvailableRules availableRules = AvailableRules.of(RuleWithInjection.class);
+    AvailableRules availableRules = AvailableRules.of(RepositoryEngineConfiguratorTest.RuleWithInjection.class);
 
-    configurator = new RepositoryEngineConfigurator(injector, availableRules, new InMemoryConfigurationStoreFactory());
+    configurator = new GlobalEngineConfigurator(injector, availableRules, new InMemoryConfigurationStoreFactory());
   }
 
   @Test
   void shouldCreateRuleWithInjection() {
-    configurator.setEngineConfiguration(repository, config(true));
-    List<Rule> rules = configurator.getRules(repository);
+    configurator.setEngineConfiguration(config(true));
+    List<Rule> rules = configurator.getRules();
 
     assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
   }
 
-  private EngineConfiguration config(boolean enabled) {
-    return new EngineConfiguration(ImmutableList.of(RuleWithInjection.class.getSimpleName()), enabled);
+  private GlobalEngineConfiguration config(boolean enabled) {
+    return new GlobalEngineConfiguration(ImmutableList.of(RepositoryEngineConfiguratorTest.RuleWithInjection.class.getSimpleName()), enabled, false);
   }
 
   @Test
   void shouldReturnEmptyListIfEngineDisabled() {
-    configurator.setEngineConfiguration(repository, config(false));
-    List<Rule> rules = configurator.getRules(repository);
+    configurator.setEngineConfiguration(config(false));
+    List<Rule> rules = configurator.getRules();
 
     assertThat(rules.isEmpty()).isTrue();
   }
 
   @Test
-  void shouldReturnEmptyListIfNoConfigurationExistYet() {
-    EngineConfiguration engineConfiguration = configurator.getEngineConfiguration(repository);
+  void shouldReturnEmptyListIfNoConfigurationExistsYet() {
+    EngineConfiguration engineConfiguration = configurator.getEngineConfiguration();
 
     assertThat(engineConfiguration.getRules().isEmpty()).isTrue();
   }
 
   public static class RuleWithInjection implements Rule {
 
-    private final ResultService service;
+    private final RepositoryEngineConfiguratorTest.ResultService service;
 
     @Inject
-    public RuleWithInjection(ResultService service) {
+    public RuleWithInjection(RepositoryEngineConfiguratorTest.ResultService service) {
       this.service = service;
     }
 
@@ -103,7 +93,7 @@ class RepositoryEngineConfiguratorTest {
   public static class ResultService {
 
     public Result getResult() {
-      return Result.success(RuleWithInjection.class);
+      return Result.success(RepositoryEngineConfiguratorTest.RuleWithInjection.class);
     }
   }
 }

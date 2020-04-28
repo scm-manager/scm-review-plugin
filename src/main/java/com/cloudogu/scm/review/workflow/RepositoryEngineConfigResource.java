@@ -82,7 +82,7 @@ public class RepositoryEngineConfigResource {
   @Path("{namespace}/{name}/config")
   @Produces(WORKFLOW_MEDIA_TYPE)
   @Operation(
-    summary = "Worflow engine configuration",
+    summary = "Workflow engine configuration",
     description = "Returns the repository specific workflow engine configuration.",
     tags = "Workflow Engine",
     operationId = "review_get_repository_workflow_configuration"
@@ -151,7 +151,7 @@ public class RepositoryEngineConfigResource {
   @Path("rules")
   @Produces(WORKFLOW_MEDIA_TYPE)
   @Operation(
-    summary = "Worflow engine rules",
+    summary = "Workflow engine rules",
     description = "Returns available rules for the workflow engine.",
     tags = "Workflow Engine",
     operationId = "review_get_workflow_rules"

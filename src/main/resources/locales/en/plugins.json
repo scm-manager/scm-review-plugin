@@ -373,11 +373,11 @@
       },
       "readWorkflowConfig": {
         "displayName": "read workflow engine configuration",
-        "description": "May read the workflow engine for this repository"
+        "description": "May read the workflow engine configuration for this repository"
       },
       "writeWorkflowConfig": {
         "displayName": "write workflow engine configuration",
-        "description": "May configure the workflow engine for this repository"
+        "description": "May configure the workflow engine configuration for this repository"
       }
     }
   },

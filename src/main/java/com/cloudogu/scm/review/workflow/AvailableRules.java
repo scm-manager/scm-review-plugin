@@ -57,11 +57,10 @@ public class AvailableRules {
   }
 
   public Class<? extends Rule> classOf(String name) {
-    // TODO create UnknownRuleException or something ...
     return rules.stream()
       .filter(ruleClass -> ruleClass.getSimpleName().equals(name))
       .findFirst()
-      .orElseThrow(() -> new RuleConfigurationException("unknown rule: " + name));
+      .orElseThrow(() -> new UnknownRuleException(name));
   }
 
   public static String nameOf(Rule rule) {
