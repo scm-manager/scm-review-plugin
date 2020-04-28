@@ -42,7 +42,7 @@ class SubscribeButton extends React.Component<Props, State> {
         title={t("scm-review-plugin.pullRequest.details.buttons.subscribe")}
         color="link is-outlined"
       >
-        <Icon name="plus" color="inherit" />
+        <Icon name="plus fa-fw" color="inherit" />
       </Button>
     );
   }
