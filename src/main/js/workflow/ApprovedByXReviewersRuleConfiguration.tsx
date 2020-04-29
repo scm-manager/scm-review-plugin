@@ -22,40 +22,49 @@
  * SOFTWARE.
  */
 
-import React, {FC, useEffect, useLayoutEffect, useState} from "react";
-import {InputField} from '@scm-manager/ui-components'
-import {useTranslation} from "react-i18next";
+import React, { FC, useEffect, useState } from "react";
+import { InputField } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
 
-type Props = {
-  configurationChanged: (newRuleConfiguration: any, valid: boolean) => any;
+type Configuration = {
+  numberOfReviewers: number;
 };
 
-const ApprovedByXReviewersRuleConfiguration: FC<Props> = ({configurationChanged}) => {
-  const [t] = useTranslation("plugins");
-  const [validationError, setValidationError] = useState(true);
+type Props = {
+  configurationChanged: (newRuleConfiguration: Configuration, valid: boolean) => void;
+};
 
-  const onValueChange = (val: any) => {
+const ApprovedByXReviewersRuleConfiguration: FC<Props> = ({ configurationChanged }) => {
+  const [t] = useTranslation("plugins");
+  const [numberOfReviewers, setNumberOfReviewers] = useState<string | undefined>();
+  const [validationError, setValidationError] = useState(false);
+
+  const onValueChange = (val: string) => {
+    setNumberOfReviewers(val);
     const numberVal = parseInt(val);
     if (!isNaN(numberVal) && numberVal > 0) {
       setValidationError(false);
-      configurationChanged({numberOfReviewers: val}, true);
+      configurationChanged({ numberOfReviewers: numberVal }, true);
     } else {
       setValidationError(true);
-      configurationChanged({numberOfReviewers: 0}, false);
+      configurationChanged({ numberOfReviewers: 0 }, false);
     }
-  }
+  };
 
-  useLayoutEffect(() => onValueChange(0), [])
+  useEffect(() => configurationChanged({ numberOfReviewers: 0 }, false), []);
 
-  return <InputField
-    type="number"
-    label={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.label")}
-    helpText={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.helpText")}
-    validationError={validationError}
-    errorMessage={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.errorMessage")}
-    autofocus={true}
-    onChange={onValueChange}
-  />
-}
+  return (
+    <InputField
+      type="number"
+      value={numberOfReviewers}
+      label={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.label")}
+      helpText={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.helpText")}
+      validationError={validationError}
+      errorMessage={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.errorMessage")}
+      autofocus={true}
+      onChange={onValueChange}
+    />
+  );
+};
 
 export default ApprovedByXReviewersRuleConfiguration;
