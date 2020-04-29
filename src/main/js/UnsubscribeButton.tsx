@@ -42,7 +42,7 @@ class UnsubscribeButton extends React.Component<Props, State> {
         title={t("scm-review-plugin.pullRequest.details.buttons.unsubscribe")}
         color="link is-outlined"
       >
-        <Icon name="minus" color="inherit" />
+        <Icon name="minus fa-fw" color="inherit" />
       </Button>
     );
   }

@@ -24,54 +24,40 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.google.inject.Injector;
-import sonia.scm.plugin.PluginLoader;
 import sonia.scm.repository.Repository;
-import sonia.scm.store.ConfigurationStore;
-import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public final class Engine {
 
-  private static final String STORE_NAME = "workflow-engine";
-
-  private final Injector injector;
-  private final AvailableRules availableRules;
-  private final ConfigurationStoreFactory storeFactory;
-  private final ClassLoader uberClassLoader;
+  private final RepositoryEngineConfigurator repositoryEngineConfigurator;
+  private final GlobalEngineConfigurator globalEngineConfigurator;
 
   @Inject
-  public Engine(Injector injector, AvailableRules availableRules, ConfigurationStoreFactory storeFactory, PluginLoader pluginLoader) {
-    this.injector = injector;
-    this.availableRules = availableRules;
-    this.storeFactory = storeFactory;
-    this.uberClassLoader = pluginLoader.getUberClassLoader();
+  public Engine(RepositoryEngineConfigurator repositoryEngineConfigurator, GlobalEngineConfigurator globalEngineConfigurator) {
+    this.repositoryEngineConfigurator = repositoryEngineConfigurator;
+    this.globalEngineConfigurator = globalEngineConfigurator;
   }
 
   public Results validate(Repository repository, PullRequest pullRequest) {
-    List<EngineConfigurator.RuleInstance> rules = configure(repository).getRules();
-    List<Result> results = rules
-      .stream()
-      .map(ruleInstance -> {
-        Context context = new Context(repository, pullRequest, ruleInstance.getConfiguration());
-        return ruleInstance.getRule().validate(context);
-      })
-      .collect(Collectors.toList());
+    List<EngineConfigurator.RuleInstance> rules;
+    if (shouldUseLocalRules(repository)) {
+      rules = repositoryEngineConfigurator.getRules(repository);
+    } else if (globalEngineConfigurator.getEngineConfiguration().isEnabled()) {
+      rules = globalEngineConfigurator.getRules();
+    } else {
+      rules = new ArrayList<>();
+    }
+    List<Result> results = rules.stream().map(ruleInstance ->
+      ruleInstance.getRule().validate(new Context(repository, pullRequest, ruleInstance.getConfiguration()))).collect(Collectors.toList());
 
     return new Results(results);
   }
 
-  public EngineConfigurator configure(Repository repository) {
-    ConfigurationStore<EngineConfiguration> store =
-      storeFactory
-        .withType(EngineConfiguration.class)
-        .withName(STORE_NAME)
-        .forRepository(repository)
-        .build();
-    return new EngineConfigurator(injector, availableRules, store, uberClassLoader);
+  private boolean shouldUseLocalRules(Repository repository) {
+    return repositoryEngineConfigurator.getEngineConfiguration(repository).isEnabled() && !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration();
   }
-
 }

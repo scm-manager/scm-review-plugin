@@ -46,4 +46,8 @@ public class AppliedRule {
   public AppliedRule(String rule) {
     this(rule, null);
   }
+
+  static AppliedRule of(Class<?> clazz) {
+    return new AppliedRule(clazz.getSimpleName());
+  }
 }

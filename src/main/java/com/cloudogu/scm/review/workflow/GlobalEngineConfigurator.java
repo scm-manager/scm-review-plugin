@@ -24,55 +24,42 @@
 
 package com.cloudogu.scm.review.workflow;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import sonia.scm.plugin.PluginLoader;
+import sonia.scm.store.ConfigurationStore;
+import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-public class AvailableRules {
+public class GlobalEngineConfigurator extends EngineConfigurator {
 
-  private final Set<Rule> rules;
+  private static final String STORE_NAME = "workflow-engine";
+
+  private final ConfigurationStoreFactory storeFactory;
 
   @Inject
-  public AvailableRules(Set<Rule> rules) {
-    this.rules = rules;
+  GlobalEngineConfigurator(AvailableRules availableRules, ConfigurationStoreFactory storeFactory, PluginLoader pluginLoader) {
+    super(availableRules, pluginLoader.getUberClassLoader());
+    this.storeFactory = storeFactory;
   }
 
-  @SafeVarargs
-  @VisibleForTesting
-  static AvailableRules of(Rule... rules) {
-    return new AvailableRules(ImmutableSet.copyOf(rules));
+  public GlobalEngineConfiguration getEngineConfiguration() {
+    return createStore().getOptional().orElse(new GlobalEngineConfiguration());
   }
 
-  public List<String> getRuleNames() {
-    return rules.stream().map(AvailableRules::nameOf).collect(Collectors.toList());
+  public void setEngineConfiguration(GlobalEngineConfiguration engineConfiguration) {
+    createStore().set(engineConfiguration);
   }
 
-  public Class<? extends Rule> classOf(String name) {
-    return rules.stream()
-      .map(Rule::getClass)
-      .filter(ruleClass -> ruleClass.getSimpleName().equals(name))
-      .findFirst()
-      .orElseThrow(() -> new UnknownRuleException(name));
+  public List<RuleInstance> getRules() {
+    return getRules(Optional.ofNullable(createStore().get()));
   }
 
-  public Rule ruleOf(String name) {
-    return rules.stream()
-      .filter(rule -> rule.getClass().getSimpleName().equals(name))
-      .findFirst()
-      .orElseThrow(() -> new UnknownRuleException(name));
+  private ConfigurationStore<GlobalEngineConfiguration> createStore() {
+    return withUberClassLoader(() -> storeFactory
+      .withType(GlobalEngineConfiguration.class)
+      .withName(STORE_NAME)
+      .build());
   }
-
-  public static String nameOf(Rule rule) {
-    return nameOf(rule.getClass());
-  }
-
-  public static String nameOf(Class<? extends Rule> ruleClass) {
-    return ruleClass.getSimpleName();
-  }
-
 }

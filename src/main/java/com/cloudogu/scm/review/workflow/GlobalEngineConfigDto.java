@@ -21,31 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Button, Icon } from "@scm-manager/ui-components";
 
-type Props = WithTranslation & {
-  loading: boolean;
-  action: () => void;
-};
+package com.cloudogu.scm.review.workflow;
 
-type State = {};
+import de.otto.edison.hal.Links;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-class SubscribeButton extends React.Component<Props, State> {
-  render() {
-    const { loading, action, t } = this.props;
-    return (
-      <Button
-        loading={loading}
-        action={action}
-        title={t("scm-review-plugin.pullRequest.details.buttons.subscribe")}
-        color="link is-outlined"
-      >
-        <Icon name="plus fa-fw" color="inherit" />
-      </Button>
-    );
+import java.util.List;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class GlobalEngineConfigDto extends RepositoryEngineConfigDto {
+
+  private boolean disableRepositoryConfiguration;
+
+  public GlobalEngineConfigDto(Links links) {
+    super(links);
   }
-}
 
-export default withTranslation("plugins")(SubscribeButton);
+  public GlobalEngineConfigDto(Links links, List<AppliedRuleDto> rules, boolean enabled, boolean disableRepositoryConfiguration) {
+    super(links, rules, enabled);
+    this.disableRepositoryConfiguration = disableRepositoryConfiguration;
+  }
+
+}

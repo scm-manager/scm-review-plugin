@@ -21,31 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Button, Icon } from "@scm-manager/ui-components";
 
-type Props = WithTranslation & {
-  loading: boolean;
-  action: () => void;
-};
+package com.cloudogu.scm.review.workflow;
 
-type State = {};
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-class SubscribeButton extends React.Component<Props, State> {
-  render() {
-    const { loading, action, t } = this.props;
-    return (
-      <Button
-        loading={loading}
-        action={action}
-        title={t("scm-review-plugin.pullRequest.details.buttons.subscribe")}
-        color="link is-outlined"
-      >
-        <Icon name="plus fa-fw" color="inherit" />
-      </Button>
-    );
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
+
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement
+@Getter
+@Setter
+@NoArgsConstructor
+public class GlobalEngineConfiguration extends EngineConfiguration {
+  @XmlElement(name = "disable-repository-configuration")
+  private boolean disableRepositoryConfiguration;
+
+  public GlobalEngineConfiguration(List<AppliedRule> rules, boolean enabled, boolean disableRepositoryConfiguration) {
+    super(rules, enabled);
+    this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }
 }
-
-export default withTranslation("plugins")(SubscribeButton);

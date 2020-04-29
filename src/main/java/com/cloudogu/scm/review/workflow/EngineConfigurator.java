@@ -23,9 +23,9 @@
  */
 package com.cloudogu.scm.review.workflow;
 
-import com.google.inject.Injector;
 import lombok.Getter;
 import sonia.scm.store.ConfigurationStore;
+import sonia.scm.store.ConfigurationStoreFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,22 +33,17 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+public abstract class EngineConfigurator {
 
-public class EngineConfigurator {
-
-  private final Injector injector;
   private final AvailableRules availableRules;
-  private final ConfigurationStore<EngineConfiguration> store;
   private final ClassLoader uberClassLoader;
 
-  EngineConfigurator(Injector injector, AvailableRules availableRules, ConfigurationStore<EngineConfiguration> store, ClassLoader uberClassLoader) {
-    this.injector = injector;
+  protected EngineConfigurator(AvailableRules availableRules, ClassLoader uberClassLoader) {
     this.availableRules = availableRules;
-    this.store = store;
     this.uberClassLoader = uberClassLoader;
   }
 
-  private <T> T withUberClassLoader(Supplier<T> runnable) {
+  final <T> T withUberClassLoader(Supplier<T> runnable) {
     ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(uberClassLoader);
     try {
@@ -58,18 +53,7 @@ public class EngineConfigurator {
     }
   }
 
-  public EngineConfiguration getEngineConfiguration() {
-    Optional<EngineConfiguration> optional = withUberClassLoader(store::getOptional);
-    return optional.orElse(new EngineConfiguration());
-  }
-
-  public void setEngineConfiguration(EngineConfiguration engineConfiguration) {
-    store.set(engineConfiguration);
-  }
-
-  public List<RuleInstance> getRules() {
-    Optional<EngineConfiguration> configuration = withUberClassLoader(store::getOptional);
-
+  protected final List<RuleInstance> getRules(Optional<EngineConfiguration> configuration) {
     if (configuration.isPresent() && !configuration.get().isEnabled()) {
       return Collections.emptyList();
     }
@@ -89,7 +73,7 @@ public class EngineConfigurator {
   }
 
   @Getter
-  class RuleInstance {
+  static class RuleInstance {
     private final Rule rule;
     private final Object configuration;
 

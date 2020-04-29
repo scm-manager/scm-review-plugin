@@ -29,47 +29,102 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.plugin.PluginLoader;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
+import java.util.Collections;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EngineTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
   private static final PullRequest PULL_REQUEST = TestData.createPullRequest();
 
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private RepositoryEngineConfigurator repositoryEngineConfigurator;
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private GlobalEngineConfigurator globalEngineConfigurator;
+
+  @InjectMocks
   private Engine engine;
 
-  @BeforeEach
-  void setupEngine() {
-    InMemoryConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
-    AvailableRules rules = AvailableRules.of(new SuccessRule(), new FailedRule());
-    PluginLoader pluginLoader = mock(PluginLoader.class);
-    engine = new Engine(Guice.createInjector(), rules, storeFactory, pluginLoader);
+  @Test
+  void shouldUseLocalConfig() {
+    when(globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()).thenReturn(false);
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY).isEnabled()).thenReturn(true);
+
+    engine.validate(REPOSITORY, PULL_REQUEST);
+
+    verify(repositoryEngineConfigurator).getRules(REPOSITORY);
+  }
+
+  @Test
+  void shouldUseGlobalConfigIfLocalConfigDisabled() {
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY).isEnabled()).thenReturn(false);
+    when(globalEngineConfigurator.getEngineConfiguration().isEnabled()).thenReturn(true);
+
+    engine.validate(REPOSITORY, PULL_REQUEST);
+
+    verify(globalEngineConfigurator).getRules();
+  }
+
+  @Test
+  void shouldUseGlobalConfigIfLocalConfigNotPermitted() {
+    when(globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()).thenReturn(true);
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY).isEnabled()).thenReturn(true);
+    when(globalEngineConfigurator.getEngineConfiguration().isEnabled()).thenReturn(true);
+
+    engine.validate(REPOSITORY, PULL_REQUEST);
+
+    verify(globalEngineConfigurator).getRules();
+  }
+
+  @Test
+  void shouldReturnEmptyListIfBothConfigsNotEnabled() {
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY).isEnabled()).thenReturn(false);
+    when(globalEngineConfigurator.getEngineConfiguration().isEnabled()).thenReturn(false);
+
+    engine.validate(REPOSITORY, PULL_REQUEST);
+
+    verify(repositoryEngineConfigurator, never()).getRules(REPOSITORY);
+    verify(globalEngineConfigurator, never()).getRules();
   }
 
   @Test
   void shouldReturnSuccess() {
-    EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.setEngineConfiguration(config(SuccessRule.class));
+    EngineConfigurator.RuleInstance ruleInstance = new EngineConfigurator.RuleInstance(new SuccessRule(), null);
+    EngineConfiguration config = createConfig();
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(config);
+    when(repositoryEngineConfigurator.getRules(REPOSITORY)).thenReturn(ImmutableList.of(ruleInstance));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
     assertThat(result.isValid()).isTrue();
   }
 
-  private EngineConfiguration config(Class<? extends Rule> rule) {
-    return new EngineConfiguration(ImmutableList.of(new AppliedRule(rule.getSimpleName(), null)), true);
+  private EngineConfiguration createConfig() {
+    return new EngineConfiguration(Collections.emptyList(), true);
   }
 
   @Test
   void shouldReturnFailed() {
-    EngineConfigurator configurator = engine.configure(REPOSITORY);
-    configurator.setEngineConfiguration(config(FailedRule.class));
+    EngineConfigurator.RuleInstance ruleInstance = new EngineConfigurator.RuleInstance(new FailedRule(), null);
+    EngineConfiguration config = createConfig();
+    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(config);
+    when(repositoryEngineConfigurator.getRules(REPOSITORY)).thenReturn(ImmutableList.of(ruleInstance));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
@@ -91,5 +146,4 @@ class EngineTest {
       return failed();
     }
   }
-
 }

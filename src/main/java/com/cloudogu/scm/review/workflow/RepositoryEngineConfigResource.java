@@ -53,9 +53,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -72,14 +70,14 @@ public class RepositoryEngineConfigResource {
   public static final String WORKFLOW_CONFIG_PATH = "v2/workflow";
 
   private final RepositoryManager repositoryManager;
-  private final Engine engine;
+  private final RepositoryEngineConfigurator configurator;
   private final RepositoryEngineConfigMapper mapper;
   private final Set<Rule> availableRules;
 
   @Inject
-  public RepositoryEngineConfigResource(RepositoryManager repositoryManager, Engine engine, RepositoryEngineConfigMapper mapper, Set<Rule> availableRules) {
+  public RepositoryEngineConfigResource(RepositoryManager repositoryManager, RepositoryEngineConfigurator configurator, RepositoryEngineConfigMapper mapper, Set<Rule> availableRules) {
     this.repositoryManager = repositoryManager;
-    this.engine = engine;
+    this.configurator = configurator;
     this.mapper = mapper;
     this.availableRules = availableRules;
   }
@@ -88,7 +86,7 @@ public class RepositoryEngineConfigResource {
   @Path("{namespace}/{name}/config")
   @Produces(WORKFLOW_MEDIA_TYPE)
   @Operation(
-    summary = "Worflow engine configuration",
+    summary = "Workflow engine configuration",
     description = "Returns the repository specific workflow engine configuration.",
     tags = "Workflow Engine",
     operationId = "review_get_repository_workflow_configuration"
@@ -115,8 +113,8 @@ public class RepositoryEngineConfigResource {
                                                              @PathParam("namespace") String namespace,
                                                              @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
-    PermissionCheck.checkReadEngineConfiguration(repository);
-    return mapper.map(engine.configure(repository).getEngineConfiguration(), repository, uriInfo);
+    PermissionCheck.checkReadWorkflowConfig(repository);
+    return mapper.map(configurator.getEngineConfiguration(repository), repository, uriInfo);
   }
 
   @PUT
@@ -141,8 +139,8 @@ public class RepositoryEngineConfigResource {
   )
   public void setRepositoryEngineConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
     Repository repository = loadRepository(namespace, name);
-    PermissionCheck.checkWriteEngineConfiguration(repository);
-    engine.configure(repository).setEngineConfiguration(mapper.map(configDto));
+    PermissionCheck.checkWriteWorkflowConfig(repository);
+    configurator.setEngineConfiguration(repository, mapper.map(configDto));
   }
 
   private Repository loadRepository(String namespace, String name) {
@@ -157,7 +155,7 @@ public class RepositoryEngineConfigResource {
   @Path("rules")
   @Produces(WORKFLOW_MEDIA_TYPE)
   @Operation(
-    summary = "Worflow engine rules",
+    summary = "Workflow engine rules",
     description = "Returns available rules for the workflow engine.",
     tags = "Workflow Engine",
     operationId = "review_get_workflow_rules"

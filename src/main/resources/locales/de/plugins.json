@@ -303,6 +303,13 @@
       "modal": {
         "failedTitle": "{{count}} Regeln nicht erfüllt",
         "successTitle": "Alle Regeln erfüllt"
+      },
+      "disableRepositoryConfiguration": {
+        "label": "Workflow Engine Konfiguration nicht für einzelne Repositories erlauben",
+        "helpText": "Repository Owner dürfen die Workflow Engine nicht individuell konfigurieren."
+      },
+      "globalConfig": {
+        "title": "Workflow Engine"
       }
     }
   },
@@ -324,6 +331,14 @@
         "*": {
           "displayName": "Configure all pull requests",
           "description": "May configure pull requests for all repositories"
+        }
+      }
+    },
+    "configuration": {
+      "read,write": {
+        "workflowConfig": {
+          "displayName": "Workflow Engine konfigurieren",
+          "description": "Darf die globale Workflow Engine für alle Repositorys konfigurieren"
         }
       }
     }
@@ -351,8 +366,16 @@
         "description": "Darf Pull Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
       },
       "configurePullRequest": {
-        "displayName": "configure pull requests",
-        "description": "May configure pull requests for this repository"
+        "displayName": "Pull Requests konfigurieren",
+        "description": "Darf Pull Requests konfigurieren"
+      },
+      "readWorkflowConfig": {
+        "displayName": "Workflow Engine Konfiguration lesen",
+        "description": "Darf die Workflow Engine Konfiguration lesen"
+      },
+      "writeWorkflowConfig": {
+        "displayName": "Workflow Engine Konfiguration ändern",
+        "description": "Darf die Workflow Engine Konfiguration bearbeiten"
       }
     }
   },

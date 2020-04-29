@@ -31,6 +31,8 @@
     <verb>modifyPullRequest</verb>
     <verb>mergePullRequest</verb>
     <verb>configurePullRequest</verb>
+    <verb>readWorkflowConfig</verb>
+    <verb>writeWorkflowConfig</verb>
   </verbs>
   <roles>
     <role>

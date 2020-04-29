@@ -43,5 +43,4 @@ public class EngineConfiguration {
   private List<AppliedRule> rules = new ArrayList<>();
   @Setter
   private boolean enabled;
-
 }

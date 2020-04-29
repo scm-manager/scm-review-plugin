@@ -24,137 +24,79 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.cloudogu.scm.review.workflow.EngineConfigurator.RuleInstance;
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junitpioneer.jupiter.TempDirectory;
-import sonia.scm.store.ConfigurationStore;
 
-import javax.inject.Inject;
-import javax.xml.bind.JAXB;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static com.google.common.collect.ImmutableList.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@ExtendWith(TempDirectory.class)
 class EngineConfiguratorTest {
 
-  private EngineConfigurator configurator;
+  private EngineConfigurator createEngineConfigurator(AvailableRules availableRules) {
+    return new EngineConfigurator(availableRules, getClass().getClassLoader()) {
 
-  @BeforeEach
-  void setupStore(@TempDirectory.TempDir Path directory) {
-    Injector injector = Guice.createInjector();
-    AvailableRules availableRules = AvailableRules.of(new RuleWithInjection(new ResultService()), new RuleWithConfiguration());
-    ConfigurationStore<EngineConfiguration> store = new SimpleJaxbStore(directory.resolve("store.xml").toFile());
-
-    configurator = new EngineConfigurator(injector, availableRules, store, getClass().getClassLoader());
+    };
   }
 
   @Test
-  void shouldCreateRule() {
-    configurator.setEngineConfiguration(config(true));
-    List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
-
-    final Rule ruleWithInjection = rules.get(0).getRule();
-    assertThat(ruleWithInjection.getClass()).isEqualTo(RuleWithInjection.class);
-    assertThat(ruleWithInjection.validate(null).isSuccess()).isTrue();
+  void shouldReturnEmptyListIfConfigurationMissing() {
+    final EngineConfigurator engineConfigurator = createEngineConfigurator(AvailableRules.of());
+    List<RuleInstance> rules = engineConfigurator.getRules(Optional.empty());
+    assertThat(rules.isEmpty()).isTrue();
   }
 
   @Test
-  void shouldCreateConfiguredRule() {
-    configurator.setEngineConfiguration(config(true));
-    List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
-
-    final EngineConfigurator.RuleInstance ruleInstance = rules.get(1);
-    final Rule ruleWithConfiguration = ruleInstance.getRule();
-    assertThat(ruleWithConfiguration.getClass()).isEqualTo(RuleWithConfiguration.class);
-    assertThat(ruleWithConfiguration.validate(new Context(null, null, ruleInstance.getConfiguration())).isSuccess()).isTrue();
-  }
-
-  private EngineConfiguration config(boolean enabled) {
-    return new EngineConfiguration(
-      ImmutableList.of(
-        new AppliedRule(RuleWithInjection.class.getSimpleName()),
-        new AppliedRule(RuleWithConfiguration.class.getSimpleName(), new TestConfiguration(42))
-      ), enabled);
-  }
-
-  @Test
-  void shouldReturnEmptyListIfEngineDisabled() {
-    configurator.setEngineConfiguration(config(false));
-    List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
+  void shouldReturnEmptyListIfWorkflowEngineDisabled() {
+    final EngineConfigurator engineConfigurator = createEngineConfigurator(AvailableRules.of(new SuccessRule()));
+    final ImmutableList<AppliedRule> appliedRules = of(new AppliedRule(SuccessRule.class.getSimpleName()));
+    EngineConfiguration configuration = new EngineConfiguration(appliedRules, false);
+    List<RuleInstance> rules = engineConfigurator.getRules(Optional.of(configuration));
 
     assertThat(rules.isEmpty()).isTrue();
   }
 
-  public static class SimpleJaxbStore implements ConfigurationStore<EngineConfiguration> {
+  @Test
+  void shouldInstantiateRules() {
+    AvailableRules availableRules = AvailableRules.of(new SuccessRule(), new FailureRule());
+    final EngineConfigurator engineConfigurator = createEngineConfigurator(availableRules);
+    List<AppliedRule> appliedRules = of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()).stream().map(AppliedRule::new).collect(Collectors.toList());
 
-    private final File file;
+    EngineConfiguration configuration = new EngineConfiguration(appliedRules, true);
+    List<RuleInstance> rules = engineConfigurator.getRules(Optional.of(configuration));
 
-    public SimpleJaxbStore(File file) {
-      this.file = file;
-    }
-
-    @Override
-    public EngineConfiguration get() {
-      return JAXB.unmarshal(file, EngineConfiguration.class);
-    }
-
-    @Override
-    public void set(EngineConfiguration object) {
-      JAXB.marshal(object, file);
-    }
+    assertThat(rules.size()).isEqualTo(2);
+    assertThat(rules.get(0).getRule()).isInstanceOfAny(FailureRule.class, SuccessRule.class);
   }
 
-  public static class RuleWithConfiguration implements Rule {
-    @Override
-    public Optional<Class<?>> getConfigurationType() {
-      return Optional.of(TestConfiguration.class);
-    }
+  @Test
+  void shouldThrowUnknownRuleException() {
+    AvailableRules availableRules = AvailableRules.of(new SuccessRule());
+    final EngineConfigurator engineConfigurator = createEngineConfigurator(availableRules);
+    List<AppliedRule> appliedRules = of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()).stream().map(AppliedRule::new).collect(Collectors.toList());
+
+    EngineConfiguration configuration = new EngineConfiguration(appliedRules, true);
+    assertThrows(UnknownRuleException.class, () -> engineConfigurator.getRules(Optional.of(configuration)));
+  }
+
+  static class SuccessRule implements Rule {
 
     @Override
     public Result validate(Context context) {
-      return ((TestConfiguration) context.getConfiguration()).number == 42 ? success() : failed();
+      return success();
     }
   }
 
-  @Data
-  @AllArgsConstructor
-  @NoArgsConstructor
-  @XmlRootElement
-  public static class TestConfiguration {
-    int number;
-  }
-
-  public static class RuleWithInjection implements Rule {
-
-    private final ResultService service;
-
-    @Inject
-    public RuleWithInjection(ResultService service) {
-      this.service = service;
-    }
+  static class FailureRule implements Rule {
 
     @Override
     public Result validate(Context context) {
-      return service.getResult();
-    }
-  }
-
-  public static class ResultService {
-
-    public Result getResult() {
-      return Result.success(RuleWithInjection.class);
+      return failed();
     }
   }
 }

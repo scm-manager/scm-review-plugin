@@ -34,7 +34,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.BaseMapper;
-import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.UriInfo;
@@ -42,17 +41,31 @@ import javax.ws.rs.core.UriInfo;
 import static de.otto.edison.hal.Link.link;
 
 @Mapper
-public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConfiguration, RepositoryEngineConfigDto> {
-
+public abstract class GlobalEngineConfigMapper extends BaseMapper<GlobalEngineConfiguration, GlobalEngineConfigDto> {
   @Inject
   AvailableRules availableRules;
+
   @Inject
   ConfigurationValidator configurationValidator;
-  @Inject
-  GlobalEngineConfigurator globalEngineConfigurator;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  public abstract RepositoryEngineConfigDto map(EngineConfiguration engineConfiguration, @Context Repository repository, @Context UriInfo uriInfo);
+  public abstract GlobalEngineConfigDto map(GlobalEngineConfiguration engineConfiguration, @org.mapstruct.Context UriInfo uriInfo);
+
+  @ObjectFactory
+  GlobalEngineConfigDto create(@Context UriInfo uriInfo) {
+    final Links.Builder linksBuilder = new Links.Builder();
+    PullRequestResourceLinks.WorkflowEngineGlobalConfigLinks workflowEngineGlobalConfigLinks = new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineGlobalConfigLinks();
+    linksBuilder.self(workflowEngineGlobalConfigLinks.getConfig());
+    if (PermissionCheck.mayConfigureGlobalWorkflowConfig()) {
+      linksBuilder.single(link("update", workflowEngineGlobalConfigLinks.setConfig()));
+    }
+    if (PermissionCheck.mayReadGlobalWorkflowConfig() || PermissionCheck.mayConfigureGlobalWorkflowConfig()) {
+      linksBuilder.single(link("availableRules", workflowEngineGlobalConfigLinks.availableRules()));
+    }
+    return new GlobalEngineConfigDto(linksBuilder.build());
+  }
+
+  public abstract GlobalEngineConfiguration map(GlobalEngineConfigDto engineConfigurationDto);
 
   AppliedRuleDto map(AppliedRule appliedRule) {
     AppliedRuleDto dto = new AppliedRuleDto();
@@ -83,23 +96,4 @@ public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConf
       throw new InvalidConfigurationException(rule, e);
     }
   }
-
-  @ObjectFactory
-  RepositoryEngineConfigDto create(@Context Repository repository, @Context UriInfo uriInfo) {
-    final Links.Builder linksBuilder = new Links.Builder();
-    PullRequestResourceLinks.WorkflowEngineConfigLinks workflowEngineConfigLinks = new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineConfigLinks();
-    linksBuilder.self(workflowEngineConfigLinks.getConfig(repository.getNamespace(), repository.getName()));
-    if (!globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()) {
-     if (PermissionCheck.mayConfigureWorkflowConfig(repository)) {
-       linksBuilder.single(link("update", workflowEngineConfigLinks.setConfig(repository.getNamespace(), repository.getName())));
-     }
-     if (PermissionCheck.mayReadWorkflowConfig(repository) || PermissionCheck.mayConfigureWorkflowConfig(repository)) {
-       linksBuilder.single(link("availableRules", workflowEngineConfigLinks.availableRules()));
-     }
-    }
-    return new RepositoryEngineConfigDto(linksBuilder.build());
-  }
-
-  public abstract EngineConfiguration map(RepositoryEngineConfigDto engineConfigurationDto);
-
 }
