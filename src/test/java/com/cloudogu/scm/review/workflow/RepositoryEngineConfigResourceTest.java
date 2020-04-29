@@ -269,28 +269,6 @@ class RepositoryEngineConfigResourceTest {
     assertThat(response.getStatus()).isEqualTo(400);
   }
 
-  @Test
-  void shouldReturnAllAvailableRules() throws URISyntaxException, UnsupportedEncodingException, JsonProcessingException {
-    MockHttpRequest request = MockHttpRequest.get("/v2/workflow/rules");
-
-    dispatcher.invoke(request, response);
-
-    final JsonNode jsonNode = new ObjectMapper().readTree(response.getContentAsString());
-    final JsonNode rules = jsonNode.get("rules");
-    assertThat(rules).isNotNull();
-    assertThat(rules.isArray()).isTrue();
-    assertThat(rules.size()).isEqualTo(3);
-    final JsonNode successRule = rules.get(0);
-    assertThat(successRule.get("name").asText()).isEqualTo(SuccessRule.class.getSimpleName());
-    assertThat(successRule.get("applicableMultipleTimes").asBoolean()).isEqualTo(false);
-    final JsonNode failureRule = rules.get(1);
-    assertThat(failureRule.get("name").asText()).isEqualTo(FailureRule.class.getSimpleName());
-    assertThat(failureRule.get("applicableMultipleTimes").asBoolean()).isEqualTo(false);
-    final JsonNode configurableRule = rules.get(2);
-    assertThat(configurableRule.get("name").asText()).isEqualTo(ConfigurableRule.class.getSimpleName());
-    assertThat(configurableRule.get("applicableMultipleTimes").asBoolean()).isEqualTo(true);
-  }
-
   public static class SuccessRule implements Rule {
 
     @Override

@@ -43,7 +43,7 @@ public abstract class EngineConfigurator {
     this.uberClassLoader = uberClassLoader;
   }
 
-  final <T> T withUberClassLoader(Supplier<T> runnable) {
+  protected final <T> T withUberClassLoader(Supplier<T> runnable) {
     ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(uberClassLoader);
     try {

@@ -63,7 +63,7 @@ public class AllTasksDoneRule implements Rule {
     return commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId());
   }
 
-  private static class ResultContext {
+  static class ResultContext {
     private final int count;
 
     private ResultContext(int count) {

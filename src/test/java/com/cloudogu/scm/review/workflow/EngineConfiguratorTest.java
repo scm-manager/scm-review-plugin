@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.ImmutableList.of;
@@ -40,7 +39,6 @@ class EngineConfiguratorTest {
 
   private EngineConfigurator createEngineConfigurator(AvailableRules availableRules) {
     return new EngineConfigurator(availableRules, getClass().getClassLoader()) {
-
     };
   }
 

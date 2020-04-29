@@ -24,6 +24,9 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
@@ -68,10 +71,11 @@ class GlobalEngineConfigResourceTest {
   private RestDispatcher dispatcher;
   private final MockHttpResponse response = new MockHttpResponse();
 
-  private final Set<Rule> availableRules = new LinkedHashSet<>();
+  private Set<Rule> availableRules;
 
   @BeforeEach
   void init() {
+    availableRules = new LinkedHashSet<>();
     GlobalEngineConfigMapperImpl mapper = new GlobalEngineConfigMapperImpl();
     mapper.availableRules = AvailableRules.of(new SuccessRule());
     GlobalEngineConfigResource globalEngineConfigResource = new GlobalEngineConfigResource(mapper, configurator, availableRules);
@@ -159,7 +163,7 @@ class GlobalEngineConfigResourceTest {
   }
 
   @Test
-  void shouldReturnAvailableRules() throws URISyntaxException, UnsupportedEncodingException {
+  void shouldReturnAvailableRules() throws URISyntaxException, UnsupportedEncodingException, JsonProcessingException {
     availableRules.add(new SuccessRule());
     availableRules.add(new FailureRule());
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/rules");
@@ -167,7 +171,19 @@ class GlobalEngineConfigResourceTest {
     dispatcher.invoke(request, response);
 
     assertThat(response.getStatus()).isEqualTo(200);
-    assertThat(response.getContentAsString()).isEqualTo("[\"SuccessRule\",\"FailureRule\"]");
+    final JsonNode jsonNode = new ObjectMapper().readTree(response.getContentAsString());
+    final JsonNode rules = jsonNode.get("rules");
+    assertThat(rules).isNotNull();
+    assertThat(rules.isArray()).isTrue();
+    assertThat(rules).hasSize(2);
+    final JsonNode successRule = rules.get(0);
+    assertThat(successRule).isNotNull();
+    assertThat(successRule.get("name").asText()).isEqualTo(SuccessRule.class.getSimpleName());
+    assertThat(successRule.get("applicableMultipleTimes").asBoolean()).isEqualTo(false);
+    final JsonNode failureRule = rules.get(1);
+    assertThat(failureRule).isNotNull();
+    assertThat(failureRule.get("name").asText()).isEqualTo(FailureRule.class.getSimpleName());
+    assertThat(failureRule.get("applicableMultipleTimes").asBoolean()).isEqualTo(false);
   }
 
   public static class SuccessRule implements Rule {
