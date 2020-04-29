@@ -26,6 +26,7 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
 import com.cloudogu.scm.review.workflow.Engine;
+import com.cloudogu.scm.review.workflow.GlobalEngineConfigurator;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.inject.Provider;
@@ -71,7 +72,7 @@ public class RepositoryLinkEnricherTest {
   @Mock
   private ConfigService configService;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-  private Engine engine;
+  private GlobalEngineConfigurator globalEngineConfigurator;
   private RepositoryLinkEnricher enricher;
   private RepositoryService service;
 
@@ -94,7 +95,7 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldEnrichRepositoriesWithBranchSupport() {
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, engine);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, globalEngineConfigurator);
 
     when(service.isSupported(Command.MERGE)).thenReturn(true);
     mockGlobalConfig(false);
@@ -108,7 +109,7 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldNotEnrichRepositoriesForConfigWhenRepositoryConfigIsDisabled() {
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, engine);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, globalEngineConfigurator);
 
     when(service.isSupported(Command.MERGE)).thenReturn(true);
     mockGlobalConfig(true);
@@ -128,7 +129,7 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldNotEnrichRepositoriesWithoutBranchSupport() {
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, engine);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, globalEngineConfigurator);
 
     when(service.isSupported(Command.MERGE)).thenReturn(false);
     Repository repo = new Repository("id", "type", "space", "name");
@@ -140,7 +141,7 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldNotEnrichBecauseOfMissingPermission() {
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, engine);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, globalEngineConfigurator);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
     enricher.enrich(context, appender);
@@ -150,11 +151,10 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldEnrichWorkflowConfigLink() {
-    when(engine.configure(any(Repository.class)).getEngineConfiguration().isEnabled()).thenReturn(true);
     when(service.isSupported(Command.MERGE)).thenReturn(true);
     mockGlobalConfig(true);
 
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, engine);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, serviceFactory, configService, globalEngineConfigurator);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
     enricher.enrich(context, appender);

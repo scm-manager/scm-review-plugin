@@ -21,54 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package com.cloudogu.scm.review.workflow;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
-import sonia.scm.plugin.PluginLoader;
+import com.google.inject.Injector;
 
-import javax.inject.Inject;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class AvailableRules {
+ public class EngineConfigurators {
 
-  private final Set<Class<? extends Rule>> rules;
+   private EngineConfigurators() {
+   }
 
-  @Inject
-  public AvailableRules(PluginLoader pluginLoader) {
-    this(pluginLoader.getExtensionProcessor().byExtensionPoint(Rule.class));
+  public static List<Rule> getRules(Injector injector, AvailableRules availableRules, Optional<EngineConfiguration> configuration) {
+    if (configuration.isPresent() && !configuration.get().isEnabled()) {
+      return Collections.emptyList();
+    }
+
+    return configuration
+      .map(engineConfiguration -> engineConfiguration.getRules()
+        .stream()
+        .map(rule -> createRuleInstance(injector, availableRules, rule))
+        .collect(Collectors.toList()))
+      .orElse(Collections.emptyList());
   }
 
-  private AvailableRules(Iterable<Class<? extends Rule>> rules) {
-    this.rules = ImmutableSet.copyOf(rules);
+  private static Rule createRuleInstance(Injector injector, AvailableRules availableRules, String ruleName) {
+    Class<? extends Rule> ruleClass = availableRules.classOf(ruleName);
+    return injector.getInstance(ruleClass);
   }
-
-  @SafeVarargs
-  @VisibleForTesting
-  static AvailableRules of(Class<? extends Rule>... rules) {
-    return new AvailableRules(ImmutableSet.copyOf(rules));
-  }
-
-  public List<String> getRuleNames() {
-    return rules.stream().map(AvailableRules::nameOf).collect(Collectors.toList());
-  }
-
-  public Class<? extends Rule> classOf(String name) {
-    return rules.stream()
-      .filter(ruleClass -> ruleClass.getSimpleName().equals(name))
-      .findFirst()
-      .orElseThrow(() -> new UnknownRuleException(name));
-  }
-
-  public static String nameOf(Rule rule) {
-    return nameOf(rule.getClass());
-  }
-
-  public static String nameOf(Class<? extends Rule> ruleClass) {
-    return ruleClass.getSimpleName();
-  }
-
 }

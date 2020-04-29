@@ -44,7 +44,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,7 +69,7 @@ public class EngineResultResource {
   @Path("")
   @Produces(WORKFLOW_RESULT_MEDIA_TYPE)
   @Operation(
-    summary = "Worflow engine result",
+    summary = "Workflow engine result",
     description = "Returns the result of the workflow checks for the given pull request.",
     tags = "Workflow Engine",
     operationId = "review_get_repository_workflow_result"
@@ -79,7 +78,7 @@ public class EngineResultResource {
     responseCode = "200",
     description = "success",
     content = @Content(
-      mediaType = MediaType.APPLICATION_JSON,
+      mediaType = WORKFLOW_RESULT_MEDIA_TYPE,
       schema = @Schema(implementation = ResultListDto.class)
     )
   )
@@ -95,9 +94,9 @@ public class EngineResultResource {
     )
   )
   public ResultListDto getResult(@Context UriInfo uriInfo,
-                                          @PathParam("namespace") String namespace,
-                                          @PathParam("name") String name,
-                                          @PathParam("pullRequestId") String pullRequestId) {
+                                 @PathParam("namespace") String namespace,
+                                 @PathParam("name") String name,
+                                 @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = pullRequestService.getRepository(namespace, name);
     PullRequest pullRequest = pullRequestService.get(namespace, name, pullRequestId);
 

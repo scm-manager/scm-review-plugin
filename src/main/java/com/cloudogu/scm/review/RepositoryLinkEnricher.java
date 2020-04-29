@@ -26,7 +26,7 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.config.api.RepositoryConfigResource;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
-import com.cloudogu.scm.review.workflow.Engine;
+import com.cloudogu.scm.review.workflow.GlobalEngineConfigurator;
 import com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
@@ -44,8 +44,9 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import static com.cloudogu.scm.review.PermissionCheck.mayConfigure;
-import static com.cloudogu.scm.review.PermissionCheck.mayConfigureWorkflowEngine;
+import static com.cloudogu.scm.review.PermissionCheck.mayConfigureWorkflowConfig;
 import static com.cloudogu.scm.review.PermissionCheck.mayRead;
+import static com.cloudogu.scm.review.PermissionCheck.mayReadWorkflowConfig;
 
 @Extension
 @Enrich(Repository.class)
@@ -54,14 +55,14 @@ public class RepositoryLinkEnricher implements HalEnricher {
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
   private final RepositoryServiceFactory serviceFactory;
   private final ConfigService configService;
-  private final Engine engine;
+  private final GlobalEngineConfigurator globalEngineConfigurator;
 
   @Inject
-  public RepositoryLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, RepositoryServiceFactory serviceFactory, ConfigService configService, Engine engine) {
+  public RepositoryLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, RepositoryServiceFactory serviceFactory, ConfigService configService, GlobalEngineConfigurator globalEngineConfigurator) {
     this.scmPathInfoStore = scmPathInfoStore;
     this.serviceFactory = serviceFactory;
     this.configService = configService;
-    this.engine = engine;
+    this.globalEngineConfigurator = globalEngineConfigurator;
   }
 
   @Override
@@ -77,11 +78,23 @@ public class RepositoryLinkEnricher implements HalEnricher {
           LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryConfigResource.class);
           appender.appendLink("pullRequestConfig", linkBuilder.method("getRepositoryConfig").parameters(repository.getNamespace(), repository.getName()).href());
         }
-        if (mayConfigureWorkflowEngine(repository)) {
+        if (isWorkflowEngineConfigurable(repository)) {
           LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
           appender.appendLink("workflowConfig", linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
         }
       }
     }
+  }
+
+  private boolean isWorkflowEngineConfigurable(Repository repository) {
+    return isWorkflowRepositoryConfigurationEnabled() && isPermittedToConfigureWorkflow(repository);
+  }
+
+  private boolean isPermittedToConfigureWorkflow(Repository repository) {
+    return mayReadWorkflowConfig(repository) || mayConfigureWorkflowConfig(repository);
+  }
+
+  private boolean isWorkflowRepositoryConfigurationEnabled() {
+    return !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration();
   }
 }

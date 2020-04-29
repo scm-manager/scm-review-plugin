@@ -21,54 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.workflow;
 
 import com.google.inject.Injector;
 import sonia.scm.store.ConfigurationStore;
+import sonia.scm.store.ConfigurationStoreFactory;
 
-import java.util.Collections;
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
+public class GlobalEngineConfigurator {
 
-public class EngineConfigurator {
+  private static final String STORE_NAME = "workflow-engine";
 
   private final Injector injector;
   private final AvailableRules availableRules;
-  private final ConfigurationStore<EngineConfiguration> store;
+  private final ConfigurationStoreFactory storeFactory;
 
-  EngineConfigurator(Injector injector, AvailableRules availableRules, ConfigurationStore<EngineConfiguration> store) {
+  @Inject
+  GlobalEngineConfigurator(Injector injector, AvailableRules availableRules, ConfigurationStoreFactory storeFactory) {
     this.injector = injector;
     this.availableRules = availableRules;
-    this.store = store;
+    this.storeFactory = storeFactory;
   }
 
-  public EngineConfiguration getEngineConfiguration() {
-    return store.getOptional().orElse(new EngineConfiguration());
+  public GlobalEngineConfiguration getEngineConfiguration() {
+    return createStore().getOptional().orElse(new GlobalEngineConfiguration());
   }
 
-  public void setEngineConfiguration(EngineConfiguration engineConfiguration) {
-    store.set(engineConfiguration);
+  public void setEngineConfiguration(GlobalEngineConfiguration engineConfiguration) {
+    createStore().set(engineConfiguration);
   }
 
   public List<Rule> getRules() {
-    Optional<EngineConfiguration> configuration = store.getOptional();
-
-    if (configuration.isPresent() && !configuration.get().isEnabled()) {
-      return Collections.emptyList();
-    }
-
-    return configuration
-      .map(engineConfiguration -> engineConfiguration.getRules()
-        .stream()
-        .map(this::createRuleInstance)
-        .collect(Collectors.toList()))
-      .orElse(Collections.emptyList());
+    return EngineConfigurators.getRules(injector, availableRules, Optional.ofNullable(createStore().get()));
   }
 
-  private Rule createRuleInstance(String ruleName) {
-      Class<? extends Rule> ruleClass = availableRules.classOf(ruleName);
-      return injector.getInstance(ruleClass);
+  private ConfigurationStore<GlobalEngineConfiguration> createStore() {
+    return storeFactory
+      .withType(GlobalEngineConfiguration.class)
+      .withName(STORE_NAME)
+      .build();
   }
 }

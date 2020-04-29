@@ -26,16 +26,11 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import de.otto.edison.hal.HalRepresentation;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import sonia.scm.api.v2.resources.ErrorDto;
-import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryManager;
 import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
@@ -44,59 +39,52 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static sonia.scm.ContextEntry.ContextBuilder.entity;
-import static sonia.scm.NotFoundException.notFound;
+import static com.cloudogu.scm.review.workflow.GlobalEngineConfigResource.WORKFLOW_CONFIG_PATH;
+import static com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource.WORKFLOW_MEDIA_TYPE;
 
-@OpenAPIDefinition(tags = {
-  @Tag(name = "Workflow Engine", description = "Workflow engine related endpoints provided by review-plugin")
-})
-@Path(RepositoryEngineConfigResource.WORKFLOW_CONFIG_PATH)
-public class RepositoryEngineConfigResource {
+@Path(WORKFLOW_CONFIG_PATH)
+public class GlobalEngineConfigResource {
 
-  public static final String WORKFLOW_MEDIA_TYPE = VndMediaType.PREFIX + "workflow" + VndMediaType.SUFFIX;
   public static final String WORKFLOW_CONFIG_PATH = "v2/workflow";
 
-  private final RepositoryManager repositoryManager;
-  private final RepositoryEngineConfigurator configurator;
-  private final RepositoryEngineConfigMapper mapper;
+  private final GlobalEngineConfigMapper mapper;
+  private final GlobalEngineConfigurator configurator;
   private final Set<Rule> availableRules;
 
   @Inject
-  public RepositoryEngineConfigResource(RepositoryManager repositoryManager, RepositoryEngineConfigurator configurator, RepositoryEngineConfigMapper mapper, Set<Rule> availableRules) {
-    this.repositoryManager = repositoryManager;
-    this.configurator = configurator;
+  public GlobalEngineConfigResource(GlobalEngineConfigMapper mapper, GlobalEngineConfigurator configurator, Set<Rule> availableRules) {
     this.mapper = mapper;
+    this.configurator = configurator;
     this.availableRules = availableRules;
   }
 
   @GET
-  @Path("{namespace}/{name}/config")
+  @Path("config")
   @Produces(WORKFLOW_MEDIA_TYPE)
   @Operation(
-    summary = "Workflow engine configuration",
-    description = "Returns the repository specific workflow engine configuration.",
+    summary = "Global workflow engine configuration",
+    description = "Returns the global workflow engine configuration.",
     tags = "Workflow Engine",
-    operationId = "review_get_repository_workflow_configuration"
+    operationId = "review_get_global_workflow_engine_config"
   )
   @ApiResponse(
     responseCode = "200",
     description = "success",
     content = @Content(
-      mediaType = MediaType.APPLICATION_JSON,
-      schema = @Schema(implementation = HalRepresentation.class)
+      mediaType = WORKFLOW_MEDIA_TYPE,
+      schema = @Schema(implementation = GlobalEngineConfigDto.class)
     )
   )
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
-  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"repository:readWorkflowConfig\" privilege")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"readWorkflowEngineConfig\" privilege")
   @ApiResponse(
     responseCode = "500",
     description = "internal server error",
@@ -105,26 +93,24 @@ public class RepositoryEngineConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public RepositoryEngineConfigDto getRepositoryEngineConfig(@Context UriInfo uriInfo,
-                                                             @PathParam("namespace") String namespace,
-                                                             @PathParam("name") String name) {
-    Repository repository = loadRepository(namespace, name);
-    PermissionCheck.checkReadWorkflowConfig(repository);
-    return mapper.map(configurator.getEngineConfiguration(repository), repository, uriInfo);
+  public GlobalEngineConfigDto getGlobalEngineConfig(@Context UriInfo uriInfo) {
+    PermissionCheck.checkReadWorkflowEngineGlobalConfig();
+    return mapper.map(configurator.getEngineConfiguration(), uriInfo);
   }
 
   @PUT
-  @Path("{namespace}/{name}/config")
+  @Path("config")
   @Consumes(WORKFLOW_MEDIA_TYPE)
   @Operation(
-    summary = "Update Repository workflow engine configuration",
-    description = "Modifies the repository-specific workflow engine configuration.",
+    summary = "Update global workflow engine configuration",
+    description = "Modifies the global workflow engine configuration.",
     tags = "Workflow Engine",
-    operationId = "review_put_repository_workflow_config"
+    operationId = "review_put_global_workflow_engine_config"
+
   )
   @ApiResponse(responseCode = "204", description = "update success")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
-  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"repository:writeWorkflowConfig\" privilege")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"configurePullRequest\" privilege")
   @ApiResponse(
     responseCode = "500",
     description = "internal server error",
@@ -133,18 +119,9 @@ public class RepositoryEngineConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public void setRepositoryEngineConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
-    Repository repository = loadRepository(namespace, name);
-    PermissionCheck.checkWriteWorkflowConfig(repository);
-    configurator.setEngineConfiguration(repository, mapper.map(configDto));
-  }
-
-  private Repository loadRepository(String namespace, String name) {
-    Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
-    if (repository == null) {
-      throw notFound(entity(new NamespaceAndName(namespace, name)));
-    }
-    return repository;
+  public void setGlobalEngineConfig(@Valid GlobalEngineConfigDto configDto) {
+    PermissionCheck.checkWriteWorkflowEngineGlobalConfig();
+    configurator.setEngineConfiguration(mapper.map(configDto));
   }
 
   @GET
@@ -160,7 +137,7 @@ public class RepositoryEngineConfigResource {
     responseCode = "200",
     description = "success",
     content = @Content(
-      mediaType = MediaType.APPLICATION_JSON,
+      mediaType = WORKFLOW_MEDIA_TYPE,
       schema = @Schema(implementation = HalRepresentation.class)
     )
   )
