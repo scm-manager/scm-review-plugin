@@ -45,6 +45,7 @@ public class CommentDto extends BasicCommentDto {
 
   private boolean systemComment;
   private boolean outdated;
+  private boolean emergencyMerged;
 
   private String type;
 

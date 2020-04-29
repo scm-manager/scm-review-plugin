@@ -83,6 +83,6 @@ class WorkflowMergeGuardTest {
 
     assertThat(obstacles)
       .extracting("key")
-      .containsExactly("workflow.rule.Rule.failed");
+      .containsExactly("Rule");
   }
 }

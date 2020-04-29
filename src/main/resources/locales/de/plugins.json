@@ -54,6 +54,7 @@
         "notification": "Pull Request erfolgreich gemerged!",
         "targetDeleted": "Der Target Branch wurde gelöscht!",
         "approved": "Freigegeben durch {{name}}",
+        "ignoredMergeObstacles": "Folgende Regeln wurden beim Mergen des Pull Requests ignoriert:",
         "buttons": {
           "edit": "Bearbeiten",
           "approve": "Freigeben",
@@ -78,7 +79,10 @@
         "conflictTabHint": "Die bestehenden Konflikte werden im Reiter 'Konflikte' angezeigt."
       },
       "mergeModal": {
-        "title": "Pull Request mergen",
+        "title": {
+          "merge": "Pull Request mergen",
+          "emergencyMerge": "Pull Request Notfall-Merge"
+        },
         "merge": "Merge",
         "cancel": "Abbrechen",
         "deleteSourceBranch": {
@@ -182,7 +186,8 @@
       "systemMessage": {
         "merged": "Der Pull Request wurde gemerged.",
         "rejected": "Der Pull Request wurde abgelehnt.",
-        "sourceDeleted": "Der Quell-Branch des Pull Requests wurde gelöscht."
+        "sourceDeleted": "Der Quell-Branch des Pull Requests wurde gelöscht.",
+        "emergencyMerged": "Dieser Pull Request wurde mit einem Notfall-Merge gemerged. Dabei wurden die Regeln der Workflow Engine ignoriert."
       },
       "type": {
         "comment": "Kommentar",
@@ -196,7 +201,8 @@
           "label": "veraltet",
           "title": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches",
           "titleClickable": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
-        }
+        },
+        "emergencyMerged": "Notfall-Merge"
       }
     },
     "changeNotification": {

@@ -46,6 +46,8 @@ export type PullRequest = BasicPullRequest & {
   sourceRevision: string;
   targetRevision: string;
   markedAsReviewed: string[];
+  emergencyMerged: boolean;
+  ignoredMergeObstacles: string[];
 };
 
 export type Location = {
@@ -68,6 +70,7 @@ export type Comment = BasicComment & {
   date: string;
   outdated: boolean;
   systemComment: boolean;
+  emergencyMerged: boolean;
   file?: string;
   lineId?: string;
   replies: Comment[];
@@ -126,6 +129,7 @@ export type MergeCommit = {
   commitMessage: string;
   shouldDeleteSourceBranch: boolean;
   overrideMessage?: string;
+  ignoredMergeObstacles?: string[];
 };
 
 export type MergeCheck = {

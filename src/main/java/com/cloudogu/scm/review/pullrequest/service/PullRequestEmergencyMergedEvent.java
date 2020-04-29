@@ -21,22 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.pullrequest.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+package com.cloudogu.scm.review.pullrequest.service;
 
-import java.util.List;
+import sonia.scm.event.Event;
+import sonia.scm.repository.Repository;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class MergeCommitDto {
-  private String commitMessage;
-  private boolean shouldDeleteSourceBranch;
-  private String overrideMessage;
-  private List<String> ignoredMergeObstacles;
+@Event
+public class PullRequestEmergencyMergedEvent extends BasicPullRequestEvent {
+
+  public PullRequestEmergencyMergedEvent(Repository repository, PullRequest pullRequest) {
+    super(repository, pullRequest);
+  }
 }

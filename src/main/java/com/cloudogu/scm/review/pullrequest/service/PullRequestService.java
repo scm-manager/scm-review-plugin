@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
@@ -105,6 +106,8 @@ public interface PullRequestService {
   void setRevisions(Repository repository, String id, String targetRevision, String revisionToMerge);
 
   void setMerged(Repository repository, String pullRequestId, String overrideMessage);
+
+  void setEmergencyMerged(Repository repository, String pullRequestId, MergeCommitDto mergeCommitDto);
 
   void updated(Repository repository, String pullRequestId);
 

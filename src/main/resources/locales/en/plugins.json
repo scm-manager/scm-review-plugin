@@ -54,6 +54,7 @@
         "notification": "Pull request merged successfully!",
         "targetDeleted": "The target branch has been deleted!",
         "approved": "Approved by {{name}}",
+        "ignoredMergeObstacles": "Following rules were ignored on merging the pull request:",
         "buttons": {
           "edit": "Edit",
           "approve": "Approve",
@@ -78,7 +79,10 @@
         "conflictTabHint": "Existing conflicts are shown in the tab 'Conflicts'."
       },
       "mergeModal": {
-        "title": "Merge Pull Request",
+        "title": {
+          "merge": "Merge Pull Request",
+          "emergencyMerge": "Emergency Merge Pull Request"
+        },
         "merge": "Merge",
         "cancel": "Cancel",
         "deleteSourceBranch": {
@@ -180,7 +184,8 @@
       "systemMessage": {
         "merged": "The pull request has been merged.",
         "rejected": "The pull request has been rejected.",
-        "sourceDeleted": "The source branch of the pull request has been deleted."
+        "sourceDeleted": "The source branch of the pull request has been deleted.",
+        "emergencyMerged": "The pull request has been merged with an emergency merge. The workflow engine rules has been ignored."
       },
       "type": {
         "comment": "Comment",
@@ -194,7 +199,8 @@
           "label": "outdated",
           "title": "The comment is related to an older of the source or target branch",
           "titleClickable": "The comment is related to an older of the source or target branch. Click here to see the original context."
-        }
+        },
+        "emergencyMerged": "Emergency Merge"
       }
     },
     "changeNotification": {

@@ -86,9 +86,9 @@ public class CommentInitializer {
 
     List<ContextLine> contextLines =
       computeContext(comment, diffResult)
-      .stream()
-      .map(ContextLine::copy)
-      .collect(Collectors.toList());
+        .stream()
+        .map(ContextLine::copy)
+        .collect(Collectors.toList());
     comment.setContext(new InlineContext(contextLines));
   }
 

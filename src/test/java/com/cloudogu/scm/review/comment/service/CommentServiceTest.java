@@ -26,18 +26,23 @@ package com.cloudogu.scm.review.comment.service;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableSet;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -48,6 +53,7 @@ import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
+import sonia.scm.user.User;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -69,6 +75,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -668,6 +675,23 @@ public class CommentServiceTest {
     assertThat(storedComment.getComment()).isEqualTo("merged");
   }
 
+
+  @Test
+  public void shouldAddCommentOnEmergencyMergeEvent() {
+    String overrideMessage = "really urgent";
+    PullRequest pullRequest = mockPullRequest();
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+    when(pullRequest.getOverrideMessage()).thenReturn(overrideMessage);
+
+    commentService.addCommentOnEmergencyMerge(new PullRequestEmergencyMergedEvent(REPOSITORY, pullRequest));
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getComment()).isEqualTo(overrideMessage);
+    assertThat(storedComment.isEmergencyMerged()).isTrue();
+    assertThat(storedComment.getAuthor()).isEqualTo("author");
+  }
+
   @Test
   @SubjectAware(username = "dent")
   public void shouldAddCommentOnRejectEventByUser() {
@@ -683,9 +707,10 @@ public class CommentServiceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldAddCommentOnRejectEventByDeletedBranch() {
+    PullRequest pullRequest = mockPullRequest();
     when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED));
+    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, pullRequest, PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED));
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();

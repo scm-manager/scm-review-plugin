@@ -23,7 +23,7 @@
  */
 import React, { FC } from "react";
 import { Comment } from "../types/PullRequest";
-import { FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag } from "./tags";
+import {EmergencyMergeTag, FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag} from "./tags";
 import { useTranslation } from "react-i18next";
 import TagGroup from "./TagGroup";
 import { findLatestTransition } from "./transitions";
@@ -48,6 +48,10 @@ const CommentTags: FC<Props> = ({ comment, onOpenContext }) => {
 
   if (comment.systemComment) {
     tags.push(<SystemTag key="system" />);
+  }
+
+  if (comment.emergencyMerged) {
+    tags.push(<EmergencyMergeTag/>)
   }
 
   if (comment.type === "TASK_TODO") {

@@ -35,6 +35,7 @@ import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -62,6 +63,8 @@ public class PullRequestDto extends HalRepresentation {
   private String sourceRevision;
   private String targetRevision;
   private Collection<String> markedAsReviewed;
+  private boolean emergencyMerged;
+  private List<String> ignoredMergeObstacles;
 
 
   @Override

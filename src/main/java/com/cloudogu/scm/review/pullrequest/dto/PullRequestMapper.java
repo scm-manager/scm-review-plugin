@@ -221,11 +221,18 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private void appendMergeStrategyLinks(Links.Builder linksBuilder, Repository repository, PullRequest pullRequest) {
     try (RepositoryService service = serviceFactory.create(repository)) {
       if (service.isSupported(Command.MERGE)) {
-        List<Link> strategyLinks = service.getMergeCommand().getSupportedMergeStrategies()
+        List<Link> mergeStrategyLinks = service.getMergeCommand().getSupportedMergeStrategies()
           .stream()
-          .map(strategy -> createStrategyLink(repository.getNamespaceAndName(), pullRequest, strategy))
+          .map(strategy -> createMergeStrategyLink(repository.getNamespaceAndName(), pullRequest, strategy))
           .collect(toList());
-        linksBuilder.array(strategyLinks);
+        linksBuilder.array(mergeStrategyLinks);
+        if (PermissionCheck.mayPerformEmergencyMerge(repository)) {
+          List<Link> emergencyMergeStrategyLinks = service.getMergeCommand().getSupportedMergeStrategies()
+            .stream()
+            .map(strategy -> createEmergencyMergeStrategyLink(repository.getNamespaceAndName(), pullRequest, strategy))
+            .collect(toList());
+          linksBuilder.array(emergencyMergeStrategyLinks);
+        }
       }
     }
   }
@@ -238,8 +245,18 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     return new ReviewerDto(user.getId(), user.getDisplayName(), user.getMail(), approved);
   }
 
-  private Link createStrategyLink(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
+  private Link createMergeStrategyLink(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
     return Link.linkBuilder("merge", pullRequestResourceLinks.mergeLinks().merge(
+      namespaceAndName.getNamespace(),
+      namespaceAndName.getName(),
+      pullRequest.getId(),
+      strategy
+      )
+    ).withName(strategy.name()).build();
+  }
+
+  private Link createEmergencyMergeStrategyLink(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
+    return Link.linkBuilder("emergencyMerge", pullRequestResourceLinks.mergeLinks().emergencyMerge(
       namespaceAndName.getNamespace(),
       namespaceAndName.getName(),
       pullRequest.getId(),

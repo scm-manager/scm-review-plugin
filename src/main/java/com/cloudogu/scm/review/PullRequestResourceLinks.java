@@ -214,6 +214,11 @@ public class PullRequestResourceLinks {
         .method("merge").parameters(namespace, name, pullRequestId).href() + "?strategy=" + strategy;
     }
 
+    public String emergencyMerge(String namespace, String name, String pullRequestId, MergeStrategy strategy) {
+      return mergeLinkBuilder
+        .method("emergencyMerge").parameters(namespace, name, pullRequestId).href() + "?strategy=" + strategy;
+    }
+
     public String conflicts(String namespace, String name, String pullRequestId) {
       return mergeLinkBuilder.method("conflicts").parameters(namespace, name, pullRequestId).href();
     }

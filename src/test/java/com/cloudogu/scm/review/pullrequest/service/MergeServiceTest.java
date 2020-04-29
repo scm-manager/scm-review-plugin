@@ -108,7 +108,10 @@ public class MergeServiceTest {
   @Before
   public void initService() {
     service = new MergeService(serviceFactory, pullRequestService, mergeGuards, branchProtectionHook);
-    doAnswer(invocation -> { invocation.<Runnable>getArgument(0).run(); return null; })
+    doAnswer(invocation -> {
+      invocation.<Runnable>getArgument(0).run();
+      return null;
+    })
       .when(branchProtectionHook).runPrivileged(any());
   }
 
@@ -124,11 +127,32 @@ public class MergeServiceTest {
   public void shouldMergeSuccessfully() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+    mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
     verify(pullRequestService).setRevisions(REPOSITORY, "1", "1", "2");
+  }
+
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldEmergencyMergeSuccessfully() {
+    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
+    mockPullRequest("squash", "master", "1");
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true);
+    verify(pullRequestService).setEmergencyMerged(REPOSITORY, "1", mergeCommit);
+  }
+
+  @Test(expected = UnauthorizedException.class)
+  @SubjectAware(username = "trillian")
+  public void shouldNotEmergencyMergeWithoutPermission() {
+    mockPullRequest("squash", "master", "1");
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true);
   }
 
   @Test(expected = UnauthorizedException.class)
@@ -137,7 +161,7 @@ public class MergeServiceTest {
     mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
   }
 
   @Test
@@ -150,7 +174,7 @@ public class MergeServiceTest {
     when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);
 
     MergeCommitDto mergeCommit = createMergeCommit(true);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
 
     verify(branchCommandBuilder).delete("squash");
   }
@@ -159,10 +183,10 @@ public class MergeServiceTest {
   @SubjectAware(username = "dent", password = "secret")
   public void shouldUpdatePullRequestStatus() throws IOException {
     mocksForPullRequestUpdate("master");
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+    mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(true);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, false);
 
     verify(pullRequestService).setMerged(REPOSITORY, "1", "override");
   }
@@ -175,7 +199,8 @@ public class MergeServiceTest {
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
-    assertThrows(MergeStrategyNotSupportedException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH));
+    assertThrows(MergeStrategyNotSupportedException.class,
+      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test
@@ -187,7 +212,8 @@ public class MergeServiceTest {
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
-    assertThrows(MergeNotAllowedException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH));
+    assertThrows(MergeNotAllowedException.class,
+      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test
@@ -195,10 +221,10 @@ public class MergeServiceTest {
   public void shouldNotThrowExceptionIfObstacleIsOverrideable() throws IOException {
     mocksForPullRequestUpdate("master");
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
-    TestMergeObstacle obstacle = mockMergeGuard(pullRequest, true);
+    mockMergeGuard(pullRequest, true);
 
     MergeCommitDto mergeCommit = createMergeCommit(true);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, false);
 
     verify(pullRequestService).setMerged(REPOSITORY, "1", "override");
   }
@@ -211,7 +237,8 @@ public class MergeServiceTest {
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
-    assertThrows(CannotMergeNotOpenPullRequestException.class, () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH));
+    assertThrows(CannotMergeNotOpenPullRequestException.class,
+      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test

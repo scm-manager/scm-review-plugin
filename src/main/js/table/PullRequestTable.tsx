@@ -58,6 +58,15 @@ class PullRequestTable extends React.Component<Props> {
     return <TodoTag label={`${todos}`} title={t("scm-review-plugin.pullRequest.tasks.todo", { count: todos })} />;
   };
 
+  evaluateTagColor = (pullRequest: PullRequest) => {
+    if (pullRequest.status === "MERGED") {
+      return "success";
+    } else if (pullRequest.status === "REJECTED") {
+      return "danger";
+    }
+    return "light";
+  };
+
   render() {
     const { pullRequests, t } = this.props;
     return (
@@ -97,8 +106,9 @@ class PullRequestTable extends React.Component<Props> {
           {(row: any) => (
             <Tag
               className="is-medium"
-              color={row.status === "MERGED" ? "success" : row.status === "REJECTED" ? "danger" : "light"}
+              color={this.evaluateTagColor(row)}
               label={row.status}
+              icon={row.emergencyMerged ? "exclamation-triangle" : undefined}
             />
           )}
         </MobileHiddenColumn>

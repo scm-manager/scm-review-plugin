@@ -25,16 +25,29 @@ import React from "react";
 import { Button, Modal, SubmitButton, Textarea } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { MergeCheck } from "./types/PullRequest";
+import styled from "styled-components";
+import OverrideModalRow from "./OverrideModalRow";
 
 type Props = WithTranslation & {
   close: () => void;
   proceed: (overrideMessage: string) => void;
-  mergeCheck: MergeCheck;
+  mergeCheck?: MergeCheck;
 };
 
 type State = {
   overrideMessage: string;
 };
+
+const StyledModal = styled(Modal)`
+  .modal-card-title {
+    color: #fff;
+  }
+`;
+
+const Description = styled.p`
+  margin-top: 0.5rem;
+  margin-bottom: -1rem;
+`;
 
 class OverrideModal extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -60,7 +73,7 @@ class OverrideModal extends React.Component<Props, State> {
           color="grey"
         />
         <SubmitButton
-          color={"danger"}
+          color="danger"
           icon={"exclamation-triangle"}
           label={t("scm-review-plugin.showPullRequest.overrideModal.continue")}
           action={() => proceed(overrideMessage)}
@@ -69,11 +82,11 @@ class OverrideModal extends React.Component<Props, State> {
     );
 
     const obstacles = (
-      <ul>
-        {mergeCheck.mergeObstacles.map(obstacle => (
-          <li>{t(obstacle.key)}</li>
+      <>
+        {mergeCheck?.mergeObstacles.map(obstacle => (
+          <OverrideModalRow result={{ rule: obstacle.key, failed: true }} />
         ))}
-      </ul>
+      </>
     );
 
     const body = (
@@ -81,14 +94,14 @@ class OverrideModal extends React.Component<Props, State> {
         <div className={"content"}>
           {t("scm-review-plugin.showPullRequest.overrideModal.introduction")}
           {obstacles}
-          <p>{t("scm-review-plugin.showPullRequest.overrideModal.addMessageText")}</p>
+          <Description>{t("scm-review-plugin.showPullRequest.overrideModal.addMessageText")}</Description>
         </div>
         <Textarea onChange={this.onChangeOverrideMessage} />
       </>
     );
 
     return (
-      <Modal
+      <StyledModal
         title={t("scm-review-plugin.showPullRequest.overrideModal.title")}
         active={true}
         body={body}
