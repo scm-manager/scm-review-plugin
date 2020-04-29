@@ -87,15 +87,16 @@ public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConf
   @ObjectFactory
   RepositoryEngineConfigDto create(@Context Repository repository, @Context UriInfo uriInfo) {
     final Links.Builder linksBuilder = new Links.Builder();
-    PullRequestResourceLinks.WorkflowEngineConfigLinks workflowEngineConfigLinks = new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineConfigLinks();
+    PullRequestResourceLinks links = new PullRequestResourceLinks(uriInfo::getBaseUri);
+    PullRequestResourceLinks.WorkflowEngineConfigLinks workflowEngineConfigLinks = links.workflowEngineConfigLinks();
     linksBuilder.self(workflowEngineConfigLinks.getConfig(repository.getNamespace(), repository.getName()));
     if (!globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()) {
-     if (PermissionCheck.mayConfigureWorkflowConfig(repository)) {
-       linksBuilder.single(link("update", workflowEngineConfigLinks.setConfig(repository.getNamespace(), repository.getName())));
-     }
-     if (PermissionCheck.mayReadWorkflowConfig(repository) || PermissionCheck.mayConfigureWorkflowConfig(repository)) {
-       linksBuilder.single(link("availableRules", workflowEngineConfigLinks.availableRules()));
-     }
+      if (PermissionCheck.mayConfigureWorkflowConfig(repository)) {
+        linksBuilder.single(link("update", workflowEngineConfigLinks.setConfig(repository.getNamespace(), repository.getName())));
+      }
+      if (PermissionCheck.mayReadWorkflowConfig(repository) || PermissionCheck.mayConfigureWorkflowConfig(repository)) {
+        linksBuilder.single(link("availableRules", links.workflowEngineGlobalConfigLinks().availableRules()));
+      }
     }
     return new RepositoryEngineConfigDto(linksBuilder.build());
   }

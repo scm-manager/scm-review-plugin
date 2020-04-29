@@ -45,7 +45,7 @@ public class GlobalEngineConfigurator extends EngineConfigurator {
   }
 
   public GlobalEngineConfiguration getEngineConfiguration() {
-    return createStore().getOptional().orElse(new GlobalEngineConfiguration());
+    return withUberClassLoader(() -> createStore().getOptional().orElse(new GlobalEngineConfiguration()));
   }
 
   public void setEngineConfiguration(GlobalEngineConfiguration engineConfiguration) {
@@ -53,13 +53,13 @@ public class GlobalEngineConfigurator extends EngineConfigurator {
   }
 
   public List<RuleInstance> getRules() {
-    return getRules(Optional.ofNullable(createStore().get()));
+    return withUberClassLoader(() -> getRules(Optional.ofNullable(createStore().get())));
   }
 
   private ConfigurationStore<GlobalEngineConfiguration> createStore() {
-    return withUberClassLoader(() -> storeFactory
+    return storeFactory
       .withType(GlobalEngineConfiguration.class)
       .withName(STORE_NAME)
-      .build());
+      .build();
   }
 }

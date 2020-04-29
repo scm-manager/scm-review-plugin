@@ -262,11 +262,6 @@ public class PullRequestResourceLinks {
       return workflowEngineConfigLinkBuilder
         .method("setRepositoryEngineConfig").parameters(namespace, name).href();
     }
-
-    public String availableRules() {
-      return workflowEngineConfigLinkBuilder
-        .method("getAvailableRules").parameters().href();
-    }
   }
 
   public WorkflowEngineGlobalConfigLinks workflowEngineGlobalConfigLinks() {

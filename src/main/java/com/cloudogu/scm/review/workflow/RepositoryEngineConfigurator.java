@@ -45,7 +45,7 @@ public class RepositoryEngineConfigurator extends EngineConfigurator {
   }
 
   public EngineConfiguration getEngineConfiguration(Repository repository) {
-    return createStore(repository).getOptional().orElse(new EngineConfiguration());
+    return withUberClassLoader(() -> createStore(repository).getOptional().orElse(new EngineConfiguration()));
   }
 
   public void setEngineConfiguration(Repository repository, EngineConfiguration engineConfiguration) {
@@ -53,14 +53,14 @@ public class RepositoryEngineConfigurator extends EngineConfigurator {
   }
 
   public List<RuleInstance> getRules(Repository repository) {
-    return getRules(createStore(repository).getOptional());
+    return withUberClassLoader(() -> getRules(createStore(repository).getOptional()));
   }
 
   private ConfigurationStore<EngineConfiguration> createStore(Repository repository) {
-    return withUberClassLoader(() -> storeFactory
+    return storeFactory
       .withType(EngineConfiguration.class)
       .withName(STORE_NAME)
       .forRepository(repository)
-      .build());
+      .build();
   }
 }
