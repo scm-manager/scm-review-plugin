@@ -45,18 +45,11 @@ class EngineConfiguratorTest {
   }
 
   @Test
-  void shouldReturnEmptyListIfConfigurationMissing() {
-    final EngineConfigurator engineConfigurator = createEngineConfigurator(AvailableRules.of());
-    List<RuleInstance> rules = engineConfigurator.getRules(Optional.empty());
-    assertThat(rules.isEmpty()).isTrue();
-  }
-
-  @Test
   void shouldReturnEmptyListIfWorkflowEngineDisabled() {
     final EngineConfigurator engineConfigurator = createEngineConfigurator(AvailableRules.of(new SuccessRule()));
     final ImmutableList<AppliedRule> appliedRules = of(new AppliedRule(SuccessRule.class.getSimpleName()));
     EngineConfiguration configuration = new EngineConfiguration(appliedRules, false);
-    List<RuleInstance> rules = engineConfigurator.getRules(Optional.of(configuration));
+    List<RuleInstance> rules = engineConfigurator.getRules(configuration);
 
     assertThat(rules.isEmpty()).isTrue();
   }
@@ -68,7 +61,7 @@ class EngineConfiguratorTest {
     List<AppliedRule> appliedRules = of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()).stream().map(AppliedRule::new).collect(Collectors.toList());
 
     EngineConfiguration configuration = new EngineConfiguration(appliedRules, true);
-    List<RuleInstance> rules = engineConfigurator.getRules(Optional.of(configuration));
+    List<RuleInstance> rules = engineConfigurator.getRules(configuration);
 
     assertThat(rules.size()).isEqualTo(2);
     assertThat(rules.get(0).getRule()).isInstanceOfAny(FailureRule.class, SuccessRule.class);
@@ -81,7 +74,7 @@ class EngineConfiguratorTest {
     List<AppliedRule> appliedRules = of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()).stream().map(AppliedRule::new).collect(Collectors.toList());
 
     EngineConfiguration configuration = new EngineConfiguration(appliedRules, true);
-    assertThrows(UnknownRuleException.class, () -> engineConfigurator.getRules(Optional.of(configuration)));
+    assertThrows(UnknownRuleException.class, () -> engineConfigurator.getRules(configuration));
   }
 
   static class SuccessRule implements Rule {

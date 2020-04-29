@@ -53,17 +53,15 @@ public abstract class EngineConfigurator {
     }
   }
 
-  protected final List<RuleInstance> getRules(Optional<EngineConfiguration> configuration) {
-    if (configuration.isPresent() && !configuration.get().isEnabled()) {
+  protected final List<RuleInstance> getRules(EngineConfiguration configuration) {
+    if (!configuration.isEnabled()) {
       return Collections.emptyList();
     }
 
-    return configuration
-      .map(engineConfiguration -> engineConfiguration.getRules()
-        .stream()
-        .map(this::createRuleInstance)
-        .collect(Collectors.toList()))
-      .orElse(Collections.emptyList());
+    return configuration.getRules()
+      .stream()
+      .map(this::createRuleInstance)
+      .collect(Collectors.toList());
   }
 
   private RuleInstance createRuleInstance(AppliedRule appliedRule) {

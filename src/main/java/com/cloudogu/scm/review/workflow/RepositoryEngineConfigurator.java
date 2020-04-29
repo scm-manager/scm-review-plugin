@@ -53,7 +53,7 @@ public class RepositoryEngineConfigurator extends EngineConfigurator {
   }
 
   public List<RuleInstance> getRules(Repository repository) {
-    return withUberClassLoader(() -> getRules(createStore(repository).getOptional()));
+    return getRules(getEngineConfiguration(repository));
   }
 
   private ConfigurationStore<EngineConfiguration> createStore(Repository repository) {

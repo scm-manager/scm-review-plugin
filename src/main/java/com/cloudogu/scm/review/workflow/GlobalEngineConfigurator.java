@@ -53,7 +53,7 @@ public class GlobalEngineConfigurator extends EngineConfigurator {
   }
 
   public List<RuleInstance> getRules() {
-    return withUberClassLoader(() -> getRules(Optional.ofNullable(createStore().get())));
+    return getRules(getEngineConfiguration());
   }
 
   private ConfigurationStore<GlobalEngineConfiguration> createStore() {
