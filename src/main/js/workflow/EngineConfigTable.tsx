@@ -23,14 +23,14 @@
  */
 
 import React, { FC } from "react";
-import { EngineConfiguration } from "../types/EngineConfig";
+import {AppliedRule, EngineConfiguration} from "../types/EngineConfig";
 import { useTranslation } from "react-i18next";
 import { Icon } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = {
   configuration: EngineConfiguration;
-  deleteRule: (rule: string) => void;
+  deleteRule: (rule: AppliedRule) => void;
 };
 
 const VCenteredTd = styled.td`
@@ -57,16 +57,16 @@ const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
         </tr>
       </thead>
       <tbody>
-        {configuration.rules?.map(rule => (
+        {configuration.rules?.map(appliedRule => (
           <tr>
             <td>
-              <strong>{t("workflow.rule." + rule + ".name")}</strong>
+              <strong>{t(`workflow.rule.${appliedRule.rule}.name`)}</strong>
             </td>
-            <td>{t("workflow.rule." + rule + ".description")}</td>
+            <td>{t(`workflow.rule.${appliedRule.rule}.description`, appliedRule.configuration)}</td>
             <VCenteredTd>
               <a
                 className="level-item"
-                onClick={() => deleteRule(rule)}
+                onClick={() => deleteRule(appliedRule)}
                 title={t("scm-review-plugin.workflow.deleteRule")}
               >
                 <span className="icon is-small">

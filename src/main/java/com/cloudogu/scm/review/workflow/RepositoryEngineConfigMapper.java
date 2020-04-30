@@ -26,6 +26,8 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -40,10 +42,8 @@ import javax.ws.rs.core.UriInfo;
 import static de.otto.edison.hal.Link.link;
 
 @Mapper
-public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConfiguration, RepositoryEngineConfigDto> {
+public abstract class RepositoryEngineConfigMapper extends EngineConfigMapper<EngineConfiguration, RepositoryEngineConfigDto> {
 
-  @Inject
-  AvailableRules availableRules;
   @Inject
   GlobalEngineConfigurator globalEngineConfigurator;
 
@@ -53,15 +53,16 @@ public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConf
   @ObjectFactory
   RepositoryEngineConfigDto create(@Context Repository repository, @Context UriInfo uriInfo) {
     final Links.Builder linksBuilder = new Links.Builder();
-    PullRequestResourceLinks.WorkflowEngineConfigLinks workflowEngineConfigLinks = new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineConfigLinks();
+    PullRequestResourceLinks links = new PullRequestResourceLinks(uriInfo::getBaseUri);
+    PullRequestResourceLinks.WorkflowEngineConfigLinks workflowEngineConfigLinks = links.workflowEngineConfigLinks();
     linksBuilder.self(workflowEngineConfigLinks.getConfig(repository.getNamespace(), repository.getName()));
     if (!globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()) {
-     if (PermissionCheck.mayConfigureWorkflowConfig(repository)) {
-       linksBuilder.single(link("update", workflowEngineConfigLinks.setConfig(repository.getNamespace(), repository.getName())));
-     }
-     if (PermissionCheck.mayReadWorkflowConfig(repository) || PermissionCheck.mayConfigureWorkflowConfig(repository)) {
-       linksBuilder.single(link("availableRules", workflowEngineConfigLinks.availableRules()));
-     }
+      if (PermissionCheck.mayConfigureWorkflowConfig(repository)) {
+        linksBuilder.single(link("update", workflowEngineConfigLinks.setConfig(repository.getNamespace(), repository.getName())));
+      }
+      if (PermissionCheck.mayReadWorkflowConfig(repository) || PermissionCheck.mayConfigureWorkflowConfig(repository)) {
+        linksBuilder.single(link("availableRules", links.workflowEngineGlobalConfigLinks().availableRules()));
+      }
     }
     return new RepositoryEngineConfigDto(linksBuilder.build());
   }

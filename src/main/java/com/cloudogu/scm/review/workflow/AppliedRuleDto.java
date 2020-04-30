@@ -22,31 +22,17 @@
  * SOFTWARE.
  */
 
-import { Links } from "@scm-manager/ui-types";
+package com.cloudogu.scm.review.workflow;
 
-export type EngineConfiguration = {
-  disableRepositoryConfiguration?: boolean;
-  enabled: boolean;
-  rules: AppliedRule[];
-  _links: Links;
-};
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Getter;
+import lombok.Setter;
 
-export type Result = {
-  rule: string;
-  failed: boolean;
-  context?: any;
-};
-
-export type AppliedRule = {
-  rule: string;
-  configuration: any;
-};
-
-export type AvailableRules = {
-  rules: Rule[];
-}
-
-export type Rule = {
-  name: string;
-  applicableMultipleTimes: boolean;
+@Getter
+@Setter
+public class AppliedRuleDto {
+  private String rule;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private JsonNode configuration;
 }

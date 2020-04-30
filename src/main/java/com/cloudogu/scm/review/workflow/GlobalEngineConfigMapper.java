@@ -26,6 +26,8 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -39,9 +41,7 @@ import javax.ws.rs.core.UriInfo;
 import static de.otto.edison.hal.Link.link;
 
 @Mapper
-public abstract class GlobalEngineConfigMapper extends BaseMapper<GlobalEngineConfiguration, GlobalEngineConfigDto> {
-  @Inject
-  AvailableRules availableRules;
+public abstract class GlobalEngineConfigMapper extends EngineConfigMapper<GlobalEngineConfiguration, GlobalEngineConfigDto> {
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   public abstract GlobalEngineConfigDto map(GlobalEngineConfiguration engineConfiguration, @org.mapstruct.Context UriInfo uriInfo);

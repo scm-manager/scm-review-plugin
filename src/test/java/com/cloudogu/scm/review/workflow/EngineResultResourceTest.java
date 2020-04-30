@@ -56,6 +56,11 @@ class EngineResultResourceTest {
 
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
   private static final PullRequest PULL_REQUEST = new PullRequest("42", "feature", "master");
+  private static final Object FAILURE_CONTEXT = new Object() {
+    public String getExpected() {
+      return "expected value";
+    }
+  };
 
   private final RestDispatcher dispatcher = new RestDispatcher();
   private final MockHttpResponse response = new MockHttpResponse();
@@ -105,7 +110,7 @@ class EngineResultResourceTest {
   @Test
   void shouldGetResultForExistingRules() throws URISyntaxException, UnsupportedEncodingException, JsonProcessingException {
     when(engine.validate(REPOSITORY, PULL_REQUEST))
-      .thenReturn(new Results(asList(Result.failed(FailingTestRule.class), Result.success(SucceedingTestRule.class))));
+      .thenReturn(new Results(asList(new FailingTestRule().validate(null), new SucceedingTestRule().validate(null))));
 
     MockHttpRequest request = MockHttpRequest.get("/v2/pull-requests/space/X/42/workflow");
     dispatcher.invoke(request, response);
@@ -115,8 +120,13 @@ class EngineResultResourceTest {
     JsonNode results = jsonNode.get("results");
     assertThat(results).isNotNull();
     assertThat(results.size()).isEqualTo(2);
+
     assertThat(results.get(0)).isNotNull();
     assertThat(results.get(0).get("rule").asText()).isEqualTo("FailingTestRule");
+    JsonNode failureContext = results.get(0).get("context");
+    assertThat(failureContext).isNotNull();
+    assertThat(failureContext.get("expected").asText()).isEqualTo("expected value");
+
     assertThat(results.get(1)).isNotNull();
     assertThat(results.get(1).get("rule").asText()).isEqualTo("SucceedingTestRule");
   }
@@ -128,7 +138,7 @@ class EngineResultResourceTest {
   private static class FailingTestRule implements Rule {
     @Override
     public Result validate(Context context) {
-      return failed();
+      return failed(FAILURE_CONTEXT);
     }
   }
 

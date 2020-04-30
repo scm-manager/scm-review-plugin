@@ -24,65 +24,51 @@
 
 package com.cloudogu.scm.review.workflow;
 
-import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
+import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryTestData;
 
-import java.util.Collection;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
+import static com.google.common.collect.ImmutableMap.of;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class WorkflowMergeGuardTest {
+class ApprovedByXReviewersRuleTest {
 
-  private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
-  private static final PullRequest PULL_REQUEST = new PullRequest("1-1", "feature", "develop");
-
-  @Mock
-  Engine engine;
+  private Repository repository;
+  private PullRequest pullRequest;
 
   @InjectMocks
-  WorkflowMergeGuard guard;
+  private ApprovedByXReviewersRule rule;
 
   @BeforeEach
-  void prepareEngine() {
+  void setUp() {
+    pullRequest = TestData.createPullRequest();
+    repository = RepositoryTestData.create42Puzzle();
   }
 
   @Test
-  void shouldReturnEmptyListWithoutRules() {
-    when(engine.validate(REPOSITORY, PULL_REQUEST)).thenReturn(new Results(emptyList()));
-
-    Collection<MergeObstacle> obstacles = guard.getObstacles(REPOSITORY, PULL_REQUEST);
-
-    assertThat(obstacles).isEmpty();
+  void shouldFailWithContextIfNotEnoughReviewersApproved() {
+    pullRequest.setReviewer(of("Homer Simpson", false, "Totoro", true));
+    Result result = rule.validate(new Context(repository, pullRequest, new ApprovedByXReviewersRule.Configuration(2)));
+    assertThat(result.isFailed()).isTrue();
+    assertThat(result.getContext()).isNotNull();
+    assertThat(result.getContext()).isInstanceOf(ApprovedByXReviewersRule.ErrorContext.class);
+    ApprovedByXReviewersRule.ErrorContext errorContext = (ApprovedByXReviewersRule.ErrorContext) result.getContext();
+    assertThat(errorContext.getMissing()).isEqualTo(1);
+    assertThat(errorContext.getActual()).isEqualTo(1);
+    assertThat(errorContext.getExpected()).isEqualTo(2);
   }
 
   @Test
-  void shouldReturnEmptyListWithoutFailingRules() {
-    when(engine.validate(REPOSITORY, PULL_REQUEST)).thenReturn(new Results(asList(Result.success(Rule.class))));
-
-    Collection<MergeObstacle> obstacles = guard.getObstacles(REPOSITORY, PULL_REQUEST);
-
-    assertThat(obstacles).isEmpty();
-  }
-
-  @Test
-  void shouldReturnListWithObstacleForFailingRules() {
-    when(engine.validate(REPOSITORY, PULL_REQUEST)).thenReturn(new Results(asList(Result.success(Rule.class), Result.failed(Rule.class))));
-
-    Collection<MergeObstacle> obstacles = guard.getObstacles(REPOSITORY, PULL_REQUEST);
-
-    assertThat(obstacles)
-      .extracting("key")
-      .containsExactly("workflow.rule.Rule.obstacle");
+  void shouldSucceedIfEnoughReviewersApproved() {
+    pullRequest.setReviewer(of("Homer Simpson", true));
+    Result result = rule.validate(new Context(repository, pullRequest, new ApprovedByXReviewersRule.Configuration(1)));
+    assertThat(result.isSuccess()).isTrue();
   }
 }

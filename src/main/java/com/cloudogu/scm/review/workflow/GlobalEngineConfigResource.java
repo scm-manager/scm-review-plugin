@@ -25,11 +25,15 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.PullRequestResourceLinks;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import lombok.Data;
+import lombok.Getter;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.web.VndMediaType;
 
@@ -42,7 +46,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -149,7 +152,31 @@ public class GlobalEngineConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public List<String> getAvailableRules() {
-    return availableRules.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
+  public AvailableRulesDto getAvailableRules(@Context UriInfo uriInfo) {
+    final String selfLink = new PullRequestResourceLinks(uriInfo::getBaseUri).workflowEngineGlobalConfigLinks().availableRules();
+    return new AvailableRulesDto(
+      new Links.Builder().self(selfLink).build(),
+      availableRules.stream().map(RuleDto::new).collect(Collectors.toList())
+    );
+  }
+
+  @Getter
+  static class AvailableRulesDto extends HalRepresentation {
+    public AvailableRulesDto(Links links, List<RuleDto> rules) {
+      super(links);
+      this.rules = rules;
+    }
+
+    private final List<RuleDto> rules;
+  }
+
+  @Getter
+  static class RuleDto {
+    RuleDto(Rule rule) {
+      this.name = AvailableRules.nameOf(rule);
+      this.applicableMultipleTimes = rule.isApplicableMultipleTimes();
+    }
+    private final String name;
+    private final boolean applicableMultipleTimes;
   }
 }

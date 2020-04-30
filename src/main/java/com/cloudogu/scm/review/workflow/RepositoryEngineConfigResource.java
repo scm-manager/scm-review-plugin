@@ -25,13 +25,17 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.PullRequestResourceLinks;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.Data;
+import lombok.Getter;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -145,34 +149,5 @@ public class RepositoryEngineConfigResource {
       throw notFound(entity(new NamespaceAndName(namespace, name)));
     }
     return repository;
-  }
-
-  @GET
-  @Path("rules")
-  @Produces(WORKFLOW_MEDIA_TYPE)
-  @Operation(
-    summary = "Workflow engine rules",
-    description = "Returns available rules for the workflow engine.",
-    tags = "Workflow Engine",
-    operationId = "review_get_workflow_rules"
-  )
-  @ApiResponse(
-    responseCode = "200",
-    description = "success",
-    content = @Content(
-      mediaType = MediaType.APPLICATION_JSON,
-      schema = @Schema(implementation = HalRepresentation.class)
-    )
-  )
-  @ApiResponse(
-    responseCode = "500",
-    description = "internal server error",
-    content = @Content(
-      mediaType = VndMediaType.ERROR_TYPE,
-      schema = @Schema(implementation = ErrorDto.class)
-    )
-  )
-  public List<String> getAvailableRules() {
-    return availableRules.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
   }
 }

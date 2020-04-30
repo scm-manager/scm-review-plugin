@@ -22,31 +22,21 @@
  * SOFTWARE.
  */
 
-import { Links } from "@scm-manager/ui-types";
+package com.cloudogu.scm.review.workflow;
 
-export type EngineConfiguration = {
-  disableRepositoryConfiguration?: boolean;
-  enabled: boolean;
-  rules: AppliedRule[];
-  _links: Links;
-};
+import sonia.scm.BadRequestException;
+import sonia.scm.ContextEntry;
 
-export type Result = {
-  rule: string;
-  failed: boolean;
-  context?: any;
-};
+public class InvalidConfigurationException extends BadRequestException {
 
-export type AppliedRule = {
-  rule: string;
-  configuration: any;
-};
+  public static final String CODE = "6nRxQptwH1";
 
-export type AvailableRules = {
-  rules: Rule[];
-}
+  public InvalidConfigurationException(Rule rule, Exception cause) {
+    super(ContextEntry.ContextBuilder.entity("rule", AvailableRules.nameOf(rule)).build(), "configuration could not be parsed", cause);
+  }
 
-export type Rule = {
-  name: string;
-  applicableMultipleTimes: boolean;
+  @Override
+  public String getCode() {
+    return CODE;
+  }
 }

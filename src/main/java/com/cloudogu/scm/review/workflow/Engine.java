@@ -43,7 +43,7 @@ public final class Engine {
   }
 
   public Results validate(Repository repository, PullRequest pullRequest) {
-    List<Rule> rules;
+    List<EngineConfigurator.RuleInstance> rules;
     if (shouldUseLocalRules(repository)) {
       rules = repositoryEngineConfigurator.getRules(repository);
     } else if (globalEngineConfigurator.getEngineConfiguration().isEnabled()) {
@@ -51,8 +51,8 @@ public final class Engine {
     } else {
       rules = new ArrayList<>();
     }
-    Context context = new Context(repository, pullRequest);
-    List<Result> results = rules.stream().map(rule -> rule.validate(context)).collect(Collectors.toList());
+    List<Result> results = rules.stream().map(ruleInstance ->
+      ruleInstance.getRule().validate(new Context(repository, pullRequest, ruleInstance.getConfiguration()))).collect(Collectors.toList());
 
     return new Results(results);
   }

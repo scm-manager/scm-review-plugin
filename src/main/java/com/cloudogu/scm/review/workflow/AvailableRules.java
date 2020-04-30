@@ -26,39 +26,28 @@ package com.cloudogu.scm.review.workflow;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import sonia.scm.plugin.PluginLoader;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class AvailableRules {
 
-  private final Set<Class<? extends Rule>> rules;
+  private final Set<Rule> rules;
 
   @Inject
-  public AvailableRules(PluginLoader pluginLoader) {
-    this(pluginLoader.getExtensionProcessor().byExtensionPoint(Rule.class));
-  }
-
-  private AvailableRules(Iterable<Class<? extends Rule>> rules) {
-    this.rules = ImmutableSet.copyOf(rules);
+  public AvailableRules(Set<Rule> rules) {
+    this.rules = rules;
   }
 
   @SafeVarargs
   @VisibleForTesting
-  static AvailableRules of(Class<? extends Rule>... rules) {
+  static AvailableRules of(Rule... rules) {
     return new AvailableRules(ImmutableSet.copyOf(rules));
   }
 
-  public List<String> getRuleNames() {
-    return rules.stream().map(AvailableRules::nameOf).collect(Collectors.toList());
-  }
-
-  public Class<? extends Rule> classOf(String name) {
+  public Rule ruleOf(String name) {
     return rules.stream()
-      .filter(ruleClass -> ruleClass.getSimpleName().equals(name))
+      .filter(rule -> rule.getClass().getSimpleName().equals(name))
       .findFirst()
       .orElseThrow(() -> new UnknownRuleException(name));
   }

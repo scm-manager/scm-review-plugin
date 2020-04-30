@@ -26,13 +26,13 @@ package com.cloudogu.scm.review.workflow;
 
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
-@Data
-@NoArgsConstructor
+@Getter
 public class ResultListDto extends HalRepresentation {
   private List<ResultDto> results;
 

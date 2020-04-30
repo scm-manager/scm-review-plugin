@@ -45,7 +45,7 @@ public class GlobalEngineConfiguration extends EngineConfiguration {
   @XmlElement(name = "disable-repository-configuration")
   private boolean disableRepositoryConfiguration;
 
-  public GlobalEngineConfiguration(List<String> rules, boolean enabled, boolean disableRepositoryConfiguration) {
+  public GlobalEngineConfiguration(List<AppliedRule> rules, boolean enabled, boolean disableRepositoryConfiguration) {
     super(rules, enabled);
     this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }

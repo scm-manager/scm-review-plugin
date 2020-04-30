@@ -25,45 +25,64 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import sonia.scm.store.InMemoryConfigurationStoreFactory;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.TempDirectory;
+import org.mockito.Answers;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.plugin.PluginLoader;
+import sonia.scm.store.ConfigurationStore;
+import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
+import javax.xml.bind.JAXB;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@ExtendWith(TempDirectory.class)
 class GlobalEngineConfiguratorTest {
+
+  @Mock
+  private PluginLoader pluginLoader;
+
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private ConfigurationStoreFactory configurationStoreFactory;
 
   private GlobalEngineConfigurator configurator;
 
   @BeforeEach
-  void setupStore() {
-    Injector injector = Guice.createInjector();
-    AvailableRules availableRules = AvailableRules.of(RepositoryEngineConfiguratorTest.RuleWithInjection.class);
+  void setupStore(@TempDirectory.TempDir Path directory) {
+    AvailableRules availableRules = AvailableRules.of(new RepositoryEngineConfiguratorTest.RuleWithInjection(new RepositoryEngineConfiguratorTest.ResultService()), new RepositoryEngineConfiguratorTest.RuleWithConfiguration());
+    ConfigurationStore<GlobalEngineConfiguration> store = new SimpleJaxbStore(directory.resolve("store.xml").toFile());
+    when(configurationStoreFactory.withType(GlobalEngineConfiguration.class).withName(any()).build()).thenReturn(store);
 
-    configurator = new GlobalEngineConfigurator(injector, availableRules, new InMemoryConfigurationStoreFactory());
+    configurator = new GlobalEngineConfigurator(availableRules, configurationStoreFactory, pluginLoader);
   }
 
   @Test
   void shouldCreateRuleWithInjection() {
     configurator.setEngineConfiguration(config(true));
-    List<Rule> rules = configurator.getRules();
+    List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
 
-    assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
+    assertThat(rules.get(0).getRule().validate(null).isSuccess()).isTrue();
   }
 
   private GlobalEngineConfiguration config(boolean enabled) {
-    return new GlobalEngineConfiguration(ImmutableList.of(RepositoryEngineConfiguratorTest.RuleWithInjection.class.getSimpleName()), enabled, false);
+    return new GlobalEngineConfiguration(ImmutableList.of(new AppliedRule(RuleWithInjection.class.getSimpleName())), enabled, false);
   }
 
   @Test
   void shouldReturnEmptyListIfEngineDisabled() {
     configurator.setEngineConfiguration(config(false));
-    List<Rule> rules = configurator.getRules();
+    List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
 
     assertThat(rules.isEmpty()).isTrue();
   }
@@ -77,10 +96,10 @@ class GlobalEngineConfiguratorTest {
 
   public static class RuleWithInjection implements Rule {
 
-    private final RepositoryEngineConfiguratorTest.ResultService service;
+    private final ResultService service;
 
     @Inject
-    public RuleWithInjection(RepositoryEngineConfiguratorTest.ResultService service) {
+    public RuleWithInjection(ResultService service) {
       this.service = service;
     }
 
@@ -93,7 +112,29 @@ class GlobalEngineConfiguratorTest {
   public static class ResultService {
 
     public Result getResult() {
-      return Result.success(RepositoryEngineConfiguratorTest.RuleWithInjection.class);
+      return Result.success(RuleWithInjection.class);
+    }
+  }
+
+  public static class SimpleJaxbStore implements ConfigurationStore<GlobalEngineConfiguration> {
+
+    private final File file;
+
+    public SimpleJaxbStore(File file) {
+      this.file = file;
+    }
+
+    @Override
+    public GlobalEngineConfiguration get() {
+      if (!file.exists()) {
+        return new GlobalEngineConfiguration();
+      }
+      return JAXB.unmarshal(file, GlobalEngineConfiguration.class);
+    }
+
+    @Override
+    public void set(GlobalEngineConfiguration object) {
+      JAXB.marshal(object, file);
     }
   }
 }

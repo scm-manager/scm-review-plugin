@@ -44,7 +44,7 @@ public class GlobalEngineConfigDto extends RepositoryEngineConfigDto {
     super(links);
   }
 
-  public GlobalEngineConfigDto(Links links, List<String> rules, boolean enabled, boolean disableRepositoryConfiguration) {
+  public GlobalEngineConfigDto(Links links, List<AppliedRuleDto> rules, boolean enabled, boolean disableRepositoryConfiguration) {
     super(links, rules, enabled);
     this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }

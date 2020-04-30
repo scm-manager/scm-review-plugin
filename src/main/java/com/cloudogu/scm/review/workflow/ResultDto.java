@@ -24,14 +24,17 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class ResultDto {
-  private String rule;
-  private boolean failed;
+  private final String rule;
+  private final boolean failed;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private final Object context;
 }

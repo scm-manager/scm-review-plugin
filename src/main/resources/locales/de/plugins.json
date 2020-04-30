@@ -407,13 +407,29 @@
         "name": "Alle Reviewer zugestimmt",
         "description": "Es müssen alle eingetragenen Reviewer dem Pull Request zustimmen.",
         "failed": "Es stimmen nicht alle eingetragenen Reviewer dem Pull Request zu.",
+        "obstacle": "Es stimmen nicht alle eingetragenen Reviewer dem Pull Request zu.",
         "success": "Alle eingetragenen Reviewer stimmen dem Pull Request zu."
       },
       "AllTasksDoneRule": {
         "name": "Alle Aufgaben erledigt",
         "description": "Es müssen alle Aufgaben des Pull Requests erledigt sein.",
-        "failed": "Es gibt noch offene Aufgaben am Pull Request.",
+        "failed": "Es gibt noch {{count}} offene Aufgaben am Pull Request.",
+        "obstacle": "Es gibt noch offene Aufgaben am Pull Request.",
         "success": "Alle Aufgaben am Pull Request wurden erledigt."
+      },
+      "ApprovedByXReviewersRule": {
+        "name": "Von ausreichend vielen Reviewern freigegeben",
+        "description": "Der Pull Request muss von mindestens {{numberOfReviewers}} Reviewern freigegeben werden.",
+        "failed": "Mindestens {{missing}} weitere Reviewer müssen den Pull Request freigeben ({{actual}}/{{expected}} haben bereits freigegeben).",
+        "obstacle": "Der Pull Request muss noch von weiteren Reviewern freigegeben werden.",
+        "success": "Der Pull Request wurde von Ausreichend vielen Reviewern freigegeben.",
+        "form": {
+          "numberOfReviewers": {
+            "label": "Mindestanzahl der Freigaben",
+            "helpText": "Anzahl der Reviewer, die eine Freigabe erteilen müssen.",
+            "errorMessage": "Der Wert muss eine ganze Zahl größer als 0 sein."
+          }
+        }
       }
     }
   }

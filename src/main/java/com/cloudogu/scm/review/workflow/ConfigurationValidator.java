@@ -21,35 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.workflow;
 
-import com.google.inject.Injector;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import java.util.Set;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
- public class EngineConfigurators {
-
-   private EngineConfigurators() {
-   }
-
-  public static List<Rule> getRules(Injector injector, AvailableRules availableRules, Optional<EngineConfiguration> configuration) {
-    if (configuration.isPresent() && !configuration.get().isEnabled()) {
-      return Collections.emptyList();
+public class ConfigurationValidator {
+  void validate(Object configuration) {
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    Validator validator = factory.getValidator();
+    Set<ConstraintViolation<Object>> violations = validator.validate(configuration);
+    if (!violations.isEmpty()) {
+      throw new ConstraintViolationException(violations);
     }
-
-    return configuration
-      .map(engineConfiguration -> engineConfiguration.getRules()
-        .stream()
-        .map(rule -> createRuleInstance(injector, availableRules, rule))
-        .collect(Collectors.toList()))
-      .orElse(Collections.emptyList());
-  }
-
-  private static Rule createRuleInstance(Injector injector, AvailableRules availableRules, String ruleName) {
-    Class<? extends Rule> ruleClass = availableRules.classOf(ruleName);
-    return injector.getInstance(ruleClass);
   }
 }
