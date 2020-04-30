@@ -144,6 +144,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
           helpText={t("scm-review-plugin.workflow.newRule.helpText")}
           onChange={selectRule}
           options={options}
+          value={selectedRule}
         />
       );
     }
