@@ -107,6 +107,6 @@ public class EngineResultResource {
   }
 
   private ResultDto createDto(Result result) {
-    return new ResultDto(result.getRule().getSimpleName(), result.isFailed());
+    return new ResultDto(result.getRule().getSimpleName(), result.isFailed(), result.getContext());
   }
 }

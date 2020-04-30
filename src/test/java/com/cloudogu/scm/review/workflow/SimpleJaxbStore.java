@@ -22,31 +22,38 @@
  * SOFTWARE.
  */
 
-import { Links } from "@scm-manager/ui-types";
+package com.cloudogu.scm.review.workflow;
 
-export type EngineConfiguration = {
-  disableRepositoryConfiguration?: boolean;
-  enabled: boolean;
-  rules: AppliedRule[];
-  _links: Links;
-};
+import sonia.scm.store.ConfigurationStore;
 
-export type Result = {
-  rule: string;
-  failed: boolean;
-  context?: any;
-};
+import javax.xml.bind.JAXB;
+import java.io.File;
 
-export type AppliedRule = {
-  rule: string;
-  configuration: any;
-};
+/**
+ * Use this to test storage and retrieval to and from the file system in xml format.
+ */
+public class SimpleJaxbStore<T> implements ConfigurationStore<T> {
 
-export type AvailableRules = {
-  rules: Rule[];
-}
+  private final File file;
+  private final Class<T> clazz;
+  private final T defaultValue;
 
-export type Rule = {
-  name: string;
-  applicableMultipleTimes: boolean;
+  public SimpleJaxbStore(Class<T> clazz, File file, T defaultValue) {
+    this.clazz = clazz;
+    this.file = file;
+    this.defaultValue = defaultValue;
+  }
+
+  @Override
+  public T get() {
+    if (!file.exists()) {
+      return defaultValue;
+    }
+    return JAXB.unmarshal(file, clazz);
+  }
+
+  @Override
+  public void set(T object) {
+    JAXB.marshal(object, file);
+  }
 }

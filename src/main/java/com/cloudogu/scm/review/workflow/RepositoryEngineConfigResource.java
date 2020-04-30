@@ -49,9 +49,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
@@ -145,34 +143,5 @@ public class RepositoryEngineConfigResource {
       throw notFound(entity(new NamespaceAndName(namespace, name)));
     }
     return repository;
-  }
-
-  @GET
-  @Path("rules")
-  @Produces(WORKFLOW_MEDIA_TYPE)
-  @Operation(
-    summary = "Workflow engine rules",
-    description = "Returns available rules for the workflow engine.",
-    tags = "Workflow Engine",
-    operationId = "review_get_workflow_rules"
-  )
-  @ApiResponse(
-    responseCode = "200",
-    description = "success",
-    content = @Content(
-      mediaType = MediaType.APPLICATION_JSON,
-      schema = @Schema(implementation = HalRepresentation.class)
-    )
-  )
-  @ApiResponse(
-    responseCode = "500",
-    description = "internal server error",
-    content = @Content(
-      mediaType = VndMediaType.ERROR_TYPE,
-      schema = @Schema(implementation = ErrorDto.class)
-    )
-  )
-  public List<String> getAvailableRules() {
-    return availableRules.stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
   }
 }

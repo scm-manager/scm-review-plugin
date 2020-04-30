@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.review.workflow;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -45,7 +44,7 @@ public class GlobalEngineConfiguration extends EngineConfiguration {
   @XmlElement(name = "disable-repository-configuration")
   private boolean disableRepositoryConfiguration;
 
-  public GlobalEngineConfiguration(List<String> rules, boolean enabled, boolean disableRepositoryConfiguration) {
+  public GlobalEngineConfiguration(List<AppliedRule> rules, boolean enabled, boolean disableRepositoryConfiguration) {
     super(rules, enabled);
     this.disableRepositoryConfiguration = disableRepositoryConfiguration;
   }

@@ -21,25 +21,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import lombok.AllArgsConstructor;
-import lombok.Value;
-import sonia.scm.repository.Repository;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import sonia.scm.plugin.Extension;
 
-@Value
-@AllArgsConstructor
-public class Context {
-  private Repository repository;
-  private PullRequest pullRequest;
-  private Object configuration;
+import javax.validation.constraints.Min;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Optional;
 
-  public <C> C getConfiguration(Class<C> configurationType) {
-    return configurationType.cast(configuration);
+@Extension
+public class ApprovedByXReviewersRule implements Rule {
+
+  @Override
+  public Optional<Class<?>> getConfigurationType() {
+    return Optional.of(Configuration.class);
   }
 
-  public Context(Repository repository, PullRequest pullRequest) {
-    this(repository, pullRequest, null);
+  @Override
+  public Result validate(Context context) {
+    final PullRequest pullRequest = context.getPullRequest();
+    Configuration configuration = context.getConfiguration(Configuration.class);
+    long numberOfReviewers = pullRequest.getReviewer().values().stream().filter(b -> b).count();
+    return numberOfReviewers >= configuration.numberOfReviewers ? success() : failed(
+      new ErrorContext(configuration.numberOfReviewers, (int) numberOfReviewers, (int) (configuration.numberOfReviewers - numberOfReviewers))
+    );
+  }
+
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @Getter
+  @Setter
+  @XmlRootElement
+  static class Configuration {
+    @Min(1)
+    private int numberOfReviewers;
+  }
+
+  @Getter
+  @Setter
+  @AllArgsConstructor
+  static class ErrorContext {
+    int expected;
+    int actual;
+    int missing;
   }
 }

@@ -39,6 +39,7 @@ import PullRequestTodos from "./landingpage/MyPullRequestTodos";
 import PullRequestReview from "./landingpage/MyPullRequestReview";
 import RepoEngineConfig from "./workflow/RepoEngineConfig";
 import GlobalEngineConfig from "./workflow/GlobalEngineConfig";
+import ApprovedByXReviewersRuleConfiguration from "./workflow/ApprovedByXReviewersRuleConfiguration";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -127,3 +128,5 @@ binder.bind("landingpage.mydata", {
 binder.bind("landingpage.myevents", PullRequestCreatedEvent);
 binder.bind("landingpage.mytask", PullRequestTodos);
 binder.bind("landingpage.mytask", PullRequestReview);
+
+binder.bind("reviewPlugin.workflow.config.ApprovedByXReviewersRule", ApprovedByXReviewersRuleConfiguration);

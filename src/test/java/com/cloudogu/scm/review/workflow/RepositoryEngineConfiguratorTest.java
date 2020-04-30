@@ -25,55 +25,80 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.TempDirectory;
+import org.mockito.Answers;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.plugin.PluginLoader;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.ConfigurationStore;
-import sonia.scm.store.InMemoryConfigurationStoreFactory;
+import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
 import javax.xml.bind.JAXB;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
+@ExtendWith(TempDirectory.class)
 class RepositoryEngineConfiguratorTest {
 
   private final Repository repository = RepositoryTestData.createHeartOfGold();
 
   private RepositoryEngineConfigurator configurator;
 
-  @BeforeEach
-  void setupStore() {
-    Injector injector = Guice.createInjector();
-    AvailableRules availableRules = AvailableRules.of(RuleWithInjection.class);
+  @Mock
+  private PluginLoader pluginLoader;
 
-    configurator = new RepositoryEngineConfigurator(injector, availableRules, new InMemoryConfigurationStoreFactory());
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private ConfigurationStoreFactory configurationStoreFactory;
+
+  @BeforeEach
+  void setupStore(@TempDirectory.TempDir Path directory) {
+    AvailableRules availableRules = AvailableRules.of(new RuleWithInjection(new ResultService()), new RuleWithConfiguration());
+    ConfigurationStore<EngineConfiguration> store = new SimpleJaxbStore<>(EngineConfiguration.class, directory.resolve("store.xml").toFile(), new EngineConfiguration());
+    when(configurationStoreFactory.withType(EngineConfiguration.class).withName(any()).forRepository(any(Repository.class)).build()).thenReturn(store);
+
+    configurator = new RepositoryEngineConfigurator(availableRules, configurationStoreFactory, pluginLoader);
   }
 
   @Test
-  void shouldCreateRuleWithInjection() {
+  void shouldCreateConfiguredRule() {
     configurator.setEngineConfiguration(repository, config(true));
-    List<Rule> rules = configurator.getRules(repository);
+    List<EngineConfigurator.RuleInstance> rules = configurator.getRules(repository);
 
-    assertThat(rules.get(0).validate(null).isSuccess()).isTrue();
+    final EngineConfigurator.RuleInstance ruleInstance = rules.get(1);
+    final Rule ruleWithConfiguration = ruleInstance.getRule();
+    assertThat(ruleWithConfiguration.getClass()).isEqualTo(RuleWithConfiguration.class);
+    assertThat(ruleWithConfiguration.validate(new Context(null, null, ruleInstance.getConfiguration())).isSuccess()).isTrue();
   }
 
   private EngineConfiguration config(boolean enabled) {
-    return new EngineConfiguration(ImmutableList.of(RuleWithInjection.class.getSimpleName()), enabled);
+    return new EngineConfiguration(
+      ImmutableList.of(
+        new AppliedRule(RuleWithInjection.class.getSimpleName()),
+        new AppliedRule(RuleWithConfiguration.class.getSimpleName(), new TestConfiguration(42))
+      ), enabled);
   }
 
   @Test
   void shouldReturnEmptyListIfEngineDisabled() {
     configurator.setEngineConfiguration(repository, config(false));
-    List<Rule> rules = configurator.getRules(repository);
+    List<EngineConfigurator.RuleInstance> rules = configurator.getRules(repository);
 
     assertThat(rules.isEmpty()).isTrue();
   }
@@ -83,6 +108,26 @@ class RepositoryEngineConfiguratorTest {
     EngineConfiguration engineConfiguration = configurator.getEngineConfiguration(repository);
 
     assertThat(engineConfiguration.getRules().isEmpty()).isTrue();
+  }
+
+  public static class RuleWithConfiguration implements Rule {
+    @Override
+    public Optional<Class<?>> getConfigurationType() {
+      return Optional.of(TestConfiguration.class);
+    }
+
+    @Override
+    public Result validate(Context context) {
+      return ((TestConfiguration) context.getConfiguration()).number == 42 ? success() : failed();
+    }
+  }
+
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @XmlRootElement
+  public static class TestConfiguration {
+    int number;
   }
 
   public static class RuleWithInjection implements Rule {
@@ -106,4 +151,5 @@ class RepositoryEngineConfiguratorTest {
       return Result.success(RuleWithInjection.class);
     }
   }
+
 }

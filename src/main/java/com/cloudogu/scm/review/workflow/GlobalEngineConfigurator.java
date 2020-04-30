@@ -24,39 +24,35 @@
 
 package com.cloudogu.scm.review.workflow;
 
-import com.google.inject.Injector;
+import sonia.scm.plugin.PluginLoader;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Optional;
 
-public class GlobalEngineConfigurator {
+public class GlobalEngineConfigurator extends EngineConfigurator {
 
   private static final String STORE_NAME = "workflow-engine";
 
-  private final Injector injector;
-  private final AvailableRules availableRules;
   private final ConfigurationStoreFactory storeFactory;
 
   @Inject
-  GlobalEngineConfigurator(Injector injector, AvailableRules availableRules, ConfigurationStoreFactory storeFactory) {
-    this.injector = injector;
-    this.availableRules = availableRules;
+  GlobalEngineConfigurator(AvailableRules availableRules, ConfigurationStoreFactory storeFactory, PluginLoader pluginLoader) {
+    super(availableRules, pluginLoader.getUberClassLoader());
     this.storeFactory = storeFactory;
   }
 
   public GlobalEngineConfiguration getEngineConfiguration() {
-    return createStore().getOptional().orElse(new GlobalEngineConfiguration());
+    return withUberClassLoader(() -> createStore().getOptional().orElse(new GlobalEngineConfiguration()));
   }
 
   public void setEngineConfiguration(GlobalEngineConfiguration engineConfiguration) {
     createStore().set(engineConfiguration);
   }
 
-  public List<Rule> getRules() {
-    return EngineConfigurators.getRules(injector, availableRules, Optional.ofNullable(createStore().get()));
+  public List<RuleInstance> getRules() {
+    return getRules(getEngineConfiguration());
   }
 
   private ConfigurationStore<GlobalEngineConfiguration> createStore() {

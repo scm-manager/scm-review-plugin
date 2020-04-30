@@ -100,9 +100,10 @@ class EngineTest {
 
   @Test
   void shouldReturnSuccess() {
+    EngineConfigurator.RuleInstance ruleInstance = new EngineConfigurator.RuleInstance(new SuccessRule(), null);
     EngineConfiguration config = createConfig();
     when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(config);
-    when(repositoryEngineConfigurator.getRules(REPOSITORY)).thenReturn(ImmutableList.of(new SuccessRule()));
+    when(repositoryEngineConfigurator.getRules(REPOSITORY)).thenReturn(ImmutableList.of(ruleInstance));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 
@@ -115,9 +116,10 @@ class EngineTest {
 
   @Test
   void shouldReturnFailed() {
+    EngineConfigurator.RuleInstance ruleInstance = new EngineConfigurator.RuleInstance(new FailedRule(), null);
     EngineConfiguration config = createConfig();
     when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(config);
-    when(repositoryEngineConfigurator.getRules(REPOSITORY)).thenReturn(ImmutableList.of(new FailedRule()));
+    when(repositoryEngineConfigurator.getRules(REPOSITORY)).thenReturn(ImmutableList.of(ruleInstance));
 
     Results result = engine.validate(REPOSITORY, PULL_REQUEST);
 

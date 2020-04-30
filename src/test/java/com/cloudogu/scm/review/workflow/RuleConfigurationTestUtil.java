@@ -21,35 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.workflow;
 
-import com.google.inject.Injector;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import javax.xml.bind.JAXB;
+import java.io.StringReader;
+import java.io.StringWriter;
 
- public class EngineConfigurators {
+public class RuleConfigurationTestUtil {
 
-   private EngineConfigurators() {
-   }
-
-  public static List<Rule> getRules(Injector injector, AvailableRules availableRules, Optional<EngineConfiguration> configuration) {
-    if (configuration.isPresent() && !configuration.get().isEnabled()) {
-      return Collections.emptyList();
-    }
-
-    return configuration
-      .map(engineConfiguration -> engineConfiguration.getRules()
-        .stream()
-        .map(rule -> createRuleInstance(injector, availableRules, rule))
-        .collect(Collectors.toList()))
-      .orElse(Collections.emptyList());
+  static <T> T toAndFromJson(Class<T> clazz, T input) throws JsonProcessingException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String json = objectMapper.writeValueAsString(input);
+    return objectMapper.readValue(json, clazz);
   }
 
-  private static Rule createRuleInstance(Injector injector, AvailableRules availableRules, String ruleName) {
-    Class<? extends Rule> ruleClass = availableRules.classOf(ruleName);
-    return injector.getInstance(ruleClass);
+  static <T> T toAndFromXml(Class<T> clazz, T input) {
+    final StringWriter xmlWriter = new StringWriter();
+    JAXB.marshal(input, xmlWriter);
+    final StringReader xmlReader = new StringReader(xmlWriter.toString());
+    return JAXB.unmarshal(xmlReader, clazz);
+  }
+
+  static <T> T toAndFromJsonAndXml(Class<T> clazz, T input) throws JsonProcessingException {
+    return toAndFromXml(clazz, toAndFromJson(clazz, input));
   }
 }

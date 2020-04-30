@@ -24,56 +24,55 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.cloudogu.scm.review.workflow.EngineConfigurator.RuleInstance;
 import com.google.common.collect.ImmutableList;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static com.google.common.collect.ImmutableList.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class EngineConfiguratorsTest {
+class EngineConfiguratorTest {
 
-  private AvailableRules availableRules;
-  private final Injector injector = Guice.createInjector();
-
-  @Test
-  void shouldReturnEmptyListIfConfigurationMissing() {
-    availableRules = AvailableRules.of();
-    List<Rule> rules = EngineConfigurators.getRules(injector, availableRules, Optional.empty());
-
-    assertThat(rules.isEmpty()).isTrue();
+  private EngineConfigurator createEngineConfigurator(AvailableRules availableRules) {
+    return new EngineConfigurator(availableRules, getClass().getClassLoader()) {
+    };
   }
 
   @Test
   void shouldReturnEmptyListIfWorkflowEngineDisabled() {
-    availableRules = AvailableRules.of(SuccessRule.class);
-    EngineConfiguration configuration = new EngineConfiguration(ImmutableList.of(SuccessRule.class.getSimpleName()), false);
-    List<Rule> rules = EngineConfigurators.getRules(injector, availableRules, Optional.of(configuration));
+    final EngineConfigurator engineConfigurator = createEngineConfigurator(AvailableRules.of(new SuccessRule()));
+    final ImmutableList<AppliedRule> appliedRules = of(new AppliedRule(SuccessRule.class.getSimpleName()));
+    EngineConfiguration configuration = new EngineConfiguration(appliedRules, false);
+    List<RuleInstance> rules = engineConfigurator.getRules(configuration);
 
     assertThat(rules.isEmpty()).isTrue();
   }
 
   @Test
   void shouldInstantiateRules() {
-    availableRules = AvailableRules.of(SuccessRule.class, FailureRule.class);
+    AvailableRules availableRules = AvailableRules.of(new SuccessRule(), new FailureRule());
+    final EngineConfigurator engineConfigurator = createEngineConfigurator(availableRules);
+    List<AppliedRule> appliedRules = of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()).stream().map(AppliedRule::new).collect(Collectors.toList());
 
-    EngineConfiguration configuration = new EngineConfiguration(ImmutableList.of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()), true);
-    List<Rule> rules = EngineConfigurators.getRules(injector, availableRules, Optional.of(configuration));
+    EngineConfiguration configuration = new EngineConfiguration(appliedRules, true);
+    List<RuleInstance> rules = engineConfigurator.getRules(configuration);
 
     assertThat(rules.size()).isEqualTo(2);
-    assertThat(rules.get(0)).isInstanceOfAny(FailureRule.class, SuccessRule.class);
+    assertThat(rules.get(0).getRule()).isInstanceOfAny(FailureRule.class, SuccessRule.class);
   }
 
   @Test
   void shouldThrowUnknownRuleException() {
-    availableRules = AvailableRules.of(SuccessRule.class);
+    AvailableRules availableRules = AvailableRules.of(new SuccessRule());
+    final EngineConfigurator engineConfigurator = createEngineConfigurator(availableRules);
+    List<AppliedRule> appliedRules = of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()).stream().map(AppliedRule::new).collect(Collectors.toList());
 
-    EngineConfiguration configuration = new EngineConfiguration(ImmutableList.of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()), true);
-    assertThrows(UnknownRuleException.class, () -> EngineConfigurators.getRules(injector, availableRules, Optional.of(configuration)));
+    EngineConfiguration configuration = new EngineConfiguration(appliedRules, true);
+    assertThrows(UnknownRuleException.class, () -> engineConfigurator.getRules(configuration));
   }
 
   static class SuccessRule implements Rule {

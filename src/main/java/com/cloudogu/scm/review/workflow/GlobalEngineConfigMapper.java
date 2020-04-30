@@ -31,17 +31,13 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
-import sonia.scm.api.v2.resources.BaseMapper;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.UriInfo;
 
 import static de.otto.edison.hal.Link.link;
 
 @Mapper
-public abstract class GlobalEngineConfigMapper extends BaseMapper<GlobalEngineConfiguration, GlobalEngineConfigDto> {
-  @Inject
-  AvailableRules availableRules;
+public abstract class GlobalEngineConfigMapper extends EngineConfigMapper<GlobalEngineConfiguration, GlobalEngineConfigDto> {
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   public abstract GlobalEngineConfigDto map(GlobalEngineConfiguration engineConfiguration, @org.mapstruct.Context UriInfo uriInfo);
