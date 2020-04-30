@@ -31,12 +31,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
-@Setter
 public class ResultDto {
-  private String rule;
-  private boolean failed;
+  private final String rule;
+  private final boolean failed;
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private Object context;
+  private final Object context;
 }

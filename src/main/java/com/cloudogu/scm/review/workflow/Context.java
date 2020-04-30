@@ -35,7 +35,7 @@ public class Context {
   private PullRequest pullRequest;
   private Object configuration;
 
-  <C> C getConfiguration(Class<C> configurationType) {
+  public <C> C getConfiguration(Class<C> configurationType) {
     return configurationType.cast(configuration);
   }
 

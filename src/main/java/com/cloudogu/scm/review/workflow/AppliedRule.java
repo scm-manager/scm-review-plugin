@@ -37,7 +37,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
 public class AppliedRule {
   String rule;
   @XmlJavaTypeAdapter(XmlConfiguration.RuleConfigurationXmlAdapter.class)

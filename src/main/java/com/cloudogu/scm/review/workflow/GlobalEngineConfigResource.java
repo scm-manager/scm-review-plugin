@@ -46,7 +46,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -171,7 +170,7 @@ public class GlobalEngineConfigResource {
     private final List<RuleDto> rules;
   }
 
-  @Data
+  @Getter
   static class RuleDto {
     RuleDto(Rule rule) {
       this.name = AvailableRules.nameOf(rule);

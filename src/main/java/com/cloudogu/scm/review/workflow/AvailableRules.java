@@ -26,12 +26,9 @@ package com.cloudogu.scm.review.workflow;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import sonia.scm.plugin.PluginLoader;
 
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class AvailableRules {
 
@@ -46,18 +43,6 @@ public class AvailableRules {
   @VisibleForTesting
   static AvailableRules of(Rule... rules) {
     return new AvailableRules(ImmutableSet.copyOf(rules));
-  }
-
-  public List<String> getRuleNames() {
-    return rules.stream().map(AvailableRules::nameOf).collect(Collectors.toList());
-  }
-
-  public Class<? extends Rule> classOf(String name) {
-    return rules.stream()
-      .map(Rule::getClass)
-      .filter(ruleClass -> ruleClass.getSimpleName().equals(name))
-      .findFirst()
-      .orElseThrow(() -> new UnknownRuleException(name));
   }
 
   public Rule ruleOf(String name) {

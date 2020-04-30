@@ -32,9 +32,7 @@ import lombok.Setter;
 
 import java.util.List;
 
-@NoArgsConstructor
 @Getter
-@Setter
 public class ResultListDto extends HalRepresentation {
   private List<ResultDto> results;
 

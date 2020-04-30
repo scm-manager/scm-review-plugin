@@ -83,8 +83,7 @@ class RepositoryEngineConfigResourceTest {
   private RepositoryManager repositoryManager;
   @Mock
   private UriInfo uriInfo;
-  @Mock
-  private Engine engine;
+
   @Mock
   private ConfigurationValidator configurationValidator;
 
@@ -219,7 +218,7 @@ class RepositoryEngineConfigResourceTest {
   }
 
   @Test
-  void shouldSetEngineConfigurationWithSimpleRule() throws URISyntaxException {
+  void shouldSetEngineConfigurationWithSuccessRule() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.put("/v2/workflow/space/X/config")
       .content("{\"rules\":[{\"rule\":\"SuccessRule\"}],\"enabled\":true}".getBytes())
       .contentType(WORKFLOW_MEDIA_TYPE);
@@ -228,7 +227,9 @@ class RepositoryEngineConfigResourceTest {
 
     verify(repositoryEngineConfigurator).setEngineConfiguration(any(), argThat(engineConfiguration -> {
       assertThat(engineConfiguration).isNotNull();
-      assertThat(engineConfiguration.getRules()).contains(new AppliedRule(SuccessRule.class.getSimpleName()));
+      assertThat(engineConfiguration.getRules().size()).isEqualTo(1);
+      final AppliedRule appliedRule = engineConfiguration.getRules().get(0);
+      assertThat(appliedRule.rule).isEqualTo(SuccessRule.class.getSimpleName());
       return true;
     }));
     assertThat(response.getStatus()).isEqualTo(204);
@@ -254,6 +255,18 @@ class RepositoryEngineConfigResourceTest {
       return true;
     }));
     assertThat(response.getStatus()).isEqualTo(204);
+  }
+
+  @Test
+  void shouldThrowIfJsonDoesNotMatchRuleConfigurationClass() throws URISyntaxException {
+
+    MockHttpRequest request = MockHttpRequest.put("/v2/workflow/space/X/config")
+      .content("{\"rules\":[{\"rule\":\"ConfigurableRule\",\"configuration\":{\"foo\":42,\"bar\":\"haxor\"}}],\"enabled\":true}".getBytes())
+      .contentType(WORKFLOW_MEDIA_TYPE);
+
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(400);
   }
 
   @Test

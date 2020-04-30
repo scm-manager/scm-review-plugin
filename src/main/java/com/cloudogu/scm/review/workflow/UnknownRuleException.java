@@ -25,10 +25,6 @@
 package com.cloudogu.scm.review.workflow;
 
 public class UnknownRuleException extends RuntimeException {
-  public UnknownRuleException(String message, Throwable throwable) {
-    super(message, throwable);
-  }
-
   public UnknownRuleException(String message) {
     super(message);
   }
