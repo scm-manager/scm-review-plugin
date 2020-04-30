@@ -397,6 +397,10 @@
     "FuRoChFWt1": {
       "displayName": "Branch only writable with pull requests",
       "description": "The branch can only be changed by merging pull requests."
+    },
+    "6nRxQptwH1": {
+      "displayName": "Invalid formatting",
+      "description": "The format of the rule configuration is invalid."
     }
   },
   "workflow": {

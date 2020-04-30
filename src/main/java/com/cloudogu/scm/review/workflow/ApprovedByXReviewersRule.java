@@ -27,6 +27,7 @@ package com.cloudogu.scm.review.workflow;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sonia.scm.plugin.Extension;
 
@@ -53,6 +54,7 @@ public class ApprovedByXReviewersRule implements Rule {
   }
 
   @AllArgsConstructor
+  @NoArgsConstructor
   @Getter
   @Setter
   @XmlRootElement
