@@ -26,8 +26,8 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Value;
+import lombok.Getter;
+import lombok.Setter;
 import sonia.scm.plugin.Extension;
 
 import javax.validation.constraints.Min;
@@ -52,16 +52,18 @@ public class ApprovedByXReviewersRule implements Rule {
     );
   }
 
-  @Data
   @AllArgsConstructor
+  @Getter
+  @Setter
   @XmlRootElement
   static class Configuration {
     @Min(1)
     private int numberOfReviewers;
   }
 
-  @Value
-  @XmlRootElement
+  @Getter
+  @Setter
+  @AllArgsConstructor
   static class ErrorContext {
     int expected;
     int actual;

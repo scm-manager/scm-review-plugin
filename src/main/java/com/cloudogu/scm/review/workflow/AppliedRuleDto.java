@@ -26,13 +26,12 @@ package com.cloudogu.scm.review.workflow;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
 public class AppliedRuleDto {
-
   private String rule;
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private JsonNode configuration;

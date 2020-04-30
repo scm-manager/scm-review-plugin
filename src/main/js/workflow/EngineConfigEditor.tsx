@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-import React, {FC, useEffect, useState} from "react";
-import {AppliedRule, AvailableRules, EngineConfiguration, Rule} from "../types/EngineConfig";
-import {useTranslation} from "react-i18next";
+import React, { FC, useEffect, useState } from "react";
+import { AppliedRule, AvailableRules, EngineConfiguration, Rule } from "../types/EngineConfig";
+import { useTranslation } from "react-i18next";
 import {
   Checkbox,
   Title,
@@ -37,9 +37,9 @@ import {
   Level
 } from "@scm-manager/ui-components";
 import EngineConfigTable from "./EngineConfigTable";
-import {Link} from "@scm-manager/ui-types";
+import { Link } from "@scm-manager/ui-types";
 import styled from "styled-components";
-import {ExtensionPoint} from "@scm-manager/ui-extensions";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
 
 type Props = {
   onConfigurationChange: (config: EngineConfiguration, valid: boolean) => void;
@@ -60,7 +60,7 @@ const RuleDetails = styled.p`
   border-radius: 4px;
 `;
 
-const EngineConfigEditor: FC<Props> = ({onConfigurationChange, initialConfiguration, global}) => {
+const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, global }) => {
   const [t] = useTranslation("plugins");
 
   const [config, setConfig] = useState(initialConfiguration);
@@ -88,20 +88,20 @@ const EngineConfigEditor: FC<Props> = ({onConfigurationChange, initialConfigurat
   }, [availableRulesHref]);
 
   const onChangeDisableRepositoryConfiguration = () => {
-    const newConfig = {...config, disableRepositoryConfiguration: !config.disableRepositoryConfiguration};
+    const newConfig = { ...config, disableRepositoryConfiguration: !config.disableRepositoryConfiguration };
     setConfig(newConfig);
     onConfigurationChange(newConfig, true);
   };
 
   const onChangeToggleEnableEngine = () => {
-    const newConfig = {...config, enabled: !config.enabled};
+    const newConfig = { ...config, enabled: !config.enabled };
     setConfig(newConfig);
     onConfigurationChange(newConfig, true);
   };
 
   const addRuleToConfig = (value: AppliedRule) => {
     if (value) {
-      const newConfig = {...config, rules: [...config.rules, value]};
+      const newConfig = { ...config, rules: [...config.rules, value] };
       setConfig(newConfig);
       setSelectedRule("");
       onConfigurationChange(newConfig, true);
@@ -112,7 +112,7 @@ const EngineConfigEditor: FC<Props> = ({onConfigurationChange, initialConfigurat
     const newRules = [...config.rules];
     const index = newRules.indexOf(rule);
     newRules.splice(index, 1);
-    const newConfig = {...config, rules: newRules};
+    const newConfig = { ...config, rules: newRules };
     setConfig(newConfig);
     onConfigurationChange(newConfig, true);
   };
@@ -124,15 +124,17 @@ const EngineConfigEditor: FC<Props> = ({onConfigurationChange, initialConfigurat
   };
 
   const options = [
-    {label: "", value: ""},
+    { label: "", value: "" },
     ...availableRules
-      .filter(availableRule => availableRule.applicableMultipleTimes || !config.rules.find(r => r.rule === availableRule.name))
-      .map(rule => ({label: t(`workflow.rule.${rule.name}.name`), value: rule.name}))
+      .filter(
+        availableRule => availableRule.applicableMultipleTimes || !config.rules.find(r => r.rule === availableRule.name)
+      )
+      .map(rule => ({ label: t(`workflow.rule.${rule.name}.name`), value: rule.name }))
   ];
 
   const renderAddRuleForm = () => {
     if (loading) {
-      return <Loading/>;
+      return <Loading />;
     }
 
     if (options.length > 1) {
@@ -150,13 +152,13 @@ const EngineConfigEditor: FC<Props> = ({onConfigurationChange, initialConfigurat
   };
 
   if (error) {
-    return <ErrorNotification error={error}/>;
+    return <ErrorNotification error={error} />;
   }
 
   const ruleConfigurationChanged = (newRuleConfiguration: any, valid: boolean) => {
     setRuleConfiguration(newRuleConfiguration);
     setRuleConfigurationValid(valid);
-  }
+  };
 
   return (
     <>
@@ -180,9 +182,9 @@ const EngineConfigEditor: FC<Props> = ({onConfigurationChange, initialConfigurat
       {config.enabled && (
         <>
           {config.rules.length > 0 ? (
-            <EngineConfigTable configuration={config} deleteRule={deleteRule}/>
+            <EngineConfigTable configuration={config} deleteRule={deleteRule} />
           ) : (
-            <Notification type="info">{t("scm-review-plugin.workflow.noRulesConfigured", {a: "B"})}</Notification>
+            <Notification type="info">{t("scm-review-plugin.workflow.noRulesConfigured", { a: "B" })}</Notification>
           )}
 
           {renderAddRuleForm()}
@@ -201,17 +203,17 @@ const EngineConfigEditor: FC<Props> = ({onConfigurationChange, initialConfigurat
                   right={
                     <AddButton
                       label={t("scm-review-plugin.workflow.addRule.label")}
-                      action={() => addRuleToConfig({
-                        rule: selectedRule,
-                        configuration: ruleConfiguration
-                      })}
+                      action={() =>
+                        addRuleToConfig({
+                          rule: selectedRule,
+                          configuration: ruleConfiguration
+                        })
+                      }
                       disabled={!ruleConfigurationValid}
                     />
                   }
                 />
-
               </RuleDetails>
-
             </AddRuleLevel>
           )}
         </>
