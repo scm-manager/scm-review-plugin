@@ -70,7 +70,7 @@ class RepositoryEngineConfiguratorTest {
   @BeforeEach
   void setupStore(@TempDirectory.TempDir Path directory) {
     AvailableRules availableRules = AvailableRules.of(new RuleWithInjection(new ResultService()), new RuleWithConfiguration());
-    ConfigurationStore<EngineConfiguration> store = new SimpleJaxbStore(directory.resolve("store.xml").toFile());
+    ConfigurationStore<EngineConfiguration> store = new SimpleJaxbStore<>(EngineConfiguration.class, directory.resolve("store.xml").toFile(), new EngineConfiguration());
     when(configurationStoreFactory.withType(EngineConfiguration.class).withName(any()).forRepository(any(Repository.class)).build()).thenReturn(store);
 
     configurator = new RepositoryEngineConfigurator(availableRules, configurationStoreFactory, pluginLoader);
@@ -152,25 +152,4 @@ class RepositoryEngineConfiguratorTest {
     }
   }
 
-  public static class SimpleJaxbStore implements ConfigurationStore<EngineConfiguration> {
-
-    private final File file;
-
-    public SimpleJaxbStore(File file) {
-      this.file = file;
-    }
-
-    @Override
-    public EngineConfiguration get() {
-      if (!file.exists()) {
-        return new EngineConfiguration();
-      }
-      return JAXB.unmarshal(file, EngineConfiguration.class);
-    }
-
-    @Override
-    public void set(EngineConfiguration object) {
-      JAXB.marshal(object, file);
-    }
-  }
 }

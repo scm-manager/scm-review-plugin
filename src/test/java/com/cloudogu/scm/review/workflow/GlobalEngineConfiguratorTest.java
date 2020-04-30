@@ -61,7 +61,7 @@ class GlobalEngineConfiguratorTest {
   @BeforeEach
   void setupStore(@TempDirectory.TempDir Path directory) {
     AvailableRules availableRules = AvailableRules.of(new RepositoryEngineConfiguratorTest.RuleWithInjection(new RepositoryEngineConfiguratorTest.ResultService()), new RepositoryEngineConfiguratorTest.RuleWithConfiguration());
-    ConfigurationStore<GlobalEngineConfiguration> store = new SimpleJaxbStore(directory.resolve("store.xml").toFile());
+    ConfigurationStore<GlobalEngineConfiguration> store = new SimpleJaxbStore<>(GlobalEngineConfiguration.class, directory.resolve("store.xml").toFile(), new GlobalEngineConfiguration());
     when(configurationStoreFactory.withType(GlobalEngineConfiguration.class).withName(any()).build()).thenReturn(store);
 
     configurator = new GlobalEngineConfigurator(availableRules, configurationStoreFactory, pluginLoader);
@@ -113,28 +113,6 @@ class GlobalEngineConfiguratorTest {
 
     public Result getResult() {
       return Result.success(RuleWithInjection.class);
-    }
-  }
-
-  public static class SimpleJaxbStore implements ConfigurationStore<GlobalEngineConfiguration> {
-
-    private final File file;
-
-    public SimpleJaxbStore(File file) {
-      this.file = file;
-    }
-
-    @Override
-    public GlobalEngineConfiguration get() {
-      if (!file.exists()) {
-        return new GlobalEngineConfiguration();
-      }
-      return JAXB.unmarshal(file, GlobalEngineConfiguration.class);
-    }
-
-    @Override
-    public void set(GlobalEngineConfiguration object) {
-      JAXB.marshal(object, file);
     }
   }
 }

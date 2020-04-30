@@ -26,6 +26,8 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.workflow.ApprovedByXReviewersRule.Configuration;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +36,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
+import static com.cloudogu.scm.review.workflow.RuleConfigurationTestUtil.toAndFromJsonAndXml;
 import static com.google.common.collect.ImmutableMap.of;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,7 +58,7 @@ class ApprovedByXReviewersRuleTest {
   @Test
   void shouldFailWithContextIfNotEnoughReviewersApproved() {
     pullRequest.setReviewer(of("Homer Simpson", false, "Totoro", true));
-    Result result = rule.validate(new Context(repository, pullRequest, new ApprovedByXReviewersRule.Configuration(2)));
+    Result result = rule.validate(new Context(repository, pullRequest, new Configuration(2)));
     assertThat(result.isFailed()).isTrue();
     assertThat(result.getContext()).isNotNull();
     assertThat(result.getContext()).isInstanceOf(ApprovedByXReviewersRule.ErrorContext.class);
@@ -68,7 +71,16 @@ class ApprovedByXReviewersRuleTest {
   @Test
   void shouldSucceedIfEnoughReviewersApproved() {
     pullRequest.setReviewer(of("Homer Simpson", true));
-    Result result = rule.validate(new Context(repository, pullRequest, new ApprovedByXReviewersRule.Configuration(1)));
+    Result result = rule.validate(new Context(repository, pullRequest, new Configuration(1)));
     assertThat(result.isSuccess()).isTrue();
+  }
+
+  @Test
+  void shouldSerializeAndDeserializeConfig() throws JsonProcessingException {
+    final Configuration input = new Configuration(42);
+    final Configuration output = toAndFromJsonAndXml(Configuration.class, input);
+    assertThat(output).isNotNull();
+    assertThat(output).isInstanceOf(Configuration.class);
+    assertThat(output.getNumberOfReviewers()).isEqualTo(42);
   }
 }
