@@ -42,47 +42,13 @@ import javax.ws.rs.core.UriInfo;
 import static de.otto.edison.hal.Link.link;
 
 @Mapper
-public abstract class RepositoryEngineConfigMapper extends BaseMapper<EngineConfiguration, RepositoryEngineConfigDto> {
+public abstract class RepositoryEngineConfigMapper extends EngineConfigMapper<EngineConfiguration, RepositoryEngineConfigDto> {
 
-  @Inject
-  AvailableRules availableRules;
-  @Inject
-  ConfigurationValidator configurationValidator;
   @Inject
   GlobalEngineConfigurator globalEngineConfigurator;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   public abstract RepositoryEngineConfigDto map(EngineConfiguration engineConfiguration, @Context Repository repository, @Context UriInfo uriInfo);
-
-  AppliedRuleDto map(AppliedRule appliedRule) {
-    AppliedRuleDto dto = new AppliedRuleDto();
-    dto.setRule(appliedRule.getRule());
-    Rule rule = availableRules.ruleOf(appliedRule.getRule());
-    if (rule.getConfigurationType().isPresent()) {
-      dto.setConfiguration(new ObjectMapper().valueToTree(appliedRule.getConfiguration()));
-    }
-    return dto;
-  }
-
-  AppliedRule map(AppliedRuleDto dto) {
-    AppliedRule appliedRule = new AppliedRule();
-    Rule rule = availableRules.ruleOf(dto.getRule());
-    rule.getConfigurationType()
-      .ifPresent(configurationType -> appliedRule.configuration = parseConfiguration(dto, rule, configurationType));
-    appliedRule.rule = dto.getRule();
-    return appliedRule;
-  }
-
-  private Object parseConfiguration(AppliedRuleDto dto, Rule rule, Class<?> configurationType) {
-    Object configuration;
-    try {
-      configuration = new ObjectMapper().treeToValue(dto.getConfiguration(), configurationType);
-      configurationValidator.validate(configuration);
-      return configuration;
-    } catch (JsonProcessingException e) {
-      throw new InvalidConfigurationException(rule, e);
-    }
-  }
 
   @ObjectFactory
   RepositoryEngineConfigDto create(@Context Repository repository, @Context UriInfo uriInfo) {

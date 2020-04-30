@@ -249,6 +249,8 @@ class RepositoryEngineConfigResourceTest {
       AppliedRule appliedRule = engineConfiguration.getRules().get(0);
       assertThat(appliedRule.getRule()).isEqualTo("ConfigurableRule");
       assertThat(appliedRule.getConfiguration()).isNotNull();
+      assertThat(((ConfigurationForRule) appliedRule.getConfiguration()).number).isEqualTo(42);
+      assertThat(((ConfigurationForRule) appliedRule.getConfiguration()).string).isEqualTo("haxor");
       return true;
     }));
     assertThat(response.getStatus()).isEqualTo(204);

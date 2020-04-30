@@ -41,12 +41,7 @@ import javax.ws.rs.core.UriInfo;
 import static de.otto.edison.hal.Link.link;
 
 @Mapper
-public abstract class GlobalEngineConfigMapper extends BaseMapper<GlobalEngineConfiguration, GlobalEngineConfigDto> {
-  @Inject
-  AvailableRules availableRules;
-
-  @Inject
-  ConfigurationValidator configurationValidator;
+public abstract class GlobalEngineConfigMapper extends EngineConfigMapper<GlobalEngineConfiguration, GlobalEngineConfigDto> {
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   public abstract GlobalEngineConfigDto map(GlobalEngineConfiguration engineConfiguration, @org.mapstruct.Context UriInfo uriInfo);
@@ -66,34 +61,4 @@ public abstract class GlobalEngineConfigMapper extends BaseMapper<GlobalEngineCo
   }
 
   public abstract GlobalEngineConfiguration map(GlobalEngineConfigDto engineConfigurationDto);
-
-  AppliedRuleDto map(AppliedRule appliedRule) {
-    AppliedRuleDto dto = new AppliedRuleDto();
-    dto.setRule(appliedRule.getRule());
-    Rule rule = availableRules.ruleOf(appliedRule.getRule());
-    if (rule.getConfigurationType().isPresent()) {
-      dto.setConfiguration(new ObjectMapper().valueToTree(appliedRule.getConfiguration()));
-    }
-    return dto;
-  }
-
-  AppliedRule map(AppliedRuleDto dto) {
-    AppliedRule appliedRule = new AppliedRule();
-    Rule rule = availableRules.ruleOf(dto.getRule());
-    rule.getConfigurationType()
-      .ifPresent(configurationType -> appliedRule.configuration = parseConfiguration(dto, rule, configurationType));
-    appliedRule.rule = dto.getRule();
-    return appliedRule;
-  }
-
-  private Object parseConfiguration(AppliedRuleDto dto, Rule rule, Class<?> configurationType) {
-    Object configuration;
-    try {
-      configuration = new ObjectMapper().treeToValue(dto.getConfiguration(), configurationType);
-      configurationValidator.validate(configuration);
-      return configuration;
-    } catch (JsonProcessingException e) {
-      throw new InvalidConfigurationException(rule, e);
-    }
-  }
 }
