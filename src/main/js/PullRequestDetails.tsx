@@ -161,7 +161,7 @@ const LevelWrapper = styled.div`
 const IgnoredMergeObstacles = styled.div`
   padding: 1rem 0;
   margin: 1rem 0;
-  border-bottom: 1px solid hsla(0,0%,85.9%,.5);
+  border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
 `;
 
 class PullRequestDetails extends React.Component<Props, State> {
@@ -322,7 +322,7 @@ class PullRequestDetails extends React.Component<Props, State> {
         <IgnoredMergeObstacles>
           <strong>{t("scm-review-plugin.pullRequest.details.ignoredMergeObstacles")}</strong>
           {pullRequest.ignoredMergeObstacles.map(o => (
-            <OverrideModalRow result={{ rule: o, failed: true }} />
+            <OverrideModalRow result={{ rule: o, failed: true }} useObstacleText={pullRequest.emergencyMerged} />
           ))}
         </IgnoredMergeObstacles>
       );

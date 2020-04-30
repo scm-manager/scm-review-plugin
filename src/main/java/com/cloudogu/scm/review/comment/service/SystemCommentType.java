@@ -27,8 +27,7 @@ public enum SystemCommentType {
 
   MERGED("merged"),
   REJECTED("rejected"),
-  SOURCE_DELETED("sourceDeleted"),
-  EMERGENCY_MERGED("emergencyMerged");
+  SOURCE_DELETED("sourceDeleted");
 
   private final String key;
 

@@ -97,10 +97,10 @@ public class MergeResource {
   @POST
   @Path("{namespace}/{name}/{pullRequestId}/emergency")
   @Consumes(PullRequestMediaType.MERGE_COMMAND)
-  @Operation(summary = "Merge pull request", description = "Merges pull request with selected strategy.", tags = "Pull Request")
+  @Operation(summary = "Merge pull request", description = "Merges pull request with selected strategy as emergency merge.", tags = "Pull Request")
   @ApiResponse(responseCode = "204", description = "update success")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
-  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"mergePullRequest\" privilege")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"performEmergencyMerge\" privilege")
   @ApiResponse(responseCode = "404", description = "not found, no pull request with the specified id is available")
   @ApiResponse(
     responseCode = "500",

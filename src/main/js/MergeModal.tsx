@@ -144,8 +144,6 @@ class MergeModal extends React.Component<Props, State> {
     const { pullRequest, emergencyMerge, close, t } = this.props;
     const { mergeStrategy, mergeCommit, loading, loadingDefaultMessage } = this.state;
 
-    console.log("emergency", emergencyMerge);
-
     const footer = (
       <>
         <Button label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")} action={() => close()} color="grey" />

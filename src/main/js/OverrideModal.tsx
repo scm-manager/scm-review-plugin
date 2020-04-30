@@ -74,7 +74,7 @@ class OverrideModal extends React.Component<Props, State> {
         />
         <SubmitButton
           color="danger"
-          icon={"exclamation-triangle"}
+          icon="exclamation-triangle"
           label={t("scm-review-plugin.showPullRequest.overrideModal.continue")}
           action={() => proceed(overrideMessage)}
         />
@@ -84,14 +84,14 @@ class OverrideModal extends React.Component<Props, State> {
     const obstacles = (
       <>
         {mergeCheck?.mergeObstacles.map(obstacle => (
-          <OverrideModalRow result={{ rule: obstacle.key, failed: true }} />
+          <OverrideModalRow result={{ rule: obstacle.key, failed: true }} useObstacleText={true} />
         ))}
       </>
     );
 
     const body = (
       <>
-        <div className={"content"}>
+        <div className="content">
           {t("scm-review-plugin.showPullRequest.overrideModal.introduction")}
           {obstacles}
           <Description>{t("scm-review-plugin.showPullRequest.overrideModal.addMessageText")}</Description>
@@ -107,7 +107,7 @@ class OverrideModal extends React.Component<Props, State> {
         body={body}
         closeFunction={close}
         footer={footer}
-        headColor={"danger"}
+        headColor="danger"
       />
     );
   }

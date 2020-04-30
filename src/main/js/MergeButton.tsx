@@ -26,7 +26,7 @@ import { WithTranslation, withTranslation } from "react-i18next";
 import { Button, Tooltip } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
-import { Repository, Link } from "@scm-manager/ui-types";
+import { Link, Repository } from "@scm-manager/ui-types";
 import MergeModal from "./MergeModal";
 import OverrideModal from "./OverrideModal";
 
@@ -112,7 +112,7 @@ class MergeButton extends React.Component<Props, State> {
     const { t, loading, mergeCheck } = this.props;
 
     const checkHints = mergeCheck
-      ? mergeCheck.mergeObstacles.map(o => t("workflow.rule." + o.key + ".failed")).join("\n")
+      ? mergeCheck.mergeObstacles.map(o => t("workflow.rule." + o.key + ".obstacle")).join("\n")
       : "";
     const obstaclesPresent = this.existsObstacles();
     const obstaclesNotOverrideable = this.existsNotOverrideableObstacles();

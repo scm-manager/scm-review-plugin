@@ -39,8 +39,8 @@ const StatusModalView: FC<Props> = ({ result, failed, onClose }) => {
 
   const body = (
     <>
-      {result.map(result => (
-        <ModalRow result={result} />
+      {result.map(r => (
+        <ModalRow result={r} />
       ))}
     </>
   );

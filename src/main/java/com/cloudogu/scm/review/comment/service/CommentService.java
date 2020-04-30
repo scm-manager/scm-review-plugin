@@ -359,7 +359,6 @@ public class CommentService {
     PullRequest pullRequest = mergedEvent.getPullRequest();
     Comment comment = new Comment();
     comment.setEmergencyMerged(true);
-    comment.setDate(Instant.now());
     comment.setComment(pullRequest.getOverrideMessage());
 
     addWithoutPermissionCheck(mergedEvent.getRepository(), pullRequest.getId(), comment);

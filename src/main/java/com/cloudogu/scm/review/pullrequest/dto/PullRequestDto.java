@@ -66,7 +66,6 @@ public class PullRequestDto extends HalRepresentation {
   private boolean emergencyMerged;
   private List<String> ignoredMergeObstacles;
 
-
   @Override
   @SuppressWarnings("squid:S1185") // We want to have this method available in this package
   protected HalRepresentation add(Links links) {
