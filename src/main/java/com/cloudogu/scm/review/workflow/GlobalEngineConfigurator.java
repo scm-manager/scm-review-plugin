@@ -30,7 +30,6 @@ import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Optional;
 
 public class GlobalEngineConfigurator extends EngineConfigurator {
 

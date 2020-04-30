@@ -24,12 +24,9 @@
 package com.cloudogu.scm.review.workflow;
 
 import lombok.Getter;
-import sonia.scm.store.ConfigurationStore;
-import sonia.scm.store.ConfigurationStoreFactory;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 

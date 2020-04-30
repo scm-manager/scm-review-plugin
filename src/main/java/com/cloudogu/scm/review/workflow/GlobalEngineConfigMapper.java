@@ -26,16 +26,12 @@ package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
-import sonia.scm.api.v2.resources.BaseMapper;
 
-import javax.inject.Inject;
 import javax.ws.rs.core.UriInfo;
 
 import static de.otto.edison.hal.Link.link;
