@@ -36,7 +36,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
-import static com.cloudogu.scm.review.workflow.RuleConfigurationTestUtil.toAndFromJsonAndXml;
+import static sonia.scm.store.SerializationTestUtil.toAndFromJsonAndXml;
 import static com.google.common.collect.ImmutableMap.of;
 import static org.assertj.core.api.Assertions.assertThat;
 
