@@ -22,11 +22,11 @@
  * SOFTWARE.
  */
 
-import React, { FC } from "react";
-import { useTranslation, withTranslation, WithTranslation } from "react-i18next";
+import React, {FC} from "react";
+import {useTranslation, withTranslation, WithTranslation} from "react-i18next";
 import styled from "styled-components";
-import { Result } from "../types/EngineConfig";
-import { Icon } from "@scm-manager/ui-components";
+import {Result} from "../types/EngineConfig";
+import {Icon} from "@scm-manager/ui-components";
 
 type Props = WithTranslation & {
   result: Result;
@@ -57,7 +57,23 @@ const PaddingRightIcon = styled(Icon)`
   padding-right: 0.5rem;
 `;
 
-const ModalRow: FC<Props> = ({ result }) => {
+function getTranslationKey(result: Result): string {
+  let translationKey = `workflow.rule`
+  if (result?.rule) {
+    translationKey += `.${result.rule}`;
+  }
+  if (result?.failed) {
+    translationKey += '.failed';
+  } else {
+    translationKey += '.success';
+  }
+  if (result?.context?.translationCode) {
+    translationKey += `.${result?.context?.translationCode}`;
+  }
+  return translationKey;
+}
+
+const ModalRow: FC<Props> = ({result}) => {
   const [t] = useTranslation("plugins");
 
   return (
@@ -70,7 +86,7 @@ const ModalRow: FC<Props> = ({ result }) => {
         <strong>{t("workflow.rule." + result?.rule + ".name")}</strong>
       </Left>
       <Right>
-        <p>{t("workflow.rule." + result?.rule + (result.failed ? ".failed" : ".success"), result?.context)}</p>
+        <p>{t(getTranslationKey(result), result?.context)}</p>
       </Right>
     </Entry>
   );
