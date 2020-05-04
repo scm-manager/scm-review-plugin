@@ -53,23 +53,23 @@ public class WorkflowMergeGuard implements MergeGuard {
         .getRuleResults()
         .stream()
         .filter(Result::isFailed)
-        .map(Result::getRule)
-        .map(Class::getSimpleName)
-        .map(this::createObstacle)
+        .map(WorkflowMergeObstacle::new)
         .collect(Collectors.toList());
     }
     return emptyList();
   }
 
-  private MergeObstacle createObstacle(String s) {
-    return new WorkflowMergeObstacle(s);
-  }
-
   private static class WorkflowMergeObstacle implements MergeObstacle {
     private final String ruleMessageKey;
+    private final String errorCode;
 
-    public WorkflowMergeObstacle(String ruleMessageKey) {
-      this.ruleMessageKey = ruleMessageKey;
+    public WorkflowMergeObstacle(Result result) {
+      this.ruleMessageKey = result.getRule().getSimpleName();
+      if (result.getContext() instanceof ResultContextWithTranslationCode) {
+        this.errorCode = ((ResultContextWithTranslationCode) result.getContext()).getTranslationCode();
+      } else {
+        this.errorCode = null;
+      }
     }
 
     @Override
@@ -79,7 +79,7 @@ public class WorkflowMergeGuard implements MergeGuard {
 
     @Override
     public String getKey() {
-      return "workflow.rule." + ruleMessageKey + ".obstacle";
+      return "workflow.rule." + ruleMessageKey + ".obstacle" + (errorCode == null ? "" : "." + errorCode);
     }
 
     @Override
