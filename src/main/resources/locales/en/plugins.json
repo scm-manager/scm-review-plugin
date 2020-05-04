@@ -386,6 +386,10 @@
       "writeWorkflowConfig": {
         "displayName": "write workflow engine configuration",
         "description": "May configure the workflow engine configuration for this repository"
+      },
+      "performEmergencyMerge": {
+        "displayName": "performe emergency merge",
+        "description": "May merge pull requests even though not all rules configured in the workflow are fulfilled"
       }
     }
   },

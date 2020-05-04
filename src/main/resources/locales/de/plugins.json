@@ -388,6 +388,10 @@
       "writeWorkflowConfig": {
         "displayName": "Workflow Engine Konfiguration ändern",
         "description": "Darf die Workflow Engine Konfiguration bearbeiten"
+      },
+      "performEmergencyMerge": {
+        "displayName": "Emergency-Merge durchführen",
+        "description": "Darf einen Pull Request auch dann mergen, wenn nicht alle in der Workflow-Engine konfigurierten Regeln erfüllt sind"
       }
     }
   },
