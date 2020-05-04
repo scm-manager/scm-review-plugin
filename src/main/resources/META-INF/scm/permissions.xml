@@ -33,4 +33,7 @@
   <permission>
     <value>configuration:read,write:workflowConfig</value>
   </permission>
+  <permission>
+    <value>repository:performEmergencyMerge:*</value>
+  </permission>
 </permissions>

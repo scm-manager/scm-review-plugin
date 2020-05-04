@@ -336,6 +336,12 @@
           "displayName": "Configure all pull requests",
           "description": "May configure pull requests for all repositories"
         }
+      },
+      "performEmergencyMerge": {
+        "*": {
+          "displayName": "Perform emergency merge",
+          "description": "May perform an emergency merge and ignore the configured workflow rules"
+        }
       }
     },
     "configuration": {

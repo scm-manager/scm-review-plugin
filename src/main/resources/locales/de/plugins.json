@@ -335,8 +335,14 @@
       },
       "configurePullRequest": {
         "*": {
-          "displayName": "Configure all pull requests",
-          "description": "May configure pull requests for all repositories"
+          "displayName": "Alle Pull Requests konfigurieren",
+          "description": "Darf Pull Requests in allen Repositories konfigurieren"
+        }
+      },
+      "performEmergencyMerge": {
+        "*": {
+          "displayName": "Notfall-Merge durchführen",
+          "description": "Darf einen Notfall-Merge bei einem Pull Request durchführen und damit die Workflow Regeln ignorieren"
         }
       }
     },
