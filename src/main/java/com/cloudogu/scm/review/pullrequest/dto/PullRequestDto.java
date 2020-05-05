@@ -28,10 +28,9 @@ import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 
-import javax.validation.constraints.Size;
+import javax.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
@@ -45,14 +44,11 @@ import java.util.Set;
 public class PullRequestDto extends HalRepresentation {
   private String id;
   private DisplayedUserDto author;
-  @NonNull
-  @Size(min = 1)
+  @NotBlank
   private String source;
-  @NonNull
-  @Size(min = 1)
+  @NotBlank
   private String target;
-  @NonNull
-  @Size(min = 1)
+  @NotBlank
   private String title;
   private String description;
   private Instant creationDate;

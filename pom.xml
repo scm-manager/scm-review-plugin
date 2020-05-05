@@ -131,6 +131,14 @@
       <version>26.0-jre</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>javax.el</groupId>
+      <artifactId>javax.el-api</artifactId>
+      <version>3.0.1-b06</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <repositories>
