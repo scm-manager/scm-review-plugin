@@ -174,7 +174,6 @@ class StatusCheckHookTest {
   @Test
   void shouldNotProcessEventsForRepositoriesWithoutMergeCapability() throws IOException {
     when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
-    PullRequest pullRequest = rejectedPullRequest();
 
     hook.checkStatus(event);
 
@@ -195,7 +194,7 @@ class StatusCheckHookTest {
   }
 
   @Test
-  void shouldSetPullRequestsWithDeletedSourceToRejected()  {
+  void shouldSetPullRequestsWithDeletedSourceToRejected() {
     PullRequest pullRequest = openPullRequest();
     when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
 

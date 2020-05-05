@@ -24,50 +24,68 @@
 
 import React, { FC } from "react";
 import { useTranslation, withTranslation, WithTranslation } from "react-i18next";
-import { Modal } from "@scm-manager/ui-components";
-import { Result } from "../types/EngineConfig";
-import ModalRow from "./ModalRow";
+import styled from "styled-components";
+import { Result } from "./types/EngineConfig";
+import { Icon } from "@scm-manager/ui-components";
 
 type Props = WithTranslation & {
-  result: Result[];
-  failed: boolean;
-  onClose: () => void;
+  result: Result;
+  useObstacleText: boolean;
 };
 
-const StatusModalView: FC<Props> = ({ result, failed, onClose }) => {
+const Entry = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  div {
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+  }
+`;
+
+const Left = styled.div`
+  min-width: 40%;
+  flex: 1;
+`;
+
+const Right = styled.div`
+  flex: 2;
+`;
+
+const PaddingRightIcon = styled(Icon)`
+  padding-right: 0.5rem;
+`;
+
+const OverrideModalRow: FC<Props> = ({ result, useObstacleText }) => {
   const [t] = useTranslation("plugins");
 
-  const body = (
-    <>
-      {result.map(r => (
-        <ModalRow result={r} />
-      ))}
-    </>
-  );
-  const errors = result && result.length > 0 ? result.filter(r => r.failed).length : 0;
-  const color = failed ? "warning" : "success";
-
-  const modalTitle = failed
-    ? t("scm-review-plugin.workflow.modal.failedTitle", {
-        count: errors
-      })
-    : t("scm-review-plugin.workflow.modal.successTitle");
+  const evaluateTranslationKey = () => {
+    if (result.failed) {
+      if (useObstacleText) {
+        return ".obstacle";
+      }
+      return ".failed";
+    }
+    return "success";
+  };
 
   return (
-    <Modal
-      title={
-        <strong
-          className={`has-text-${color === "warning" ? "warning-invert" : color === "success" ? "white" : "default"}`}
-        >
-          {modalTitle}
-        </strong>
-      }
-      closeFunction={() => onClose()}
-      body={body}
-      active={true}
-      headColor={color}
-    />
+    <Entry>
+      <Left>
+        <PaddingRightIcon
+          color={result?.failed ? "warning" : "success"}
+          name={result?.failed ? "exclamation-triangle" : "check-circle"}
+        />
+        <strong>{t("workflow.rule." + result?.rule + ".name")}</strong>
+      </Left>
+      <Right>
+        <p>{t("workflow.rule." + result?.rule + evaluateTranslationKey())}</p>
+      </Right>
+    </Entry>
   );
 };
 
-export default withTranslation("plugins")(StatusModalView);
+export default withTranslation("plugins")(OverrideModalRow);

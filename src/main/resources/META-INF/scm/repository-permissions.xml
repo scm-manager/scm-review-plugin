@@ -33,6 +33,7 @@
     <verb>configurePullRequest</verb>
     <verb>readWorkflowConfig</verb>
     <verb>writeWorkflowConfig</verb>
+    <verb>performEmergencyMerge</verb>
   </verbs>
   <roles>
     <role>

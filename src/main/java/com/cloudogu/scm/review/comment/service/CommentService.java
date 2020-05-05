@@ -27,6 +27,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
@@ -40,8 +41,10 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
+import sonia.scm.user.User;
 
 import javax.inject.Inject;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -349,6 +352,16 @@ public class CommentService {
   @Subscribe
   public void addCommentOnMerge(PullRequestMergedEvent mergedEvent) {
     addStatusChangedComment(mergedEvent.getRepository(), mergedEvent.getPullRequest().getId(), SystemCommentType.MERGED);
+  }
+
+  @Subscribe
+  public void addCommentOnEmergencyMerge(PullRequestEmergencyMergedEvent mergedEvent) {
+    PullRequest pullRequest = mergedEvent.getPullRequest();
+    Comment comment = new Comment();
+    comment.setEmergencyMerged(true);
+    comment.setComment(pullRequest.getOverrideMessage());
+
+    addWithoutPermissionCheck(mergedEvent.getRepository(), pullRequest.getId(), comment);
   }
 
   @Subscribe

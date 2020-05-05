@@ -49,7 +49,8 @@ import java.util.List;
 import static java.lang.String.format;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
-@EagerSingleton @Extension
+@EagerSingleton
+@Extension
 public class StatusCheckHook {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatusCheckHook.class);
@@ -103,7 +104,7 @@ public class StatusCheckHook {
     }
 
     private void processOpen(PullRequest pullRequest) {
-      if (branchesAreModified(pullRequest)){
+      if (branchesAreModified(pullRequest)) {
         if (isMerged(pullRequest)) {
           setMerged(pullRequest);
         } else {

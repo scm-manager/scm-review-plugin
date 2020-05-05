@@ -46,9 +46,11 @@ import static com.google.common.io.Resources.toByteArray;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static sonia.scm.repository.api.MergeStrategy.FAST_FORWARD_IF_POSSIBLE;
 import static sonia.scm.repository.api.MergeStrategy.SQUASH;
 
 @SubjectAware(
@@ -82,7 +84,18 @@ class MergeResourceTest {
     MockHttpRequest request = createHttpPostRequest(MERGE_URL + "?strategy=SQUASH", mergeCommitJson);
 
     dispatcher.invoke(request, response);
-    verify(mergeService).merge(eq(new NamespaceAndName("space", "name")), eq("1"), any(), eq(SQUASH));
+    verify(mergeService).merge(eq(new NamespaceAndName("space", "name")), eq("1"), any(), eq(SQUASH), anyBoolean());
+    assertThat(response.getStatus()).isEqualTo(204);
+  }
+
+  @Test
+  void shouldEmergencyMergeWithFastForward() throws URISyntaxException, IOException {
+    byte[] mergeCommitJson = loadJson("com/cloudogu/scm/review/mergeCommit.json");
+
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/emergency" + "?strategy=FAST_FORWARD_IF_POSSIBLE", mergeCommitJson);
+
+    dispatcher.invoke(request, response);
+    verify(mergeService).merge(eq(new NamespaceAndName("space", "name")), eq("1"), any(), eq(FAST_FORWARD_IF_POSSIBLE), anyBoolean());
     assertThat(response.getStatus()).isEqualTo(204);
   }
 

@@ -51,6 +51,7 @@ import org.apache.shiro.util.ThreadContext;
 import org.assertj.core.util.Lists;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -168,6 +169,11 @@ public class PullRequestRootResourceTest {
     lenient().when(userDisplayManager.get("reviewer")).thenReturn(Optional.of(DisplayUser.from(new User("reviewer", "reviewer", ""))));
   }
 
+  @After
+  public void unbindSubject() {
+    ThreadContext.unbindSubject();
+  }
+
   @Test
   @SubjectAware(username = "slarti")
   public void shouldCreateNewValidPullRequest() throws URISyntaxException, IOException {
@@ -241,7 +247,7 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian")
+  @SubjectAware(username = "dent")
   public void shouldRejectInvalidPullRequest() throws URISyntaxException, IOException {
     byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest_invalid.json");
     MockHttpRequest request =
@@ -252,7 +258,7 @@ public class PullRequestRootResourceTest {
 
     dispatcher.invoke(request, response);
 
-    assertEquals(HttpServletResponse.SC_FORBIDDEN, response.getStatus());
+    assertEquals(HttpServletResponse.SC_BAD_REQUEST, response.getStatus());
     verify(store, never()).add(any());
   }
 

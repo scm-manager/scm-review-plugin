@@ -38,6 +38,7 @@ public final class PermissionCheck {
   public static final String READ_PULL_REQUEST = "readPullRequest";
   public static final String COMMENT_PULL_REQUEST = "commentPullRequest";
   public static final String MERGE_PULL_REQUEST = "mergePullRequest";
+  public static final String PERFORM_EMERGENCY_MERGE = "performEmergencyMerge";
   public static final String CONFIGURE_PULL_REQUEST = "configurePullRequest";
   public static final String CONFIGURE_PERMISSION = "pullRequest";
   public static final String WORKFLOW_CONFIG = "workflowConfig";
@@ -82,6 +83,14 @@ public final class PermissionCheck {
 
   public static void checkMerge(Repository repository) {
     RepositoryPermissions.custom(MERGE_PULL_REQUEST, repository).check();
+  }
+
+  public static void checkEmergencyMerge(Repository repository) {
+    RepositoryPermissions.custom(PERFORM_EMERGENCY_MERGE, repository).check();
+  }
+
+  public static boolean mayPerformEmergencyMerge(Repository repository) {
+    return RepositoryPermissions.custom(PERFORM_EMERGENCY_MERGE, repository).isPermitted();
   }
 
   /**

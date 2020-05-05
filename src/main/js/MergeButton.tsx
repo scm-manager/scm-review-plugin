@@ -26,12 +26,12 @@ import { WithTranslation, withTranslation } from "react-i18next";
 import { Button, Tooltip } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
-import { Repository } from "@scm-manager/ui-types";
+import { Link, Repository } from "@scm-manager/ui-types";
 import MergeModal from "./MergeModal";
 import OverrideModal from "./OverrideModal";
 
 type Props = WithTranslation & {
-  merge: (strategy: string, commit: MergeCommit) => void;
+  merge: (strategy: string, commit: MergeCommit, emergency: boolean) => void;
   repository: Repository;
   mergeCheck?: MergeCheck;
   loading: boolean;
@@ -87,13 +87,35 @@ class MergeButton extends React.Component<Props, State> {
     });
   };
 
+  existsNotOverrideableObstacles = () => {
+    const { mergeCheck } = this.props;
+    return mergeCheck ? mergeCheck.mergeObstacles.filter(obstacle => !obstacle.overrideable).length > 0 : false;
+  };
+
+  existsObstacles() {
+    const { mergeCheck } = this.props;
+    return mergeCheck ? mergeCheck.mergeObstacles.length > 0 : false;
+  }
+
+  isMergeButtonDisabled = () => {
+    const { pullRequest } = this.props;
+
+    if (this.existsObstacles()) {
+      if (!this.existsNotOverrideableObstacles()) {
+        return !(pullRequest?._links?.emergencyMerge as Link[]);
+      }
+    }
+    return false;
+  };
+
   renderButton = () => {
     const { t, loading, mergeCheck } = this.props;
 
-    const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map(o => t(o.key)).join("\n") : "";
-    const obstaclesPresent = mergeCheck && mergeCheck.mergeObstacles.length > 0;
-    // TODO enabled with Emergency Merge Feature
-    const obstaclesNotOverrideable = true; // mergeCheck && mergeCheck.mergeObstacles.filter(obstacle => !obstacle.overrideable).length > 0;
+    const checkHints = mergeCheck
+      ? mergeCheck.mergeObstacles.map(o => t("workflow.rule." + o.key + ".obstacle")).join("\n")
+      : "";
+    const obstaclesPresent = this.existsObstacles();
+    const obstaclesNotOverrideable = this.existsNotOverrideableObstacles();
     let color;
     if (mergeCheck?.hasConflicts) {
       color = "warning";
@@ -106,7 +128,8 @@ class MergeButton extends React.Component<Props, State> {
     } else {
       color = "primary";
     }
-    const disabled = obstaclesPresent && obstaclesNotOverrideable;
+
+    const disabled = this.isMergeButtonDisabled();
 
     let action;
     if (mergeCheck?.hasConflicts) {
@@ -167,11 +190,12 @@ class MergeButton extends React.Component<Props, State> {
     if (showMergeModal) {
       return (
         <MergeModal
-          merge={(strategy: string, mergeCommit: MergeCommit) =>
-            merge(strategy, this.addOverrideMessageToMergeCommit(mergeCommit))
+          merge={(strategy: string, mergeCommit: MergeCommit, emergency: boolean) =>
+            merge(strategy, this.addOverrideMessageToMergeCommit(mergeCommit), emergency)
           }
           close={this.toggleMergeModal}
           pullRequest={pullRequest}
+          emergencyMerge={this.existsObstacles() && !this.existsNotOverrideableObstacles()}
         />
       );
     }

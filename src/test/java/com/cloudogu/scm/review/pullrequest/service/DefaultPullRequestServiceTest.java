@@ -26,7 +26,9 @@ package com.cloudogu.scm.review.pullrequest.service;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
+import com.cloudogu.scm.review.workflow.AllReviewerApprovedRule;
 import com.github.sdorra.shiro.ShiroRule;
+import com.google.common.collect.ImmutableList;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -56,6 +58,7 @@ import sonia.scm.user.User;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -568,9 +571,28 @@ class DefaultPullRequestServiceTest {
 
       verify(store, never()).update(any());
     }
+
+    @Test
+    void shouldSetPullRequestEmergencyMerged() {
+      PullRequest pullRequest = createPullRequest("emergency", null, null);
+      pullRequest.setStatus(OPEN);
+      String overrideMessage = "really urgent";
+      String ignoredRule = AllReviewerApprovedRule.class.getSimpleName();
+      when(store.get("emergency")).thenReturn(pullRequest);
+
+      service.setEmergencyMerged(REPOSITORY, pullRequest.getId(), overrideMessage, ImmutableList.of(ignoredRule));
+
+      assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
+      assertThat(pullRequest.isEmergencyMerged()).isTrue();
+      assertThat(pullRequest.getOverrideMessage()).isEqualTo(overrideMessage);
+      assertThat(pullRequest.getIgnoredMergeObstacles().size()).isEqualTo(1);
+      assertThat(pullRequest.getIgnoredMergeObstacles().get(0)).isEqualTo(ignoredRule);
+
+      verify(eventBus).post(any(PullRequestEmergencyMergedEvent.class));
+    }
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "", emptySet(), null);
+    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "", emptySet(), null, false, Collections.emptyList());
   }
 }

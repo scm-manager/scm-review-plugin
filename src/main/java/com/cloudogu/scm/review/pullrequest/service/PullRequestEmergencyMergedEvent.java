@@ -21,47 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.comment.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+package com.cloudogu.scm.review.pullrequest.service;
 
-import javax.validation.Valid;
-import java.util.List;
+import sonia.scm.event.Event;
+import sonia.scm.repository.Repository;
 
+@Event
+public class PullRequestEmergencyMergedEvent extends BasicPullRequestEvent {
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode
-public class CommentDto extends BasicCommentDto {
-
-  @Valid
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private LocationDto location;
-
-  private boolean systemComment;
-  private boolean outdated;
-  private boolean emergencyMerged;
-
-  private String type;
-
-  private InlineContextDto context;
-
-  @Getter
-  @Setter
-  static class InlineContextDto {
-    private List<ContextLineDto> lines;
-  }
-
-  @Getter
-  @Setter
-  static class ContextLineDto {
-    private Integer oldLineNumber;
-    private Integer newLineNumber;
-    private String content;
+  public PullRequestEmergencyMergedEvent(Repository repository, PullRequest pullRequest) {
+    super(repository, pullRequest);
   }
 }

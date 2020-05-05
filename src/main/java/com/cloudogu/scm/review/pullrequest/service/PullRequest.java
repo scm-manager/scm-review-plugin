@@ -38,6 +38,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -72,6 +73,8 @@ public class PullRequest {
   private String targetRevision;
   private Set<ReviewMark> reviewMarks = new HashSet<>();
   private String overrideMessage;
+  private boolean emergencyMerged;
+  private List<String> ignoredMergeObstacles;
 
   public PullRequest(String id, String source, String target) {
     this.id = id;

@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCheckResultDto;
@@ -90,7 +91,34 @@ public class MergeResource {
     @NotNull @Valid MergeCommitDto mergeCommitDto
   ) {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
-    service.merge(namespaceAndName, pullRequestId, mergeCommitDto, strategy);
+    service.merge(namespaceAndName, pullRequestId, mergeCommitDto, strategy, false);
+  }
+
+  @POST
+  @Path("{namespace}/{name}/{pullRequestId}/emergency")
+  @Consumes(PullRequestMediaType.MERGE_COMMAND)
+  @Operation(summary = "Merge pull request", description = "Merges pull request with selected strategy as emergency merge.", tags = "Pull Request")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"performEmergencyMerge\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no pull request with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public void emergencyMerge(
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @PathParam("pullRequestId") String pullRequestId,
+    @QueryParam("strategy") MergeStrategy strategy,
+    @NotNull @Valid MergeCommitDto mergeCommitDto
+  ) {
+    NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
+    service.merge(namespaceAndName, pullRequestId, mergeCommitDto, strategy, true);
   }
 
   @POST

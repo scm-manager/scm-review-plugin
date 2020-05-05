@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Added
 - Workflow Engine to enforce rules before merging pull requests
+- Emergency Merge to override configured workflow rules ([#70](https://github.com/scm-manager/scm-review-plugin/pull/70)
 
 ## 2.0.0-rc9-2 - 2020-04-14
 ### Added

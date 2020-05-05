@@ -106,6 +106,8 @@ public interface PullRequestService {
 
   void setMerged(Repository repository, String pullRequestId, String overrideMessage);
 
+  void setEmergencyMerged(Repository repository, String pullRequestId, String overrideMessage, List<String> ignoredMergeObstacles);
+
   void updated(Repository repository, String pullRequestId);
 
   boolean hasUserApproved(Repository repository, String pullRequestId, User user);

@@ -83,7 +83,7 @@ class WorkflowMergeGuardTest {
 
     assertThat(obstacles)
       .extracting("key")
-      .containsExactly("workflow.rule.Rule.obstacle");
+      .containsExactly("Rule");
   }
 
   @Test
@@ -93,7 +93,7 @@ class WorkflowMergeGuardTest {
     Collection<MergeObstacle> obstacles = guard.getObstacles(REPOSITORY, PULL_REQUEST);
 
     assertThat(obstacles)
-      .extracting("key")
-      .containsExactly("workflow.rule.Rule.obstacle.MyErrorCode");
+      .extracting("errorCode")
+      .containsExactly("MyErrorCode");
   }
 }

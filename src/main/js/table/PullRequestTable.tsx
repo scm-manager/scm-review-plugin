@@ -26,9 +26,10 @@ import styled from "styled-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { PullRequest } from "../types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
-import { Column, DateFromNow, Table, Tag, TextColumn, comparators } from "@scm-manager/ui-components";
+import { Column, comparators, DateFromNow, Table, Tag, TextColumn } from "@scm-manager/ui-components";
 import { Link } from "react-router-dom";
 import ReviewerIcon from "./ReviewerIcon";
+import { evaluateTagColor } from "../pullRequest";
 
 type Props = WithTranslation & {
   repository: Repository;
@@ -97,8 +98,9 @@ class PullRequestTable extends React.Component<Props> {
           {(row: any) => (
             <Tag
               className="is-medium"
-              color={row.status === "MERGED" ? "success" : row.status === "REJECTED" ? "danger" : "light"}
+              color={evaluateTagColor(row)}
               label={row.status}
+              icon={row.emergencyMerged ? "exclamation-triangle" : undefined}
             />
           )}
         </MobileHiddenColumn>

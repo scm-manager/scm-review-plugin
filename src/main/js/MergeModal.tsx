@@ -31,8 +31,9 @@ import { getDefaultCommitDefaultMessage } from "./pullRequest";
 
 type Props = WithTranslation & {
   close: () => void;
-  merge: (strategy: string, mergeCommit: MergeCommit) => void;
+  merge: (strategy: string, mergeCommit: MergeCommit, emergency: boolean) => void;
   pullRequest: PullRequest;
+  emergencyMerge: boolean;
 };
 
 type State = {
@@ -51,7 +52,7 @@ class MergeModal extends React.Component<Props, State> {
       mergeStrategy: this.extractFirstMergeStrategy(props.pullRequest._links.merge as Link[]),
       mergeCommit: {
         commitMessage: "",
-        shouldDeleteSourceBranch: false
+        shouldDeleteSourceBranch: false,
       },
       defaultCommitMessages: {},
       loading: false,
@@ -122,12 +123,12 @@ class MergeModal extends React.Component<Props, State> {
     this.setState({ messageChanged: true, mergeCommit: { ...this.state.mergeCommit, commitMessage: newMessage } });
   };
 
-  performMerge = () => {
+  performMerge = (emergency: boolean) => {
     const { merge } = this.props;
     const { mergeStrategy, mergeCommit } = this.state;
 
     this.setState({ loading: true });
-    merge(mergeStrategy, mergeCommit);
+    merge(mergeStrategy, mergeCommit, emergency);
   };
 
   shouldDisableMergeButton = () => {
@@ -140,18 +141,29 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   render() {
-    const { pullRequest, close, t } = this.props;
+    const { pullRequest, emergencyMerge, close, t } = this.props;
     const { mergeStrategy, mergeCommit, loading, loadingDefaultMessage } = this.state;
 
     const footer = (
       <>
         <Button label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")} action={() => close()} color="grey" />
-        <SubmitButton
-          label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}
-          action={() => this.performMerge()}
-          loading={loading}
-          disabled={this.shouldDisableMergeButton()}
-        />
+        {emergencyMerge ? (
+          <SubmitButton
+            icon="exclamation-triangle"
+            color="danger"
+            label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}
+            action={() => this.performMerge(true)}
+            loading={loading}
+            disabled={this.shouldDisableMergeButton()}
+          />
+        ) : (
+          <SubmitButton
+            label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}
+            action={() => this.performMerge(false)}
+            loading={loading}
+            disabled={this.shouldDisableMergeButton()}
+          />
+        )}
       </>
     );
 
@@ -171,7 +183,11 @@ class MergeModal extends React.Component<Props, State> {
 
     return (
       <Modal
-        title={t("scm-review-plugin.showPullRequest.mergeModal.title")}
+        title={
+          emergencyMerge
+            ? t("scm-review-plugin.showPullRequest.mergeModal.title.emergencyMerge")
+            : t("scm-review-plugin.showPullRequest.mergeModal.title.merge")
+        }
         active={true}
         body={body}
         closeFunction={close}

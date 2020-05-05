@@ -226,6 +226,17 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
+  public void setEmergencyMerged(Repository repository, String pullRequestId, String overrideMessage, List<String> ignoredMergeObstacles) {
+    PullRequest pullRequest = get(repository, pullRequestId);
+    pullRequest.setOverrideMessage(overrideMessage);
+    pullRequest.setEmergencyMerged(true);
+    pullRequest.setStatus(MERGED);
+    pullRequest.setIgnoredMergeObstacles(ignoredMergeObstacles);
+    getStore(repository).update(pullRequest);
+    eventBus.post(new PullRequestEmergencyMergedEvent(repository, pullRequest));
+  }
+
+  @Override
   public void updated(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
 

@@ -41,7 +41,7 @@ import {
   Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
-import { check, merge, reject } from "./pullRequest";
+import { check, evaluateTagColor, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -51,6 +51,7 @@ import ReviewerList from "./ReviewerList";
 import ChangeNotification from "./ChangeNotification";
 import ReducedMarkdownView from "./ReducedMarkdownView";
 import Statusbar from "./workflow/Statusbar";
+import OverrideModalRow from "./OverrideModalRow";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -157,6 +158,12 @@ const LevelWrapper = styled.div`
   }
 `;
 
+const IgnoredMergeObstacles = styled.div`
+  padding: 1rem 0;
+  margin: 1rem 0;
+  border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
+`;
+
 class PullRequestDetails extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -210,13 +217,17 @@ class PullRequestDetails extends React.Component<Props, State> {
   }
 
   findStrategyLink = (links: Link[], strategy: string) => {
-    return links.filter(link => link.name === strategy)[0].href;
+    return links?.filter(link => link.name === strategy)[0].href;
   };
 
-  performMerge = (strategy: string, commit: MergeCommit) => {
+  performMerge = (strategy: string, commit: MergeCommit, emergency: boolean) => {
     const { pullRequest, fetchPullRequest } = this.props;
+    const mergeLinks = emergency
+      ? (pullRequest?._links?.emergencyMerge as Link[])
+      : (pullRequest?._links?.merge as Link[]);
+
     this.setMergeButtonLoadingState();
-    merge(this.findStrategyLink(pullRequest._links.merge as Link[], strategy), commit)
+    merge(this.findStrategyLink(mergeLinks, strategy), commit)
       .then(fetchPullRequest)
       .catch(err => {
         if (err instanceof ConflictError) {
@@ -292,6 +303,18 @@ class PullRequestDetails extends React.Component<Props, State> {
       );
     }
 
+    let ignoredMergeObstacles = null;
+    if (pullRequest.ignoredMergeObstacles?.length > 0) {
+      ignoredMergeObstacles = (
+        <IgnoredMergeObstacles>
+          <strong>{t("scm-review-plugin.pullRequest.details.ignoredMergeObstacles")}</strong>
+          {pullRequest.ignoredMergeObstacles.map(o => (
+            <OverrideModalRow result={{ rule: o, failed: true }} useObstacleText={pullRequest.emergencyMerged} />
+          ))}
+        </IgnoredMergeObstacles>
+      );
+    }
+
     let mergeButton = null;
     let rejectButton = null;
     if (pullRequest._links.reject) {
@@ -299,7 +322,7 @@ class PullRequestDetails extends React.Component<Props, State> {
       if (!!pullRequest._links.merge) {
         mergeButton = targetBranchDeleted ? null : (
           <MergeButton
-            merge={(strategy: string, commit: MergeCommit) => this.performMerge(strategy, commit)}
+            merge={(strategy: string, commit: MergeCommit, emergency) => this.performMerge(strategy, commit, emergency)}
             mergeCheck={mergeCheck}
             loading={mergeButtonLoading}
             repository={repository}
@@ -388,10 +411,9 @@ class PullRequestDetails extends React.Component<Props, State> {
             <div className="media-right">
               <Tag
                 className="is-medium"
-                color={
-                  pullRequest.status === "MERGED" ? "success" : pullRequest.status === "REJECTED" ? "danger" : "light"
-                }
+                color={evaluateTagColor(pullRequest)}
                 label={pullRequest.status}
+                icon={pullRequest.emergencyMerged ? "exclamation-triangle" : undefined}
               />
             </div>
           </MediaWithTopBorder>
@@ -405,7 +427,7 @@ class PullRequestDetails extends React.Component<Props, State> {
           />
           <Statusbar pullRequest={pullRequest} />
           {description}
-
+          {ignoredMergeObstacles}
           <UserList className="media">
             <div className="media-content">
               {author}
