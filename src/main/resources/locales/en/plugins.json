@@ -271,8 +271,8 @@
     },
     "workflow": {
       "enableEngine": {
-        "label": "Activates workflow engine",
-        "helpText": "Activates the workflow engine and validates all pull requests by the defined rules."
+        "label": "Activate workflow engine",
+        "helpText": "Activate the workflow engine and validate all pull requests by the defined rules."
       },
       "rule": {
         "column": {
@@ -293,13 +293,13 @@
       "statusbar": {
         "rules": "{{count}} rule",
         "rules_plural": "{{count}} rules",
-        "failedRules": "{{count}} rule not fulfilled",
-        "failedRules_plural": "{{count}} rules not fulfilled",
+        "failedRules": "{{count}} rule is not fulfilled",
+        "failedRules_plural": "{{count}} rules are not fulfilled",
         "noFailedRules": "All rules fulfilled"
       },
       "modal": {
-        "failedTitle": "{{count}} rule not fulfilled",
-        "failedTitle_plural": "{{count}} rules not fulfilled",
+        "failedTitle": "{{count}} rule is not fulfilled",
+        "failedTitle_plural": "{{count}} rules are not fulfilled",
         "successTitle": "All rules fulfilled"
       },
       "disableRepositoryConfiguration": {
@@ -407,29 +407,29 @@
     "rule": {
       "AllReviewerApprovedRule": {
         "name": "All reviewers approved",
-        "description": "All selected reviewers have to approve the pull request.",
-        "failed": "This pull request was not approved by all reviewers.",
-        "obstacle": "This pull request was not approved by all reviewers.",
-        "success": "This pull request was approved by all reviewers."
+        "description": "All selected reviewers have approved the pull request.",
+        "failed": "Not all reviewers have approved this pull request.",
+        "obstacle": "Not all reviewers have approved this pull request.",
+        "success": "All reviewers approved this pull request."
       },
       "AllTasksDoneRule": {
         "name": "All tasks done",
-        "description": "All tasks of the pull requests have to be done.",
-        "failed": "There are {{count}} open tasks for this pull request.",
+        "description": "All tasks of the pull requests are done.",
+        "failed": "{{count}} tasks for this pull request are open.",
         "obstacle": "There are open tasks for this pull request.",
         "success": "All tasks for this pull request are done."
       },
       "ApprovedByXReviewersRule": {
-        "name": "Approved by sufficient number of reviewers",
-        "description": "The pull request has to be approved by at least {{numberOfReviewers}} reviewers.",
-        "failed": "Another {{missing}} reviewers have to approve this pull request ({{actual}}/{{expected}} have approved).",
-        "obstacle": "There have to be more reviewers to approve this pull request.",
-        "success": "A sufficient number of reviewers have approved this pull request.",
+        "name": "Number of approvals",
+        "description": "The pull request is approved by at least {{numberOfReviewers}} reviewers.",
+        "failed": "{{missing}} approvals are missing ({{actual}}/{{expected}} reviewers approved this pull request).",
+        "obstacle": "There are not enough approvals for this pull request.",
+        "success": "There are enough approvals for this pull request.",
         "form": {
           "numberOfReviewers": {
             "label": "Minimum number of approvals",
             "helpText": "Minimum number of reviewers that have to approve the pull request.",
-            "errorMessage": "The value has to be a whole number greater than 0."
+            "errorMessage": "The value must be greater than 0."
           }
         }
       }
