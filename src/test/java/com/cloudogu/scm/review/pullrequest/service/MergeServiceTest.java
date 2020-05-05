@@ -66,9 +66,12 @@ import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -132,6 +135,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(false);
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
     verify(pullRequestService).setRevisions(REPOSITORY, "1", "1", "2");
+    verify(pullRequestService, never()).setEmergencyMerged(any(Repository.class), anyString(), anyString(), anyList());
   }
 
   @Test
@@ -143,7 +147,9 @@ public class MergeServiceTest {
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true);
-    verify(pullRequestService).setEmergencyMerged(REPOSITORY, "1", mergeCommit);
+
+    verify(pullRequestService).setEmergencyMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage(), mergeCommit.getIgnoredMergeObstacles());
+    verify(pullRequestService, never()).setMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage());
   }
 
   @Test(expected = UnauthorizedException.class)
@@ -153,6 +159,18 @@ public class MergeServiceTest {
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true);
+  }
+
+  @Test(expected = MergeNotAllowedException.class)
+  @SubjectAware(username = "dent")
+  public void shouldNotMergeWithObstaclesIfNotEmergency() {
+    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+    mockMergeGuard(pullRequest, true);
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
   }
 
   @Test(expected = UnauthorizedException.class)

@@ -28,7 +28,6 @@ import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
-import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.google.inject.Inject;
 import sonia.scm.HandlerEventType;
 import sonia.scm.event.ScmEventBus;
@@ -227,12 +226,12 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public void setEmergencyMerged(Repository repository, String pullRequestId, MergeCommitDto mergeCommitDto) {
+  public void setEmergencyMerged(Repository repository, String pullRequestId, String overrideMessage, List<String> ignoredMergeObstacles) {
     PullRequest pullRequest = get(repository, pullRequestId);
-    pullRequest.setOverrideMessage(mergeCommitDto.getOverrideMessage());
+    pullRequest.setOverrideMessage(overrideMessage);
     pullRequest.setEmergencyMerged(true);
     pullRequest.setStatus(MERGED);
-    pullRequest.setIgnoredMergeObstacles(mergeCommitDto.getIgnoredMergeObstacles());
+    pullRequest.setIgnoredMergeObstacles(ignoredMergeObstacles);
     getStore(repository).update(pullRequest);
     eventBus.post(new PullRequestEmergencyMergedEvent(repository, pullRequest));
   }

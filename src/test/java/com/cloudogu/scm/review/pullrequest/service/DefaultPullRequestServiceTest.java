@@ -26,7 +26,6 @@ package com.cloudogu.scm.review.pullrequest.service;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
-import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.workflow.AllReviewerApprovedRule;
 import com.github.sdorra.shiro.ShiroRule;
 import com.google.common.collect.ImmutableList;
@@ -581,10 +580,7 @@ class DefaultPullRequestServiceTest {
       String ignoredRule = AllReviewerApprovedRule.class.getSimpleName();
       when(store.get("emergency")).thenReturn(pullRequest);
 
-      service.setEmergencyMerged(
-        REPOSITORY,
-        pullRequest.getId(),
-        new MergeCommitDto("awesome commit", false, overrideMessage, ImmutableList.of(ignoredRule)));
+      service.setEmergencyMerged(REPOSITORY, pullRequest.getId(), overrideMessage, ImmutableList.of(ignoredRule));
 
       assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
       assertThat(pullRequest.isEmergencyMerged()).isTrue();

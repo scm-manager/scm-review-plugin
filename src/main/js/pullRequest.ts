@@ -24,7 +24,7 @@
 
 import { BasicComment, BasicPullRequest, MergeCommit, PossibleTransition, PullRequest } from "./types/PullRequest";
 import { apiClient } from "@scm-manager/ui-components";
-import { Link, Repository, Branch } from "@scm-manager/ui-types";
+import { Branch, Link, Repository } from "@scm-manager/ui-types";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
@@ -201,4 +201,13 @@ export function fetchConflicts(url: string, source: string, target: string) {
         error: err
       };
     });
+}
+
+export function evaluateTagColor(pullRequest: PullRequest) {
+  if (pullRequest.status === "MERGED") {
+    return "success";
+  } else if (pullRequest.status === "REJECTED") {
+    return "danger";
+  }
+  return "light";
 }

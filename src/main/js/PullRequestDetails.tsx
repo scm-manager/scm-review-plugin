@@ -41,7 +41,7 @@ import {
   Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
-import { check, merge, reject } from "./pullRequest";
+import { check, evaluateTagColor, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -276,16 +276,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     });
   };
 
-  evaluateTagColor = () => {
-    const { pullRequest } = this.props;
-    if (pullRequest.status === "MERGED") {
-      return "success";
-    } else if (pullRequest.status === "REJECTED") {
-      return "danger";
-    }
-    return "light";
-  };
-
   render() {
     const { repository, pullRequest, match, t } = this.props;
     const {
@@ -424,7 +414,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             <div className="media-right">
               <Tag
                 className="is-medium"
-                color={this.evaluateTagColor()}
+                color={evaluateTagColor(pullRequest)}
                 label={pullRequest.status}
                 icon={pullRequest.emergencyMerged ? "exclamation-triangle" : undefined}
               />

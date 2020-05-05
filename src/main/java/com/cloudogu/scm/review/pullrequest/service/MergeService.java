@@ -81,9 +81,7 @@ public class MergeService {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
       Collection<MergeObstacle> obstacles = getObstacles(repositoryService.getRepository(), pullRequest);
-      if (!obstacles.stream().allMatch(MergeObstacle::isOverrideable)) {
-        throw new MergeNotAllowedException(repositoryService.getRepository(), pullRequest, obstacles);
-      }
+      checkIfMergeIsPreventedByObstacles(repositoryService, pullRequest, obstacles, emergency);
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
 
       branchProtectionHook.runPrivileged(
@@ -98,9 +96,10 @@ public class MergeService {
           }
 
           pullRequestService.setRevisions(repositoryService.getRepository(), pullRequest.getId(), mergeCommandResult.getTargetRevision(), mergeCommandResult.getRevisionToMerge());
-          pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage());
           if (emergency) {
-            pullRequestService.setEmergencyMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto);
+            pullRequestService.setEmergencyMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage(), mergeCommitDto.getIgnoredMergeObstacles());
+          } else {
+            pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage());
           }
 
           if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
@@ -108,6 +107,15 @@ public class MergeService {
           }
         }
       );
+    }
+  }
+
+  private void checkIfMergeIsPreventedByObstacles(RepositoryService repositoryService, PullRequest pullRequest, Collection<MergeObstacle> obstacles, boolean emergency) {
+    if (!obstacles.stream().allMatch(MergeObstacle::isOverrideable)) {
+      throw new MergeNotAllowedException(repositoryService.getRepository(), pullRequest, obstacles);
+    }
+    if (!emergency && !obstacles.isEmpty()) {
+      throw new MergeNotAllowedException(repositoryService.getRepository(), pullRequest, obstacles);
     }
   }
 
