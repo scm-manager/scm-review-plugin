@@ -44,6 +44,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -97,7 +98,7 @@ public class MergeService {
 
           pullRequestService.setRevisions(repositoryService.getRepository(), pullRequest.getId(), mergeCommandResult.getTargetRevision(), mergeCommandResult.getRevisionToMerge());
           if (emergency) {
-            pullRequestService.setEmergencyMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage(), mergeCommitDto.getIgnoredMergeObstacles());
+            pullRequestService.setEmergencyMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage(), getIgnoredMergeObstacles(obstacles));
           } else {
             pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage());
           }
@@ -108,6 +109,10 @@ public class MergeService {
         }
       );
     }
+  }
+
+  private List<String> getIgnoredMergeObstacles(Collection<MergeObstacle> obstacles) {
+    return obstacles.stream().map(MergeObstacle::getKey).collect(Collectors.toList());
   }
 
   private void checkIfMergeIsPreventedByObstacles(RepositoryService repositoryService, PullRequest pullRequest, Collection<MergeObstacle> obstacles, boolean emergency) {

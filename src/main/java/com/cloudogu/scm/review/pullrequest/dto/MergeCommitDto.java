@@ -38,5 +38,4 @@ public class MergeCommitDto {
   private String commitMessage;
   private boolean shouldDeleteSourceBranch;
   private String overrideMessage;
-  private List<String> ignoredMergeObstacles;
 }

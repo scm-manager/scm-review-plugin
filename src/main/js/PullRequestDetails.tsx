@@ -225,9 +225,6 @@ class PullRequestDetails extends React.Component<Props, State> {
     const mergeLinks = emergency
       ? (pullRequest?._links?.emergencyMerge as Link[])
       : (pullRequest?._links?.merge as Link[]);
-    if (emergency) {
-      commit.ignoredMergeObstacles = this.state.mergeCheck?.mergeObstacles.map(o => o.key);
-    }
 
     this.setMergeButtonLoadingState();
     merge(this.findStrategyLink(mergeLinks, strategy), commit)

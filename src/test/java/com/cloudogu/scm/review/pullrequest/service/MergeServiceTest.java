@@ -56,6 +56,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -148,7 +149,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(false);
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true);
 
-    verify(pullRequestService).setEmergencyMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage(), mergeCommit.getIgnoredMergeObstacles());
+    verify(pullRequestService).setEmergencyMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage(), Collections.emptyList());
     verify(pullRequestService, never()).setMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage());
   }
 
@@ -164,8 +165,6 @@ public class MergeServiceTest {
   @Test(expected = MergeNotAllowedException.class)
   @SubjectAware(username = "dent")
   public void shouldNotMergeWithObstaclesIfNotEmergency() {
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
     mockMergeGuard(pullRequest, true);
     MergeCommitDto mergeCommit = createMergeCommit(false);
@@ -242,9 +241,9 @@ public class MergeServiceTest {
     mockMergeGuard(pullRequest, true);
 
     MergeCommitDto mergeCommit = createMergeCommit(true);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, false);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, true);
 
-    verify(pullRequestService).setMerged(REPOSITORY, "1", "override");
+    verify(pullRequestService).setEmergencyMerged(any(Repository.class), anyString(), anyString(), anyList());
   }
 
   @Test

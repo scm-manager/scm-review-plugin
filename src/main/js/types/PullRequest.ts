@@ -129,7 +129,6 @@ export type MergeCommit = {
   commitMessage: string;
   shouldDeleteSourceBranch: boolean;
   overrideMessage?: string;
-  ignoredMergeObstacles?: string[];
 };
 
 export type MergeCheck = {
