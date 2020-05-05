@@ -61,15 +61,9 @@ public class WorkflowMergeGuard implements MergeGuard {
 
   private static class WorkflowMergeObstacle implements MergeObstacle {
     private final String ruleMessageKey;
-    private final String errorCode;
 
     public WorkflowMergeObstacle(Result result) {
       this.ruleMessageKey = result.getRule().getSimpleName();
-      if (result.getContext() instanceof ResultContextWithTranslationCode) {
-        this.errorCode = ((ResultContextWithTranslationCode) result.getContext()).getTranslationCode();
-      } else {
-        this.errorCode = null;
-      }
     }
 
     @Override
