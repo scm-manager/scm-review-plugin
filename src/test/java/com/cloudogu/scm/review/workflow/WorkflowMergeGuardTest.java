@@ -85,15 +85,4 @@ class WorkflowMergeGuardTest {
       .extracting("key")
       .containsExactly("Rule");
   }
-
-  @Test
-  void shouldReturnListWithObstacleForFailingRulesWithErrorContext() {
-    when(engine.validate(REPOSITORY, PULL_REQUEST)).thenReturn(new Results(asList(Result.success(Rule.class), Result.failed(Rule.class, (ResultContextWithTranslationCode) () -> "MyErrorCode"))));
-
-    Collection<MergeObstacle> obstacles = guard.getObstacles(REPOSITORY, PULL_REQUEST);
-
-    assertThat(obstacles)
-      .extracting("errorCode")
-      .containsExactly("MyErrorCode");
-  }
 }
