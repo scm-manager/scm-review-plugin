@@ -46,10 +46,7 @@ package com.cloudogu.scm.review.workflow;
  *             "MySuccessCode1": "This is the first type of success message.",
  *             "MySuccessCode2": "This is the second type of success message."
  *           },
- *           "obstacle": {
- *             "MyErrorCode1": "This is the first type of obstacle.",
- *             "MyErrorCode2": "This is the second type of obstacle."
- *           },
+ *           "obstacle": "I never use translation keys.",
  *         }
  *       }
  *     }
@@ -58,7 +55,7 @@ package com.cloudogu.scm.review.workflow;
  * <br>
  * This format is only required if the rule actually returns a translation code in the result context.<br>
  * If the translation code is null, the default method of forming the translation key is used.<br>
- * In the event of an error, the same translation code is used for both obstacle and failure message.
+ * The translation code is never used for obstacles.<br>
  */
 public interface ResultContextWithTranslationCode {
   String getTranslationCode();
