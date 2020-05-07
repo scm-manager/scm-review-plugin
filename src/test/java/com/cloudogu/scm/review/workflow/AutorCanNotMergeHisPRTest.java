@@ -54,7 +54,7 @@ public class AutorCanNotMergeHisPRTest {
 
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
   private static final PullRequest PULL_REQUEST = new PullRequest("1-1", "feature", "develop");
-  private static final CurrentUserResolver CURRENT_USER_RESOLVER  = new CurrentUserResolver();
+  //private static final CurrentUserResolver CURRENT_USER_RESOLVER  = new CurrentUserResolver();
   private AutorCanNotMergeHisPR rule = new AutorCanNotMergeHisPR();
 
   @BeforeEach
@@ -70,17 +70,17 @@ public class AutorCanNotMergeHisPRTest {
   @Test
   void shouldReturnSuccessForOwnerasAuthor() {
     PullRequest pullRequest = TestData.createPullRequest();
-pullRequest.setAuthor("OWNER");
+pullRequest.setAuthor("SCM Administrator");
 
-    assertEquals(pullRequest.getAuthor(),"OWNER");
+    assertEquals(pullRequest.getAuthor(),"SCM Administrator");
   }
 
 
   @Test
   void shouldReturnSuccessForOwnerasAuthorwithValidate() {
     PullRequest pullRequest = TestData.createPullRequest();
-    pullRequest.setAuthor("OWNER");
-    Validate.isTrue(pullRequest.getAuthor().equals("OWNER"));
+    pullRequest.setAuthor("SCM Administrator");
+    Validate.isTrue(pullRequest.getAuthor().equals("SCM Administrator"));
   }
 
 
