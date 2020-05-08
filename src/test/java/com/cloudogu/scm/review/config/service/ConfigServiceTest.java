@@ -30,6 +30,7 @@ import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
+import sun.print.resources.serviceui;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -155,6 +156,42 @@ class ConfigServiceTest {
     mockGlobalConfig(true, false, "feature/*");
 
     assertThat(service.isBranchProtected(REPOSITORY, "feature/something")).isTrue();
+  }
+
+  @Test
+  void shouldNotPreventMergesFromAuthorByDefault() {
+    assertThat(service.isPreventMergeFromAuthor(REPOSITORY)).isFalse();
+  }
+
+  @Test
+  void shouldPreventMergesFromAuthorIfSetInGlobalConfig() {
+    GlobalPullRequestConfig pullRequestConfig = new GlobalPullRequestConfig();
+    pullRequestConfig.setPreventMergeFromAuthor(true);
+    service.setGlobalPullRequestConfig(pullRequestConfig);
+
+    assertThat(service.isPreventMergeFromAuthor(REPOSITORY)).isTrue();
+  }
+
+  @Test
+  void shouldPreventMergesFromAuthorIfSetInRepositoryConfig() {
+    PullRequestConfig pullRequestConfig = new PullRequestConfig();
+    pullRequestConfig.setPreventMergeFromAuthor(true);
+    service.setRepositoryPullRequestConfig(REPOSITORY, pullRequestConfig);
+
+    assertThat(service.isPreventMergeFromAuthor(REPOSITORY)).isTrue();
+  }
+
+  @Test
+  void shouldNotPreventMergesFromAuthorIfSetInRepositoryConfigNutDisabledGlobally() {
+    GlobalPullRequestConfig globalPullRequestConfig = new GlobalPullRequestConfig();
+    globalPullRequestConfig.setDisableRepositoryConfiguration(true);
+    service.setGlobalPullRequestConfig(globalPullRequestConfig);
+
+    PullRequestConfig pullRequestConfig = new PullRequestConfig();
+    pullRequestConfig.setPreventMergeFromAuthor(true);
+    service.setRepositoryPullRequestConfig(REPOSITORY, pullRequestConfig);
+
+    assertThat(service.isPreventMergeFromAuthor(REPOSITORY)).isFalse();
   }
 
   private void mockGlobalConfig(boolean enabled, boolean disableRepositoryConfig, String... protectedBranches) {

@@ -74,7 +74,11 @@ public class ConfigService {
   }
 
   public boolean isPreventMergeFromAuthor(Repository repository) {
-    return getRepositoryPullRequestConfig(repository).isPreventMergeFromAuthor();
+    if (getRepositoryPullRequestConfig(repository).isPreventMergeFromAuthor() && !getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
+      return true;
+    } else {
+      return getGlobalPullRequestConfig().isPreventMergeFromAuthor();
+    }
   }
 
   private Collection<String> getProtectedBranches(Repository repository) {
