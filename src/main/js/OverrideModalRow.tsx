@@ -35,24 +35,8 @@ type Props = WithTranslation & {
 
 const Entry = styled.div`
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   padding: 0.3rem 0;
-  div {
-    background: #f5f5f5;
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
-  }
-`;
-
-const Left = styled.div`
-  min-width: 40%;
-  flex: 1;
-`;
-
-const Right = styled.div`
-  flex: 2;
+  align-items: center;
 `;
 
 const PaddingRightIcon = styled(Icon)`
@@ -62,28 +46,10 @@ const PaddingRightIcon = styled(Icon)`
 const OverrideModalRow: FC<Props> = ({ result, useObstacleText }) => {
   const [t] = useTranslation("plugins");
 
-  const evaluateTranslationKey = () => {
-    if (result.failed) {
-      if (useObstacleText) {
-        return ".obstacle";
-      }
-      return ".failed";
-    }
-    return "success";
-  };
-
   return (
     <Entry>
-      <Left>
-        <PaddingRightIcon
-          color={result?.failed ? "warning" : "success"}
-          name={result?.failed ? "exclamation-triangle" : "check-circle"}
-        />
-        <strong>{t("workflow.rule." + result?.rule + ".name")}</strong>
-      </Left>
-      <Right>
-        <p>{t("workflow.rule." + result?.rule + evaluateTranslationKey())}</p>
-      </Right>
+      <PaddingRightIcon color={"warning"} name={"exclamation-triangle"} />
+      <p>{t(result?.rule)}</p>
     </Entry>
   );
 };
