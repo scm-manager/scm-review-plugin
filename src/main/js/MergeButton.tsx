@@ -132,10 +132,12 @@ class MergeButton extends React.Component<Props, State> {
     let action;
     if (mergeCheck?.hasConflicts) {
       action = this.showInformation;
-    } else if (!disabled && obstaclesPresent) {
-      action = this.toggleOverrideModal;
-    } else {
-      action = this.toggleMergeModal;
+    } else if (!disabled && !obstaclesNotOverrideable) {
+      if (obstaclesPresent) {
+        action = this.toggleOverrideModal;
+      } else {
+        action = this.toggleMergeModal;
+      }
     }
 
     const button = (
@@ -144,7 +146,7 @@ class MergeButton extends React.Component<Props, State> {
         loading={loading}
         action={action}
         color={color}
-        disabled={disabled}
+        disabled={disabled || obstaclesNotOverrideable}
         icon={checkHints ? "exclamation-triangle" : ""}
       />
     );
