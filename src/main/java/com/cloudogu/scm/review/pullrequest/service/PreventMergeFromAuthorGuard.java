@@ -22,63 +22,54 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.review.workflow;
+package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.pullrequest.service.MergeGuard;
-import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
-import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.CurrentUserResolver;
+import com.cloudogu.scm.review.config.service.ConfigService;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
 import javax.inject.Inject;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 
 @Extension
-public class WorkflowMergeGuard implements MergeGuard {
+public class PreventMergeFromAuthorGuard implements MergeGuard {
 
-  private final Engine engine;
+  private final ConfigService configService;
 
   @Inject
-  public WorkflowMergeGuard(Engine engine) {
-    this.engine = engine;
+  public PreventMergeFromAuthorGuard(ConfigService configService) {
+    this.configService = configService;
   }
 
   @Override
   public Collection<MergeObstacle> getObstacles(Repository repository, PullRequest pullRequest) {
-    if (!engine.validate(repository, pullRequest).isValid()) {
-      return engine.validate(repository, pullRequest)
-        .getRuleResults()
-        .stream()
-        .filter(Result::isFailed)
-        .map(WorkflowMergeObstacle::new)
-        .collect(Collectors.toList());
+    if (configService.isPreventMergeFromAuthor(repository) && currentUserIsAuthorOfPullRequest(pullRequest)) {
+      return singleton(new MergeObstacle() {
+        @Override
+        public String getMessage() {
+          return "Merge from pull request author is not allowed";
+        }
+
+        @Override
+        public String getKey() {
+          return "scm-review-plugin.pullRequest.guard.mergeFromAuthorNotAllowed.obstacle";
+        }
+
+        @Override
+        public boolean isOverrideable() {
+          return true;
+        }
+      });
+    } else {
+      return emptySet();
     }
-    return emptyList();
   }
 
-  private static class WorkflowMergeObstacle implements MergeObstacle {
-    private final String ruleMessageKey;
-
-    public WorkflowMergeObstacle(Result result) {
-      this.ruleMessageKey = result.getRule().getSimpleName();
-    }
-
-    @Override
-    public String getMessage() {
-      return "rule failed: " + ruleMessageKey;
-    }
-
-    @Override
-    public String getKey() {
-      return "workflow.rule." + ruleMessageKey + ".obstacle";
-    }
-
-    @Override
-    public boolean isOverrideable() {
-      return true;
-    }
+  private boolean currentUserIsAuthorOfPullRequest(PullRequest pullRequest) {
+    return pullRequest.getAuthor().equals(CurrentUserResolver.getCurrentUser().getId());
   }
 }

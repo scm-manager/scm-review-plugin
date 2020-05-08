@@ -70,6 +70,11 @@
         "ALL": "all",
         "REJECTED": "rejected",
         "MERGED": "merged"
+      },
+      "guard": {
+        "mergeFromAuthorNotAllowed": {
+          "obstacle": "You should not merge your own pull request."
+        }
       }
     },
     "showPullRequest": {
@@ -250,7 +255,11 @@
         }
       },
       "noBranches": "No branch patterns defined.",
-      "deleteBranch": "Delete this branch pattern"
+      "deleteBranch": "Delete this branch pattern",
+      "preventMergeFromAuthor": {
+        "label": "Prevent authors from merging own pull requests",
+        "helpText": "Check this to prevent authors to merge pull requests created by them. This can be overridden with the emergency merge permission."
+      }
     },
     "obstacle": "This branch can only be modified by pull requests.",
     "landingpage": {

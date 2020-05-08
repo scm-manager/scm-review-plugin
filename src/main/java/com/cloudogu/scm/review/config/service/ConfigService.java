@@ -73,6 +73,10 @@ public class ConfigService {
     return getProtectedBranches(repository).stream().anyMatch(branchPattern -> branchMatches(branch, branchPattern));
   }
 
+  public boolean isPreventMergeFromAuthor(Repository repository) {
+    return getRepositoryPullRequestConfig(repository).isPreventMergeFromAuthor();
+  }
+
   private Collection<String> getProtectedBranches(Repository repository) {
     if (getRepositoryPullRequestConfig(repository).isRestrictBranchWriteAccess() && !getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
       return getRepositoryPullRequestConfig(repository).getProtectedBranchPatterns();

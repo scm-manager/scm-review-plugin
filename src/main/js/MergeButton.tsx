@@ -111,9 +111,7 @@ class MergeButton extends React.Component<Props, State> {
   renderButton = () => {
     const { t, loading, mergeCheck } = this.props;
 
-    const checkHints = mergeCheck
-      ? mergeCheck.mergeObstacles.map(o => t("workflow.rule." + o.key + ".obstacle")).join("\n")
-      : "";
+    const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map(o => t(o.key)).join("\n") : "";
     const obstaclesPresent = this.existsObstacles();
     const obstaclesNotOverrideable = this.existsNotOverrideableObstacles();
     let color;
