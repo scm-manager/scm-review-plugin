@@ -38,6 +38,7 @@ public class PullRequestConfigDto extends HalRepresentation {
     super(links);
   }
 
+  private boolean preventMergeFromAuthor;
   private boolean restrictBranchWriteAccess;
   private List<String> protectedBranchPatterns;
 }

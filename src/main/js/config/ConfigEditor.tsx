@@ -64,6 +64,15 @@ class ConfigEditor extends React.Component<Props, State> {
     );
   };
 
+  onChangePreventMergeFromAuthor = (isChangePreventMergeFromAuthor: boolean) => {
+    this.setState(
+      {
+        preventMergeFromAuthor: isChangePreventMergeFromAuthor
+      },
+      () => this.props.onConfigurationChange(this.state, true)
+    );
+  };
+
   onChangeBranches = (newBranches: string[]) => {
     this.setState(
       {
@@ -75,7 +84,12 @@ class ConfigEditor extends React.Component<Props, State> {
 
   render() {
     const { global, t } = this.props;
-    const { restrictBranchWriteAccess, protectedBranchPatterns, disableRepositoryConfiguration } = this.state;
+    const {
+      restrictBranchWriteAccess,
+      protectedBranchPatterns,
+      preventMergeFromAuthor,
+      disableRepositoryConfiguration
+    } = this.state;
     return (
       <>
         {global && (
@@ -94,6 +108,12 @@ class ConfigEditor extends React.Component<Props, State> {
           onChange={this.onChangeRestrictBranchWriteAccess}
           label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
           helpText={t("scm-review-plugin.config.restrictBranchWriteAccess.helpText")}
+        />
+        <Checkbox
+          checked={preventMergeFromAuthor}
+          onChange={this.onChangePreventMergeFromAuthor}
+          label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
+          helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
         />
         {restrictBranchWriteAccess && (
           <>

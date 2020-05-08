@@ -70,6 +70,11 @@
         "ALL": "alle",
         "REJECTED": "abgelehnt",
         "MERGED": "gemerged"
+      },
+      "guard": {
+        "mergeFromAuthorNotAllowed": {
+          "obstacle": "Sie sollten nicht Ihren eigenen Pull Request mergen."
+        }
       }
     },
     "showPullRequest": {
@@ -252,7 +257,11 @@
         }
       },
       "noBranches": "Keine Muster für Branches definiert.",
-      "deleteBranch": "Dieses Muster löschen"
+      "deleteBranch": "Dieses Muster löschen",
+      "preventMergeFromAuthor": {
+        "label": "Verhindern, dass Autoren ihre eigenen Pull Requests mergen",
+        "helpText": "Aktivieren Sie diese Option, damit Entwickler nicht von ihnen selbst erstellte Pull Requests mergen können. Dieses kann durch die Berechtigung zum Emergency Merge überschrieben werden."
+      }
     },
     "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden.",
     "landingpage": {

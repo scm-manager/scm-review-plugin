@@ -37,6 +37,7 @@ public class PullRequestConfig {
   private boolean restrictBranchWriteAccess = false;
   @XmlElement(name = "protected-branch-patterns")
   private List<String> protectedBranchPatterns = new ArrayList<>();
+  private boolean preventMergeFromAuthor = false;
 
   public boolean isRestrictBranchWriteAccess() {
     return restrictBranchWriteAccess;
@@ -52,5 +53,13 @@ public class PullRequestConfig {
 
   public void setProtectedBranchPatterns(List<String> protectedBranchPatterns) {
     this.protectedBranchPatterns = protectedBranchPatterns;
+  }
+
+  public boolean isPreventMergeFromAuthor() {
+    return preventMergeFromAuthor;
+  }
+
+  public void setPreventMergeFromAuthor(boolean preventMergeFromAuthor) {
+    this.preventMergeFromAuthor = preventMergeFromAuthor;
   }
 }
