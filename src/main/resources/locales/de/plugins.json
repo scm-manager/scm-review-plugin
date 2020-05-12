@@ -86,7 +86,7 @@
       "mergeModal": {
         "title": {
           "merge": "Pull Request mergen",
-          "emergencyMerge": "Pull Request Notfall-Merge"
+          "emergencyMerge": "Pull Request Emergency-Merge"
         },
         "merge": "Merge",
         "cancel": "Abbrechen",
@@ -192,7 +192,7 @@
         "merged": "Der Pull Request wurde gemerged.",
         "rejected": "Der Pull Request wurde abgelehnt.",
         "sourceDeleted": "Der Quell-Branch des Pull Requests wurde gelöscht.",
-        "emergencyMerged": "Dieser Pull Request wurde mit einem Notfall-Merge gemerged. Dabei wurden die Regeln der Workflow Engine ignoriert."
+        "emergencyMerged": "Dieser Pull Request wurde mit einem Emergency-Merge gemerged. Dabei wurden die Regeln der Workflow Engine ignoriert."
       },
       "type": {
         "comment": "Kommentar",
@@ -207,7 +207,7 @@
           "title": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches",
           "titleClickable": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
         },
-        "emergencyMerged": "Notfall-Merge"
+        "emergencyMerged": "Emergency-Merge"
       }
     },
     "changeNotification": {
@@ -350,8 +350,8 @@
       },
       "performEmergencyMerge": {
         "*": {
-          "displayName": "Notfall-Merge durchführen",
-          "description": "Darf einen Notfall-Merge bei einem Pull Request durchführen und damit die Workflow Regeln ignorieren"
+          "displayName": "Emergency-Merge durchführen",
+          "description": "Darf einen Emergency-Merge bei einem Pull Request durchführen und damit die Workflow Regeln ignorieren"
         }
       }
     },
