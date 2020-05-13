@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
 import com.google.common.base.Strings;
+import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
@@ -41,6 +42,7 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ObjectFactory;
 import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.repository.NamespaceAndName;
@@ -52,6 +54,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
+import sonia.scm.web.EdisonHalAppender;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -172,11 +175,11 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     return comments.stream().filter(filter).count();
   }
 
-  @AfterMapping
-  protected void appendLinks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
+  @ObjectFactory
+  PullRequestDto createDto(PullRequest pullRequest, @Context Repository repository) {
     String namespace = repository.getNamespace();
     String name = repository.getName();
-    String pullRequestId = target.getId();
+    String pullRequestId = pullRequest.getId();
     Links.Builder linksBuilder = linkingTo().self(pullRequestResourceLinks.pullRequest()
       .self(namespace, name, pullRequestId));
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments()
@@ -199,11 +202,11 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest()
         .update(namespace, name, pullRequestId)));
     }
-    if (PermissionCheck.mayMerge(repository) && target.getStatus() == PullRequestStatus.OPEN) {
+    if (PermissionCheck.mayMerge(repository) && pullRequest.getStatus() == PullRequestStatus.OPEN) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest()
         .reject(namespace, name, pullRequestId)));
 
-      if (RepositoryPermissions.push(repository).isPermitted() && target.getStatus() == PullRequestStatus.OPEN) {
+      if (RepositoryPermissions.push(repository).isPermitted() && pullRequest.getStatus() == PullRequestStatus.OPEN) {
         linksBuilder.single(link("mergeCheck", pullRequestResourceLinks.mergeLinks()
           .check(namespace, name, pullRequest.getId())));
         linksBuilder.single(link("mergeConflicts", pullRequestResourceLinks.mergeLinks()
@@ -215,7 +218,11 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     }
     linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
-    target.add(linksBuilder.build());
+    applyEnrichers(new EdisonHalAppender(linksBuilder, new Embedded.Builder()), pullRequest, repository);
+    PullRequestDto pullRequestDto = new PullRequestDto();
+    pullRequestDto.add(linksBuilder.build());
+
+    return pullRequestDto;
   }
 
   private void appendMergeStrategyLinks(Links.Builder linksBuilder, Repository repository, PullRequest pullRequest) {
