@@ -219,10 +219,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
     applyEnrichers(new EdisonHalAppender(linksBuilder, new Embedded.Builder()), pullRequest, repository);
-    PullRequestDto pullRequestDto = new PullRequestDto();
-    pullRequestDto.add(linksBuilder.build());
-
-    return pullRequestDto;
+    return new PullRequestDto(linksBuilder.build());
   }
 
   private void appendMergeStrategyLinks(Links.Builder linksBuilder, Repository repository, PullRequest pullRequest) {
