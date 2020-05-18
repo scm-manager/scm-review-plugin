@@ -70,6 +70,9 @@ public class ProcessChangedFilesHook {
 
   @Subscribe
   public void checkChangedFiles(PostReceiveRepositoryHookEvent event) {
+    if (!pullRequestService.supportsPullRequests(event.getRepository())) {
+      return;
+    }
     CachingModificationCollector collector = new CachingModificationCollector(event);
     FlagAffectedCommentsAsOutdated flagAffectedCommentsAsOutdated = new FlagAffectedCommentsAsOutdated(event.getRepository(), collector);
     RemoveReviewMarksForChangedFiles removeReviewMarksForChangedFiles = new RemoveReviewMarksForChangedFiles(event.getRepository(), collector);

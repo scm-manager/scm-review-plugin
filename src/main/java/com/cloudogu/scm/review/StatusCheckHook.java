@@ -68,11 +68,10 @@ public class StatusCheckHook {
 
   @Subscribe(async = false)
   public void checkStatus(PostReceiveRepositoryHookEvent event) {
+    if (!service.supportsPullRequests(event.getRepository())) {
+      return;
+    }
     try (RepositoryService repositoryService = serviceFactory.create(event.getRepository())) {
-      if (!repositoryService.isSupported(Command.MERGE)) {
-        LOG.trace("ignoring post receive event for repository {}", event.getRepository().getNamespaceAndName());
-        return;
-      }
       List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
       new Worker(repositoryService, event).process(pullRequests);
     }
