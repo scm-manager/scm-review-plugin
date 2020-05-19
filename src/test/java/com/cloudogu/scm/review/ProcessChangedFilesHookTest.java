@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -54,6 +55,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -79,76 +81,93 @@ class ProcessChangedFilesHookTest {
   @InjectMocks
   private ProcessChangedFilesHook hook;
 
-  private Repository repository;
+  private Repository repository = RepositoryTestData.createHeartOfGold();
 
-  private PullRequest pullRequest;
+  private PullRequest pullRequest = TestData.createPullRequest();
 
-  @BeforeEach
-  void setUpHookContext() {
-    repository = RepositoryTestData.createHeartOfGold();
-    pullRequest = TestData.createPullRequest();
+  @Nested
+  class WithPullRequestSupport {
+    @BeforeEach
+    void setUpHookContext() {
+      when(pullRequestService.supportsPullRequests(repository)).thenReturn(true);
+    }
+
+    @Test
+    void shouldMarkAllGlobalCommentsAsOutdated() {
+      Comment one = Comment.createComment("1", "awesome", null, null);
+      Comment two = Comment.createComment("2", "with-location", null, null);
+      two.setLocation(new Location("pom.xml", null, null, null));
+
+      flagAffectedComments(one, two);
+
+      verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
+      verify(commentService, never()).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), two.getId());
+    }
+
+    @Test
+    void shouldMarkAffectedFileCommentsAsOutdated() throws IOException {
+      Comment one = Comment.createComment("1", "awesome", null, new Location("some"));
+      Comment two = Comment.createComment("2", "with-location", null, new Location("pom.xml"));
+
+      Set<String> modifications = ImmutableSet.of("pom.xml");
+
+      when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
+
+      flagAffectedComments(one, two);
+
+      verify(commentService, never()).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
+      verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), two.getId());
+    }
+
+    @Test
+    void shouldNotCollectModificationWithoutFileComments() throws IOException {
+      Comment one = Comment.createSystemComment("awesome");
+
+      flagAffectedComments(one);
+
+      verify(modificationCollector, never()).collect(any(), any());
+    }
+
+    @Test
+    void shouldRemoveReviewMarksForAffectedFiles() throws IOException {
+      Set<String> modifications = ImmutableSet.of("pom.xml");
+      when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
+
+      ReviewMark reviewMark = new ReviewMark("pom.xml", "dent");
+      pullRequest.getReviewMarks().add(reviewMark);
+
+      flagAffectedComments();
+
+      verify(pullRequestService).removeReviewMarks(repository, "id", asList(reviewMark));
+    }
+
+    @Test
+    void shouldNotTouchReviewMarksForUnaffectedFiles() throws IOException {
+      Set<String> modifications = ImmutableSet.of("pom.xml");
+      when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
+
+      ReviewMark reviewMark = new ReviewMark("other.txt", "dent");
+      pullRequest.getReviewMarks().add(reviewMark);
+
+      flagAffectedComments();
+
+      assertThat(pullRequest.getReviewMarks()).contains(reviewMark);
+    }
   }
 
-  @Test
-  void shouldMarkAllGlobalCommentsAsOutdated() {
-    Comment one = Comment.createComment("1", "awesome", null, null);
-    Comment two = Comment.createComment("2", "with-location", null, null);
-    two.setLocation(new Location("pom.xml", null, null, null));
+  @Nested
+  class WithoutPullRequestSupport {
+    @BeforeEach
+    void setUpHookContext() {
+      repository = RepositoryTestData.createHeartOfGold();
+      when(pullRequestService.supportsPullRequests(repository)).thenReturn(false);
+    }
 
-    flagAffectedComments(one, two);
-
-    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
-    verify(commentService, never()).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), two.getId());
-  }
-
-  @Test
-  void shouldMarkAffectedFileCommentsAsOutdated() throws IOException {
-    Comment one = Comment.createComment("1", "awesome", null, new Location("some"));
-    Comment two = Comment.createComment("2", "with-location", null, new Location("pom.xml"));
-
-    Set<String> modifications = ImmutableSet.of("pom.xml");
-
-    when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
-
-    flagAffectedComments(one, two);
-
-    verify(commentService, never()).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), one.getId());
-    verify(commentService).markAsOutdated(repository.getNamespace(), repository.getName(), pullRequest.getId(), two.getId());
-  }
-
-  @Test
-  void shouldNotCollectModificationWithoutFileComments() throws IOException {
-    Comment one = Comment.createSystemComment("awesome");
-
-    flagAffectedComments(one);
-
-    verify(modificationCollector, never()).collect(any(), any());
-  }
-
-  @Test
-  void shouldRemoveReviewMarksForAffectedFiles() throws IOException {
-    Set<String> modifications = ImmutableSet.of("pom.xml");
-    when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
-
-    ReviewMark reviewMark = new ReviewMark("pom.xml", "dent");
-    pullRequest.getReviewMarks().add(reviewMark);
-
-    flagAffectedComments();
-
-    verify(pullRequestService).removeReviewMarks(repository, "id", asList(reviewMark));
-  }
-
-  @Test
-  void shouldNotTouchReviewMarksForUnaffectedFiles() throws IOException {
-    Set<String> modifications = ImmutableSet.of("pom.xml");
-    when(modificationCollector.collect(eq(repository), any())).thenReturn(modifications);
-
-    ReviewMark reviewMark = new ReviewMark("other.txt", "dent");
-    pullRequest.getReviewMarks().add(reviewMark);
-
-    flagAffectedComments();
-
-    assertThat(pullRequest.getReviewMarks()).contains(reviewMark);
+    @Test
+    void shouldDoNothing() throws IOException {
+      flagAffectedComments(Comment.createComment("2", "with-location", null, new Location("pom.xml")));
+      verify(modificationCollector, never()).collect(any(), any());
+    }
   }
 
   private void flagAffectedComments(Comment... comments) {
@@ -158,15 +177,15 @@ class ProcessChangedFilesHookTest {
   }
 
   private PostReceiveRepositoryHookEvent prepareEvent(Comment... comments) {
-    when(commentCollector.collectNonOutdated(repository, pullRequest)).thenReturn(Stream.of(comments));
+    lenient().when(commentCollector.collectNonOutdated(repository, pullRequest)).thenReturn(Stream.of(comments));
     List<String> branches = ImmutableList.of(pullRequest.getSource(), pullRequest.getTarget());
     PostReceiveRepositoryHookEvent event = createRepositoryHookEvent(branches);
-    when(pullRequestCollector.collectAffectedPullRequests(repository, branches)).thenReturn(ImmutableList.of(pullRequest));
+    lenient().when(pullRequestCollector.collectAffectedPullRequests(repository, branches)).thenReturn(ImmutableList.of(pullRequest));
     List<Changeset> changesets = ImmutableList.of(
       new Changeset(),
       new Changeset()
     );
-    when(event.getContext().getChangesetProvider().getChangesets()).thenReturn(changesets);
+    lenient().when(event.getContext().getChangesetProvider().getChangesets()).thenReturn(changesets);
     return event;
   }
 
