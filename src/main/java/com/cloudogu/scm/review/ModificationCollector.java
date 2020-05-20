@@ -57,8 +57,6 @@ class ModificationCollector {
 
   private void append(Set<String> paths, RepositoryService repositoryService, Changeset changeset) throws IOException {
     Modifications modifications = repositoryService.getModificationsCommand().revision(changeset.getId()).getModifications();
-    paths.addAll(modifications.getAdded());
-    paths.addAll(modifications.getModified());
-    paths.addAll(modifications.getRemoved());
+    paths.addAll(modifications.getEffectedPaths());
   }
 }
