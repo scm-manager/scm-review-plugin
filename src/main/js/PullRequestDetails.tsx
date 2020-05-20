@@ -430,6 +430,14 @@ class PullRequestDetails extends React.Component<Props, State> {
           {ignoredMergeObstacles}
           <UserList className="media">
             <div className="media-content">
+              <ExtensionPoint
+                name="reviewPlugin.pullrequest.userList"
+                renderAll={true}
+                props={{
+                  repository,
+                  pullRequest
+                }}
+              />
               {author}
               <ReviewerList pullRequest={pullRequest} reviewer={pullRequest.reviewer} />
             </div>
