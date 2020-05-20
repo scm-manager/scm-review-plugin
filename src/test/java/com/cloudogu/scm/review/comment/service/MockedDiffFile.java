@@ -59,6 +59,11 @@ public class MockedDiffFile implements DiffFile {
   }
 
   @Override
+  public ChangeType getChangeType() {
+    return ChangeType.RENAME;
+  }
+
+  @Override
   public Iterator<Hunk> iterator() {
     return hunks.iterator();
   }
