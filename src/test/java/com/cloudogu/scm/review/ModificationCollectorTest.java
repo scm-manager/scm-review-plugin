@@ -31,6 +31,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Changeset;
+import sonia.scm.repository.Added;
+import sonia.scm.repository.Removed;
+import sonia.scm.repository.Modified;
+import sonia.scm.repository.Modification;
 import sonia.scm.repository.Modifications;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
@@ -141,9 +145,7 @@ class ModificationCollectorTest {
   private class Builder {
 
     private final Changeset changeset;
-    private final List<String> added = new ArrayList<>();
-    private final List<String> modified = new ArrayList<>();
-    private final List<String> removed = new ArrayList<>();
+    private final List<Modification> modifications = new ArrayList<>();
 
     private Builder(String id) {
       this.changeset = new Changeset();
@@ -151,22 +153,22 @@ class ModificationCollectorTest {
     }
 
     Builder added(String... paths) {
-      added.addAll(Arrays.asList(paths));
+      Arrays.stream(paths).map(Added::new).forEach(modifications::add);
       return this;
     }
 
     Builder modified(String... paths) {
-      modified.addAll(Arrays.asList(paths));
+      Arrays.stream(paths).map(Modified::new).forEach(modifications::add);
       return this;
     }
 
     Builder removed(String... paths) {
-      removed.addAll(Arrays.asList(paths));
+      Arrays.stream(paths).map(Removed::new).forEach(modifications::add);
       return this;
     }
 
     Changeset build() {
-      modificationMap.put(changeset.getId(), new Modifications(added, modified, removed));
+      modificationMap.put(changeset.getId(), new Modifications(changeset.getId(), modifications));
       return changeset;
     }
   }
