@@ -26,6 +26,7 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.config.api.RepositoryConfigResource;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.workflow.GlobalEngineConfigurator;
 import com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource;
 import sonia.scm.api.v2.resources.Enrich;
@@ -53,14 +54,14 @@ import static com.cloudogu.scm.review.PermissionCheck.mayReadWorkflowConfig;
 public class RepositoryLinkEnricher implements HalEnricher {
 
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
-  private final RepositoryServiceFactory serviceFactory;
+  private final PullRequestService pullRequestService;
   private final ConfigService configService;
   private final GlobalEngineConfigurator globalEngineConfigurator;
 
   @Inject
-  public RepositoryLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, RepositoryServiceFactory serviceFactory, ConfigService configService, GlobalEngineConfigurator globalEngineConfigurator) {
+  public RepositoryLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, PullRequestService pullRequestService, ConfigService configService, GlobalEngineConfigurator globalEngineConfigurator) {
     this.scmPathInfoStore = scmPathInfoStore;
-    this.serviceFactory = serviceFactory;
+    this.pullRequestService = pullRequestService;
     this.configService = configService;
     this.globalEngineConfigurator = globalEngineConfigurator;
   }
@@ -68,20 +69,18 @@ public class RepositoryLinkEnricher implements HalEnricher {
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     Repository repository = context.oneRequireByType(Repository.class);
-    try (RepositoryService repositoryService = serviceFactory.create(repository)) {
-      if (repositoryService.isSupported(Command.MERGE)) {
-        if (mayRead(repository)) {
-          LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
-          appender.appendLink("pullRequest", linkBuilder.method("getAll").parameters(repository.getNamespace(), repository.getName()).href());
-        }
-        if (mayConfigure(repository) && !configService.getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
-          LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryConfigResource.class);
-          appender.appendLink("pullRequestConfig", linkBuilder.method("getRepositoryConfig").parameters(repository.getNamespace(), repository.getName()).href());
-        }
-        if (isWorkflowEngineConfigurable(repository)) {
-          LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
-          appender.appendLink("workflowConfig", linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
-        }
+    if (pullRequestService.supportsPullRequests(repository)) {
+      if (mayRead(repository)) {
+        LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
+        appender.appendLink("pullRequest", linkBuilder.method("getAll").parameters(repository.getNamespace(), repository.getName()).href());
+      }
+      if (mayConfigure(repository) && !configService.getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
+        LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryConfigResource.class);
+        appender.appendLink("pullRequestConfig", linkBuilder.method("getRepositoryConfig").parameters(repository.getNamespace(), repository.getName()).href());
+      }
+      if (isWorkflowEngineConfigurable(repository)) {
+        LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
+        appender.appendLink("workflowConfig", linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
       }
     }
   }

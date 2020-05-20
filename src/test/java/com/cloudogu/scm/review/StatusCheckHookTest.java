@@ -107,7 +107,7 @@ class StatusCheckHookTest {
     when(repositoryServiceFactory.create(REPOSITORY)).thenReturn(repositoryService);
     when(repositoryService.getRepository()).thenReturn(REPOSITORY);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
-    when(repositoryService.isSupported(Command.MERGE)).thenReturn(true);
+    when(service.supportsPullRequests(REPOSITORY)).thenReturn(true);
     when(configuration.getBaseUrl()).thenReturn("http://example.com/");
     when(event.getContext()).thenReturn(hookContext);
     when(hookContext.isFeatureSupported(MESSAGE_PROVIDER)).thenReturn(true);
@@ -173,7 +173,7 @@ class StatusCheckHookTest {
 
   @Test
   void shouldNotProcessEventsForRepositoriesWithoutMergeCapability() throws IOException {
-    when(repositoryService.isSupported(Command.MERGE)).thenReturn(false);
+    when(service.supportsPullRequests(REPOSITORY)).thenReturn(false);
 
     hook.checkStatus(event);
 

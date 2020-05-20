@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Adapted to new modification api from core ([#77](https://github.com/scm-manager/scm-review-plugin/pull/77))
 
+### Fixed
+- Exception on push in repository without merge support([#78](https://github.com/scm-manager/scm-review-plugin/pull/78))
+
 ## 2.0.0-rc9-3 - 2020-05-08
 ### Added
 - Workflow Engine to enforce rules before merging pull requests ([#75](https://github.com/scm-manager/scm-review-plugin/pull/75))

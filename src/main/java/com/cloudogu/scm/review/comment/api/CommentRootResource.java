@@ -116,7 +116,6 @@ public class CommentRootResource {
   public Response create(@PathParam("namespace") String namespace,
                          @PathParam("name") String name,
                          @PathParam("pullRequestId") String pullRequestId,
-                         @PathParam("commentId") String commentId,
                          @QueryParam("sourceRevision") String expectedSourceRevision,
                          @QueryParam("targetRevision") String expectedTargetRevision,
                          @Valid @NotNull CommentDto commentDto) {

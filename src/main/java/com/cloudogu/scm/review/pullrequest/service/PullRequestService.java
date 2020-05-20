@@ -159,4 +159,6 @@ public interface PullRequestService {
   }
 
   void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved);
+
+  boolean supportsPullRequests(Repository repository);
 }

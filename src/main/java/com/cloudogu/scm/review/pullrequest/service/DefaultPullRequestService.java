@@ -35,6 +35,7 @@ import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
@@ -335,6 +336,13 @@ public class DefaultPullRequestService implements PullRequestService {
     newReviewMarks.removeAll(marksToBeRemoved);
     pullRequest.setReviewMarks(newReviewMarks);
     getStore(repository).update(pullRequest);
+  }
+
+  @Override
+  public boolean supportsPullRequests(Repository repository) {
+    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      return repositoryService.isSupported(Command.MERGE);
+    }
   }
 
   private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {
