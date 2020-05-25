@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- New extension point for pull request details view
+
 ### Changed
 - Adapted to new modification api from core ([#77](https://github.com/scm-manager/scm-review-plugin/pull/77))
+
 
 ### Fixed
 - Exception on push in repository without merge support([#78](https://github.com/scm-manager/scm-review-plugin/pull/78))
