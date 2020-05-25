@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junitpioneer.jupiter.TempDirectory;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,9 +42,7 @@ import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
-import javax.xml.bind.JAXB;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +52,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@ExtendWith(TempDirectory.class)
 class RepositoryEngineConfiguratorTest {
 
   private final Repository repository = RepositoryTestData.createHeartOfGold();
@@ -68,7 +65,7 @@ class RepositoryEngineConfiguratorTest {
   private ConfigurationStoreFactory configurationStoreFactory;
 
   @BeforeEach
-  void setupStore(@TempDirectory.TempDir Path directory) {
+  void setupStore(@TempDir Path directory) {
     AvailableRules availableRules = AvailableRules.of(new RuleWithInjection(new ResultService()), new RuleWithConfiguration());
     ConfigurationStore<EngineConfiguration> store = new SimpleJaxbStore<>(EngineConfiguration.class, directory.resolve("store.xml").toFile(), new EngineConfiguration());
     when(configurationStoreFactory.withType(EngineConfiguration.class).withName(any()).forRepository(any(Repository.class)).build()).thenReturn(store);

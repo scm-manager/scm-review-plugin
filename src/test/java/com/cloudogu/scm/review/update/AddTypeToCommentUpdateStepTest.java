@@ -30,7 +30,7 @@ import com.google.common.io.Resources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junitpioneer.jupiter.TempDirectory;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.RepositoryLocationResolver;
@@ -48,7 +48,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
-@ExtendWith({MockitoExtension.class, TempDirectory.class})
+@ExtendWith(MockitoExtension.class)
 class AddTypeToCommentUpdateStepTest {
 
   @Mock
@@ -61,7 +61,7 @@ class AddTypeToCommentUpdateStepTest {
   private Path store;
 
   @BeforeEach
-  void init(@TempDirectory.TempDir Path temp) throws IOException {
+  void init(@TempDir Path temp) throws IOException {
     when(resolver.forClass(Path.class)).thenReturn(resolverInstance);
     updateStep = new AddTypeToCommentUpdateStep(resolver);
 

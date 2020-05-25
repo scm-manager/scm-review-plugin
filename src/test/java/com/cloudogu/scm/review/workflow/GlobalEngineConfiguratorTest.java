@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junitpioneer.jupiter.TempDirectory;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,8 +37,6 @@ import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
-import javax.xml.bind.JAXB;
-import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -47,7 +45,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@ExtendWith(TempDirectory.class)
 class GlobalEngineConfiguratorTest {
 
   @Mock
@@ -59,7 +56,7 @@ class GlobalEngineConfiguratorTest {
   private GlobalEngineConfigurator configurator;
 
   @BeforeEach
-  void setupStore(@TempDirectory.TempDir Path directory) {
+  void setupStore(@TempDir Path directory) {
     AvailableRules availableRules = AvailableRules.of(new RepositoryEngineConfiguratorTest.RuleWithInjection(new RepositoryEngineConfiguratorTest.ResultService()), new RepositoryEngineConfiguratorTest.RuleWithConfiguration());
     ConfigurationStore<GlobalEngineConfiguration> store = new SimpleJaxbStore<>(GlobalEngineConfiguration.class, directory.resolve("store.xml").toFile(), new GlobalEngineConfiguration());
     when(configurationStoreFactory.withType(GlobalEngineConfiguration.class).withName(any()).build()).thenReturn(store);
