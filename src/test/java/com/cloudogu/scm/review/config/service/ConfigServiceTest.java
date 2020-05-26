@@ -30,7 +30,6 @@ import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
-import sun.print.resources.serviceui;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;

@@ -26,8 +26,10 @@ package com.cloudogu.scm.review.pullrequest.service;
 import com.cloudogu.scm.review.BranchProtectionHook;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
+import sonia.scm.repository.Changeset;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.api.Command;
@@ -39,14 +41,18 @@ import sonia.scm.repository.api.MergeStrategyNotSupportedException;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.spi.MergeConflictResult;
+import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
@@ -69,13 +75,15 @@ public class MergeService {
   private final PullRequestService pullRequestService;
   private final Collection<MergeGuard> mergeGuards;
   private final BranchProtectionHook branchProtectionHook;
+  private final UserDisplayManager userDisplayManager;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, BranchProtectionHook branchProtectionHook) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, BranchProtectionHook branchProtectionHook, UserDisplayManager userDisplayManager) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
     this.mergeGuards = mergeGuards;
     this.branchProtectionHook = branchProtectionHook;
+    this.userDisplayManager = userDisplayManager;
   }
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy, boolean emergency) {
@@ -89,7 +97,7 @@ public class MergeService {
         () -> {
           MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
           isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy, emergency);
-          prepareMergeCommand(mergeCommand, pullRequest, mergeCommitDto, strategy);
+          prepareMergeCommand(repositoryService, mergeCommand, pullRequest, mergeCommitDto, strategy);
           MergeCommandResult mergeCommandResult = mergeCommand.executeMerge();
 
           if (!mergeCommandResult.isSuccess()) {
@@ -229,11 +237,99 @@ public class MergeService {
     }
   }
 
-  private void prepareMergeCommand(MergeCommandBuilder mergeCommand, PullRequest pullRequest, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
+  private void prepareMergeCommand(RepositoryService repositoryService, MergeCommandBuilder mergeCommand, PullRequest pullRequest, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
     mergeCommand.setBranchToMerge(pullRequest.getSource());
     mergeCommand.setTargetBranch(pullRequest.getTarget());
-    mergeCommand.setMessageTemplate(mergeCommitDto.getCommitMessage());
+    String enrichedCommitMessage = enrichCommitMessageWithTrailers(repositoryService, pullRequest, mergeCommitDto, strategy);
+    mergeCommand.setMessageTemplate(enrichedCommitMessage);
     mergeCommand.setMergeStrategy(strategy);
+  }
+
+  private String enrichCommitMessageWithTrailers(RepositoryService repositoryService, PullRequest pullRequest, MergeCommitDto mergeCommitDto, MergeStrategy strategy) {
+    StringBuilder builder = new StringBuilder();
+    builder.append(mergeCommitDto.getCommitMessage());
+
+    List<String> approvers = getPullRequestApprovers(pullRequest);
+    if (shouldAppendTrailers(strategy, approvers)) {
+      builder.append("\n\n");
+
+      appendSquashCoAuthorsToCommitMessage(repositoryService, pullRequest, strategy, builder);
+      appendApproversToCommitMessage(builder, approvers);
+
+    }
+    return builder.toString();
+  }
+
+  private void appendSquashCoAuthorsToCommitMessage(RepositoryService repositoryService, PullRequest pullRequest, MergeStrategy strategy, StringBuilder builder) {
+    if (strategy == MergeStrategy.SQUASH) {
+      List<Changeset> changesets = getAllChangesetsForBranch(repositoryService, pullRequest);
+      appendCommitAuthorsAsCoAuthors(builder, pullRequest.getAuthor(), changesets);
+      extractCoAuthorsFromSquashedCommitMessages(builder, pullRequest.getAuthor(), changesets);
+    }
+  }
+
+  private void appendCommitAuthorsAsCoAuthors(StringBuilder builder, String prAuthor, List<Changeset> changesets) {
+    Set<Person> authors = changesets
+      .stream()
+      .map(Changeset::getAuthor)
+      .collect(Collectors.toSet());
+    for (Person author : authors) {
+      if (!author.getName().equals(prAuthor))
+      builder.append("Co-authored-by: ").append(author.getName()).append(" <").append(author.getMail()).append(">\n");
+    }
+  }
+
+  private void extractCoAuthorsFromSquashedCommitMessages(StringBuilder builder, String author, List<Changeset> changesets) {
+    for (Changeset changeset : changesets) {
+      if (changeset.getDescription() != null) {
+        try (Scanner scanner = new Scanner(changeset.getDescription())) {
+          scanner.useDelimiter(Pattern.compile("[\\n;]"));
+          while (scanner.hasNext()) {
+            String line = scanner.next();
+            if (shouldExtractLineFromSquashedCommit(builder, line, author)) {
+              builder.append(line).append("\n");
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private boolean shouldExtractLineFromSquashedCommit(StringBuilder builder, String line, String author) {
+    return line.contains("Co-authored-by") && !line.contains(author) && !builder.toString().contains(line);
+  }
+
+  private List<Changeset> getAllChangesetsForBranch(RepositoryService repositoryService, PullRequest pullRequest) {
+    try {
+      return repositoryService
+        .getLogCommand()
+        .setBranch(pullRequest.getSource())
+        .setAncestorChangeset(pullRequest.getTarget())
+        .getChangesets()
+        .getChangesets();
+    } catch (IOException e) {
+      throw new InternalRepositoryException(repositoryService.getRepository(), "Could not read changesets from branch " + pullRequest.getSource(), e);
+    }
+  }
+
+  private boolean shouldAppendTrailers(MergeStrategy strategy, List<String> approvers) {
+    return !approvers.isEmpty() || strategy == MergeStrategy.SQUASH;
+  }
+
+  private void appendApproversToCommitMessage(StringBuilder builder, List<String> approvers) {
+    for (String approver : approvers) {
+      userDisplayManager.get(approver)
+        .ifPresent(r -> builder.append("Reviewed-by: ").append(r.getDisplayName()).append(" <").append(r.getMail()).append(">\n"));
+    }
+  }
+
+  private List<String> getPullRequestApprovers(PullRequest pullRequest) {
+    return pullRequest.getReviewer()
+      .entrySet()
+      .stream()
+      .filter(Map.Entry::getValue)
+      .map(Map.Entry::getKey)
+      .collect(Collectors.toList());
   }
 
   private MergeCommandBuilder prepareDryRun(RepositoryService repositoryService, String sourceBranch, String targetBranch) {
