@@ -149,18 +149,7 @@
       <url>https://packages.scm-manager.org/repository/public/</url>
     </repository>
 
-    <repository>
-      <id>maven.scm-manager.org_snapshots</id>
-      <name>scm-manager snapshot repository</name>
-      <url>http://maven.scm-manager.org/nexus/content/repositories/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
-    </repository>
+
 
   </repositories>
 </project>
