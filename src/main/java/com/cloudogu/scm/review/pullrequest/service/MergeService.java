@@ -274,16 +274,18 @@ public class MergeService {
       .map(Changeset::getAuthor)
       .collect(Collectors.toSet());
     for (Person author : authors) {
-      if (!author.getName().equals(prAuthor))
-      builder.append("Co-authored-by: ").append(author.getName()).append(" <").append(author.getMail()).append(">\n");
+      if (!author.getName().equals(prAuthor)) {
+        builder.append("Co-authored-by: ").append(author.getName()).append(" <").append(author.getMail()).append(">\n");
+      }
     }
   }
 
   private void extractCoAuthorsFromSquashedCommitMessages(StringBuilder builder, String author, List<Changeset> changesets) {
+    Pattern delimiter = Pattern.compile("[\\n;]");
     for (Changeset changeset : changesets) {
       if (changeset.getDescription() != null) {
         try (Scanner scanner = new Scanner(changeset.getDescription())) {
-          scanner.useDelimiter(Pattern.compile("[\\n;]"));
+          scanner.useDelimiter(delimiter);
           while (scanner.hasNext()) {
             String line = scanner.next();
             if (shouldExtractLineFromSquashedCommit(builder, line, author)) {
