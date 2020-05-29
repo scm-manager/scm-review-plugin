@@ -26,10 +26,10 @@ package com.cloudogu.scm.review.pullrequest.service;
 import com.cloudogu.scm.review.BranchProtectionHook;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
+import org.apache.shiro.SecurityUtils;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.api.Command;
@@ -41,12 +41,14 @@ import sonia.scm.repository.api.MergeStrategyNotSupportedException;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.spi.MergeConflictResult;
+import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -192,11 +194,7 @@ public class MergeService {
       if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
         try {
           StringBuilder builder = new StringBuilder();
-          repositoryService.getLogCommand()
-            .setBranch(pullRequest.getSource())
-            .setAncestorChangeset(pullRequest.getTarget())
-            .getChangesets()
-            .getChangesets()
+          getChangesetsFromLogCommand(pullRequest, repositoryService)
             .forEach(c -> {
               builder.append("- ").append(c.getDescription()).append('\n');
               if (c.getDescription().contains("\n")) {
@@ -218,6 +216,14 @@ public class MergeService {
         return createDefaultMergeCommitMessage(pullRequest);
       }
     }
+  }
+
+  private List<Changeset> getChangesetsFromLogCommand(PullRequest pullRequest, RepositoryService repositoryService) throws IOException {
+    return repositoryService.getLogCommand()
+      .setBranch(pullRequest.getSource())
+      .setAncestorChangeset(pullRequest.getTarget())
+      .getChangesets()
+      .getChangesets();
   }
 
   private void assertPullRequestIsOpen(Repository repository, PullRequest pullRequest) {
@@ -253,42 +259,45 @@ public class MergeService {
     if (shouldAppendTrailers(strategy, approvers)) {
       builder.append("\n\n");
 
-      appendSquashCoAuthorsToCommitMessage(repositoryService, pullRequest, strategy, builder);
-      appendApproversToCommitMessage(builder, approvers);
-
+      String merger = SecurityUtils.getSubject().getPrincipals().oneByType(User.class).getDisplayName();
+      appendSquashCoAuthorsToCommitMessage(repositoryService, pullRequest, strategy, merger, builder);
+      appendApproversToCommitMessage(builder, approvers, merger);
     }
     return builder.toString();
   }
 
-  private void appendSquashCoAuthorsToCommitMessage(RepositoryService repositoryService, PullRequest pullRequest, MergeStrategy strategy, StringBuilder builder) {
+  private void appendSquashCoAuthorsToCommitMessage(RepositoryService repositoryService, PullRequest pullRequest, MergeStrategy strategy, String merger, StringBuilder builder) {
+
     if (strategy == MergeStrategy.SQUASH) {
       List<Changeset> changesets = getAllChangesetsForBranch(repositoryService, pullRequest);
-      appendCommitAuthorsAsCoAuthors(builder, pullRequest.getAuthor(), changesets);
-      extractCoAuthorsFromSquashedCommitMessages(builder, pullRequest.getAuthor(), changesets);
+      Set<String> appendedCoAuthorMails = new HashSet<>();
+      appendCommitAuthorsAsCoAuthors(changesets, merger, appendedCoAuthorMails, builder);
+      extractCoAuthorsFromSquashedCommitMessages(changesets, merger, appendedCoAuthorMails, builder);
     }
   }
 
-  private void appendCommitAuthorsAsCoAuthors(StringBuilder builder, String prAuthor, List<Changeset> changesets) {
-    Set<Person> authors = changesets
+  private void appendCommitAuthorsAsCoAuthors(List<Changeset> changesets, String merger, Set<String> appendedCoAuthorMails, StringBuilder builder) {
+    changesets
       .stream()
       .map(Changeset::getAuthor)
-      .collect(Collectors.toSet());
-    for (Person author : authors) {
-      if (!author.getName().equals(prAuthor)) {
+      .distinct()
+      .filter(author -> !author.getName().equals(merger))
+      .forEach(author -> {
+        appendedCoAuthorMails.add(author.getMail());
         builder.append("Co-authored-by: ").append(author.getName()).append(" <").append(author.getMail()).append(">\n");
-      }
-    }
+      });
   }
 
-  private void extractCoAuthorsFromSquashedCommitMessages(StringBuilder builder, String author, List<Changeset> changesets) {
-    Pattern delimiter = Pattern.compile("[\\n;]");
+  private void extractCoAuthorsFromSquashedCommitMessages(List<Changeset> changesets, String author, Set<String> appendedCoAuthors, StringBuilder builder) {
+    Pattern delimiter = Pattern.compile("[\\n]");
     for (Changeset changeset : changesets) {
       if (changeset.getDescription() != null) {
         try (Scanner scanner = new Scanner(changeset.getDescription())) {
           scanner.useDelimiter(delimiter);
           while (scanner.hasNext()) {
             String line = scanner.next();
-            if (shouldExtractLineFromSquashedCommit(builder, line, author)) {
+            if (shouldExtractLineFromSquashedCommit(appendedCoAuthors, line, author)) {
+              appendedCoAuthors.add(line);
               builder.append(line).append("\n");
             }
           }
@@ -297,18 +306,13 @@ public class MergeService {
     }
   }
 
-  private boolean shouldExtractLineFromSquashedCommit(StringBuilder builder, String line, String author) {
-    return line.contains("Co-authored-by") && !line.contains(author) && !builder.toString().contains(line);
+  private boolean shouldExtractLineFromSquashedCommit(Set<String> extractedSquashedCoAuthors, String line, String author) {
+    return line.contains("Co-authored-by") && !line.contains(author) && extractedSquashedCoAuthors.stream().noneMatch(line::contains);
   }
 
   private List<Changeset> getAllChangesetsForBranch(RepositoryService repositoryService, PullRequest pullRequest) {
     try {
-      return repositoryService
-        .getLogCommand()
-        .setBranch(pullRequest.getSource())
-        .setAncestorChangeset(pullRequest.getTarget())
-        .getChangesets()
-        .getChangesets();
+      return getChangesetsFromLogCommand(pullRequest, repositoryService);
     } catch (IOException e) {
       throw new InternalRepositoryException(repositoryService.getRepository(), "Could not read changesets from branch " + pullRequest.getSource(), e);
     }
@@ -318,10 +322,14 @@ public class MergeService {
     return !approvers.isEmpty() || strategy == MergeStrategy.SQUASH;
   }
 
-  private void appendApproversToCommitMessage(StringBuilder builder, List<String> approvers) {
+  private void appendApproversToCommitMessage(StringBuilder builder, List<String> approvers, String merger) {
     for (String approver : approvers) {
       userDisplayManager.get(approver)
-        .ifPresent(r -> builder.append("Reviewed-by: ").append(r.getDisplayName()).append(" <").append(r.getMail()).append(">\n"));
+        .ifPresent(reviewer -> {
+          if (!reviewer.getDisplayName().equals(merger)) {
+            builder.append("Reviewed-by: ").append(reviewer.getDisplayName()).append(" <").append(reviewer.getMail()).append(">\n");
+          }
+        });
     }
   }
 
