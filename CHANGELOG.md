@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Added
 - New extension point for pull request details view
+- Add commit message trailers for reviewed-by and co-authored-by ([#80](https://github.com/scm-manager/scm-review-plugin/pull/80))
 
 ### Changed
 - Adapted to new modification api from core ([#77](https://github.com/scm-manager/scm-review-plugin/pull/77))

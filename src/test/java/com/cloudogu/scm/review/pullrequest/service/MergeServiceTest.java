@@ -25,17 +25,17 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.BranchProtectionHook;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
-import com.github.sdorra.shiro.ShiroRule;
-import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableList;
 import org.apache.shiro.authz.UnauthorizedException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.Branches;
 import sonia.scm.repository.Changeset;
@@ -54,10 +54,16 @@ import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.api.MergeStrategyNotSupportedException;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.user.DisplayUser;
+import sonia.scm.user.User;
+import sonia.scm.user.UserDisplayManager;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
@@ -69,30 +75,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SubjectAware(
-  configuration = "classpath:com/cloudogu/scm/review/shiro.ini",
-  password = "secret"
-)
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MergeServiceTest {
 
-  @Rule
-  public ShiroRule shiroRule = new ShiroRule();
-
   private final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
+
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private Subject subject;
 
   @Mock
   BranchCommandBuilder branchCommandBuilder;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   BranchesCommandBuilder branchesCommandBuilder;
-  @Mock
+  @Mock(answer = Answers.RETURNS_SELF)
   LogCommandBuilder logCommandBuilder;
   @Mock
   private RepositoryServiceFactory serviceFactory;
@@ -104,101 +106,230 @@ public class MergeServiceTest {
   private MergeCommandBuilder mergeCommandBuilder;
   @Mock
   private BranchProtectionHook branchProtectionHook;
+  @Mock
+  private UserDisplayManager userDisplayManager;
 
-  private Set<MergeGuard> mergeGuards = new HashSet<>();
+  private final Set<MergeGuard> mergeGuards = new HashSet<>();
 
   private MergeService service;
 
-  @Before
-  public void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, branchProtectionHook);
-    doAnswer(invocation -> {
+  @BeforeEach
+  void initService() {
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, branchProtectionHook, userDisplayManager);
+    lenient().doAnswer(invocation -> {
       invocation.<Runnable>getArgument(0).run();
       return null;
     })
       .when(branchProtectionHook).runPrivileged(any());
   }
 
-  @Before
-  public void initMocks() {
+  @BeforeEach
+  void initMocks() {
     when(serviceFactory.create(REPOSITORY.getNamespaceAndName())).thenReturn(repositoryService);
     when(repositoryService.getRepository()).thenReturn(REPOSITORY);
     lenient().when(repositoryService.getMergeCommand()).thenReturn(mergeCommandBuilder);
+    lenient().when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
+    lenient().when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
+  }
+
+  @BeforeEach
+  void bindSubject() {
+    ThreadContext.bind(subject);
+  }
+
+  @AfterEach
+  void tearDownSubject() {
+    ThreadContext.unbindSubject();
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldMergeSuccessfully() {
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+  void shouldMergeSuccessfully() {
+    when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, false);
     verify(pullRequestService).setRevisions(REPOSITORY, "1", "1", "2");
     verify(pullRequestService, never()).setEmergencyMerged(any(Repository.class), anyString(), anyString(), anyList());
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldEmergencyMergeSuccessfully() {
+  void shouldEnrichCommitMessageWithReviewedBy() {
+    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org"));
+    when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
+    when(userDisplayManager.get("trillian")).thenReturn(Optional.of(DisplayUser.from(new User("trillian", "Tricia McMillan", "trillian@hitchhiker.org"))));
+    when(userDisplayManager.get("dent")).thenReturn(Optional.of(DisplayUser.from(new User("dent", "Arthur Dent", "dent@hitchhiker.org"))));
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+    LinkedHashMap<String, Boolean> reviewers = new LinkedHashMap<>();
+    reviewers.put("dent", true);
+    reviewers.put("trillian", true);
+    reviewers.put("zaphod", false);
+    pullRequest.setReviewer(reviewers);
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+    mergeCommit.setCommitMessage("42");
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, false);
+    verify(mergeCommandBuilder).setMessageTemplate(
+      "42\n\n" +
+        "Reviewed-by: Arthur Dent <dent@hitchhiker.org>\n" +
+        "Reviewed-by: Tricia McMillan <trillian@hitchhiker.org>\n"
+    );
+  }
+
+  @Test
+  void shouldEnrichCommitMessageWithCoAuthoredBy() throws IOException {
+    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org"));
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
+    ImmutableList<Changeset> changesets = ImmutableList.of(
+      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org")),
+      new Changeset("2", 2L, new Person("Tricia McMillan", "trillian@hitchhiker.org"))
+    );
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
+    mockPullRequest("squash", "master", "1");
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+    mergeCommit.setCommitMessage("42");
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
+    verify(mergeCommandBuilder).setMessageTemplate(
+      "42\n\n" +
+        "Co-authored-by: Arthur Dent <dent@hitchhiker.org>\n" +
+        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
+    );
+  }
+
+  @Test
+  void shouldEnrichCommitMessageWithCoAuthorsOfSquashedCommits() throws IOException {
+    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org"));
+    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
+    ImmutableList<Changeset> changesets = ImmutableList.of(
+      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
+      new Changeset("2", 2L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Arthur Dent <dent@hitchhiker.org>")
+    );
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+    pullRequest.setAuthor("Zaphod Beetlebrox");
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+    mergeCommit.setCommitMessage("42");
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
+    verify(mergeCommandBuilder).setMessageTemplate(
+      "42\n\n" +
+        "Co-authored-by: Arthur Dent <dent@hitchhiker.org>\n" +
+        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
+    );
+  }
+
+  @Test
+  void shouldNotEnrichCommitMessageWithMergerAsReviewer() throws IOException {
+    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("arthur", "Arthur Dent", "dent@hitchhiker.org"));
+    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
+    ImmutableList<Changeset> changesets = ImmutableList.of(
+      new Changeset("1", 1L, new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
+      new Changeset("2", 2L, new Person("Tricia McMillan", "trillian@hitchhiker.org"), "42\n\n")
+    );
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+    pullRequest.setAuthor("Arthur Dent");
+    HashMap<String, Boolean> reviewers = new HashMap<>();
+    reviewers.put("dent", true);
+    pullRequest.setReviewer(reviewers);
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+    mergeCommit.setCommitMessage("42");
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
+    verify(mergeCommandBuilder).setMessageTemplate(
+      "42\n\n" +
+        "Co-authored-by: Zaphod Beeblebrox <zaphod@hitchhiker.org>\n" +
+        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
+    );
+  }
+
+  @Test
+  void shouldNotEnrichCommitMessageWithMergerAsCoAuthor() throws IOException {
+    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("arthur", "Arthur Dent", "dent@hitchhiker.org"));
+    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
+    ImmutableList<Changeset> changesets = ImmutableList.of(
+      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
+      new Changeset("2", 2L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Arthur Dent <dent@hitchhiker.org>")
+    );
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
+    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
+    pullRequest.setAuthor("Arthur Dent");
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+    mergeCommit.setCommitMessage("42");
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
+    verify(mergeCommandBuilder).setMessageTemplate(
+      "42\n\n" +
+        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
+    );
+  }
+
+  @Test
+  void shouldEmergencyMergeSuccessfully() {
+    when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, true);
 
     verify(pullRequestService).setEmergencyMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage(), Collections.emptyList());
     verify(pullRequestService, never()).setMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage());
   }
 
-  @Test(expected = UnauthorizedException.class)
-  @SubjectAware(username = "trillian")
-  public void shouldNotEmergencyMergeWithoutPermission() {
+  @Test
+  void shouldNotEmergencyMergeWithoutPermission() {
+    doThrow(UnauthorizedException.class).when(subject).checkPermission("repository:performEmergencyMerge:" + REPOSITORY.getId());
     mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true);
+    assertThrows(UnauthorizedException.class,
+      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true));
   }
 
-  @Test(expected = MergeNotAllowedException.class)
-  @SubjectAware(username = "dent")
-  public void shouldNotMergeWithObstaclesIfNotEmergency() {
+  @Test
+  void shouldNotMergeWithObstaclesIfNotEmergency() {
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
     mockMergeGuard(pullRequest, true);
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-  }
-
-  @Test(expected = UnauthorizedException.class)
-  @SubjectAware(username = "trillian")
-  public void shouldNotMergeWithoutPermission() {
-    mockPullRequest("squash", "master", "1");
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
+    assertThrows(MergeNotAllowedException.class,
+      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldDeleteBranchIfFlagIsSet() {
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
+  void shouldNotMergeWithoutPermission() {
+    doThrow(UnauthorizedException.class).when(subject).checkPermission("repository:mergePullRequest:" + REPOSITORY.getId());
+    mockPullRequest("squash", "master", "1");
+
+    MergeCommitDto mergeCommit = createMergeCommit(false);
+    assertThrows(UnauthorizedException.class,
+      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
+  }
+
+  @Test
+  void shouldDeleteBranchIfFlagIsSet() {
+    when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
     when(repositoryService.getBranchCommand()).thenReturn(branchCommandBuilder);
     when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);
 
     MergeCommitDto mergeCommit = createMergeCommit(true);
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
+    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, false);
 
     verify(branchCommandBuilder).delete("squash");
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldUpdatePullRequestStatus() throws IOException {
+  void shouldUpdatePullRequestStatus() throws IOException {
     mocksForPullRequestUpdate("master");
     mockPullRequest("squash", "master", "1");
 
@@ -209,8 +340,7 @@ public class MergeServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldThrowExceptionIfStrategyNotSupported() {
+  void shouldThrowExceptionIfStrategyNotSupported() {
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(false);
     mockPullRequest("squash", "master", "1");
 
@@ -221,8 +351,7 @@ public class MergeServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldThrowExceptionIfObstacleExists() {
+  void shouldThrowExceptionIfObstacleExists() {
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
 
     mockMergeGuard(pullRequest, false);
@@ -234,8 +363,7 @@ public class MergeServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldNotThrowExceptionIfObstacleIsOverrideable() throws IOException {
+  void shouldNotThrowExceptionIfObstacleIsOverrideable() throws IOException {
     mocksForPullRequestUpdate("master");
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
     mockMergeGuard(pullRequest, true);
@@ -247,8 +375,7 @@ public class MergeServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldThrowExceptionWhenPullRequestIsNotOpen() {
+  void shouldThrowExceptionWhenPullRequestIsNotOpen() {
     lenient().when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     mockPullRequest("squash", "master", "1", REJECTED);
 
@@ -259,8 +386,8 @@ public class MergeServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldDoDryRun() {
+  void shouldDoDryRun() {
+    when(subject.isPermitted("repository:push:" + REPOSITORY.getId())).thenReturn(true);
     mockPullRequest("mergeable", "master", "1");
     when(mergeCommandBuilder.dryRun()).thenReturn(new MergeDryRunCommandResult(true));
 
@@ -270,8 +397,7 @@ public class MergeServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
-  public void shouldNotDoDryRunIfMissingPermission() {
+  void shouldNotDoDryRunIfMissingPermission() {
     mockPullRequest("mergable", "master", "1");
 
     MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
@@ -280,12 +406,9 @@ public class MergeServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
-  public void shouldCreateCommitMessageForSquash() throws IOException {
+  void shouldCreateCommitMessageForSquash() throws IOException {
+    when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
     when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
-    when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
-    when(logCommandBuilder.setBranch(any())).thenReturn(logCommandBuilder);
-    when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
     PullRequest pullRequest = createPullRequest();
     when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
@@ -314,8 +437,7 @@ public class MergeServiceTest {
   }
 
   @Test
-  @SubjectAware(username = "trillian", password = "secret")
-  public void shouldForwardObstaclesFromGuards() {
+  void shouldForwardObstaclesFromGuards() {
     PullRequest pullRequest = mockPullRequest("mergeable", "master", "1");
 
     TestMergeObstacle obstacle1 = mockMergeGuard(pullRequest, false);
