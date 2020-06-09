@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-div.commentable .diff-gutter:hover::after {
+tbody.commentable .diff-gutter:hover::after {
   font-family: "Font Awesome 5 Free";
   content: " \f075";
   color: #33b2e8;
