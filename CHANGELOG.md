@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ### Added
-- Documentation in English and German ([])
+- Documentation in English and German ([#84](https://github.com/scm-manager/scm-review-plugin/pull/84))
 
 ## [2.0.0] - 2020-06-04
 ### Added
