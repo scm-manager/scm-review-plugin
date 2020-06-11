@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 2.0.0 - 2020-06-04
+## Unreleased
+### Added
+- Documentation in English and German ([])
+
+## [2.0.0] - 2020-06-04
 ### Added
 - New extension point for pull request details view
 - Add commit message trailers for reviewed-by and co-authored-by ([#80](https://github.com/scm-manager/scm-review-plugin/pull/80))
@@ -16,52 +20,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Exception on push in repository without merge support([#78](https://github.com/scm-manager/scm-review-plugin/pull/78))
 
-## 2.0.0-rc9-3 - 2020-05-08
+## [2.0.0-rc9-3] - 2020-05-08
 ### Added
 - Workflow Engine to enforce rules before merging pull requests ([#75](https://github.com/scm-manager/scm-review-plugin/pull/75))
 - Emergency Merge to override configured workflow rules ([#70](https://github.com/scm-manager/scm-review-plugin/pull/70)
 - Configuration to prevent authors from merging their own pull requests
 
-## 2.0.0-rc9-2 - 2020-04-14
+## [2.0.0-rc9-2] - 2020-04-14
 ### Added
 - Data for landing page, displaying my pull requests, tasks, reviews and events ([#61](https://github.com/scm-manager/scm-review-plugin/pull/61))
 
-## 2.0.0-rc9-1 - 2020-03-27
+## [2.0.0-rc9-1] - 2020-03-27
 ### Added
 - Toast messages are enabled, again
 
-## 2.0.0-rc9 - 2020-03-26
+## [2.0.0-rc9] - 2020-03-26
+### Added
+- Add a link to the pull requests inside the repository card overview ([#57](https://github.com/scm-manager/scm-review-plugin/pull/57))
+
 ### Changed
 - Notification channel are now cleaned every 30 seconds
 - Every notifcation client is closed after 30 seconds
-### Added
-- Add a link to the pull requests inside the repository card overview ([#57](https://github.com/scm-manager/scm-review-plugin/pull/57))
+
 ### Fixed
 - Threads for toast navigation could be in blocking state up to 1 hour
 
-## 2.0.0-rc8 - 2020-03-16
+## [2.0.0-rc8] - 2020-03-16
 ### Fixed
 - Removed toast messages, as these are not closed correctly on the server
 
-## 2.0.0-rc7 - 2020-03-16
-### Fixed
-- rc4 with removed toast messages, as these are not closed correctly on the server
-
+## [2.0.0-rc7] - 2020-03-16
 ### Changed
 - Changeover to MIT license ([#58](https://github.com/scm-manager/scm-review-plugin/pull/58))
 
-## 2.0.0-rc6
+### Fixed
+- rc4 with removed toast messages, as these are not closed correctly on the server
+
+## [2.0.0-rc6]
 ### Added
 - Add swagger rest annotations to generate openAPI specs for the scm-openapi-plugin. ([#54](https://github.com/scm-manager/scm-review-plugin/pull/54))
 - Make navigation item collapsable ([#55](https://github.com/scm-manager/scm-review-plugin/pull/55))
 
-## 2.0.0-rc5 - 2020-02-18
+## [2.0.0-rc5] - 2020-02-18
 Re-release of 2.0.0-rc3
 
-## 2.0.0-rc4 - 2020-02-18
+## [2.0.0-rc4] - 2020-02-18
 Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and [#53](https://github.com/scm-manager/scm-review-plugin/pull/53) to 2.0.0-rc2
 
-## 2.0.0-rc3 - 2020-02-14
+## [2.0.0-rc3] - 2020-02-14
 ### Added
 - Mark files as reviewed in diff view ([#48](https://github.com/scm-manager/scm-review-plugin/pull/48))
 - Add @-Mentionings for User in Comments ([#50](https://github.com/scm-manager/scm-review-plugin/pull/50))
@@ -76,7 +82,7 @@ Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and
 ### Security
 - The creator of a pull request can no longer fake approvals ([#48](https://github.com/scm-manager/scm-review-plugin/pull/48))
 
-## 2.0.0-rc2 - 2020-01-29
+## [2.0.0-rc2] - 2020-01-29
 ### Added
 - Filter and sort function of the pull requests in the overview ([#19](https://github.com/scm-manager/scm-review-plugin/pull/19), [#21](https://github.com/scm-manager/scm-review-plugin/pull/21))
 - Show toast on changes in the detailed view ([#26](https://github.com/scm-manager/scm-review-plugin/pull/26))
@@ -124,4 +130,16 @@ Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and
 - Option to remove the source branch after merge ([#8](https://github.com/scm-manager/scm-review-plugin/pull/8))
 - As a reviewer, I can explicitly give my consent to merge via "Approve"-button
 
+[2.0.0]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc9-3]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc9-2]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc9-1]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc9]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc8]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc7]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc6]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc5]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc4]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc3]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
+[2.0.0-rc2]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
 [2.0.0-rc1]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
