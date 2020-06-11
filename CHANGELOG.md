@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ### Added
-- Disable the possibility to add line comments to add line comments to expanded diff lines ([#83](https://github.com/scm-manager/scm-review-plugin/pull/83))
+- Disable the possibility to add line comments to expanded diff lines ([#83](https://github.com/scm-manager/scm-review-plugin/pull/83))
 
 ## 2.0.0 - 2020-06-04
 ### Added
