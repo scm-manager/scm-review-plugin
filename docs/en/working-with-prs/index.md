@@ -27,13 +27,13 @@ There are these options to interact with a comment:
 
 |Icon|Meaning|
 |---|--------------------------------------------|
-|![Delete](assets/icon-delete.png){ height=5mm }|Delete comment|
-|![Edit](assets/icon-edit.png){ height=5mm }|Edit comment|
-|![Task](assets/icon-make-task.png){ height=5mm }|Convert comment into task|
-|![Comment](assets/icon-make-comment.png){ height=5mm }|Convert task into comment|
-|![Reply](assets/icon-reply.png){ height=5mm }|Reply to comment or task|
-|![Done](assets/icon-done.png){ height=5mm }|Mark task as done|
-|![Reopen](assets/icon-reopen.png){ height=5mm }|Mark task as *not* done|
+|![Delete](assets/icon-delete.png)|Delete comment|
+|![Edit](assets/icon-edit.png)|Edit comment|
+|![Task](assets/icon-make-task.png)|Convert comment into task|
+|![Comment](assets/icon-make-comment.png)|Convert task into comment|
+|![Reply](assets/icon-reply.png)|Reply to comment or task|
+|![Done](assets/icon-done.png)|Mark task as done|
+|![Reopen](assets/icon-reopen.png)|Mark task as *not* done|
 
 ### Outdated comments
 As soon as there are new commits in a pull request, some comments are marked as outdated. General comments are outdated after each new commit. File and line comments are outdated once a commit changes the related file.

@@ -27,13 +27,13 @@ Erstellte Kommentare bieten folgende Interaktions-Möglichkeiten:
 
 |Icon|Bedeutung|
 |---|--------------------------------------------|
-|![Loeschen](assets/icon-delete.png){ height=5mm }|Kommentar löschen|
-|![Bearbeiten](assets/icon-edit.png){ height=5mm }|Kommentar bearbeiten|
-|![Task](assets/icon-make-task.png){ height=5mm }|Kommentar in Aufgabe umwandeln|
-|![Kommentar](assets/icon-make-comment.png){ height=5mm }|Aufgabe in Kommentar umwandeln|
-|![Reply](assets/icon-reply.png){ height=5mm }|Auf Kommentar bzw. Aufgabe antworten|
-|![Done](assets/icon-done.png){ height=5mm }|Aufgabe als erledigt markieren|
-|![Wieder eröffnen](assets/icon-reopen.png){ height=5mm }|Aufgabe als _nicht_ erledigt markieren|
+|![Loeschen](assets/icon-delete.png)|Kommentar löschen|
+|![Bearbeiten](assets/icon-edit.png)|Kommentar bearbeiten|
+|![Task](assets/icon-make-task.png)|Kommentar in Aufgabe umwandeln|
+|![Kommentar](assets/icon-make-comment.png)|Aufgabe in Kommentar umwandeln|
+|![Reply](assets/icon-reply.png)|Auf Kommentar bzw. Aufgabe antworten|
+|![Done](assets/icon-done.png)|Aufgabe als erledigt markieren|
+|![Wieder eröffnen](assets/icon-reopen.png)|Aufgabe als _nicht_ erledigt markieren|
 
 ### Veraltete Kommentare
 Sobald ein Pull Request neue Commits erhält, werden die Kommentare teilweise als veraltet markiert. Allgemeine Kommentare gelten nach jedem neuen Commit als veraltet und Datei- bzw. Zeilen-Kommentare nach einem Commit, der die entsprechende Datei ändert.
