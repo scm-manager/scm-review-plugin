@@ -110,7 +110,7 @@ class Diff extends React.Component<Props, State> {
           fileAnnotationFactory={this.fileAnnotationFactory}
           annotationFactory={this.annotationFactory}
           onClick={this.onGutterClick}
-          hunkClass={hunk => (hunk.expansion ? null : "commentable")}
+          hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
         />
       </StyledDiffWrapper>
     );

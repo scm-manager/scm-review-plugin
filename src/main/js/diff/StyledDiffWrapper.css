@@ -26,3 +26,7 @@ tbody.commentable .diff-gutter:hover::after {
   content: " \f075";
   color: #33b2e8;
 }
+
+tbody.expanded .diff-gutter {
+  cursor: default;
+}
