@@ -40,7 +40,7 @@ class StyledDiffWrapper extends Component<Props> {
   render() {
     const { children, commentable } = this.props;
     if (commentable) {
-      return <CommentableWrapper className="commentable">{children}</CommentableWrapper>;
+      return <CommentableWrapper>{children}</CommentableWrapper>;
     }
     return <div>{children}</div>;
   }
