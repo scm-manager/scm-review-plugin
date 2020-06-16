@@ -110,6 +110,7 @@ class Diff extends React.Component<Props, State> {
           fileAnnotationFactory={this.fileAnnotationFactory}
           annotationFactory={this.annotationFactory}
           onClick={this.onGutterClick}
+          hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
         />
       </StyledDiffWrapper>
     );
@@ -195,7 +196,7 @@ class Diff extends React.Component<Props, State> {
   };
 
   onGutterClick = (context: DiffEventContext) => {
-    if (this.isPermittedToComment()) {
+    if (this.isPermittedToComment() && !context.hunk.expansion) {
       const location = createInlineLocation(context);
       this.openEditor(location);
     }

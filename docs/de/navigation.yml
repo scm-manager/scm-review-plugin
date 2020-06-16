@@ -1,0 +1,8 @@
+- section: Features
+  entries:
+    - /overview/
+    - /create-pr/
+    - /details-page/
+    - /working-with-prs/
+    - /permissions/
+    - /protect-branches/
