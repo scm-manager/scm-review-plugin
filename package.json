@@ -7,7 +7,7 @@
   "scripts": {
     "build": "ui-scripts plugin",
     "watch": "ui-scripts plugin-watch",
-    "test": "jest",
+    "test": "jest src/main/js",
     "postinstall": "ui-plugins postinstall"
   },
   "dependencies": {
