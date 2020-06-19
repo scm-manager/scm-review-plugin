@@ -1,7 +1,7 @@
 ---
 title: Overview
 ---
-Most of the extensions that come with the Review plugin can be found inside each repository under the tab "Pull Requests". Once the tab is open it shows a list of all pull requests that are open.
+Most of the extensions that come with the Review plugin can be found inside each git repository under the tab "Pull Requests". Once the tab is open it shows a list of all pull requests that are open.
 
 The list offers these options:
 
