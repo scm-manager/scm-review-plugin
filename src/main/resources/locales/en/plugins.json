@@ -332,6 +332,9 @@
       "comments": {
         "label": "New/changed comments"
       },
+      "replies": {
+        "label": "Replies to comments"
+      },
       "approvals": {
         "label": "Approvals"
       },

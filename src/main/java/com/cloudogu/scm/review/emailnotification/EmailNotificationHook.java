@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.MentionEvent;
+import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
@@ -66,6 +67,11 @@ public class EmailNotificationHook {
     if (!isSystemComment(event)) {
       handleEvent(event, new CommentEventMailTextResolver(event));
     }
+  }
+
+  @Subscribe
+  public void handleReplyEvents(ReplyEvent event) {
+    handleEvent(event, new CommentEventMailTextResolver(event));
   }
 
   @Subscribe

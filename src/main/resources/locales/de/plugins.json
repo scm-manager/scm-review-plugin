@@ -334,6 +334,9 @@
       "comments": {
         "label": "Neue/geänderte Kommentare"
       },
+      "replies": {
+        "label": "Antworten auf Kommentare"
+      },
       "approvals": {
         "label": "Freigaben"
       },

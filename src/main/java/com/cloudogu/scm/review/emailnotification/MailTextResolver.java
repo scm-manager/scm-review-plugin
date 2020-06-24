@@ -36,6 +36,7 @@ public interface MailTextResolver {
   Topic TOPIC_APPROVALS = new Topic(CATEGORY, "approvals");
   Topic TOPIC_MENTIONS = new Topic(CATEGORY, "mentions");
   Topic TOPIC_COMMENTS = new Topic(CATEGORY, "comments");
+  Topic TOPIC_REPLIES = new Topic(CATEGORY, "replies");
   Topic TOPIC_CLOSED = new Topic(CATEGORY, "closed");
 
   String getMailSubject(Locale locale);

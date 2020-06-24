@@ -86,7 +86,7 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicC
       return CommentEventType.TASK_DONE;
     } else if (lastTransition == CommentTransition.REOPEN) {
       return CommentEventType.TASK_REOPEN;
-    } else if(lastTransition == CommentTransition.MAKE_COMMENT) {
+    } else if (lastTransition == CommentTransition.MAKE_COMMENT) {
       return CommentEventType.COMMENT_CREATED;
     } else {
       log.trace("cannot handle changes of comment");
@@ -130,7 +130,7 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicC
 
   @Override
   public Topic getTopic() {
-    return TOPIC_COMMENTS;
+    return commentEvent instanceof ReplyEvent ? TOPIC_REPLIES : TOPIC_COMMENTS;
   }
 
   private enum CommentEventType {

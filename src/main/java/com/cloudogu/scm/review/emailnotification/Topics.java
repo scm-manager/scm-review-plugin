@@ -42,6 +42,7 @@ public class Topics implements TopicProvider {
       TOPIC_APPROVALS,
       TOPIC_MENTIONS,
       TOPIC_COMMENTS,
+      TOPIC_REPLIES,
       TOPIC_CLOSED
     );
   }
