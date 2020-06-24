@@ -40,10 +40,10 @@ public class Topics implements TopicProvider {
     return asList(
       TOPIC_PR_CHANGED,
       TOPIC_APPROVALS,
+      TOPIC_CLOSED,
       TOPIC_MENTIONS,
       TOPIC_COMMENTS,
-      TOPIC_REPLIES,
-      TOPIC_CLOSED
+      TOPIC_REPLIES
     );
   }
 }
