@@ -21,43 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.emailnotification;
 
-import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
-import lombok.extern.slf4j.Slf4j;
 import sonia.scm.mail.api.Topic;
+import sonia.scm.mail.api.TopicProvider;
+import sonia.scm.plugin.Extension;
 
-import java.util.Locale;
-import java.util.Map;
+import java.util.Collection;
 
-@Slf4j
-public class PullRequestRejectedMailTextResolver extends BasicPRMailTextResolver<PullRequestRejectedEvent> implements MailTextResolver {
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.*;
+import static java.util.Arrays.asList;
 
-  public static final String EVENT_DISPLAY_NAME = "prRejected";
-  private final PullRequestRejectedEvent pullRequestRejectedEvent;
-  protected static final String TEMPLATE_PATH = "com/cloudogu/scm/email/template/rejected_pull_request.mustache";
-
-  public PullRequestRejectedMailTextResolver(PullRequestRejectedEvent pullRequestRejectedEvent) {
-    this.pullRequestRejectedEvent = pullRequestRejectedEvent;
-  }
-
+@Extension
+public class Topics implements TopicProvider {
   @Override
-  public String getMailSubject(Locale locale) {
-    return getMailSubject(pullRequestRejectedEvent, EVENT_DISPLAY_NAME, locale);
-  }
-
-  @Override
-  public String getContentTemplatePath() {
-    return TEMPLATE_PATH;
-  }
-
-  @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    return getTemplateModel(basePath, pullRequestRejectedEvent, isReviewer);
-  }
-
-  @Override
-  public Topic getTopic() {
-    return TOPIC_CLOSED;
+  public Collection<Topic> topics() {
+    return asList(
+      TOPIC_PR_CHANGED,
+      TOPIC_APPROVALS,
+      TOPIC_MENTIONS,
+      TOPIC_COMMENTS,
+      TOPIC_CLOSED
+    );
   }
 }

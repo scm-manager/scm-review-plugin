@@ -328,6 +328,26 @@
       }
     }
   },
+  "mailTopics": {
+    "review-plugin": {
+      "label": "Pull Requests",
+      "comments": {
+        "label": "Neue/geänderte Kommentare"
+      },
+      "approvals": {
+        "label": "Freigaben"
+      },
+      "mentions": {
+        "label": "Erwähnungen"
+      },
+      "prChanged": {
+        "label": "Änderungen an Pull Requests"
+      },
+      "closed": {
+        "label": "Schließen von Pull Requests"
+      }
+    }
+  },
   "permissions": {
     "repository": {
       "readPullRequest": {

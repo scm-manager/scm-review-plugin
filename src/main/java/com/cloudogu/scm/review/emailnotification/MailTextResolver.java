@@ -23,14 +23,26 @@
  */
 package com.cloudogu.scm.review.emailnotification;
 
+import sonia.scm.mail.api.Category;
+import sonia.scm.mail.api.Topic;
+
 import java.util.Locale;
 import java.util.Map;
 
 public interface MailTextResolver {
+
+  Category CATEGORY = new Category("review-plugin");
+  Topic TOPIC_PR_CHANGED = new Topic(CATEGORY, "prChanged");
+  Topic TOPIC_APPROVALS = new Topic(CATEGORY, "approvals");
+  Topic TOPIC_MENTIONS = new Topic(CATEGORY, "mentions");
+  Topic TOPIC_COMMENTS = new Topic(CATEGORY, "comments");
+  Topic TOPIC_CLOSED = new Topic(CATEGORY, "closed");
 
   String getMailSubject(Locale locale);
 
   String getContentTemplatePath();
 
   Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer);
+
+  Topic getTopic();
 }

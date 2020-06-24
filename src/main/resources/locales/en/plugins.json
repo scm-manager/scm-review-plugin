@@ -326,6 +326,26 @@
       }
     }
   },
+  "mailTopics": {
+    "review-plugin": {
+      "label": "Pull Requests",
+      "comments": {
+        "label": "New/changed comments"
+      },
+      "approvals": {
+        "label": "Approvals"
+      },
+      "mentions": {
+        "label": "Mentions"
+      },
+      "prChanged": {
+        "label": "Changes of pull requests"
+      },
+      "closed": {
+        "label": "Closing pull requests"
+      }
+    }
+  },
   "permissions": {
     "repository": {
       "readPullRequest": {
@@ -460,4 +480,4 @@
       }
     }
   }
-}
+},

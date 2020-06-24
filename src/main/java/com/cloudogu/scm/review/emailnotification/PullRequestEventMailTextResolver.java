@@ -26,6 +26,7 @@ package com.cloudogu.scm.review.emailnotification;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.HandlerEventType;
+import sonia.scm.mail.api.Topic;
 
 import java.util.Locale;
 import java.util.Map;
@@ -63,6 +64,11 @@ public class PullRequestEventMailTextResolver extends BasicPRMailTextResolver<Pu
       model.put("oldPullRequest", pullRequestEvent.getOldItem());
     }
     return model;
+  }
+
+  @Override
+  public Topic getTopic() {
+    return TOPIC_PR_CHANGED;
   }
 
   private enum PullRequestEventType {

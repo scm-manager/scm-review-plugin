@@ -84,6 +84,7 @@ public class EmailNotificationService {
       .fromCurrentUser();
     recipients.forEach(envelopeBuilder::toUser);
     envelopeBuilder
+      .onTopic(mailTextResolver.getTopic())
       .withSubject(mailTextResolver.getMailSubject(ENGLISH))
       .withSubject(GERMAN, mailTextResolver.getMailSubject(GERMAN))
       .withTemplate(mailTextResolver.getContentTemplatePath(), MailTemplateType.MARKDOWN_HTML)

@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.comment.service.MentionEvent;
 import lombok.extern.slf4j.Slf4j;
+import sonia.scm.mail.api.Topic;
 
 import java.util.Locale;
 import java.util.Map;
@@ -57,5 +58,10 @@ public class MentionEventMailTextResolver extends BasicPRMailTextResolver<Mentio
     Map<String, Object> model = getTemplateModel(basePath, mentionEvent, false);
     model.put("comment", mentionEvent.getItem());
     return model;
+  }
+
+  @Override
+  public Topic getTopic() {
+    return TOPIC_MENTIONS;
   }
 }

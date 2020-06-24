@@ -33,6 +33,7 @@ import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.cloudogu.scm.review.comment.service.Transition;
 import lombok.extern.slf4j.Slf4j;
+import sonia.scm.mail.api.Topic;
 
 import java.util.List;
 import java.util.Locale;
@@ -125,6 +126,11 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicC
         break;
     }
     return model;
+  }
+
+  @Override
+  public Topic getTopic() {
+    return TOPIC_COMMENTS;
   }
 
   private enum CommentEventType {
