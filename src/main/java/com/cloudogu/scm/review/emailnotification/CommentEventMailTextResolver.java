@@ -23,45 +23,30 @@
  */
 package com.cloudogu.scm.review.emailnotification;
 
+import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.BasicCommentEvent;
-import com.cloudogu.scm.review.comment.service.Comment;
-import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
 import com.cloudogu.scm.review.comment.service.ExecutedTransition;
-import com.cloudogu.scm.review.comment.service.Reply;
-import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.cloudogu.scm.review.comment.service.Transition;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.mail.api.Topic;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-
-import static java.util.Collections.emptySet;
 
 @Slf4j
-public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicCommentEvent> implements MailTextResolver {
+public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicCommentEvent<?>> implements MailTextResolver {
 
-  private final BasicCommentEvent commentEvent;
+  private final BasicCommentEvent<?> commentEvent;
   private final CommentEventType commentEventType;
 
-  public CommentEventMailTextResolver(CommentEvent commentEvent) {
-    this(commentEvent, getCommentEventType(commentEvent));
-  }
-
-  public CommentEventMailTextResolver(ReplyEvent commentEvent) {
-    this(commentEvent, getReplyEventType(commentEvent));
-  }
-
-  private CommentEventMailTextResolver(BasicCommentEvent commentEvent, CommentEventType commentEventType) {
+  public CommentEventMailTextResolver(BasicCommentEvent<?> commentEvent) {
     this.commentEvent = commentEvent;
-    this.commentEventType = commentEventType;
+    this.commentEventType = getCommentEventType(commentEvent);
   }
 
-  private static CommentEventType getCommentEventType(CommentEvent commentEvent) {
+  private static CommentEventType getCommentEventType(BasicCommentEvent<?> commentEvent) {
     switch (commentEvent.getEventType()) {
       case CREATE:
         return CommentEventType.COMMENT_CREATED;
@@ -71,7 +56,7 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicC
         if (!commentEvent.getItem().getComment().equals(commentEvent.getOldItem().getComment())) {
           return CommentEventType.TEXT_MODIFIED;
         } else {
-          return getCommentModificationEventType(commentEvent.getOldItem(), commentEvent.getItem());
+          return getCommentModificationEventType(commentEvent.getItem());
         }
       default:
         log.warn("the event " + commentEvent.getEventType() + " is not supported for the Mail Renderer ");
@@ -79,21 +64,7 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicC
     }
   }
 
-  private static CommentEventType getReplyEventType(ReplyEvent commentEvent) {
-    switch (commentEvent.getEventType()) {
-      case CREATE:
-        return CommentEventType.REPLY_CREATED;
-      case DELETE:
-        return CommentEventType.REPLY_DELETED;
-      case MODIFY:
-        return CommentEventType.REPLY_MODIFIED;
-      default:
-        log.warn("the event " + commentEvent.getEventType() + " is not supported for the Mail Renderer ");
-        return null;
-    }
-  }
-
-  private static CommentEventType getCommentModificationEventType(Comment oldComment, Comment newComment) {
+  private static CommentEventType getCommentModificationEventType(BasicComment newComment) {
     List<ExecutedTransition> transitions = newComment.getExecutedTransitions();
     Transition lastTransition = transitions.get(transitions.size() - 1).getTransition();
     if (lastTransition == CommentTransition.MAKE_TASK) {
@@ -126,34 +97,30 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicC
 
     switch (commentEventType) {
       case COMMENT_DELETED:
-      case REPLY_DELETED:
         model.put("oldComment", commentEvent.getOldItem());
         break;
       case COMMENT_CREATED:
-      case REPLY_CREATED:
         model.put("comment", commentEvent.getItem());
         break;
       case TEXT_MODIFIED:
-      case REPLY_MODIFIED:
         model.put("oldComment", commentEvent.getOldItem());
         model.put("comment", commentEvent.getItem());
         break;
+      default:
+        // no more values needed
     }
     return model;
   }
 
   @Override
   public Topic getTopic() {
-    return commentEvent instanceof ReplyEvent ? TOPIC_REPLIES : TOPIC_COMMENTS;
+    return TOPIC_COMMENTS;
   }
 
   private enum CommentEventType {
     COMMENT_CREATED("created_comment.mustache", "commentAdded"),
     COMMENT_DELETED("deleted_comment.mustache", "commentDeleted"),
     TEXT_MODIFIED("modified_comment.mustache", "commentChanged"),
-    REPLY_CREATED("created_reply.mustache", "replyAdded"),
-    REPLY_DELETED("deleted_reply.mustache", "replyDeleted"),
-    REPLY_MODIFIED("modified_reply.mustache", "replyChanged"),
     TASK_DONE("task_done.mustache", "taskDone"),
     TASK_REOPEN("task_reopened.mustache", "taskReopened"),
     TASK_CREATED("task_created.mustache", "taskCreated");

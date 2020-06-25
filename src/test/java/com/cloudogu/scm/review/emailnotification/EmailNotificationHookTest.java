@@ -27,6 +27,8 @@ import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.MentionEvent;
+import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
@@ -57,6 +59,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableSet.of;
+import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
@@ -110,15 +113,37 @@ class EmailNotificationHookTest {
   @TestFactory
   Stream<DynamicTest> sendingCommentEmailTestFactory() {
     ArrayList<CommentEvent> events = Lists.newArrayList(
-      new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE),
+      new CommentEvent(repository, pullRequest, comment, null, HandlerEventType.CREATE),
       new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY),
-      new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.DELETE)
+      new CommentEvent(repository, pullRequest, null, oldComment, HandlerEventType.DELETE)
     );
     return events.stream().map(event ->
       DynamicTest.dynamicTest(event.getEventType().toString(), () -> {
         emailNotificationHook.handleCommentEvents(event);
 
         verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(CommentEventMailTextResolver.class));
+        reset(service);
+      })
+    );
+  }
+
+  @TestFactory
+  Stream<DynamicTest> sendingReplyEmailTestFactory() {
+    Reply reply = Reply.createReply("1", "42", currentUser);
+    Reply oldReply = Reply.createReply("1", "have to think", currentUser);
+    comment.setAuthor("first author");
+    comment.setReplies(asList(reply, Reply.createReply("0", "dumb question", "former participant")));
+    ArrayList<ReplyEvent> events = Lists.newArrayList(
+      new ReplyEvent(repository, pullRequest, reply, null, comment, HandlerEventType.CREATE),
+      new ReplyEvent(repository, pullRequest, reply, oldReply, comment, HandlerEventType.MODIFY),
+      new ReplyEvent(repository, pullRequest, null, oldReply, comment, HandlerEventType.DELETE)
+    );
+    return events.stream().map(event ->
+      DynamicTest.dynamicTest(event.getEventType().toString(), () -> {
+        emailNotificationHook.handleReplyEvents(event);
+
+        verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(CommentEventMailTextResolver.class));
+        verify(service).sendEmail(eq(of("first author", "former participant")), isA(ReplyEventMailTextResolver.class));
         reset(service);
       })
     );

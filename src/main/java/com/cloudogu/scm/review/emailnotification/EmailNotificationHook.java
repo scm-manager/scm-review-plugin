@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.MentionEvent;
+import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -82,7 +83,18 @@ public class EmailNotificationHook {
   @Subscribe
   public void handleReplyEvents(ReplyEvent event) {
     PullRequest pullRequest = event.getPullRequest();
-    handleEvent(event, new CommentEventMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
+    Set<String> authorsInThread = getAuthorsInThread(event);
+    Set<String> subscribers = getSubscribersWithoutCurrentUser(pullRequest);
+    subscribers.removeAll(authorsInThread);
+    handleEvent(event, new CommentEventMailTextResolver(event), pullRequest, subscribers);
+    handleEvent(event, new ReplyEventMailTextResolver(event), pullRequest, authorsInThread);
+  }
+
+  private Set<String> getAuthorsInThread(ReplyEvent replyEvent) {
+    Set<String> involvedUsers = new HashSet<>();
+    involvedUsers.add(replyEvent.getRootComment().getAuthor());
+    replyEvent.getRootComment().getReplies().stream().map(Reply::getAuthor).forEach(involvedUsers::add);
+    return filterCurrentUser(involvedUsers);
   }
 
   @Subscribe
@@ -139,11 +151,14 @@ public class EmailNotificationHook {
   }
 
   private Set<String> getSubscribersWithoutCurrentUser(PullRequest pullRequest) {
-    Set<String> subscriber = pullRequest.getSubscriber();
-    Object currentUser = SecurityUtils.getSubject().getPrincipal();
-    if (subscriber.contains(currentUser)) {
-      return subscriber.stream().filter(s -> !s.equals(currentUser)).collect(toSet());
+    return filterCurrentUser(pullRequest.getSubscriber());
+  }
+
+  private Set<String> filterCurrentUser(Set<String> users) {
+    String currentUser = SecurityUtils.getSubject().getPrincipal().toString();
+    if (users.contains(currentUser)) {
+      return users.stream().filter(s -> !s.equals(currentUser)).collect(toSet());
     }
-    return subscriber;
+    return users;
   }
 }
