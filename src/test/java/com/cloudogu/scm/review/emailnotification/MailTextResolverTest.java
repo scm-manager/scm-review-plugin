@@ -125,7 +125,7 @@ class MailTextResolverTest {
   void shouldRenderEmailOnModifiedPullRequest() {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
 
-    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
+    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event, false);
 
     assertEmail(renderer, "changed");
   }
@@ -134,7 +134,7 @@ class MailTextResolverTest {
   void shouldRenderEmailOnCreatedPullRequest() {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
 
-    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
+    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event, false);
 
     assertEmail(renderer, "created");
   }
@@ -143,9 +143,9 @@ class MailTextResolverTest {
   void shouldNotRenderReviewerEmailOnCreatedPullRequest() {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
 
-    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event);
+    PullRequestEventMailTextResolver renderer = new PullRequestEventMailTextResolver(event, false);
 
-    assertEmail(renderer, "created", false)
+    assertEmail(renderer, "created")
     .doesNotContain("You are chosen as reviewer for this pull request.");
   }
 
@@ -205,11 +205,7 @@ class MailTextResolverTest {
     assertEmail(renderer, "rejected");
   }
 
-  private void assertEmail(MailTextResolver renderer, String event) {
-    assertEmail(renderer, event, false);
-  }
-
-  private AbstractCharSequenceAssert<?, String> assertEmail(MailTextResolver renderer, String event, boolean isReviewer) {
+  private AbstractCharSequenceAssert<?, String> assertEmail(MailTextResolver renderer, String event) {
     String mailSubject = renderer.getMailSubject(Locale.ENGLISH);
     return assertThat(mailSubject).isNotEmpty()
       .contains(repository.getName(), repository.getNamespace(), pullRequest.getId(), pullRequest.getTitle(), event);

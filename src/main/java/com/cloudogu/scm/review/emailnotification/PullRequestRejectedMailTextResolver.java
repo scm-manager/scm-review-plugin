@@ -52,8 +52,8 @@ public class PullRequestRejectedMailTextResolver extends BasicPRMailTextResolver
   }
 
   @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    return getTemplateModel(basePath, pullRequestRejectedEvent, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    return getTemplateModel(basePath, pullRequestRejectedEvent);
   }
 
   @Override

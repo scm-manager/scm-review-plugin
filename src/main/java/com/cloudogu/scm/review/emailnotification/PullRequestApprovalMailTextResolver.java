@@ -72,8 +72,8 @@ public class PullRequestApprovalMailTextResolver extends BasicPRMailTextResolver
   }
 
   @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    return getTemplateModel(basePath, pullRequestApprovalEvent, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    return getTemplateModel(basePath, pullRequestApprovalEvent);
   }
 
   @Override

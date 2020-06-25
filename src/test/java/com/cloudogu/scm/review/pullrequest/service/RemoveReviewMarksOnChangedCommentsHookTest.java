@@ -116,7 +116,7 @@ class RemoveReviewMarksOnChangedCommentsHookTest {
     when(commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId()))
       .thenReturn(singletonList(comment));
 
-    ReplyEvent event = new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE);
+    ReplyEvent event = new ReplyEvent(repository, pullRequest, reply, null, comment, HandlerEventType.CREATE);
 
     hook.handleReplyEvents(event);
 
@@ -134,7 +134,7 @@ class RemoveReviewMarksOnChangedCommentsHookTest {
     when(commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId()))
       .thenReturn(singletonList(comment));
 
-    ReplyEvent event = new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE);
+    ReplyEvent event = new ReplyEvent(repository, pullRequest, reply, null, comment, HandlerEventType.CREATE);
 
     hook.handleReplyEvents(event);
 
@@ -145,7 +145,7 @@ class RemoveReviewMarksOnChangedCommentsHookTest {
   void shouldIgnoreDeletedReply() {
     Reply reply = Reply.createReply("321", "reply", "trillian");
 
-    ReplyEvent event = new ReplyEvent(repository, pullRequest, null, reply, HandlerEventType.DELETE);
+    ReplyEvent event = new ReplyEvent(repository, pullRequest, null, reply, comment, HandlerEventType.DELETE);
 
     hook.handleReplyEvents(event);
 

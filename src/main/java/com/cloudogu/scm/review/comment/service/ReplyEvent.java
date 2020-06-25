@@ -29,8 +29,16 @@ import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
 
 public class ReplyEvent extends BasicCommentEvent<Reply> {
+
+  private final Comment rootComment;
+
   @VisibleForTesting
-  public ReplyEvent(Repository repository, PullRequest pullRequest, Reply comment, Reply oldComment, HandlerEventType type) {
+  public ReplyEvent(Repository repository, PullRequest pullRequest, Reply comment, Reply oldComment, Comment rootComment, HandlerEventType type) {
     super(repository, pullRequest, comment, oldComment, type);
+    this.rootComment = rootComment;
+  }
+
+  public Comment getRootComment() {
+    return rootComment;
   }
 }

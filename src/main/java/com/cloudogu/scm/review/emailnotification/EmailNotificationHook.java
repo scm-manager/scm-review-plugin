@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
 import sonia.scm.mail.api.MailSendBatchException;
@@ -44,6 +45,8 @@ import javax.inject.Inject;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.util.stream.Collectors.toSet;
 
 @Slf4j
 @EagerSingleton
@@ -59,19 +62,27 @@ public class EmailNotificationHook {
 
   @Subscribe
   public void handlePullRequestEvents(PullRequestEvent event) {
-    handleEvent(event, new PullRequestEventMailTextResolver(event));
+    PullRequest pullRequest = event.getPullRequest();
+    EMailRecipientHelper eMailRecipientHelper = new EMailRecipientHelper(pullRequest);
+    Set<String> subscriberWithoutReviewers = eMailRecipientHelper.getSubscriberWithoutReviewers();
+    Set<String> reviewers = eMailRecipientHelper.getSubscribingReviewers();
+
+    handleEvent(event, new PullRequestEventMailTextResolver(event, false), pullRequest, subscriberWithoutReviewers);
+    handleEvent(event, new PullRequestEventMailTextResolver(event, true), pullRequest, reviewers);
   }
 
   @Subscribe
   public void handleCommentEvents(CommentEvent event) {
     if (!isSystemComment(event)) {
-      handleEvent(event, new CommentEventMailTextResolver(event));
+      PullRequest pullRequest = event.getPullRequest();
+      handleEvent(event, new CommentEventMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
     }
   }
 
   @Subscribe
   public void handleReplyEvents(ReplyEvent event) {
-    handleEvent(event, new CommentEventMailTextResolver(event));
+    PullRequest pullRequest = event.getPullRequest();
+    handleEvent(event, new CommentEventMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
   @Subscribe
@@ -83,7 +94,9 @@ public class EmailNotificationHook {
     } else {
       newMentions = event.getItem().getMentionUserIds();
     }
-    service.sendEmails(new MentionEventMailTextResolver(event), newMentions, Collections.emptySet());
+    MailTextResolver mailTextResolver = new MentionEventMailTextResolver(event);
+    service.sendEmail(newMentions, mailTextResolver);
+    service.sendEmail(Collections.emptySet(), mailTextResolver);
   }
 
   private boolean isSystemComment(CommentEvent event) {
@@ -96,30 +109,41 @@ public class EmailNotificationHook {
 
   @Subscribe
   public void handleMergedPullRequest(PullRequestMergedEvent event) {
-    handleEvent(event, new PullRequestMergedMailTextResolver(event));
+    PullRequest pullRequest = event.getPullRequest();
+    handleEvent(event, new PullRequestMergedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
   @Subscribe
   public void handleRejectedPullRequest(PullRequestRejectedEvent event) {
-    handleEvent(event, new PullRequestRejectedMailTextResolver(event));
+    PullRequest pullRequest = event.getPullRequest();
+    handleEvent(event, new PullRequestRejectedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
   @Subscribe
   public void handlePullRequestApproval(PullRequestApprovalEvent event) {
-    handleEvent(event, new PullRequestApprovalMailTextResolver(event));
+    PullRequest pullRequest = event.getPullRequest();
+    handleEvent(event, new PullRequestApprovalMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
-  private void handleEvent(BasicPullRequestEvent event, MailTextResolver mailTextResolver) {
-    PullRequest pullRequest = event.getPullRequest();
+  private void handleEvent(BasicPullRequestEvent event, MailTextResolver mailTextResolver, PullRequest pullRequest, Set<String> recipients) {
     Repository repository = event.getRepository();
     if (pullRequest == null || repository == null) {
-      log.error("Repository or Pull Request not found in the event {}", event);
+      log.warn("Repository or Pull Request not found in the event {}", event);
       return;
     }
     try {
-      service.sendEmails(mailTextResolver, pullRequest.getSubscriber(), pullRequest.getReviewer().keySet());
+      service.sendEmail(recipients, mailTextResolver);
     } catch (Exception e) {
       log.warn("Error on sending Email", e);
     }
+  }
+
+  private Set<String> getSubscribersWithoutCurrentUser(PullRequest pullRequest) {
+    Set<String> subscriber = pullRequest.getSubscriber();
+    Object currentUser = SecurityUtils.getSubject().getPrincipal();
+    if (subscriber.contains(currentUser)) {
+      return subscriber.stream().filter(s -> !s.equals(currentUser)).collect(toSet());
+    }
+    return subscriber;
   }
 }

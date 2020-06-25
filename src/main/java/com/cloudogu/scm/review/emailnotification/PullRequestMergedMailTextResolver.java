@@ -52,8 +52,8 @@ public class PullRequestMergedMailTextResolver extends BasicPRMailTextResolver<P
   }
 
   @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    return getTemplateModel(basePath, pullRequestMergedEvent, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    return getTemplateModel(basePath, pullRequestMergedEvent);
   }
 
   @Override

@@ -54,8 +54,8 @@ public class MentionEventMailTextResolver extends BasicPRMailTextResolver<Mentio
   }
 
   @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    Map<String, Object> model = getTemplateModel(basePath, mentionEvent, false);
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    Map<String, Object> model = getTemplateModel(basePath, mentionEvent);
     model.put("comment", mentionEvent.getItem());
     return model;
   }
