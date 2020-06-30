@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import lombok.extern.slf4j.Slf4j;
+import sonia.scm.mail.api.Topic;
 
 import java.util.Locale;
 import java.util.Map;
@@ -51,8 +52,12 @@ public class PullRequestMergedMailTextResolver extends BasicPRMailTextResolver<P
   }
 
   @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    return getTemplateModel(basePath, pullRequestMergedEvent, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    return getTemplateModel(basePath, pullRequestMergedEvent);
   }
 
+  @Override
+  public Topic getTopic() {
+    return TOPIC_CLOSED;
+  }
 }

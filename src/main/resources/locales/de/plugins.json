@@ -328,6 +328,35 @@
       }
     }
   },
+  "mailTopics": {
+    "review-plugin": {
+      "label": "Pull Requests",
+      "prChanged": {
+        "label": "Neue/geänderte Pull Requests",
+        "helpText": "Mails bei neuen oder geänderten Pull Requests (Titel oder Beschreibung)."
+      },
+      "closed": {
+        "label": "Schließen von Pull Requests",
+        "helpText": "Mails, wenn ein Pull Request gemerged oder abschließend abgelehnt wird."
+      },
+      "comments": {
+        "label": "Neue/geänderte Kommentare",
+        "helpText": "Mails bei neuen oder geänderten Kommentaren anderer Benutzer an abonnierten Pull Requests."
+      },
+      "replies": {
+        "label": "Antworten auf Kommentare",
+        "helpText": "Mails bei Antworten auf Kommentare anderer Benutzer an abonnierten Pull Requests."
+      },
+      "approvals": {
+        "label": "Freigaben",
+        "helpText": "Mails, wenn abonnierte Pull Requests freigegeben wurden bzw. wenn Freigaben zurückgenommen wurden."
+      },
+      "mentions": {
+        "label": "Erwähnungen",
+        "helpText": "Mails bei Erwähnungen von Ihnen in Kommentaren."
+      }
+    }
+  },
   "permissions": {
     "repository": {
       "readPullRequest": {

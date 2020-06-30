@@ -41,10 +41,8 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
-import sonia.scm.user.User;
 
 import javax.inject.Inject;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -113,7 +111,7 @@ public class CommentService {
     getCommentStore(repository).update(pullRequestId, originalRootComment);
 
     fireMentionEventIfMentionsExist(repository, pullRequest, reply);
-    eventBus.post(new ReplyEvent(repository, pullRequest, reply, null, HandlerEventType.CREATE));
+    eventBus.post(new ReplyEvent(repository, pullRequest, reply, null, originalRootComment, HandlerEventType.CREATE));
     return reply.getId();
   }
 
@@ -224,7 +222,7 @@ public class CommentService {
         reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
         handleMentions(repository, pullRequest, reply, clone);
         getCommentStore(repository).update(pullRequestId, parent);
-        eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, HandlerEventType.MODIFY));
+        eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, parent, HandlerEventType.MODIFY));
       }
     );
   }
@@ -256,7 +254,7 @@ public class CommentService {
             PermissionCheck.checkModifyComment(repository, reply);
             parent.removeReply(reply);
             getCommentStore(repository).update(pullRequestId, parent);
-            eventBus.post(new ReplyEvent(repository, pullRequest, null, reply, HandlerEventType.DELETE));
+            eventBus.post(new ReplyEvent(repository, pullRequest, null, reply, parent, HandlerEventType.DELETE));
           }
         )
       );

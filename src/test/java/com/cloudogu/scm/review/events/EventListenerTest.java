@@ -179,7 +179,7 @@ class EventListenerTest {
 
     Reply reply = new Reply();
     reply.setId("c42");
-    return new ReplyEvent(repository, pullRequest, reply, reply, HandlerEventType.MODIFY);
+    return new ReplyEvent(repository, pullRequest, reply, reply, null, HandlerEventType.MODIFY);
   }
 
   private CommentEvent createCommentEvent() {

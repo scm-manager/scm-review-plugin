@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import lombok.extern.slf4j.Slf4j;
+import sonia.scm.mail.api.Topic;
 
 import java.util.Locale;
 import java.util.Map;
@@ -51,9 +52,12 @@ public class PullRequestRejectedMailTextResolver extends BasicPRMailTextResolver
   }
 
   @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    return getTemplateModel(basePath, pullRequestRejectedEvent, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    return getTemplateModel(basePath, pullRequestRejectedEvent);
   }
 
-
+  @Override
+  public Topic getTopic() {
+    return TOPIC_CLOSED;
+  }
 }

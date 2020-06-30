@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import lombok.extern.slf4j.Slf4j;
+import sonia.scm.mail.api.Topic;
 
 import java.util.Locale;
 import java.util.Map;
@@ -71,7 +72,12 @@ public class PullRequestApprovalMailTextResolver extends BasicPRMailTextResolver
   }
 
   @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    return getTemplateModel(basePath, pullRequestApprovalEvent, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    return getTemplateModel(basePath, pullRequestApprovalEvent);
+  }
+
+  @Override
+  public Topic getTopic() {
+    return TOPIC_APPROVALS;
   }
 }

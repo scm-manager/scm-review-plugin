@@ -66,10 +66,9 @@ public abstract class BasicPRMailTextResolver<E extends BasicPullRequestEvent> i
    *
    * @param basePath   the path url of the ui
    * @param event      the fired event
-   * @param isReviewer true if the recipient is a reviewer
    * @return basic environment used by all templates
    */
-  protected Map<String, Object> getTemplateModel(String basePath, E event, boolean isReviewer) {
+  protected Map<String, Object> getTemplateModel(String basePath, E event) {
     Map<String, Object> result = Maps.newHashMap();
     result.put("namespace", event.getRepository().getNamespace());
     result.put("name", event.getRepository().getName());
@@ -79,7 +78,6 @@ public abstract class BasicPRMailTextResolver<E extends BasicPullRequestEvent> i
     result.put("link", getPullRequestLink(basePath, event));
     result.put("repository", event.getRepository());
     result.put("pullRequest", event.getPullRequest());
-    result.put("isReviewer", isReviewer);
     return result;
   }
 

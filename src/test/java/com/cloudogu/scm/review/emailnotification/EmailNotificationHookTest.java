@@ -27,6 +27,8 @@ import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.MentionEvent;
+import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
@@ -34,7 +36,9 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import org.assertj.core.util.Sets;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -54,22 +58,28 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.google.common.collect.ImmutableSet.of;
+import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static sonia.scm.repository.RepositoryTestData.createHeartOfGold;
 
 @ExtendWith(MockitoExtension.class)
 class EmailNotificationHookTest {
 
+  String currentUser = "current-user";
+  String subscribedButNotReviewer = "subscribed-but-not-reviewer";
+  String subscribedAndReviewer = "subscribed-and-reviewer";
+  String reviewerButNotSubscribed= "reviewer-but-not-subscribed";
 
   @Mock
   EmailNotificationService service;
-
   @InjectMocks
   EmailNotificationHook emailNotificationHook;
   private PullRequest pullRequest;
@@ -83,16 +93,13 @@ class EmailNotificationHookTest {
   @BeforeEach
   void setUp() {
     pullRequest = TestData.createPullRequest();
-
-    String recipient1 = "user1";
-    String recipient2 = "user2";
-    subscriber = Sets.newHashSet(Lists.newArrayList(recipient1, recipient2));
+    subscriber = of(currentUser, subscribedButNotReviewer, subscribedAndReviewer);
     pullRequest.setSubscriber(subscriber);
-    String recipient3 = "user3";
-    String recipient4 = "user4";
-    reviewers.put(recipient3, Boolean.FALSE);
-    reviewers.put(recipient4, Boolean.TRUE);
+
+    reviewers.put(subscribedAndReviewer, Boolean.FALSE);
+    reviewers.put(reviewerButNotSubscribed, Boolean.TRUE);
     pullRequest.setReviewer(reviewers);
+
     repository = createHeartOfGold();
     oldPullRequest = TestData.createPullRequest();
     oldPullRequest.setTitle("old Title");
@@ -106,15 +113,37 @@ class EmailNotificationHookTest {
   @TestFactory
   Stream<DynamicTest> sendingCommentEmailTestFactory() {
     ArrayList<CommentEvent> events = Lists.newArrayList(
-      new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE),
+      new CommentEvent(repository, pullRequest, comment, null, HandlerEventType.CREATE),
       new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY),
-      new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.DELETE)
+      new CommentEvent(repository, pullRequest, null, oldComment, HandlerEventType.DELETE)
     );
     return events.stream().map(event ->
       DynamicTest.dynamicTest(event.getEventType().toString(), () -> {
         emailNotificationHook.handleCommentEvents(event);
 
-        verify(service).sendEmails(isA(CommentEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
+        verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(CommentEventMailTextResolver.class));
+        reset(service);
+      })
+    );
+  }
+
+  @TestFactory
+  Stream<DynamicTest> sendingReplyEmailTestFactory() {
+    Reply reply = Reply.createReply("1", "42", currentUser);
+    Reply oldReply = Reply.createReply("1", "have to think", currentUser);
+    comment.setAuthor("first author");
+    comment.setReplies(asList(reply, Reply.createReply("0", "dumb question", "former participant")));
+    ArrayList<ReplyEvent> events = Lists.newArrayList(
+      new ReplyEvent(repository, pullRequest, reply, null, comment, HandlerEventType.CREATE),
+      new ReplyEvent(repository, pullRequest, reply, oldReply, comment, HandlerEventType.MODIFY),
+      new ReplyEvent(repository, pullRequest, null, oldReply, comment, HandlerEventType.DELETE)
+    );
+    return events.stream().map(event ->
+      DynamicTest.dynamicTest(event.getEventType().toString(), () -> {
+        emailNotificationHook.handleReplyEvents(event);
+
+        verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(CommentEventMailTextResolver.class));
+        verify(service).sendEmail(eq(of("first author", "former participant")), isA(ReplyEventMailTextResolver.class));
         reset(service);
       })
     );
@@ -126,7 +155,8 @@ class EmailNotificationHookTest {
     CommentEvent commentEvent = new CommentEvent(repository, pullRequest, systemComment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleCommentEvents(commentEvent);
 
-    verify(service, never()).sendEmails(any(), any(), any());
+    verify(service, never()).sendEmail(any(), any());
+    verify(service, never()).sendEmail(any(), any());
     reset(service);
   }
 
@@ -140,7 +170,8 @@ class EmailNotificationHookTest {
       DynamicTest.dynamicTest(event.toString(), () -> {
         emailNotificationHook.handlePullRequestEvents(event);
 
-        verify(service).sendEmails(isA(PullRequestEventMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
+        verify(service).sendEmail(eq(of(subscribedButNotReviewer)), isA(PullRequestEventMailTextResolver.class));
+        verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
         reset(service);
       })
     );
@@ -151,7 +182,7 @@ class EmailNotificationHookTest {
     PullRequestMergedEvent event = new PullRequestMergedEvent(repository, pullRequest);
     emailNotificationHook.handleMergedPullRequest(event);
 
-    verify(service).sendEmails(isA(PullRequestMergedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
+    verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestMergedMailTextResolver.class));
   }
 
   @Test
@@ -159,7 +190,7 @@ class EmailNotificationHookTest {
     PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
     emailNotificationHook.handleRejectedPullRequest(event);
 
-    verify(service).sendEmails(isA(PullRequestRejectedMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
+    verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestRejectedMailTextResolver.class));
   }
 
   @Test
@@ -167,7 +198,7 @@ class EmailNotificationHookTest {
     PullRequestApprovalEvent event = new PullRequestApprovalEvent(repository, pullRequest, PullRequestApprovalEvent.ApprovalCause.APPROVED);
     emailNotificationHook.handlePullRequestApproval(event);
 
-    verify(service).sendEmails(isA(PullRequestApprovalMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
+    verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestApprovalMailTextResolver.class));
   }
 
   @Test
@@ -175,47 +206,60 @@ class EmailNotificationHookTest {
     PullRequestApprovalEvent event = new PullRequestApprovalEvent(repository, pullRequest, PullRequestApprovalEvent.ApprovalCause.APPROVAL_REMOVED);
     emailNotificationHook.handlePullRequestApproval(event);
 
-    verify(service).sendEmails(isA(PullRequestApprovalMailTextResolver.class), eq(pullRequest.getSubscriber()), eq(pullRequest.getReviewer().keySet()));
+    verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestApprovalMailTextResolver.class));
   }
 
   @Test
   void shouldSendEmailAfterUserGotMentionedInComment() throws MailSendBatchException {
     comment.setComment("@[_anonymous] But why? @[scmadmin]");
-    comment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
+    comment.setMentionUserIds(of("scmadmin", "_anonymous"));
     oldComment.setMentionUserIds(Collections.emptySet());
 
-    ImmutableSet<String> newMentions = ImmutableSet.of("scmadmin", "_anonymous");
+    ImmutableSet<String> newMentions = of("scmadmin", "_anonymous");
 
     MentionEvent event = new MentionEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleMentionEvents(event);
 
-    verify(service).sendEmails(isA(MentionEventMailTextResolver.class), eq(newMentions), eq(Collections.emptySet()));
+    verify(service).sendEmail(eq(newMentions), isA(MentionEventMailTextResolver.class));
   }
 
   @Test
   void shouldNotSendEmailIfUserWasAlreadyMentionedOnEditingComment() throws MailSendBatchException {
-    oldComment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
+    oldComment.setMentionUserIds(of("scmadmin", "_anonymous"));
     comment.setComment("@[_anonymous] But why? @[scmadmin]");
-    comment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
+    comment.setMentionUserIds(of("scmadmin", "_anonymous"));
     oldComment.setMentionUserIds(Collections.emptySet());
 
     MentionEvent event = new MentionEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleMentionEvents(event);
 
-    verify(service, never()).sendEmails(isA(MentionEventMailTextResolver.class), eq(Collections.emptySet()), eq(Collections.emptySet()));
+    verify(service).sendEmail(eq(Collections.emptySet()), isA(MentionEventMailTextResolver.class));
   }
 
   @Test
   void shouldSendEmailOnlyToNewMentionsOnEditingComment() throws MailSendBatchException {
-    oldComment.setMentionUserIds(ImmutableSet.of("scmadmin"));
+    oldComment.setMentionUserIds(of("scmadmin"));
     comment.setComment("@[_anonymous] But why? @[scmadmin]");
-    comment.setMentionUserIds(ImmutableSet.of("scmadmin", "_anonymous"));
+    comment.setMentionUserIds(of("scmadmin", "_anonymous"));
 
-    ImmutableSet<String> newMentions = ImmutableSet.of("_anonymous");
+    ImmutableSet<String> newMentions = of("_anonymous");
 
     MentionEvent event = new MentionEvent(repository, pullRequest, comment, oldComment, HandlerEventType.CREATE);
     emailNotificationHook.handleMentionEvents(event);
 
-    verify(service).sendEmails(isA(MentionEventMailTextResolver.class), eq(newMentions), eq(Collections.emptySet()));
+    verify(service).sendEmail(eq(newMentions), isA(MentionEventMailTextResolver.class));
+    verify(service).sendEmail(eq(Collections.emptySet()), isA(MentionEventMailTextResolver.class));
+  }
+
+  @BeforeEach
+  void mockCurrentUser() {
+    Subject subject = mock(Subject.class);
+    lenient().when(subject.getPrincipal()).thenReturn(currentUser);
+    ThreadContext.bind(subject);
+  }
+
+  @AfterEach
+  void cleanupThreadContext() {
+    ThreadContext.unbindSubject();
   }
 }

@@ -21,29 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.emailnotification;
 
-import sonia.scm.mail.api.Category;
-import sonia.scm.mail.api.Topic;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import org.apache.shiro.SecurityUtils;
 
-import java.util.Locale;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public interface MailTextResolver {
+import static java.util.Collections.unmodifiableSet;
 
-  Category CATEGORY = new Category("review-plugin");
-  Topic TOPIC_PR_CHANGED = new Topic(CATEGORY, "prChanged");
-  Topic TOPIC_APPROVALS = new Topic(CATEGORY, "approvals");
-  Topic TOPIC_MENTIONS = new Topic(CATEGORY, "mentions");
-  Topic TOPIC_COMMENTS = new Topic(CATEGORY, "comments");
-  Topic TOPIC_REPLIES = new Topic(CATEGORY, "replies");
-  Topic TOPIC_CLOSED = new Topic(CATEGORY, "closed");
+class EMailRecipientHelper {
 
-  String getMailSubject(Locale locale);
+  private final Set<String> subscribingReviewers;
+  private final Set<String> subscriberWithoutReviewers;
 
-  String getContentTemplatePath();
+  EMailRecipientHelper(PullRequest pullRequest) {
+    Set<String> subscriber = pullRequest.getSubscriber();
+    Set<String> reviewer = pullRequest.getReviewer().keySet();
 
-  Map<String, Object> getContentTemplateModel(String basePath);
+    Object currentUser = SecurityUtils.getSubject().getPrincipal();
 
-  Topic getTopic();
+    subscriberWithoutReviewers = unmodifiableSet(subscriber.stream()
+      .filter(recipient -> !reviewer.contains(recipient))
+      .filter(recipient -> !recipient.equals(currentUser))
+      .collect(Collectors.toSet()));
+
+    subscribingReviewers = unmodifiableSet(subscriber.stream()
+      .filter(reviewer::contains)
+      .filter(recipient -> !recipient.equals(currentUser))
+      .collect(Collectors.toSet()));
+  }
+
+  Set<String> getSubscribingReviewers() {
+    return subscribingReviewers;
+  }
+
+  Set<String> getSubscriberWithoutReviewers() {
+    return subscriberWithoutReviewers;
+  }
 }

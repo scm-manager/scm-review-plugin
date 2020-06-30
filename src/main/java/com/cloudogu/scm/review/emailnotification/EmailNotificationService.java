@@ -23,7 +23,6 @@
  */
 package com.cloudogu.scm.review.emailnotification;
 
-import org.apache.shiro.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.config.ScmConfiguration;
@@ -32,8 +31,8 @@ import sonia.scm.mail.api.MailService;
 import sonia.scm.mail.api.MailTemplateType;
 
 import javax.inject.Inject;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.Locale.ENGLISH;
 import static java.util.Locale.GERMAN;
@@ -51,44 +50,25 @@ public class EmailNotificationService {
     this.configuration = configuration;
   }
 
-  public void sendEmails(MailTextResolver mailTextResolver, Set<String> subscriber, Set<String> reviewer) throws MailSendBatchException {
+  void sendEmail(Set<String> recipients, MailTextResolver mailTextResolver) throws MailSendBatchException {
+    if (recipients.isEmpty()) {
+      return;
+    }
     if (!mailService.isConfigured()) {
-      LOG.warn("cannot send Email because the mail server is not configured");
+      LOG.debug("cannot send Email because the mail server is not configured");
       return;
     }
 
-    Object principal = SecurityUtils.getSubject().getPrincipal();
+    Map<String, Object> contentTemplateModel = mailTextResolver.getContentTemplateModel(configuration.getBaseUrl());
 
-    Set<String> subscriberWithoutReviewers = subscriber.stream()
-      .filter(recipient -> !reviewer.contains(recipient))
-      .filter(recipient -> !recipient.equals(principal))
-      .collect(Collectors.toSet());
-
-    Set<String> subscribingReviewers = subscriber.stream()
-      .filter(reviewer::contains)
-      .filter(recipient -> !recipient.equals(principal))
-      .collect(Collectors.toSet());
-
-
-    if (!subscriberWithoutReviewers.isEmpty()) {
-      sendEmails(mailTextResolver, subscriberWithoutReviewers, false);
-    }
-
-    if (!subscribingReviewers.isEmpty()){
-      sendEmails(mailTextResolver, subscribingReviewers, true);
-    }
-  }
-
-  private void sendEmails(MailTextResolver mailTextResolver, Set<String> recipients, boolean reviewer) throws MailSendBatchException {
-    MailService.EnvelopeBuilder envelopeBuilder = mailService.emailTemplateBuilder()
-      .fromCurrentUser();
+    MailService.EnvelopeBuilder envelopeBuilder = mailService.emailTemplateBuilder().fromCurrentUser();
     recipients.forEach(envelopeBuilder::toUser);
     envelopeBuilder
+      .onTopic(mailTextResolver.getTopic())
       .withSubject(mailTextResolver.getMailSubject(ENGLISH))
       .withSubject(GERMAN, mailTextResolver.getMailSubject(GERMAN))
       .withTemplate(mailTextResolver.getContentTemplatePath(), MailTemplateType.MARKDOWN_HTML)
-      .andModel(mailTextResolver.getContentTemplateModel(configuration.getBaseUrl(), reviewer))
+      .andModel(contentTemplateModel)
       .send();
   }
-
 }

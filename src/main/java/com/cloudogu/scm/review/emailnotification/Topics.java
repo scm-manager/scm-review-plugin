@@ -21,29 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.emailnotification;
 
-import sonia.scm.mail.api.Category;
 import sonia.scm.mail.api.Topic;
+import sonia.scm.mail.api.TopicProvider;
+import sonia.scm.plugin.Extension;
 
-import java.util.Locale;
-import java.util.Map;
+import java.util.Collection;
 
-public interface MailTextResolver {
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.*;
+import static java.util.Arrays.asList;
 
-  Category CATEGORY = new Category("review-plugin");
-  Topic TOPIC_PR_CHANGED = new Topic(CATEGORY, "prChanged");
-  Topic TOPIC_APPROVALS = new Topic(CATEGORY, "approvals");
-  Topic TOPIC_MENTIONS = new Topic(CATEGORY, "mentions");
-  Topic TOPIC_COMMENTS = new Topic(CATEGORY, "comments");
-  Topic TOPIC_REPLIES = new Topic(CATEGORY, "replies");
-  Topic TOPIC_CLOSED = new Topic(CATEGORY, "closed");
-
-  String getMailSubject(Locale locale);
-
-  String getContentTemplatePath();
-
-  Map<String, Object> getContentTemplateModel(String basePath);
-
-  Topic getTopic();
+@Extension
+public class Topics implements TopicProvider {
+  @Override
+  public Collection<Topic> topics() {
+    return asList(
+      TOPIC_PR_CHANGED,
+      TOPIC_APPROVALS,
+      TOPIC_CLOSED,
+      TOPIC_MENTIONS,
+      TOPIC_COMMENTS,
+      TOPIC_REPLIES
+    );
+  }
 }

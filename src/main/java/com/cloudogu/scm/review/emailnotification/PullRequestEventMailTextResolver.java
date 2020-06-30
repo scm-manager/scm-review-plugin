@@ -26,6 +26,7 @@ package com.cloudogu.scm.review.emailnotification;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.HandlerEventType;
+import sonia.scm.mail.api.Topic;
 
 import java.util.Locale;
 import java.util.Map;
@@ -34,10 +35,12 @@ import java.util.Map;
 public class PullRequestEventMailTextResolver extends BasicPRMailTextResolver<PullRequestEvent> implements MailTextResolver {
 
   private final PullRequestEvent pullRequestEvent;
+  private final boolean reviewer;
   private PullRequestEventType pullRequestEventType;
 
-  public PullRequestEventMailTextResolver(PullRequestEvent pullRequestEvent) {
+  public PullRequestEventMailTextResolver(PullRequestEvent pullRequestEvent, boolean reviewer) {
     this.pullRequestEvent = pullRequestEvent;
+    this.reviewer = reviewer;
     try {
       pullRequestEventType = PullRequestEventType.valueOf(pullRequestEvent.getEventType().name());
     } catch (Exception e) {
@@ -57,12 +60,18 @@ public class PullRequestEventMailTextResolver extends BasicPRMailTextResolver<Pu
   }
 
   @Override
-  public Map<String, Object> getContentTemplateModel(String basePath, boolean isReviewer) {
-    Map<String, Object> model = super.getTemplateModel(basePath, pullRequestEvent, isReviewer);
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    Map<String, Object> model = super.getTemplateModel(basePath, pullRequestEvent);
     if (pullRequestEventType == PullRequestEventType.MODIFY) {
       model.put("oldPullRequest", pullRequestEvent.getOldItem());
+      model.put("isReviewer", reviewer);
     }
     return model;
+  }
+
+  @Override
+  public Topic getTopic() {
+    return TOPIC_PR_CHANGED;
   }
 
   private enum PullRequestEventType {
@@ -72,9 +81,9 @@ public class PullRequestEventMailTextResolver extends BasicPRMailTextResolver<Pu
 
     protected static final String PATH_BASE = "com/cloudogu/scm/email/template/";
 
-    private String template;
-    private String displayEventNameKey;
-    private HandlerEventType type;
+    private final String template;
+    private final String displayEventNameKey;
+    private final HandlerEventType type;
 
 
     PullRequestEventType(String template, String displayEventNameKey, HandlerEventType type) {
