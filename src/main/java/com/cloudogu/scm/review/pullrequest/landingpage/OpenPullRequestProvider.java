@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.review.pullrequest.landingpage;
 
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import sonia.scm.repository.Repository;
@@ -52,13 +53,17 @@ class OpenPullRequestProvider {
   }
 
   void findOpenPullRequests(RepositoryAndPullRequestConsumer forEachPullRequest) {
-    repositoryManager.getAll().stream().filter(this::supportsPullRequests).forEach(
-      repository ->
-        forEachPullRequest.accept(
-          repository,
-          allPullRequestsFor(repository).stream().filter(pr -> pr.getStatus() == OPEN)
-        )
-    );
+    repositoryManager.getAll()
+      .stream()
+      .filter(PermissionCheck::mayRead)
+      .filter(this::supportsPullRequests)
+      .forEach(
+        repository ->
+          forEachPullRequest.accept(
+            repository,
+            allPullRequestsFor(repository).stream().filter(pr -> pr.getStatus() == OPEN)
+          )
+      );
   }
 
   private List<PullRequest> allPullRequestsFor(Repository repository) {

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use mail topics so users can unsubscribe from mails for specific events ([#85](https://github.com/scm-manager/scm-review-plugin/pull/85))
 - Send mails for replies ([#85](https://github.com/scm-manager/scm-review-plugin/pull/85))
 
+### Fixed
+- Add missing permission check on accessing open pull requests ([#86](https://github.com/scm-manager/scm-review-plugin/pull/86))
+
 ## [2.1.0] - 2020-06-19
 ### Added
 - Documentation in English and German ([#84](https://github.com/scm-manager/scm-review-plugin/pull/84))
