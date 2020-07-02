@@ -28,6 +28,9 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import junit.framework.AssertionFailedError;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,11 +67,24 @@ class OpenPullRequestProviderTest {
   PullRequestService pullRequestService;
   @Mock
   RepositoryManager repositoryManager;
+  @Mock
+  Subject subject;
 
   @InjectMocks
   OpenPullRequestProvider provider;
 
   boolean closureCalled = false;
+
+  @BeforeEach
+  void bindSubject() {
+    ThreadContext.bind(subject);
+    when(subject.isPermitted("repository:readPullRequest:1")).thenReturn(true);
+  }
+
+  @AfterEach
+  void tearDownSubject() {
+    ThreadContext.unbindSubject();
+  }
 
   @BeforeEach
   void mockPrSupport() {
