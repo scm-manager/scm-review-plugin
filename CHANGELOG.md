@@ -12,12 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Add missing permission check on accessing open pull requests ([#86](https://github.com/scm-manager/scm-review-plugin/pull/86))
 
-## [2.1.0] - 2020-06-19
+## 2.1.0 - 2020-06-19
 ### Added
 - Documentation in English and German ([#84](https://github.com/scm-manager/scm-review-plugin/pull/84))
 - Disable the possibility to add line comments to expanded diff lines ([#83](https://github.com/scm-manager/scm-review-plugin/pull/83))
 
-## [2.0.0] - 2020-06-04
+## 2.0.0 - 2020-06-04
 ### Added
 - New extension point for pull request details view
 - Add commit message trailers for reviewed-by and co-authored-by ([#80](https://github.com/scm-manager/scm-review-plugin/pull/80))
@@ -29,21 +29,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Exception on push in repository without merge support([#78](https://github.com/scm-manager/scm-review-plugin/pull/78))
 
-## [2.0.0-rc9-3] - 2020-05-08
+## 2.0.0-rc9-3 - 2020-05-08
 ### Added
 - Workflow Engine to enforce rules before merging pull requests ([#75](https://github.com/scm-manager/scm-review-plugin/pull/75))
 - Emergency Merge to override configured workflow rules ([#70](https://github.com/scm-manager/scm-review-plugin/pull/70)
 - Configuration to prevent authors from merging their own pull requests
 
-## [2.0.0-rc9-2] - 2020-04-14
+## 2.0.0-rc9-2 - 2020-04-14
 ### Added
 - Data for landing page, displaying my pull requests, tasks, reviews and events ([#61](https://github.com/scm-manager/scm-review-plugin/pull/61))
 
-## [2.0.0-rc9-1] - 2020-03-27
+## 2.0.0-rc9-1 - 2020-03-27
 ### Added
 - Toast messages are enabled, again
 
-## [2.0.0-rc9] - 2020-03-26
+## 2.0.0-rc9 - 2020-03-26
 ### Added
 - Add a link to the pull requests inside the repository card overview ([#57](https://github.com/scm-manager/scm-review-plugin/pull/57))
 
@@ -54,29 +54,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Threads for toast navigation could be in blocking state up to 1 hour
 
-## [2.0.0-rc8] - 2020-03-16
+## 2.0.0-rc8 - 2020-03-16
 ### Fixed
 - Removed toast messages, as these are not closed correctly on the server
 
-## [2.0.0-rc7] - 2020-03-16
+## 2.0.0-rc7 - 2020-03-16
 ### Changed
 - Changeover to MIT license ([#58](https://github.com/scm-manager/scm-review-plugin/pull/58))
 
 ### Fixed
 - rc4 with removed toast messages, as these are not closed correctly on the server
 
-## [2.0.0-rc6]
+## 2.0.0-rc6
 ### Added
 - Add swagger rest annotations to generate openAPI specs for the scm-openapi-plugin. ([#54](https://github.com/scm-manager/scm-review-plugin/pull/54))
 - Make navigation item collapsable ([#55](https://github.com/scm-manager/scm-review-plugin/pull/55))
 
-## [2.0.0-rc5] - 2020-02-18
+## 2.0.0-rc5 - 2020-02-18
 Re-release of 2.0.0-rc3
 
-## [2.0.0-rc4] - 2020-02-18
+## 2.0.0-rc4 - 2020-02-18
 Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and [#53](https://github.com/scm-manager/scm-review-plugin/pull/53) to 2.0.0-rc2
 
-## [2.0.0-rc3] - 2020-02-14
+## 2.0.0-rc3 - 2020-02-14
 ### Added
 - Mark files as reviewed in diff view ([#48](https://github.com/scm-manager/scm-review-plugin/pull/48))
 - Add @-Mentionings for User in Comments ([#50](https://github.com/scm-manager/scm-review-plugin/pull/50))
@@ -91,7 +91,7 @@ Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and
 ### Security
 - The creator of a pull request can no longer fake approvals ([#48](https://github.com/scm-manager/scm-review-plugin/pull/48))
 
-## [2.0.0-rc2] - 2020-01-29
+## 2.0.0-rc2 - 2020-01-29
 ### Added
 - Filter and sort function of the pull requests in the overview ([#19](https://github.com/scm-manager/scm-review-plugin/pull/19), [#21](https://github.com/scm-manager/scm-review-plugin/pull/21))
 - Show toast on changes in the detailed view ([#26](https://github.com/scm-manager/scm-review-plugin/pull/26))
@@ -118,7 +118,7 @@ Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and
 - Radio button disappeared when opening several comment forms ([#40](https://github.com/scm-manager/scm-review-plugin/pull/40))
 - Fix clipped autocomplete when adding reviewer on pull request editing ([#46](https://github.com/scm-manager/scm-review-plugin/pull/46))
 
-## [2.0.0-rc1] - 2019-12-02
+## 2.0.0-rc1 - 2019-12-02
 ### Added
 - List overview for pull requests
 - Detailed view of PRs including new comments, changesets and diff tab
@@ -139,16 +139,3 @@ Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and
 - Option to remove the source branch after merge ([#8](https://github.com/scm-manager/scm-review-plugin/pull/8))
 - As a reviewer, I can explicitly give my consent to merge via "Approve"-button
 
-[2.0.0]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc9-3]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc9-2]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc9-1]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc9]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc8]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc7]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc6]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc5]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc4]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc3]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc2]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
-[2.0.0-rc1]: https://github.com/scm-manager/scm-review-plugin/releases/tag/2.0.0-rc1
