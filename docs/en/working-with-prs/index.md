@@ -12,6 +12,11 @@ Reviewers can subscribe ("+") or unsubscribe ("-") from a pull request in the up
 ### Approve pull request
 After a successful review, the reviewer can approve the pull request for a merge. At this point, the approval is merely an information for the author that the review is done. Once a reviewer approved a review, there is a green checkmark behind his name in the list of reviewers.
 
+### Expand diff
+In the pull request all changes are shown as diff per file. This shortened view may be expanded gradually or completely.
+
+![Pull Request - Diff expand](assets/diffExpand.png)
+
 ### Create comments
 There are three different kinds of comments for pull requests.
 
@@ -20,6 +25,8 @@ There are three different kinds of comments for pull requests.
 * **Line comment:** Can be created by clicking on a line in the diff view.
 
 All comments are shown in the "Comments" tab. The file and line comments are also shown in the "Diff" tab.
+It is possible to mention SCM-Manager user in comments. Simply type "@" and right afterwards the name, username or the e-mail-address. 
+After the third character an autocomplete form will appear suggesting the best matches.
 
 ![Pull Request - Create comment](assets/createComment.png)
 
@@ -51,6 +58,12 @@ Open tasks can be marked as done using the "Mark as done" icon. At this point ta
 
 ![Pull Request - Create task](assets/createTask.png)
 
+### Concurrent changes
+As several users can review or edit a pull request concurrently, it is quite likely you could miss the latest changes. 
+So you will be informed on each change of the pull request by a toast message appearing on your right corner window.
+
+![Pull Request - Toastmessage](assets/toastmessage.png)
+
 ### Reject a pull request
 If a reviewer thinks that a pull request should not be merged, he can reject it. That should happen in coordination with the author. It is not possible to reopen a rejected pull request. Instead a new pull request has to be opened.
 
@@ -64,5 +77,7 @@ If a pull request can be merged, the changes can be applied in different ways af
 If desired, it is possible to replace the default message with an individual commit message. If the box "Delete branch" is checked, the source branch is deleted from the repository after the successful merge. 
 
 In case of a merge conflict, the pull request cannot be merged automatically. The conflicts have to be resolved manually before the merge.
+
+Approvers of this pull request will be set as "Reviewed-by" in the merge commit.
 
 ![Pull Request - Merge-Modal](assets/mergeModal.png)
