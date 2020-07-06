@@ -63,6 +63,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Branch;
+import sonia.scm.api.v2.resources.BranchLinkProvider;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
@@ -95,6 +96,7 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -117,6 +119,7 @@ public class PullRequestRootResourceTest {
   private final PullRequestStoreFactory storeFactory = mock(PullRequestStoreFactory.class);
   private final PullRequestStore store = mock(PullRequestStore.class);
   private final Repository repository = mock(Repository.class);
+  private final BranchLinkProvider branchLinkProvider = mock(BranchLinkProvider.class);
   private final ArgumentCaptor<PullRequest> pullRequestStoreCaptor = ArgumentCaptor.forClass(PullRequest.class);
 
   private RestDispatcher dispatcher;
@@ -163,6 +166,7 @@ public class PullRequestRootResourceTest {
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
+    when(branchLinkProvider.get(any(NamespaceAndName.class), anyString())).thenReturn("");
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(pullRequestRootResource);
     lenient().when(repositoryServiceFactory.create(any(Repository.class))).thenReturn(repositoryService);
