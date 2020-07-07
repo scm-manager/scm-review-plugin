@@ -123,12 +123,30 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
     setRuleConfigurationValid(true);
   };
 
+  const bySortKey = (a: Rule, b: Rule): number => {
+    const ruleASortKey = getRuleSortKey(a);
+    const ruleBSortKey = getRuleSortKey(b);
+    if (ruleASortKey === ruleBSortKey) {
+      const ruleATranslatedName = t(`workflow.rule.${a.name}.name`);
+      const ruleBTranslatedName = t(`workflow.rule.${b.name}.name`);
+      return ruleATranslatedName.localeCompare(ruleBTranslatedName);
+    } else {
+      return ruleASortKey.localeCompare(ruleBSortKey);
+    }
+  }
+
+  const getRuleSortKey = (rule: Rule): string => {
+    const sortKey = t(`workflow.rule.${rule.name}.sortKey`);
+    return sortKey || t(`workflow.rule.${rule.name}.name`);
+  }
+
   const options = [
     { label: "", value: "" },
     ...availableRules
       .filter(
         availableRule => availableRule.applicableMultipleTimes || !config.rules.find(r => r.rule === availableRule.name)
       )
+      .sort(bySortKey)
       .map(rule => ({ label: t(`workflow.rule.${rule.name}.name`), value: rule.name }))
   ];
 

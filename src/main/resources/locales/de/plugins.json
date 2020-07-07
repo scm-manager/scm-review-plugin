@@ -463,6 +463,7 @@
     "rule": {
       "AllReviewerApprovedRule": {
         "name": "Durch alle Reviewer freigegeben",
+        "sortKey": "Reviewer-Approval",
         "description": "Alle eingetragenen Reviewer geben den Pull Request frei.",
         "failed": "Nicht alle eingetragenen Reviewer geben den Pull Request frei.",
         "obstacle": "Nicht alle eingetragenen Reviewer geben den Pull Request frei.",
@@ -470,6 +471,7 @@
       },
       "AllTasksDoneRule": {
         "name": "Alle Aufgaben erledigt",
+        "sortKey": "Tasks",
         "description": "Alle Aufgaben im Pull Request sind erledigt.",
         "failed": "Es gibt noch {{count}} offene Aufgaben im Pull Request.",
         "obstacle": "Es gibt noch offene Aufgaben im Pull Request.",
@@ -477,6 +479,7 @@
       },
       "ApprovedByXReviewersRule": {
         "name": "Anzahl an Freigaben",
+        "sortKey": "Reviewer-Approval",
         "description": "Der Pull Request ist von mindestens {{numberOfReviewers}} Reviewern freigegeben.",
         "failed": "Es fehlen {{missing}} weitere Freigaben ({{actual}} von {{expected}} Reviewern haben den Pull Request freigegeben).",
         "obstacle": "Es sind nicht ausreichend viele Freigaben vorhanden.",

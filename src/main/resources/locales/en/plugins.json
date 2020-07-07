@@ -461,6 +461,7 @@
     "rule": {
       "AllReviewerApprovedRule": {
         "name": "All reviewers approved",
+        "sortKey": "Reviewer-Approval",
         "description": "All selected reviewers have approved the pull request.",
         "failed": "Not all reviewers have approved this pull request.",
         "obstacle": "Not all reviewers have approved this pull request.",
@@ -468,6 +469,7 @@
       },
       "AllTasksDoneRule": {
         "name": "All tasks done",
+        "sortKey": "Tasks",
         "description": "All tasks of the pull requests are done.",
         "failed": "{{count}} tasks for this pull request are open.",
         "obstacle": "There are open tasks for this pull request.",
@@ -475,6 +477,7 @@
       },
       "ApprovedByXReviewersRule": {
         "name": "Number of approvals",
+        "sortKey": "Reviewer-Approval",
         "description": "The pull request is approved by at least {{numberOfReviewers}} reviewers.",
         "failed": "{{missing}} approvals are missing ({{actual}}/{{expected}} reviewers approved this pull request).",
         "obstacle": "There are not enough approvals for this pull request.",
