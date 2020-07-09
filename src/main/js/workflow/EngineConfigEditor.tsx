@@ -123,30 +123,13 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
     setRuleConfigurationValid(true);
   };
 
-  const bySortKey = (a: Rule, b: Rule): number => {
-    const ruleASortKey = getRuleSortKey(a);
-    const ruleBSortKey = getRuleSortKey(b);
-    if (ruleASortKey === ruleBSortKey) {
-      const ruleATranslatedName = t(`workflow.rule.${a.name}.name`);
-      const ruleBTranslatedName = t(`workflow.rule.${b.name}.name`);
-      return ruleATranslatedName.localeCompare(ruleBTranslatedName);
-    } else {
-      return ruleASortKey.localeCompare(ruleBSortKey);
-    }
-  }
-
-  const getRuleSortKey = (rule: Rule): string => {
-    const sortKey = t(`workflow.rule.${rule.name}.sortKey`);
-    return sortKey || t(`workflow.rule.${rule.name}.name`);
-  }
-
   const options = [
     { label: "", value: "" },
     ...availableRules
       .filter(
         availableRule => availableRule.applicableMultipleTimes || !config.rules.find(r => r.rule === availableRule.name)
       )
-      .sort(bySortKey)
+      .sort((a, b) => bySortKey(a.name, b.name, t.bind(t)))
       .map(rule => ({ label: t(`workflow.rule.${rule.name}.name`), value: rule.name }))
   ];
 
@@ -240,5 +223,33 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
     </>
   );
 };
+
+export const bySortKey = (ruleNameA: string, ruleNameB: string, translateFn: (key: string) => string | null): number => {
+  const [ruleASortKey, ruleATranslatedName, aSortValue] = getRuleSortKey(ruleNameA, translateFn);
+  const [ruleBSortKey, ruleBTranslatedName, bSortValue] = getRuleSortKey(ruleNameB, translateFn);
+  if (!aSortValue && !bSortValue) {
+    return 0;
+  } else if (!aSortValue) {
+    return 1;
+  } else if (!bSortValue) {
+    return -1;
+  } else if (ruleASortKey === ruleBSortKey && ruleATranslatedName !== null && ruleBTranslatedName !== null) {
+    return ruleATranslatedName.localeCompare(ruleBTranslatedName);
+  } else {
+    return aSortValue.localeCompare(bSortValue);
+  }
+}
+
+const getRuleSortKey = (name: string, translateFn: (key: string) => string | null): [string | null, string | null, string | null, boolean] => {
+  const sortKey = translateFn(`workflow.rule.${name}.sortKey`);
+  const translatedName = translateFn(`workflow.rule.${name}.name`);
+  const sortValue = sortKey || translatedName;
+  return [
+    sortKey,
+    translatedName,
+    sortValue,
+    !!sortValue
+  ];
+}
 
 export default EngineConfigEditor;
