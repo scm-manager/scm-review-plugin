@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ### Added
+- Sort mechanism for rules in "Add Rule" dropdown [#88](https://github.com/scm-manager/scm-review-plugin/pull/88)
 - Append source and target branch links to pull request [#87](https://github.com/scm-manager/scm-review-plugin/pull/87)
 
 ## 2.2.0 - 2020-07-03
