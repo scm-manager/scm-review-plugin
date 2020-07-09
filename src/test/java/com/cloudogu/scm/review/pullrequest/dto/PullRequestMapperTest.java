@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.common.collect.ImmutableSet;
+import de.otto.edison.hal.Link;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
@@ -39,6 +40,8 @@ import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import sonia.scm.api.v2.resources.BranchLinkProvider;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.MergeStrategy;
@@ -46,7 +49,11 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.UserDisplayManager;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,6 +64,8 @@ class PullRequestMapperTest {
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private Subject subject;
 
+  @Mock
+  private BranchLinkProvider branchLinkProvider;
   @Mock
   private UserDisplayManager userDisplayManager;
   @Mock
@@ -86,6 +95,7 @@ class PullRequestMapperTest {
     when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("dent");
     when(serviceFactory.create(REPOSITORY)).thenReturn(service);
     when(service.isSupported(Command.MERGE)).thenReturn(true);
+    when(branchLinkProvider.get(any(NamespaceAndName.class), anyString())).thenReturn("link");
     when(service.getMergeCommand().getSupportedMergeStrategies()).thenReturn(ImmutableSet.of(MergeStrategy.MERGE_COMMIT));
     when(subject.isPermitted("repository:commentPullRequest:id-1")).thenReturn(true);
     when(subject.isPermitted("repository:push:id-1")).thenReturn(true);
@@ -104,6 +114,7 @@ class PullRequestMapperTest {
     when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("dent");
     when(serviceFactory.create(REPOSITORY)).thenReturn(service);
     when(service.isSupported(Command.MERGE)).thenReturn(true);
+    when(branchLinkProvider.get(any(NamespaceAndName.class), anyString())).thenReturn("link");
     when(service.getMergeCommand().getSupportedMergeStrategies()).thenReturn(ImmutableSet.of(MergeStrategy.MERGE_COMMIT));
     when(subject.isPermitted("repository:commentPullRequest:id-1")).thenReturn(true);
     when(subject.isPermitted("repository:push:id-1")).thenReturn(true);
@@ -117,5 +128,24 @@ class PullRequestMapperTest {
     assertThat(dto.getLinks().getLinkBy("emergencyMerge").isPresent()).isTrue();
   }
 
+  @Test
+  void shouldAppendSourceAndTargetBranchLinks() {
+    String sourceLink = "/api/v2/source";
+    String targetLink = "/api/v2/target";
+    when(branchLinkProvider.get(REPOSITORY.getNamespaceAndName(), "develop")).thenReturn(sourceLink);
+    when(branchLinkProvider.get(REPOSITORY.getNamespaceAndName(), "master")).thenReturn(targetLink);
 
+    when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("dent");
+
+    PullRequest pullRequest = TestData.createPullRequest();
+    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+    assertThat(dto.getLinks().isEmpty()).isFalse();
+    Optional<Link> sourceBranch = dto.getLinks().getLinkBy("sourceBranch");
+    assertThat(sourceBranch).isPresent();
+    assertThat(sourceBranch.get().getHref()).isEqualTo(sourceLink);
+    Optional<Link> targetBranch = dto.getLinks().getLinkBy("targetBranch");
+    assertThat(targetBranch).isPresent();
+    assertThat(targetBranch.get().getHref()).isEqualTo(targetLink);
+  }
 }

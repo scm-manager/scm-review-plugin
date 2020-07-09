@@ -45,6 +45,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.BaseMapper;
+import sonia.scm.api.v2.resources.BranchLinkProvider;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
@@ -85,6 +86,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private CommentService commentService;
   @Inject
   private RepositoryServiceFactory serviceFactory;
+  @Inject
+  private BranchLinkProvider branchLinkProvider;
+
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
@@ -218,6 +222,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     }
     linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
+    linksBuilder.single(link("sourceBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getSource())));
+    linksBuilder.single(link("targetBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getTarget())));
+
     applyEnrichers(new EdisonHalAppender(linksBuilder, new Embedded.Builder()), pullRequest, repository);
     return new PullRequestDto(linksBuilder.build());
   }
