@@ -12,6 +12,12 @@ Oben rechts auf der Pull Request Detailseite kann ein Reviewer mit einem Klick a
 ### Pull Request freigeben
 Nach einem Review kann der Reviewer den Pull Request für den Merge freigeben. Die Freigabe gilt vorerst nur als Informationen für den Autor über das durchgeführte Review. Eine tatsächliche Freigabe im Sinne eines Entsperrens findet noch nicht statt. Sobald ein Reviewer auf "Freigeben" klickt, wird hinter seinem Namen in der Reviewer-Liste ein grüner Haken hinterlegt.
 
+### Diff erweitern
+Innerhalb des Pull Request werden die Änderungen in verkürzten Diffs pro Datei angezeigt. 
+Diese Diffs können auch schrittweise oder komplett nachgeladen werden, um den gesamten Inhalt der Datei zu sehen.
+
+![Pull Request - Diff expand](assets/diffExpand.png)
+
 ### Kommentare erstellen
 Für einen Pull Request können drei Arten von Kommentaren erstellt werden. 
 
@@ -19,7 +25,9 @@ Für einen Pull Request können drei Arten von Kommentaren erstellt werden.
 - **Datei-Kommentar:** Kann im Diff-Tab in der Kopfzeile einer Datei über "Kommentar hinzufügen" erstellt werden.
 - **Zeilen-Kommentar:** Kann über einen Klick auf eine Zeile im Diff erstellt werden.
 
-Alle Kommentare findet man in dem Kommentar-Tab. Die Datei- und Zeilen-Kommentare findet man auch direkt an der Datei in dem Diff-Tab.
+Alle Kommentare findet man in dem Kommentar-Tab. Die Datei- und Zeilen-Kommentare findet man auch direkt an der Datei in dem Diff-Tab. 
+Es ist möglich innerhalb von Kommentaren andere Benutzer des SCM-Managers zu erwähnen. Dafür beginnt man mit einem "@"-Zeichen und tippt danach den Namen, Benutzername oder die E-Mail-Adresse des Benutzers. 
+Ab dem dritten Zeichen werden über eine Autovervollständigung passende Benutzer vorgeschlagen. Erwähnte Benutzer werden per E-Mail benachrichtigt, dass sie in dem Kommentar erwähnt wurden. 
 
 ![Pull Request - Create comment](assets/createComment.png)
 
@@ -44,6 +52,11 @@ Diese Kommentare werden mit einem "Veraltet"-Tag markiert. Mit einem Klick auf e
 
 ![Pull Request - Outdated context](assets/outdatedContext.png)
 
+### Gleichzeitige Bearbeitung
+Da mehrere Benutzer zeitgleich einen Pull Request reviewen oder bearbeiten können, ist es möglich neue Änderungen nicht mitzubekommen. 
+Daher werden alle Bearbeiter, die einen Pull Request geöffnet haben, über Änderungen an diesem Pull Request mit einer Meldung informiert.
+
+![Pull Request - Toastmessage](assets/toastmessage.png)
 
 ### Aufgaben erstellen
 Sollte ein Reviewer Fehler finden oder Änderungen am Pull Request vorschlagen wollen, kann er dies über Aufgaben realisieren. Der Kommentar-Editor kann über einen Radio-Button zu einem Aufgaben-Editor umgeschaltet werden. Aufgaben werden in den Pull Request Details und in der Übersichtstabelle über einen Tag angezeigt, beispielsweise "2 / 5 Aufgaben erledigt". 
@@ -66,5 +79,7 @@ Sollte ein Pull Request mergebar sein, können die Änderungen über den Button 
 Für den Merge kann statt der vorgegebenen Muster-Nachricht eine eigene Commit-Nachricht eingetragen werden. Über die Checkbox "Branch löschen" wird der Source-Branch nach dem erfolgreichen Merge aus dem Repository entfernt.
 
 Im Falle eines Merge-Konflikts kann der Pull Request nicht automatisch gemerged werden. Die Konflikte müssen vor dem Merge manuell aufgelöst werden.
+
+In dem Merge-Commit werden die zustimmenden Reviewer als "Reviewed-by" gesetzt.
 
 ![Pull Request - Merge-Modal](assets/mergeModal.png)
