@@ -6,8 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ### Added
-- Sort mechanism for rules in "Add Rule" dropdown [#88](https://github.com/scm-manager/scm-review-plugin/pull/88)
-- Append source and target branch links to pull request [#87](https://github.com/scm-manager/scm-review-plugin/pull/87)
+- Sort mechanism for rules in "Add Rule" dropdown ([#88](https://github.com/scm-manager/scm-review-plugin/pull/88))
+- Append source and target branch links to pull request ([#87](https://github.com/scm-manager/scm-review-plugin/pull/87))
+- Extends permission role `CI-SERVER` with the permission to read pull requests ([#91](https://github.com/scm-manager/scm-review-plugin/pull/91))
 
 ## 2.2.0 - 2020-07-03
 ### Added
@@ -32,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rebuild for api changes from core
 
 ### Fixed
-- Exception on push in repository without merge support([#78](https://github.com/scm-manager/scm-review-plugin/pull/78))
+- Exception on push in repository without merge support ([#78](https://github.com/scm-manager/scm-review-plugin/pull/78))
 
 ## 2.0.0-rc9-3 - 2020-05-08
 ### Added
