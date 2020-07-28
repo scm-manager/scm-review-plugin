@@ -59,6 +59,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
         createLink={createLink}
         dispatch={dispatch}
         pullRequest={pullRequest}
+        baseUrl={`/repo/${repository.namespace}/${repository.name}/code/changeset`}
       />
     );
   }

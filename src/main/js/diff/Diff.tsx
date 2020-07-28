@@ -64,6 +64,7 @@ type Props = WithTranslation & {
   createLink?: string;
   dispatch: Dispatch<any>;
   pullRequest: PullRequest;
+  baseUrl: string;
 };
 
 type State = {
@@ -79,7 +80,7 @@ class Diff extends React.Component<Props, State> {
   }
 
   render() {
-    const { diffUrl, pullRequest, t } = this.props;
+    const { diffUrl, pullRequest, baseUrl, t } = this.props;
     const { collapsed } = this.state;
 
     let globalCollapsedOrByMarks: DefaultCollapsedFunction;
@@ -111,6 +112,8 @@ class Diff extends React.Component<Props, State> {
           annotationFactory={this.annotationFactory}
           onClick={this.onGutterClick}
           hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
+          changesetId={pullRequest && pullRequest.source ? encodeURIComponent(pullRequest.source) : undefined}
+          baseUrl={baseUrl}
         />
       </StyledDiffWrapper>
     );
