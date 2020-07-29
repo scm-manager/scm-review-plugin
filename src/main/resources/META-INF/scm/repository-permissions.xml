@@ -51,5 +51,11 @@
         <verb>mergePullRequest</verb>
       </verbs>
     </role>
+    <role>
+      <name>CI-SERVER</name>
+      <verbs>
+        <verb>readPullRequest</verb>
+      </verbs>
+    </role>
   </roles>
 </repository-permissions>
