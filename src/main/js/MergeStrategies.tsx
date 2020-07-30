@@ -37,7 +37,7 @@ const RadioList = styled.div`
   display: flex;
   flex-direction: column;
   > label:not(:last-child) {
-    margin-bottom: 0.6em;
+    margin-bottom: 0.75rem;
   }
 `;
 
