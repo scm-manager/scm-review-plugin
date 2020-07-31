@@ -145,7 +145,7 @@ public class PullRequestRootResource {
 
   @GET
   @Path("{namespace}/{name}")
-  @Produces(PullRequestMediaType.PULL_REQUEST)
+  @Produces(PullRequestMediaType.PULL_REQUEST_COLLECTION)
   @Operation(
     summary = "Collection of pull requests",
     description = "Returns a list of pull requests by status.",
@@ -156,7 +156,7 @@ public class PullRequestRootResource {
     responseCode = "200",
     description = "success",
     content = @Content(
-      mediaType = PullRequestMediaType.PULL_REQUEST,
+      mediaType = PullRequestMediaType.PULL_REQUEST_COLLECTION,
       schema = @Schema(implementation = HalRepresentation.class)
     )
   )
