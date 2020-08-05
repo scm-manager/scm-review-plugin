@@ -25,8 +25,8 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import sonia.scm.config.ScmConfiguration;
-import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.api.HookMessageProvider;
 
 import javax.inject.Inject;
@@ -37,10 +37,10 @@ import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
 public class MessageSender {
 
   private final ScmConfiguration configuration;
-  private final PostReceiveRepositoryHookEvent event;
+  private final RepositoryHookEvent event;
 
   @Inject
-  public MessageSender(ScmConfiguration configuration, PostReceiveRepositoryHookEvent event) {
+  public MessageSender(ScmConfiguration configuration, RepositoryHookEvent event) {
     this.configuration = configuration;
     this.event = event;
   }

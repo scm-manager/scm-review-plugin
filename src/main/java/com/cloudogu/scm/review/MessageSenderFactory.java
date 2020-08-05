@@ -24,7 +24,7 @@
 package com.cloudogu.scm.review;
 
 import sonia.scm.config.ScmConfiguration;
-import sonia.scm.repository.PostReceiveRepositoryHookEvent;
+import sonia.scm.repository.RepositoryHookEvent;
 
 import javax.inject.Inject;
 
@@ -37,7 +37,7 @@ public class MessageSenderFactory {
     this.configuration = configuration;
   }
 
-  public MessageSender create(PostReceiveRepositoryHookEvent event) {
+  public MessageSender create(RepositoryHookEvent event) {
     return new MessageSender(configuration, event);
   }
 }
