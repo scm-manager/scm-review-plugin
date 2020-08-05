@@ -33,9 +33,9 @@ import java.util.Arrays;
 
 public interface MessageSender {
 
-  void sendMessageForPullRequest(PullRequest pullRequest, String message);
+  void sendMessageForPullRequest(PullRequest pullRequest, String... message);
 
-  void sendCreatePullRequestMessage(String branch, String message);
+  void sendCreatePullRequestMessage(String branch, String... message);
 }
 
 class ProviderMessageSender implements MessageSender {
@@ -49,12 +49,12 @@ class ProviderMessageSender implements MessageSender {
   }
 
   @Override
-  public void sendMessageForPullRequest(PullRequest pullRequest, String message) {
+  public void sendMessageForPullRequest(PullRequest pullRequest, String... message) {
     sendMessages(message, createPullRequestLink(pullRequest));
   }
 
   @Override
-  public void sendCreatePullRequestMessage(String branch, String message) {
+  public void sendCreatePullRequestMessage(String branch, String... message) {
     sendMessages(message, createCreateLink(event.getRepository(), branch));
   }
 
@@ -77,10 +77,11 @@ class ProviderMessageSender implements MessageSender {
       pullRequest.getId());
   }
 
-  private void sendMessages(String... messages) {
+  private void sendMessages(String[] messages, String url) {
     HookMessageProvider messageProvider = event.getContext().getMessageProvider();
     messageProvider.sendMessage("");
     Arrays.stream(messages).forEach(messageProvider::sendMessage);
+    messageProvider.sendMessage(url);
     messageProvider.sendMessage("");
   }
 }
@@ -88,12 +89,12 @@ class ProviderMessageSender implements MessageSender {
 class NoOpMessageSender implements MessageSender {
 
   @Override
-  public void sendMessageForPullRequest(PullRequest pullRequest, String message) {
+  public void sendMessageForPullRequest(PullRequest pullRequest, String... message) {
     // no op implementation
   }
 
   @Override
-  public void sendCreatePullRequestMessage(String branch, String message) {
+  public void sendCreatePullRequestMessage(String branch, String... message) {
     // no op implementation
   }
 }

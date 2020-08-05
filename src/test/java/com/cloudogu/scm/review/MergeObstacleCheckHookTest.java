@@ -37,12 +37,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.PreReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.HookBranchProvider;
@@ -52,7 +52,7 @@ import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -75,6 +75,11 @@ class MergeObstacleCheckHookTest {
   @Mock
   private MergeService mergeService;
 
+  @Mock
+  private ScmConfiguration configuration;
+  @InjectMocks
+  private MessageSenderFactory messageSenderFactory;
+
   private MergeObstacleCheckHook hook;
 
   @Mock
@@ -87,23 +92,21 @@ class MergeObstacleCheckHookTest {
   private HookMessageProvider messageProvider;
   @Mock
   private HookBranchProvider branchProvider;
-  @Captor
-  private ArgumentCaptor<String> messageCaptor;
 
   @Mock
   private Subject subject;
 
   @BeforeEach
   void initBasics() {
-    hook = new MergeObstacleCheckHook(pullRequestService, mergeService);
+    hook = new MergeObstacleCheckHook(pullRequestService, mergeService, messageSenderFactory);
     when(pullRequestService.supportsPullRequests(REPOSITORY)).thenReturn(true);
+    when(configuration.getBaseUrl()).thenReturn("http://example.com/");
     when(hookContext.isFeatureSupported(MERGE_DETECTION_PROVIDER)).thenReturn(true);
     when(hookContext.getMergeDetectionProvider()).thenReturn(mergeDetectionProvider);
     when(hookContext.isFeatureSupported(BRANCH_PROVIDER)).thenReturn(true);
     when(hookContext.getBranchProvider()).thenReturn(branchProvider);
     when(hookContext.isFeatureSupported(MESSAGE_PROVIDER)).thenReturn(true);
     when(hookContext.getMessageProvider()).thenReturn(messageProvider);
-    doNothing().when(messageProvider).sendMessage(messageCaptor.capture());
   }
 
   @BeforeEach
@@ -164,6 +167,15 @@ class MergeObstacleCheckHookTest {
 
         // nothing more expected to happen
       }
+
+      @Test
+      void shouldSendMessageToUser() {
+        when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+
+        hook.checkForObstacles(event);
+
+        verify(messageProvider, atLeastOnce()).sendMessage(any());
+      }
     }
 
     @Nested
@@ -179,6 +191,20 @@ class MergeObstacleCheckHookTest {
         when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
 
         Assertions.assertThrows(MergeNotAllowedException.class, () -> hook.checkForObstacles(event));
+      }
+
+
+      @Test
+      void shouldSendMessageToUser() {
+        when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+
+        try {
+          hook.checkForObstacles(event);
+        } catch (Exception e) {
+          // exception is of no interest in this test
+        }
+
+        verify(messageProvider, atLeastOnce()).sendMessage(any());
       }
     }
 

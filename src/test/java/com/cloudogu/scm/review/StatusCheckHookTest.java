@@ -30,8 +30,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -50,7 +48,6 @@ import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,8 +83,6 @@ class StatusCheckHookTest {
   private HookMessageProvider messageProvider;
   @Mock
   private HookBranchProvider branchProvider;
-  @Captor
-  private ArgumentCaptor<String> messageCaptor;
 
   @BeforeEach
   void initBasics() {
@@ -100,7 +95,6 @@ class StatusCheckHookTest {
     when(hookContext.getBranchProvider()).thenReturn(branchProvider);
     when(hookContext.isFeatureSupported(MESSAGE_PROVIDER)).thenReturn(true);
     when(hookContext.getMessageProvider()).thenReturn(messageProvider);
-    doNothing().when(messageProvider).sendMessage(messageCaptor.capture());
   }
 
   @BeforeEach

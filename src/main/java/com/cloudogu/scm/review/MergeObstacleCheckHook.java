@@ -24,6 +24,8 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.MergeNotAllowedException;
+import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -39,7 +41,10 @@ import sonia.scm.repository.api.HookBranchProvider;
 import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.List;
+
+import static java.lang.String.format;
 
 @EagerSingleton
 @Extension
@@ -49,11 +54,13 @@ public class MergeObstacleCheckHook {
 
   private final DefaultPullRequestService pullRequestService;
   private final MergeService mergeService;
+  private final MessageSenderFactory messageSenderFactory;
 
   @Inject
-  public MergeObstacleCheckHook(DefaultPullRequestService pullRequestService, MergeService mergeService) {
+  public MergeObstacleCheckHook(DefaultPullRequestService pullRequestService, MergeService mergeService, MessageSenderFactory messageSenderFactory) {
     this.pullRequestService = pullRequestService;
     this.mergeService = mergeService;
+    this.messageSenderFactory = messageSenderFactory;
   }
 
   @Subscribe(async = false)
@@ -69,11 +76,13 @@ public class MergeObstacleCheckHook {
     private final Repository repository;
     private final HookBranchProvider branchProvider;
     private final HookMergeDetectionProvider mergeDetectionProvider;
+    private final MessageSender messageSender;
 
     private Worker(PreReceiveRepositoryHookEvent event) {
       this.repository = event.getRepository();
       this.branchProvider = event.getContext().getBranchProvider();
       this.mergeDetectionProvider = event.getContext().getMergeDetectionProvider();
+      this.messageSender = messageSenderFactory.create(event);
     }
 
     private void process(List<PullRequest> pullRequests) {
@@ -90,7 +99,31 @@ public class MergeObstacleCheckHook {
 
     private void processOpen(PullRequest pullRequest) {
       if (branchesAreModified(pullRequest) && isMerged(pullRequest)) {
-        mergeService.verifyNoObstacles(PermissionCheck.mayPerformEmergencyMerge(repository), repository, pullRequest);
+        try {
+          Collection<MergeObstacle> mergeObstacles = mergeService.verifyNoObstacles(PermissionCheck.mayPerformEmergencyMerge(repository), repository, pullRequest);
+          if (!mergeObstacles.isEmpty()) {
+            LOG.info("about to merge pull request #{} for repository {} with {} obstacles by push", pullRequest.getId(), repository.getNamespaceAndName(), mergeObstacles.size());
+            String[] message =
+              {
+                format("This merges pull request #%s (%s -> %s) with %s obstacles.", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget(), mergeObstacles.size()),
+                "This merge is permitted only because you have the permission for emergency merges",
+                "or the obstacles are not blocking ones.",
+                "Please check this pull request:"
+              };
+            messageSender.sendMessageForPullRequest(pullRequest, message);
+          }
+        } catch (MergeNotAllowedException e) {
+          Collection<MergeObstacle> mergeObstacles = e.getObstacles();
+          LOG.debug("merge of pull request #{} for repository {} was rejected due to {} obstacle(s)", pullRequest.getId(), repository.getNamespaceAndName(), mergeObstacles.size());
+          String[] message =
+            {
+              format("This would merge pull request #%s (%s -> %s) with %s obstacle(s).", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget(), mergeObstacles.size()),
+              "You do not have the permission to execute emergency merges.",
+              "Please check this pull request for obstacles:"
+            };
+          messageSender.sendMessageForPullRequest(pullRequest, message);
+          throw e;
+        }
       }
     }
 
