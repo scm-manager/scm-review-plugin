@@ -29,26 +29,31 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.api.HookMessageProvider;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 
-import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
+public interface MessageSender {
 
-public class MessageSender {
+  void sendMessageForPullRequest(PullRequest pullRequest, String message);
+
+  void sendCreatePullRequestMessage(String branch, String message);
+}
+
+class ProviderMessageSender implements MessageSender {
 
   private final ScmConfiguration configuration;
   private final RepositoryHookEvent event;
 
-  @Inject
-  public MessageSender(ScmConfiguration configuration, RepositoryHookEvent event) {
+  public ProviderMessageSender(ScmConfiguration configuration, RepositoryHookEvent event) {
     this.configuration = configuration;
     this.event = event;
   }
 
+  @Override
   public void sendMessageForPullRequest(PullRequest pullRequest, String message) {
     sendMessages(message, createPullRequestLink(pullRequest));
   }
 
+  @Override
   public void sendCreatePullRequestMessage(String branch, String message) {
     sendMessages(message, createCreateLink(event.getRepository(), branch));
   }
@@ -73,11 +78,23 @@ public class MessageSender {
   }
 
   private void sendMessages(String... messages) {
-    if (event.getContext().isFeatureSupported(MESSAGE_PROVIDER)) {
-      HookMessageProvider messageProvider = event.getContext().getMessageProvider();
-      messageProvider.sendMessage("");
-      Arrays.stream(messages).forEach(messageProvider::sendMessage);
-      messageProvider.sendMessage("");
-    }
+    HookMessageProvider messageProvider = event.getContext().getMessageProvider();
+    messageProvider.sendMessage("");
+    Arrays.stream(messages).forEach(messageProvider::sendMessage);
+    messageProvider.sendMessage("");
   }
 }
+
+class NoOpMessageSender implements MessageSender {
+
+  @Override
+  public void sendMessageForPullRequest(PullRequest pullRequest, String message) {
+    // no op implementation
+  }
+
+  @Override
+  public void sendCreatePullRequestMessage(String branch, String message) {
+    // no op implementation
+  }
+}
+

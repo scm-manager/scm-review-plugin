@@ -28,6 +28,8 @@ import sonia.scm.repository.RepositoryHookEvent;
 
 import javax.inject.Inject;
 
+import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
+
 public class MessageSenderFactory {
 
   private final ScmConfiguration configuration;
@@ -38,6 +40,10 @@ public class MessageSenderFactory {
   }
 
   public MessageSender create(RepositoryHookEvent event) {
-    return new MessageSender(configuration, event);
+    if (event.getContext().isFeatureSupported(MESSAGE_PROVIDER)) {
+      return new ProviderMessageSender(configuration, event);
+    } else {
+      return new NoOpMessageSender();
+    }
   }
 }
