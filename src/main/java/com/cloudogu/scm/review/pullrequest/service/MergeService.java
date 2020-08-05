@@ -91,8 +91,7 @@ public class MergeService {
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy, boolean emergency) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
-      Collection<MergeObstacle> obstacles = getObstacles(repositoryService.getRepository(), pullRequest);
-      checkIfMergeIsPreventedByObstacles(repositoryService, pullRequest, obstacles, emergency);
+      Collection<MergeObstacle> obstacles = verifyNoObstacles(emergency, repositoryService.getRepository(), pullRequest);
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
 
       branchProtectionHook.runPrivileged(
@@ -121,16 +120,25 @@ public class MergeService {
     }
   }
 
+  public Collection<MergeObstacle> verifyNoObstacles(boolean emergency, Repository repository, PullRequest pullRequest) {
+    if (emergency) {
+      PermissionCheck.checkEmergencyMerge(repository);
+    }
+    Collection<MergeObstacle> obstacles = getObstacles(repository, pullRequest);
+    checkIfMergeIsPreventedByObstacles(repository, pullRequest, obstacles, emergency);
+    return obstacles;
+  }
+
   private List<String> getIgnoredMergeObstacles(Collection<MergeObstacle> obstacles) {
     return obstacles.stream().map(MergeObstacle::getKey).collect(Collectors.toList());
   }
 
-  private void checkIfMergeIsPreventedByObstacles(RepositoryService repositoryService, PullRequest pullRequest, Collection<MergeObstacle> obstacles, boolean emergency) {
+  private void checkIfMergeIsPreventedByObstacles(Repository repository, PullRequest pullRequest, Collection<MergeObstacle> obstacles, boolean emergency) {
     if (!obstacles.stream().allMatch(MergeObstacle::isOverrideable)) {
-      throw new MergeNotAllowedException(repositoryService.getRepository(), pullRequest, obstacles);
+      throw new MergeNotAllowedException(repository, pullRequest, obstacles);
     }
     if (!emergency && !obstacles.isEmpty()) {
-      throw new MergeNotAllowedException(repositoryService.getRepository(), pullRequest, obstacles);
+      throw new MergeNotAllowedException(repository, pullRequest, obstacles);
     }
   }
 
