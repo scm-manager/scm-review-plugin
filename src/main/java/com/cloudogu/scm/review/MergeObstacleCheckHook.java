@@ -102,24 +102,24 @@ public class MergeObstacleCheckHook {
         try {
           Collection<MergeObstacle> mergeObstacles = mergeService.verifyNoObstacles(PermissionCheck.mayPerformEmergencyMerge(repository), repository, pullRequest);
           if (!mergeObstacles.isEmpty()) {
-            LOG.info("about to merge pull request #{} for repository {} with {} obstacles by push", pullRequest.getId(), repository.getNamespaceAndName(), mergeObstacles.size());
+            LOG.info("about to merge pull request #{} for repository {} with {} violated rule(s) by push", pullRequest.getId(), repository.getNamespaceAndName(), mergeObstacles.size());
             String[] message =
               {
-                format("This merges pull request #%s (%s -> %s) with %s obstacles.", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget(), mergeObstacles.size()),
+                format("This merges pull request #%s (%s -> %s) with %s violated rule(s).", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget(), mergeObstacles.size()),
                 "This merge is permitted only because you have the permission for emergency merges",
-                "or the obstacles are not blocking ones.",
+                "or the violated rules are not blocking ones.",
                 "Please check this pull request:"
               };
             messageSender.sendMessageForPullRequest(pullRequest, message);
           }
         } catch (MergeNotAllowedException e) {
           Collection<MergeObstacle> mergeObstacles = e.getObstacles();
-          LOG.debug("merge of pull request #{} for repository {} was rejected due to {} obstacle(s)", pullRequest.getId(), repository.getNamespaceAndName(), mergeObstacles.size());
+          LOG.debug("merge of pull request #{} for repository {} was rejected due to {} violated rule(s)", pullRequest.getId(), repository.getNamespaceAndName(), mergeObstacles.size());
           String[] message =
             {
-              format("This would merge pull request #%s (%s -> %s) with %s obstacle(s).", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget(), mergeObstacles.size()),
+              format("This would merge pull request #%s (%s -> %s) with %s violated rule(s).", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget(), mergeObstacles.size()),
               "You do not have the permission to execute emergency merges.",
-              "Please check this pull request for obstacles:"
+              "Please check this pull request for details about the rules:"
             };
           messageSender.sendMessageForPullRequest(pullRequest, message);
           throw e;
