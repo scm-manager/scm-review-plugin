@@ -24,6 +24,8 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
+import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -43,6 +45,7 @@ import javax.inject.Inject;
 import java.util.List;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 @EagerSingleton
 @Extension
@@ -50,18 +53,25 @@ public class StatusCheckHook {
 
   private static final Logger LOG = LoggerFactory.getLogger(StatusCheckHook.class);
 
-  private final DefaultPullRequestService service;
+  private final DefaultPullRequestService pullRequestService;
   private final MessageSenderFactory messageSenderFactory;
+  private final MergeService mergeService;
+  private final InternalMergeSwitch internalMergeSwitch;
 
   @Inject
-  public StatusCheckHook(DefaultPullRequestService service, MessageSenderFactory messageSenderFactory) {
-    this.service = service;
+  public StatusCheckHook(DefaultPullRequestService pullRequestService, MessageSenderFactory messageSenderFactory, MergeService mergeService, InternalMergeSwitch internalMergeSwitch) {
+    this.pullRequestService = pullRequestService;
     this.messageSenderFactory = messageSenderFactory;
+    this.mergeService = mergeService;
+    this.internalMergeSwitch = internalMergeSwitch;
   }
 
   @Subscribe(async = false)
   public void checkStatus(PostReceiveRepositoryHookEvent event) {
-    if (!service.supportsPullRequests(event.getRepository())) {
+    if (internalMergeSwitch.internalMergeRunning()) {
+      return;
+    }
+    if (!pullRequestService.supportsPullRequests(event.getRepository())) {
       return;
     }
     if (!event.getContext().isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
@@ -72,7 +82,7 @@ public class StatusCheckHook {
       LOG.warn("hook event for repository {} does not support merge detection - cannot check for merges", event.getRepository().getNamespaceAndName());
       return;
     }
-    List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
+    List<PullRequest> pullRequests = pullRequestService.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
     new Worker(event).process(pullRequests);
   }
 
@@ -136,7 +146,18 @@ public class StatusCheckHook {
       LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
       String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
-      service.setMerged(repository, pullRequest.getId(), null);
+
+      List<String> mergeObstacles =
+        mergeService.verifyNoObstacles(PermissionCheck.mayPerformEmergencyMerge(repository), repository, pullRequest)
+          .stream()
+          .map(MergeObstacle::getKey)
+          .collect(toList());
+
+      if (mergeObstacles.isEmpty()) {
+        pullRequestService.setMerged(repository, pullRequest.getId());
+      } else {
+        pullRequestService.setEmergencyMerged(repository, pullRequest.getId(), "merged by a direct push to the repository", mergeObstacles);
+      }
     }
 
     private boolean sourceBranchIsDeleted(PullRequest pullRequest) {
@@ -147,12 +168,12 @@ public class StatusCheckHook {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
       String message = format("Rejected pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
-      service.setRejected(repository, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+      pullRequestService.setRejected(repository, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
     }
 
     private void updated(PullRequest pullRequest) {
       LOG.info("pull request {} was updated", pullRequest.getId());
-      service.updated(repository, pullRequest.getId());
+      pullRequestService.updated(repository, pullRequest.getId());
     }
   }
 }

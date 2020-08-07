@@ -214,11 +214,10 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public void setMerged(Repository repository, String pullRequestId, String overrideMessage) {
+  public void setMerged(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.getStatus() == OPEN) {
       pullRequest.setStatus(MERGED);
-      pullRequest.setOverrideMessage(overrideMessage);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
     } else if (pullRequest.getStatus() == REJECTED) {

@@ -453,7 +453,7 @@ class DefaultPullRequestServiceTest {
       service.setRejected(REPOSITORY, pullRequest.getId(), REJECTED_BY_USER);
 
       assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
-      assertThat(eventCaptor.getAllValues()).hasSize(0);
+      assertThat(eventCaptor.getAllValues()).isEmpty();
     }
 
     @Test
@@ -463,17 +463,16 @@ class DefaultPullRequestServiceTest {
       assertThrows(StatusChangeNotAllowedException.class, () -> service.setRejected(REPOSITORY, pullRequest.getId(), REJECTED_BY_USER));
 
       assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
-      assertThat(eventCaptor.getAllValues()).hasSize(0);
+      assertThat(eventCaptor.getAllValues()).isEmpty();
     }
 
     @Test
     void shouldSetPullRequestMergedAndSendEvent() {
       pullRequest.setStatus(OPEN);
 
-      service.setMerged(REPOSITORY, pullRequest.getId(), "had to be this way");
+      service.setMerged(REPOSITORY, pullRequest.getId());
 
       assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
-      assertThat(pullRequest.getOverrideMessage()).isEqualTo("had to be this way");
       assertThat(eventCaptor.getAllValues()).hasSize(1);
       PullRequestMergedEvent event = (PullRequestMergedEvent) eventCaptor.getValue();
       assertThat(event.getRepository()).isSameAs(REPOSITORY);
@@ -484,20 +483,20 @@ class DefaultPullRequestServiceTest {
     void shouldNotSetPullRequestMergedMultipleTimes() {
       pullRequest.setStatus(MERGED);
 
-      service.setMerged(REPOSITORY, pullRequest.getId(), null);
+      service.setMerged(REPOSITORY, pullRequest.getId());
 
       assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
-      assertThat(eventCaptor.getAllValues()).hasSize(0);
+      assertThat(eventCaptor.getAllValues()).isEmpty();
     }
 
     @Test
     void shouldNotSetRejectedPullRequestMerged() {
       pullRequest.setStatus(REJECTED);
 
-      assertThrows(StatusChangeNotAllowedException.class, () -> service.setMerged(REPOSITORY, pullRequest.getId(), null));
+      assertThrows(StatusChangeNotAllowedException.class, () -> service.setMerged(REPOSITORY, pullRequest.getId()));
 
       assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
-      assertThat(eventCaptor.getAllValues()).hasSize(0);
+      assertThat(eventCaptor.getAllValues()).isEmpty();
     }
 
     @Test

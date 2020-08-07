@@ -24,9 +24,14 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
+import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,7 +69,9 @@ class StatusCheckHookTest {
   private static final Repository REPOSITORY = new Repository("id", "git", NAMESPACE, NAME);
 
   @Mock
-  private DefaultPullRequestService service;
+  private DefaultPullRequestService pullRequestService;
+  @Mock
+  private MergeService mergeService;
 
   @Mock
   private ScmConfiguration configuration;
@@ -83,11 +90,16 @@ class StatusCheckHookTest {
   private HookMessageProvider messageProvider;
   @Mock
   private HookBranchProvider branchProvider;
+  @Mock
+  private InternalMergeSwitch internalMergeSwitch;
+
+  @Mock
+  private Subject subject;
 
   @BeforeEach
   void initBasics() {
-    hook = new StatusCheckHook(service, messageSenderFactory);
-    when(service.supportsPullRequests(REPOSITORY)).thenReturn(true);
+    hook = new StatusCheckHook(pullRequestService, messageSenderFactory, mergeService, internalMergeSwitch);
+    when(pullRequestService.supportsPullRequests(REPOSITORY)).thenReturn(true);
     when(configuration.getBaseUrl()).thenReturn("http://example.com/");
     when(hookContext.isFeatureSupported(MERGE_DETECTION_PROVIDER)).thenReturn(true);
     when(hookContext.getMergeDetectionProvider()).thenReturn(mergeDetectionProvider);
@@ -108,6 +120,16 @@ class StatusCheckHookTest {
     when(event.getRepository()).thenReturn(REPOSITORY);
   }
 
+  @BeforeEach
+  void bindSubject() {
+    ThreadContext.bind(subject);
+  }
+
+  @AfterEach
+  void unbindSubject() {
+    ThreadContext.unbindSubject();
+  }
+
   @Test
   void shouldSetMergedPullRequestToMerged() {
     PullRequest pullRequest = mockOpenPullRequest();
@@ -115,7 +137,7 @@ class StatusCheckHookTest {
 
     hook.checkStatus(event);
 
-    verify(service).setMerged(REPOSITORY, pullRequest.getId(), null);
+    verify(pullRequestService).setMerged(REPOSITORY, pullRequest.getId());
   }
 
   @Test
@@ -127,7 +149,7 @@ class StatusCheckHookTest {
 
     hook.checkStatus(event);
 
-    verify(service).setMerged(REPOSITORY, pullRequest.getId(), null);
+    verify(pullRequestService).setMerged(REPOSITORY, pullRequest.getId());
   }
 
   @Test
@@ -137,7 +159,7 @@ class StatusCheckHookTest {
 
     hook.checkStatus(event);
 
-    verify(service, never()).setMerged(any(), anyString(), anyString());
+    verify(pullRequestService, never()).setMerged(any(), anyString());
   }
 
   @Test
@@ -147,7 +169,7 @@ class StatusCheckHookTest {
 
     hook.checkStatus(event);
 
-    verify(service).updated(REPOSITORY, pullRequest.getId());
+    verify(pullRequestService).updated(REPOSITORY, pullRequest.getId());
   }
 
   @Test
@@ -157,18 +179,18 @@ class StatusCheckHookTest {
     hook.checkStatus(event);
 
     verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
-    verify(service, never()).reject(eq(REPOSITORY), eq(pullRequest.getId()), any());
+    verify(pullRequestService, never()).reject(eq(REPOSITORY), eq(pullRequest.getId()), any());
   }
 
   @Test
   void shouldNotProcessEventsForRepositoriesWithoutMergeCapability() {
-    when(service.supportsPullRequests(REPOSITORY)).thenReturn(false);
+    when(pullRequestService.supportsPullRequests(REPOSITORY)).thenReturn(false);
 
     hook.checkStatus(event);
 
     verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
-    verify(service, never()).getAll(anyString(), anyString());
-    verify(service, never()).setMerged(any(), anyString(), anyString());
+    verify(pullRequestService, never()).getAll(anyString(), anyString());
+    verify(pullRequestService, never()).setMerged(any(), anyString());
   }
 
   @Test
@@ -190,7 +212,32 @@ class StatusCheckHookTest {
 
     hook.checkStatus(event);
 
-    verify(service).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+    verify(pullRequestService).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+  }
+
+  @Test
+  void shouldSetMergedPullRequestToMergedWithEmergencyMergeAndObstacles() {
+    PullRequest pullRequest = mockOpenPullRequest();
+    when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+    when(subject.isPermitted("repository:performEmergencyMerge:id")).thenReturn(true);
+    when(mergeService.verifyNoObstacles(true, REPOSITORY, pullRequest))
+      .thenReturn(singletonList(new TestObstacle()));
+
+    hook.checkStatus(event);
+
+    verify(pullRequestService)
+      .setEmergencyMerged(REPOSITORY, pullRequest.getId(), "merged by a direct push to the repository", singletonList("TEST_OBSTACLE"));
+  }
+
+  @Test
+  void shouldIgnoreHookWhenInternalMerge() {
+    when(internalMergeSwitch.internalMergeRunning()).thenReturn(true);
+    when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+
+    hook.checkStatus(event);
+
+    verify(pullRequestService, never()).setEmergencyMerged(any(), any(), any(), any());
+    verify(pullRequestService, never()).setMerged(any(), any());
   }
 
   private PullRequest mockOpenPullRequest() {
@@ -198,14 +245,26 @@ class StatusCheckHookTest {
     pullRequest.setStatus(PullRequestStatus.OPEN);
     pullRequest.setSource("source");
     pullRequest.setTarget("target");
-    when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
+    when(pullRequestService.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
     return pullRequest;
   }
 
   private PullRequest mockRejectedPullRequest() {
     PullRequest pullRequest = new PullRequest();
     pullRequest.setStatus(PullRequestStatus.REJECTED);
-    when(service.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
+    when(pullRequestService.getAll(NAMESPACE, NAME)).thenReturn(singletonList(pullRequest));
     return pullRequest;
+  }
+
+  private static class TestObstacle implements MergeObstacle {
+    @Override
+    public String getMessage() {
+      return null;
+    }
+
+    @Override
+    public String getKey() {
+      return "TEST_OBSTACLE";
+    }
   }
 }

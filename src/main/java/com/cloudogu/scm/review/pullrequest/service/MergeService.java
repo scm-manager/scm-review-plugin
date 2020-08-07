@@ -23,7 +23,7 @@
  */
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.BranchProtectionHook;
+import com.cloudogu.scm.review.InternalMergeSwitch;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import org.apache.shiro.SecurityUtils;
@@ -76,15 +76,15 @@ public class MergeService {
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
   private final Collection<MergeGuard> mergeGuards;
-  private final BranchProtectionHook branchProtectionHook;
+  private final InternalMergeSwitch internalMergeSwitch;
   private final UserDisplayManager userDisplayManager;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, BranchProtectionHook branchProtectionHook, UserDisplayManager userDisplayManager) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, InternalMergeSwitch internalMergeSwitch, UserDisplayManager userDisplayManager) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
     this.mergeGuards = mergeGuards;
-    this.branchProtectionHook = branchProtectionHook;
+    this.internalMergeSwitch = internalMergeSwitch;
     this.userDisplayManager = userDisplayManager;
   }
 
@@ -94,7 +94,7 @@ public class MergeService {
       Collection<MergeObstacle> obstacles = verifyNoObstacles(emergency, repositoryService.getRepository(), pullRequest);
       assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
 
-      branchProtectionHook.runPrivileged(
+      internalMergeSwitch.runInternalMerge(
         () -> {
           MergeCommandBuilder mergeCommand = repositoryService.getMergeCommand();
           isAllowedToMerge(repositoryService.getRepository(), mergeCommand, strategy, emergency);
@@ -109,7 +109,7 @@ public class MergeService {
           if (emergency) {
             pullRequestService.setEmergencyMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage(), getIgnoredMergeObstacles(obstacles));
           } else {
-            pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId(), mergeCommitDto.getOverrideMessage());
+            pullRequestService.setMerged(repositoryService.getRepository(), pullRequest.getId());
           }
 
           if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {

@@ -38,6 +38,8 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PreReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.HookBranchProvider;
+import sonia.scm.repository.api.HookContext;
+import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
 import javax.inject.Inject;
@@ -55,17 +57,22 @@ public class MergeObstacleCheckHook {
   private final DefaultPullRequestService pullRequestService;
   private final MergeService mergeService;
   private final MessageSenderFactory messageSenderFactory;
+  private final InternalMergeSwitch internalMergeSwitch;
 
   @Inject
-  public MergeObstacleCheckHook(DefaultPullRequestService pullRequestService, MergeService mergeService, MessageSenderFactory messageSenderFactory) {
+  public MergeObstacleCheckHook(DefaultPullRequestService pullRequestService, MergeService mergeService, MessageSenderFactory messageSenderFactory, InternalMergeSwitch internalMergeSwitch) {
     this.pullRequestService = pullRequestService;
     this.mergeService = mergeService;
     this.messageSenderFactory = messageSenderFactory;
+    this.internalMergeSwitch = internalMergeSwitch;
   }
 
   @Subscribe(async = false)
   public void checkForObstacles(PreReceiveRepositoryHookEvent event) {
-    if (!pullRequestService.supportsPullRequests(event.getRepository())) {
+    if (internalMergeSwitch.internalMergeRunning()) {
+      return;
+    }
+    if (!event.getContext().isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER) || !pullRequestService.supportsPullRequests(event.getRepository())) {
       return;
     }
     List<PullRequest> pullRequests = pullRequestService.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
@@ -79,9 +86,10 @@ public class MergeObstacleCheckHook {
     private final MessageSender messageSender;
 
     private Worker(PreReceiveRepositoryHookEvent event) {
+      HookContext context = event.getContext();
       this.repository = event.getRepository();
-      this.branchProvider = event.getContext().getBranchProvider();
-      this.mergeDetectionProvider = event.getContext().getMergeDetectionProvider();
+      this.branchProvider = context.getBranchProvider();
+      this.mergeDetectionProvider = context.getMergeDetectionProvider();
       this.messageSender = messageSenderFactory.create(event);
     }
 

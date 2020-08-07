@@ -92,13 +92,15 @@ class MergeObstacleCheckHookTest {
   private HookMessageProvider messageProvider;
   @Mock
   private HookBranchProvider branchProvider;
+  @Mock
+  private InternalMergeSwitch internalMergeSwitch;
 
   @Mock
   private Subject subject;
 
   @BeforeEach
   void initBasics() {
-    hook = new MergeObstacleCheckHook(pullRequestService, mergeService, messageSenderFactory);
+    hook = new MergeObstacleCheckHook(pullRequestService, mergeService, messageSenderFactory, internalMergeSwitch);
     when(pullRequestService.supportsPullRequests(REPOSITORY)).thenReturn(true);
     when(configuration.getBaseUrl()).thenReturn("http://example.com/");
     when(hookContext.isFeatureSupported(MERGE_DETECTION_PROVIDER)).thenReturn(true);
@@ -175,6 +177,16 @@ class MergeObstacleCheckHookTest {
         hook.checkForObstacles(event);
 
         verify(messageProvider, atLeastOnce()).sendMessage(any());
+      }
+
+      @Test
+      void shouldNotCheckForInternalMerge() {
+        when(internalMergeSwitch.internalMergeRunning()).thenReturn(true);
+
+        hook.checkForObstacles(event);
+
+        verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
+        verify(messageProvider, never()).sendMessage(any());
       }
     }
 
