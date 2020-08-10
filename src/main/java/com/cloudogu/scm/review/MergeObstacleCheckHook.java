@@ -69,14 +69,19 @@ public class MergeObstacleCheckHook {
 
   @Subscribe(async = false)
   public void checkForObstacles(PreReceiveRepositoryHookEvent event) {
-    if (internalMergeSwitch.internalMergeRunning()) {
+    HookContext context = event.getContext();
+    Repository repository = event.getRepository();
+    if (ignoreHook(context, repository)) {
       return;
     }
-    if (!event.getContext().isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER) || !pullRequestService.supportsPullRequests(event.getRepository())) {
-      return;
-    }
-    List<PullRequest> pullRequests = pullRequestService.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
+    List<PullRequest> pullRequests = pullRequestService.getAll(repository.getNamespace(), repository.getName());
     new Worker(event).process(pullRequests);
+  }
+
+  private boolean ignoreHook(HookContext context, Repository repository) {
+    return internalMergeSwitch.internalMergeRunning()
+      || !context.isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER)
+      || !pullRequestService.supportsPullRequests(repository);
   }
 
   private class Worker {

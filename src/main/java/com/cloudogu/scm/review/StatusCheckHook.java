@@ -38,6 +38,7 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.HookBranchProvider;
+import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
@@ -68,22 +69,30 @@ public class StatusCheckHook {
 
   @Subscribe(async = false)
   public void checkStatus(PostReceiveRepositoryHookEvent event) {
-    if (internalMergeSwitch.internalMergeRunning()) {
+    Repository repository = event.getRepository();
+    if (ignoreHook(event.getContext(), repository)) {
       return;
     }
-    if (!pullRequestService.supportsPullRequests(event.getRepository())) {
-      return;
-    }
-    if (!event.getContext().isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
-      LOG.warn("hook event for repository {} does not support branches - cannot check for merges", event.getRepository().getNamespaceAndName());
-      return;
-    }
-    if (!event.getContext().isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER)) {
-      LOG.warn("hook event for repository {} does not support merge detection - cannot check for merges", event.getRepository().getNamespaceAndName());
-      return;
-    }
-    List<PullRequest> pullRequests = pullRequestService.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
+    List<PullRequest> pullRequests = pullRequestService.getAll(repository.getNamespace(), repository.getName());
     new Worker(event).process(pullRequests);
+  }
+
+  private boolean ignoreHook(HookContext context, Repository repository) {
+    if (internalMergeSwitch.internalMergeRunning()) {
+      return true;
+    }
+    if (!pullRequestService.supportsPullRequests(repository)) {
+      return true;
+    }
+    if (!context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
+      LOG.warn("hook event for repository {} does not support branches - cannot check for merges", repository.getNamespaceAndName());
+      return true;
+    }
+    if (!context.isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER)) {
+      LOG.warn("hook event for repository {} does not support merge detection - cannot check for merges", repository.getNamespaceAndName());
+      return true;
+    }
+    return false;
   }
 
   private class Worker {
