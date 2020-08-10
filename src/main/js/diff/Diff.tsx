@@ -113,6 +113,7 @@ class Diff extends React.Component<Props, State> {
           onClick={this.onGutterClick}
           hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
           changesetId={pullRequest && pullRequest.source ? encodeURIComponent(pullRequest.source) : undefined}
+          targetChangesetId={pullRequest && pullRequest.target ? encodeURIComponent(pullRequest.target) : undefined}
           baseUrl={baseUrl}
         />
       </StyledDiffWrapper>
