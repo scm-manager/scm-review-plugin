@@ -24,7 +24,6 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.config.service.ConfigService;
-import junit.framework.AssertionFailedError;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -41,13 +40,17 @@ import sonia.scm.repository.api.HookChangesetBuilder;
 import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.HookFeature;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("java:S2699") // We have some tests that should just assert that no exceptions are throws, so we have no asserts
 class BranchProtectionHookTest {
 
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
@@ -56,6 +59,8 @@ class BranchProtectionHookTest {
   ConfigService configService;
   @Mock
   PreReceiveRepositoryHookEvent event;
+  @Mock
+  InternalMergeSwitch internalMergeSwitch;
   @InjectMocks
   BranchProtectionHook hook;
 
@@ -76,8 +81,8 @@ class BranchProtectionHookTest {
     @BeforeEach
     void setContext() {
       when(event.getContext()).thenReturn(hookContext);
-      when(hookContext.isFeatureSupported(HookFeature.BRANCH_PROVIDER)).thenReturn(true);
       when(event.getRepository()).thenReturn(REPOSITORY);
+      lenient().when(hookContext.isFeatureSupported(HookFeature.BRANCH_PROVIDER)).thenReturn(true);
       lenient().when(hookContext.getBranchProvider()).thenReturn(branchProvider);
       lenient().when(hookContext.getChangesetProvider()).thenReturn(changesetBuilder);
     }
@@ -94,7 +99,7 @@ class BranchProtectionHookTest {
       when(configService.isEnabled(REPOSITORY)).thenReturn(true);
       when(configService.isBranchProtected(REPOSITORY, "feature")).thenReturn(false);
 
-      when(branchProvider.getCreatedOrModified()).thenReturn(asList("feature"));
+      when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("feature"));
 
       hook.onEvent(event);
     }
@@ -104,7 +109,7 @@ class BranchProtectionHookTest {
       when(configService.isEnabled(REPOSITORY)).thenReturn(true);
       when(configService.isBranchProtected(REPOSITORY, "master")).thenReturn(true);
 
-      when(branchProvider.getCreatedOrModified()).thenReturn(asList("master"));
+      when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("master"));
       when(changesetBuilder.getChangesets()).thenReturn(emptyList());
 
       hook.onEvent(event);
@@ -115,21 +120,24 @@ class BranchProtectionHookTest {
       when(configService.isEnabled(REPOSITORY)).thenReturn(true);
       when(configService.isBranchProtected(REPOSITORY, "master")).thenReturn(true);
 
-      when(branchProvider.getCreatedOrModified()).thenReturn(asList("master"));
+      when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("master"));
       Changeset changeset = mock(Changeset.class);
-      when(changesetBuilder.getChangesets()).thenReturn(asList(changeset));
-      when(changeset.getBranches()).thenReturn(asList("master"));
-      when(changeset.getParents()).thenReturn(asList("parent"));
+      when(changesetBuilder.getChangesets()).thenReturn(singletonList(changeset));
+      when(changeset.getBranches()).thenReturn(singletonList("master"));
+      when(changeset.getParents()).thenReturn(singletonList("parent"));
 
       Assertions.assertThrows(BranchOnlyWritableByMergeException.class, () ->
         hook.onEvent(event)
       );
     }
-  }
 
-  @Test
-  void shouldIgnoreChecksWhenRunPrivileged() {
-    lenient().when(event.getContext()).thenThrow(new AssertionFailedError("this should not have been called"));
-    hook.runPrivileged(() -> hook.onEvent(event));
+    @Test
+    void shouldIgnoreChecksWhenRunPrivileged() {
+      when(internalMergeSwitch.internalMergeRunning()).thenReturn(true);
+
+      hook.onEvent(event);
+
+      verify(configService, never()).isEnabled(any());
+    }
   }
 }

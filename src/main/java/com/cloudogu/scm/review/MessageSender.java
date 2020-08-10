@@ -25,31 +25,36 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import sonia.scm.config.ScmConfiguration;
-import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.api.HookMessageProvider;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 
-import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
+public interface MessageSender {
 
-public class MessageSender {
+  void sendMessageForPullRequest(PullRequest pullRequest, String... message);
+
+  void sendCreatePullRequestMessage(String branch, String... message);
+}
+
+class ProviderMessageSender implements MessageSender {
 
   private final ScmConfiguration configuration;
-  private final PostReceiveRepositoryHookEvent event;
+  private final RepositoryHookEvent event;
 
-  @Inject
-  public MessageSender(ScmConfiguration configuration, PostReceiveRepositoryHookEvent event) {
+  public ProviderMessageSender(ScmConfiguration configuration, RepositoryHookEvent event) {
     this.configuration = configuration;
     this.event = event;
   }
 
-  public void sendMessageForPullRequest(PullRequest pullRequest, String message) {
+  @Override
+  public void sendMessageForPullRequest(PullRequest pullRequest, String... message) {
     sendMessages(message, createPullRequestLink(pullRequest));
   }
 
-  public void sendCreatePullRequestMessage(String branch, String message) {
+  @Override
+  public void sendCreatePullRequestMessage(String branch, String... message) {
     sendMessages(message, createCreateLink(event.getRepository(), branch));
   }
 
@@ -72,12 +77,25 @@ public class MessageSender {
       pullRequest.getId());
   }
 
-  private void sendMessages(String... messages) {
-    if (event.getContext().isFeatureSupported(MESSAGE_PROVIDER)) {
-      HookMessageProvider messageProvider = event.getContext().getMessageProvider();
-      messageProvider.sendMessage("");
-      Arrays.stream(messages).forEach(messageProvider::sendMessage);
-      messageProvider.sendMessage("");
-    }
+  private void sendMessages(String[] messages, String url) {
+    HookMessageProvider messageProvider = event.getContext().getMessageProvider();
+    messageProvider.sendMessage("");
+    Arrays.stream(messages).forEach(messageProvider::sendMessage);
+    messageProvider.sendMessage(url);
+    messageProvider.sendMessage("");
   }
 }
+
+class NoOpMessageSender implements MessageSender {
+
+  @Override
+  public void sendMessageForPullRequest(PullRequest pullRequest, String... message) {
+    // no op implementation
+  }
+
+  @Override
+  public void sendCreatePullRequestMessage(String branch, String... message) {
+    // no op implementation
+  }
+}
+

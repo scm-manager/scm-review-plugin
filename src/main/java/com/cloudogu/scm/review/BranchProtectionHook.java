@@ -40,42 +40,21 @@ import javax.inject.Inject;
 @EagerSingleton
 public class BranchProtectionHook {
 
-  private ConfigService service;
-
-  private final ThreadLocal<Object> mergeRunning = new InheritableThreadLocal<>();
+  private final ConfigService service;
+  private final InternalMergeSwitch internalMergeSwitch;
 
   @Inject
-  public BranchProtectionHook(ConfigService service) {
+  public BranchProtectionHook(ConfigService service, InternalMergeSwitch internalMergeSwitch) {
     this.service = service;
-  }
-
-  public void runPrivileged(Runnable r) {
-    mergeRunning.set(new Object());
-    try {
-      r.run();
-    } finally {
-      mergeRunning.remove();
-    }
+    this.internalMergeSwitch = internalMergeSwitch;
   }
 
   @Subscribe(async = false)
   public void onEvent(PreReceiveRepositoryHookEvent event) {
-    if (mergeRunning.get() != null) {
-      return;
-    }
     HookContext context = event.getContext();
-    if (context == null) {
-      log.warn("there is no context in the received repository hook");
-      return;
-    }
-    if (!context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
-      log.debug("The repository does not support branches. Skip check.");
-      return;
-    }
-
     Repository repository = event.getRepository();
-    if (repository == null) {
-      log.warn("there is no repository in the received repository hook");
+
+    if (ignoreHook(context, repository)) {
       return;
     }
 
@@ -101,5 +80,24 @@ public class BranchProtectionHook {
         throw new BranchOnlyWritableByMergeException(repository, branch);
       }
     }
+  }
+
+  private boolean ignoreHook(HookContext context, Repository repository) {
+    if (internalMergeSwitch.internalMergeRunning()) {
+      return true;
+    }
+    if (context == null) {
+      log.warn("there is no context in the received repository hook");
+      return true;
+    }
+    if (!context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
+      log.debug("The repository does not support branches. Skip check.");
+      return true;
+    }
+    if (repository == null) {
+      log.warn("there is no repository in the received repository hook");
+      return true;
+    }
+    return false;
   }
 }

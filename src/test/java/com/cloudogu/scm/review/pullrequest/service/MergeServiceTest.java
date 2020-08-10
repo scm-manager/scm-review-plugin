@@ -23,7 +23,7 @@
  */
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.BranchProtectionHook;
+import com.cloudogu.scm.review.InternalMergeSwitch;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.google.common.collect.ImmutableList;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -40,6 +40,7 @@ import sonia.scm.repository.Branch;
 import sonia.scm.repository.Branches;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
@@ -105,7 +106,7 @@ public class MergeServiceTest {
   @Mock
   private MergeCommandBuilder mergeCommandBuilder;
   @Mock
-  private BranchProtectionHook branchProtectionHook;
+  private InternalMergeSwitch internalMergeSwitch;
   @Mock
   private UserDisplayManager userDisplayManager;
 
@@ -115,12 +116,12 @@ public class MergeServiceTest {
 
   @BeforeEach
   void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, branchProtectionHook, userDisplayManager);
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, internalMergeSwitch, userDisplayManager);
     lenient().doAnswer(invocation -> {
       invocation.<Runnable>getArgument(0).run();
       return null;
     })
-      .when(branchProtectionHook).runPrivileged(any());
+      .when(internalMergeSwitch).runInternalMerge(any());
   }
 
   @BeforeEach
@@ -281,7 +282,7 @@ public class MergeServiceTest {
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, true);
 
     verify(pullRequestService).setEmergencyMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage(), Collections.emptyList());
-    verify(pullRequestService, never()).setMerged(REPOSITORY, "1", mergeCommit.getOverrideMessage());
+    verify(pullRequestService, never()).setMerged(REPOSITORY, "1");
   }
 
   @Test
@@ -290,8 +291,10 @@ public class MergeServiceTest {
     mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
+
+    NamespaceAndName namespaceAndName = REPOSITORY.getNamespaceAndName();
     assertThrows(UnauthorizedException.class,
-      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, true));
+      () -> service.merge(namespaceAndName, "1", mergeCommit, MergeStrategy.SQUASH, true));
   }
 
   @Test
@@ -300,8 +303,9 @@ public class MergeServiceTest {
     mockMergeGuard(pullRequest, true);
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
+    NamespaceAndName namespaceAndName = REPOSITORY.getNamespaceAndName();
     assertThrows(MergeNotAllowedException.class,
-      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
+      () -> service.merge(namespaceAndName, "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test
@@ -310,8 +314,9 @@ public class MergeServiceTest {
     mockPullRequest("squash", "master", "1");
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
+    NamespaceAndName namespaceAndName = REPOSITORY.getNamespaceAndName();
     assertThrows(UnauthorizedException.class,
-      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
+      () -> service.merge(namespaceAndName, "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test
@@ -336,7 +341,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(true);
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, false);
 
-    verify(pullRequestService).setMerged(REPOSITORY, "1", "override");
+    verify(pullRequestService).setMerged(REPOSITORY, "1");
   }
 
   @Test
@@ -346,8 +351,9 @@ public class MergeServiceTest {
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
+    NamespaceAndName namespaceAndName = REPOSITORY.getNamespaceAndName();
     assertThrows(MergeStrategyNotSupportedException.class,
-      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
+      () -> service.merge(namespaceAndName, "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test
@@ -358,8 +364,9 @@ public class MergeServiceTest {
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
+    NamespaceAndName namespaceAndName = REPOSITORY.getNamespaceAndName();
     assertThrows(MergeNotAllowedException.class,
-      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
+      () -> service.merge(namespaceAndName, "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test
@@ -381,8 +388,9 @@ public class MergeServiceTest {
 
     MergeCommitDto mergeCommit = createMergeCommit(false);
 
+    NamespaceAndName namespaceAndName = REPOSITORY.getNamespaceAndName();
     assertThrows(CannotMergeNotOpenPullRequestException.class,
-      () -> service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false));
+      () -> service.merge(namespaceAndName, "1", mergeCommit, MergeStrategy.SQUASH, false));
   }
 
   @Test

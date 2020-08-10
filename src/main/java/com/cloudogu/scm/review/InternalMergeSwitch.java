@@ -21,29 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review;
 
-import sonia.scm.config.ScmConfiguration;
-import sonia.scm.repository.RepositoryHookEvent;
+import javax.inject.Singleton;
 
-import javax.inject.Inject;
+@Singleton
+public class InternalMergeSwitch {
 
-import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
+  private final ThreadLocal<Object> mergeRunning = new InheritableThreadLocal<>();
 
-public class MessageSenderFactory {
-
-  private final ScmConfiguration configuration;
-
-  @Inject
-  public MessageSenderFactory(ScmConfiguration configuration) {
-    this.configuration = configuration;
+  public void runInternalMerge(Runnable r) {
+    mergeRunning.set(new Object());
+    try {
+      r.run();
+    } finally {
+      mergeRunning.remove();
+    }
   }
 
-  public MessageSender create(RepositoryHookEvent event) {
-    if (event.getContext().isFeatureSupported(MESSAGE_PROVIDER)) {
-      return new ProviderMessageSender(configuration, event);
-    } else {
-      return new NoOpMessageSender();
-    }
+  boolean internalMergeRunning() {
+    return mergeRunning.get() != null;
   }
 }

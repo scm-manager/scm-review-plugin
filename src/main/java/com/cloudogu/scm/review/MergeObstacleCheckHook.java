@@ -24,10 +24,10 @@
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.MergeNotAllowedException;
 import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
 import sonia.scm.NotFoundException;
 import sonia.scm.plugin.Extension;
-import sonia.scm.repository.PostReceiveRepositoryHookEvent;
+import sonia.scm.repository.PreReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.HookBranchProvider;
 import sonia.scm.repository.api.HookContext;
@@ -43,34 +43,35 @@ import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.List;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 @EagerSingleton
 @Extension
-public class StatusCheckHook {
+public class MergeObstacleCheckHook {
 
-  private static final Logger LOG = LoggerFactory.getLogger(StatusCheckHook.class);
+  private static final Logger LOG = LoggerFactory.getLogger(MergeObstacleCheckHook.class);
 
   private final DefaultPullRequestService pullRequestService;
-  private final MessageSenderFactory messageSenderFactory;
   private final MergeService mergeService;
+  private final MessageSenderFactory messageSenderFactory;
   private final InternalMergeSwitch internalMergeSwitch;
 
   @Inject
-  public StatusCheckHook(DefaultPullRequestService pullRequestService, MessageSenderFactory messageSenderFactory, MergeService mergeService, InternalMergeSwitch internalMergeSwitch) {
+  public MergeObstacleCheckHook(DefaultPullRequestService pullRequestService, MergeService mergeService, MessageSenderFactory messageSenderFactory, InternalMergeSwitch internalMergeSwitch) {
     this.pullRequestService = pullRequestService;
-    this.messageSenderFactory = messageSenderFactory;
     this.mergeService = mergeService;
+    this.messageSenderFactory = messageSenderFactory;
     this.internalMergeSwitch = internalMergeSwitch;
   }
 
   @Subscribe(async = false)
-  public void checkStatus(PostReceiveRepositoryHookEvent event) {
+  public void checkForObstacles(PreReceiveRepositoryHookEvent event) {
+    HookContext context = event.getContext();
     Repository repository = event.getRepository();
-    if (ignoreHook(event.getContext(), repository)) {
+    if (ignoreHook(context, repository)) {
       return;
     }
     List<PullRequest> pullRequests = pullRequestService.getAll(repository.getNamespace(), repository.getName());
@@ -78,34 +79,23 @@ public class StatusCheckHook {
   }
 
   private boolean ignoreHook(HookContext context, Repository repository) {
-    if (internalMergeSwitch.internalMergeRunning()) {
-      return true;
-    }
-    if (!pullRequestService.supportsPullRequests(repository)) {
-      return true;
-    }
-    if (!context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
-      LOG.warn("hook event for repository {} does not support branches - cannot check for merges", repository.getNamespaceAndName());
-      return true;
-    }
-    if (!context.isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER)) {
-      LOG.warn("hook event for repository {} does not support merge detection - cannot check for merges", repository.getNamespaceAndName());
-      return true;
-    }
-    return false;
+    return internalMergeSwitch.internalMergeRunning()
+      || !context.isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER)
+      || !pullRequestService.supportsPullRequests(repository);
   }
 
   private class Worker {
-    private final MessageSender messageSender;
     private final Repository repository;
     private final HookBranchProvider branchProvider;
     private final HookMergeDetectionProvider mergeDetectionProvider;
+    private final MessageSender messageSender;
 
-    private Worker(PostReceiveRepositoryHookEvent event) {
-      this.messageSender = messageSenderFactory.create(event);
+    private Worker(PreReceiveRepositoryHookEvent event) {
+      HookContext context = event.getContext();
       this.repository = event.getRepository();
-      this.branchProvider = event.getContext().getBranchProvider();
-      this.mergeDetectionProvider = event.getContext().getMergeDetectionProvider();
+      this.branchProvider = context.getBranchProvider();
+      this.mergeDetectionProvider = context.getMergeDetectionProvider();
+      this.messageSender = messageSenderFactory.create(event);
     }
 
     private void process(List<PullRequest> pullRequests) {
@@ -121,14 +111,32 @@ public class StatusCheckHook {
     }
 
     private void processOpen(PullRequest pullRequest) {
-      if (branchesAreModified(pullRequest)) {
-        if (isMerged(pullRequest)) {
-          setMerged(pullRequest);
-        } else {
-          updated(pullRequest);
+      if (branchesAreModified(pullRequest) && isMerged(pullRequest)) {
+        try {
+          Collection<MergeObstacle> mergeObstacles = mergeService.verifyNoObstacles(PermissionCheck.mayPerformEmergencyMerge(repository), repository, pullRequest);
+          if (!mergeObstacles.isEmpty()) {
+            LOG.info("about to merge pull request #{} for repository {} with {} violated rule(s) by push", pullRequest.getId(), repository.getNamespaceAndName(), mergeObstacles.size());
+            String[] message =
+              {
+                format("This merges pull request #%s (%s -> %s) with %s violated rule(s).", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget(), mergeObstacles.size()),
+                "This merge is permitted only because you have the permission for emergency merges",
+                "or the violated rules are not blocking ones.",
+                "Please check this pull request:"
+              };
+            messageSender.sendMessageForPullRequest(pullRequest, message);
+          }
+        } catch (MergeNotAllowedException e) {
+          Collection<MergeObstacle> mergeObstacles = e.getObstacles();
+          LOG.debug("merge of pull request #{} for repository {} was rejected due to {} violated rule(s)", pullRequest.getId(), repository.getNamespaceAndName(), mergeObstacles.size());
+          String[] message =
+            {
+              format("This would merge pull request #%s (%s -> %s) with %s violated rule(s).", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget(), mergeObstacles.size()),
+              "You do not have the permission to execute emergency merges.",
+              "Please check this pull request for details about the rules:"
+            };
+          messageSender.sendMessageForPullRequest(pullRequest, message);
+          throw e;
         }
-      } else if (sourceBranchIsDeleted(pullRequest)) {
-        setRejected(pullRequest);
       }
     }
 
@@ -137,9 +145,10 @@ public class StatusCheckHook {
     }
 
     private boolean branchesAreModified(PullRequest pullRequest) {
+      List<String> createdOrModified = branchProvider.getCreatedOrModified();
       return
-        branchProvider.getCreatedOrModified().contains(pullRequest.getSource()) ||
-          branchProvider.getCreatedOrModified().contains(pullRequest.getTarget());
+        createdOrModified.contains(pullRequest.getSource()) ||
+          createdOrModified.contains(pullRequest.getTarget());
     }
 
     private boolean isMerged(PullRequest pullRequest) {
@@ -149,40 +158,6 @@ public class StatusCheckHook {
         LOG.debug("target or source branch not found for pull request #{}", pullRequest.getId(), e);
         return false;
       }
-    }
-
-    private void setMerged(PullRequest pullRequest) {
-      LOG.info("setting pull request {} to status MERGED", pullRequest.getId());
-      String message = format("Merged pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
-      messageSender.sendMessageForPullRequest(pullRequest, message);
-
-      List<String> mergeObstacles =
-        mergeService.verifyNoObstacles(PermissionCheck.mayPerformEmergencyMerge(repository), repository, pullRequest)
-          .stream()
-          .map(MergeObstacle::getKey)
-          .collect(toList());
-
-      if (mergeObstacles.isEmpty()) {
-        pullRequestService.setMerged(repository, pullRequest.getId());
-      } else {
-        pullRequestService.setEmergencyMerged(repository, pullRequest.getId(), "merged by a direct push to the repository", mergeObstacles);
-      }
-    }
-
-    private boolean sourceBranchIsDeleted(PullRequest pullRequest) {
-      return branchProvider.getDeletedOrClosed().contains(pullRequest.getSource());
-    }
-
-    private void setRejected(PullRequest pullRequest) {
-      LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
-      String message = format("Rejected pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
-      messageSender.sendMessageForPullRequest(pullRequest, message);
-      pullRequestService.setRejected(repository, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
-    }
-
-    private void updated(PullRequest pullRequest) {
-      LOG.info("pull request {} was updated", pullRequest.getId());
-      pullRequestService.updated(repository, pullRequest.getId());
     }
   }
 }

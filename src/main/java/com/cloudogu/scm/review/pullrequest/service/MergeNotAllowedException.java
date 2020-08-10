@@ -30,9 +30,19 @@ import sonia.scm.repository.Repository;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.unmodifiableCollection;
+
 public class MergeNotAllowedException extends ExceptionWithContext {
+
+  private final Collection<MergeObstacle> obstacles;
+
   public MergeNotAllowedException(Repository repository, PullRequest pullRequest, Collection<MergeObstacle> obstacles) {
     super(ContextEntry.ContextBuilder.entity(PullRequest.class, pullRequest.getId()).in(repository).build(), buildMessage(obstacles));
+    this.obstacles = obstacles;
+  }
+
+  public Collection<MergeObstacle> getObstacles() {
+    return unmodifiableCollection(obstacles);
   }
 
   private static String buildMessage(Collection<MergeObstacle> obstacles) {
