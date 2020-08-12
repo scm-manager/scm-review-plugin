@@ -33,7 +33,8 @@ import {
   diffs,
   File,
   Level,
-  LoadingDiff
+  LoadingDiff,
+  FileContentFactory
 } from "@scm-manager/ui-components";
 import { Comment, Location, PullRequest } from "../types/PullRequest";
 import { createHunkId, createInlineLocation } from "./locations";
@@ -64,6 +65,7 @@ type Props = WithTranslation & {
   createLink?: string;
   dispatch: Dispatch<any>;
   pullRequest: PullRequest;
+  fileContentFactory: FileContentFactory;
 };
 
 type State = {
@@ -79,7 +81,7 @@ class Diff extends React.Component<Props, State> {
   }
 
   render() {
-    const { diffUrl, pullRequest, t } = this.props;
+    const { diffUrl, pullRequest, fileContentFactory, t } = this.props;
     const { collapsed } = this.state;
 
     let globalCollapsedOrByMarks: DefaultCollapsedFunction;
@@ -106,7 +108,7 @@ class Diff extends React.Component<Props, State> {
         <LoadingDiff
           url={diffUrl}
           defaultCollapse={globalCollapsedOrByMarks}
-          fileControlFactory={this.createFileControls}
+          fileControlFactory={this.createFileControlsFactory(fileContentFactory)}
           fileAnnotationFactory={this.fileAnnotationFactory}
           annotationFactory={this.annotationFactory}
           onClick={this.onGutterClick}
@@ -172,7 +174,10 @@ class Diff extends React.Component<Props, State> {
     }));
   };
 
-  createFileControls = (file: File, setCollapse: (p: boolean) => void) => {
+  createFileControlsFactory = (fileContentFactory: FileContentFactory) => (
+    file: File,
+    setCollapse: (p: boolean) => void
+  ) => {
     if (this.isPermittedToComment()) {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
@@ -190,8 +195,11 @@ class Diff extends React.Component<Props, State> {
             setCollapse={setCollapse}
           />
           <AddCommentButton action={openFileEditor} />
+          {fileContentFactory(file)}
         </ButtonGroup>
       );
+    } else {
+      return <ButtonGroup>{fileContentFactory(file)}</ButtonGroup>;
     }
   };
 

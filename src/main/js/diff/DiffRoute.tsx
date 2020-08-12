@@ -24,8 +24,8 @@
 import React, { FC, useReducer } from "react";
 import reducer, { initialState } from "./reducer";
 import { PullRequest } from "../types/PullRequest";
-import { Repository, Link } from "@scm-manager/ui-types";
-import { Notification, Loading, ErrorNotification } from "@scm-manager/ui-components";
+import { Link, Repository } from "@scm-manager/ui-types";
+import { ErrorNotification, JumpToFileButton, Loading, Notification } from "@scm-manager/ui-components";
 import useComments from "../comment/useComments";
 import { createDiffUrl } from "../pullRequest";
 import { useTranslation } from "react-i18next";
@@ -43,6 +43,38 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
   const { error, loading, links } = useComments(pullRequest, dispatch);
   const { t } = useTranslation("plugins");
 
+  const fileContentFactory: FileContentFactory = file => {
+    const baseUrl = `/repo/${repository.namespace}/${repository.name}/code/sources`;
+    const sourceLink = {
+      url: `${baseUrl}/${pullRequest && pullRequest.source && encodeURIComponent(pullRequest.source)}/${file.newPath}/`,
+      label: t("scm-review-plugin.diff.jumpToSource")
+    };
+    const targetLink = pullRequest.target && {
+      url: `${baseUrl}/${encodeURIComponent(pullRequest.target)}/${file.oldPath}`,
+      label: t("scm-review-plugin.diff.jumpToTarget")
+    };
+
+    const links = [];
+    switch (file.type) {
+      case "add":
+        links.push(sourceLink);
+        break;
+      case "delete":
+        if (targetLink) {
+          links.push(targetLink);
+        }
+        break;
+      default:
+        if (targetLink) {
+          links.push(sourceLink, targetLink);
+        } else {
+          links.push(sourceLink);
+        }
+    }
+
+    return links.map(({ url, label }) => <JumpToFileButton tooltip={label} link={url} />);
+  };
+
   const diffUrl = createDiffUrl(repository, source, target);
   if (!diffUrl) {
     return <Notification type="danger">{t("scm-review-plugin.diff.notSupported")}</Notification>;
@@ -59,6 +91,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
         createLink={createLink}
         dispatch={dispatch}
         pullRequest={pullRequest}
+        fileContentFactory={fileContentFactory}
       />
     );
   }

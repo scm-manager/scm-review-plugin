@@ -19,7 +19,9 @@
       "collapseDiffs": "Auf-/Zuklappen",
       "markReviewed": "Markiere Datei als reviewed. Diese Markierung sorgt dafür, dass diese Datei standardmäßig eingeklappt dargestellt wird.",
       "markNotReviewed": "Entferne Review-Markierung",
-      "addComment": "Kommentar für Datei hinzufügen"
+      "addComment": "Kommentar für Datei hinzufügen",
+      "jumpToSource": "Zur Quelldatei springen",
+      "jumpToTarget": "Zur Zieldatei springen"
     },
     "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
     "pullRequest": {
