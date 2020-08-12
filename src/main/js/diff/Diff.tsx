@@ -174,7 +174,10 @@ class Diff extends React.Component<Props, State> {
     }));
   };
 
-  createFileControlsFactory = (fileContentFactory: FileContentFactory) => (file: File, setCollapse: (p: boolean) => void) => {
+  createFileControlsFactory = (fileContentFactory: FileContentFactory) => (
+    file: File,
+    setCollapse: (p: boolean) => void
+  ) => {
     if (this.isPermittedToComment()) {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
@@ -196,9 +199,7 @@ class Diff extends React.Component<Props, State> {
         </ButtonGroup>
       );
     } else {
-      return <ButtonGroup>
-        {fileContentFactory(file)}
-      </ButtonGroup>
+      return <ButtonGroup>{fileContentFactory(file)}</ButtonGroup>;
     }
   };
 
