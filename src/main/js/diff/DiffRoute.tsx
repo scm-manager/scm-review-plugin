@@ -49,7 +49,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
       url: `${baseUrl}/${pullRequest && pullRequest.source && encodeURIComponent(pullRequest.source)}/${file.newPath}/`,
       label: t("scm-review-plugin.diff.jumpToSource")
     };
-    const targetLink = pullRequest.target && {
+    const targetLink = pullRequest && pullRequest.target && {
       url: `${baseUrl}/${encodeURIComponent(pullRequest.target)}/${file.oldPath}`,
       label: t("scm-review-plugin.diff.jumpToTarget")
     };
