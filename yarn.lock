@@ -1253,6 +1253,27 @@
     react-select "^2.1.2"
     react-syntax-highlighter "https://github.com/conorhastings/react-syntax-highlighter#08bcf49b1aa7877ce94f7208e73dfa6bef8b26e7"
 
+"@scm-manager/ui-components@^2.3.0":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-2.3.1.tgz#39f3ef1b79e4cbdda980b4745a3d77c8cd66e8b5"
+  integrity sha512-Hutx01F9UEila+G7qZOSB3qnaW9NFldBA73v94G/H1eH48LnKJSUNiKIbAHl20C+WUJUgb42VvVdrTo5fT8juA==
+  dependencies:
+    "@scm-manager/ui-extensions" "^2.1.0"
+    "@scm-manager/ui-types" "^2.3.0"
+    classnames "^2.2.6"
+    date-fns "^2.4.1"
+    gitdiff-parser "^0.1.2"
+    lowlight "^1.13.0"
+    query-string "5"
+    react "^16.8.6"
+    react-diff-view "^2.4.1"
+    react-dom "^16.8.6"
+    react-i18next "^10.13.1"
+    react-markdown "^4.0.6"
+    react-router-dom "^5.1.2"
+    react-select "^2.1.2"
+    react-syntax-highlighter "https://github.com/conorhastings/react-syntax-highlighter#08bcf49b1aa7877ce94f7208e73dfa6bef8b26e7"
+
 "@scm-manager/ui-extensions@^2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-2.1.0.tgz#8bb1f520e363953fbd4b7d806da8187d07321259"
@@ -1316,6 +1337,11 @@
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-2.1.0.tgz#ef589960d6b6e017755f7e0358f0cf790eeb8442"
   integrity sha512-w+xv6whnJ6NCkmdJ19J38tUW++xKJBv2buSTCLqhed4a98TvFQFDguCNnlontHpfYL6sDlhssVGuG+iipWOsmw==
+
+"@scm-manager/ui-types@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-2.3.0.tgz#95c1ebde625fe0158587dfc6290d9169fd3354b6"
+  integrity sha512-rqY6oqjxF4Iy8i9DYZPKgsmKCh29bBTdpBnDLvQscx7OpAwwap03uteZzbb6vIwNtl1h1ARVP71VGcbw3ino+A==
 
 "@types/babel__core@^7.1.0":
   version "7.1.9"
@@ -8038,6 +8064,17 @@ react-select@^2.1.2:
     raf "^3.4.0"
     react-input-autosize "^2.2.1"
     react-transition-group "^2.2.1"
+
+"react-syntax-highlighter@git+https://github.com/conorhastings/react-syntax-highlighter.git#08bcf49b1aa7877ce94f7208e73dfa6bef8b26e7":
+  version "12.0.2"
+  uid "08bcf49b1aa7877ce94f7208e73dfa6bef8b26e7"
+  resolved "git+https://github.com/conorhastings/react-syntax-highlighter.git#08bcf49b1aa7877ce94f7208e73dfa6bef8b26e7"
+  dependencies:
+    "@babel/runtime" "^7.3.1"
+    highlight.js "~9.13.0"
+    lowlight "~1.11.0"
+    prismjs "^1.16.0"
+    refractor "^2.10.1"
 
 "react-syntax-highlighter@https://github.com/conorhastings/react-syntax-highlighter#08bcf49b1aa7877ce94f7208e73dfa6bef8b26e7":
   version "12.0.2"

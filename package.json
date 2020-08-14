@@ -12,7 +12,7 @@
   },
   "dependencies" : {
     "@scm-manager/ui-plugins" : "2.2.0",
-    "@scm-manager/ui-components" : "^2.2.0",
+    "@scm-manager/ui-components" : "^2.3.0",
     "@scm-manager/ui-extensions" : "^2.1.0",
     "classnames" : "^2.2.6",
     "gitdiff-parser" : "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
