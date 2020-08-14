@@ -1232,13 +1232,13 @@
   dependencies:
     typescript "^3.7.2"
 
-"@scm-manager/ui-components@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-2.2.0.tgz#9cc7c8143ca33816b506f0c42211346d0cc7c184"
-  integrity sha512-jDZ2aRcT1d4riW6H+0OcixQYlisK3K586ak2T4MS6pL6uws+gtpQeIwV6fotD1ZT+tppdYWgq7UXFODa3Pq4MQ==
+"@scm-manager/ui-components@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-2.4.0.tgz#0096c4a8cd93c8af544f54ed0462a044ee116647"
+  integrity sha512-WgLLgYMpHIdobFXo8hmO4RbF8zP+AQlzSKoa5rc8i52qws51yFNM8E/EIeAQubKtTZik2yb/Gp8G6saIADQGJw==
   dependencies:
     "@scm-manager/ui-extensions" "^2.1.0"
-    "@scm-manager/ui-types" "^2.1.0"
+    "@scm-manager/ui-types" "^2.4.0"
     classnames "^2.2.6"
     date-fns "^2.4.1"
     gitdiff-parser "^0.1.2"
@@ -1260,12 +1260,12 @@
   dependencies:
     react "^16.10.2"
 
-"@scm-manager/ui-plugins@2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-2.2.0.tgz#b7cd4f2a5f72c750a666484ce0e590d49fca15e6"
-  integrity sha512-+S3DhuaU4eCwVuOaJ6IHqa5eh+SVjqWGBuCveG5gNlmA7EpHzlPqEBEz0/49wPlTAQI/hZnJ+sQNRJnA6V1kSw==
+"@scm-manager/ui-plugins@2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-2.4.0.tgz#a730d5049b92bbccb0049cdc3da47a0290e18f07"
+  integrity sha512-NAYrKttYLaaM2A7NR+7zQFhmTPq5SPKr7XamuzrxebxaebhF6SaJ6O7zz2wYJeDFBPgZPfa3f8trDRYi/+pN4w==
   dependencies:
-    "@scm-manager/ui-components" "^2.2.0"
+    "@scm-manager/ui-components" "^2.4.0"
     "@scm-manager/ui-extensions" "^2.1.0"
     classnames "^2.2.6"
     query-string "^5.0.1"
@@ -1312,10 +1312,10 @@
     raf "^3.4.1"
     react-test-renderer "^16.10.2"
 
-"@scm-manager/ui-types@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-2.1.0.tgz#ef589960d6b6e017755f7e0358f0cf790eeb8442"
-  integrity sha512-w+xv6whnJ6NCkmdJ19J38tUW++xKJBv2buSTCLqhed4a98TvFQFDguCNnlontHpfYL6sDlhssVGuG+iipWOsmw==
+"@scm-manager/ui-types@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-2.4.0.tgz#64defa85e8db5c2358012ac25c08ec6603922a5e"
+  integrity sha512-NmLQrq1yKg0YCFBeJUvs+h5q9RGthC59SZYRFIPlIRvaX+w6DWnkxMXdXYNbpO7wBKyKcDxhxoFpWb/hOqaNSw==
 
 "@types/babel__core@^7.1.0":
   version "7.1.9"
