@@ -98,7 +98,8 @@
         },
         "commitMessage": "Bitte Commit Nachricht eingeben",
         "resetMessage": "Nachricht zurücksetzen",
-        "fallbackMessageInfo": "Diese Nachricht wird nur genutzt, wenn Fast Forward nicht möglich ist."
+        "fallbackMessageInfo": "Diese Nachricht wird nur genutzt, wenn Fast Forward nicht möglich ist.",
+        "mergeConflict": "Die Branches konnten nicht gemerged werden, da Konflikte existieren. Bitte versuchen sie eine andere Merge-Strategie."
       },
       "mergeStrategies": {
         "SQUASH": "Squash",
@@ -438,10 +439,6 @@
     }
   },
   "errors": {
-    "DTRhFJFgU1": {
-      "displayName": "Merge Konflikte",
-      "description": "Die Branches konnten nicht gemerged werden, da Konflikte existieren."
-    },
     "FTRhcI0To1": {
       "displayName": "Pull Request nicht offen",
       "description": "Merges können nur auf offenen Pull Requests ausgeführt werden."

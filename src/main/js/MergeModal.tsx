@@ -22,18 +22,25 @@
  * SOFTWARE.
  */
 import React from "react";
-import { Button, Modal, SubmitButton } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
+import {Button, Modal, SubmitButton} from "@scm-manager/ui-components";
+import {WithTranslation, withTranslation} from "react-i18next";
 import MergeForm from "./MergeForm";
-import { MergeCommit, PullRequest } from "./types/PullRequest";
-import { Link } from "@scm-manager/ui-types";
-import { getDefaultCommitDefaultMessage } from "./pullRequest";
+import {MergeCheck, MergeCommit, PullRequest} from "./types/PullRequest";
+import {Link} from "@scm-manager/ui-types";
+import {getDefaultCommitDefaultMessage} from "./pullRequest";
+import styled from "styled-components";
+
+const ErrorBanner = styled("div")`
+  padding: 8px;
+  color: white;
+`;
 
 type Props = WithTranslation & {
   close: () => void;
   merge: (strategy: string, mergeCommit: MergeCommit, emergency: boolean) => void;
   pullRequest: PullRequest;
   emergencyMerge: boolean;
+  mergeCheck?: MergeCheck;
 };
 
 type State = {
@@ -43,6 +50,7 @@ type State = {
   loading: boolean;
   loadingDefaultMessage: boolean;
   messageChanged: boolean;
+  mergeFailed: boolean;
 };
 
 class MergeModal extends React.Component<Props, State> {
@@ -57,7 +65,8 @@ class MergeModal extends React.Component<Props, State> {
       defaultCommitMessages: {},
       loading: false,
       loadingDefaultMessage: false,
-      messageChanged: false
+      messageChanged: false,
+      mergeFailed: false
     };
   }
 
@@ -73,16 +82,31 @@ class MergeModal extends React.Component<Props, State> {
     this.getDefaultMessage();
   }
 
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+    if (prevProps.mergeCheck !== this.props.mergeCheck) {
+      if (this.props.mergeCheck?.hasConflicts) {
+        this.setState({
+          mergeFailed: true,
+          loading: false
+        });
+      } else {
+        this.setState({
+          mergeFailed: false,
+        })
+      }
+    }
+  }
+
   getDefaultMessage = () => {
-    const { pullRequest } = this.props;
-    const { defaultCommitMessages, mergeCommit, mergeStrategy } = this.state;
+    const {pullRequest} = this.props;
+    const {defaultCommitMessages, mergeCommit, mergeStrategy} = this.state;
     if (!!defaultCommitMessages[mergeStrategy]) {
       this.setState({
-        mergeCommit: { ...mergeCommit, commitMessage: defaultCommitMessages[mergeStrategy] },
+        mergeCommit: {...mergeCommit, commitMessage: defaultCommitMessages[mergeStrategy]},
         messageChanged: false
       });
     } else if (pullRequest && pullRequest._links && pullRequest._links.defaultCommitMessage) {
-      this.setState({ loadingDefaultMessage: true }, () => {
+      this.setState({loadingDefaultMessage: true}, () => {
         getDefaultCommitDefaultMessage(
           (pullRequest._links.defaultCommitMessage as Link).href + "?strategy=" + mergeStrategy
         )
@@ -90,14 +114,14 @@ class MergeModal extends React.Component<Props, State> {
             defaultCommitMessages[mergeStrategy] = commitMessage;
             this.setState({
               defaultCommitMessages: defaultCommitMessages,
-              mergeCommit: { ...mergeCommit, commitMessage: commitMessage },
+              mergeCommit: {...mergeCommit, commitMessage: commitMessage},
               messageChanged: false,
               loadingDefaultMessage: false
             });
           })
           .catch(error => {
             this.setState({
-              mergeCommit: { ...mergeCommit, commitMessage: "" },
+              mergeCommit: {...mergeCommit, commitMessage: ""},
               messageChanged: false,
               loadingDefaultMessage: false
             });
@@ -109,7 +133,8 @@ class MergeModal extends React.Component<Props, State> {
   selectStrategy = (strategy: string) => {
     this.setState(
       {
-        mergeStrategy: strategy
+        mergeStrategy: strategy,
+        mergeFailed: false
       },
       () => {
         if (!this.state.messageChanged) {
@@ -120,33 +145,33 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   onChangeCommitMessage = (newMessage: string) => {
-    this.setState({ messageChanged: true, mergeCommit: { ...this.state.mergeCommit, commitMessage: newMessage } });
+    this.setState({messageChanged: true, mergeCommit: {...this.state.mergeCommit, commitMessage: newMessage}});
   };
 
   performMerge = (emergency: boolean) => {
-    const { merge } = this.props;
-    const { mergeStrategy, mergeCommit } = this.state;
+    const {merge} = this.props;
+    const {mergeStrategy, mergeCommit} = this.state;
 
-    this.setState({ loading: true });
+    this.setState({loading: true});
     merge(mergeStrategy, mergeCommit, emergency);
   };
 
   shouldDisableMergeButton = () => {
-    const { mergeCommit } = this.state;
-    return !mergeCommit.commitMessage || mergeCommit.commitMessage.trim() === "";
+    const {mergeCommit, mergeFailed} = this.state;
+    return !mergeCommit.commitMessage || mergeCommit.commitMessage.trim() === "" || mergeFailed;
   };
 
   onChangeDeleteSourceBranch = (value: boolean) => {
-    this.setState({ mergeCommit: { ...this.state.mergeCommit, shouldDeleteSourceBranch: value } });
+    this.setState({mergeCommit: {...this.state.mergeCommit, shouldDeleteSourceBranch: value}});
   };
 
   render() {
-    const { pullRequest, emergencyMerge, close, t } = this.props;
-    const { mergeStrategy, mergeCommit, loading, loadingDefaultMessage } = this.state;
+    const {pullRequest, emergencyMerge, close, t} = this.props;
+    const {mergeStrategy, mergeCommit, loading, loadingDefaultMessage, mergeFailed} = this.state;
 
     const footer = (
       <>
-        <Button label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")} action={() => close()} color="grey" />
+        <Button label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")} action={() => close()} color="grey"/>
         {emergencyMerge ? (
           <SubmitButton
             icon="exclamation-triangle"
@@ -167,7 +192,7 @@ class MergeModal extends React.Component<Props, State> {
       </>
     );
 
-    const body = (
+    const body = (<>
       <MergeForm
         selectedStrategy={mergeStrategy}
         selectStrategy={this.selectStrategy}
@@ -179,7 +204,11 @@ class MergeModal extends React.Component<Props, State> {
         onChangeDeleteSourceBranch={this.onChangeDeleteSourceBranch}
         loading={loadingDefaultMessage}
       />
-    );
+      {mergeFailed && <ErrorBanner
+        className="has-background-danger has-rounded-border">
+        {t('scm-review-plugin.showPullRequest.mergeModal.mergeConflict')}
+      </ErrorBanner>}
+    </>);
 
     return (
       <Modal

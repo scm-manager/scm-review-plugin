@@ -196,6 +196,7 @@ class MergeButton extends React.Component<Props, State> {
           close={this.toggleMergeModal}
           pullRequest={pullRequest}
           emergencyMerge={this.existsObstacles() && !this.existsNotOverrideableObstacles()}
+          mergeCheck={mergeCheck}
         />
       );
     }

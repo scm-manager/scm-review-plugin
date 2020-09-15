@@ -98,7 +98,8 @@
         },
         "commitMessage": "Please insert your commit message",
         "resetMessage": "Reset message",
-        "fallbackMessageInfo": "This message will only be used, when fast forward is not possible."
+        "fallbackMessageInfo": "This message will only be used, when fast forward is not possible.",
+        "mergeConflict": "The branches could not be merged because there were merge conflicts. Please try a different merging strategy."
       },
       "mergeStrategies": {
         "REBASE": "Rebase",
@@ -436,10 +437,6 @@
     }
   },
   "errors": {
-    "DTRhFJFgU1": {
-      "displayName": "Merge conflict",
-      "description": "The branches could not be merged because there were merge conflicts."
-    },
     "FTRhcI0To1": {
       "displayName": "Pull request not open",
       "description": "Merges can only be performed for open pull requests."
