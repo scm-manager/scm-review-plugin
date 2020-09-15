@@ -59,6 +59,6 @@
     "@types/styled-components" : "^5.1.0",
     "fetch-mock" : "^8.0.0",
     "jest" : "^24.9.0",
-    "node-fetch" : "^2.6.0"
+    "node-fetch" : "^2.6.1"
   }
 }
