@@ -101,10 +101,12 @@
         "fallbackMessageInfo": "This message will only be used, when fast forward is not possible."
       },
       "mergeStrategies": {
+        "REBASE": "Rebase",
         "SQUASH": "Squash",
         "MERGE_COMMIT": "Merge Commit",
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward if possible",
         "help": {
+          "REBASE": "Executes a rebase before the merge. Commits on the source branch are directly applied to the target branch.",
           "SQUASH": "Squash all commits of source branch into one new commit --and merge into-- on top of the target branch",
           "MERGE_COMMIT": "Merge branches with new commit and custom commit message",
           "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit. If a fast forward is not possible, a normal merge commit will be created."
