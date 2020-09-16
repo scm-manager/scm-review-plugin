@@ -98,8 +98,10 @@
         },
         "commitMessage": "Please insert your commit message",
         "resetMessage": "Reset message",
-        "fallbackMessageInfo": "This message will only be used, when fast forward is not possible.",
-        "mergeConflict": "The branches could not be merged because there were merge conflicts. Please try a different merging strategy."
+        "commitMessageHint": {
+          "FAST_FORWARD_IF_POSSIBLE": "This message will only be used, when fast forward is not possible."
+        },
+        "mergeConflict": "The branches could not be merged because there were merge conflicts. Please try a different merging strategy or resolve the conflicts manually."
       },
       "mergeStrategies": {
         "REBASE": "Rebase",

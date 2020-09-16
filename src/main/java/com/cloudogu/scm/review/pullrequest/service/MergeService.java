@@ -27,6 +27,7 @@ import com.cloudogu.scm.review.InternalMergeSwitch;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import org.apache.shiro.SecurityUtils;
+import sonia.scm.i18n.I18nMessages;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
@@ -191,6 +192,20 @@ public class MergeService {
       default:
         return createDefaultMergeCommitMessage(pullRequest);
     }
+  }
+
+  public boolean isCommitMessageDisabled(MergeStrategy strategy) {
+    if (strategy == MergeStrategy.REBASE) {
+      return true;
+    }
+    return false;
+  }
+
+  public String createMergeCommitMessageHint(MergeStrategy strategy) {
+    if (strategy == MergeStrategy.FAST_FORWARD_IF_POSSIBLE) {
+      return strategy.name();
+    }
+    return null;
   }
 
   private String createDefaultMergeCommitMessage(PullRequest pullRequest) {

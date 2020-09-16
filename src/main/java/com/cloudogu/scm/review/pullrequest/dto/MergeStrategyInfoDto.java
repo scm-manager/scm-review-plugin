@@ -21,19 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review;
 
-import sonia.scm.web.VndMediaType;
+package com.cloudogu.scm.review.pullrequest.dto;
 
-public class PullRequestMediaType {
-  public static final String PULL_REQUEST = VndMediaType.PREFIX + "pullRequest" + VndMediaType.SUFFIX;
-  public static final String PULL_REQUEST_COLLECTION = VndMediaType.PREFIX + "pullRequestCollection" + VndMediaType.SUFFIX;
-  public static final String MERGE_COMMAND = VndMediaType.PREFIX + "mergeCommand" + VndMediaType.SUFFIX;
-  public static final String MERGE_CHECK_RESULT = VndMediaType.PREFIX + "mergeCheckResult" + VndMediaType.SUFFIX;
-  public static final String MERGE_CONFLICT_RESULT = VndMediaType.PREFIX + "mergeConflictsResult" + VndMediaType.SUFFIX;
-  public static final String MERGE_STRATEGY_INFO = VndMediaType.PREFIX + "mergeStrategyInfo" + VndMediaType.SUFFIX;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-  private PullRequestMediaType() {
-
-  }
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class MergeStrategyInfoDto {
+  private boolean commitMessageDisabled;
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private String defaultCommitMessage;
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private String commitMessageHint;
 }

@@ -33,6 +33,8 @@ type Props = WithTranslation & {
   selectStrategy: (strategy: string) => void;
   selectedStrategy: string;
   commitMessage: string;
+  commitMessageDisabled?: boolean;
+  commitMessageHint?: string;
   onChangeCommitMessage: (message: string) => void;
   onResetCommitMessage: () => void;
   shouldDeleteSourceBranch: boolean;
@@ -49,12 +51,12 @@ class MergeForm extends React.Component<Props> {
     return this.props.loading;
   };
 
-  isCommitMessageVisisble = () => {
-    return this.props.selectedStrategy !== "REBASE";
+  isCommitMessageVisible = () => {
+    return !this.props.commitMessageDisabled;
   }
 
   isShowMessageHint = () => {
-    return this.props.selectedStrategy === "FAST_FORWARD_IF_POSSIBLE";
+    return !!this.props.commitMessageHint;
   };
 
   render() {
@@ -67,8 +69,28 @@ class MergeForm extends React.Component<Props> {
       shouldDeleteSourceBranch,
       onChangeDeleteSourceBranch,
       onResetCommitMessage,
-      t
+      t,
+      commitMessageHint
     } = this.props;
+
+    const commitMessageElement = <>
+      <Textarea
+        placeholder={t("scm-review-plugin.showPullRequest.mergeModal.commitMessage")}
+        disabled={this.isCommitMessageDisabled()}
+        value={commitMessage}
+        onChange={onChangeCommitMessage}
+      />
+      {this.isShowMessageHint() && (
+        <CommitMessageInfo className="is-size-7">
+            <span className="icon is-small has-text-info">
+              <i className="fas fa-info-circle"/>
+            </span>{" "}
+          <span>{t('scm-review-plugin.showPullRequest.mergeModal.commitMessageHint.' + commitMessageHint)}</span>
+        </CommitMessageInfo>
+      )}
+      <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage}/>
+      <hr/>
+    </>
 
     return (
       <>
@@ -78,22 +100,7 @@ class MergeForm extends React.Component<Props> {
           selectStrategy={selectStrategy}
         />
         <hr/>
-        {this.isCommitMessageVisisble() && <Textarea
-          placeholder={t("scm-review-plugin.showPullRequest.mergeModal.commitMessage")}
-          disabled={this.isCommitMessageDisabled()}
-          value={commitMessage}
-          onChange={onChangeCommitMessage}
-        />}
-        {this.isShowMessageHint() && (
-          <CommitMessageInfo className="is-size-7">
-            <span className="icon is-small has-text-info">
-              <i className="fas fa-info-circle"/>
-            </span>{" "}
-            <span>{t("scm-review-plugin.showPullRequest.mergeModal.fallbackMessageInfo")}</span>
-          </CommitMessageInfo>
-        )}
-        {this.isCommitMessageVisisble() && <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage}/>}
-        {this.isCommitMessageVisisble() && <hr/>}
+        {this.isCommitMessageVisible() && commitMessageElement}
         <Checkbox
           label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.flag")}
           checked={shouldDeleteSourceBranch}

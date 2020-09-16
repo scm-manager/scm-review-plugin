@@ -98,8 +98,10 @@
         },
         "commitMessage": "Bitte Commit Nachricht eingeben",
         "resetMessage": "Nachricht zurücksetzen",
-        "fallbackMessageInfo": "Diese Nachricht wird nur genutzt, wenn Fast Forward nicht möglich ist.",
-        "mergeConflict": "Die Branches konnten nicht gemerged werden, da Konflikte existieren. Bitte versuchen sie eine andere Merge-Strategie."
+        "commitMessageHint": {
+          "FAST_FORWARD_IF_POSSIBLE": "Diese Nachricht wird nur genutzt, wenn Fast Forward nicht möglich ist."
+        },
+        "mergeConflict": "Die Branches konnten nicht gemerged werden, da Konflikte existieren. Bitte versuchen sie eine andere Merge-Strategie oder beheben sie die Konflikte manuell."
       },
       "mergeStrategies": {
         "SQUASH": "Squash",
