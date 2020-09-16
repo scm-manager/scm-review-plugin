@@ -38,6 +38,7 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.web.RestDispatcher;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -51,6 +52,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.api.MergeStrategy.FAST_FORWARD_IF_POSSIBLE;
+import static sonia.scm.repository.api.MergeStrategy.REBASE;
 import static sonia.scm.repository.api.MergeStrategy.SQUASH;
 
 @SubjectAware(
@@ -135,6 +137,18 @@ class MergeResourceTest {
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).isEqualTo("successful");
+  }
+
+  @Test
+  void shouldGetRebaseMergeStrategyInfo() throws URISyntaxException, UnsupportedEncodingException {
+    when(mergeService.createDefaultCommitMessage(any(), any(), eq(REBASE))).thenReturn("happy days");
+    when(mergeService.isCommitMessageDisabled(REBASE)).thenReturn(true);
+    when(mergeService.createMergeCommitMessageHint(REBASE)).thenReturn(null);
+    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/merge-strategy-info/?strategy=REBASE");
+    MockHttpResponse response = new MockHttpResponse();
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("happy days").contains("true").doesNotContain("commitMessageHint");
   }
 
   private MockHttpRequest createHttpPostRequest(String url, byte[] content) throws URISyntaxException {

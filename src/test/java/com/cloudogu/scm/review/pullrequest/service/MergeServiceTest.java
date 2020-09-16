@@ -126,8 +126,8 @@ public class MergeServiceTest {
 
   @BeforeEach
   void initMocks() {
-    when(serviceFactory.create(REPOSITORY.getNamespaceAndName())).thenReturn(repositoryService);
-    when(repositoryService.getRepository()).thenReturn(REPOSITORY);
+    lenient().when(serviceFactory.create(REPOSITORY.getNamespaceAndName())).thenReturn(repositoryService);
+    lenient().when(repositoryService.getRepository()).thenReturn(REPOSITORY);
     lenient().when(repositoryService.getMergeCommand()).thenReturn(mergeCommandBuilder);
     lenient().when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     lenient().when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
@@ -454,6 +454,22 @@ public class MergeServiceTest {
     MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
     assertThat(mergeCheckResult.getMergeObstacles()).contains(obstacle1, obstacle2);
+  }
+
+  @Test
+  void shouldReturnCorrectDisabledCommitMessageStatus() {
+    assertThat(service.isCommitMessageDisabled(MergeStrategy.REBASE)).isTrue();
+    assertThat(service.isCommitMessageDisabled(MergeStrategy.SQUASH)).isFalse();
+    assertThat(service.isCommitMessageDisabled(MergeStrategy.MERGE_COMMIT)).isFalse();
+    assertThat(service.isCommitMessageDisabled(MergeStrategy.FAST_FORWARD_IF_POSSIBLE)).isFalse();
+  }
+
+  @Test
+  void shouldReturnCorrectCommitMessageHint() {
+    assertThat(service.createMergeCommitMessageHint(MergeStrategy.REBASE)).isNullOrEmpty();
+    assertThat(service.createMergeCommitMessageHint(MergeStrategy.SQUASH)).isNullOrEmpty();
+    assertThat(service.createMergeCommitMessageHint(MergeStrategy.MERGE_COMMIT)).isNullOrEmpty();
+    assertThat(service.createMergeCommitMessageHint(MergeStrategy.FAST_FORWARD_IF_POSSIBLE)).isEqualTo(MergeStrategy.FAST_FORWARD_IF_POSSIBLE.name());
   }
 
   private TestMergeObstacle mockMergeGuard(PullRequest pullRequest, boolean overrideable) {
