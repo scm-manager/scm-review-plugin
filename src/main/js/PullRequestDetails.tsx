@@ -187,7 +187,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     );
   };
 
-  mergeModalClosed = () => {
+  onMergeModalClosed = () => {
     this.setState({
       mergeCheck: undefined
     });
@@ -333,7 +333,7 @@ class PullRequestDetails extends React.Component<Props, State> {
             loading={mergeButtonLoading}
             repository={repository}
             pullRequest={pullRequest}
-            modalClose={() => this.mergeModalClosed()}
+            onMergeModalClose={this.onMergeModalClosed}
           />
         );
       }
