@@ -69,8 +69,8 @@ class MergeForm extends React.Component<Props> {
       shouldDeleteSourceBranch,
       onChangeDeleteSourceBranch,
       onResetCommitMessage,
-      t,
-      commitMessageHint
+      commitMessageHint,
+      t
     } = this.props;
 
     const commitMessageElement = this.isCommitMessageVisible() && (

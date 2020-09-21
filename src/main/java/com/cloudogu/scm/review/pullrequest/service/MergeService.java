@@ -195,10 +195,7 @@ public class MergeService {
   }
 
   public boolean isCommitMessageDisabled(MergeStrategy strategy) {
-    if (strategy == MergeStrategy.REBASE) {
-      return true;
-    }
-    return false;
+    return !strategy.isCommitMessageAllowed();
   }
 
   public String createMergeCommitMessageHint(MergeStrategy strategy) {
