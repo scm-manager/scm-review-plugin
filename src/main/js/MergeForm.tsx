@@ -22,10 +22,12 @@
  * SOFTWARE.
  */
 import React from "react";
+import { compose } from "redux";
+import { connect } from "react-redux";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Link } from "@scm-manager/ui-types";
+import { Link, Me } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
-import { Button, Checkbox, Textarea } from "@scm-manager/ui-components";
+import { Button, Checkbox, Textarea, CommitAuthor } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = WithTranslation & {
@@ -40,6 +42,7 @@ type Props = WithTranslation & {
   shouldDeleteSourceBranch: boolean;
   onChangeDeleteSourceBranch: (value: boolean) => void;
   loading: boolean;
+  me: Me;
 };
 
 const CommitMessageInfo = styled.div`
@@ -70,7 +73,8 @@ class MergeForm extends React.Component<Props> {
       onChangeDeleteSourceBranch,
       onResetCommitMessage,
       commitMessageHint,
-      t
+      t,
+      me
     } = this.props;
 
     const commitMessageElement = this.isCommitMessageVisible() && (
@@ -102,6 +106,7 @@ class MergeForm extends React.Component<Props> {
           selectStrategy={selectStrategy}
         />
         <hr />
+        <CommitAuthor displayName={me.displayName} mail={me.mail} />
         {commitMessageElement}
         <Checkbox
           label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.flag")}
@@ -114,4 +119,13 @@ class MergeForm extends React.Component<Props> {
   }
 }
 
-export default withTranslation("plugins")(MergeForm);
+const mapStateToProps = (state: any) => {
+  const { auth } = state;
+  const me = auth.me;
+
+  return {
+    me
+  };
+};
+
+export default compose(connect(mapStateToProps), withTranslation("plugins"))(MergeForm);
