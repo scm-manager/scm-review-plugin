@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add support for pr merge with prior rebase ([#99](https://github.com/scm-manager/scm-review-plugin/pull/99))
 
+### Fixed
+- Merging without an email address ([#100](https://github.com/scm-manager/scm-review-plugin/pull/100))
+
 ## 2.3.0 - 2020-08-14
 ### Added
 - Sort mechanism for rules in "Add Rule" dropdown ([#88](https://github.com/scm-manager/scm-review-plugin/pull/88))
