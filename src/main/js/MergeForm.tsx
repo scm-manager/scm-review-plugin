@@ -25,7 +25,7 @@ import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Link } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
-import { Checkbox, Textarea, Button } from "@scm-manager/ui-components";
+import { Button, Checkbox, Textarea } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = WithTranslation & {
@@ -33,6 +33,8 @@ type Props = WithTranslation & {
   selectStrategy: (strategy: string) => void;
   selectedStrategy: string;
   commitMessage: string;
+  commitMessageDisabled?: boolean;
+  commitMessageHint?: string;
   onChangeCommitMessage: (message: string) => void;
   onResetCommitMessage: () => void;
   shouldDeleteSourceBranch: boolean;
@@ -49,8 +51,12 @@ class MergeForm extends React.Component<Props> {
     return this.props.loading;
   };
 
+  isCommitMessageVisible = () => {
+    return !this.props.commitMessageDisabled;
+  };
+
   isShowMessageHint = () => {
-    return this.props.selectedStrategy === "FAST_FORWARD_IF_POSSIBLE";
+    return !!this.props.commitMessageHint;
   };
 
   render() {
@@ -63,17 +69,12 @@ class MergeForm extends React.Component<Props> {
       shouldDeleteSourceBranch,
       onChangeDeleteSourceBranch,
       onResetCommitMessage,
+      commitMessageHint,
       t
     } = this.props;
 
-    return (
+    const commitMessageElement = this.isCommitMessageVisible() && (
       <>
-        <MergeStrategies
-          strategyLinks={strategyLinks}
-          selectedStrategy={selectedStrategy}
-          selectStrategy={selectStrategy}
-        />
-        <hr />
         <Textarea
           placeholder={t("scm-review-plugin.showPullRequest.mergeModal.commitMessage")}
           disabled={this.isCommitMessageDisabled()}
@@ -85,11 +86,23 @@ class MergeForm extends React.Component<Props> {
             <span className="icon is-small has-text-info">
               <i className="fas fa-info-circle" />
             </span>{" "}
-            <span>{t("scm-review-plugin.showPullRequest.mergeModal.fallbackMessageInfo")}</span>
+            <span>{t("scm-review-plugin.showPullRequest.mergeModal.commitMessageHint." + commitMessageHint)}</span>
           </CommitMessageInfo>
         )}
         <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage} />
         <hr />
+      </>
+    );
+
+    return (
+      <>
+        <MergeStrategies
+          strategyLinks={strategyLinks}
+          selectedStrategy={selectedStrategy}
+          selectStrategy={selectStrategy}
+        />
+        <hr />
+        {commitMessageElement}
         <Checkbox
           label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.flag")}
           checked={shouldDeleteSourceBranch}

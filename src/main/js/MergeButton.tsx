@@ -36,6 +36,7 @@ type Props = WithTranslation & {
   mergeCheck?: MergeCheck;
   loading: boolean;
   pullRequest: PullRequest;
+  onMergeModalClose?: () => void;
 };
 
 type State = {
@@ -74,6 +75,9 @@ class MergeButton extends React.Component<Props, State> {
   };
 
   toggleMergeModal = () => {
+    if (this.state.showMergeModal) {
+      this.props.onMergeModalClose && this.props.onMergeModalClose();
+    }
     this.setState(prevState => ({
       showMergeModal: !prevState.showMergeModal
     }));
@@ -196,6 +200,7 @@ class MergeButton extends React.Component<Props, State> {
           close={this.toggleMergeModal}
           pullRequest={pullRequest}
           emergencyMerge={this.existsObstacles() && !this.existsNotOverrideableObstacles()}
+          mergeCheck={mergeCheck}
         />
       );
     }

@@ -22,27 +22,30 @@
  * SOFTWARE.
  */
 import React from "react";
-import { Button, Modal, SubmitButton } from "@scm-manager/ui-components";
+import { Button, Modal, SubmitButton, Notification } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
-import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import { Link } from "@scm-manager/ui-types";
-import { getDefaultCommitDefaultMessage } from "./pullRequest";
+import { getMergeStrategyInfo } from "./pullRequest";
+import { MergeStrategyInfo } from "./types/MergeStrategyInfo";
 
 type Props = WithTranslation & {
   close: () => void;
   merge: (strategy: string, mergeCommit: MergeCommit, emergency: boolean) => void;
   pullRequest: PullRequest;
   emergencyMerge: boolean;
+  mergeCheck?: MergeCheck;
 };
 
 type State = {
   mergeStrategy: string;
   mergeCommit: MergeCommit;
-  defaultCommitMessages: { [key: string]: string };
+  commitStrategyInfos: { [key: string]: MergeStrategyInfo };
   loading: boolean;
   loadingDefaultMessage: boolean;
   messageChanged: boolean;
+  mergeFailed: boolean;
 };
 
 class MergeModal extends React.Component<Props, State> {
@@ -52,12 +55,13 @@ class MergeModal extends React.Component<Props, State> {
       mergeStrategy: this.extractFirstMergeStrategy(props.pullRequest._links.merge as Link[]),
       mergeCommit: {
         commitMessage: "",
-        shouldDeleteSourceBranch: false,
+        shouldDeleteSourceBranch: false
       },
-      defaultCommitMessages: {},
+      commitStrategyInfos: {},
       loading: false,
       loadingDefaultMessage: false,
-      messageChanged: false
+      messageChanged: false,
+      mergeFailed: false
     };
   }
 
@@ -70,27 +74,40 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   componentDidMount(): void {
-    this.getDefaultMessage();
+    this.getMergeStrategyInfo();
   }
 
-  getDefaultMessage = () => {
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+    if (prevProps.mergeCheck !== this.props.mergeCheck) {
+      if (this.props.mergeCheck?.hasConflicts) {
+        this.setState({
+          mergeFailed: true,
+          loading: false
+        });
+      } else {
+        this.setState({
+          mergeFailed: false
+        });
+      }
+    }
+  }
+
+  getMergeStrategyInfo = () => {
     const { pullRequest } = this.props;
-    const { defaultCommitMessages, mergeCommit, mergeStrategy } = this.state;
-    if (!!defaultCommitMessages[mergeStrategy]) {
+    const { commitStrategyInfos, mergeCommit, mergeStrategy } = this.state;
+    if (mergeStrategy in commitStrategyInfos) {
       this.setState({
-        mergeCommit: { ...mergeCommit, commitMessage: defaultCommitMessages[mergeStrategy] },
+        mergeCommit: { ...mergeCommit, commitMessage: commitStrategyInfos[mergeStrategy].defaultCommitMessage },
         messageChanged: false
       });
     } else if (pullRequest && pullRequest._links && pullRequest._links.defaultCommitMessage) {
       this.setState({ loadingDefaultMessage: true }, () => {
-        getDefaultCommitDefaultMessage(
-          (pullRequest._links.defaultCommitMessage as Link).href + "?strategy=" + mergeStrategy
-        )
-          .then(commitMessage => {
-            defaultCommitMessages[mergeStrategy] = commitMessage;
+        getMergeStrategyInfo((pullRequest._links.mergeStrategyInfo as Link).href + "?strategy=" + mergeStrategy)
+          .then((commitStrategyInfo: MergeStrategyInfo) => {
+            commitStrategyInfos[mergeStrategy] = commitStrategyInfo;
             this.setState({
-              defaultCommitMessages: defaultCommitMessages,
-              mergeCommit: { ...mergeCommit, commitMessage: commitMessage },
+              commitStrategyInfos,
+              mergeCommit: { ...mergeCommit, commitMessage: commitStrategyInfo.defaultCommitMessage },
               messageChanged: false,
               loadingDefaultMessage: false
             });
@@ -109,11 +126,12 @@ class MergeModal extends React.Component<Props, State> {
   selectStrategy = (strategy: string) => {
     this.setState(
       {
-        mergeStrategy: strategy
+        mergeStrategy: strategy,
+        mergeFailed: false
       },
       () => {
         if (!this.state.messageChanged) {
-          this.getDefaultMessage();
+          this.getMergeStrategyInfo();
         }
       }
     );
@@ -132,8 +150,8 @@ class MergeModal extends React.Component<Props, State> {
   };
 
   shouldDisableMergeButton = () => {
-    const { mergeCommit } = this.state;
-    return !mergeCommit.commitMessage || mergeCommit.commitMessage.trim() === "";
+    const { mergeCommit, mergeFailed } = this.state;
+    return !mergeCommit.commitMessage || mergeCommit.commitMessage.trim() === "" || mergeFailed;
   };
 
   onChangeDeleteSourceBranch = (value: boolean) => {
@@ -142,7 +160,7 @@ class MergeModal extends React.Component<Props, State> {
 
   render() {
     const { pullRequest, emergencyMerge, close, t } = this.props;
-    const { mergeStrategy, mergeCommit, loading, loadingDefaultMessage } = this.state;
+    const { mergeStrategy, mergeCommit, loading, loadingDefaultMessage, mergeFailed, commitStrategyInfos } = this.state;
 
     const footer = (
       <>
@@ -168,17 +186,27 @@ class MergeModal extends React.Component<Props, State> {
     );
 
     const body = (
-      <MergeForm
-        selectedStrategy={mergeStrategy}
-        selectStrategy={this.selectStrategy}
-        strategyLinks={pullRequest._links.merge as Link[]}
-        commitMessage={mergeCommit.commitMessage}
-        onChangeCommitMessage={this.onChangeCommitMessage}
-        onResetCommitMessage={this.getDefaultMessage}
-        shouldDeleteSourceBranch={mergeCommit.shouldDeleteSourceBranch}
-        onChangeDeleteSourceBranch={this.onChangeDeleteSourceBranch}
-        loading={loadingDefaultMessage}
-      />
+      <>
+        <MergeForm
+          selectedStrategy={mergeStrategy}
+          selectStrategy={this.selectStrategy}
+          strategyLinks={pullRequest._links.merge as Link[]}
+          commitMessage={mergeCommit.commitMessage}
+          onChangeCommitMessage={this.onChangeCommitMessage}
+          onResetCommitMessage={this.getMergeStrategyInfo}
+          shouldDeleteSourceBranch={mergeCommit.shouldDeleteSourceBranch}
+          onChangeDeleteSourceBranch={this.onChangeDeleteSourceBranch}
+          loading={loadingDefaultMessage}
+          commitMessageDisabled={commitStrategyInfos[mergeStrategy]?.commitMessageDisabled}
+          commitMessageHint={commitStrategyInfos[mergeStrategy]?.commitMessageHint}
+        />
+        {mergeFailed && (
+          <>
+            <hr />
+            <Notification type="danger">{t("scm-review-plugin.showPullRequest.mergeModal.mergeConflict")}</Notification>
+          </>
+        )}
+      </>
     );
 
     return (

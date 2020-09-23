@@ -23,12 +23,12 @@
  */
 package com.cloudogu.scm.review.pullrequest.api;
 
-import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCheckResultDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import com.cloudogu.scm.review.pullrequest.dto.MergeConflictResultDto;
+import com.cloudogu.scm.review.pullrequest.dto.MergeStrategyInfoDto;
 import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import de.otto.edison.hal.Links;
@@ -197,6 +197,7 @@ public class MergeResource {
     );
   }
 
+  @Deprecated
   @GET
   @Path("{namespace}/{name}/{pullRequestId}/commit-message")
   @Produces("text/plain")
@@ -228,5 +229,42 @@ public class MergeResource {
     @QueryParam("strategy") MergeStrategy strategy
   ) {
     return service.createDefaultCommitMessage(new NamespaceAndName(namespace, name), pullRequestId, strategy);
+  }
+
+  @GET
+  @Path("{namespace}/{name}/{pullRequestId}/merge-strategy-info")
+  @Produces(PullRequestMediaType.MERGE_STRATEGY_INFO)
+  @Operation(
+    summary = "Get commit message information",
+    description = "Returns commit message information for the given merge strategy",
+    tags = "Pull Request"
+  )
+  @ApiResponse(
+    responseCode = "200",
+    description = "commit message was created",
+    content = @Content(
+      schema = @Schema(implementation = MergeStrategyInfoDto.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public MergeStrategyInfoDto getMergeStrategyInfo(
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @PathParam("pullRequestId") String pullRequestId,
+    @QueryParam("strategy") MergeStrategy strategy
+  ) {
+    return new MergeStrategyInfoDto(
+      service.isCommitMessageDisabled(strategy),
+      service.createDefaultCommitMessage(new NamespaceAndName(namespace, name), pullRequestId, strategy),
+      service.createMergeCommitMessageHint(strategy)
+    );
   }
 }

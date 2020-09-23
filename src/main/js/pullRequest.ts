@@ -140,10 +140,10 @@ export function check(pullRequest: PullRequest) {
   return apiClient.post((pullRequest._links.mergeCheck as Link).href, {}).then(response => response.json());
 }
 
-export function getDefaultCommitDefaultMessage(url: string) {
+export function getMergeStrategyInfo(url: string) {
   return apiClient
     .get(url)
-    .then(response => response.text())
+    .then(response => response.json())
     .catch(err => "");
 }
 

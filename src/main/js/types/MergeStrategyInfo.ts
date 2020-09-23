@@ -21,19 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review;
 
-import sonia.scm.web.VndMediaType;
-
-public class PullRequestMediaType {
-  public static final String PULL_REQUEST = VndMediaType.PREFIX + "pullRequest" + VndMediaType.SUFFIX;
-  public static final String PULL_REQUEST_COLLECTION = VndMediaType.PREFIX + "pullRequestCollection" + VndMediaType.SUFFIX;
-  public static final String MERGE_COMMAND = VndMediaType.PREFIX + "mergeCommand" + VndMediaType.SUFFIX;
-  public static final String MERGE_CHECK_RESULT = VndMediaType.PREFIX + "mergeCheckResult" + VndMediaType.SUFFIX;
-  public static final String MERGE_CONFLICT_RESULT = VndMediaType.PREFIX + "mergeConflictsResult" + VndMediaType.SUFFIX;
-  public static final String MERGE_STRATEGY_INFO = VndMediaType.PREFIX + "mergeStrategyInfo" + VndMediaType.SUFFIX;
-
-  private PullRequestMediaType() {
-
-  }
+export interface MergeStrategyInfo {
+  commitMessageDisabled: boolean;
+  defaultCommitMessage: string;
+  commitMessageHint: string;
 }

@@ -98,13 +98,18 @@
         },
         "commitMessage": "Please insert your commit message",
         "resetMessage": "Reset message",
-        "fallbackMessageInfo": "This message will only be used, when fast forward is not possible."
+        "commitMessageHint": {
+          "FAST_FORWARD_IF_POSSIBLE": "This message will only be used, when fast forward is not possible."
+        },
+        "mergeConflict": "The branches could not be merged because there were merge conflicts. Please try a different merging strategy or resolve the conflicts manually."
       },
       "mergeStrategies": {
+        "REBASE": "Rebase",
         "SQUASH": "Squash",
         "MERGE_COMMIT": "Merge Commit",
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward if possible",
         "help": {
+          "REBASE": "Executes a rebase before the merge. Commits on the source branch are directly applied to the target branch.",
           "SQUASH": "Squash all commits of source branch into one new commit --and merge into-- on top of the target branch",
           "MERGE_COMMIT": "Merge branches with new commit and custom commit message",
           "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit. If a fast forward is not possible, a normal merge commit will be created."
@@ -434,10 +439,6 @@
     }
   },
   "errors": {
-    "DTRhFJFgU1": {
-      "displayName": "Merge conflict",
-      "description": "The branches could not be merged because there were merge conflicts."
-    },
     "FTRhcI0To1": {
       "displayName": "Pull request not open",
       "description": "Merges can only be performed for open pull requests."

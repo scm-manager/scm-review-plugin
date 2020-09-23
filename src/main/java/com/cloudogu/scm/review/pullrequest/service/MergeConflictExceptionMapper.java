@@ -21,19 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review;
 
+package com.cloudogu.scm.review.pullrequest.service;
+
+import org.slf4j.MDC;
+import sonia.scm.ContextEntry;
 import sonia.scm.web.VndMediaType;
 
-public class PullRequestMediaType {
-  public static final String PULL_REQUEST = VndMediaType.PREFIX + "pullRequest" + VndMediaType.SUFFIX;
-  public static final String PULL_REQUEST_COLLECTION = VndMediaType.PREFIX + "pullRequestCollection" + VndMediaType.SUFFIX;
-  public static final String MERGE_COMMAND = VndMediaType.PREFIX + "mergeCommand" + VndMediaType.SUFFIX;
-  public static final String MERGE_CHECK_RESULT = VndMediaType.PREFIX + "mergeCheckResult" + VndMediaType.SUFFIX;
-  public static final String MERGE_CONFLICT_RESULT = VndMediaType.PREFIX + "mergeConflictsResult" + VndMediaType.SUFFIX;
-  public static final String MERGE_STRATEGY_INFO = VndMediaType.PREFIX + "mergeStrategyInfo" + VndMediaType.SUFFIX;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+import java.util.List;
 
-  private PullRequestMediaType() {
+@Provider
+public class MergeConflictExceptionMapper implements ExceptionMapper<MergeConflictException> {
 
+  @Override
+  public Response toResponse(MergeConflictException exception) {
+    return Response.status(409).entity(new Object() {
+      public String getTransactionId() {
+        return MDC.get("transaction_id");
+      }
+
+      public String getErrorCode() {
+        return exception.getCode();
+      }
+
+      public List<ContextEntry> getContext() {
+        return exception.getContext();
+      }
+
+      public String getMessage() {
+        return exception.getMessage();
+      }
+    }).type(VndMediaType.ERROR_TYPE).build();
   }
 }
