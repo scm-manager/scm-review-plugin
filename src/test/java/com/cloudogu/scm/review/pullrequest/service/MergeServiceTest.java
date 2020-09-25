@@ -172,7 +172,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(false);
     mergeCommit.setCommitMessage("42");
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.MERGE_COMMIT, false);
-    verify(mergeCommandBuilder).setMessageTemplate(
+    verify(mergeCommandBuilder).setMessage(
       "42\n\n" +
         "Reviewed-by: Arthur Dent <dent@hitchhiker.org>\n" +
         "Reviewed-by: Tricia McMillan <trillian@hitchhiker.org>\n"
@@ -194,7 +194,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(false);
     mergeCommit.setCommitMessage("42");
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessageTemplate(
+    verify(mergeCommandBuilder).setMessage(
       "42\n\n" +
         "Co-authored-by: Arthur Dent <dent@hitchhiker.org>\n" +
         "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
@@ -217,7 +217,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(false);
     mergeCommit.setCommitMessage("42");
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessageTemplate(
+    verify(mergeCommandBuilder).setMessage(
       "42\n\n" +
         "Co-authored-by: Arthur Dent <dent@hitchhiker.org>\n" +
         "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
@@ -243,7 +243,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(false);
     mergeCommit.setCommitMessage("42");
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessageTemplate(
+    verify(mergeCommandBuilder).setMessage(
       "42\n\n" +
         "Co-authored-by: Zaphod Beeblebrox <zaphod@hitchhiker.org>\n" +
         "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
@@ -266,7 +266,7 @@ public class MergeServiceTest {
     MergeCommitDto mergeCommit = createMergeCommit(false);
     mergeCommit.setCommitMessage("42");
     service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessageTemplate(
+    verify(mergeCommandBuilder).setMessage(
       "42\n\n" +
         "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
     );

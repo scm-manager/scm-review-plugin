@@ -267,7 +267,7 @@ public class MergeService {
     mergeCommand.setBranchToMerge(pullRequest.getSource());
     mergeCommand.setTargetBranch(pullRequest.getTarget());
     String enrichedCommitMessage = enrichCommitMessageWithTrailers(repositoryService, pullRequest, mergeCommitDto, strategy);
-    mergeCommand.setMessageTemplate(enrichedCommitMessage);
+    mergeCommand.setMessage(enrichedCommitMessage);
     mergeCommand.setMergeStrategy(strategy);
   }
 
