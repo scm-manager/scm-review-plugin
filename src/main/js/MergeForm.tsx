@@ -25,7 +25,7 @@ import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Link } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
-import { Button, Checkbox, Textarea } from "@scm-manager/ui-components";
+import { Button, Checkbox, CommitAuthor, Textarea } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = WithTranslation & {
@@ -44,6 +44,10 @@ type Props = WithTranslation & {
 
 const CommitMessageInfo = styled.div`
   margin-bottom: 1em;
+`;
+
+const MarginBottom = styled.div`
+  margin-bottom: 0.5rem;
 `;
 
 class MergeForm extends React.Component<Props> {
@@ -89,6 +93,9 @@ class MergeForm extends React.Component<Props> {
             <span>{t("scm-review-plugin.showPullRequest.mergeModal.commitMessageHint." + commitMessageHint)}</span>
           </CommitMessageInfo>
         )}
+        <MarginBottom>
+          <CommitAuthor />
+        </MarginBottom>
         <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage} />
         <hr />
       </>
