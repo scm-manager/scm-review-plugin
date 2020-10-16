@@ -626,6 +626,42 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
+  public void shouldGetTheApproveAndSubscriptionLink() throws URISyntaxException, IOException {
+    PullRequest pullRequest = createPullRequest();
+
+    when(store.get("1")).thenReturn(pullRequest);
+
+    mockLoggedInUser(new User("user1", "User 1", "email@d.de"));
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    assertThat(jsonNode.path("_links").get("approve")).isNotNull();
+    assertThat(jsonNode.path("_links").get("subscription")).isNotNull();
+  }
+
+  @Test
+  public void shouldGetTheApproveButNoSubscriptionLinkWithoutMail() throws URISyntaxException, IOException {
+    PullRequest pullRequest = createPullRequest();
+
+    when(store.get("1")).thenReturn(pullRequest);
+
+    mockLoggedInUser(new User("user1", "User 1", null));
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    assertThat(jsonNode.path("_links").get("approve")).isNotNull();
+    assertThat(jsonNode.path("_links").get("subscription")).isNull();
+  }
+
+  @Test
   public void shouldNotReturnAnySubscriptionLinkOnMissingUserMail() throws URISyntaxException, IOException {
     // the PR has no subscriber
     mockLoggedInUser(new User("user1", "User 1", null));
@@ -639,7 +675,6 @@ public class PullRequestRootResourceTest {
 
   @Test
   public void shouldGetTheUnsubscribeLink() throws URISyntaxException, IOException {
-    // the PR has no subscriber
     PullRequest pullRequest = createPullRequest();
     pullRequest.setSubscriber(singleton("user1"));
 

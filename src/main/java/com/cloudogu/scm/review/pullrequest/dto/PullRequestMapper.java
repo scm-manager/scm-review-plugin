@@ -190,7 +190,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .all(namespace, name, pullRequestId)));
     linksBuilder.single(link("events", pullRequestResourceLinks.pullRequest()
       .events(namespace, name, pullRequestId)));
-    if (PermissionCheck.mayComment(repository) && CurrentUserResolver.getCurrentUser() != null && !Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
+    if (PermissionCheck.mayComment(repository) && CurrentUserResolver.getCurrentUser() != null) {
       if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
         if (pullRequestService.hasUserApproved(repository, pullRequest.getId())) {
           linksBuilder.single(link("disapprove", pullRequestResourceLinks.pullRequest().disapprove(namespace, name, pullRequestId)));
@@ -199,8 +199,10 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
         }
       }
 
-      linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest()
-        .subscription(namespace, name, pullRequestId)));
+      if (!Strings.isNullOrEmpty(CurrentUserResolver.getCurrentUser().getMail())) {
+        linksBuilder.single(link("subscription", pullRequestResourceLinks.pullRequest()
+          .subscription(namespace, name, pullRequestId)));
+      }
     }
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest()
