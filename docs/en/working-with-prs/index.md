@@ -73,6 +73,7 @@ If a pull request can be merged, the changes can be applied in different ways af
 * **Merge Commit:** The branches are merged with a new commit.
 * **Fast forward, if possible:** If possible, the target branch is set to the state of the source branch without a merge. If this is not possible, a regular merge commit is created.
 * **Squash:** All changes from the source branch are condensed into one commit on the target branch. The commit history of the source branch is not transferred to the target branch.
+* **Rebase:** All changes from the source branch are individually reapplied on the target branch. No merge commit is created.
 
 If desired, it is possible to replace the default message with an individual commit message. If the box "Delete branch" is checked, the source branch is deleted from the repository after the successful merge. 
 
