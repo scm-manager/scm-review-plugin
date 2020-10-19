@@ -75,6 +75,7 @@ Sollte ein Pull Request mergebar sein, können die Änderungen über den Button 
 - **Merge Commit:** Die Branches werden mit einem neuen Commit gemerged.
 - **Fast-Forward, wenn möglich:** Falls möglich wird der Target Branch ohne Merge auf den Stand des Source Branches gesetzt. Falls dies nicht möglich ist, wird ein normaler Merge Commit erzeugt.
 - **Squash:** Alle Änderungen des Source Branches werden als ein neuer Commit auf dem Target Branch zusammengefasst. Die Commit-Historie des Source Branches wird dabei nicht in den Target Branch übertragen.
+- **Rebase:** Alle Änderungen des Source Branches werden einzeln auf den Target Branch angewendet. Es wird kein Commit für den Merge erstellt. 
 
 Für den Merge kann statt der vorgegebenen Muster-Nachricht eine eigene Commit-Nachricht eingetragen werden. Über die Checkbox "Branch löschen" wird der Source-Branch nach dem erfolgreichen Merge aus dem Repository entfernt.
 
