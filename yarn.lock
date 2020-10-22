@@ -1315,6 +1315,13 @@
   dependencies:
     react "^16.10.2"
 
+"@scm-manager/ui-extensions@^2.6.1":
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-2.7.1.tgz#8466c05f9e51e75688bae9a30eb421546ccc7d69"
+  integrity sha512-3oiNP2EuuroSJMHgK0cjjfdMaAtF0obgr3x7cv/vXTyy37NAw7CZ6oZ4bUr6PiDJ+zziqnA+kc7T1M9o4ooteQ==
+  dependencies:
+    react "^16.10.2"
+
 "@scm-manager/ui-plugins@2.6.0":
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-2.6.0.tgz#33961ecb981f9a568b8be78ab3d1ebba0df4c5bf"
