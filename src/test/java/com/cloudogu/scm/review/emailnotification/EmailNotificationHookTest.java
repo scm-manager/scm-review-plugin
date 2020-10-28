@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.shiro.subject.Subject;
@@ -175,6 +176,14 @@ class EmailNotificationHookTest {
         reset(service);
       })
     );
+  }
+
+  @Test
+  void shouldSendEmailsAfterUpdatingPullRequest() throws Exception {
+    PullRequestUpdatedEvent event = new PullRequestUpdatedEvent(repository, pullRequest);
+    emailNotificationHook.handleUpdatedPullRequest(event);
+
+    verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestUpdatedMailTextResolver.class));
   }
 
   @Test

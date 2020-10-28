@@ -359,6 +359,10 @@
       "mentions": {
         "label": "Mentions",
         "helpText": "Mails when you have been mentioned in a comment."
+      },
+      "prUpdated": {
+        "label": "Updated",
+        "helpText": "Mails when pull requests have been updated."
       }
     }
   },

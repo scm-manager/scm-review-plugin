@@ -33,6 +33,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -117,6 +118,12 @@ public class EmailNotificationHook {
     } else {
       return event.getItem().isSystemComment();
     }
+  }
+
+  @Subscribe
+  public void handleUpdatedPullRequest(PullRequestUpdatedEvent event) {
+    PullRequest pullRequest = event.getPullRequest();
+    handleEvent(event, new PullRequestUpdatedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
   @Subscribe

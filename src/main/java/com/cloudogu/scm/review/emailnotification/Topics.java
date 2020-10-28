@@ -39,6 +39,7 @@ public class Topics implements TopicProvider {
   public Collection<Topic> topics() {
     return asList(
       TOPIC_PR_CHANGED,
+      TOPIC_PR_UPDATED,
       TOPIC_APPROVALS,
       TOPIC_CLOSED,
       TOPIC_MENTIONS,

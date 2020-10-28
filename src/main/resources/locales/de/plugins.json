@@ -361,6 +361,10 @@
       "mentions": {
         "label": "Erwähnungen",
         "helpText": "Mails bei Erwähnungen von Ihnen in Kommentaren."
+      },
+      "prUpdated": {
+        "label": "Aktualisierungen",
+        "helpText": "Mails, wenn ein Pull Request aktualisiert wird."
       }
     }
   },
