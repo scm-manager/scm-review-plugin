@@ -22,20 +22,10 @@
 # SOFTWARE.
 #
 
-prCreated = PR created
-prChanged = PR changed
-prMerged = PR merged
-prRejected = PR rejected
-prApproved = PR approved
-prApprovalRemoved = PR approval removed
-commentDeleted = Comment deleted
-commentAdded = Comment added
-commentChanged = Comment changed
-replyDeleted = Reply deleted
-replyAdded = Reply added
-replyChanged = Reply changed
-taskDone = Task done
-taskReopened = Task reopened
-taskCreated = Task created
-newMention = New mention
-prUpdated = PR updated
+version: '3.0'
+services:
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"

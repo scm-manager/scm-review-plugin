@@ -21,30 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.emailnotification;
 
-import sonia.scm.mail.api.Category;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import sonia.scm.mail.api.Topic;
 
 import java.util.Locale;
 import java.util.Map;
 
-public interface MailTextResolver {
+public class PullRequestUpdatedMailTextResolver extends BasicPRMailTextResolver<PullRequestUpdatedEvent> implements MailTextResolver {
 
-  Category CATEGORY = new Category("review-plugin");
-  Topic TOPIC_PR_CHANGED = new Topic(CATEGORY, "prChanged");
-  Topic TOPIC_PR_UPDATED = new Topic(CATEGORY, "prUpdated");
-  Topic TOPIC_APPROVALS = new Topic(CATEGORY, "approvals");
-  Topic TOPIC_MENTIONS = new Topic(CATEGORY, "mentions");
-  Topic TOPIC_COMMENTS = new Topic(CATEGORY, "comments");
-  Topic TOPIC_REPLIES = new Topic(CATEGORY, "replies");
-  Topic TOPIC_CLOSED = new Topic(CATEGORY, "closed");
+  public static final String EVENT_DISPLAY_NAME = "prUpdated";
+  private final PullRequestUpdatedEvent pullRequestUpdatedEvent;
+  protected static final String TEMPLATE_PATH = "com/cloudogu/scm/email/template/updated_pull_request.mustache";
 
-  String getMailSubject(Locale locale);
+  public PullRequestUpdatedMailTextResolver(PullRequestUpdatedEvent pullRequestUpdatedEvent) {
+    this.pullRequestUpdatedEvent = pullRequestUpdatedEvent;
+  }
 
-  String getContentTemplatePath();
+  @Override
+  public String getMailSubject(Locale locale) {
+    return getMailSubject(pullRequestUpdatedEvent, EVENT_DISPLAY_NAME, locale);
+  }
 
-  Map<String, Object> getContentTemplateModel(String basePath);
+  @Override
+  public String getContentTemplatePath() {
+    return TEMPLATE_PATH;
+  }
 
-  Topic getTopic();
+  @Override
+  public Map<String, Object> getContentTemplateModel(String basePath) {
+    return getTemplateModel(basePath, pullRequestUpdatedEvent);
+  }
+
+  @Override
+  public Topic getTopic() {
+    return TOPIC_PR_UPDATED;
+  }
 }
