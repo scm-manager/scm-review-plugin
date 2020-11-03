@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.shiro.subject.Subject;
@@ -44,6 +45,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,12 +56,15 @@ import sonia.scm.repository.Repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_PR_UPDATED;
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
@@ -80,8 +85,10 @@ class EmailNotificationHookTest {
 
   @Mock
   EmailNotificationService service;
+
   @InjectMocks
   EmailNotificationHook emailNotificationHook;
+
   private PullRequest pullRequest;
   private Set<String> subscriber;
   private Repository repository;
@@ -175,6 +182,20 @@ class EmailNotificationHookTest {
         reset(service);
       })
     );
+  }
+
+  @Test
+  void shouldSendEmailsAfterUpdatingPullRequest() throws Exception {
+    PullRequestUpdatedEvent event = new PullRequestUpdatedEvent(repository, pullRequest);
+    emailNotificationHook.handleUpdatedPullRequest(event);
+
+    ArgumentCaptor<PullRequestUpdatedMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestUpdatedMailTextResolver.class);
+    verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), captor.capture());
+
+    PullRequestUpdatedMailTextResolver resolver = captor.getValue();
+    assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR updated");
+    assertThat(resolver.getTopic()).isEqualTo(TOPIC_PR_UPDATED);
+    assertThat(resolver.getContentTemplatePath()).contains("updated_pull_request");
   }
 
   @Test
