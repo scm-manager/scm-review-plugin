@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC, useReducer } from "react";
-import reducer, { initialState } from "./reducer";
+import reducer, {createInitialState, initialState} from "./reducer";
 import { PullRequest } from "../types/PullRequest";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { ErrorNotification, JumpToFileButton, Loading, Notification } from "@scm-manager/ui-components";
@@ -39,7 +39,7 @@ type Props = {
 };
 
 const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
-  const [comments, dispatch] = useReducer(reducer, initialState);
+  const [comments, dispatch] = useReducer(reducer, createInitialState(pullRequest.markedAsReviewed));
   const { error, loading, links } = useComments(pullRequest, dispatch);
   const { t } = useTranslation("plugins");
 

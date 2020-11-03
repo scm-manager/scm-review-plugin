@@ -54,15 +54,42 @@ export type DiffRelatedCommentCollection = {
   files: FileCommentCollection;
   lines: LineCommentCollection;
   comments: { [key: string]: Comment };
+  reviewedFiles: string[];
 };
 
-export const initialState: State = {
+const initialState: State = {
   lines: {},
   files: {},
-  comments: {}
+  comments: {},
+  reviewedFiles: []
 };
 
-type Reducer = (state: State, action: Action) => State | undefined;
+export const createInitialState = (reviewedFiles: string[]): State => {
+  return {
+    ...initialState,
+    reviewedFiles
+  };
+};
+
+type ReviewMarkActionType = "markAsReviewed" | "unmarkAsReviewed";
+
+type ReviewMarkAction = {
+  type: ReviewMarkActionType;
+  filepath: string;
+};
+
+type DiffAction = Action | ReviewMarkAction;
+type DiffActionType = ActionType | ReviewMarkActionType;
+
+export const markAsReviewed = (filepath: string): ReviewMarkAction => {
+  return { type: "markAsReviewed", filepath };
+};
+
+export const unmarkAsReviewed = (filepath: string): ReviewMarkAction => {
+  return { type: "unmarkAsReviewed", filepath };
+};
+
+type Reducer = (state: State, action: DiffAction) => State | undefined;
 
 const addFileComments = (fileComments: FileCommentCollection, comment: Comment) => {
   const location = comment.location;
@@ -170,8 +197,8 @@ const setEditState = (state: State, editor: boolean, location?: Location) => {
   }
 };
 
-const reducers: { [type in ActionType]: Reducer } = {
-  fetchAll: (state: State, a: Action) => {
+const reducers: { [type in DiffActionType]: Reducer } = {
+  fetchAll: (state: State, a: DiffAction) => {
     const action = a as FetchAllAction;
     const commentsWithLocations = action.comments.filter(c => !!c.location);
 
@@ -191,10 +218,11 @@ const reducers: { [type in ActionType]: Reducer } = {
     return {
       files,
       lines,
-      comments
+      comments,
+      reviewedFiles: state.reviewedFiles
     };
   },
-  createComment: (state: State, a: Action) => {
+  createComment: (state: State, a: DiffAction) => {
     const action = a as CommentAction;
     const comment = action.comment;
     if (comment.location) {
@@ -209,14 +237,14 @@ const reducers: { [type in ActionType]: Reducer } = {
       });
     }
   },
-  updateComment: (state: State, a: Action) => {
+  updateComment: (state: State, a: DiffAction) => {
     const action = a as CommentAction;
     const comment = action.comment;
     return produce(state, draft => {
       draft.comments[comment.id] = comment;
     });
   },
-  deleteComment: (state: State, a: Action) => {
+  deleteComment: (state: State, a: DiffAction) => {
     const action = a as CommentAction;
     const comment = action.comment;
     if (comment.location) {
@@ -231,7 +259,7 @@ const reducers: { [type in ActionType]: Reducer } = {
       });
     }
   },
-  createReply: (state: State, a: Action) => {
+  createReply: (state: State, a: DiffAction) => {
     const { parentId, reply } = a as ReplyAction;
     return produce(state, draft => {
       const comment = draft.comments[parentId];
@@ -246,7 +274,7 @@ const reducers: { [type in ActionType]: Reducer } = {
       }
     });
   },
-  deleteReply: (state: State, a: Action) => {
+  deleteReply: (state: State, a: DiffAction) => {
     const { parentId, reply } = a as ReplyAction;
     return produce(state, draft => {
       const comment = draft.comments[parentId];
@@ -258,7 +286,7 @@ const reducers: { [type in ActionType]: Reducer } = {
       }
     });
   },
-  updateReply: (state: State, a: Action) => {
+  updateReply: (state: State, a: DiffAction) => {
     const { parentId, reply } = a as ReplyAction;
     return produce(state, draft => {
       const comment = draft.comments[parentId];
@@ -270,21 +298,36 @@ const reducers: { [type in ActionType]: Reducer } = {
       }
     });
   },
-  openEditor: (state: State, a: Action) => {
+  openEditor: (state: State, a: DiffAction) => {
     const { location } = a as EditorAction;
     return produce(state, draft => {
       setEditState(draft, true, location);
     });
   },
-  closeEditor: (state: State, a: Action) => {
+  closeEditor: (state: State, a: DiffAction) => {
     const { location } = a as EditorAction;
     return produce(state, draft => {
       setEditState(draft, false, location);
     });
+  },
+  markAsReviewed: (state: State, a: DiffAction) => {
+    const { filepath } = a as ReviewMarkAction;
+    return produce(state, draft => {
+      draft.reviewedFiles.push(filepath);
+    });
+  },
+  unmarkAsReviewed: (state: State, a: DiffAction) => {
+    const { filepath } = a as ReviewMarkAction;
+    return produce(state, draft => {
+      const index = draft.reviewedFiles.indexOf(filepath);
+      if (index >= 0) {
+        draft.reviewedFiles.splice(index, 1);
+      }
+    });
   }
 };
 
-const reducer = (state: State, action: Action) => {
+const reducer = (state: State, action: DiffAction) => {
   const nextState = reducers[action.type](state, action);
   return nextState || state;
 };
