@@ -34,7 +34,7 @@ import {
   updateComment,
   updateReply
 } from "../comment/actiontypes";
-import reducer, { initialState, State } from "./reducer";
+import reducer, {createInitialState, markAsReviewed, State, unmarkAsReviewed} from "./reducer";
 
 describe("diff comment reducer tests", () => {
   const createTestComment = (id: string, comment: string): Comment => {
@@ -49,6 +49,8 @@ describe("diff comment reducer tests", () => {
       },
       systemComment: false,
       outdated: false,
+      mentions: [],
+      emergencyMerged: false,
       date: new Date().toDateString(),
       replies: [],
       _links: {}
@@ -80,7 +82,7 @@ describe("diff comment reducer tests", () => {
       })
     ];
 
-    const state = reducer(initialState, fetchAll(comments));
+    const state = reducer(createInitialState([]), fetchAll(comments));
     expect(state.files["file.txt"].comments.length).toBe(1);
     expect(state.files["file.txt"].comments[0]).toBe("two");
 
@@ -100,7 +102,8 @@ describe("diff comment reducer tests", () => {
       lines: {},
       comments: {
         one: createTestFileComment("one", "comment one", "test.txt")
-      }
+      },
+      reviewedFiles: []
     };
 
     const two = createTestFileComment("two", "comment two", "test.txt");
@@ -120,7 +123,8 @@ describe("diff comment reducer tests", () => {
       lines: {},
       comments: {
         one: createTestFileComment("one", "comment one", "a.txt")
-      }
+      },
+      reviewedFiles: []
     };
 
     const two = createTestFileComment("two", "comment two", "b.txt");
@@ -147,7 +151,8 @@ describe("diff comment reducer tests", () => {
       },
       comments: {
         one: createTestInlineComment("one", "comment one", location)
-      }
+      },
+      reviewedFiles: []
     };
 
     const two = createTestInlineComment("two", "comment two", location);
@@ -166,7 +171,8 @@ describe("diff comment reducer tests", () => {
       lines: {},
       comments: {
         one: createTestFileComment("one", "comment one", "a.txt")
-      }
+      },
+      reviewedFiles: []
     };
 
     const one = createTestFileComment("one", "the awesome one", "a.txt");
@@ -185,7 +191,8 @@ describe("diff comment reducer tests", () => {
       lines: {},
       comments: {
         one: one
-      }
+      },
+      reviewedFiles: []
     };
 
     const state = reducer(prevState, deleteComment(one));
@@ -212,7 +219,8 @@ describe("diff comment reducer tests", () => {
       },
       comments: {
         one: one
-      }
+      },
+      reviewedFiles: []
     };
 
     const state = reducer(prevState, deleteComment(one));
@@ -226,7 +234,8 @@ describe("diff comment reducer tests", () => {
       lines: {},
       comments: {
         one: createTestFileComment("one", "comment one", "a.txt")
-      }
+      },
+      reviewedFiles: []
     };
 
     const two = createTestComment("two", "comment two");
@@ -250,7 +259,8 @@ describe("diff comment reducer tests", () => {
       lines: {},
       comments: {
         one: one
-      }
+      },
+      reviewedFiles: []
     };
 
     const state = reducer(prevState, deleteReply("one", two));
@@ -273,7 +283,8 @@ describe("diff comment reducer tests", () => {
       lines: {},
       comments: {
         one: one
-      }
+      },
+      reviewedFiles: []
     };
 
     const updatedTwo = createTestComment("two", "updated two");
@@ -291,7 +302,8 @@ describe("diff comment reducer tests", () => {
     const prevState: State = {
       files: {},
       lines: {},
-      comments: {}
+      comments: {},
+      reviewedFiles: []
     };
     const location: Location = {
       file: "a.txt"
@@ -309,7 +321,8 @@ describe("diff comment reducer tests", () => {
         }
       },
       lines: {},
-      comments: {}
+      comments: {},
+      reviewedFiles: []
     };
     const location: Location = {
       file: "a.txt"
@@ -322,7 +335,8 @@ describe("diff comment reducer tests", () => {
     const prevState: State = {
       files: {},
       lines: {},
-      comments: {}
+      comments: {},
+      reviewedFiles: []
     };
     const location: Location = {
       file: "a.txt",
@@ -351,10 +365,39 @@ describe("diff comment reducer tests", () => {
           }
         }
       },
-      comments: {}
+      comments: {},
+      reviewedFiles: []
     };
 
     const state = reducer(prevState, closeEditor(location));
     expect(state.lines["a.txt_@@ -28,12 +27,10 @@"]["I27"].editor).toBe(false);
+  });
+
+  it("should mark file as reviewed", () => {
+    const filepath = "a.txt";
+
+    const prevState: State = {
+      files: {},
+      lines: {},
+      comments: {},
+      reviewedFiles: []
+    };
+
+    const state = reducer(prevState, markAsReviewed(filepath));
+    expect(state.reviewedFiles[0]).toBe("a.txt");
+  });
+
+  it("should unmark file as reviewed", () => {
+    const filepath = "a.txt";
+
+    const prevState: State = {
+      files: {},
+      lines: {},
+      comments: {},
+      reviewedFiles: ["a.txt"]
+    };
+
+    const state = reducer(prevState, unmarkAsReviewed(filepath));
+    expect(state.reviewedFiles).toEqual([]);
   });
 });

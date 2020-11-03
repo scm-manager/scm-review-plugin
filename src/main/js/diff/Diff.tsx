@@ -45,7 +45,7 @@ import InlineComments from "./InlineComments";
 import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
-import { DiffRelatedCommentCollection } from "./reducer";
+import { State as DiffState, DiffAction, markAsReviewed, unmarkAsReviewed } from "./reducer";
 import { closeEditor, createComment, openEditor } from "../comment/actiontypes";
 import MarkReviewedButton from "./MarkReviewedButton";
 
@@ -61,9 +61,9 @@ const CommentWrapper = styled.div`
 
 type Props = WithTranslation & {
   diffUrl: string;
-  comments: DiffRelatedCommentCollection;
+  diffState: DiffState;
   createLink?: string;
-  dispatch: Dispatch<any>;
+  dispatch: Dispatch<DiffAction>;
   pullRequest: PullRequest;
   fileContentFactory: FileContentFactory;
 };
@@ -81,7 +81,7 @@ class Diff extends React.Component<Props, State> {
   }
 
   render() {
-    const { diffUrl, pullRequest, fileContentFactory, t } = this.props;
+    const { diffUrl, fileContentFactory, diffState, t } = this.props;
     const { collapsed } = this.state;
 
     let globalCollapsedOrByMarks: DefaultCollapsedFunction;
@@ -89,7 +89,7 @@ class Diff extends React.Component<Props, State> {
       globalCollapsedOrByMarks = () => true;
     } else {
       globalCollapsedOrByMarks = (oldPath: string, newPath: string) =>
-        pullRequest ? pullRequest.markedAsReviewed.some(path => path === oldPath || path === newPath) : false;
+        diffState ? diffState.reviewedFiles.some(path => path === oldPath || path === newPath) : false;
     }
 
     return (
@@ -122,7 +122,7 @@ class Diff extends React.Component<Props, State> {
     const path = diffs.getPath(file);
 
     const annotations = [];
-    const fileState = this.props.comments.files[path] || [];
+    const fileState = this.props.diffState.files[path] || [];
     if (fileState.comments && fileState.comments.length > 0) {
       annotations.push(this.createComments(fileState.comments));
     }
@@ -145,7 +145,7 @@ class Diff extends React.Component<Props, State> {
     const annotations: { [key: string]: React.ReactNode } = {};
 
     const hunkId = createHunkId(context);
-    const hunkState = this.props.comments.lines[hunkId];
+    const hunkState = this.props.diffState.lines[hunkId];
     if (hunkState) {
       Object.keys(hunkState).forEach((changeId: string) => {
         const lineState = hunkState[changeId];
@@ -178,6 +178,17 @@ class Diff extends React.Component<Props, State> {
     file: File,
     setCollapse: (p: boolean) => void
   ) => {
+    const { pullRequest, diffState, dispatch } = this.props;
+
+    const setReviewMark = (filepath: string, reviewed: boolean) => {
+      if (reviewed) {
+        dispatch(markAsReviewed(filepath));
+      } else {
+        dispatch(unmarkAsReviewed(filepath));
+      }
+      setCollapse(reviewed);
+    };
+
     if (this.isPermittedToComment()) {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
@@ -189,10 +200,11 @@ class Diff extends React.Component<Props, State> {
       return (
         <ButtonGroup>
           <MarkReviewedButton
-            pullRequest={this.props.pullRequest}
+            pullRequest={pullRequest}
             newPath={file.newPath}
             oldPath={file.oldPath}
-            setCollapse={setCollapse}
+            setReviewed={setReviewMark}
+            diffState={diffState}
           />
           <AddCommentButton action={openFileEditor} />
           {fileContentFactory(file)}
@@ -225,8 +237,8 @@ class Diff extends React.Component<Props, State> {
   };
 
   findComment = (id: string): Comment => {
-    const { comments } = this.props;
-    const comment = comments.comments[id];
+    const { diffState } = this.props;
+    const comment = diffState.comments[id];
     if (!comment) {
       throw new Error("could not find comment with id " + id);
     }

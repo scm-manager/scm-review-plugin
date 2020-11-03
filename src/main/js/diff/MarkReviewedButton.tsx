@@ -27,12 +27,14 @@ import { DiffButton } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import { deleteReviewMark, postReviewMark } from "../pullRequest";
+import { State as DiffState } from "./reducer";
 
 type Props = WithTranslation & {
   pullRequest: PullRequest;
   oldPath: string;
   newPath: string;
-  setCollapse: (p: boolean) => void;
+  setReviewed: (filepath: string, reviewed: boolean) => void;
+  diffState: DiffState;
 };
 
 type State = {
@@ -44,7 +46,7 @@ class MarkReviewedButton extends React.Component<Props, State> {
     super(props);
 
     this.state = {
-      marked: props.pullRequest.markedAsReviewed.some(mark => mark === this.determinePath())
+      marked: props.diffState.reviewedFiles.some(mark => mark === this.determinePath())
     };
   }
 
@@ -58,16 +60,18 @@ class MarkReviewedButton extends React.Component<Props, State> {
   };
 
   mark = () => {
-    const { pullRequest, setCollapse } = this.props;
-    postReviewMark((pullRequest._links.reviewMark as Link).href, this.determinePath());
-    setCollapse(true);
+    const { pullRequest, setReviewed } = this.props;
+    const filepath = this.determinePath();
+    postReviewMark((pullRequest._links.reviewMark as Link).href, filepath);
+    setReviewed(filepath, true);
     this.setState({ marked: true });
   };
 
   unmark = () => {
-    const { pullRequest, setCollapse } = this.props;
-    deleteReviewMark((pullRequest._links.reviewMark as Link).href, this.determinePath());
-    setCollapse(false);
+    const { pullRequest, setReviewed } = this.props;
+    const filepath = this.determinePath();
+    deleteReviewMark((pullRequest._links.reviewMark as Link).href, filepath);
+    setReviewed(filepath, false);
     this.setState({ marked: false });
   };
 
