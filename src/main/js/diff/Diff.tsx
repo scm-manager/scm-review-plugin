@@ -45,7 +45,7 @@ import InlineComments from "./InlineComments";
 import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
-import { DiffRelatedCommentCollection, markAsReviewed, unmarkAsReviewed } from "./reducer";
+import { State as DiffState, DiffAction, markAsReviewed, unmarkAsReviewed } from "./reducer";
 import { closeEditor, createComment, openEditor } from "../comment/actiontypes";
 import MarkReviewedButton from "./MarkReviewedButton";
 
@@ -61,9 +61,9 @@ const CommentWrapper = styled.div`
 
 type Props = WithTranslation & {
   diffUrl: string;
-  diffState: DiffRelatedCommentCollection;
+  diffState: DiffState;
   createLink?: string;
-  dispatch: Dispatch<any>;
+  dispatch: Dispatch<DiffAction>;
   pullRequest: PullRequest;
   fileContentFactory: FileContentFactory;
 };
@@ -81,7 +81,7 @@ class Diff extends React.Component<Props, State> {
   }
 
   render() {
-    const { diffUrl, pullRequest, fileContentFactory, diffState, t } = this.props;
+    const { diffUrl, fileContentFactory, diffState, t } = this.props;
     const { collapsed } = this.state;
 
     let globalCollapsedOrByMarks: DefaultCollapsedFunction;
@@ -89,7 +89,7 @@ class Diff extends React.Component<Props, State> {
       globalCollapsedOrByMarks = () => true;
     } else {
       globalCollapsedOrByMarks = (oldPath: string, newPath: string) =>
-        pullRequest ? diffState.reviewedFiles.some(path => path === oldPath || path === newPath) : false;
+        diffState ? diffState.reviewedFiles.some(path => path === oldPath || path === newPath) : false;
     }
 
     return (
@@ -178,7 +178,7 @@ class Diff extends React.Component<Props, State> {
     file: File,
     setCollapse: (p: boolean) => void
   ) => {
-    const { dispatch, diffState } = this.props;
+    const { pullRequest, diffState, dispatch } = this.props;
 
     const setReviewMark = (filepath: string, reviewed: boolean) => {
       if (reviewed) {
@@ -200,7 +200,7 @@ class Diff extends React.Component<Props, State> {
       return (
         <ButtonGroup>
           <MarkReviewedButton
-            pullRequest={this.props.pullRequest}
+            pullRequest={pullRequest}
             newPath={file.newPath}
             oldPath={file.oldPath}
             setReviewed={setReviewMark}

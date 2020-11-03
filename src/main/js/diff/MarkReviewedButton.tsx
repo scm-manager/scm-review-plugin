@@ -27,14 +27,14 @@ import { DiffButton } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import { deleteReviewMark, postReviewMark } from "../pullRequest";
-import {DiffRelatedCommentCollection} from "./reducer";
+import { State as DiffState } from "./reducer";
 
 type Props = WithTranslation & {
   pullRequest: PullRequest;
   oldPath: string;
   newPath: string;
   setReviewed: (filepath: string, reviewed: boolean) => void;
-  diffState: DiffRelatedCommentCollection;
+  diffState: DiffState;
 };
 
 type State = {

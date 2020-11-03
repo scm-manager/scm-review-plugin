@@ -24,8 +24,8 @@
 
 import { Comment, Location } from "../types/PullRequest";
 import { Action, ActionType, CommentAction, ReplyAction, FetchAllAction, EditorAction } from "../comment/actiontypes";
-import produce from "immer";
 import { createChangeIdFromLocation, createHunkIdFromLocation, isInlineLocation } from "./locations";
+import produce from "immer";
 
 export type FileCommentState = {
   comments: string[];
@@ -48,9 +48,7 @@ export type LineCommentCollection = {
   };
 };
 
-export type State = DiffRelatedCommentCollection;
-
-export type DiffRelatedCommentCollection = {
+export type State = {
   files: FileCommentCollection;
   lines: LineCommentCollection;
   comments: { [key: string]: Comment };
@@ -78,7 +76,7 @@ type ReviewMarkAction = {
   filepath: string;
 };
 
-type DiffAction = Action | ReviewMarkAction;
+export type DiffAction = Action | ReviewMarkAction;
 type DiffActionType = ActionType | ReviewMarkActionType;
 
 export const markAsReviewed = (filepath: string): ReviewMarkAction => {

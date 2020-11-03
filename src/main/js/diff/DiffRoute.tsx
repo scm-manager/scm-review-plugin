@@ -22,10 +22,10 @@
  * SOFTWARE.
  */
 import React, { FC, useReducer } from "react";
-import reducer, {createInitialState, initialState} from "./reducer";
+import reducer, { createInitialState } from "./reducer";
 import { PullRequest } from "../types/PullRequest";
 import { Link, Repository } from "@scm-manager/ui-types";
-import { ErrorNotification, JumpToFileButton, Loading, Notification } from "@scm-manager/ui-components";
+import { ErrorNotification, JumpToFileButton, Loading, Notification, FileContentFactory } from "@scm-manager/ui-components";
 import useComments from "../comment/useComments";
 import { createDiffUrl } from "../pullRequest";
 import { useTranslation } from "react-i18next";
@@ -39,7 +39,7 @@ type Props = {
 };
 
 const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
-  const [comments, dispatch] = useReducer(reducer, createInitialState(pullRequest.markedAsReviewed));
+  const [diffState, dispatch] = useReducer(reducer, createInitialState(pullRequest.markedAsReviewed));
   const { error, loading, links } = useComments(pullRequest, dispatch);
   const { t } = useTranslation("plugins");
 
@@ -87,7 +87,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
     return (
       <Diff
         diffUrl={diffUrl}
-        comments={comments}
+        diffState={diffState}
         createLink={createLink}
         dispatch={dispatch}
         pullRequest={pullRequest}
