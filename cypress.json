@@ -1,0 +1,5 @@
+{
+  "integrationFolder": "src/test/e2e/cypress/integration",
+  "supportFile": "src/test/e2e/cypress/support/index.js",
+  "pluginsFile": "src/test/e2e/cypress/plugins/index.js"
+}
