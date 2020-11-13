@@ -9,7 +9,7 @@
     "watch": "ui-scripts plugin-watch",
     "test": "jest src/main/js",
     "postinstall": "ui-plugins postinstall",
-    "e2e": "node ./node_modules/@scm-manager/integration-test-runner/cli.js run -u scmadmin -p scmadmin -o"
+    "e2e": "node ./node_modules/@scm-manager/integration-test-runner/cli.js run -u scmadmin -p scmadmin -d ./src/test/e2e"
   },
   "dependencies": {
     "@scm-manager/ui-components": "^2.8.0",
@@ -66,9 +66,5 @@
     "fetch-mock": "^8.0.0",
     "jest": "^24.9.0",
     "node-fetch": "^2.6.1"
-  },
-  "cypress-cucumber-preprocessor": {
-    "step_definitions": "src/test/cypress/support/steps/",
-    "nonGlobalStepDefinitions": false
   }
 }

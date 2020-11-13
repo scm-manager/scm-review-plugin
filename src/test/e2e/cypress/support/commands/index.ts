@@ -22,32 +22,6 @@
  * SOFTWARE.
  */
 
-const restCreateRepo = (namespace, name) => {
-  const reposUrl = `http://localhost:8081/scm/api/v2/repositories?initialize=true`;
-
-  cy.request({
-    method: "POST",
-    url: reposUrl,
-    body: {
-      name,
-      namespace
-    }
-  });
-}
-
-const restCreateBranch = (namespace, name, newBranch, parent = "main") => {
-  const createBranchUrl = `http://localhost:8081/scm/api/v2/repositories/${namespace}/${name}/branches`;
-
-  cy.request({
-    method: "POST",
-    url: createBranchUrl,
-    body: {
-      name: newBranch,
-      parent: parent
-    }
-  })
-}
-
 const restLogin = (username, password) => {
   const loginUrl = `http://localhost:8081/scm/api/v2/auth/access_token`;
 
@@ -58,13 +32,55 @@ const restLogin = (username, password) => {
       cookie: true,
       username: username,
       password: password,
-      grantType: "password"
+      grant_type: "password"
+    }
+  });
+};
+
+const restCreateRepo = (namespace, name) => {
+  const reposUrl = `http://localhost:8081/scm/api/v2/repositories?initialize=true`;
+
+  cy.request({
+    method: "POST",
+    url: reposUrl,
+    headers: {
+      "Content-Type": "application/vnd.scmm-repository+json;v=2"
+    },
+    body: {
+      name,
+      namespace,
+      type: "git"
+    }
+  });
+};
+
+const restDeleteRepo = (namespace, name) => {
+  const url = `http://localhost:8081/scm/api/v2/repositories/${namespace}/${name}`;
+
+  cy.request({
+    method: "DELETE",
+    url: url
+  });
+};
+
+const restCreateBranch = (namespace, name, newBranch, parent = "main") => {
+  const createBranchUrl = `http://localhost:8081/scm/api/v2/repositories/${namespace}/${name}/branches`;
+
+  cy.request({
+    method: "POST",
+    url: createBranchUrl,
+    headers: {
+      "Content-Type": "application/vnd.scmm-branchRequest+json;v=2"
+    },
+    body: {
+      name: newBranch,
+      parent: parent
     }
   });
 };
 
 const restCreateFile = (namespace, repo, branch, filename, content, commitMessage = "Created a new file.") => {
-  const createFileUrl = `http://localhost:8081/scm/api/v2/edit/${namespace}/${repo}/create`
+  const createFileUrl = `http://localhost:8081/scm/api/v2/edit/${namespace}/${repo}/create`;
 
   cy.request({
     method: "POST",
@@ -75,33 +91,37 @@ const restCreateFile = (namespace, repo, branch, filename, content, commitMessag
       fileName: filename,
       fileContent: content
     }
-  })
-}
+  });
+};
 
 const restCreatePr = (namespace, repo, source, target, title) => {
-  const url = `http://localhost:8081/scm/api/v2/pull-requests/${namespace}/${repo}`
+  const url = `http://localhost:8081/scm/api/v2/pull-requests/${namespace}/${repo}`;
 
   cy.request({
     method: "POST",
     url: url,
+    headers: {
+      "Content-Type": "application/vnd.scmm-pullRequest+json;v=2"
+    },
     body: {
       source,
       target,
       title
     }
-  })
-}
+  });
+};
 
 const restGetPr = (namespace, repo, prId = 1) => {
-  const url = `http://localhost:8081/scm/api/v2/pull-requests/${namespace}/${repo}/${prId}`
+  const url = `http://localhost:8081/scm/api/v2/pull-requests/${namespace}/${repo}/${prId}`;
 
   cy.request({
     method: "GET",
     url: url
-  })
-}
+  });
+};
 
 Cypress.Commands.add("restCreateRepo", restCreateRepo);
+Cypress.Commands.add("restDeleteRepo", restDeleteRepo);
 Cypress.Commands.add("restLogin", restLogin);
 Cypress.Commands.add("restCreateBranch", restCreateBranch);
 Cypress.Commands.add("restCreateFile", restCreateFile);

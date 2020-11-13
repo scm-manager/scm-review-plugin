@@ -22,16 +22,30 @@
  * SOFTWARE.
  */
 
-import { Given, Then } from "cypress-cucumber-preprocessor/steps";
-
-Given("I am authenticated and a repository with a non-default branch exists", () => {
-  cy.restLogin(Cypress.env("USERNAME"), Cypress.env("PASSWORD"));
-  cy.restCreateRepo("Test", "HeartOfGold");
-  cy.restCreateBranch("Test", "HeartOfGold", "develop", "main");
-  cy.restCreateFile("Test", "HeartOfGold", "develop", "index.js", "console.log(\"Hello World\"");
-  cy.restCreatePr("Test", "HeartOfGold", "develop", "main", "A new PR");
+Given("repo doesnt exist", () => {
+  cy.restDeleteRepo(Cypress.env("USERNAME"), "heartofgold")
 });
 
-Then("Asking the rest api confirms a new pr has been created", () => {
-  cy.restGetPr("Test", "HeartOfGold", 1);
+Given("is authenticated", () => {
+  cy.restLogin(Cypress.env("USERNAME"), Cypress.env("PASSWORD"));
+});
+
+Given("repository exists", () => {
+  cy.restCreateRepo("test", "heartofgold");
+});
+
+Given("develop branch exists", () => {
+  cy.restCreateBranch(Cypress.env("USERNAME"), "heartofgold", "develop", "master");
+});
+
+Given("commit exists", () => {
+  cy.restCreateFile(Cypress.env("USERNAME"), "heartofgold", "develop", "index.js", "console.log(\"Hello World\"");
+});
+
+When("create pr", () => {
+  cy.restCreatePr(Cypress.env("USERNAME"), "heartofgold", "develop", "master", "A new PR");
+});
+
+Then("pr exists", () => {
+  cy.restGetPr(Cypress.env("USERNAME"), "heartofgold", 1);
 });

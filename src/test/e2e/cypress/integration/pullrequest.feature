@@ -1,6 +1,11 @@
-Feature: Pull Request
-  I want to manage pull requests.
+Feature: Pull Requests
+  Background:
+    Given is authenticated
+    And repo doesnt exist
 
   Scenario: Creating a pull request
-    Given I am authenticated and a repository with a non-default branch exists
-    Then Asking the rest api confirms a new pr has been created
+    Given repository exists
+    And develop branch exists
+    And commit exists
+    When create pr
+    Then pr exists
