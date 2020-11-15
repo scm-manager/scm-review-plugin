@@ -22,30 +22,30 @@
  * SOFTWARE.
  */
 
-Given("repo doesnt exist", () => {
-  cy.restDeleteRepo(Cypress.env("USERNAME"), "heartofgold")
+Given("repository {string} / {string} doesnt exist", (namespace, repo) => {
+  cy.restDeleteRepo(namespace, repo)
 });
 
-Given("is authenticated", () => {
-  cy.restLogin(Cypress.env("USERNAME"), Cypress.env("PASSWORD"));
+Given("{string} is authenticated with password {string}", (username, password) => {
+  cy.restLogin(username, password);
 });
 
-Given("repository exists", () => {
-  cy.restCreateRepo("test", "heartofgold");
+Given("repository {string} / {string} exists", (namespace, repo) => {
+  cy.restCreateRepo(namespace, repo);
 });
 
-Given("develop branch exists", () => {
-  cy.restCreateBranch(Cypress.env("USERNAME"), "heartofgold", "develop", "master");
+Given("branch {string} exists in repository {string} / {string} based on branch {string}", (branch, namespace, repo, parent) => {
+  cy.restCreateBranch(namespace, repo, branch, parent);
 });
 
-Given("commit exists", () => {
-  cy.restCreateFile(Cypress.env("USERNAME"), "heartofgold", "develop", "index.js", "console.log(\"Hello World\"");
+Given("any commit exists on branch {string} of repository {string} / {string}", (branch, namespace, repository) => {
+  cy.restCreateFile(namespace, repository, branch, "index.js", "console.log(\"Hello World\"");
 });
 
-When("create pr", () => {
-  cy.restCreatePr(Cypress.env("USERNAME"), "heartofgold", "develop", "master", "A new PR");
+When("a pull request is created from {string} to {string} in repository {string} / {string}", (from, to, namespace, repository) => {
+  cy.restCreatePr(namespace, repository, from, to, "A new PR");
 });
 
-Then("pr exists", () => {
-  cy.restGetPr(Cypress.env("USERNAME"), "heartofgold", 1);
+Then("a pull request with id {int} exists in repository {string} / {string}", (id, namespace, repository) => {
+  cy.restGetPr(namespace, repository, id);
 });
