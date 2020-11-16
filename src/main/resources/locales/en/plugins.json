@@ -30,6 +30,7 @@
       "title": "Title",
       "validation": {
         "sourceBranch": "No differences between source branch and target branch",
+        "alreadyExists": "The pull request with your selected source branch and target branch already exists",
         "title": "Title is required"
       },
       "description": "Description",

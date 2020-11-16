@@ -42,6 +42,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.google.inject.util.Providers;
@@ -61,9 +62,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.NotFoundException;
+import sonia.scm.api.v2.resources.BranchLinkProvider;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Branch;
-import sonia.scm.api.v2.resources.BranchLinkProvider;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
@@ -89,6 +90,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -870,6 +872,35 @@ public class PullRequestRootResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     assertThat(response.getContentAsString()).contains("\"markedAsReviewed\":[\"/some/file\"]");
+  }
+
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldCheckPullRequest() throws URISyntaxException {
+    mockLoggedInUser(new User("dent"));
+    PullRequest pullRequest = createPullRequest();
+    when(store.getAll()).thenReturn(ImmutableList.of(pullRequest));
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/check?source=feature&target=master");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldThrowConflictErrorOnCheckPullRequest() throws URISyntaxException {
+    mockLoggedInUser(new User("dent"));
+    PullRequest pullRequest = createPullRequest();
+    when(store.getAll()).thenReturn(ImmutableList.of(pullRequest));
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/check?source=develop&target=master");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(409);
   }
 
   private void mockLoggedInUser(User user1) {

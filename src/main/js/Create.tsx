@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 import React from "react";
-import { ErrorNotification, Level, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
+import { ConflictError, ErrorNotification, Level, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
 import { Changeset, Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
-import { BasicPullRequest, PullRequest } from "./types/PullRequest";
-import { createChangesetUrl, createPullRequest, getChangesets } from "./pullRequest";
+import { BasicPullRequest } from "./types/PullRequest";
+import { checkPullRequest, createChangesetUrl, createPullRequest, getChangesets } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
 import { RouteComponentProps, withRouter } from "react-router-dom";
@@ -50,6 +50,7 @@ type State = {
   disabled: boolean;
   changesets: Changeset[];
   showBranchesValidationError: boolean;
+  showAlreadyExistValidationError: boolean;
 };
 
 class Create extends React.Component<Props, State> {
@@ -64,12 +65,19 @@ class Create extends React.Component<Props, State> {
       loading: false,
       disabled: true,
       changesets: [],
-      showBranchesValidationError: false
+      showBranchesValidationError: false,
+      showAlreadyExistValidationError: false
     };
   }
 
   fetchChangesets = (pullRequest: BasicPullRequest) => {
-    return getChangesets(createChangesetUrl(this.props.repository, pullRequest.source, pullRequest.target))
+    const { repository } = this.props;
+
+    checkPullRequest((repository._links.pullRequestCheck as Link)?.href, pullRequest).catch(error => {
+      this.setState({ showAlreadyExistValidationError: error instanceof ConflictError });
+    });
+
+    return getChangesets(createChangesetUrl(repository, pullRequest.source, pullRequest.target))
       .then((result: Changeset) => {
         this.setState({ changesets: result._embedded.changesets });
       })
@@ -130,7 +138,7 @@ class Create extends React.Component<Props, State> {
         this.setState({
           pullRequest,
           disabled: !this.verify(pullRequest),
-          showBranchesValidationError: !(this.state.changesets.length > 0)
+          showBranchesValidationError: this.state.changesets.length <= 0
         });
       });
     } else {
@@ -171,20 +179,19 @@ class Create extends React.Component<Props, State> {
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.create.title")} />
           <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
-
           {notification}
-
-          <CreateForm
-            repository={repository}
-            userAutocompleteLink={this.props.userAutocompleteLink}
-            onChange={this.handleFormChange}
-            source={params.source}
-            target={params.target}
-            showBranchesValidationError={this.state.showBranchesValidationError}
-          />
-
+          {!loading && (
+            <CreateForm
+              repository={repository}
+              userAutocompleteLink={this.props.userAutocompleteLink}
+              onChange={this.handleFormChange}
+              source={params.source}
+              target={params.target}
+              showBranchesValidationError={this.state.showBranchesValidationError}
+              showAlreadyExistValidationError={this.state.showAlreadyExistValidationError}
+            />
+          )}
           {information}
-
           <TopPaddingLevel
             right={
               <SubmitButton

@@ -44,6 +44,7 @@ type Props = WithTranslation & {
   source?: string;
   target?: string;
   showBranchesValidationError: boolean;
+  showAlreadyExistValidationError: boolean;
 };
 
 type State = {
@@ -117,6 +118,18 @@ class CreateForm extends React.Component<Props, State> {
     event.preventDefault();
   };
 
+  renderValidationError = () => {
+    const { t } = this.props;
+
+    if (this.props.showBranchesValidationError) {
+      return <ValidationError>{t("scm-review-plugin.pullRequest.validation.sourceBranch")}</ValidationError>;
+    }
+
+    if (this.props.showAlreadyExistValidationError) {
+      return <ValidationError>{t("scm-review-plugin.pullRequest.validation.alreadyExists")}</ValidationError>;
+    }
+  };
+
   render() {
     const { t } = this.props;
     const { loading, error, pullRequest } = this.state;
@@ -153,9 +166,7 @@ class CreateForm extends React.Component<Props, State> {
             />
           </div>
         </div>
-        {this.props.showBranchesValidationError && (
-          <ValidationError>{t("scm-review-plugin.pullRequest.validation.sourceBranch")}</ValidationError>
-        )}
+        {this.renderValidationError()}
         <EditForm
           description=""
           title={undefined}

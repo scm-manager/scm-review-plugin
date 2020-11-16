@@ -30,6 +30,7 @@
       "title": "Titel",
       "validation": {
         "sourceBranch": "Kein Unterschied zwischen Source-Branch und Target-Branch.",
+        "alreadyExists": "Der Pull-Request zwischen dem gewählten Source-Branch und Target-Branch existiert bereits.",
         "title": "Titel erforderlich"
       },
       "description": "Beschreibung",

@@ -117,24 +117,13 @@ public class PullRequestRootResource {
     )
   )
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
-
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
-    pullRequestDto.setStatus(PullRequestStatus.OPEN);
 
-    String source = pullRequestDto.getSource();
-    String target = pullRequestDto.getTarget();
-
-    service.get(repository, source, target, pullRequestDto.getStatus())
-      .ifPresent(pullRequest -> {
-        throw alreadyExists(entity("pull request", pullRequest.getId()).in(repository));
-      });
-    service.checkBranch(repository, source);
-    service.checkBranch(repository, source);
-
-    verifyBranchesDiffer(source, target);
+    validateBranches(pullRequestDto.getSource(), pullRequestDto.getTarget(), repository);
 
     User user = CurrentUserResolver.getCurrentUser();
+    pullRequestDto.setStatus(PullRequestStatus.OPEN);
     PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
     pullRequest.setAuthor(user.getId());
 
@@ -184,6 +173,53 @@ public class PullRequestRootResource {
     boolean permission = PermissionCheck.mayCreate(repository);
     return
       createCollection(permission, resourceLinks.pullRequestCollection().all(namespace, name), resourceLinks.pullRequestCollection().create(namespace, name), pullRequestDtos, "pullRequests");
+  }
+
+  @GET
+  @Path("{namespace}/{name}/check")
+  @Consumes(PullRequestMediaType.PULL_REQUEST)
+  @Operation(
+    summary = "Checks pull request",
+    description = "Checks if new pull request can be created.",
+    tags = "Pull Request",
+    operationId = "review_check_pull_request"
+  )
+  @ApiResponse(responseCode = "200", description = "Pull request is valid")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"createPullRequest\" privilege")
+  @ApiResponse(responseCode = "409", description = "conflict, a similar pull request for these branches already exists")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public Response check(
+    @Context UriInfo uriInfo,
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @QueryParam("source") String source,
+    @QueryParam("target") String target
+  ) {
+    Repository repository = service.getRepository(namespace, name);
+    PermissionCheck.checkCreate(repository);
+
+    validateBranches(source, target, repository);
+
+    return Response.ok().build();
+  }
+
+  private void validateBranches(String source, String target, Repository repository) {
+    service.get(repository, source, target, PullRequestStatus.OPEN)
+      .ifPresent(pullRequest -> {
+        throw alreadyExists(entity("pull request", pullRequest.getId()).in(repository));
+      });
+    service.checkBranch(repository, source);
+    service.checkBranch(repository, target);
+
+    verifyBranchesDiffer(source, target);
   }
 
   private Instant getLastModification(PullRequestDto pr) {
