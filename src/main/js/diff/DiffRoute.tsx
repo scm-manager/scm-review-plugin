@@ -39,7 +39,7 @@ type Props = {
 };
 
 const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
-  const [diffState, dispatch] = useReducer(reducer, createInitialState(pullRequest.markedAsReviewed));
+  const [diffState, dispatch] = useReducer(reducer, createInitialState(pullRequest?.markedAsReviewed || []));
   const { error, loading, links } = useComments(pullRequest, dispatch);
   const { t } = useTranslation("plugins");
 
