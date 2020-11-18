@@ -57,6 +57,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.RestDispatcher;
 
@@ -115,6 +116,8 @@ public class CommentRootResourceTest {
   @Mock
   private PullRequestService pullRequestService;
   @Mock
+  private RepositoryServiceFactory serviceFactory;
+  @Mock
   private BranchRevisionResolver branchRevisionResolver;
   @Mock
   private MentionMapper mentionMapper;
@@ -147,7 +150,7 @@ public class CommentRootResourceTest {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-      Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), null, channelRegistry)));
+            serviceFactory, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), null, channelRegistry)));
     dispatcher.addSingletonResource(pullRequestRootResource);
     when(branchRevisionResolver.getRevisions(any(), any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));

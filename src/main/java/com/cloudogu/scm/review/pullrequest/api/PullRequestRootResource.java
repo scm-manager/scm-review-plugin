@@ -27,12 +27,14 @@ import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,7 +43,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.api.v2.resources.ErrorDto;
+import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
 import sonia.scm.web.VndMediaType;
 
@@ -60,6 +65,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Comparator;
@@ -67,6 +73,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.HalRepresentations.createCollection;
+import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.BRANCHES_NOT_DIFFER;
+import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_ALREADY_EXISTS;
+import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
 import static java.util.Optional.ofNullable;
 import static sonia.scm.AlreadyExistsException.alreadyExists;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
@@ -81,12 +90,14 @@ public class PullRequestRootResource {
 
   private final PullRequestMapper mapper;
   private final PullRequestService service;
+  private final RepositoryServiceFactory serviceFactory;
   private final Provider<PullRequestResource> pullRequestResourceProvider;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, Provider<PullRequestResource> pullRequestResourceProvider) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, RepositoryServiceFactory serviceFactory, Provider<PullRequestResource> pullRequestResourceProvider) {
     this.mapper = mapper;
     this.service = service;
+    this.serviceFactory = serviceFactory;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
   }
 
@@ -120,7 +131,18 @@ public class PullRequestRootResource {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
 
-    validateBranches(pullRequestDto.getSource(), pullRequestDto.getTarget(), repository);
+    String source = pullRequestDto.getSource();
+    String target = pullRequestDto.getTarget();
+
+    service.get(repository, source, target, PullRequestStatus.OPEN)
+      .ifPresent(pullRequest -> {
+        throw alreadyExists(entity(repository).in("pull request", pullRequest.getId()).in(repository));
+      });
+
+    service.checkBranch(repository, source);
+    service.checkBranch(repository, target);
+
+    verifyBranchesDiffer(source, target);
 
     User user = CurrentUserResolver.getCurrentUser();
     pullRequestDto.setStatus(PullRequestStatus.OPEN);
@@ -177,17 +199,17 @@ public class PullRequestRootResource {
 
   @GET
   @Path("{namespace}/{name}/check")
-  @Consumes(PullRequestMediaType.PULL_REQUEST)
+  @Produces(PullRequestMediaType.PULL_REQUEST)
   @Operation(
     summary = "Checks pull request",
     description = "Checks if new pull request can be created.",
     tags = "Pull Request",
     operationId = "review_check_pull_request"
   )
-  @ApiResponse(responseCode = "200", description = "Pull request is valid")
+  @ApiResponse(responseCode = "200", description = "Returns pull request check result")
+  @ApiResponse(responseCode = "400", description = "Invalid request / the provided source branch or target branch may not exist")
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
   @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"createPullRequest\" privilege")
-  @ApiResponse(responseCode = "409", description = "conflict, a similar pull request for these branches already exists")
   @ApiResponse(
     responseCode = "500",
     description = "internal server error",
@@ -196,30 +218,59 @@ public class PullRequestRootResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response check(
+  public PullRequestCheckResultDto check(
     @Context UriInfo uriInfo,
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
     @QueryParam("source") String source,
     @QueryParam("target") String target
-  ) {
+  ) throws IOException {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
 
-    validateBranches(source, target, repository);
-
-    return Response.ok().build();
-  }
-
-  private void validateBranches(String source, String target, Repository repository) {
-    service.get(repository, source, target, PullRequestStatus.OPEN)
-      .ifPresent(pullRequest -> {
-        throw alreadyExists(entity("pull request", pullRequest.getId()).in(repository));
-      });
     service.checkBranch(repository, source);
     service.checkBranch(repository, target);
 
-    verifyBranchesDiffer(source, target);
+    return checkIfPullRequestIsValid(uriInfo, repository, source, target);
+  }
+
+  private PullRequestCheckResultDto checkIfPullRequestIsValid(UriInfo uriInfo, Repository repository, String source, String target) throws IOException {
+    PullRequestCheckResultDto checkResultDto = createCheckResultDto(uriInfo, repository, source, target);
+
+    try (RepositoryService repositoryService = serviceFactory.create(repository)) {
+      ChangesetPagingResult changesets = repositoryService
+        .getLogCommand()
+        .setStartChangeset(source)
+        .setAncestorChangeset(target)
+        .getChangesets();
+
+      if (changesets == null || changesets.getChangesets() == null || changesets.getChangesets().isEmpty()) {
+        checkResultDto.setStatus(BRANCHES_NOT_DIFFER);
+      }
+    }
+
+    service.get(repository, source, target, PullRequestStatus.OPEN)
+      .ifPresent(pullRequest -> checkResultDto.setStatus(PR_ALREADY_EXISTS));
+
+    try {
+      verifyBranchesDiffer(source, target);
+    } catch (ScmConstraintViolationException e) {
+      checkResultDto.setStatus(BRANCHES_NOT_DIFFER);
+    }
+    return checkResultDto;
+  }
+
+  private PullRequestCheckResultDto createCheckResultDto(UriInfo uriInfo, Repository repository, String source, String target) {
+    PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
+    String checkLink = String.format(
+      "%s?source=%s&target=%s",
+      pullRequestResourceLinks.pullRequestCollection().check(repository.getNamespace(), repository.getName()), source, target
+    );
+
+    return new PullRequestCheckResultDto(
+      Links.linkingTo().self(checkLink).build(),
+      PR_VALID
+    );
   }
 
   private Instant getLastModification(PullRequestDto pr) {

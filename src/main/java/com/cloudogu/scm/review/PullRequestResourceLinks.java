@@ -79,6 +79,12 @@ public class PullRequestResourceLinks {
         .method("create").parameters(namespace, name)
         .href();
     }
+
+    public String check(String namespace, String name) {
+      return pullRequestLinkBuilder
+        .method("check").parameters(namespace, name)
+        .href();
+    }
   }
 
   public PullRequestLinks pullRequest() {

@@ -42,6 +42,7 @@ type Props = WithTranslation &
     status: string;
     mergeHasNoConflict: boolean;
     targetBranchDeleted: boolean;
+    shouldFetchChangesets?: boolean;
   };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
@@ -57,6 +58,10 @@ export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string
 }
 
 class PullRequestInformation extends React.Component<Props> {
+  static defaultProps = {
+    shouldFetchChangesets: true
+  };
+
   navigationClass(suffix: string) {
     const { baseURL, location } = this.props;
     if (isUrlSuffixMatching(baseURL, location.pathname, suffix)) {
@@ -66,7 +71,18 @@ class PullRequestInformation extends React.Component<Props> {
   }
 
   render() {
-    const { pullRequest, repository, baseURL, status, target, source, mergeHasNoConflict, targetBranchDeleted, t } = this.props;
+    const {
+      pullRequest,
+      repository,
+      baseURL,
+      status,
+      target,
+      source,
+      mergeHasNoConflict,
+      targetBranchDeleted,
+      shouldFetchChangesets,
+      t
+    } = this.props;
 
     let changesetTab = null;
     let diffTab = null;
@@ -89,14 +105,28 @@ class PullRequestInformation extends React.Component<Props> {
       routeChangeset = (
         <Route
           path={`${baseURL}/changesets`}
-          render={() => <Changesets repository={repository} source={sourceRevision} target={targetRevision} />}
+          render={() => (
+            <Changesets
+              repository={repository}
+              source={sourceRevision}
+              target={targetRevision}
+              shouldFetchChangesets={shouldFetchChangesets}
+            />
+          )}
           exact
         />
       );
       routeChangesetPagination = (
         <Route
           path={`${baseURL}/changesets/:page`}
-          render={() => <Changesets repository={repository} source={sourceRevision} target={targetRevision} />}
+          render={() => (
+            <Changesets
+              repository={repository}
+              source={sourceRevision}
+              target={targetRevision}
+              shouldFetchChangesets={shouldFetchChangesets}
+            />
+          )}
           exact
         />
       );

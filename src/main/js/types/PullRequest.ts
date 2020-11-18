@@ -156,3 +156,7 @@ export type Tasks = {
   todo: number;
   done: number;
 };
+
+export type CheckResult = {
+  status: "PR_VALID" | "BRANCHES_NOT_DIFFER" | "PR_ALREADY_EXISTS"
+};

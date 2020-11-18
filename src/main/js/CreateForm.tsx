@@ -24,7 +24,7 @@
 import React from "react";
 import { Repository, Branch, Link } from "@scm-manager/ui-types";
 import { ErrorNotification, Select } from "@scm-manager/ui-components";
-import { BasicPullRequest } from "./types/PullRequest";
+import {BasicPullRequest, CheckResult} from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import EditForm from "./EditForm";
@@ -43,8 +43,7 @@ type Props = WithTranslation & {
   userAutocompleteLink: string;
   source?: string;
   target?: string;
-  showBranchesValidationError: boolean;
-  showAlreadyExistValidationError: boolean;
+  checkResult?: CheckResult
 };
 
 type State = {
@@ -119,14 +118,10 @@ class CreateForm extends React.Component<Props, State> {
   };
 
   renderValidationError = () => {
-    const { t } = this.props;
+    const { t, checkResult } = this.props;
 
-    if (this.props.showBranchesValidationError) {
-      return <ValidationError>{t("scm-review-plugin.pullRequest.validation.sourceBranch")}</ValidationError>;
-    }
-
-    if (this.props.showAlreadyExistValidationError) {
-      return <ValidationError>{t("scm-review-plugin.pullRequest.validation.alreadyExists")}</ValidationError>;
+    if (checkResult && checkResult.status !== "PR_VALID") {
+      return <ValidationError>{t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}</ValidationError>;
     }
   };
 

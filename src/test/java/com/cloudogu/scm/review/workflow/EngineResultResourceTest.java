@@ -76,7 +76,7 @@ class EngineResultResourceTest {
   @BeforeEach
   void setUpResource() {
     PullRequestResource pullRequestResource = new PullRequestResource(null, null, null, Providers.of(resource), null);
-    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(null, null, Providers.of(pullRequestResource));
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(null, null, null, Providers.of(pullRequestResource));
 
     dispatcher.addSingletonResource(pullRequestRootResource);
   }
