@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - New endpoint to check pull request before creation ([#105](https://github.com/scm-manager/scm-review-plugin/pull/105))
 
+### Fixed
+- Error on diff viewer during pull request creation ([#106](https://github.com/scm-manager/scm-review-plugin/pull/106))
+
 ## 2.4.2 - 2020-11-06
 ### Fixed
 - Missing email notification for updated pull requests ([#103](https://github.com/scm-manager/scm-review-plugin/pull/103))

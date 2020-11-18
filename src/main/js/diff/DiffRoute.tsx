@@ -25,7 +25,13 @@ import React, { FC, useReducer } from "react";
 import reducer, { createInitialState } from "./reducer";
 import { PullRequest } from "../types/PullRequest";
 import { Link, Repository } from "@scm-manager/ui-types";
-import { ErrorNotification, JumpToFileButton, Loading, Notification, FileContentFactory } from "@scm-manager/ui-components";
+import {
+  ErrorNotification,
+  FileContentFactory,
+  JumpToFileButton,
+  Loading,
+  Notification
+} from "@scm-manager/ui-components";
 import useComments from "../comment/useComments";
 import { createDiffUrl } from "../pullRequest";
 import { useTranslation } from "react-i18next";
@@ -39,7 +45,7 @@ type Props = {
 };
 
 const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
-  const [diffState, dispatch] = useReducer(reducer, createInitialState(pullRequest.markedAsReviewed));
+  const [diffState, dispatch] = useReducer(reducer, createInitialState(pullRequest?.markedAsReviewed || []));
   const { error, loading, links } = useComments(pullRequest, dispatch);
   const { t } = useTranslation("plugins");
 
@@ -49,10 +55,11 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
       url: `${baseUrl}/${pullRequest && pullRequest.source && encodeURIComponent(pullRequest.source)}/${file.newPath}/`,
       label: t("scm-review-plugin.diff.jumpToSource")
     };
-    const targetLink = pullRequest && pullRequest.target && {
-      url: `${baseUrl}/${encodeURIComponent(pullRequest.target)}/${file.oldPath}`,
-      label: t("scm-review-plugin.diff.jumpToTarget")
-    };
+    const targetLink = pullRequest &&
+      pullRequest.target && {
+        url: `${baseUrl}/${encodeURIComponent(pullRequest.target)}/${file.oldPath}`,
+        label: t("scm-review-plugin.diff.jumpToTarget")
+      };
 
     const links = [];
     switch (file.type) {

@@ -25,9 +25,7 @@ package com.cloudogu.scm.review.pullrequest.dto;
 
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter

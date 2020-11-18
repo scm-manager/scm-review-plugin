@@ -31,8 +31,8 @@ import {
   ErrorNotification,
   LinkPaginator,
   Loading,
-  Notification,
-  NotFoundError
+  NotFoundError,
+  Notification
 } from "@scm-manager/ui-components";
 
 type Props = WithTranslation &
@@ -65,6 +65,7 @@ class Changesets extends React.Component<Props, State> {
       page: 1
     };
   }
+
   static defaultProps = {
     shouldFetchChangesets: true
   };
@@ -155,7 +156,12 @@ class Changesets extends React.Component<Props, State> {
       return <ErrorNotification error={error} />;
     } else if (loading) {
       return <Loading />;
-    } else if (changesets && changesets._embedded && changesets._embedded.changesets) {
+    } else if (
+      this.props.shouldFetchChangesets &&
+      changesets &&
+      changesets._embedded &&
+      changesets._embedded.changesets
+    ) {
       if (changesets._embedded.changesets.length !== 0) {
         return (
           <div className="panel">

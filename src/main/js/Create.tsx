@@ -124,7 +124,7 @@ class Create extends React.Component<Props, State> {
 
   isValid = () => {
     return this.state.checkResult?.status === "PR_VALID";
-  }
+  };
 
   verify = (pullRequest: BasicPullRequest) => {
     const { source, target, title } = pullRequest;
@@ -169,7 +169,7 @@ class Create extends React.Component<Props, State> {
     }
 
     let information = null;
-    if (pullRequest) {
+    if (!loading && pullRequest?.source && pullRequest?.target) {
       information = (
         <PullRequestInformation
           repository={repository}
