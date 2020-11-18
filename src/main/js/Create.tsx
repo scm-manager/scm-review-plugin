@@ -26,7 +26,7 @@ import { ErrorNotification, Level, SubmitButton, Subtitle, Title } from "@scm-ma
 import { Changeset, Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
-import { BasicPullRequest, PullRequest } from "./types/PullRequest";
+import { BasicPullRequest } from "./types/PullRequest";
 import { createChangesetUrl, createPullRequest, getChangesets } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
@@ -130,7 +130,7 @@ class Create extends React.Component<Props, State> {
         this.setState({
           pullRequest,
           disabled: !this.verify(pullRequest),
-          showBranchesValidationError: !(this.state.changesets.length > 0)
+          showBranchesValidationError: this.state.changesets.length <= 0
         });
       });
     } else {
@@ -154,7 +154,7 @@ class Create extends React.Component<Props, State> {
     }
 
     let information = null;
-    if (pullRequest) {
+    if (!loading && pullRequest?.source && pullRequest.target) {
       information = (
         <PullRequestInformation
           repository={repository}
