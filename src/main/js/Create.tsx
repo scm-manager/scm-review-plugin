@@ -154,7 +154,7 @@ class Create extends React.Component<Props, State> {
     }
 
     let information = null;
-    if (!loading && pullRequest?.source && pullRequest.target) {
+    if (!loading && pullRequest?.source && pullRequest?.target) {
       information = (
         <PullRequestInformation
           repository={repository}
