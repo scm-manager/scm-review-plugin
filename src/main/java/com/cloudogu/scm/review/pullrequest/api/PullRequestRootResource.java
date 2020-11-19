@@ -235,42 +235,42 @@ public class PullRequestRootResource {
   }
 
   private PullRequestCheckResultDto checkIfPullRequestIsValid(UriInfo uriInfo, Repository repository, String source, String target) throws IOException {
-    PullRequestCheckResultDto checkResultDto = createCheckResultDto(uriInfo, repository, source, target);
+    Links links = createCheckResultLinks(uriInfo, repository, source, target);
+
+    try {
+      verifyBranchesDiffer(source, target);
+    } catch (ScmConstraintViolationException e) {
+      return BRANCHES_NOT_DIFFER.create(links);
+    }
+
+    if (service.get(repository, source, target, PullRequestStatus.OPEN).isPresent()) {
+      return PR_ALREADY_EXISTS.create(links);
+    }
 
     try (RepositoryService repositoryService = serviceFactory.create(repository)) {
       ChangesetPagingResult changesets = repositoryService
         .getLogCommand()
         .setStartChangeset(source)
         .setAncestorChangeset(target)
+        .setPagingLimit(1)
         .getChangesets();
 
       if (changesets == null || changesets.getChangesets() == null || changesets.getChangesets().isEmpty()) {
-        checkResultDto.setStatus(BRANCHES_NOT_DIFFER);
+        return BRANCHES_NOT_DIFFER.create(links);
       }
     }
 
-    service.get(repository, source, target, PullRequestStatus.OPEN)
-      .ifPresent(pullRequest -> checkResultDto.setStatus(PR_ALREADY_EXISTS));
-
-    try {
-      verifyBranchesDiffer(source, target);
-    } catch (ScmConstraintViolationException e) {
-      checkResultDto.setStatus(BRANCHES_NOT_DIFFER);
-    }
-    return checkResultDto;
+    return PR_VALID.create(links);
   }
 
-  private PullRequestCheckResultDto createCheckResultDto(UriInfo uriInfo, Repository repository, String source, String target) {
+  private Links createCheckResultLinks(UriInfo uriInfo, Repository repository, String source, String target) {
     PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
     String checkLink = String.format(
       "%s?source=%s&target=%s",
       pullRequestResourceLinks.pullRequestCollection().check(repository.getNamespace(), repository.getName()), source, target
     );
 
-    return new PullRequestCheckResultDto(
-      Links.linkingTo().self(checkLink).build(),
-      PR_VALID
-    );
+    return Links.linkingTo().self(checkLink).build();
   }
 
   private Instant getLastModification(PullRequestDto pr) {

@@ -26,27 +26,28 @@ package com.cloudogu.scm.review.pullrequest.dto;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 @SuppressWarnings("squid:S2160") // there is no proper semantic for equals on this dto
 public class PullRequestCheckResultDto extends HalRepresentation {
 
-  private PullRequestCheckStatus status;
+  private final PullRequestCheckStatus status;
 
-  public PullRequestCheckResultDto(Links links, PullRequestCheckStatus status) {
+  private PullRequestCheckResultDto(Links links, PullRequestCheckStatus status) {
     super(links);
     this.status = status;
   }
 
-  @Override
-  @SuppressWarnings("squid:S1185") // We want to have this method available in this package
-  protected HalRepresentation add(Links links) {
-    return super.add(links);
+  interface Creator {
+    PullRequestCheckResultDto create(Links links);
   }
 
-  public enum PullRequestCheckStatus {
-    PR_VALID, PR_ALREADY_EXISTS, BRANCHES_NOT_DIFFER
+  public enum PullRequestCheckStatus implements Creator {
+    PR_VALID, PR_ALREADY_EXISTS, BRANCHES_NOT_DIFFER;
+
+    @Override
+    public PullRequestCheckResultDto create(Links links) {
+      return new PullRequestCheckResultDto(links, this);
+    }
   }
 }
