@@ -26,8 +26,8 @@ import { ErrorNotification, Level, SubmitButton, Subtitle, Title } from "@scm-ma
 import { Changeset, Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
-import { BasicPullRequest } from "./types/PullRequest";
-import { createChangesetUrl, createPullRequest, getChangesets } from "./pullRequest";
+import { BasicPullRequest, CheckResult } from "./types/PullRequest";
+import { checkPullRequest, createChangesetUrl, createPullRequest, getChangesets } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import PullRequestInformation from "./PullRequestInformation";
 import { RouteComponentProps, withRouter } from "react-router-dom";
@@ -49,7 +49,7 @@ type State = {
   error?: Error;
   disabled: boolean;
   changesets: Changeset[];
-  showBranchesValidationError: boolean;
+  checkResult?: CheckResult;
 };
 
 class Create extends React.Component<Props, State> {
@@ -63,17 +63,29 @@ class Create extends React.Component<Props, State> {
       },
       loading: false,
       disabled: true,
-      changesets: [],
-      showBranchesValidationError: false
+      changesets: []
     };
   }
 
   fetchChangesets = (pullRequest: BasicPullRequest) => {
-    return getChangesets(createChangesetUrl(this.props.repository, pullRequest.source, pullRequest.target))
-      .then((result: Changeset) => {
-        this.setState({ changesets: result._embedded.changesets });
+    const { repository } = this.props;
+
+    return checkPullRequest((repository._links.pullRequestCheck as Link)?.href, pullRequest)
+      .then(r => r.json())
+      .then(checkResult => {
+        this.setState({ checkResult: { status: checkResult.status } }, () => {
+          if (this.state.checkResult?.status === "PR_VALID") {
+            getChangesets(createChangesetUrl(repository, pullRequest.source, pullRequest.target))
+              .then((result: Changeset) => {
+                this.setState({ changesets: result._embedded.changesets });
+              })
+              .catch((error: Error) => this.setState({ error, loading: false }));
+          }
+        });
       })
-      .catch((error: Error) => this.setState({ error, loading: false }));
+      .catch(error => {
+        this.setState({ error });
+      });
   };
 
   pullRequestCreated = (pullRequestId: string) => {
@@ -110,10 +122,14 @@ class Create extends React.Component<Props, State> {
       });
   };
 
+  isValid = () => {
+    return this.state.checkResult?.status === "PR_VALID";
+  };
+
   verify = (pullRequest: BasicPullRequest) => {
     const { source, target, title } = pullRequest;
-    if (source && target && title && this.state.changesets) {
-      return source !== target && this.state.changesets.length > 0;
+    if (source && target && title) {
+      return this.isValid();
     }
     return false;
   };
@@ -129,8 +145,7 @@ class Create extends React.Component<Props, State> {
       this.fetchChangesets(pullRequest).then(() => {
         this.setState({
           pullRequest,
-          disabled: !this.verify(pullRequest),
-          showBranchesValidationError: this.state.changesets.length <= 0
+          disabled: !this.verify(pullRequest)
         });
       });
     } else {
@@ -143,7 +158,7 @@ class Create extends React.Component<Props, State> {
 
   render() {
     const { repository, match, t } = this.props;
-    const { pullRequest, loading, error, disabled } = this.state;
+    const { pullRequest, loading, error, disabled, checkResult } = this.state;
 
     const url = this.props.location.search;
     const params = queryString.parse(url);
@@ -163,6 +178,7 @@ class Create extends React.Component<Props, State> {
           status="OPEN"
           baseURL={match.url}
           mergeHasNoConflict={true}
+          shouldFetchChangesets={this.isValid()}
         />
       );
     }
@@ -171,20 +187,18 @@ class Create extends React.Component<Props, State> {
         <div className="column is-clipped">
           <Title title={t("scm-review-plugin.create.title")} />
           <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
-
           {notification}
-
-          <CreateForm
-            repository={repository}
-            userAutocompleteLink={this.props.userAutocompleteLink}
-            onChange={this.handleFormChange}
-            source={params.source}
-            target={params.target}
-            showBranchesValidationError={this.state.showBranchesValidationError}
-          />
-
+          {!loading && (
+            <CreateForm
+              repository={repository}
+              userAutocompleteLink={this.props.userAutocompleteLink}
+              onChange={this.handleFormChange}
+              source={params.source}
+              target={params.target}
+              checkResult={checkResult}
+            />
+          )}
           {information}
-
           <TopPaddingLevel
             right={
               <SubmitButton

@@ -44,6 +44,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.web.RestDispatcher;
 
 import javax.servlet.http.HttpServletResponse;
@@ -83,6 +84,8 @@ public class CommentResourceTest {
   @Mock
   private PullRequestService pullRequestService;
   @Mock
+  private RepositoryServiceFactory serviceFactory;
+  @Mock
   private BranchRevisionResolver branchRevisionResolver;
   @Mock
   private ChannelRegistry channelRegistry;
@@ -99,7 +102,7 @@ public class CommentResourceTest {
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(
       new PullRequestMapperImpl(),
       null,
-      Providers.of(
+            serviceFactory, Providers.of(
         new PullRequestResource(
           new PullRequestMapperImpl(),
           null,

@@ -24,7 +24,7 @@
 import React from "react";
 import { Repository, Branch, Link } from "@scm-manager/ui-types";
 import { ErrorNotification, Select } from "@scm-manager/ui-components";
-import { BasicPullRequest } from "./types/PullRequest";
+import { BasicPullRequest, CheckResult } from "./types/PullRequest";
 import { getBranches } from "./pullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 import EditForm from "./EditForm";
@@ -43,7 +43,7 @@ type Props = WithTranslation & {
   userAutocompleteLink: string;
   source?: string;
   target?: string;
-  showBranchesValidationError: boolean;
+  checkResult?: CheckResult;
 };
 
 type State = {
@@ -117,6 +117,14 @@ class CreateForm extends React.Component<Props, State> {
     event.preventDefault();
   };
 
+  renderValidationError = () => {
+    const { t, checkResult } = this.props;
+
+    if (checkResult && checkResult.status !== "PR_VALID") {
+      return <ValidationError>{t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}</ValidationError>;
+    }
+  };
+
   render() {
     const { t } = this.props;
     const { loading, error, pullRequest } = this.state;
@@ -153,9 +161,7 @@ class CreateForm extends React.Component<Props, State> {
             />
           </div>
         </div>
-        {this.props.showBranchesValidationError && (
-          <ValidationError>{t("scm-review-plugin.pullRequest.validation.sourceBranch")}</ValidationError>
-        )}
+        {this.renderValidationError()}
         <EditForm
           description=""
           title={undefined}

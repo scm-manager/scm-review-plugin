@@ -29,8 +29,9 @@
       "targetBranch": "Target Branch",
       "title": "Title",
       "validation": {
-        "sourceBranch": "No differences between source branch and target branch",
-        "title": "Title is required"
+        "title": "Title is required",
+        "BRANCHES_NOT_DIFFER": "No differences between source branch and target branch",
+        "PR_ALREADY_EXISTS": "The pull request with your selected source branch and target branch already exists"
       },
       "description": "Description",
       "status": "Status",

@@ -147,6 +147,12 @@ export function getMergeStrategyInfo(url: string) {
     .catch(err => "");
 }
 
+export function checkPullRequest(url: string, pullRequest: BasicPullRequest) {
+  const checkUrl = url + `?source=${pullRequest.source}&target=${pullRequest.target}`
+  return apiClient
+    .get(checkUrl);
+}
+
 export function getChangesets(url: string) {
   return apiClient.get(url).then(response => response.json());
 }
@@ -181,7 +187,7 @@ export function deleteReviewMark(url: string, path: string) {
 
 function createIncomingUrl(repository: Repository, linkName: string, source: string, target: string) {
   const link = repository._links[linkName];
-  if (link && (link as Link).templated) {
+  if ((link as Link)?.templated) {
     return (link as Link).href
       .replace("{source}", encodeURIComponent(source))
       .replace("{target}", encodeURIComponent(target));
