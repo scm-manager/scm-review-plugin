@@ -37,15 +37,13 @@ import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.Command;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 
 import static com.cloudogu.scm.review.PermissionCheck.mayConfigure;
 import static com.cloudogu.scm.review.PermissionCheck.mayConfigureWorkflowConfig;
+import static com.cloudogu.scm.review.PermissionCheck.mayCreate;
 import static com.cloudogu.scm.review.PermissionCheck.mayRead;
 import static com.cloudogu.scm.review.PermissionCheck.mayReadWorkflowConfig;
 
@@ -73,6 +71,10 @@ public class RepositoryLinkEnricher implements HalEnricher {
       if (mayRead(repository)) {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
         appender.appendLink("pullRequest", linkBuilder.method("getAll").parameters(repository.getNamespace(), repository.getName()).href());
+      }
+      if (mayCreate(repository)) {
+        LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
+        appender.appendLink("pullRequestCheck", linkBuilder.method("check").parameters(repository.getNamespace(), repository.getName()).href());
       }
       if (mayConfigure(repository) && !configService.getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryConfigResource.class);

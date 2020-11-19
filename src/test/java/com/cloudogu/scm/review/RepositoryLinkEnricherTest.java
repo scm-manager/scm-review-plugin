@@ -156,4 +156,18 @@ public class RepositoryLinkEnricherTest {
     enricher.enrich(context, appender);
     verify(appender).appendLink("workflowConfig", "https://scm-manager.org/scm/api/v2/workflow/space/name/config");
   }
+
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldEnrichPullRequestCheckLink() {
+    when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
+    mockGlobalConfig(true);
+
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, globalEngineConfigurator);
+    Repository repo = new Repository("id", "type", "space", "name");
+    HalEnricherContext context = HalEnricherContext.of(repo);
+    enricher.enrich(context, appender);
+    verify(appender).appendLink("pullRequestCheck", "https://scm-manager.org/scm/api/v2/pull-requests/space/name/check");
+  }
+
 }

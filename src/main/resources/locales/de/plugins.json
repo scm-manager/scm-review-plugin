@@ -29,8 +29,9 @@
       "targetBranch": "Target Branch",
       "title": "Titel",
       "validation": {
-        "sourceBranch": "Kein Unterschied zwischen Source-Branch und Target-Branch.",
-        "title": "Titel erforderlich"
+        "title": "Titel erforderlich",
+        "BRANCHES_NOT_DIFFER": "Kein Unterschied zwischen Source-Branch und Target-Branch.",
+        "PR_ALREADY_EXISTS": "Der Pull-Request zwischen dem gewählten Source-Branch und Target-Branch existiert bereits."
       },
       "description": "Beschreibung",
       "status": "Status",

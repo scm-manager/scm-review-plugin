@@ -31,8 +31,8 @@ import {
   ErrorNotification,
   LinkPaginator,
   Loading,
-  Notification,
-  NotFoundError
+  NotFoundError,
+  Notification
 } from "@scm-manager/ui-components";
 
 type Props = WithTranslation &
@@ -40,6 +40,7 @@ type Props = WithTranslation &
     repository: Repository;
     source: string;
     target: string;
+    shouldFetchChangesets?: boolean;
   };
 
 type ChangesetCollection = PagedCollection & {
@@ -64,6 +65,10 @@ class Changesets extends React.Component<Props, State> {
       page: 1
     };
   }
+
+  static defaultProps = {
+    shouldFetchChangesets: true
+  };
 
   getCurrentPage(): number {
     const { match } = this.props;
@@ -100,7 +105,7 @@ class Changesets extends React.Component<Props, State> {
   };
 
   loadChangesets = () => {
-    const { source, target } = this.props;
+    const { source, target, shouldFetchChangesets } = this.props;
     const url = this.createChangesetLink();
     if (!url && source && target) {
       this.setState({
@@ -108,7 +113,7 @@ class Changesets extends React.Component<Props, State> {
         error: new Error("incoming changesets are not supported")
       });
     } else {
-      url && this.fetchChangesets(url);
+      url && shouldFetchChangesets && this.fetchChangesets(url);
     }
   };
 
@@ -144,10 +149,9 @@ class Changesets extends React.Component<Props, State> {
     const { repository, t } = this.props;
     const { changesets, error, loading } = this.state;
 
-    if (error) {
-      if (error instanceof NotFoundError) {
-        return <Notification type="info">{t("scm-review-plugin.pullRequest.noChangesets")}</Notification>;
-      }
+    if (error instanceof NotFoundError || !this.props.shouldFetchChangesets) {
+      return <Notification type="info">{t("scm-review-plugin.pullRequest.noChangesets")}</Notification>;
+    } else if (error) {
       return <ErrorNotification error={error} />;
     } else if (loading) {
       return <Loading />;
