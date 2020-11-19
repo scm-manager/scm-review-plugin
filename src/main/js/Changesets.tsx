@@ -149,19 +149,13 @@ class Changesets extends React.Component<Props, State> {
     const { repository, t } = this.props;
     const { changesets, error, loading } = this.state;
 
-    if (error) {
-      if (error instanceof NotFoundError) {
-        return <Notification type="info">{t("scm-review-plugin.pullRequest.noChangesets")}</Notification>;
-      }
+    if (error instanceof NotFoundError || !this.props.shouldFetchChangesets) {
+      return <Notification type="info">{t("scm-review-plugin.pullRequest.noChangesets")}</Notification>;
+    } else if (error) {
       return <ErrorNotification error={error} />;
     } else if (loading) {
       return <Loading />;
-    } else if (
-      this.props.shouldFetchChangesets &&
-      changesets &&
-      changesets._embedded &&
-      changesets._embedded.changesets
-    ) {
+    } else if (changesets && changesets._embedded && changesets._embedded.changesets) {
       if (changesets._embedded.changesets.length !== 0) {
         return (
           <div className="panel">
