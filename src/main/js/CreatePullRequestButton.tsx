@@ -30,10 +30,6 @@ import { PullRequest, PullRequestCollection } from "./types/PullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import styled from "styled-components";
 
-const PullRequestInfo = styled.div`
-  padding-top: 1em;
-`;
-
 type Props = WithTranslation & {
   repository: Repository;
   branch: Branch;
@@ -44,6 +40,10 @@ type State = {
   error?: Error;
   loading: boolean;
 };
+
+const HR = styled.hr`
+  height: 3px;
+`;
 
 class CreatePullRequestButton extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -106,14 +106,15 @@ class CreatePullRequestButton extends React.Component<Props, State> {
       );
     }
     return (
-      <PullRequestInfo>
+      <div>
+        <HR />
         <h4>{t("scm-review-plugin.branch.header")}</h4>
         {existing}
         <AddButton
           label={t("scm-review-plugin.branch.createPullRequest")}
           link={`/repo/${repository.namespace}/${repository.name}/pull-requests/add?source=${branch.name}`}
         />
-      </PullRequestInfo>
+      </div>
     );
   }
 }
