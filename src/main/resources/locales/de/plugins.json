@@ -4,6 +4,7 @@
       "pullRequest": "Pull Requests",
       "workflow": "Workflow Engine"
     },
+    "repositoryCardTooltip": "Pull Requests",
     "create": {
       "title": "Pull Request",
       "subtitle": "Erstellt einen neuen Pull Request für {{repositoryName}}",
