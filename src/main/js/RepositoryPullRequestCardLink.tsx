@@ -21,29 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { Link } from "react-router-dom";
-import styled from "styled-components";
-import { Icon } from "@scm-manager/ui-components";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
+import { RepositoryEntryLink } from "@scm-manager/ui-components";
 
 type Props = {
   repository: Repository;
   repositoryLink: string;
 };
 
-const PointerEventsLink = styled(Link)`
-  pointer-events: all;
-`;
+const RepositoryPullRequestCardLink: FC<Props> = ({ repository, repositoryLink }) => {
+  const [t] = useTranslation("plugins");
 
-class RepositoryPullRequestCardLink extends React.Component<Props> {
-  render() {
-    return (
-      <PointerEventsLink className="level-item" to={this.props.repositoryLink + "/pull-requests"}>
-        <Icon className="fa-lg" name="fas fa-code-branch fa-rotate-180 fa-fw" color="inherit" />
-      </PointerEventsLink>
-    );
-  }
-}
+  return (
+    <RepositoryEntryLink
+      icon="code-branch fa-rotate-180"
+      to={repositoryLink + "/pull-requests"}
+      tooltip={t("scm-review-plugin.repositoryCardTooltip")}
+    />
+  );
+};
 
 export default RepositoryPullRequestCardLink;
