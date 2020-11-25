@@ -148,4 +148,17 @@ class PullRequestMapperTest {
     assertThat(targetBranch).isPresent();
     assertThat(targetBranch.get().getHref()).isEqualTo(targetLink);
   }
+
+  @Test
+  void shouldMapPullRequestApprover() {
+    when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("dent");
+    when(branchLinkProvider.get(any(NamespaceAndName.class), anyString())).thenReturn("link");
+
+    PullRequest pullRequest = TestData.createPullRequest();
+    pullRequest.addApprover("deletedUser");
+
+    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+    assertThat(dto.getReviewer()).extracting("id").containsExactly("deletedUser");
+  }
 }

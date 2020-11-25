@@ -43,7 +43,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.ObjectFactory;
-import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.api.v2.resources.BranchLinkProvider;
 import sonia.scm.repository.NamespaceAndName;
@@ -54,6 +53,7 @@ import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.DisplayUser;
+import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.EdisonHalAppender;
 
@@ -127,13 +127,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   }
 
   private DisplayUser getUserIfAvailable(Map.Entry<String, Boolean> entry) {
-    Optional<DisplayUser> getDisplayUser = userDisplayManager.get(entry.getKey());
-    DisplayUser user = getDisplayUser.orElse(null);
-
-    if (user == null) {
-      throw new NotFoundException(DisplayUser.class, String.format("User %s not found", entry.getKey()));
-    }
-    return user;
+    return userDisplayManager
+      .get(entry.getKey())
+      .orElse(DisplayUser.from(new User(entry.getKey(), entry.getKey(), null)));
   }
 
   @Named("mapAuthor")
