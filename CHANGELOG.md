@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Handle users without an email address ([#101](https://github.com/scm-manager/scm-review-plugin/pull/101))
 
+## 2.4.0.1 - 2020-11-25
+### Fixed
+- "User not found" error for Pull Requests with approvals from deleted users (backport from 2.5.1) ([#108](https://github.com/scm-manager/scm-review-plugin/pull/108))
+
 ## 2.4.0 - 2020-09-25
 ### Added
 - Add support for pr merge with prior rebase ([#99](https://github.com/scm-manager/scm-review-plugin/pull/99))
