@@ -1479,7 +1479,7 @@
   dependencies:
     typescript "^3.7.2"
 
-"@scm-manager/ui-components@^2.8.0":
+"@scm-manager/ui-components@^2.8.0", "@scm-manager/ui-components@^2.9.0":
   version "2.10.1"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-2.10.1.tgz#13e75c33b82eeec3aba6260336b61df15c229c9e"
   integrity sha512-/yQAfu57HGV4SyyNDYEJhinjmvXlSLbOXvupmlhnGezSk19s4GvpgYkFmI3tYTtlGtHWpCGkKP1RJmKCGOJxyg==
@@ -1502,20 +1502,20 @@
     react-syntax-highlighter "^15.2.1"
     refractor "^3.0.0"
 
-"@scm-manager/ui-extensions@^2.10.1", "@scm-manager/ui-extensions@^2.8.0":
+"@scm-manager/ui-extensions@^2.10.1", "@scm-manager/ui-extensions@^2.8.0", "@scm-manager/ui-extensions@^2.9.0":
   version "2.10.1"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-2.10.1.tgz#e9916f1df78a404b75a00520c511f4069e197953"
   integrity sha512-vkoUf0BPH5P/kFozTBf9+Uqu3dNFCCJiJ31YYK7FPEqUM+lv/vMDWAwG6upvYh0wSqD9qkmi+zzkRAWt3SHVBA==
   dependencies:
     react "^16.10.2"
 
-"@scm-manager/ui-plugins@2.8.0":
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-2.8.0.tgz#b31d82ebec8e3cfe1736be7052e8a3540f1432a1"
-  integrity sha512-e9s759o97lys+WS6AJ+TedTyK/gjuSSeYPN6fSnQuiM5O22FUPBbmN4Amdfog0R7OAeP1a4d+6Ow/VfnK/Ixbw==
+"@scm-manager/ui-plugins@2.9.0":
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-2.9.0.tgz#5322852fe47b1e553de172fd6a91a2568e05e70a"
+  integrity sha512-rylyZxpIKZ0QQoZSJeTRmo1gC37NLiyAFa8My31FvCyv0ijy18VULOjBY9458Y3l4xKpISEXFZexrLq+0dgTRQ==
   dependencies:
-    "@scm-manager/ui-components" "^2.8.0"
-    "@scm-manager/ui-extensions" "^2.8.0"
+    "@scm-manager/ui-components" "^2.9.0"
+    "@scm-manager/ui-extensions" "^2.9.0"
     classnames "^2.2.6"
     query-string "^5.0.1"
     react "^16.10.2"

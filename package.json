@@ -11,7 +11,7 @@
     "postinstall" : "ui-plugins postinstall"
   },
   "dependencies" : {
-    "@scm-manager/ui-plugins" : "2.8.0",
+    "@scm-manager/ui-plugins" : "2.9.0",
     "@scm-manager/ui-components" : "^2.8.0",
     "@scm-manager/ui-extensions" : "^2.8.0",
     "classnames" : "^2.2.6",
