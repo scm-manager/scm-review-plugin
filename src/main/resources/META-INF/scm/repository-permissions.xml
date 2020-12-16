@@ -26,12 +26,12 @@
 <repository-permissions>
   <verbs>
     <verb>createPullRequest</verb>
-    <verb>readPullRequest</verb>
+    <verb read-only="true">readPullRequest</verb>
     <verb>commentPullRequest</verb>
     <verb>modifyPullRequest</verb>
     <verb>mergePullRequest</verb>
     <verb>configurePullRequest</verb>
-    <verb>readWorkflowConfig</verb>
+    <verb read-only="true">readWorkflowConfig</verb>
     <verb>writeWorkflowConfig</verb>
     <verb>performEmergencyMerge</verb>
   </verbs>
