@@ -1463,6 +1463,29 @@
   dependencies:
     typescript "^3.7.2"
 
+"@scm-manager/ui-components@^2.12.0":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-2.12.0.tgz#4e96f922d6c129ab655d4ae2bc0e4d1118d01c10"
+  integrity sha512-6MqjFKqP683UUaYe4i5RTfDFklwueZxb1MK1B6SqNZ68uNHRFcN2KHXuIDEx/s/pohSOi3Kjb6DINynIoHK/6Q==
+  dependencies:
+    "@scm-manager/ui-extensions" "^2.12.0"
+    "@scm-manager/ui-types" "^2.12.0"
+    classnames "^2.2.6"
+    date-fns "^2.4.1"
+    gitdiff-parser "^0.1.2"
+    lowlight "^1.13.0"
+    prism-themes "^1.4.0"
+    query-string "5"
+    react "^16.8.6"
+    react-diff-view "^2.4.1"
+    react-dom "^16.8.6"
+    react-i18next "^10.13.1"
+    react-markdown "^4.0.6"
+    react-router-dom "^5.1.2"
+    react-select "^2.1.2"
+    react-syntax-highlighter "^15.2.1"
+    refractor "^3.0.0"
+
 "@scm-manager/ui-components@^2.8.0":
   version "2.11.1"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-2.11.1.tgz#d411c5557f6264b241f346b670ed2b48ebc53929"
@@ -1490,6 +1513,13 @@
   version "2.11.1"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-2.11.1.tgz#6070bffdff89d8396e9c4885629b8f39eb49758b"
   integrity sha512-p/3YEmE4mObFUx7keZouFT7C7M19MyyMlMiHw+czQnwKycgMaxuVWDa8A/pIylXL7lPLE6ry/lY+Zoanifw+EQ==
+  dependencies:
+    react "^16.10.2"
+
+"@scm-manager/ui-extensions@^2.12.0":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-2.12.0.tgz#085de0a928ef6ac789a562631647f2389145f26c"
+  integrity sha512-brY+EyR5vKQBwjVQ4lU4EP8p3eUwcENfoQUdI2WK2liNpA3AvMhx9AdJ16Rhn4GdmalUJw7PcqFf44IvPTXVuQ==
   dependencies:
     react "^16.10.2"
 
@@ -1549,6 +1579,11 @@
   version "2.11.1"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-2.11.1.tgz#e21328f1b1a390f0796c0e4cf366d156466f0871"
   integrity sha512-5vT0OcVw5zUHx2481tWutwfBEj6VN7DJ0pW6EZ/qEjOMv+nYoz67jWDVeAZIPZMqXGx2YkrOZkCGGSuYowdbzw==
+
+"@scm-manager/ui-types@^2.12.0":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-2.12.0.tgz#d3d2dc2e62f7677486ec847b6e754ab26e8fdcea"
+  integrity sha512-cmC5Jh3+mEk6KpPx6eNaJViAbJzJxYPIj5D1MZAHSJzPZPdQAwg7PVit8lFPWl2SujLXIqo81vgt9qwGT+5CAw==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.1"
