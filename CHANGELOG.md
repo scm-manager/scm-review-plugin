@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Fixed
+- Reject pull requests for branches deleted from the UI ([#116](https://github.com/scm-manager/scm-review-plugin/pull/116))
+
 ## 2.6.0 - 2020-12-17
 ### Added
 - Mark read only verbs to be able to see pull requests in archived repositories ([#114](https://github.com/scm-manager/scm-review-plugin/pull/114))
