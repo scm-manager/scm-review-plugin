@@ -85,11 +85,7 @@ public class StatusCheckHook {
       return true;
     }
     if (!context.isFeatureSupported(HookFeature.BRANCH_PROVIDER)) {
-      LOG.warn("hook event for repository {} does not support branches - cannot check for merges", repository.getNamespaceAndName());
-      return true;
-    }
-    if (!context.isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER)) {
-      LOG.warn("hook event for repository {} does not support merge detection - cannot check for merges", repository.getNamespaceAndName());
+      LOG.debug("hook event for repository {} does not support branches - cannot check for merges", repository);
       return true;
     }
     return false;
@@ -105,7 +101,12 @@ public class StatusCheckHook {
       this.messageSender = messageSenderFactory.create(event);
       this.repository = event.getRepository();
       this.branchProvider = event.getContext().getBranchProvider();
-      this.mergeDetectionProvider = event.getContext().getMergeDetectionProvider();
+      if (event.getContext().isFeatureSupported(HookFeature.MERGE_DETECTION_PROVIDER)) {
+        this.mergeDetectionProvider = event.getContext().getMergeDetectionProvider();
+      } else {
+        LOG.debug("hook event for repository {} does not support merge detection - cannot check for merges", repository);
+        this.mergeDetectionProvider = null;
+      }
     }
 
     private void process(List<PullRequest> pullRequests) {
@@ -143,6 +144,9 @@ public class StatusCheckHook {
     }
 
     private boolean isMerged(PullRequest pullRequest) {
+      if (mergeDetectionProvider == null) {
+        return false;
+      }
       try {
         return mergeDetectionProvider.branchesMerged(pullRequest.getTarget(), pullRequest.getSource());
       } catch (NotFoundException e) {

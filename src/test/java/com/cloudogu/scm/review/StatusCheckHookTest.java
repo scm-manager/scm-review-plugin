@@ -33,6 +33,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,6 +46,8 @@ import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.HookBranchProvider;
 import sonia.scm.repository.api.HookContext;
+import sonia.scm.repository.api.HookFeature;
+import sonia.scm.repository.api.HookFeatureIsNotSupportedException;
 import sonia.scm.repository.api.HookMessageProvider;
 import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
@@ -101,8 +104,6 @@ class StatusCheckHookTest {
     hook = new StatusCheckHook(pullRequestService, messageSenderFactory, mergeService, internalMergeSwitch);
     when(pullRequestService.supportsPullRequests(REPOSITORY)).thenReturn(true);
     when(configuration.getBaseUrl()).thenReturn("http://example.com/");
-    when(hookContext.isFeatureSupported(MERGE_DETECTION_PROVIDER)).thenReturn(true);
-    when(hookContext.getMergeDetectionProvider()).thenReturn(mergeDetectionProvider);
     when(hookContext.isFeatureSupported(BRANCH_PROVIDER)).thenReturn(true);
     when(hookContext.getBranchProvider()).thenReturn(branchProvider);
     when(hookContext.isFeatureSupported(MESSAGE_PROVIDER)).thenReturn(true);
@@ -130,116 +131,135 @@ class StatusCheckHookTest {
     ThreadContext.unbindSubject();
   }
 
-  @Test
-  void shouldSetMergedPullRequestToMerged() {
-    PullRequest pullRequest = mockOpenPullRequest();
-    when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+  @Nested
+  class WithMergeDetectionProvider {
 
-    hook.checkStatus(event);
+    @BeforeEach
+    void initMergeDetectionProvider() {
+      when(hookContext.isFeatureSupported(MERGE_DETECTION_PROVIDER)).thenReturn(true);
+      when(hookContext.getMergeDetectionProvider()).thenReturn(mergeDetectionProvider);
+    }
 
-    verify(pullRequestService).setMerged(REPOSITORY, pullRequest.getId());
+    @Test
+    void shouldSetMergedPullRequestToMerged() {
+      PullRequest pullRequest = mockOpenPullRequest();
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService).setMerged(REPOSITORY, pullRequest.getId());
+    }
+
+    @Test
+    void shouldSetMergedPullRequestToMergedEvenWhenSourceBranchHasBeenChanged() {
+      when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("source"));
+
+      PullRequest pullRequest = mockOpenPullRequest();
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService).setMerged(REPOSITORY, pullRequest.getId());
+    }
+
+    @Test
+    void shouldSetMergedPullRequestToMergedWithEmergencyMergeAndObstacles() {
+      PullRequest pullRequest = mockOpenPullRequest();
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+      when(subject.isPermitted("repository:performEmergencyMerge:id")).thenReturn(true);
+      when(mergeService.verifyNoObstacles(true, REPOSITORY, pullRequest))
+        .thenReturn(singletonList(new TestObstacle()));
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService)
+        .setEmergencyMerged(REPOSITORY, pullRequest.getId(), "merged by a direct push to the repository", singletonList("TEST_OBSTACLE"));
+    }
   }
 
-  @Test
-  void shouldSetMergedPullRequestToMergedEvenWhenSourceBranchHasBeenChanged() {
-    when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("source"));
+  @Nested
+  class WithoutMergeDetectionProvider {
 
-    PullRequest pullRequest = mockOpenPullRequest();
-    when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+    @BeforeEach
+    void failForMergeDetectionProvider() {
+      when(hookContext.isFeatureSupported(MERGE_DETECTION_PROVIDER)).thenReturn(false);
+      when(hookContext.getMergeDetectionProvider()).thenThrow(new HookFeatureIsNotSupportedException(HookFeature.MERGE_DETECTION_PROVIDER));
+    }
 
-    hook.checkStatus(event);
+    @Test
+    void shouldLeaveUnmergedPullRequestOpen() {
+      mockOpenPullRequest();
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(false);
 
-    verify(pullRequestService).setMerged(REPOSITORY, pullRequest.getId());
+      hook.checkStatus(event);
+
+      verify(pullRequestService, never()).setMerged(any(), anyString());
+    }
+
+    @Test
+    void shouldNotifyServiceThatPrWasUpdated() {
+      PullRequest pullRequest = mockOpenPullRequest();
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(false);
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService).updated(REPOSITORY, pullRequest.getId());
+    }
+
+    @Test
+    void shouldLeaveRejectedPullRequestRejected() {
+      PullRequest pullRequest = mockRejectedPullRequest();
+
+      hook.checkStatus(event);
+
+      verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
+      verify(pullRequestService, never()).reject(eq(REPOSITORY), eq(pullRequest.getId()), any());
+    }
+
+    @Test
+    void shouldNotProcessEventsForRepositoriesWithoutMergeCapability() {
+      when(pullRequestService.supportsPullRequests(REPOSITORY)).thenReturn(false);
+
+      hook.checkStatus(event);
+
+      verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
+      verify(pullRequestService, never()).getAll(anyString(), anyString());
+      verify(pullRequestService, never()).setMerged(any(), anyString());
+    }
+
+    @Test
+    void shouldNotCheckNotEffectedPullRequests() {
+      PullRequest pullRequest = mockOpenPullRequest();
+      pullRequest.setTarget("other");
+
+      hook.checkStatus(event);
+
+      verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
+    }
+
+    @Test
+    void shouldSetPullRequestsWithDeletedSourceToRejected() {
+      PullRequest pullRequest = mockOpenPullRequest();
+
+      when(branchProvider.getCreatedOrModified()).thenReturn(emptyList());
+      when(branchProvider.getDeletedOrClosed()).thenReturn(singletonList("source"));
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+    }
+
+    @Test
+    void shouldIgnoreHookWhenInternalMerge() {
+      when(internalMergeSwitch.internalMergeRunning()).thenReturn(true);
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService, never()).setEmergencyMerged(any(), any(), any(), any());
+      verify(pullRequestService, never()).setMerged(any(), any());
+    }
   }
-
-  @Test
-  void shouldLeaveUnmergedPullRequestOpen() {
-    mockOpenPullRequest();
-    when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(false);
-
-    hook.checkStatus(event);
-
-    verify(pullRequestService, never()).setMerged(any(), anyString());
-  }
-
-  @Test
-  void shouldNotifyServiceThatPrWasUpdated() {
-    PullRequest pullRequest = mockOpenPullRequest();
-    when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(false);
-
-    hook.checkStatus(event);
-
-    verify(pullRequestService).updated(REPOSITORY, pullRequest.getId());
-  }
-
-  @Test
-  void shouldLeaveRejectedPullRequestRejected() {
-    PullRequest pullRequest = mockRejectedPullRequest();
-
-    hook.checkStatus(event);
-
-    verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
-    verify(pullRequestService, never()).reject(eq(REPOSITORY), eq(pullRequest.getId()), any());
-  }
-
-  @Test
-  void shouldNotProcessEventsForRepositoriesWithoutMergeCapability() {
-    when(pullRequestService.supportsPullRequests(REPOSITORY)).thenReturn(false);
-
-    hook.checkStatus(event);
-
-    verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
-    verify(pullRequestService, never()).getAll(anyString(), anyString());
-    verify(pullRequestService, never()).setMerged(any(), anyString());
-  }
-
-  @Test
-  void shouldNotCheckNotEffectedPullRequests() {
-    PullRequest pullRequest = mockOpenPullRequest();
-    pullRequest.setTarget("other");
-
-    hook.checkStatus(event);
-
-    verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
-  }
-
-  @Test
-  void shouldSetPullRequestsWithDeletedSourceToRejected() {
-    PullRequest pullRequest = mockOpenPullRequest();
-
-    when(branchProvider.getCreatedOrModified()).thenReturn(emptyList());
-    when(branchProvider.getDeletedOrClosed()).thenReturn(singletonList("source"));
-
-    hook.checkStatus(event);
-
-    verify(pullRequestService).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
-  }
-
-  @Test
-  void shouldSetMergedPullRequestToMergedWithEmergencyMergeAndObstacles() {
-    PullRequest pullRequest = mockOpenPullRequest();
-    when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
-    when(subject.isPermitted("repository:performEmergencyMerge:id")).thenReturn(true);
-    when(mergeService.verifyNoObstacles(true, REPOSITORY, pullRequest))
-      .thenReturn(singletonList(new TestObstacle()));
-
-    hook.checkStatus(event);
-
-    verify(pullRequestService)
-      .setEmergencyMerged(REPOSITORY, pullRequest.getId(), "merged by a direct push to the repository", singletonList("TEST_OBSTACLE"));
-  }
-
-  @Test
-  void shouldIgnoreHookWhenInternalMerge() {
-    when(internalMergeSwitch.internalMergeRunning()).thenReturn(true);
-    when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
-
-    hook.checkStatus(event);
-
-    verify(pullRequestService, never()).setEmergencyMerged(any(), any(), any(), any());
-    verify(pullRequestService, never()).setMerged(any(), any());
-  }
-
   private PullRequest mockOpenPullRequest() {
     PullRequest pullRequest = new PullRequest();
     pullRequest.setStatus(PullRequestStatus.OPEN);
