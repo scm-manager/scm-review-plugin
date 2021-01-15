@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React from "react";
-import styled from "styled-components";
+import styled, {css} from "styled-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { PullRequest } from "../types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
@@ -36,13 +36,25 @@ type Props = WithTranslation & {
   pullRequests: PullRequest[];
 };
 
-const MobileHiddenColumn = styled(Column).attrs(() => {
-  className: "is-hidden-mobile";
-})``;
+const breakLongElements = css`
+  word-break: break-all;
+`;
 
-const TodoTag = styled(Tag).attrs(props => ({}))`
+const BreakLongColumn = styled(Column)`
+  ${breakLongElements}
+`;
+
+const BreakLongTextColumn = styled(TextColumn)`
+  ${breakLongElements}
+`;
+
+const TodoTag = styled(Tag).attrs(() => ({}))`
   margin-left: 0.5em;
 `;
+
+const MobileHiddenColumn = styled(Column).attrs(() => ({
+  className: "is-hidden-mobile"
+}))``;
 
 class PullRequestTable extends React.Component<Props> {
   to = (pullRequest: PullRequest) => {
@@ -63,17 +75,17 @@ class PullRequestTable extends React.Component<Props> {
     const { pullRequests, t } = this.props;
     return (
       <Table data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
-        <Column
+        <BreakLongColumn
           header={t("scm-review-plugin.pullRequest.title")}
           createComparator={() => comparators.byKey("title")}
           ascendingIcon="sort-alpha-down-alt"
           descendingIcon="sort-alpha-down"
         >
           {(row: any) => <Link to={this.to(row)}>{row.title}</Link>}
-        </Column>
+        </BreakLongColumn>
         <Column header="">{(row: any) => <>{this.todoTag(row)}</>}</Column>
-        <TextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />
-        <TextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
+        <BreakLongTextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />
+        <BreakLongTextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
         <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.author")}
           createComparator={() => comparators.byNestedKeys("author", "displayName")}
