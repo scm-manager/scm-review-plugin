@@ -1446,7 +1446,7 @@
   dependencies:
     typescript "^3.7.2"
 
-"@scm-manager/ui-components@^2.8.0":
+"@scm-manager/ui-components@^2.12.0", "@scm-manager/ui-components@^2.8.0":
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-2.12.0.tgz#4e96f922d6c129ab655d4ae2bc0e4d1118d01c10"
   integrity sha512-6MqjFKqP683UUaYe4i5RTfDFklwueZxb1MK1B6SqNZ68uNHRFcN2KHXuIDEx/s/pohSOi3Kjb6DINynIoHK/6Q==
@@ -1476,13 +1476,13 @@
   dependencies:
     react "^16.10.2"
 
-"@scm-manager/ui-plugins@2.8.0":
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-2.8.0.tgz#b31d82ebec8e3cfe1736be7052e8a3540f1432a1"
-  integrity sha512-e9s759o97lys+WS6AJ+TedTyK/gjuSSeYPN6fSnQuiM5O22FUPBbmN4Amdfog0R7OAeP1a4d+6Ow/VfnK/Ixbw==
+"@scm-manager/ui-plugins@2.12.0":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-2.12.0.tgz#493dfaf6dc61e69758ad5d34a9871e2c546e6eb0"
+  integrity sha512-graMSwaaF5hoDf9oxrmuEOwrLGsDHUsGaDD6tAhB8rNHBqYjiZCFbMI9SwoPMmJfs6LYHaDWy8Vb2AS65qCAyw==
   dependencies:
-    "@scm-manager/ui-components" "^2.8.0"
-    "@scm-manager/ui-extensions" "^2.8.0"
+    "@scm-manager/ui-components" "^2.12.0"
+    "@scm-manager/ui-extensions" "^2.12.0"
     classnames "^2.2.6"
     query-string "^5.0.1"
     react "^16.10.2"
