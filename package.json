@@ -16,7 +16,7 @@
     "@scm-manager/ui-extensions" : "^2.8.0",
     "classnames" : "^2.2.6",
     "gitdiff-parser" : "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
-    "immer" : "^5.0.0",
+    "immer" : "^8.0.1",
     "typescript" : "^3.9.7",
     "query-string" : "^5.0.1",
     "react" : "^16.10.2",
