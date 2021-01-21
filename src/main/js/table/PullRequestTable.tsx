@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React from "react";
-import styled, {css} from "styled-components";
+import styled from "styled-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { PullRequest } from "../types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
@@ -36,19 +36,15 @@ type Props = WithTranslation & {
   pullRequests: PullRequest[];
 };
 
-const breakLongElements = css`
+const BreakLongColumn = styled(Column)`
   word-break: break-all;
 `;
 
-const BreakLongColumn = styled(Column)`
-  ${breakLongElements}
-`;
-
 const BreakLongTextColumn = styled(TextColumn)`
-  ${breakLongElements}
+  word-break: break-all;
 `;
 
-const TodoTag = styled(Tag).attrs(() => ({}))`
+const TodoTag = styled(Tag)`
   margin-left: 0.5em;
 `;
 
