@@ -36,13 +36,19 @@ type Props = WithTranslation & {
   pullRequests: PullRequest[];
 };
 
-const MobileHiddenColumn = styled(Column).attrs(() => {
-  className: "is-hidden-mobile";
-})``;
+const StyledTable = styled(Table)`
+  td {
+    word-break: break-all;
+  }
+`
 
-const TodoTag = styled(Tag).attrs(props => ({}))`
+const TodoTag = styled(Tag)`
   margin-left: 0.5em;
 `;
+
+const MobileHiddenColumn = styled(Column).attrs(() => ({
+  className: "is-hidden-mobile"
+}))``;
 
 class PullRequestTable extends React.Component<Props> {
   to = (pullRequest: PullRequest) => {
@@ -62,7 +68,7 @@ class PullRequestTable extends React.Component<Props> {
   render() {
     const { pullRequests, t } = this.props;
     return (
-      <Table data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
+      <StyledTable data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
         <Column
           header={t("scm-review-plugin.pullRequest.title")}
           createComparator={() => comparators.byKey("title")}
@@ -104,7 +110,7 @@ class PullRequestTable extends React.Component<Props> {
             />
           )}
         </MobileHiddenColumn>
-      </Table>
+      </StyledTable>
     );
   }
 }
