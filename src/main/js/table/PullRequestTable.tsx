@@ -36,13 +36,11 @@ type Props = WithTranslation & {
   pullRequests: PullRequest[];
 };
 
-const BreakLongColumn = styled(Column)`
-  word-break: break-all;
-`;
-
-const BreakLongTextColumn = styled(TextColumn)`
-  word-break: break-all;
-`;
+const StyledTable = styled(Table)`
+  td {
+    word-break: break-all;
+  }
+`
 
 const TodoTag = styled(Tag)`
   margin-left: 0.5em;
@@ -70,18 +68,18 @@ class PullRequestTable extends React.Component<Props> {
   render() {
     const { pullRequests, t } = this.props;
     return (
-      <Table data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
-        <BreakLongColumn
+      <StyledTable data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
+        <Column
           header={t("scm-review-plugin.pullRequest.title")}
           createComparator={() => comparators.byKey("title")}
           ascendingIcon="sort-alpha-down-alt"
           descendingIcon="sort-alpha-down"
         >
           {(row: any) => <Link to={this.to(row)}>{row.title}</Link>}
-        </BreakLongColumn>
+        </Column>
         <Column header="">{(row: any) => <>{this.todoTag(row)}</>}</Column>
-        <BreakLongTextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />
-        <BreakLongTextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
+        <TextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />
+        <TextColumn header={t("scm-review-plugin.pullRequest.targetBranch")} dataKey="target" />
         <MobileHiddenColumn
           header={t("scm-review-plugin.pullRequest.author")}
           createComparator={() => comparators.byNestedKeys("author", "displayName")}
@@ -112,7 +110,7 @@ class PullRequestTable extends React.Component<Props> {
             />
           )}
         </MobileHiddenColumn>
-      </Table>
+      </StyledTable>
     );
   }
 }
