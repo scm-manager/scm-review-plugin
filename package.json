@@ -5,14 +5,14 @@
   "license" : "MIT",
   "main" : "./src/main/js/index.tsx",
   "scripts" : {
-    "build" : "ui-scripts plugin",
-    "watch" : "ui-scripts plugin-watch",
+    "build" : "plugin-scripts build",
+    "watch" : "plugin-scripts watch",
     "test" : "jest src/main/js",
-    "postinstall" : "ui-plugins postinstall"
+    "postinstall" : "plugin-scripts postinstall"
   },
   "dependencies" : {
     "@scm-manager/ui-plugins" : "2.8.0",
-    "@scm-manager/ui-components" : "^2.13.0-20210026-105041",
+    "@scm-manager/ui-components" : "^2.8.0",
     "@scm-manager/ui-extensions" : "^2.8.0",
     "classnames" : "^2.2.6",
     "gitdiff-parser" : "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
@@ -40,7 +40,7 @@
   "devDependencies" : {
     "@scm-manager/babel-preset" : "^2.8.0",
     "@scm-manager/eslint-config" : "^2.8.0",
-    "@scm-manager/jest-preset" : "^2.8.0",
+    "@scm-manager/jest-preset" : "^2.12.3",
     "@scm-manager/prettier-config" : "^2.8.0",
     "@scm-manager/tsconfig" : "^2.8.0",
     "@scm-manager/ui-scripts" : "^2.8.0",
@@ -59,6 +59,7 @@
     "@types/styled-components" : "^5.1.0",
     "fetch-mock" : "^8.0.0",
     "jest" : "^24.9.0",
-    "node-fetch" : "^2.6.1"
+    "node-fetch" : "^2.6.1",
+    "@scm-manager/plugin-scripts" : "1.0.1"
   }
 }
