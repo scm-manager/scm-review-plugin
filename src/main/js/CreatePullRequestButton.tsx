@@ -45,6 +45,10 @@ const HR = styled.hr`
   height: 3px;
 `;
 
+const ScrollingTable = styled.div`
+  overflow-x: auto;
+`;
+
 class CreatePullRequestButton extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -100,9 +104,9 @@ class CreatePullRequestButton extends React.Component<Props, State> {
     let existing = null;
     if (matchingPullRequests.length > 0) {
       existing = (
-        <div>
+        <ScrollingTable className="mb-3">
           <PullRequestTable repository={repository} pullRequests={matchingPullRequests} />
-        </div>
+        </ScrollingTable>
       );
     }
     return (
