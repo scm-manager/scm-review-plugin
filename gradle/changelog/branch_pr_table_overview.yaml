@@ -1,0 +1,3 @@
+- type: fixed
+  description: Prevents branch pr table from overlapping with navigation ([#121](https://github.com/scm-manager/scm-review-plugin/pull/121))
+
