@@ -26,8 +26,9 @@ import styled from "styled-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { Link, Repository } from "@scm-manager/ui-types";
-import { ExtensionPoint } from "@scm-manager/ui-extensions";
+import { binder, ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
+  AstPlugin,
   Button,
   ButtonGroup,
   ConflictError,
@@ -191,7 +192,7 @@ class PullRequestDetails extends React.Component<Props, State> {
     this.setState({
       mergeCheck: undefined
     });
-  }
+  };
 
   getMergeDryRun(pullRequest: PullRequest) {
     if (this.shouldRunDryMerge(pullRequest)) {
@@ -303,7 +304,14 @@ class PullRequestDetails extends React.Component<Props, State> {
       description = (
         <div className="media">
           <MediaContent>
-            <ReducedMarkdownView content={pullRequest.description} />
+            <ReducedMarkdownView
+              content={pullRequest.description}
+              plugins={binder
+                .getExtensions("pullrequest.description.plugins", {
+                  halObject: pullRequest
+                })
+                .map(pluginFactory => pluginFactory({ halObject: pullRequest }) as AstPlugin)}
+            />
           </MediaContent>
         </div>
       );

@@ -30,22 +30,22 @@ import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.ContextLine;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
-import com.google.common.base.Strings;
-import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.Links;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import sonia.scm.api.v2.resources.HalAppenderMapper;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
+import sonia.scm.web.EdisonHalAppender;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.Collection;
-import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
 
@@ -53,7 +53,7 @@ import static de.otto.edison.hal.Link.link;
 import static java.util.stream.Collectors.toList;
 
 @Mapper
-public abstract class CommentMapper {
+public abstract class CommentMapper extends HalAppenderMapper {
 
   @Inject
   private UserDisplayManager userDisplayManager;
@@ -106,6 +106,8 @@ public abstract class CommentMapper {
         linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId(), revisions)));
       }
     }
+    applyEnrichers(new EdisonHalAppender(linksBuilder, new Embedded.Builder()), source, repository);
+
     target.add(linksBuilder.build());
   }
 

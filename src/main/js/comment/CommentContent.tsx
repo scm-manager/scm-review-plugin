@@ -25,6 +25,8 @@ import React, { FC, useEffect, useState } from "react";
 import { Comment } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 import ReducedMarkdownView from "../ReducedMarkdownView";
+import { binder } from "@scm-manager/ui-extensions";
+import { AstPlugin } from "@scm-manager/ui-components";
 
 type Props = {
   comment: Comment;
@@ -44,7 +46,16 @@ const CommentContent: FC<Props> = ({ comment }) => {
     setMessage(content);
   }, [comment]);
 
-  return <ReducedMarkdownView content={message} />;
+  return (
+    <ReducedMarkdownView
+      content={message}
+      plugins={binder
+        .getExtensions("pullrequest.comment.plugins", {
+          halObject: comment
+        })
+        .map(pluginFactory => pluginFactory({ halObject: comment }) as AstPlugin)}
+    />
+  );
 };
 
 export default CommentContent;
