@@ -1,18 +1,18 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2020-present Cloudogu GmbH and Contributors
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,11 +32,17 @@ dependencies {
   optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.0.0"
   optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.0.0"
   testImplementation "com.github.spullara.mustache.java:compiler:0.9.7"
-  testImplementation "javax.el:javax.el-api:3.0.1-b06"
+
+  testImplementation "com.github.sdorra:shiro-unit:1.0.1"
+
+  testImplementation "org.jboss.resteasy:resteasy-validator-provider:4.5.8.Final"
+  testImplementation "org.hibernate.validator:hibernate-validator:6.1.6.Final"
+  testImplementation "javax.el:javax.el-api:3.0.0"
+  testImplementation "org.glassfish:javax.el:3.0.1-b11"
 }
 
 scmPlugin {
-  scmVersion = "2.8.0"
+  scmVersion = "2.14.2-SNAPSHOT"
   displayName = "Review"
   description = "Depict a review process with pull requests"
   author = "Cloudogu GmbH"
