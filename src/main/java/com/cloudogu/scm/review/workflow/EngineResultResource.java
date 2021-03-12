@@ -48,10 +48,6 @@ import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@OpenAPIDefinition(tags = {
-  @Tag(name = "Workflow Engine", description = "Workflow engine related endpoints provided by review-plugin")
-})
-@Path("")
 public class EngineResultResource {
 
   public static final String WORKFLOW_RESULT_MEDIA_TYPE = VndMediaType.PREFIX + "workflowResult" + VndMediaType.SUFFIX;
