@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Path for open api spec ([#123](https://github.com/scm-manager/scm-review-plugin/pull/123))
 
+# 2.7.0 - 2021-03-12
+### Added
+- add extension points for markdown ast plugins to pr description & comments ([#122](https://github.com/scm-manager/scm-review-plugin/pull/122))
+
 ## 2.6.3 - 2021-03-01
 ### Fixed
 - Prevents branch pr table from overlapping with navigation ([#121](https://github.com/scm-manager/scm-review-plugin/pull/121))

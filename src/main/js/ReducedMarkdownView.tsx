@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { MarkdownView } from "@scm-manager/ui-components";
+import { AstPlugin, MarkdownView } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 const MarkdownWrapper = styled.div`
@@ -56,12 +56,13 @@ const MarkdownWrapper = styled.div`
 
 type Props = {
   content: string;
+  plugins?: AstPlugin[];
 };
 
-const ReducedMarkdownView: FC<Props> = ({ content }) => {
+const ReducedMarkdownView: FC<Props> = ({ content, plugins = [] }) => {
   return (
     <MarkdownWrapper>
-      <MarkdownView content={content} />
+      <MarkdownView content={content} mdastPlugins={plugins} />
     </MarkdownWrapper>
   );
 };
