@@ -23,14 +23,14 @@
  */
 import React, { FC } from "react";
 import { Comment } from "../types/PullRequest";
-import {EmergencyMergeTag, FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag} from "./tags";
+import { EmergencyMergeTag, FileTag, OutdatedTag, SystemTag, TaskDoneTag, TaskTodoTag } from "./tags";
 import { useTranslation } from "react-i18next";
 import TagGroup from "./TagGroup";
 import { findLatestTransition } from "./transitions";
 
 type Props = {
   comment: Comment;
-  onOpenContext: () => void;
+  onOpenContext?: () => void;
 };
 
 const CommentTags: FC<Props> = ({ comment, onOpenContext }) => {
@@ -51,7 +51,7 @@ const CommentTags: FC<Props> = ({ comment, onOpenContext }) => {
   }
 
   if (comment.emergencyMerged) {
-    tags.push(<EmergencyMergeTag/>)
+    tags.push(<EmergencyMergeTag />);
   }
 
   if (comment.type === "TASK_TODO") {

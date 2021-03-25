@@ -63,7 +63,7 @@ const TranslatedTag = withTranslation("plugins")(({ label, title, t, ...restProp
 });
 
 type ClickableTagProps = {
-  onClick: () => void;
+  onClick?: () => void;
 };
 
 export const EmergencyMergeTag = () => <TranslatedTag icon="exclamation-triangle" label="emergencyMerged" color="danger"/>;

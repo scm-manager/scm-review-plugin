@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Fixed
 - Path for open api spec ([#123](https://github.com/scm-manager/scm-review-plugin/pull/123))
+- fix outdated tag without context being displayed as clickable ([#125](https://github.com/scm-manager/scm-review-plugin/pull/125))
 
 # 2.7.0 - 2021-03-12
 ### Added

@@ -344,7 +344,7 @@ class PullRequestComment extends React.Component<Props, State> {
   };
 
   collectTags = (comment: Comment) => {
-    let onOpenContext = () => {};
+    let onOpenContext;
     if (comment.context) {
       onOpenContext = () => {
         this.setState({
