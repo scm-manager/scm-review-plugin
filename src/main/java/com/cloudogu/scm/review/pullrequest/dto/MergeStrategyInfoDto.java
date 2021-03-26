@@ -40,4 +40,5 @@ public class MergeStrategyInfoDto {
   private String defaultCommitMessage;
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private String commitMessageHint;
+  private String commitAuthor;
 }

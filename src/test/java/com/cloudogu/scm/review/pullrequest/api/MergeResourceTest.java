@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
+import com.cloudogu.scm.review.pullrequest.service.MergeService.CommitDefaults;
 import com.github.sdorra.shiro.SubjectAware;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
@@ -35,6 +36,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.user.DisplayUser;
+import sonia.scm.user.User;
 import sonia.scm.web.RestDispatcher;
 
 import java.io.IOException;
@@ -49,6 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.api.MergeStrategy.FAST_FORWARD_IF_POSSIBLE;
@@ -131,7 +135,8 @@ class MergeResourceTest {
 
   @Test
   void shouldCreateSquashCommitMessage() throws IOException, URISyntaxException {
-    when(mergeService.createDefaultCommitMessage(any(), any(), eq(SQUASH))).thenReturn("successful");
+    when(mergeService.createCommitDefaults(any(), any(), eq(SQUASH)))
+      .thenReturn(new CommitDefaults("successful", DisplayUser.from(new User("Arthur Dent"))));
     MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/commit-message/?strategy=SQUASH");
     MockHttpResponse response = new MockHttpResponse();
     dispatcher.invoke(request, response);
@@ -140,8 +145,26 @@ class MergeResourceTest {
   }
 
   @Test
+  void shouldGetSquashMergeStrategyInfo() throws URISyntaxException, UnsupportedEncodingException {
+    when(mergeService.createCommitDefaults(any(), any(), eq(SQUASH)))
+      .thenReturn(new CommitDefaults("happy days", DisplayUser.from(new User("Arthur Dent"))));
+    when(mergeService.isCommitMessageDisabled(SQUASH)).thenReturn(true);
+    when(mergeService.createMergeCommitMessageHint(SQUASH)).thenReturn(null);
+    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/merge-strategy-info/?strategy=SQUASH");
+    MockHttpResponse response = new MockHttpResponse();
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString())
+      .contains("happy days")
+      .contains("true")
+      .contains("Arthur Dent")
+      .doesNotContain("commitMessageHint");
+  }
+
+  @Test
   void shouldGetRebaseMergeStrategyInfo() throws URISyntaxException, UnsupportedEncodingException {
-    when(mergeService.createDefaultCommitMessage(any(), any(), eq(REBASE))).thenReturn("happy days");
+    CommitDefaults commitDefaults = new CommitDefaults("happy days", DisplayUser.from(new User("Arthur Dent")));
+    when(mergeService.createCommitDefaults(any(), any(), eq(REBASE))).thenReturn(commitDefaults);
     when(mergeService.isCommitMessageDisabled(REBASE)).thenReturn(true);
     when(mergeService.createMergeCommitMessageHint(REBASE)).thenReturn(null);
     MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/merge-strategy-info/?strategy=REBASE");

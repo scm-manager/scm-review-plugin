@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.InternalMergeSwitch;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
+import com.cloudogu.scm.review.pullrequest.service.MergeService.CommitDefaults;
 import com.google.common.collect.ImmutableList;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.subject.Subject;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.Branches;
 import sonia.scm.repository.Changeset;
@@ -64,13 +66,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Optional;
 import java.util.Set;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,7 +86,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class MergeServiceTest {
+class MergeServiceTest {
 
   private final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
 
@@ -145,6 +147,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldMergeSuccessfully() {
+    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
@@ -157,11 +160,11 @@ public class MergeServiceTest {
 
   @Test
   void shouldEnrichCommitMessageWithReviewedBy() {
-    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org"));
+    mockUser("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    when(userDisplayManager.get("trillian")).thenReturn(Optional.of(DisplayUser.from(new User("trillian", "Tricia McMillan", "trillian@hitchhiker.org"))));
-    when(userDisplayManager.get("dent")).thenReturn(Optional.of(DisplayUser.from(new User("dent", "Arthur Dent", "dent@hitchhiker.org"))));
+    when(userDisplayManager.get("trillian")).thenReturn(of(DisplayUser.from(new User("trillian", "Tricia McMillan", "trillian@hitchhiker.org"))));
+    when(userDisplayManager.get("dent")).thenReturn(of(DisplayUser.from(new User("dent", "Arthur Dent", "dent@hitchhiker.org"))));
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
     LinkedHashMap<String, Boolean> reviewers = new LinkedHashMap<>();
     reviewers.put("dent", true);
@@ -181,7 +184,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldEnrichCommitMessageWithCoAuthoredBy() throws IOException {
-    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org"));
+    mockUser("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     ImmutableList<Changeset> changesets = ImmutableList.of(
@@ -203,7 +206,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldEnrichCommitMessageWithCoAuthorsOfSquashedCommits() throws IOException {
-    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org"));
+    mockUser("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     ImmutableList<Changeset> changesets = ImmutableList.of(
@@ -226,7 +229,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldNotEnrichCommitMessageWithMergerAsReviewer() throws IOException {
-    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("arthur", "Arthur Dent", "dent@hitchhiker.org"));
+    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     ImmutableList<Changeset> changesets = ImmutableList.of(
@@ -252,7 +255,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldNotEnrichCommitMessageWithMergerAsCoAuthor() throws IOException {
-    when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User("arthur", "Arthur Dent", "dent@hitchhiker.org"));
+    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     ImmutableList<Changeset> changesets = ImmutableList.of(
@@ -274,6 +277,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldEmergencyMergeSuccessfully() {
+    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
@@ -321,6 +325,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldDeleteBranchIfFlagIsSet() {
+    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
@@ -335,6 +340,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldUpdatePullRequestStatus() throws IOException {
+    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     mocksForPullRequestUpdate("master");
     mockPullRequest("squash", "master", "1");
 
@@ -371,6 +377,7 @@ public class MergeServiceTest {
 
   @Test
   void shouldNotThrowExceptionIfObstacleIsOverrideable() throws IOException {
+    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     mocksForPullRequestUpdate("master");
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
     mockMergeGuard(pullRequest, true);
@@ -414,7 +421,45 @@ public class MergeServiceTest {
   }
 
   @Test
-  void shouldCreateCommitMessageForSquash() throws IOException {
+  void shouldCreateCommitMessageForSquashWithAuthorFromPullRequest() throws IOException {
+    DisplayUser prAuthor = DisplayUser.from(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
+    when(userDisplayManager.get("zaphod")).thenReturn(of(prAuthor));
+    when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
+    when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
+    PullRequest pullRequest = createPullRequest();
+    pullRequest.setAuthor("zaphod");
+    when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
+
+    Person author = new Person("Philip", "phil@groundhog.com");
+
+    ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
+      new Changeset("1", 1L, author, "first commit"),
+      new Changeset("2", 2L, author, "second commit\nwith multiple lines"),
+      new Changeset("3", 3L, author, "third commit")
+    ));
+
+    when(logCommandBuilder.getChangesets()).thenReturn(changesets);
+    CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+    assertThat(commitDefaults.getCommitMessage()).isEqualTo("Squash commits of branch squash:\n" +
+      "\n" +
+      "- first commit\n" +
+      "  Author: Philip <phil@groundhog.com>\n" +
+      "- second commit\n" +
+      "with multiple lines\n" +
+      "\n" +
+      "Author: Philip <phil@groundhog.com>\n" +
+      "\n" +
+      "- third commit\n" +
+      "  Author: Philip <phil@groundhog.com>\n"
+    );
+    assertThat(commitDefaults.getCommitAuthor())
+      .usingRecursiveComparison()
+      .isEqualTo(prAuthor);
+  }
+
+  @Test
+  void shouldCreateCommitMessageForSquashWithFallbackForMissingAuthorFromPullRequest() throws IOException {
+    mockUser("trillian", "Tricia McMillan", "tricia@hitchhiker.com");
     when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
     when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
     PullRequest pullRequest = createPullRequest();
@@ -429,8 +474,8 @@ public class MergeServiceTest {
     ));
 
     when(logCommandBuilder.getChangesets()).thenReturn(changesets);
-    String message = service.createDefaultCommitMessage(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-    assertThat(message).isEqualTo("Squash commits of branch squash:\n" +
+    CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+    assertThat(commitDefaults.getCommitMessage()).isEqualTo("Squash commits of branch squash:\n" +
       "\n" +
       "- first commit\n" +
       "  Author: Philip <phil@groundhog.com>\n" +
@@ -442,6 +487,9 @@ public class MergeServiceTest {
       "- third commit\n" +
       "  Author: Philip <phil@groundhog.com>\n"
     );
+    assertThat(commitDefaults.getCommitAuthor())
+      .usingRecursiveComparison()
+      .isEqualTo(DisplayUser.from(new User("trillian", "Tricia McMillan", "tricia@hitchhiker.com")));
   }
 
   @Test
@@ -518,6 +566,10 @@ public class MergeServiceTest {
     Branches branches = new Branches();
     branches.setBranches(ImmutableList.of(Branch.normalBranch(branchName, "123")));
     when(branchesCommandBuilder.getBranches()).thenReturn(branches);
+  }
+
+  private OngoingStubbing<User> mockUser(String name, String displayName, String mail) {
+    return when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User(name, displayName, mail));
   }
 
   private static class TestMergeObstacle implements MergeObstacle {
