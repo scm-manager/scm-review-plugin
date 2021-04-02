@@ -32,9 +32,9 @@ import {
   DiffEventContext,
   diffs,
   File,
+  FileContentFactory,
   Level,
-  LoadingDiff,
-  FileContentFactory
+  LoadingDiff
 } from "@scm-manager/ui-components";
 import { Comment, Location, PullRequest } from "../types/PullRequest";
 import { createHunkId, createInlineLocation } from "./locations";
@@ -45,7 +45,7 @@ import InlineComments from "./InlineComments";
 import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
-import { State as DiffState, DiffAction, markAsReviewed, unmarkAsReviewed } from "./reducer";
+import { DiffAction, markAsReviewed, State as DiffState, unmarkAsReviewed } from "./reducer";
 import { closeEditor, createComment, openEditor } from "../comment/actiontypes";
 import MarkReviewedButton from "./MarkReviewedButton";
 
@@ -70,13 +70,15 @@ type Props = WithTranslation & {
 
 type State = {
   collapsed: boolean;
+  explicitlyOpenedFiles: string[];
 };
 
 class Diff extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      collapsed: false
+      collapsed: false,
+      explicitlyOpenedFiles: []
     };
   }
 
@@ -86,7 +88,7 @@ class Diff extends React.Component<Props, State> {
 
     let globalCollapsedOrByMarks: DefaultCollapsedFunction;
     if (collapsed) {
-      globalCollapsedOrByMarks = () => true;
+      globalCollapsedOrByMarks = (oldPath, newPath) => !this.hasOpenEditor(oldPath, newPath);
     } else {
       globalCollapsedOrByMarks = (oldPath: string, newPath: string) =>
         diffState ? diffState.reviewedFiles.some(path => path === oldPath || path === newPath) : false;
@@ -136,9 +138,36 @@ class Diff extends React.Component<Props, State> {
     }
 
     if (annotations.length > 0) {
-      return <FileComments>{annotations}</FileComments>;
+      return [<FileComments>{annotations}</FileComments>];
     }
     return [];
+  };
+
+  hasOpenEditor = (oldPath: string, newPath: string) => {
+    const explicitlyOpenedFiles = this.state.explicitlyOpenedFiles;
+    const path = newPath === "/dev/null" ? oldPath : newPath;
+    const fileState = this.props.diffState.files[path] || [];
+    if (explicitlyOpenedFiles.find(o => o === path)) {
+      return true;
+    }
+
+    if (!!fileState.editor) {
+      this.markAsExplicitlyOpened(path);
+      return true;
+    }
+
+    const lineEditor = !!Object.values(this.props.diffState.lines)
+      .flatMap(line => Object.values(line))
+      .filter(line => line.location.file === path)
+      .find(line => line.editor);
+    if (lineEditor) {
+      this.markAsExplicitlyOpened(path);
+    }
+    return lineEditor;
+  };
+
+  markAsExplicitlyOpened = (file: string) => {
+    this.setState({ explicitlyOpenedFiles: [...this.state.explicitlyOpenedFiles, file] });
   };
 
   annotationFactory = (context: AnnotationFactoryContext) => {
@@ -170,7 +199,8 @@ class Diff extends React.Component<Props, State> {
 
   collapseDiffs = () => {
     this.setState(state => ({
-      collapsed: !state.collapsed
+      collapsed: !state.collapsed,
+      explicitlyOpenedFiles: []
     }));
   };
 
