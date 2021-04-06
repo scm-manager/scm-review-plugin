@@ -53,6 +53,7 @@ import ChangeNotification from "./ChangeNotification";
 import ReducedMarkdownView from "./ReducedMarkdownView";
 import Statusbar from "./workflow/Statusbar";
 import OverrideModalRow from "./OverrideModalRow";
+import PullRequestTitle from "./PullRequestTitle";
 
 type Props = WithTranslation &
   RouteComponentProps & {
@@ -396,10 +397,9 @@ class PullRequestDetails extends React.Component<Props, State> {
         <Container>
           <div className="media">
             <div className="media-content">
-              <RightMarginTitle
-                className="is-inline is-marginless"
-                title={"#" + pullRequest.id + " " + pullRequest.title}
-              />
+              <RightMarginTitle className="is-inline is-marginless">
+                #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />
+              </RightMarginTitle>
               {totalTasks > 0 && (
                 <TitleTag
                   label={titleTagText}
