@@ -160,31 +160,31 @@
         "message": "This is the original diff context at the time of comment creation"
       },
       "confirmDeleteAlert": {
-        "title": "Delete comment",
+        "title": "Delete Comment",
         "message": "Do you really want to delete the comment?",
         "submit": "Yes",
         "cancel": "No"
       },
       "confirmDoneAlert": {
-        "title": "Mark as done",
+        "title": "Mark as Done",
         "message": "Do you really want to mark this task as done?",
         "submit": "Yes",
         "cancel": "No"
       },
       "confirmMakeTaskAlert": {
-        "title": "Create a task from this comment",
+        "title": "Create a Task from this Comment",
         "message": "Do you really want to make this comment a task?",
         "submit": "Yes",
         "cancel": "No"
       },
       "reopenAlert": {
-        "title": "Mark as NOT done",
+        "title": "Mark as NOT Done",
         "message": "Do you really want to reopen this task?",
         "submit": "Yes",
         "cancel": "No"
       },
       "makeCommentAlert": {
-        "title": "Make this a normal comment",
+        "title": "Make this a Normal Comment",
         "message": "Do you really want to transform this task to a normal comment?",
         "submit": "Yes",
         "cancel": "No"
