@@ -21,18 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useReducer } from "react";
+import React, { FC, useEffect, useReducer, useRef } from "react";
 import reducer, { initialState } from "./reducer";
 import { createComment } from "./actiontypes";
 
 import { PullRequest } from "../types/PullRequest";
 
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
+import { useLocation } from "react-router-dom";
 import { Link } from "@scm-manager/ui-types";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
 import styled from "styled-components";
 import useComments from "./useComments";
+
+const COMMENT_URL_HASH_REGEX = /^#comment-(.*)$/;
 
 type Props = {
   pullRequest: PullRequest;
@@ -47,8 +50,25 @@ const CommentWrapper = styled.div`
 `;
 
 const RootCommentContainer: FC<Props> = ({ pullRequest }) => {
+  const location = useLocation();
   const [comments, dispatch] = useReducer(reducer, initialState);
   const { error, loading, links } = useComments(pullRequest, dispatch);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!loading && contentRef.current) {
+      setTimeout(() => {
+        const match = location.hash.match(COMMENT_URL_HASH_REGEX);
+        if (match) {
+          const anchorId = `#comment-${match[1]}`;
+          const element = contentRef.current?.querySelector(anchorId);
+          if (element) {
+            element.scrollIntoView();
+          }
+        }
+      })
+    }
+  }, [loading, contentRef]);
 
   if (error) {
     return <ErrorNotification error={error} />;
@@ -63,14 +83,14 @@ const RootCommentContainer: FC<Props> = ({ pullRequest }) => {
 
   const createLink = links.create ? (links.create as Link).href : undefined;
   return (
-    <>
+    <div ref={contentRef}>
       {comments.map(rootComment => (
         <CommentWrapper key={rootComment.id} className="comment-wrapper">
           <PullRequestComment comment={rootComment} dispatch={dispatch} createLink={createLink} />
         </CommentWrapper>
       ))}
       {createLink && <CreateComment url={createLink} onCreation={c => dispatch(createComment(c))} />}
-    </>
+    </div>
   );
 };
 
