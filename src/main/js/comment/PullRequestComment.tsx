@@ -390,7 +390,7 @@ class PullRequestComment extends React.Component<Props, State> {
       <>
         {contextModalOpen && <ContextModal comment={comment} onClose={this.onClose} />}
         <CommentSpacingWrapper isChildComment={!!parent}>
-          <article className="media">
+          <article id={`comment-${comment.id}`} className="media">
             <div className="media-content is-clipped content">
               <p>
                 <LinkWithInheritColor onClick={this.toggleCollapse} title={collapseTitle}>
