@@ -1,0 +1,2 @@
+- type: fixed
+  description: Correct styling of modal footer and capitalize titles ([#128](https://github.com/scm-manager/scm-review-plugin/pull/128))

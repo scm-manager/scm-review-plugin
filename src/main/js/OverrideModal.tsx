@@ -67,16 +67,15 @@ class OverrideModal extends React.Component<Props, State> {
 
     const footer = (
       <>
-        <Button
-          label={t("scm-review-plugin.showPullRequest.overrideModal.cancel")}
-          action={() => close()}
-          color="grey"
-        />
         <SubmitButton
           color="danger"
           icon="exclamation-triangle"
           label={t("scm-review-plugin.showPullRequest.overrideModal.continue")}
           action={() => proceed(overrideMessage)}
+        />
+        <Button
+          label={t("scm-review-plugin.showPullRequest.overrideModal.cancel")}
+          action={() => close()}
         />
       </>
     );

@@ -164,7 +164,6 @@ class MergeModal extends React.Component<Props, State> {
 
     const footer = (
       <>
-        <Button label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")} action={() => close()} color="grey" />
         {emergencyMerge ? (
           <SubmitButton
             icon="exclamation-triangle"
@@ -182,6 +181,7 @@ class MergeModal extends React.Component<Props, State> {
             disabled={this.shouldDisableMergeButton()}
           />
         )}
+        <Button label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")} action={() => close()} color="grey" />
       </>
     );
 

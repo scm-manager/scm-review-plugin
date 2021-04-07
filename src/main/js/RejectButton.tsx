@@ -38,6 +38,7 @@ class RejectButton extends React.Component<Props> {
       message: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message"),
       buttons: [
         {
+          className: "is-outlined",
           label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
           onClick: () => reject()
         },

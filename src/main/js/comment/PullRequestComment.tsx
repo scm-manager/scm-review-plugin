@@ -225,6 +225,7 @@ class PullRequestComment extends React.Component<Props, State> {
       message: t("scm-review-plugin.comment.confirmDeleteAlert.message"),
       buttons: [
         {
+          className: "is-outlined",
           label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
           onClick: () => this.delete()
         },
@@ -267,6 +268,7 @@ class PullRequestComment extends React.Component<Props, State> {
       message: t(translationKey + ".message"),
       buttons: [
         {
+          className: "is-outlined",
           label: t(translationKey + ".submit"),
           onClick: () => this.executeTransition(transition)
         },
