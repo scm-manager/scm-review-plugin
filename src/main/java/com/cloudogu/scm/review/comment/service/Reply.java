@@ -27,6 +27,16 @@ import java.time.Instant;
 
 public class Reply extends BasicComment {
 
+  private boolean systemReply = false;
+
+  public boolean isSystemReply() {
+    return systemReply;
+  }
+
+  public void setSystemReply(boolean systemReply) {
+    this.systemReply = systemReply;
+  }
+
   public static Reply createReply(String id, String text, String author) {
     Reply comment = new Reply();
     comment.setId(id);

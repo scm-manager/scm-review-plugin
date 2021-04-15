@@ -70,7 +70,7 @@ class Edit extends React.Component<Props, State> {
       loading: true
     });
 
-    updatePullRequest((modifiedPullRequest._links.update as Link).href, modifiedPullRequest)
+    updatePullRequest((modifiedPullRequest._links.update as Link).href, {...modifiedPullRequest, _embedded : {}})
       .then(() => {
         this.setState({
           loading: false
