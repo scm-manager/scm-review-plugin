@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { Collection, DisplayedUser, Links, Embedded } from "@scm-manager/ui-types";
+import { Collection, DisplayedUser, Links, Embedded, HalRepresentation } from "@scm-manager/ui-types";
 
 export type Reviewer = DisplayedUser & {
   approved: boolean;
@@ -34,15 +34,13 @@ export type BasicPullRequest = {
   title: string;
 };
 
-export type PullRequest = BasicPullRequest & {
+export type PullRequest = BasicPullRequest & HalRepresentation & {
   description?: string;
   author: DisplayedUser;
   id: string;
   creationDate: string;
   reviewer: Reviewer[];
   status: string;
-  _links: Links;
-  _embedded: Embedded;
   tasks: Tasks;
   sourceRevision: string;
   targetRevision: string;
