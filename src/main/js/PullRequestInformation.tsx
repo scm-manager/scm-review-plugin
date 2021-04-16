@@ -103,46 +103,34 @@ class PullRequestInformation extends React.Component<Props> {
       const sourceRevision = isClosedPullRequest && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source;
       const targetRevision = isClosedPullRequest && pullRequest?.targetRevision ? pullRequest.targetRevision : target;
       routeChangeset = (
-        <Route
-          path={`${baseURL}/changesets`}
-          render={() => (
-            <Changesets
-              repository={repository}
-              source={sourceRevision}
-              target={targetRevision}
-              shouldFetchChangesets={shouldFetchChangesets}
-            />
-          )}
-          exact
-        />
+        <Route path={`${baseURL}/changesets`} exact>
+          <Changesets
+            repository={repository}
+            source={sourceRevision}
+            target={targetRevision}
+            shouldFetchChangesets={shouldFetchChangesets}
+          />
+        </Route>
       );
       routeChangesetPagination = (
-        <Route
-          path={`${baseURL}/changesets/:page`}
-          render={() => (
-            <Changesets
-              repository={repository}
-              source={sourceRevision}
-              target={targetRevision}
-              shouldFetchChangesets={shouldFetchChangesets}
-            />
-          )}
-          exact
-        />
+        <Route path={`${baseURL}/changesets/:page`} exact>
+          <Changesets
+            repository={repository}
+            source={sourceRevision}
+            target={targetRevision}
+            shouldFetchChangesets={shouldFetchChangesets}
+          />
+        </Route>
       );
       routeDiff = (
-        <Route
-          path={`${baseURL}/diff`}
-          render={() => (
-            <DiffRoute
-              repository={repository}
-              pullRequest={pullRequest}
-              source={sourceRevision}
-              target={targetRevision}
-            />
-          )}
-          exact
-        />
+        <Route path={`${baseURL}/diff`} exact>
+          <DiffRoute
+            repository={repository}
+            pullRequest={pullRequest}
+            source={sourceRevision}
+            target={targetRevision}
+          />
+        </Route>
       );
       diffTab = (
         <li className={this.navigationClass("diff")}>
