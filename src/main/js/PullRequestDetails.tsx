@@ -477,6 +477,15 @@ class PullRequestDetails extends React.Component<Props, State> {
           </LevelWrapper>
         </Container>
 
+        <ExtensionPoint
+          name="reviewPlugin.pullrequest.bottom"
+          renderAll={true}
+          props={{
+            repository,
+            pullRequest
+          }}
+        />
+
         <PullRequestInformation
           pullRequest={pullRequest}
           baseURL={match.url}

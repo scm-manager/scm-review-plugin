@@ -80,7 +80,7 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
   };
 
   const isDeletable = () => {
-    return parent || (isEmptyRootComment() && hasLink("delete"));
+    return (isEmptyRootComment() && hasLink("delete")) || (parent && hasLink("delete"));
   };
 
   const icons = [];
