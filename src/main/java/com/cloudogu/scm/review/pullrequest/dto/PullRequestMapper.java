@@ -70,6 +70,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
+import static de.otto.edison.hal.Embedded.embeddedBuilder;
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.stream.Collectors.toList;
@@ -224,8 +225,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     linksBuilder.single(link("sourceBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getSource())));
     linksBuilder.single(link("targetBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getTarget())));
 
-    applyEnrichers(new EdisonHalAppender(linksBuilder, new Embedded.Builder()), pullRequest, repository);
-    return new PullRequestDto(linksBuilder.build());
+    Embedded.Builder embeddedBuilder = embeddedBuilder();
+    applyEnrichers(new EdisonHalAppender(linksBuilder, embeddedBuilder), pullRequest, repository);
+    return new PullRequestDto(linksBuilder.build(), embeddedBuilder.build());
   }
 
   private void appendMergeStrategyLinks(Links.Builder linksBuilder, Repository repository, PullRequest pullRequest) {

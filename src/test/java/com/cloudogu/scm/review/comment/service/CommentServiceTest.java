@@ -33,16 +33,12 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableSet;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -53,7 +49,6 @@ import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
-import sonia.scm.user.User;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -75,7 +70,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -472,6 +466,16 @@ public class CommentServiceTest {
   @SubjectAware(username = "dent")
   public void shouldNotDeleteIfReplyExists() {
     commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_COMMENT.getId());
+  }
+
+  @Test(expected = ScmConstraintViolationException.class)
+  @SubjectAware(username = "dent")
+  public void shouldNotDeleteIfReplyIsSystemReply() {
+    EXISTING_REPLY.setSystemReply(true);
+
+    commentService.delete(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId());
+
+    EXISTING_REPLY.setSystemReply(false);
   }
 
   @Test
