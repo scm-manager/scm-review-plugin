@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.google.inject.Inject;
+import org.apache.shiro.SecurityUtils;
 import sonia.scm.HandlerEventType;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.ChangesetPagingResult;
@@ -197,6 +198,7 @@ public class DefaultPullRequestService implements PullRequestService {
     if (pullRequest.getStatus() == OPEN) {
       pullRequest.setSourceRevision(branchResolver.resolve(repository, pullRequest.getSource()).getRevision());
       pullRequest.setTargetRevision(branchResolver.resolve(repository, pullRequest.getTarget()).getRevision());
+      pullRequest.setReviser(getCurrentUser().getName());
       pullRequest.setStatus(REJECTED);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause));
@@ -218,6 +220,7 @@ public class DefaultPullRequestService implements PullRequestService {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.getStatus() == OPEN) {
       pullRequest.setStatus(MERGED);
+      pullRequest.setReviser(getCurrentUser().getName());
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
     } else if (pullRequest.getStatus() == REJECTED) {
@@ -231,6 +234,7 @@ public class DefaultPullRequestService implements PullRequestService {
     pullRequest.setOverrideMessage(overrideMessage);
     pullRequest.setEmergencyMerged(true);
     pullRequest.setStatus(MERGED);
+    pullRequest.setReviser(getCurrentUser().getName());
     pullRequest.setIgnoredMergeObstacles(ignoredMergeObstacles);
     getStore(repository).update(pullRequest);
     eventBus.post(new PullRequestEmergencyMergedEvent(repository, pullRequest));
@@ -342,6 +346,10 @@ public class DefaultPullRequestService implements PullRequestService {
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       return repositoryService.isSupported(Command.MERGE);
     }
+  }
+
+  private User getCurrentUser() {
+    return SecurityUtils.getSubject().getPrincipals().oneByType(User.class);
   }
 
   private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {

@@ -161,4 +161,17 @@ class PullRequestMapperTest {
 
     assertThat(dto.getReviewer()).extracting("id").containsExactly("deletedUser");
   }
+
+  @Test
+  void shouldMapPullRequestReviser() {
+    when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("dent");
+    when(branchLinkProvider.get(any(NamespaceAndName.class), anyString())).thenReturn("link");
+
+    PullRequest pullRequest = TestData.createPullRequest();
+    pullRequest.setReviser("trillian");
+
+    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+    assertThat(dto.getReviser().getDisplayName()).isEqualTo("trillian");
+  }
 }

@@ -37,6 +37,7 @@ export type BasicPullRequest = {
 export type PullRequest = BasicPullRequest & {
   description?: string;
   author: DisplayedUser;
+  reviser?: DisplayedUser;
   id: string;
   creationDate: string;
   reviewer: Reviewer[];

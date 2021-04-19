@@ -36,8 +36,15 @@
       },
       "description": "Beschreibung",
       "status": "Status",
+      "statusLabel": {
+        "OPEN": "OFFEN",
+        "MERGED": "GEMERGED",
+        "REJECTED": "ABGELEHNT"
+      },
+      "statusReviser": " VON {{reviserName}}",
       "id": "ID",
       "author": "Autor",
+      "reviser": " von {{reviserName}}",
       "date": "Datum",
       "reviewer": "Reviewers",
       "addReviewer": "Reviewer hinzufügen",

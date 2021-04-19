@@ -101,6 +101,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -154,7 +155,7 @@ public class PullRequestRootResourceTest {
   @InjectMocks
   private PullRequestMapperImpl mapper;
 
-  private ScmEventBus eventBus = mock(ScmEventBus.class);
+  private final ScmEventBus eventBus = mock(ScmEventBus.class);
 
   @Before
   public void init() {
@@ -763,8 +764,12 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
-  @SubjectAware(username = "slarti")
   public void shouldSetPullRequestToStatusRejected() throws URISyntaxException {
+    Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+    shiroRule.setSubject(subject);
+    User currentUser = new User("currentUser");
+    when(subject.getPrincipals().oneByType(User.class)).thenReturn(currentUser);
+
     when(store.get("1")).thenReturn(createPullRequest("opened_1", PullRequestStatus.OPEN));
     when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
     MockHttpRequest request = MockHttpRequest

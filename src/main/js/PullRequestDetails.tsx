@@ -415,7 +415,6 @@ class PullRequestDetails extends React.Component<Props, State> {
               </MobileFlexButtonGroup>
             </div>
           </div>
-
           <MediaWithTopBorder>
             <div className="media-content">
               <ShortTag label={pullRequest.source} title={pullRequest.source} />{" "}
@@ -427,7 +426,14 @@ class PullRequestDetails extends React.Component<Props, State> {
               <Tag
                 className="is-medium"
                 color={evaluateTagColor(pullRequest)}
-                label={pullRequest.status}
+                label={
+                  t("scm-review-plugin.pullRequest.statusLabel." + pullRequest.status) +
+                  (!!pullRequest.reviser?.displayName
+                    ? t("scm-review-plugin.pullRequest.statusReviser", {
+                        reviserName: pullRequest.reviser?.displayName?.toUpperCase()
+                      })
+                    : "")
+                }
                 icon={pullRequest.emergencyMerged ? "exclamation-triangle" : undefined}
               />
             </div>

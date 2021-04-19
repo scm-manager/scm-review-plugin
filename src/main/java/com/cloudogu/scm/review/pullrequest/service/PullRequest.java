@@ -62,6 +62,7 @@ public class PullRequest {
   private String title;
   private String description;
   private String author;
+  private String reviser;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant creationDate;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
