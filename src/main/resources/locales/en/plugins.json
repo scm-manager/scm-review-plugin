@@ -137,6 +137,7 @@
     "pullRequests": {
       "errorTitle": "Error",
       "errorSubtitle": "Unspecified pull request error",
+      "forbidden": "Please note: You do not have the permission to read pull requests!",
       "createButton": "Create Pull Request"
     },
     "comment": {
