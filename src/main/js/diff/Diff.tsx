@@ -82,6 +82,10 @@ class Diff extends React.Component<Props, State> {
     };
   }
 
+  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>) {
+    return this.state.collapsed !== nextState.collapsed;
+  }
+
   render() {
     const { diffUrl, fileContentFactory, diffState, t } = this.props;
     const { collapsed } = this.state;

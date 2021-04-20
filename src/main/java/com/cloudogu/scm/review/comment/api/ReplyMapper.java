@@ -84,7 +84,7 @@ public abstract class ReplyMapper extends HalAppenderMapper {
     String name = repository.getName();
     final Links.Builder linksBuilder = new Links.Builder();
     linksBuilder.self(commentPathBuilder.createReplySelfUri(namespace, name, pullRequestId, comment.getId(), target.getId()));
-    if (PermissionCheck.mayModifyComment(repository, source)) {
+    if (PermissionCheck.mayModifyComment(repository, source) && !source.isSystemReply()) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId(), revisions)));
       linksBuilder.single(link("delete", commentPathBuilder.createDeleteReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId(), revisions)));
     }
