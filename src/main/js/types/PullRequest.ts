@@ -38,6 +38,7 @@ export type PullRequest = BasicPullRequest & HalRepresentation & {
   description?: string;
   author: DisplayedUser;
   reviser?: DisplayedUser;
+  closeDate?: string;
   id: string;
   creationDate: string;
   reviewer: Reviewer[];

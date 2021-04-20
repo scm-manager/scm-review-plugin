@@ -198,7 +198,7 @@ public class DefaultPullRequestService implements PullRequestService {
     if (pullRequest.getStatus() == OPEN) {
       pullRequest.setSourceRevision(branchResolver.resolve(repository, pullRequest.getSource()).getRevision());
       pullRequest.setTargetRevision(branchResolver.resolve(repository, pullRequest.getTarget()).getRevision());
-      pullRequest.setReviser(getCurrentUser().getName());
+      setPullRequestClosed(pullRequest);
       pullRequest.setStatus(REJECTED);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause));
@@ -220,7 +220,7 @@ public class DefaultPullRequestService implements PullRequestService {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.getStatus() == OPEN) {
       pullRequest.setStatus(MERGED);
-      pullRequest.setReviser(getCurrentUser().getName());
+      setPullRequestClosed(pullRequest);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
     } else if (pullRequest.getStatus() == REJECTED) {
@@ -234,10 +234,15 @@ public class DefaultPullRequestService implements PullRequestService {
     pullRequest.setOverrideMessage(overrideMessage);
     pullRequest.setEmergencyMerged(true);
     pullRequest.setStatus(MERGED);
-    pullRequest.setReviser(getCurrentUser().getName());
+    setPullRequestClosed(pullRequest);
     pullRequest.setIgnoredMergeObstacles(ignoredMergeObstacles);
     getStore(repository).update(pullRequest);
     eventBus.post(new PullRequestEmergencyMergedEvent(repository, pullRequest));
+  }
+
+  private void setPullRequestClosed(PullRequest pullRequest) {
+    pullRequest.setReviser(getCurrentUser().getName());
+    pullRequest.setCloseDate(Instant.now());
   }
 
   @Override

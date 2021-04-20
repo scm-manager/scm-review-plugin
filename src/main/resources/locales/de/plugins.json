@@ -41,10 +41,10 @@
         "MERGED": "GEMERGED",
         "REJECTED": "ABGELEHNT"
       },
-      "statusReviser": " VON {{reviserName}}",
       "id": "ID",
       "author": "Autor",
-      "reviser": " von {{reviserName}}",
+      "mergedBy": "Gemerged von",
+      "rejectedBy": "Abgelehnt von",
       "date": "Datum",
       "reviewer": "Reviewers",
       "addReviewer": "Reviewer hinzufügen",

@@ -64,6 +64,8 @@ public class PullRequest {
   private String author;
   private String reviser;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
+  private Instant closeDate;
+  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant creationDate;
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
