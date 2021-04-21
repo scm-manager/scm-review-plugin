@@ -68,6 +68,7 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -605,6 +606,21 @@ class DefaultPullRequestServiceTest {
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "", emptySet(), null, false, Collections.emptyList());
+    PullRequest pullRequest = new PullRequest();
+    pullRequest.setId(id);
+    pullRequest.setSource("source");
+    pullRequest.setTarget("target");
+    pullRequest.setTitle("pr");
+    pullRequest.setDescription("description");
+    pullRequest.setCreationDate(creationDate);
+    pullRequest.setLastModified(lastModified);
+    pullRequest.setStatus(OPEN);
+    pullRequest.setSubscriber(emptySet());
+    pullRequest.setReviewer(new HashMap<>());
+    pullRequest.setSourceRevision("");
+    pullRequest.setTargetRevision("");
+    pullRequest.setReviewMarks(emptySet());
+    pullRequest.setIgnoredMergeObstacles(emptyList());
+    return pullRequest;
   }
 }
