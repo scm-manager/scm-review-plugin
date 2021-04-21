@@ -22,18 +22,20 @@
  * SOFTWARE.
  */
 import React from "react";
-import { ErrorNotification, Loading } from "@scm-manager/ui-components";
+import { ErrorNotification, Loading, Notification } from "@scm-manager/ui-components";
 import { Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import { getPullRequest, getReviewer } from "./pullRequest";
 import Edit from "./Edit";
+import { withTranslation, WithTranslation } from "react-i18next";
 
-type Props = RouteComponentProps & {
-  repository: Repository;
-  userAutocompleteLink: string;
-};
+type Props = RouteComponentProps &
+  WithTranslation & {
+    repository: Repository;
+    userAutocompleteLink: string;
+  };
 
 type State = {
   pullRequest?: PullRequest;
@@ -50,7 +52,9 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    this.fetchPullRequest();
+    if (this.props.repository._links.pullRequest) {
+      this.fetchPullRequest();
+    }
   }
 
   shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
@@ -93,8 +97,12 @@ class SinglePullRequest extends React.Component<Props, State> {
   };
 
   render() {
-    const { match, repository, userAutocompleteLink } = this.props;
+    const { match, repository, userAutocompleteLink, t } = this.props;
     const { loading, error, pullRequest } = this.state;
+
+    if (!repository._links.pullRequest) {
+      return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
+    }
 
     if (error) {
       return <ErrorNotification error={error} />;
@@ -134,4 +142,4 @@ class SinglePullRequest extends React.Component<Props, State> {
   }
 }
 
-export default withRouter(SinglePullRequest);
+export default withRouter(withTranslation("plugins")(SinglePullRequest));

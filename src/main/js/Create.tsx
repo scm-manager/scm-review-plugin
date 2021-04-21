@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React from "react";
-import { ErrorNotification, Level, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
+import { ErrorNotification, Level, Notification, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
 import { Changeset, Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
@@ -162,6 +162,10 @@ class Create extends React.Component<Props, State> {
 
     const url = this.props.location.search;
     const params = queryString.parse(url);
+
+    if (!repository._links.pullRequest) {
+      return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
+    }
 
     let notification = null;
     if (error) {

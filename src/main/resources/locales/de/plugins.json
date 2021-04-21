@@ -144,6 +144,7 @@
     "pullRequests": {
       "errorTitle": "Fehler",
       "errorSubtitle": "Unbekannter Pull Request Fehler",
+      "forbidden": "Es fehlen Berechtigungen zum Lesen der Pull Requests!",
       "createButton": "Pull Request erstellen"
     },
     "comment": {
