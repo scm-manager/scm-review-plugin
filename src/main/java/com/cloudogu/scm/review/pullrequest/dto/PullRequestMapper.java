@@ -94,7 +94,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")
-  @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
+  @Mapping(target = "author", source = "author", qualifiedByName = "mapUser")
+  @Mapping(target = "reviser", source = "reviser", qualifiedByName = "mapUser")
   @Mapping(target = "markedAsReviewed", ignore = true)
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
@@ -133,12 +134,12 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .orElse(DisplayUser.from(new User(entry.getKey(), entry.getKey(), null)));
   }
 
-  @Named("mapAuthor")
-  DisplayedUserDto mapAuthor(String authorId) {
+  @Named("mapUser")
+  DisplayedUserDto mapUser(String authorId) {
     return userDisplayManager.get(authorId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(authorId, authorId, null));
   }
 
-  String mapAuthor(DisplayedUserDto author) {
+  String mapUser(DisplayedUserDto author) {
     if (author == null) {
       return null;
     } else {

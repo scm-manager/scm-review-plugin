@@ -370,16 +370,18 @@ class PullRequestDetails extends React.Component<Props, State> {
       </Tooltip>
     ) : null;
 
-    const author = (
-      <div className="field is-horizontal">
-        <UserLabel>{t("scm-review-plugin.pullRequest.author")}:</UserLabel>
-        <UserField>
-          <UserInline>{pullRequest.author.displayName}</UserInline>
-          &nbsp;
-          <DateFromNow date={pullRequest.creationDate} />
-        </UserField>
-      </div>
-    );
+    const userEntry = (labelKey: string, displayName: string, date?: string) => {
+      return (
+        <div className="field is-horizontal">
+          <UserLabel>{t("scm-review-plugin.pullRequest." + labelKey)}:</UserLabel>
+          <UserField>
+            <UserInline>{displayName}</UserInline>
+            &nbsp;
+            {date ? <DateFromNow date={date} /> : null}
+          </UserField>
+        </div>
+      );
+    };
 
     const totalTasks = pullRequest.tasks.todo + pullRequest.tasks.done;
 
@@ -415,7 +417,6 @@ class PullRequestDetails extends React.Component<Props, State> {
               </MobileFlexButtonGroup>
             </div>
           </div>
-
           <MediaWithTopBorder>
             <div className="media-content">
               <ShortTag label={pullRequest.source} title={pullRequest.source} />{" "}
@@ -427,7 +428,7 @@ class PullRequestDetails extends React.Component<Props, State> {
               <Tag
                 className="is-medium"
                 color={evaluateTagColor(pullRequest)}
-                label={pullRequest.status}
+                label={t("scm-review-plugin.pullRequest.statusLabel." + pullRequest.status)}
                 icon={pullRequest.emergencyMerged ? "exclamation-triangle" : undefined}
               />
             </div>
@@ -453,7 +454,14 @@ class PullRequestDetails extends React.Component<Props, State> {
                   pullRequest
                 }}
               />
-              {author}
+              {userEntry("author", pullRequest.author.displayName, pullRequest.creationDate)}
+              {pullRequest.status !== "OPEN" && !!pullRequest.reviser?.displayName
+                ? userEntry(
+                    pullRequest.status === "MERGED" ? "mergedBy" : "rejectedBy",
+                    pullRequest.reviser.displayName,
+                    pullRequest.closeDate
+                  )
+                : null}
               <ReviewerList pullRequest={pullRequest} reviewer={pullRequest.reviewer} />
             </div>
           </UserList>

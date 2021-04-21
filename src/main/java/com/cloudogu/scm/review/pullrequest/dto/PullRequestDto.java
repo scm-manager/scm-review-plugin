@@ -45,6 +45,8 @@ import java.util.Set;
 public class PullRequestDto extends HalRepresentation {
   private String id;
   private DisplayedUserDto author;
+  private DisplayedUserDto reviser;
+  private Instant closeDate;
   @NotBlank
   private String source;
   @NotBlank
