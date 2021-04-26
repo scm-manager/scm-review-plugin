@@ -68,6 +68,7 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -76,6 +77,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -428,6 +430,11 @@ class DefaultPullRequestServiceTest {
 
     @Test
     void shouldSetPullRequestRejectedAndSendEvent() {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+      User currentUser = new User("currentUser");
+      when(subject.getPrincipals().oneByType(User.class)).thenReturn(currentUser);
+
       doReturn(Branch.normalBranch("source", "1"))
         .when(branchResolver).resolve(REPOSITORY, pullRequest.getSource());
       doReturn(Branch.normalBranch("target", "2"))
@@ -436,6 +443,7 @@ class DefaultPullRequestServiceTest {
 
       service.setRejected(REPOSITORY, pullRequest.getId(), REJECTED_BY_USER);
 
+      assertThat(pullRequest.getReviser()).isEqualTo(currentUser.getName());
       assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
       assertThat(pullRequest.getSourceRevision()).isEqualTo("1");
       assertThat(pullRequest.getTargetRevision()).isEqualTo("2");
@@ -468,11 +476,17 @@ class DefaultPullRequestServiceTest {
 
     @Test
     void shouldSetPullRequestMergedAndSendEvent() {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+      User currentUser = new User("currentUser");
+      when(subject.getPrincipals().oneByType(User.class)).thenReturn(currentUser);
+
       pullRequest.setStatus(OPEN);
 
       service.setMerged(REPOSITORY, pullRequest.getId());
 
       assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
+      assertThat(pullRequest.getReviser()).isEqualTo(currentUser.getName());
       assertThat(eventCaptor.getAllValues()).hasSize(1);
       PullRequestMergedEvent event = (PullRequestMergedEvent) eventCaptor.getValue();
       assertThat(event.getRepository()).isSameAs(REPOSITORY);
@@ -592,6 +606,21 @@ class DefaultPullRequestServiceTest {
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {
-    return new PullRequest(id, "source", "target", "pr", "description", null, creationDate, lastModified, OPEN, emptySet(), new HashMap<>(), "", "", emptySet(), null, false, Collections.emptyList());
+    PullRequest pullRequest = new PullRequest();
+    pullRequest.setId(id);
+    pullRequest.setSource("source");
+    pullRequest.setTarget("target");
+    pullRequest.setTitle("pr");
+    pullRequest.setDescription("description");
+    pullRequest.setCreationDate(creationDate);
+    pullRequest.setLastModified(lastModified);
+    pullRequest.setStatus(OPEN);
+    pullRequest.setSubscriber(emptySet());
+    pullRequest.setReviewer(new HashMap<>());
+    pullRequest.setSourceRevision("");
+    pullRequest.setTargetRevision("");
+    pullRequest.setReviewMarks(emptySet());
+    pullRequest.setIgnoredMergeObstacles(emptyList());
+    return pullRequest;
   }
 }

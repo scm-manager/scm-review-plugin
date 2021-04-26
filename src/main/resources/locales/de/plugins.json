@@ -36,8 +36,15 @@
       },
       "description": "Beschreibung",
       "status": "Status",
+      "statusLabel": {
+        "OPEN": "OFFEN",
+        "MERGED": "GEMERGED",
+        "REJECTED": "ABGELEHNT"
+      },
       "id": "ID",
       "author": "Autor",
+      "mergedBy": "Gemerged von",
+      "rejectedBy": "Abgelehnt von",
       "date": "Datum",
       "reviewer": "Reviewers",
       "addReviewer": "Reviewer hinzufügen",
@@ -138,6 +145,7 @@
     "pullRequests": {
       "errorTitle": "Fehler",
       "errorSubtitle": "Unbekannter Pull Request Fehler",
+      "forbidden": "Es fehlen Berechtigungen zum Lesen der Pull Requests!",
       "createButton": "Pull Request erstellen"
     },
     "comment": {

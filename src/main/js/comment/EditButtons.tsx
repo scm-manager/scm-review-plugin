@@ -43,6 +43,7 @@ const EditButtons: FC<Props> = ({ comment, onSubmit, onCancel, changed }) => {
         message: t("scm-review-plugin.comment.confirmCancelUpdateAlert.message"),
         buttons: [
           {
+            className: "is-outlined",
             label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.submit"),
             onClick: onCancel
           },

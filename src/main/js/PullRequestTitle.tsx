@@ -21,33 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.comment.service;
 
-import java.time.Instant;
+import React, {FC} from "react";
+import {PullRequest} from "./types/PullRequest";
+import { useBinder } from "@scm-manager/ui-extensions";
+import { SplitAndReplace, Replacement } from "@scm-manager/ui-components";
 
-public class Reply extends BasicComment {
+type Props = {
+  pullRequest: PullRequest;
+};
 
-  private boolean systemReply = false;
+const PullRequestTitle: FC<Props> = ({pullRequest}) => {
+  const binder = useBinder();
+  const value = pullRequest.title || "";
 
-  public boolean isSystemReply() {
-    return systemReply;
-  }
+  const replacements: ((pullRequest: PullRequest, value: string) => Replacement[])[] = binder.getExtensions(
+    "reviewPlugin.pullrequest.title.tokens",
+    {
+      pullRequest,
+      value
+    }
+  );
 
-  public void setSystemReply(boolean systemReply) {
-    this.systemReply = systemReply;
-  }
+  return <SplitAndReplace text={value} replacements={replacements.flatMap(r => r(pullRequest, value))} />;
+};
 
-  public static Reply createReply(String id, String text, String author) {
-    Reply comment = new Reply();
-    comment.setId(id);
-    comment.setComment(text);
-    comment.setAuthor(author);
-    comment.setDate(Instant.now());
-    return comment;
-  }
-
-  @Override
-  public Reply clone() {
-    return (Reply) super.clone();
-  }
-}
+export default PullRequestTitle;

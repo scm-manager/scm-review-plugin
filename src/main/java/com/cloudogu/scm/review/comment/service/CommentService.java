@@ -252,6 +252,7 @@ public class CommentService {
         replyWithParent -> replyWithParent.execute(
           (parent, reply) -> {
             PermissionCheck.checkModifyComment(repository, reply);
+            doThrow().violation("Must not delete system reply").when(reply.isSystemReply());
             parent.removeReply(reply);
             getCommentStore(repository).update(pullRequestId, parent);
             eventBus.post(new ReplyEvent(repository, pullRequest, null, reply, parent, HandlerEventType.DELETE));

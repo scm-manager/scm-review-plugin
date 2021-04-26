@@ -34,4 +34,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @EqualsAndHashCode
 public class ReplyDto extends BasicCommentDto {
+  private boolean systemReply;
 }

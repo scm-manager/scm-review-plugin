@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.9.0 - 2021-04-22
+### Added
+- System replies which are not modifiable nor deletable ([#130](https://github.com/scm-manager/scm-review-plugin/pull/130)
+- Show pull request reviser for merged/rejected pull requests ([#132](https://github.com/scm-manager/scm-review-plugin/pull/132))
+
+### Changed
+- Make pull request enrichable by embedded objects ([#130](https://github.com/scm-manager/scm-review-plugin/pull/130)
+
+### Fixed
+- Prevent collapsed diffs from reopen on page refocus ([#131](https://github.com/scm-manager/scm-review-plugin/pull/131))
+- Show forbidden notification if there is no read permission ([#133](https://github.com/scm-manager/scm-review-plugin/pull/133))
+
+## 2.8.0 - 2021-04-07
+### Added
+- Enable anchor links for pull request comments ([#127](https://github.com/scm-manager/scm-review-plugin/pull/127))
+- ExtensionPoint to modify title ([#129](https://github.com/scm-manager/scm-review-plugin/pull/129))
+
+### Fixed
+- Collapse of file in diff when adding comment ([#126](https://github.com/scm-manager/scm-review-plugin/pull/126))
+- Correct styling of modal footer and capitalize titles ([#128](https://github.com/scm-manager/scm-review-plugin/pull/128))
+
 ## 2.7.1 - 2021-03-26
 ### Fixed
 - Path for open api spec ([#123](https://github.com/scm-manager/scm-review-plugin/pull/123))

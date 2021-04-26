@@ -24,6 +24,7 @@
 package com.cloudogu.scm.review.pullrequest.dto;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
@@ -44,6 +45,8 @@ import java.util.Set;
 public class PullRequestDto extends HalRepresentation {
   private String id;
   private DisplayedUserDto author;
+  private DisplayedUserDto reviser;
+  private Instant closeDate;
   @NotBlank
   private String source;
   @NotBlank
@@ -62,7 +65,7 @@ public class PullRequestDto extends HalRepresentation {
   private boolean emergencyMerged;
   private List<String> ignoredMergeObstacles;
 
-  public PullRequestDto(Links links) {
-    super(links);
+  public PullRequestDto(Links links, Embedded embedded) {
+    super(links, embedded);
   }
 }

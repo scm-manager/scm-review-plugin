@@ -225,6 +225,7 @@ class PullRequestComment extends React.Component<Props, State> {
       message: t("scm-review-plugin.comment.confirmDeleteAlert.message"),
       buttons: [
         {
+          className: "is-outlined",
           label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
           onClick: () => this.delete()
         },
@@ -267,6 +268,7 @@ class PullRequestComment extends React.Component<Props, State> {
       message: t(translationKey + ".message"),
       buttons: [
         {
+          className: "is-outlined",
           label: t(translationKey + ".submit"),
           onClick: () => this.executeTransition(transition)
         },
@@ -390,7 +392,7 @@ class PullRequestComment extends React.Component<Props, State> {
       <>
         {contextModalOpen && <ContextModal comment={comment} onClose={this.onClose} />}
         <CommentSpacingWrapper isChildComment={!!parent}>
-          <article className="media">
+          <article id={`comment-${comment.id}`} className="media">
             <div className="media-content is-clipped content">
               <p>
                 <LinkWithInheritColor onClick={this.toggleCollapse} title={collapseTitle}>

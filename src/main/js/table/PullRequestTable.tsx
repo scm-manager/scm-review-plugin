@@ -40,7 +40,7 @@ const StyledTable = styled(Table)`
   td {
     word-break: break-all;
   }
-`
+`;
 
 const TodoTag = styled(Tag)`
   margin-left: 0.5em;
@@ -105,7 +105,7 @@ class PullRequestTable extends React.Component<Props> {
             <Tag
               className="is-medium"
               color={evaluateTagColor(row)}
-              label={row.status}
+              label={t("scm-review-plugin.pullRequest.statusLabel." + row.status)}
               icon={row.emergencyMerged ? "exclamation-triangle" : undefined}
             />
           )}

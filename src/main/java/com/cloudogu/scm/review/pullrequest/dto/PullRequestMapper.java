@@ -70,6 +70,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
+import static de.otto.edison.hal.Embedded.embeddedBuilder;
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.stream.Collectors.toList;
@@ -93,7 +94,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
   @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")
-  @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
+  @Mapping(target = "author", source = "author", qualifiedByName = "mapUser")
+  @Mapping(target = "reviser", source = "reviser", qualifiedByName = "mapUser")
   @Mapping(target = "markedAsReviewed", ignore = true)
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
@@ -132,12 +134,12 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .orElse(DisplayUser.from(new User(entry.getKey(), entry.getKey(), null)));
   }
 
-  @Named("mapAuthor")
-  DisplayedUserDto mapAuthor(String authorId) {
+  @Named("mapUser")
+  DisplayedUserDto mapUser(String authorId) {
     return userDisplayManager.get(authorId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(authorId, authorId, null));
   }
 
-  String mapAuthor(DisplayedUserDto author) {
+  String mapUser(DisplayedUserDto author) {
     if (author == null) {
       return null;
     } else {
@@ -224,8 +226,9 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     linksBuilder.single(link("sourceBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getSource())));
     linksBuilder.single(link("targetBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getTarget())));
 
-    applyEnrichers(new EdisonHalAppender(linksBuilder, new Embedded.Builder()), pullRequest, repository);
-    return new PullRequestDto(linksBuilder.build());
+    Embedded.Builder embeddedBuilder = embeddedBuilder();
+    applyEnrichers(new EdisonHalAppender(linksBuilder, embeddedBuilder), pullRequest, repository);
+    return new PullRequestDto(linksBuilder.build(), embeddedBuilder.build());
   }
 
   private void appendMergeStrategyLinks(Links.Builder linksBuilder, Repository repository, PullRequest pullRequest) {
