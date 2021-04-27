@@ -58,6 +58,7 @@ import sonia.scm.repository.api.MergeStrategyNotSupportedException;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.DisplayUser;
+import sonia.scm.user.EMail;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
@@ -66,6 +67,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
@@ -112,13 +114,16 @@ class MergeServiceTest {
   @Mock
   private UserDisplayManager userDisplayManager;
 
+  @Mock
+  private EMail email;
+
   private final Set<MergeGuard> mergeGuards = new HashSet<>();
 
   private MergeService service;
 
   @BeforeEach
   void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, internalMergeSwitch, userDisplayManager);
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, internalMergeSwitch, userDisplayManager, email);
     lenient().doAnswer(invocation -> {
       invocation.<Runnable>getArgument(0).run();
       return null;
@@ -422,20 +427,25 @@ class MergeServiceTest {
 
   @Test
   void shouldCreateCommitMessageForSquashWithAuthorFromPullRequest() throws IOException {
-    DisplayUser prAuthor = DisplayUser.from(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
-    when(userDisplayManager.get("zaphod")).thenReturn(of(prAuthor));
+    User user = mockUser("Phil", "Phil Groundhog", "phil@groundhog.com");
+    when(email.getMailOrFallback(user)).thenReturn("phil@groundhog.com");
+
+    DisplayUser currentUser = DisplayUser.from(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
+    when(userDisplayManager.get("zaphod")).thenReturn(of(currentUser));
+
     when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
     when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
     PullRequest pullRequest = createPullRequest();
     pullRequest.setAuthor("zaphod");
     when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
+    when(userDisplayManager.get("zaphod")).thenReturn(Optional.of(currentUser));
 
-    Person author = new Person("Philip", "phil@groundhog.com");
+    Person author = new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.com");
 
     ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
       new Changeset("1", 1L, author, "first commit"),
       new Changeset("2", 2L, author, "second commit\nwith multiple lines"),
-      new Changeset("3", 3L, author, "third commit")
+      new Changeset("3", 3L, new Person("Arthur", "dent@hitchhiker.com"), "third commit")
     ));
 
     when(logCommandBuilder.getChangesets()).thenReturn(changesets);
@@ -443,29 +453,33 @@ class MergeServiceTest {
     assertThat(commitDefaults.getCommitMessage()).isEqualTo("Squash commits of branch squash:\n" +
       "\n" +
       "- first commit\n" +
-      "  Author: Philip <phil@groundhog.com>\n" +
+      "\n" +
       "- second commit\n" +
       "with multiple lines\n" +
       "\n" +
-      "Author: Philip <phil@groundhog.com>\n" +
-      "\n" +
       "- third commit\n" +
-      "  Author: Philip <phil@groundhog.com>\n"
-    );
+      "\n" +
+      "\n" +
+      "Author: Zaphod Beeblebrox <zaphod@hitchhiker.com>" +
+      "\nCommitted-by: Phil Groundhog <phil@groundhog.com>" +
+      "\nCo-authored-by: Arthur <dent@hitchhiker.com>");
     assertThat(commitDefaults.getCommitAuthor())
       .usingRecursiveComparison()
-      .isEqualTo(prAuthor);
+      .isEqualTo(currentUser);
   }
 
   @Test
   void shouldCreateCommitMessageForSquashWithFallbackForMissingAuthorFromPullRequest() throws IOException {
-    mockUser("trillian", "Tricia McMillan", "tricia@hitchhiker.com");
+    User user = mockUser("trillian", "Tricia McMillan", "tricia@hitchhiker.com");
     when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
     when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
     PullRequest pullRequest = createPullRequest();
+    pullRequest.setAuthor("trillian");
+    when(userDisplayManager.get("trillian")).thenReturn(Optional.of(DisplayUser.from(user)));
     when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
     Person author = new Person("Philip", "phil@groundhog.com");
+    when(userDisplayManager.get("Philip")).thenReturn(Optional.of(DisplayUser.from(new User("Philip", "Philip Groundhog", "phil@groundhog.com"))));
 
     ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
       new Changeset("1", 1L, author, "first commit"),
@@ -478,14 +492,14 @@ class MergeServiceTest {
     assertThat(commitDefaults.getCommitMessage()).isEqualTo("Squash commits of branch squash:\n" +
       "\n" +
       "- first commit\n" +
-      "  Author: Philip <phil@groundhog.com>\n" +
+      "\n" +
       "- second commit\n" +
       "with multiple lines\n" +
       "\n" +
-      "Author: Philip <phil@groundhog.com>\n" +
-      "\n" +
       "- third commit\n" +
-      "  Author: Philip <phil@groundhog.com>\n"
+      "\n\n" +
+      "Author: Tricia McMillan <tricia@hitchhiker.com>" +
+      "\nCo-authored-by: Philip Groundhog <phil@groundhog.com>"
     );
     assertThat(commitDefaults.getCommitAuthor())
       .usingRecursiveComparison()
@@ -568,8 +582,10 @@ class MergeServiceTest {
     when(branchesCommandBuilder.getBranches()).thenReturn(branches);
   }
 
-  private OngoingStubbing<User> mockUser(String name, String displayName, String mail) {
-    return when(subject.getPrincipals().oneByType(User.class)).thenReturn(new User(name, displayName, mail));
+  private User mockUser(String name, String displayName, String mail) {
+    User user = new User(name, displayName, mail);
+    when(subject.getPrincipals().oneByType(User.class)).thenReturn(user);
+    return user;
   }
 
   private static class TestMergeObstacle implements MergeObstacle {

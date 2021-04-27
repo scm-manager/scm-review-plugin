@@ -42,6 +42,7 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.spi.MergeConflictResult;
 import sonia.scm.user.DisplayUser;
+import sonia.scm.user.EMail;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
@@ -80,14 +81,16 @@ public class MergeService {
   private final Collection<MergeGuard> mergeGuards;
   private final InternalMergeSwitch internalMergeSwitch;
   private final UserDisplayManager userDisplayManager;
+  private final EMail email;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, InternalMergeSwitch internalMergeSwitch, UserDisplayManager userDisplayManager) {
+  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, InternalMergeSwitch internalMergeSwitch, UserDisplayManager userDisplayManager, EMail email) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
     this.mergeGuards = mergeGuards;
     this.internalMergeSwitch = internalMergeSwitch;
     this.userDisplayManager = userDisplayManager;
+    this.email = email;
   }
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy, boolean emergency) {
@@ -203,7 +206,7 @@ public class MergeService {
 
   public DisplayUser determineDefaultAuthor(PullRequest pullRequest, MergeStrategy strategy) {
     if (strategy == null) {
-      return currentUser();
+      return currentDisplayUser();
     }
     switch (strategy) {
       case SQUASH:
@@ -211,13 +214,13 @@ public class MergeService {
       case FAST_FORWARD_IF_POSSIBLE:
       case MERGE_COMMIT:
       default:
-        return currentUser();
+        return currentDisplayUser();
     }
   }
 
   private DisplayUser determineSquashAuthor(PullRequest pullRequest) {
     return userDisplayManager.get(pullRequest.getAuthor())
-      .orElseGet(MergeService::currentUser);
+      .orElseGet(MergeService::currentDisplayUser);
   }
 
   public boolean isCommitMessageDisabled(MergeStrategy strategy) {
@@ -239,20 +242,16 @@ public class MergeService {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
         try {
+
           StringBuilder builder = new StringBuilder();
+          Set<Person> contributors = new HashSet<>();
           getChangesetsFromLogCommand(pullRequest, repositoryService)
             .forEach(c -> {
-              builder.append("- ").append(c.getDescription()).append('\n');
-              if (c.getDescription().contains("\n")) {
-                builder.append('\n');
-              } else {
-                builder.append("  ");
-              }
-              builder.append("Author: ").append(c.getAuthor().getName()).append(" <").append(c.getAuthor().getMail()).append(">\n");
-              if (c.getDescription().contains("\n")) {
-                builder.append('\n');
-              }
+              contributors.add(c.getAuthor());
+              builder.append("- ").append(c.getDescription()).append("\n\n");
             });
+          appendSquashContributors(builder, pullRequest, contributors);
+
           return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString());
         } catch (IOException e) {
           throw new InternalRepositoryException(entity("Branch", pullRequest.getSource()).in(repositoryService.getRepository()),
@@ -262,6 +261,38 @@ public class MergeService {
         return createDefaultMergeCommitMessage(pullRequest);
       }
     }
+  }
+
+  private void appendSquashContributors(StringBuilder builder, PullRequest pullRequest, Set<Person> contributors) {
+    userDisplayManager.get(pullRequest.getAuthor()).ifPresent(prAuthor -> {
+        User currentUser = currentUser();
+        String committerMail = email.getMailOrFallback(currentUser);
+        builder.append("\nAuthor: ").append(prAuthor.getDisplayName()).append(" <").append(prAuthor.getMail()).append(">");
+        if (!prAuthor.getDisplayName().equals(currentUser.getDisplayName())) {
+          builder.append("\nCommitted-by: ").append(currentUser.getDisplayName());
+          builder.append(" <").append(committerMail).append(">");
+        }
+        appendCoAuthors(builder, contributors, prAuthor);
+      }
+    );
+  }
+
+  private void appendCoAuthors(StringBuilder builder, Set<Person> contributors, DisplayUser prAuthor) {
+    for (Person contributor : contributors) {
+      Optional<DisplayUser> prAuthorDisplayUser = userDisplayManager.get(prAuthor.getId());
+      if (prAuthorDisplayUser.isPresent() && !prAuthorDisplayUser.get().getDisplayName().equals(contributor.getName())) {
+        Optional<DisplayUser> contributorDisplayUser = userDisplayManager.get(contributor.getName());
+        if (contributorDisplayUser.isPresent()) {
+          appendCoAuthor(builder, contributorDisplayUser.get().getDisplayName(), contributor.getMail());
+        } else {
+          appendCoAuthor(builder, contributor.getName(), contributor.getMail());
+        }
+      }
+    }
+  }
+
+  private void appendCoAuthor(StringBuilder builder, String name, String mail) {
+    builder.append("\nCo-authored-by: ").append(name).append(" <").append(mail).append(">");
   }
 
   private List<Changeset> getChangesetsFromLogCommand(PullRequest pullRequest, RepositoryService repositoryService) throws IOException {
@@ -307,7 +338,7 @@ public class MergeService {
     if (shouldAppendTrailers(strategy, approvers)) {
       builder.append("\n\n");
 
-      String merger = getSubject().getPrincipals().oneByType(User.class).getDisplayName();
+      String merger = currentDisplayUser().getDisplayName();
       appendSquashCoAuthorsToCommitMessage(repositoryService, pullRequest, strategy, merger, builder);
       appendApproversToCommitMessage(builder, approvers, merger);
     }
@@ -315,7 +346,6 @@ public class MergeService {
   }
 
   private void appendSquashCoAuthorsToCommitMessage(RepositoryService repositoryService, PullRequest pullRequest, MergeStrategy strategy, String merger, StringBuilder builder) {
-
     if (strategy == MergeStrategy.SQUASH) {
       List<Changeset> changesets = getAllChangesetsForBranch(repositoryService, pullRequest);
       Set<String> appendedCoAuthorMails = new HashSet<>();
@@ -397,9 +427,14 @@ public class MergeService {
     return mergeCommand;
   }
 
-  private static DisplayUser currentUser() {
-    return DisplayUser.from(getSubject().getPrincipals().oneByType(User.class));
+  private static DisplayUser currentDisplayUser() {
+    return DisplayUser.from(currentUser());
   }
+
+  private static User currentUser() {
+    return getSubject().getPrincipals().oneByType(User.class);
+  }
+
 
   public static class CommitDefaults {
     private final String commitMessage;
