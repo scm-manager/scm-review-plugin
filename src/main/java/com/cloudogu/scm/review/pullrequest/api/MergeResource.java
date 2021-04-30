@@ -40,6 +40,7 @@ import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.spi.MergeConflictResult;
+import sonia.scm.user.DisplayUser;
 import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
@@ -55,6 +56,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
+
+import static java.lang.String.format;
 
 @Path(MergeResource.MERGE_PATH_V2)
 public class MergeResource {
@@ -228,7 +231,7 @@ public class MergeResource {
     @PathParam("pullRequestId") String pullRequestId,
     @QueryParam("strategy") MergeStrategy strategy
   ) {
-    return service.createDefaultCommitMessage(new NamespaceAndName(namespace, name), pullRequestId, strategy);
+    return service.createCommitDefaults(new NamespaceAndName(namespace, name), pullRequestId, strategy).getCommitMessage();
   }
 
   @GET
@@ -261,10 +264,13 @@ public class MergeResource {
     @PathParam("pullRequestId") String pullRequestId,
     @QueryParam("strategy") MergeStrategy strategy
   ) {
+    MergeService.CommitDefaults commitDefaults = service.createCommitDefaults(new NamespaceAndName(namespace, name), pullRequestId, strategy);
+    DisplayUser commitAuthor = commitDefaults.getCommitAuthor();
     return new MergeStrategyInfoDto(
       service.isCommitMessageDisabled(strategy),
-      service.createDefaultCommitMessage(new NamespaceAndName(namespace, name), pullRequestId, strategy),
-      service.createMergeCommitMessageHint(strategy)
+      commitDefaults.getCommitMessage(),
+      service.createMergeCommitMessageHint(strategy),
+      format("%s <%s>", commitAuthor.getDisplayName(), commitAuthor.getMail())
     );
   }
 }

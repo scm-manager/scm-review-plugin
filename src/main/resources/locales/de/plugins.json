@@ -106,6 +106,7 @@
           "help": "Nach einem erfolgreichen Merge wird der Source-Branch entfernt"
         },
         "commitMessage": "Bitte Commit Nachricht eingeben",
+        "commitAuthor": "Autor",
         "resetMessage": "Nachricht zurücksetzen",
         "commitMessageHint": {
           "FAST_FORWARD_IF_POSSIBLE": "Diese Nachricht wird nur genutzt, wenn Fast Forward nicht möglich ist."

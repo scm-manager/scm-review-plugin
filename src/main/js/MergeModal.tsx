@@ -199,6 +199,7 @@ class MergeModal extends React.Component<Props, State> {
           loading={loadingDefaultMessage}
           commitMessageDisabled={commitStrategyInfos[mergeStrategy]?.commitMessageDisabled}
           commitMessageHint={commitStrategyInfos[mergeStrategy]?.commitMessageHint}
+          commitAuthor={commitStrategyInfos[mergeStrategy]?.commitAuthor}
         />
         {mergeFailed && (
           <>

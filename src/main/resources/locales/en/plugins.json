@@ -106,6 +106,7 @@
           "help": "Source branch will be deleted after successful merge"
         },
         "commitMessage": "Please insert your commit message",
+        "commitAuthor": "Author",
         "resetMessage": "Reset message",
         "commitMessageHint": {
           "FAST_FORWARD_IF_POSSIBLE": "This message will only be used, when fast forward is not possible."

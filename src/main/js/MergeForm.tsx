@@ -35,6 +35,7 @@ type Props = WithTranslation & {
   commitMessage: string;
   commitMessageDisabled?: boolean;
   commitMessageHint?: string;
+  commitAuthor?: string;
   onChangeCommitMessage: (message: string) => void;
   onResetCommitMessage: () => void;
   shouldDeleteSourceBranch: boolean;
@@ -74,8 +75,14 @@ class MergeForm extends React.Component<Props> {
       onChangeDeleteSourceBranch,
       onResetCommitMessage,
       commitMessageHint,
+      commitAuthor,
       t
     } = this.props;
+
+    const renderCommitAuthor = (author: string) =>
+      <span className="mb-2">
+        <strong>{t("scm-review-plugin.showPullRequest.mergeModal.commitAuthor")}</strong> {author}
+      </span>;
 
     const commitMessageElement = this.isCommitMessageVisible() && (
       <>
@@ -94,7 +101,7 @@ class MergeForm extends React.Component<Props> {
           </CommitMessageInfo>
         )}
         <MarginBottom>
-          <CommitAuthor />
+          {commitAuthor? renderCommitAuthor(commitAuthor): <CommitAuthor />}
         </MarginBottom>
         <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage} />
         <hr />
