@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Set pull request author as commit author for squash commits via SCMM ([#134](https://github.com/scm-manager/scm-review-plugin/pull/134))
 
+### Fixed
+- Fix pull request comments not opening/closing unless the window is refocused ([#135](https://github.com/scm-manager/scm-review-plugin/pull/135))
+
 ## 2.9.0 - 2021-04-22
 ### Added
 - System replies which are not modifiable nor deletable ([#130](https://github.com/scm-manager/scm-review-plugin/pull/130)
