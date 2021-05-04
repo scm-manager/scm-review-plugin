@@ -49,12 +49,9 @@ const reviewSupportedPredicate = (props: object) => {
 
 const NewPullRequestRoute = props => {
   return (
-    <Route
-      path={`${props.url}/pull-requests/add`}
-      render={() => (
-        <Create repository={props.repository} userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)} />
-      )}
-    />
+    <Route path={`${props.url}/pull-requests/add`}>
+      <Create repository={props.repository} userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)} />
+    </Route>
   );
 };
 
@@ -74,15 +71,12 @@ export function getUserAutoCompleteLink(indexLinks) {
 
 const ShowPullRequestRoute = props => {
   return (
-    <Route
-      path={`${props.url}/pull-request/:pullRequestNumber`}
-      render={() => (
-        <SinglePullRequest
-          repository={props.repository}
-          userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)}
-        />
-      )}
-    />
+    <Route path={`${props.url}/pull-request/:pullRequestNumber`}>
+      <SinglePullRequest
+        repository={props.repository}
+        userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)}
+      />
+    </Route>
   );
 };
 
@@ -102,7 +96,11 @@ const PullRequestNavLink = ({ url }) => {
 binder.bind("repository.navigation", PullRequestNavLink, reviewSupportedPredicate);
 
 const ShowPullRequestsRoute = ({ url, repository }) => {
-  return <Route path={`${url}/pull-requests/`} render={() => <PullRequestList repository={repository} />} exact />;
+  return (
+    <Route path={`${url}/pull-requests/`} exact>
+      <PullRequestList repository={repository} />
+    </Route>
+  );
 };
 
 binder.bind("repository.route", ShowPullRequestsRoute);
@@ -113,7 +111,12 @@ binder.bind("repos.branch-details.information", ({ repository, branch }) => (
 
 binder.bind("repository.card.quickLink", RepositoryPullRequestCardLink, reviewSupportedPredicate);
 
-cfgBinder.bindRepositorySetting("/review", "scm-review-plugin.navLink.pullRequest", "pullRequestConfig", RepositoryConfig);
+cfgBinder.bindRepositorySetting(
+  "/review",
+  "scm-review-plugin.navLink.pullRequest",
+  "pullRequestConfig",
+  RepositoryConfig
+);
 cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink.pullRequest", "pullRequestConfig", GlobalConfig);
 
 cfgBinder.bindRepositorySetting("/workflow", "scm-review-plugin.navLink.workflow", "workflowConfig", RepoEngineConfig);
