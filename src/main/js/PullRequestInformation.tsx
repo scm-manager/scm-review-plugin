@@ -23,7 +23,7 @@
  */
 import React from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { urls, Icon } from "@scm-manager/ui-components";
+import { Icon, urls } from "@scm-manager/ui-components";
 import { WithTranslation, withTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
@@ -138,13 +138,9 @@ class PullRequestInformation extends React.Component<Props> {
         </li>
       );
       routeConflicts = !mergeHasNoConflict && (
-        <Route
-          path={`${baseURL}/conflicts`}
-          render={() => (
-            <MergeConflicts repository={repository} pullRequest={pullRequest} source={source} target={target} />
-          )}
-          exact
-        />
+        <Route path={`${baseURL}/conflicts`} exact>
+          <MergeConflicts repository={repository} pullRequest={pullRequest} source={source} target={target} />
+        </Route>
       );
       conflictsTab = !mergeHasNoConflict && (
         <li className={this.navigationClass("conflicts")}>
@@ -158,7 +154,9 @@ class PullRequestInformation extends React.Component<Props> {
     const routes = (
       <Switch>
         <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
-        <Route path={`${baseURL}/comments`} render={() => <RootComments pullRequest={pullRequest} />} exact />
+        <Route path={`${baseURL}/comments`} exact>
+          <RootComments pullRequest={pullRequest} />
+        </Route>
         {routeChangeset}
         {routeChangesetPagination}
         {routeDiff}

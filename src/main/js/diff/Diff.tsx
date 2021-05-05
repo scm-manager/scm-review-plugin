@@ -83,7 +83,7 @@ class Diff extends React.Component<Props, State> {
   }
 
   shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>) {
-    return this.state.collapsed !== nextState.collapsed;
+    return this.state.collapsed !== nextState.collapsed || this.props.diffState !== nextProps.diffState;
   }
 
   render() {

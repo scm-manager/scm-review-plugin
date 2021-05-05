@@ -114,29 +114,22 @@ class SinglePullRequest extends React.Component<Props, State> {
 
     return (
       <Switch>
-        <Route
-          component={() => (
-            <Edit
-              repository={repository}
-              pullRequest={pullRequest}
-              userAutocompleteLink={userAutocompleteLink}
-              fetchPullRequest={this.fetchPullRequest}
-            />
-          )}
-          path={`${match.url}/edit`}
-          exact
-        />
-        <Route
-          component={() => (
-            <PullRequestDetails
-              repository={repository}
-              pullRequest={pullRequest}
-              fetchReviewer={this.fetchReviewer}
-              fetchPullRequest={this.fetchPullRequest}
-            />
-          )}
-          path={`${match.url}`}
-        />
+        <Route path={`${match.url}/edit`} exact>
+          <Edit
+            repository={repository}
+            pullRequest={pullRequest}
+            userAutocompleteLink={userAutocompleteLink}
+            fetchPullRequest={this.fetchPullRequest}
+          />
+        </Route>
+        <Route path={`${match.url}`}>
+          <PullRequestDetails
+            repository={repository}
+            pullRequest={pullRequest}
+            fetchReviewer={this.fetchReviewer}
+            fetchPullRequest={this.fetchPullRequest}
+          />
+        </Route>
       </Switch>
     );
   }
