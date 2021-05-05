@@ -62,6 +62,6 @@
         "fetch-mock": "^8.0.0",
         "jest": "^24.9.0",
         "node-fetch": "^2.6.1",
-        "@scm-manager/plugin-scripts": "1.0.1"
+        "@scm-manager/plugin-scripts": "^1.0.3"
     }
 }
