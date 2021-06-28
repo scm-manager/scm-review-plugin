@@ -28,9 +28,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
-import com.cloudogu.scm.review.events.Channel;
-import com.cloudogu.scm.review.events.ChannelRegistry;
-import com.cloudogu.scm.review.events.Registration;
+import com.cloudogu.scm.review.events.ChannelId;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -48,6 +46,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
+import sonia.scm.sse.Channel;
+import sonia.scm.sse.ChannelRegistry;
+import sonia.scm.sse.Registration;
+import sonia.scm.sse.SseResponse;
 import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
@@ -368,6 +370,7 @@ public class PullRequestResource {
 
   @GET
   @Path("events")
+  @SseResponse
   @Operation(summary = "Register SSE", hidden = true)
   @Produces(MediaType.SERVER_SENT_EVENTS)
   public void events(@Context Sse sse, @Context SseEventSink eventSink, @BeanParam EventSubscriptionRequest request) {
@@ -375,11 +378,12 @@ public class PullRequestResource {
     PermissionCheck.checkRead(repository);
     PullRequest pullRequest = service.get(repository, request.getPullRequestId());
 
-    Channel channel = channelRegistry.channel(repository, pullRequest);
+    Channel channel = channelRegistry.channel(new ChannelId(repository, pullRequest));
     channel.register(new Registration(
+      request.getSessionId(),
       sse,
-      eventSink,
-      request.getSessionId()
+      eventSink
     ));
   }
+
 }

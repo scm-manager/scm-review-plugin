@@ -33,7 +33,6 @@ import com.cloudogu.scm.review.comment.service.InlineContext;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.MockedDiffLine;
 import com.cloudogu.scm.review.comment.service.Reply;
-import com.cloudogu.scm.review.events.ChannelRegistry;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
@@ -58,6 +57,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.sse.ChannelRegistry;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.RestDispatcher;
 
@@ -171,7 +171,7 @@ public class CommentRootResourceTest {
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
-    assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1/comments/1");
+    assertThat(response.getOutputHeaders().getFirst("Location")).hasToString("/v2/pull-requests/space/name/1/comments/1");
   }
 
   @Test

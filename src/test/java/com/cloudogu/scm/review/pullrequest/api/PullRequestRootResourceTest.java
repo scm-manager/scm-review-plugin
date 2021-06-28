@@ -30,7 +30,6 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Location;
-import com.cloudogu.scm.review.events.ChannelRegistry;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -73,6 +72,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.sse.ChannelRegistry;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
@@ -198,7 +198,7 @@ public class PullRequestRootResourceTest {
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
-    assertThat(response.getOutputHeaders().getFirst("Location").toString()).isEqualTo("/v2/pull-requests/space/name/1");
+    assertThat(response.getOutputHeaders().getFirst("Location")).hasToString("/v2/pull-requests/space/name/1");
     PullRequest pullRequest = pullRequestStoreCaptor.getValue();
     assertThat(pullRequest.getAuthor()).isEqualTo("user1");
   }

@@ -50,6 +50,9 @@ import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.security.SessionId;
+import sonia.scm.sse.Channel;
+import sonia.scm.sse.ChannelRegistry;
+import sonia.scm.sse.Message;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -94,61 +97,73 @@ class EventListenerTest {
 
   @Test
   void shouldBroadcastMessageForPullRequestEvent() {
+    bindSessionId("1-2-3");
+    PullRequestEvent event = createPullRequestEvent();
+
+    listener.handle(event);
+
+    verify(channel).broadcast(captor.capture());
+
+    assertMessageHasCorrectTypeAndName(PullRequestEvent.class);
+  }
+
+  @Test
+  void shouldSendSessionIdWithMessage() {
     SessionId sessionId = bindSessionId("1-2-3");
     PullRequestEvent event = createPullRequestEvent();
 
     listener.handle(event);
 
-    verify(channel).broadcast(eq(sessionId), captor.capture());
+    verify(channel).broadcast(captor.capture());
 
     assertMessageHasCorrectTypeAndName(PullRequestEvent.class);
+    assertThat(captor.getValue().getSender()).contains(sessionId);
   }
-
 
   @Test
   void shouldBroadcastPullRequestMergedEvent() {
-    SessionId sessionId = bindSessionId("1-2-3");
+    bindSessionId("1-2-3");
     PullRequestMergedEvent event = createPullRequestMergedEvent();
 
     listener.handle(event);
 
-    verify(channel).broadcast(eq(sessionId), captor.capture());
+    verify(channel).broadcast(captor.capture());
 
     assertMessageHasCorrectTypeAndName(PullRequestMergedEvent.class);
   }
 
   @Test
   void shouldBroadcastPullRequestRejectedEvent() {
-    SessionId sessionId = bindSessionId("1-2-3");
+    bindSessionId("1-2-3");
     PullRequestRejectedEvent event = createPullRequestRejectedEvent();
 
     listener.handle(event);
 
-    verify(channel).broadcast(eq(sessionId), captor.capture());
+    verify(channel).broadcast(captor.capture());
 
     assertMessageHasCorrectTypeAndName(PullRequestRejectedEvent.class);
   }
 
   @Test
   void shouldBroadcastPullRequestUpdatedEvent() {
-    SessionId sessionId = bindSessionId("1-2-3");
+    bindSessionId("1-2-3");
     PullRequestUpdatedEvent event = createPullRequestUpdatedEvent();
 
     listener.handle(event);
 
-    verify(channel).broadcast(eq(sessionId), captor.capture());
+    verify(channel).broadcast(captor.capture());
 
     assertMessageHasCorrectTypeAndName(PullRequestUpdatedEvent.class);
   }
 
   @Test
   void shouldBroadcastMessageForCommentEvent() {
-    SessionId sessionId = bindSessionId("4-2");
+    bindSessionId("4-2");
     CommentEvent event = createCommentEvent();
 
     listener.handle(event);
 
-    verify(channel).broadcast(eq(sessionId), captor.capture());
+    verify(channel).broadcast(captor.capture());
 
     assertMessageHasCorrectTypeAndName(CommentEvent.class);
   }
@@ -160,7 +175,7 @@ class EventListenerTest {
 
     listener.handle(event);
 
-    verify(channel).broadcast(eq(sessionId), captor.capture());
+    verify(channel).broadcast(captor.capture());
 
     assertMessageHasCorrectTypeAndName(ReplyEvent.class);
   }
@@ -175,18 +190,22 @@ class EventListenerTest {
     Repository repository = RepositoryTestData.createHeartOfGold();
     PullRequest pullRequest = TestData.createPullRequest();
 
-    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    mockChannel(repository, pullRequest);
 
     Reply reply = new Reply();
     reply.setId("c42");
     return new ReplyEvent(repository, pullRequest, reply, reply, null, HandlerEventType.MODIFY);
   }
 
+  private void mockChannel(Repository repository, PullRequest pullRequest) {
+    when(registry.channel(new ChannelId(repository, pullRequest))).thenReturn(channel);
+  }
+
   private CommentEvent createCommentEvent() {
     Repository repository = RepositoryTestData.createHeartOfGold();
     PullRequest pullRequest = TestData.createPullRequest();
 
-    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    mockChannel(repository, pullRequest);
 
     Comment comment = new Comment();
     comment.setId("c42");
@@ -197,7 +216,7 @@ class EventListenerTest {
     Repository repository = RepositoryTestData.createHeartOfGold();
     PullRequest pullRequest = TestData.createPullRequest();
 
-    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    mockChannel(repository, pullRequest);
 
     return new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE);
   }
@@ -205,7 +224,7 @@ class EventListenerTest {
   private PullRequestUpdatedEvent createPullRequestUpdatedEvent() {
     Repository repository = RepositoryTestData.createHeartOfGold();
     PullRequest pullRequest = TestData.createPullRequest();
-    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    mockChannel(repository, pullRequest);
     return new PullRequestUpdatedEvent(
       repository,
       pullRequest
@@ -215,7 +234,7 @@ class EventListenerTest {
   private PullRequestMergedEvent createPullRequestMergedEvent() {
     Repository repository = RepositoryTestData.createHeartOfGold();
     PullRequest pullRequest = TestData.createPullRequest();
-    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    mockChannel(repository, pullRequest);
     return new PullRequestMergedEvent(
       repository,
       pullRequest
@@ -225,7 +244,7 @@ class EventListenerTest {
   private PullRequestRejectedEvent createPullRequestRejectedEvent() {
     Repository repository = RepositoryTestData.createHeartOfGold();
     PullRequest pullRequest = TestData.createPullRequest();
-    when(registry.channel(repository, pullRequest)).thenReturn(channel);
+    mockChannel(repository, pullRequest);
     return new PullRequestRejectedEvent(
       repository,
       pullRequest,

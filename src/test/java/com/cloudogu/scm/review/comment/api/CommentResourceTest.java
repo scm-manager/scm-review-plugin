@@ -28,7 +28,6 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.Reply;
-import com.cloudogu.scm.review.events.ChannelRegistry;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
@@ -45,6 +44,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.sse.ChannelRegistry;
 import sonia.scm.web.RestDispatcher;
 
 import javax.servlet.http.HttpServletResponse;
