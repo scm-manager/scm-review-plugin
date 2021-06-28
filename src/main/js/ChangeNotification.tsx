@@ -33,20 +33,26 @@ type HandlerProps = {
 };
 
 const EventNotificationHandler: FC<HandlerProps> = ({ url, reload }) => {
-  const [event, setEvent] = useState<any>();
+  const [event, setEvent] = useState<unknown>();
   useEffect(() => {
     return apiClient.subscribe(url, {
       pullRequest: setEvent
     });
   }, [url]);
   const { t } = useTranslation("plugins");
+
+  const reloadAndClose = () => {
+    reload();
+    setEvent(null);
+  };
+
   if (event) {
     return (
       <Toast type="warning" title={t("scm-review-plugin.changeNotification.title")}>
         <p>{t("scm-review-plugin.changeNotification.description")}</p>
         <p>{t("scm-review-plugin.changeNotification.modificationWarning")}</p>
         <ToastButtons>
-          <ToastButton icon="redo" onClick={reload}>
+          <ToastButton icon="redo" onClick={reloadAndClose}>
             {t("scm-review-plugin.changeNotification.buttons.reload")}
           </ToastButton>
           <ToastButton icon="times" onClick={() => setEvent(undefined)}>
