@@ -119,6 +119,7 @@ class Diff extends React.Component<Props, State> {
           annotationFactory={this.annotationFactory}
           onClick={this.onGutterClick}
           hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
+          refetchOnWindowFocus={false}
         />
       </StyledDiffWrapper>
     );

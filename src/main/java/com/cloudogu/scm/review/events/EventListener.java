@@ -33,6 +33,9 @@ import sonia.scm.EagerSingleton;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.SessionId;
+import sonia.scm.sse.Channel;
+import sonia.scm.sse.ChannelRegistry;
+import sonia.scm.sse.Message;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -52,11 +55,11 @@ class EventListener {
   @Subscribe
   public void handle(BasicPullRequestEvent event) {
     Channel channel = channel(event);
-    channel.broadcast(senderId(), message(event));
+    channel.broadcast(message(event));
   }
 
   private Message message(BasicPullRequestEvent event) {
-    return new Message(String.class, event.getClass().getName());
+    return new Message("pullRequest", String.class, event.getClass().getName(), senderId());
   }
 
   private SessionId senderId() {
@@ -70,6 +73,6 @@ class EventListener {
   }
 
   private Channel channel(Repository repository, PullRequest pullRequest) {
-    return registry.channel(repository, pullRequest);
+    return registry.channel(new ChannelId(repository, pullRequest));
   }
 }

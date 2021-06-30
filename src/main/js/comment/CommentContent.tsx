@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useMemo} from "react";
 import { Comment } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 import ReducedMarkdownView from "../ReducedMarkdownView";
@@ -34,17 +34,17 @@ type Props = {
 
 const CommentContent: FC<Props> = ({ comment }) => {
   const { t } = useTranslation("plugins");
-  const [message, setMessage] = useState(
-    comment.systemComment ? t("scm-review-plugin.comment.systemMessage." + comment.comment) : comment.comment
-  );
-  useEffect(() => {
-    let content = message;
+  const message = useMemo<string>(() => {
+    let content = comment.comment;
+    if (comment.systemComment) {
+      content = t(`scm-review-plugin.comment.systemMessage.${comment.comment}`);
+    }
     comment.mentions.forEach(m => {
       const matcher = new RegExp("@\\[" + m.id + "\\]", "g");
       content = content.replace(matcher, `[${m.displayName}](mailto:${m.mail})`);
     });
-    setMessage(content);
-  }, [comment]);
+    return content;
+  }, [t, comment.systemComment, comment.comment, comment.mentions]);
 
   return (
     <ReducedMarkdownView

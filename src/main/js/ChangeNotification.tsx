@@ -22,31 +22,44 @@
  * SOFTWARE.
  */
 import React, { FC, useEffect, useState } from "react";
-import { Link } from "@scm-manager/ui-types";
+import { Link, Repository } from "@scm-manager/ui-types";
 import { apiClient, Toast, ToastButtons, ToastButton } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "react-query";
+import { createDiffUrl } from "./pullRequest";
 
 type HandlerProps = {
   url: string;
+  diffUrl?: string;
   reload: () => void;
 };
 
-const EventNotificationHandler: FC<HandlerProps> = ({ url, reload }) => {
-  const [event, setEvent] = useState<any>();
+const EventNotificationHandler: FC<HandlerProps> = ({ url, diffUrl, reload }) => {
+  const queryClient = useQueryClient();
+  const [event, setEvent] = useState<unknown>();
   useEffect(() => {
     return apiClient.subscribe(url, {
       pullRequest: setEvent
     });
   }, [url]);
   const { t } = useTranslation("plugins");
+
+  const reloadAndClose = async () => {
+    if (diffUrl) {
+      await queryClient.invalidateQueries(["link", diffUrl]);
+    }
+    reload();
+    setEvent(null);
+  };
+
   if (event) {
     return (
       <Toast type="warning" title={t("scm-review-plugin.changeNotification.title")}>
         <p>{t("scm-review-plugin.changeNotification.description")}</p>
         <p>{t("scm-review-plugin.changeNotification.modificationWarning")}</p>
         <ToastButtons>
-          <ToastButton icon="redo" onClick={reload}>
+          <ToastButton icon="redo" onClick={reloadAndClose}>
             {t("scm-review-plugin.changeNotification.buttons.reload")}
           </ToastButton>
           <ToastButton icon="times" onClick={() => setEvent(undefined)}>
@@ -60,14 +73,19 @@ const EventNotificationHandler: FC<HandlerProps> = ({ url, reload }) => {
 };
 
 type Props = {
+  repository: Repository;
   pullRequest: PullRequest;
   reload: () => void;
 };
 
-const ChangeNotification: FC<Props> = ({ pullRequest, reload }) => {
+const ChangeNotification: FC<Props> = ({ repository, pullRequest, reload }) => {
   if (pullRequest._links.events) {
     const link = pullRequest._links.events as Link;
-    return <EventNotificationHandler url={link.href} reload={reload} />;
+    let diffLink;
+    if (pullRequest.source && pullRequest.target) {
+      diffLink = createDiffUrl(repository, pullRequest.source, pullRequest.target);
+    }
+    return <EventNotificationHandler url={link.href} diffUrl={diffLink} reload={reload} />;
   }
   return null;
 };

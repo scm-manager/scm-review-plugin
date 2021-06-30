@@ -395,7 +395,7 @@ class PullRequestDetails extends React.Component<Props, State> {
 
     return (
       <>
-        <ChangeNotification pullRequest={pullRequest} reload={this.props.fetchPullRequest} />
+        <ChangeNotification repository={repository} pullRequest={pullRequest} reload={this.props.fetchPullRequest} />
         <Container>
           <div className="media">
             <div className="media-content">
