@@ -109,8 +109,6 @@ binder.bind("repos.branch-details.information", ({ repository, branch }) => (
   <CreatePullRequestButton repository={repository} branch={branch} />
 ));
 
-binder.bind("repository.card.quickLink", RepositoryPullRequestCardLink, reviewSupportedPredicate);
-
 cfgBinder.bindRepositorySetting(
   "/review",
   "scm-review-plugin.navLink.pullRequest",
