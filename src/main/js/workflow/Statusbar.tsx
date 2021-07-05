@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import { PullRequest } from "../types/PullRequest";
-import { apiClient, ErrorNotification, Icon } from "@scm-manager/ui-components";
+import { ErrorNotification, Icon } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import classNames from "classnames";
-import { Result } from "../types/EngineConfig";
 import StatusModalView from "./StatusModalView";
+import { useStatusbar } from "./statusbar";
 
 type Props = {
   pullRequest: PullRequest;
@@ -54,29 +54,11 @@ const PaddingRightIcon = styled(Icon)`
 
 const Statusbar: FC<Props> = ({ pullRequest }) => {
   const [t] = useTranslation("plugins");
-  const [error, setError] = useState<undefined | Error>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState<Result[]>([]);
+  const { data, error, isLoading } = useStatusbar((pullRequest._links.workflowResult as Link).href);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const workflowResultHref = (pullRequest._links.workflowResult as Link).href;
-
-  useEffect(() => {
-    apiClient
-      .get(workflowResultHref)
-      .then(r => r.json())
-      .then(r => {
-        setResult(r.results);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err);
-        setLoading(false);
-      });
-  }, [workflowResultHref]);
-
   // no workflow rules configured
-  if (!loading && result?.length === 0) {
+  if (isLoading || !data || data?.results?.length === 0) {
     return null;
   }
 
@@ -84,7 +66,7 @@ const Statusbar: FC<Props> = ({ pullRequest }) => {
     return <ErrorNotification error={error} />;
   }
 
-  const failedRules = result?.filter(r => r.failed).length;
+  const failedRules = data.results.filter(r => r.failed).length;
   const failed = failedRules > 0;
   const color = failed ? "warning" : "success";
   const icon = failed ? "exclamation-triangle" : "check-circle";
@@ -95,7 +77,7 @@ const Statusbar: FC<Props> = ({ pullRequest }) => {
 
   return (
     <>
-      {modalOpen && <StatusModalView onClose={toggleModal} result={result} failed={failed} />}
+      {modalOpen && <StatusModalView onClose={toggleModal} result={data.results} failed={failed} />}
       <Notification
         className={classNames("media", `notification is-grey-lighter`, "has-cursor-pointer")}
         onClick={() => toggleModal()}
@@ -103,14 +85,16 @@ const Statusbar: FC<Props> = ({ pullRequest }) => {
         <PaddingRightIcon className="fa-lg" color={color} name={icon} />
         <span className="has-text-weight-bold">
           {t("scm-review-plugin.workflow.statusbar.rules", {
-            count: result && result.length
+            count: data?.results && data.results.length
           })}
         </span>
         <AngleRight className="fas fa-angle-right" />
         <span>
-          {failedRules === 0 ? t("scm-review-plugin.workflow.statusbar.noFailedRules") : t("scm-review-plugin.workflow.statusbar.failedRules", {
-            count: failedRules
-          })}
+          {failedRules === 0
+            ? t("scm-review-plugin.workflow.statusbar.noFailedRules")
+            : t("scm-review-plugin.workflow.statusbar.failedRules", {
+                count: failedRules
+              })}
         </span>
       </Notification>
     </>
