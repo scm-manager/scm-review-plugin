@@ -59,8 +59,6 @@ type Props = WithTranslation &
   RouteComponentProps & {
     repository: Repository;
     pullRequest: PullRequest;
-    fetchReviewer: () => void;
-    fetchPullRequest: () => void;
   };
 
 type State = {
