@@ -21,77 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
+import React, { FC } from "react";
 import { ErrorNotification } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
-import { getApproval, handleApproval } from "./pullRequest";
+import { useApproveReviewer, useDisapproveReviewer } from "./pullRequest";
 import ApprovalButton from "./ApprovalButton";
 import DisapprovalButton from "./DisapprovalButton";
-import { Link } from "@scm-manager/ui-types";
+import { Repository } from "@scm-manager/ui-types";
 
 type Props = {
+  repository: Repository;
   pullRequest: PullRequest;
-  refreshReviewer: () => void;
 };
 
-type State = {
-  loading: boolean;
-  error?: Error;
+const ApprovalContainer: FC<Props> = ({ repository, pullRequest }) => {
+  const { error: approveError, isLoading: approveIsLoading, approve } = useApproveReviewer(repository, pullRequest);
+  const { error: disapproveError, isLoading: disapproveIsLoading, disapprove } = useDisapproveReviewer(
+    repository,
+    pullRequest
+  );
+
+  if (approveError) {
+    return <ErrorNotification error={approveError} />;
+  }
+
+  if (disapproveError) {
+    return <ErrorNotification error={disapproveError} />;
+  }
+
+  if (!!pullRequest?._links?.approve) {
+    return <ApprovalButton loading={approveIsLoading} action={approve} />;
+  } else if (!!pullRequest?._links?.disapprove) {
+    return <DisapprovalButton loading={disapproveIsLoading} action={disapprove} />;
+  } else {
+    return null;
+  }
 };
 
-export default class ApprovalContainer extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      loading: false
-    };
-  }
-
-  handleApproval = () => {
-    const { refreshReviewer } = this.props;
-    this.setState({
-      loading: true
-    });
-    const link = this.createHandleApprovalLink();
-    if (link) {
-      handleApproval(link)
-        .then(response => {
-          this.setState(
-            {
-              loading: false
-            },
-            () => refreshReviewer()
-          );
-        })
-        .catch((error: Error) => {
-          this.setState({
-            loading: false,
-            error
-          });
-        });
-    }
-  };
-
-  createHandleApprovalLink = () => {
-    const { pullRequest } = this.props;
-    if (pullRequest._links && (pullRequest._links.approve as Link)) {
-      return (pullRequest._links.approve as Link).href;
-    }
-    return (pullRequest._links.disapprove as Link).href;
-  };
-
-  render() {
-    const { error, loading } = this.state;
-    if (error) {
-      return <ErrorNotification error={error} />;
-    }
-
-    if (this.props.pullRequest._links && !!this.props.pullRequest._links.approve) {
-      return <ApprovalButton loading={loading} action={this.handleApproval} />;
-    } else if (this.props.pullRequest._links && !!this.props.pullRequest._links.disapprove) {
-      return <DisapprovalButton loading={loading} action={this.handleApproval} />;
-    } else {
-      return null;
-    }
-  }
-}
+export default ApprovalContainer;

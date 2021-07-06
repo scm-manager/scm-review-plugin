@@ -77,13 +77,13 @@ export function getBranches(url: string) {
     });
 }
 
-const prQueryKey = (repository: Repository, pullrequestId: string) => {
-  return ["repository", repository.namespace, repository.name, "pull-request", pullrequestId];
+const prQueryKey = (repository: Repository, pullRequestId: string) => {
+  return ["repository", repository.namespace, repository.name, "pull-request", pullRequestId];
 };
 
 export const usePullRequest = (repository: Repository, pullRequestId: string) => {
   const { error, isLoading, data } = useQuery<PullRequest, Error>(prQueryKey(repository, pullRequestId), () =>
-    apiClient.get((repository._links.pullRequest as Link).href + "/" + pullRequestId).then(response => response.json())
+    getPullRequest((repository._links.pullRequest as Link).href + "/" + pullRequestId)
   );
 
   return {
@@ -96,7 +96,7 @@ export const usePullRequest = (repository: Repository, pullRequestId: string) =>
 export const useUpdatePullRequest = (repository: Repository, pullRequest: PullRequest, callback?: () => void) => {
   const queryClient = useQueryClient();
   const { isLoading, error, mutate } = useMutation<unknown, Error, PullRequest>(
-    (pr) => updatePullRequest(pr).then(callback),
+    pr => updatePullRequest(pr).then(callback),
     {
       onSuccess: async pr => {
         queryClient.setQueryData(prQueryKey(repository, pullRequest.id), pr);
@@ -110,6 +110,43 @@ export const useUpdatePullRequest = (repository: Repository, pullRequest: PullRe
     error,
     update: (pr: PullRequest) => mutate(pr)
   };
+};
+
+export const useApproveReviewer = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { isLoading, error, mutate } = useMutation<unknown, Error, PullRequest>(pr => handleApproval(pr), {
+    onSuccess: async pr => {
+      queryClient.setQueryData(prQueryKey(repository, pullRequest.id), pr);
+      await queryClient.invalidateQueries(prQueryKey(repository, pullRequest.id));
+    }
+  });
+
+  return {
+    isLoading,
+    error,
+    approve: () => mutate(pullRequest)
+  };
+};
+
+export const useDisapproveReviewer = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { isLoading, error, mutate } = useMutation<unknown, Error, PullRequest>(pr => handleDisapproval(pr), {
+    onSuccess: async pr => {
+      queryClient.setQueryData(prQueryKey(repository, pullRequest.id), pr);
+      await queryClient.invalidateQueries(prQueryKey(repository, pullRequest.id));
+    }
+  });
+
+  return {
+    isLoading,
+    error,
+    disapprove: () => mutate(pullRequest)
+  };
+};
+
+export const invalidatePullRequest = async (repository: Repository, pullRequestId: string) => {
+  const queryClient = useQueryClient();
+  await queryClient.invalidateQueries(prQueryKey(repository, pullRequestId));
 };
 
 export function getPullRequest(url: string): Promise<PullRequest> {
@@ -134,19 +171,12 @@ export function getReviewer(url: string) {
     });
 }
 
-export function getApproval(url: string) {
-  return apiClient
-    .get(url)
-    .then(response => response.json())
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
+export function handleApproval(pr: PullRequest) {
+  return apiClient.post((pr._links.approve as Link).href, {});
 }
 
-export function handleApproval(url: string) {
-  return apiClient.post(url, {});
+export function handleDisapproval(pr: PullRequest) {
+  return apiClient.post((pr._links.disapprove as Link).href, {});
 }
 
 export function getSubscription(url: string) {

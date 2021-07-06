@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
+import React, { FC, useEffect, useState } from "react";
 import styled from "styled-components";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { RouteComponentProps, withRouter } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useRouteMatch } from "react-router-dom";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { binder, ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
@@ -33,7 +33,6 @@ import {
   ButtonGroup,
   ConflictError,
   DateFromNow,
-  ErrorNotification,
   Icon,
   Loading,
   NotFoundError,
@@ -42,7 +41,7 @@ import {
   Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
-import { check, evaluateTagColor, merge, reject } from "./pullRequest";
+import { check, evaluateTagColor, invalidatePullRequest, merge, reject } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -55,19 +54,9 @@ import Statusbar from "./workflow/Statusbar";
 import OverrideModalRow from "./OverrideModalRow";
 import PullRequestTitle from "./PullRequestTitle";
 
-type Props = WithTranslation &
-  RouteComponentProps & {
-    repository: Repository;
-    pullRequest: PullRequest;
-  };
-
-type State = {
-  error?: Error;
-  loadingDryRun: boolean;
-  mergeCheck?: MergeCheck;
-  targetBranchDeleted: boolean;
-  mergeButtonLoading: boolean;
-  rejectButtonLoading: boolean;
+type Props = {
+  repository: Repository;
+  pullRequest: PullRequest;
 };
 
 const MediaContent = styled.div.attrs(() => ({
@@ -164,341 +153,298 @@ const IgnoredMergeObstacles = styled.div`
   border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
 `;
 
-class PullRequestDetails extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      ...this.state,
-      loadingDryRun: false,
-      mergeButtonLoading: true,
-      rejectButtonLoading: false,
-      targetBranchDeleted: false
-    };
-  }
+const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
+  const [t] = useTranslation("plugins");
+  const match = useRouteMatch();
+  const [loadingDryRun, setLoadingDryRun] = useState(false);
+  const [mergeButtonLoading, setMergeButtonLoading] = useState(true);
+  const [rejectButtonLoading, setRejectButtonLoading] = useState(false);
+  const [targetBranchDeleted, setTargetBranchDeleted] = useState(false);
+  const [mergeCheck, setMergeCheck] = useState<MergeCheck | undefined>(undefined);
 
-  componentDidMount(): void {
-    const { pullRequest } = this.props;
-    this.getMergeDryRun(pullRequest);
-  }
+  useEffect(() => {
+    getMergeDryRun(pullRequest);
+  }, [repository, pullRequest]);
 
-  shouldRunDryMerge = (pullRequest: PullRequest) => {
-    return (
-      pullRequest._links.mergeCheck && (pullRequest._links.mergeCheck as Link).href && pullRequest.status === "OPEN"
-    );
+  const shouldRunDryMerge = (pr: PullRequest) => {
+    return (pr?._links?.mergeCheck as Link)?.href && pr.status === "OPEN";
   };
 
-  onMergeModalClosed = () => {
-    this.setState({
-      mergeCheck: undefined
-    });
-  };
-
-  getMergeDryRun(pullRequest: PullRequest) {
-    if (this.shouldRunDryMerge(pullRequest)) {
-      check(pullRequest)
+  const getMergeDryRun = (pr: PullRequest) => {
+    if (shouldRunDryMerge(pr)) {
+      check(pr)
         .then(response => {
-          this.setState({
-            mergeCheck: response,
-            targetBranchDeleted: false,
-            loadingDryRun: false,
-            mergeButtonLoading: false
-          });
+          setMergeCheck(response);
+          setTargetBranchDeleted(false);
+          setMergeButtonLoading(false);
+          setLoadingDryRun(false);
         })
         .catch(err => {
           if (err instanceof NotFoundError) {
-            this.setState({
-              mergeButtonLoading: false,
-              loadingDryRun: false,
-              targetBranchDeleted: true
-            });
+            setMergeButtonLoading(false);
+            setLoadingDryRun(false);
+            setTargetBranchDeleted(true);
           } else {
-            this.setState({
-              error: err,
-              loadingDryRun: false,
-              mergeButtonLoading: false
-            });
+            //TODO set error?
+            setLoadingDryRun(false);
+            setMergeButtonLoading(false);
           }
         });
     }
-  }
+  };
 
-  findStrategyLink = (links: Link[], strategy: string) => {
+  const findStrategyLink = (links: Link[], strategy: string) => {
     return links?.filter(link => link.name === strategy)[0].href;
   };
 
-  performMerge = (strategy: string, commit: MergeCommit, emergency: boolean) => {
-    const { pullRequest, fetchPullRequest } = this.props;
+  const performMerge = (strategy: string, commit: MergeCommit, emergency: boolean) => {
     const mergeLinks = emergency
       ? (pullRequest?._links?.emergencyMerge as Link[])
       : (pullRequest?._links?.merge as Link[]);
 
-    this.setMergeButtonLoadingState();
-    merge(this.findStrategyLink(mergeLinks, strategy), commit)
-      .then(fetchPullRequest)
+    setMergeButtonLoading(true);
+    merge(findStrategyLink(mergeLinks, strategy), commit)
+      .then(() => invalidatePullRequest(repository, pullRequest.id))
       .catch(err => {
         if (err instanceof ConflictError) {
-          this.setState({
-            mergeCheck: {
-              mergeObstacles: this.state.mergeCheck ? this.state.mergeCheck.mergeObstacles : [],
-              hasConflicts: true
-            },
-            mergeButtonLoading: false
+          setMergeCheck({
+            mergeObstacles: mergeCheck ? mergeCheck.mergeObstacles : [],
+            hasConflicts: true
           });
+          setMergeButtonLoading(false);
         } else {
-          this.setState({
-            error: err,
-            mergeButtonLoading: false
-          });
+          //TODO Set error?
+          setMergeButtonLoading(false);
         }
       });
   };
 
-  performReject = () => {
-    this.setState({
-      rejectButtonLoading: true
-    });
-    const { pullRequest, fetchPullRequest } = this.props;
+  const performReject = () => {
+    setRejectButtonLoading(true);
     reject(pullRequest)
       .then(() => {
-        this.setState({
-          rejectButtonLoading: false
-        });
-        fetchPullRequest();
+        setRejectButtonLoading(false);
+        return invalidatePullRequest(repository, pullRequest.id);
       })
-      .catch(cause =>
-        this.setState({
-          error: new Error(`could not reject request: ${cause.message}`),
-          rejectButtonLoading: false
-        })
-      );
+      .catch(cause => {
+        //TODO set error
+        // new Error(`could not reject request: ${cause.message}`)
+        setRejectButtonLoading(false);
+      });
   };
 
-  setMergeButtonLoadingState = () => {
-    this.setState({
-      mergeButtonLoading: true
-    });
-  };
+  // if (error) {
+  //   return <ErrorNotification error={error} />;
+  // }
 
-  render() {
-    const { repository, pullRequest, match, t } = this.props;
-    const {
-      error,
-      loadingDryRun,
-      mergeButtonLoading,
-      mergeCheck,
-      targetBranchDeleted,
-      rejectButtonLoading
-    } = this.state;
+  if (!pullRequest._links || loadingDryRun) {
+    return <Loading />;
+  }
 
-    if (error) {
-      return <ErrorNotification error={error} />;
-    }
-
-    if (!pullRequest || loadingDryRun) {
-      return <Loading />;
-    }
-
-    let description = null;
-    if (pullRequest.description) {
-      description = (
-        <div className="media">
-          <MediaContent>
-            <ReducedMarkdownView
-              content={pullRequest.description}
-              plugins={binder
-                .getExtensions("pullrequest.description.plugins", {
-                  halObject: pullRequest
-                })
-                .map(pluginFactory => pluginFactory({ halObject: pullRequest }) as AstPlugin)}
-            />
-          </MediaContent>
-        </div>
-      );
-    }
-
-    let ignoredMergeObstacles = null;
-    if (pullRequest.ignoredMergeObstacles?.length > 0) {
-      ignoredMergeObstacles = (
-        <IgnoredMergeObstacles>
-          <strong>{t("scm-review-plugin.pullRequest.details.ignoredMergeObstacles")}</strong>
-          {pullRequest.ignoredMergeObstacles.map(o => (
-            <OverrideModalRow result={{ rule: o, failed: true }} useObstacleText={pullRequest.emergencyMerged} />
-          ))}
-        </IgnoredMergeObstacles>
-      );
-    }
-
-    let mergeButton = null;
-    let rejectButton = null;
-    if (pullRequest._links.reject) {
-      rejectButton = <RejectButton reject={() => this.performReject()} loading={rejectButtonLoading} />;
-      if (!!pullRequest._links.merge) {
-        mergeButton = targetBranchDeleted ? null : (
-          <MergeButton
-            merge={(strategy: string, commit: MergeCommit, emergency) => this.performMerge(strategy, commit, emergency)}
-            mergeCheck={mergeCheck}
-            loading={mergeButtonLoading}
-            repository={repository}
-            pullRequest={pullRequest}
-            onMergeModalClose={this.onMergeModalClosed}
+  let description = null;
+  if (pullRequest.description) {
+    description = (
+      <div className="media">
+        <MediaContent>
+          <ReducedMarkdownView
+            content={pullRequest.description}
+            plugins={binder
+              .getExtensions("pullrequest.description.plugins", {
+                halObject: pullRequest
+              })
+              .map(pluginFactory => pluginFactory({ halObject: pullRequest }) as AstPlugin)}
           />
-        );
-      }
-    }
+        </MediaContent>
+      </div>
+    );
+  }
 
-    let editButton = null;
-    if (pullRequest._links.update && (pullRequest._links.update as Link).href) {
-      const toEdit =
-        "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
-      editButton = (
-        <Button link={toEdit} title={t("scm-review-plugin.pullRequest.details.buttons.edit")} color="link is-outlined">
-          <Icon name="edit fa-fw" color="inherit" />
-        </Button>
+  let ignoredMergeObstacles = null;
+  if (pullRequest.ignoredMergeObstacles?.length > 0) {
+    ignoredMergeObstacles = (
+      <IgnoredMergeObstacles>
+        <strong>{t("scm-review-plugin.pullRequest.details.ignoredMergeObstacles")}</strong>
+        {pullRequest.ignoredMergeObstacles.map(o => (
+          <OverrideModalRow result={{ rule: o, failed: true }} useObstacleText={pullRequest.emergencyMerged} />
+        ))}
+      </IgnoredMergeObstacles>
+    );
+  }
+
+  let mergeButton = null;
+  let rejectButton = null;
+  if (pullRequest?._links?.reject) {
+    rejectButton = <RejectButton reject={() => performReject()} loading={rejectButtonLoading} />;
+    if (!!pullRequest._links.merge) {
+      mergeButton = targetBranchDeleted ? null : (
+        <MergeButton
+          merge={(strategy: string, commit: MergeCommit, emergency) => performMerge(strategy, commit, emergency)}
+          mergeCheck={mergeCheck}
+          loading={mergeButtonLoading}
+          repository={repository}
+          pullRequest={pullRequest}
+          onMergeModalClose={() => setMergeCheck(undefined)}
+        />
       );
     }
+  }
 
-    let subscriptionButton = null;
-    if (pullRequest._links.subscription && (pullRequest._links.subscription as Link).href) {
-      subscriptionButton = <SubscriptionContainer pullRequest={pullRequest} />;
-    }
+  let editButton = null;
+  if ((pullRequest?._links?.update as Link)?.href) {
+    const toEdit =
+      "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
+    editButton = (
+      <Button link={toEdit} title={t("scm-review-plugin.pullRequest.details.buttons.edit")} color="link is-outlined">
+        <Icon name="edit fa-fw" color="inherit" />
+      </Button>
+    );
+  }
 
-    const targetBranchDeletedWarning = targetBranchDeleted ? (
-      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
-        <i className="fas fa-exclamation-triangle" />
-      </Tooltip>
-    ) : null;
+  let subscriptionButton = null;
+  if ((pullRequest?._links?.subscription as Link)?.href) {
+    subscriptionButton = <SubscriptionContainer pullRequest={pullRequest} />;
+  }
 
-    const userEntry = (labelKey: string, displayName: string, date?: string) => {
-      return (
-        <div className="field is-horizontal">
-          <UserLabel>{t("scm-review-plugin.pullRequest." + labelKey)}:</UserLabel>
-          <UserField>
-            <UserInline>{displayName}</UserInline>
-            &nbsp;
-            {date ? <DateFromNow date={date} /> : null}
-          </UserField>
-        </div>
-      );
-    };
+  const targetBranchDeletedWarning = targetBranchDeleted ? (
+    <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
+      <i className="fas fa-exclamation-triangle" />
+    </Tooltip>
+  ) : null;
 
-    const totalTasks = pullRequest.tasks.todo + pullRequest.tasks.done;
-
-    const titleTagText =
-      pullRequest.tasks.done < totalTasks
-        ? t("scm-review-plugin.pullRequest.tasks.done", {
-            done: pullRequest.tasks.done,
-            total: totalTasks
-          })
-        : t("scm-review-plugin.pullRequest.tasks.allDone");
-
+  const userEntry = (labelKey: string, displayName: string, date?: string) => {
     return (
-      <>
-        <ChangeNotification repository={repository} pullRequest={pullRequest} reload={this.props.fetchPullRequest} />
-        <Container>
-          <div className="media">
-            <div className="media-content">
-              <RightMarginTitle className="is-inline is-marginless">
-                #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />
-              </RightMarginTitle>
-              {totalTasks > 0 && (
-                <TitleTag
-                  label={titleTagText}
-                  title={titleTagText}
-                  color={pullRequest.tasks.done < totalTasks ? "light" : "success"}
-                />
-              )}
-            </div>
-            <div className="media-right">
-              <MobileFlexButtonGroup>
-                {subscriptionButton}
-                {editButton}
-              </MobileFlexButtonGroup>
-            </div>
+      <div className="field is-horizontal">
+        <UserLabel>{t("scm-review-plugin.pullRequest." + labelKey)}:</UserLabel>
+        <UserField>
+          <UserInline>{displayName}</UserInline>
+          &nbsp;
+          {date ? <DateFromNow date={date} /> : null}
+        </UserField>
+      </div>
+    );
+  };
+
+  const totalTasks = pullRequest?.tasks?.todo + pullRequest?.tasks?.done;
+
+  const titleTagText =
+    pullRequest?.tasks?.done < totalTasks
+      ? t("scm-review-plugin.pullRequest.tasks.done", {
+          done: pullRequest.tasks.done,
+          total: totalTasks
+        })
+      : t("scm-review-plugin.pullRequest.tasks.allDone");
+
+  const getLabelKeyForUser = () => {
+    return pullRequest.status === "MERGED" ? "mergedBy" : "rejectedBy";
+  };
+
+  return (
+    <>
+      <ChangeNotification
+        repository={repository}
+        pullRequest={pullRequest}
+        reload={() => invalidatePullRequest(repository, pullRequest.id)}
+      />
+      <Container>
+        <div className="media">
+          <div className="media-content">
+            <RightMarginTitle className="is-inline is-marginless">
+              #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />
+            </RightMarginTitle>
+            {totalTasks > 0 && (
+              <TitleTag
+                label={titleTagText}
+                title={titleTagText}
+                color={pullRequest.tasks.done < totalTasks ? "light" : "success"}
+              />
+            )}
           </div>
-          <MediaWithTopBorder>
-            <div className="media-content">
-              <ShortTag label={pullRequest.source} title={pullRequest.source} />{" "}
-              <i className="fas fa-long-arrow-alt-right" />{" "}
-              <ShortTag label={pullRequest.target} title={pullRequest.target} />
-              {targetBranchDeletedWarning}
-            </div>
-            <div className="media-right">
-              <Tag
-                className="is-medium"
-                color={evaluateTagColor(pullRequest)}
-                label={t("scm-review-plugin.pullRequest.statusLabel." + pullRequest.status)}
-                icon={pullRequest.emergencyMerged ? "exclamation-triangle" : undefined}
-              />
-            </div>
-          </MediaWithTopBorder>
-          <ExtensionPoint
-            name="reviewPlugin.pullrequest.top"
-            renderAll={true}
-            props={{
-              repository,
-              pullRequest
-            }}
-          />
-          <Statusbar pullRequest={pullRequest} />
-          {description}
-          {ignoredMergeObstacles}
-          <UserList className="media">
-            <div className="media-content">
-              <ExtensionPoint
-                name="reviewPlugin.pullrequest.userList"
-                renderAll={true}
-                props={{
-                  repository,
-                  pullRequest
-                }}
-              />
-              {userEntry("author", pullRequest.author.displayName, pullRequest.creationDate)}
-              {pullRequest.status !== "OPEN" && !!pullRequest.reviser?.displayName
-                ? userEntry(
-                    pullRequest.status === "MERGED" ? "mergedBy" : "rejectedBy",
-                    pullRequest.reviser.displayName,
-                    pullRequest.closeDate
-                  )
-                : null}
-              <ReviewerList pullRequest={pullRequest} reviewer={pullRequest.reviewer} />
-            </div>
-          </UserList>
-
-          <LevelWrapper className="level">
-            <div className="level-left">
-              <div className="level-item">
-                <ApprovalContainer pullRequest={pullRequest} refreshReviewer={() => this.props.fetchReviewer()} />
-              </div>
-            </div>
-            <div className="level-right">
-              <div className="level-item">{rejectButton}</div>
-              <div className="level-item">{mergeButton}</div>
-            </div>
-          </LevelWrapper>
-        </Container>
-
+          <div className="media-right">
+            <MobileFlexButtonGroup>
+              {subscriptionButton}
+              {editButton}
+            </MobileFlexButtonGroup>
+          </div>
+        </div>
+        <MediaWithTopBorder>
+          <div className="media-content">
+            <ShortTag label={pullRequest.source} title={pullRequest.source} />{" "}
+            <i className="fas fa-long-arrow-alt-right" />{" "}
+            <ShortTag label={pullRequest.target} title={pullRequest.target} />
+            {targetBranchDeletedWarning}
+          </div>
+          <div className="media-right">
+            <Tag
+              className="is-medium"
+              color={evaluateTagColor(pullRequest)}
+              label={t("scm-review-plugin.pullRequest.statusLabel." + pullRequest.status)}
+              icon={pullRequest.emergencyMerged ? "exclamation-triangle" : undefined}
+            />
+          </div>
+        </MediaWithTopBorder>
         <ExtensionPoint
-          name="reviewPlugin.pullrequest.bottom"
+          name="reviewPlugin.pullrequest.top"
           renderAll={true}
           props={{
             repository,
             pullRequest
           }}
         />
+        <Statusbar pullRequest={pullRequest} />
+        {description}
+        {ignoredMergeObstacles}
+        <UserList className="media">
+          <div className="media-content">
+            <ExtensionPoint
+              name="reviewPlugin.pullrequest.userList"
+              renderAll={true}
+              props={{
+                repository,
+                pullRequest
+              }}
+            />
+            {userEntry("author", pullRequest.author.displayName, pullRequest.creationDate)}
+            {pullRequest.status !== "OPEN" && !!pullRequest.reviser?.displayName
+              ? userEntry(getLabelKeyForUser(), pullRequest.reviser.displayName, pullRequest.closeDate)
+              : null}
+            <ReviewerList pullRequest={pullRequest} reviewer={pullRequest.reviewer} />
+          </div>
+        </UserList>
 
-        <PullRequestInformation
-          pullRequest={pullRequest}
-          baseURL={match.url}
-          repository={repository}
-          source={pullRequest.source}
-          target={pullRequest.target}
-          status={pullRequest.status}
-          mergeHasNoConflict={!mergeCheck?.hasConflicts}
-          targetBranchDeleted={targetBranchDeleted}
-        />
-      </>
-    );
-  }
-}
+        <LevelWrapper className="level">
+          <div className="level-left">
+            <div className="level-item">
+              <ApprovalContainer repository={repository} pullRequest={pullRequest} />
+            </div>
+          </div>
+          <div className="level-right">
+            <div className="level-item">{rejectButton}</div>
+            <div className="level-item">{mergeButton}</div>
+          </div>
+        </LevelWrapper>
+      </Container>
 
-export default withRouter(withTranslation("plugins")(PullRequestDetails));
+      <ExtensionPoint
+        name="reviewPlugin.pullrequest.bottom"
+        renderAll={true}
+        props={{
+          repository,
+          pullRequest
+        }}
+      />
+
+      <PullRequestInformation
+        pullRequest={pullRequest}
+        baseURL={match.url}
+        repository={repository}
+        source={pullRequest.source}
+        target={pullRequest.target}
+        status={pullRequest.status}
+        mergeHasNoConflict={!mergeCheck?.hasConflicts}
+        targetBranchDeleted={targetBranchDeleted}
+      />
+    </>
+  );
+};
+
+export default PullRequestDetails;
