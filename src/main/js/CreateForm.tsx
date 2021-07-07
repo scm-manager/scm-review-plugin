@@ -21,16 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect } from "react";
-import {Branch, Repository} from "@scm-manager/ui-types";
+import React, { FC } from "react";
+import { Branch, Repository } from "@scm-manager/ui-types";
 import { ErrorNotification, Select } from "@scm-manager/ui-components";
-import { useBranches } from "@scm-manager/ui-api";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
 import { useTranslation } from "react-i18next";
 import EditForm from "./EditForm";
 import styled from "styled-components";
-import {useLocation} from "react-router-dom";
-import queryString from "query-string";
 
 const ValidationError = styled.p`
   font-size: 0.75rem;
@@ -42,30 +39,23 @@ const ValidationError = styled.p`
 type Props = {
   repository: Repository;
   pullRequest: BasicPullRequest;
-  onChange: (pr: BasicPullRequest) => void;
+  handleFormChange: (pr: BasicPullRequest) => void;
   checkResult?: CheckResult;
+  branches?: Branch[];
+  branchesError?: Error | null;
+  branchesLoading: boolean;
 };
 
-const CreateForm: FC<Props> = ({ repository, pullRequest, onChange, checkResult }) => {
+const CreateForm: FC<Props> = ({
+  repository,
+  pullRequest,
+  handleFormChange,
+  checkResult,
+  branches,
+  branchesError,
+  branchesLoading
+}) => {
   const [t] = useTranslation("plugins");
-  const location = useLocation();
-  const { data: branchesData, error, isLoading } = useBranches(repository);
-
-  useEffect(() => {
-    const url = location.search;
-    const params = queryString.parse(url);
-    const branchNames = branchesData?._embedded?.branches.map((b: Branch) => b.name);
-    const defaultBranch = branchesData?._embedded?.branches.find((b: Branch) => b.defaultBranch);
-
-    const initialSource = params.source || (branchNames && branchNames[0]);
-    const initialTarget = params.target || defaultBranch?.name;
-
-    onChange({
-      title: "",
-      source: initialSource,
-      target: initialTarget
-    });
-  }, [repository, branchesData]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -78,14 +68,14 @@ const CreateForm: FC<Props> = ({ repository, pullRequest, onChange, checkResult 
   };
 
   const createOptions = () => {
-    return branchesData?._embedded?.branches.map(branch => ({
+    return branches?.map(branch => ({
       label: branch.name,
       value: branch.name
     }));
   };
 
-  if (error) {
-    return <ErrorNotification error={error} />;
+  if (branchesError) {
+    return <ErrorNotification error={branchesError} />;
   }
 
   return (
@@ -96,8 +86,8 @@ const CreateForm: FC<Props> = ({ repository, pullRequest, onChange, checkResult 
             name="source"
             label={t("scm-review-plugin.pullRequest.sourceBranch")}
             options={createOptions() || []}
-            onChange={value => onChange({ ...pullRequest, source: value })}
-            loading={isLoading}
+            onChange={value => handleFormChange({ ...pullRequest, source: value })}
+            loading={branchesLoading}
             value={pullRequest?.source}
           />
         </div>
@@ -106,14 +96,14 @@ const CreateForm: FC<Props> = ({ repository, pullRequest, onChange, checkResult 
             name="target"
             label={t("scm-review-plugin.pullRequest.targetBranch")}
             options={createOptions() || []}
-            onChange={value => onChange({ ...pullRequest, target: value })}
-            loading={isLoading}
+            onChange={value => handleFormChange({ ...pullRequest, target: value })}
+            loading={branchesLoading}
             value={pullRequest?.target}
           />
         </div>
       </div>
       {renderValidationError()}
-      <EditForm handleFormChange={onChange} pullRequest={pullRequest as PullRequest} />
+      <EditForm handleFormChange={handleFormChange} pullRequest={pullRequest as PullRequest} />
     </form>
   );
 };

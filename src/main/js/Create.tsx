@@ -21,16 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { ErrorNotification, Level, Notification, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
-import { Link, Repository } from "@scm-manager/ui-types";
+import { Branch, Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
 import { checkPullRequest, createChangesetUrl, getChangesets, useCreatePullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useBranches } from "@scm-manager/ui-api";
+import queryString from "query-string";
 
 const TopPaddingLevel = styled(Level)`
   padding-top: 1.5em;
@@ -47,22 +49,45 @@ const Create: FC<Props> = ({ repository }) => {
   const [changesets, setChangesets] = useState([]);
   const [disabled, setDisabled] = useState(true);
   const [checkResult, setCheckResult] = useState<CheckResult | undefined>();
+  const location = useLocation();
 
   const pullRequestCreated = (pullRequestId: string) => {
     history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequestId}/comments`);
   };
 
-  const { error, isLoading, create } = useCreatePullRequest(repository, pullRequestCreated);
+  const { data: branchesData, error: branchesError, isLoading: branchesLoading } = useBranches(repository);
+  const { error: createError, isLoading: createLoading, create } = useCreatePullRequest(repository, pullRequestCreated);
+
+  const branches = branchesData?._embedded.branches;
+
+  useEffect(() => {
+    if (branchesData) {
+      const url = location.search;
+      const params = queryString.parse(url);
+      const branchNames = branches?.map((b: Branch) => b.name);
+      const defaultBranch = branches?.find((b: Branch) => b.defaultBranch);
+
+      const initialSource = params.source || (branchNames && branchNames[0]);
+      const initialTarget = params.target || defaultBranch?.name;
+
+      handleFormChange({
+        title: "",
+        source: initialSource,
+        target: initialTarget
+      });
+    }
+  }, [repository, branchesData]);
 
   const fetchChangesets = (basicPR: BasicPullRequest) => {
     return checkPullRequest((repository._links.pullRequestCheck as Link)?.href, basicPR)
       .then(r => r.json())
-      .then(checkResult => {
-        setCheckResult(checkResult);
-        if (checkResult?.status === "PR_VALID") {
-          getChangesets(createChangesetUrl(repository, basicPR.source, basicPR.target)!).then(result => {
-            setPullRequest(basicPR);
-            setChangesets(result._embedded.changesets);
+      .then(result => {
+        setCheckResult(result);
+        setPullRequest(basicPR);
+        setDisabled(!isPullRequestValid(basicPR, result));
+        if (result.status === "PR_VALID") {
+          getChangesets(createChangesetUrl(repository, basicPR.source, basicPR.target)!).then(r => {
+            setChangesets(r._embedded.changesets);
           });
         }
       });
@@ -70,16 +95,15 @@ const Create: FC<Props> = ({ repository }) => {
 
   const submit = () => create(pullRequest);
 
-  const isValid = () => {
+  const isValid = (result?: CheckResult) => {
+    if (result) {
+      return result?.status === "PR_VALID";
+    }
     return checkResult?.status === "PR_VALID";
   };
 
-  const verify = (basicPR: BasicPullRequest) => {
-    const { source, target, title } = basicPR;
-    if (source && target && title) {
-      return isValid();
-    }
-    return false;
+  const isPullRequestValid = (basicPR: BasicPullRequest, result?: CheckResult) => {
+    return !!basicPR.source && !!basicPR.target && !!basicPR.title && isValid(result);
   };
 
   const shouldFetchChangesets = (basicPR: BasicPullRequest) => {
@@ -88,14 +112,10 @@ const Create: FC<Props> = ({ repository }) => {
 
   const handleFormChange = (basicPR: BasicPullRequest) => {
     if (shouldFetchChangesets(basicPR)) {
-      setPullRequest(basicPR);
-      fetchChangesets(basicPR).then(() => {
-        setPullRequest(pullRequest);
-        setDisabled(!verify(basicPR));
-      });
+      fetchChangesets(basicPR);
     } else {
+      setDisabled(!isPullRequestValid(basicPR));
       setPullRequest(basicPR);
-      setDisabled(!verify(basicPR));
     }
   };
 
@@ -104,12 +124,12 @@ const Create: FC<Props> = ({ repository }) => {
   }
 
   let notification = null;
-  if (error) {
-    notification = <ErrorNotification error={error} />;
+  if (createError) {
+    notification = <ErrorNotification error={createError} />;
   }
 
   let information = null;
-  if (!isLoading && pullRequest?.source && pullRequest?.target) {
+  if (!createLoading && pullRequest?.source && pullRequest?.target) {
     information = (
       <PullRequestInformation
         repository={repository}
@@ -129,12 +149,15 @@ const Create: FC<Props> = ({ repository }) => {
         <Title title={t("scm-review-plugin.create.title")} />
         <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
         {notification}
-        {!isLoading && (
+        {!createLoading && (
           <CreateForm
             repository={repository}
             pullRequest={pullRequest}
-            onChange={handleFormChange}
+            branches={branchesData?._embedded.branches}
+            handleFormChange={handleFormChange}
             checkResult={checkResult}
+            branchesLoading={branchesLoading}
+            branchesError={branchesError}
           />
         )}
         {information}
@@ -143,7 +166,7 @@ const Create: FC<Props> = ({ repository }) => {
             <SubmitButton
               label={t("scm-review-plugin.create.submitButton")}
               action={submit}
-              loading={isLoading}
+              loading={createLoading}
               disabled={disabled}
             />
           }
