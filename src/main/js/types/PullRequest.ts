@@ -102,13 +102,13 @@ export type Reply = BasicComment & {
   _links: Links;
 };
 
-export type PullRequestCollection = Collection & {
+export type PullRequestCollection = HalRepresentation & {
   _embedded: {
     pullRequests: PullRequest[];
   };
 };
 
-export type Comments = Collection & {
+export type Comments = HalRepresentation & {
   _embedded: {
     pullRequestComments: Comment[];
   };
