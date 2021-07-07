@@ -52,20 +52,20 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest }) => {
     <>
       <InputField
         name="title"
-        value={pullRequest.title}
+        value={pullRequest?.title}
         label={t("scm-review-plugin.pullRequest.title")}
-        validationError={pullRequest.title === ""}
+        validationError={pullRequest?.title === ""}
         errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
         onChange={value => handleFormChange({ ...pullRequest, title: value })}
       />
       <Textarea
         name="description"
-        value={pullRequest.description}
+        value={pullRequest?.description}
         label={t("scm-review-plugin.pullRequest.description")}
         onChange={value => handleFormChange({ ...pullRequest, description: value })}
       />
       <TagGroup
-        items={pullRequest.reviewer}
+        items={pullRequest?.reviewer || []}
         label={t("scm-review-plugin.pullRequest.reviewer")}
         onRemove={removeReviewer}
       />

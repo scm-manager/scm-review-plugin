@@ -22,11 +22,15 @@
  * SOFTWARE.
  */
 
-import {SuggestionDataItem} from "react-mentions";
+import { SuggestionDataItem } from "react-mentions";
 import { apiClient } from "@scm-manager/ui-components";
-import {Mention} from "../types/PullRequest";
+import { Mention } from "../types/PullRequest";
 
-export function mapAutocompleteToSuggestions(link: string, query: string, callback: (data: SuggestionDataItem[]) => void) {
+export function mapAutocompleteToSuggestions(
+  link: string,
+  query: string,
+  callback: (data: SuggestionDataItem[]) => void
+) {
   if (query && query.length > 1) {
     const url = link + "?q=";
     return apiClient
@@ -39,4 +43,4 @@ export function mapAutocompleteToSuggestions(link: string, query: string, callba
       })
       .then(callback);
   }
-};
+}

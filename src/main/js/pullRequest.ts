@@ -29,56 +29,15 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
-export function createPullRequest(url: string, pullRequest: BasicPullRequest) {
-  return apiClient
-    .post(url, pullRequest, CONTENT_TYPE_PULLREQUEST)
-    .then(response => {
-      const location = response.headers.get("Location");
-      if (!location) {
-        throw new Error("missing location header in response from create request");
-      }
-      return apiClient.get(location + "?fields=id");
-    })
-    .then(response => response.json())
-    .then(pr => pr.id);
-}
-
-export function updatePullRequest(pullRequest: PullRequest) {
-  return apiClient.put((pullRequest._links.update as Link).href, pullRequest, CONTENT_TYPE_PULLREQUEST);
-}
-
-export function createPullRequestComment(url: string, comment: BasicComment) {
-  return apiClient.post(url, comment).then(response => {
-    return response;
-  });
-}
-
-export function updatePullRequestComment(url: string, comment: BasicComment) {
-  return apiClient.put(url, comment);
-}
-
-export function transformPullRequestComment(transition: PossibleTransition) {
-  const link = transition._links.transform as Link;
-  return apiClient.post(link.href, transition);
-}
-
-export function getBranches(url: string) {
-  return apiClient
-    .get(url)
-    .then(response => response.json())
-    .then(collection => collection._embedded.branches)
-    .then(branches => {
-      const branchNames = branches.map((b: Branch) => b.name);
-      const defaultBranch = branches.find((b: Branch) => b.defaultBranch);
-      return {
-        branchNames,
-        defaultBranch
-      };
-    });
-}
+// React-Query Hooks
 
 const prQueryKey = (repository: Repository, pullRequestId: string) => {
   return ["repository", repository.namespace, repository.name, "pull-request", pullRequestId];
+};
+
+export const invalidatePullRequest = async (repository: Repository, pullRequestId: string) => {
+  const queryClient = useQueryClient();
+  await queryClient.invalidateQueries(prQueryKey(repository, pullRequestId));
 };
 
 export const usePullRequest = (repository: Repository, pullRequestId: string) => {
@@ -112,6 +71,10 @@ export const useUpdatePullRequest = (repository: Repository, pullRequest: PullRe
   };
 };
 
+export function updatePullRequest(pullRequest: PullRequest) {
+  return apiClient.put((pullRequest._links.update as Link).href, pullRequest, CONTENT_TYPE_PULLREQUEST);
+}
+
 export const useApproveReviewer = (repository: Repository, pullRequest: PullRequest) => {
   const queryClient = useQueryClient();
   const { isLoading, error, mutate } = useMutation<unknown, Error, PullRequest>(pr => handleApproval(pr), {
@@ -144,10 +107,130 @@ export const useDisapproveReviewer = (repository: Repository, pullRequest: PullR
   };
 };
 
-export const invalidatePullRequest = async (repository: Repository, pullRequestId: string) => {
+
+export function handleApproval(pr: PullRequest) {
+  return apiClient.post((pr._links.approve as Link).href, {});
+}
+
+export function handleDisapproval(pr: PullRequest) {
+  return apiClient.post((pr._links.disapprove as Link).href, {});
+}
+
+export const useCreatePullRequest = (repository: Repository, callback?: (id: string) => void) => {
   const queryClient = useQueryClient();
-  await queryClient.invalidateQueries(prQueryKey(repository, pullRequestId));
+  const { mutate, data, isLoading, error } = useMutation<PullRequest, Error, BasicPullRequest>(
+    pr => createPullRequest((repository._links.pullRequest as Link).href, pr, callback),
+    {
+      onSuccess: pr => {
+        queryClient.setQueryData(prQueryKey(repository, pr.id), pr);
+        return queryClient.invalidateQueries(prQueryKey(repository, pr.id));
+      }
+    }
+  );
+  return {
+    create: (pr: BasicPullRequest) => mutate(pr),
+    isLoading,
+    error,
+    data
+  };
 };
+
+export function createPullRequest(url: string, pullRequest: BasicPullRequest, callback?: (id: string) => void) {
+  return apiClient
+    .post(url, pullRequest, CONTENT_TYPE_PULLREQUEST)
+    .then(response => {
+      const location = response.headers.get("Location");
+      if (!location) {
+        throw new Error("missing location header in response from create request");
+      }
+      return apiClient.get(location + "?fields=id");
+    })
+    .then(response => response.json())
+    .then(pr => {
+      if (callback) {
+        callback(pr.id);
+      }
+      return pr;
+    });
+}
+
+
+export const useRejectPullRequest = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, PullRequest>(
+    pr => rejectPullRequest(pr),
+    {
+      onSuccess: () => {
+        return queryClient.invalidateQueries(prQueryKey(repository, pullRequest.id));
+      }
+    }
+  );
+  return {
+    reject: (pr: PullRequest) => mutate(pr),
+    isLoading,
+    error,
+  };
+};
+
+export function rejectPullRequest(pullRequest: PullRequest) {
+  return apiClient.post((pullRequest._links.reject as Link).href, {});
+}
+
+type MergeRequest = {
+  url: string;
+  mergeCommit: MergeCommit;
+}
+
+export const useMergePullRequest = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, MergeRequest>(
+    request => merge(request),
+    {
+      onSuccess: () => {
+        return queryClient.invalidateQueries(prQueryKey(repository, pullRequest.id));
+      }
+    }
+  );
+  return {
+    merge: (request: MergeRequest) => mutate(request),
+    isLoading,
+    error,
+  };
+};
+
+export function merge(request: MergeRequest) {
+  return apiClient.post(request.url, request.mergeCommit, "application/vnd.scmm-mergeCommand+json");
+}
+
+export function createPullRequestComment(url: string, comment: BasicComment) {
+  return apiClient.post(url, comment).then(response => {
+    return response;
+  });
+}
+
+export function updatePullRequestComment(url: string, comment: BasicComment) {
+  return apiClient.put(url, comment);
+}
+
+export function transformPullRequestComment(transition: PossibleTransition) {
+  const link = transition._links.transform as Link;
+  return apiClient.post(link.href, transition);
+}
+
+export function getBranches(url: string) {
+  return apiClient
+    .get(url)
+    .then(response => response.json())
+    .then(collection => collection._embedded.branches)
+    .then(branches => {
+      const branchNames = branches.map((b: Branch) => b.name);
+      const defaultBranch = branches.find((b: Branch) => b.defaultBranch);
+      return {
+        branchNames,
+        defaultBranch
+      };
+    });
+}
 
 export function getPullRequest(url: string): Promise<PullRequest> {
   return apiClient.get(url).then(response => response.json());
@@ -171,14 +254,6 @@ export function getReviewer(url: string) {
     });
 }
 
-export function handleApproval(pr: PullRequest) {
-  return apiClient.post((pr._links.approve as Link).href, {});
-}
-
-export function handleDisapproval(pr: PullRequest) {
-  return apiClient.post((pr._links.disapprove as Link).href, {});
-}
-
 export function getSubscription(url: string) {
   return apiClient
     .get(url)
@@ -198,9 +273,6 @@ export function handleSubscription(url: string) {
   });
 }
 
-export function merge(url: string, mergeCommit: MergeCommit) {
-  return apiClient.post(url, mergeCommit, "application/vnd.scmm-mergeCommand+json");
-}
 
 export function check(pullRequest: PullRequest) {
   return apiClient.post((pullRequest._links.mergeCheck as Link).href, {}).then(response => response.json());
@@ -257,10 +329,6 @@ function createIncomingUrl(repository: Repository, linkName: string, source: str
       .replace("{source}", encodeURIComponent(source))
       .replace("{target}", encodeURIComponent(target));
   }
-}
-
-export function reject(pullRequest: PullRequest) {
-  return apiClient.post((pullRequest._links.reject as Link).href, {});
 }
 
 export function fetchConflicts(url: string, source: string, target: string) {

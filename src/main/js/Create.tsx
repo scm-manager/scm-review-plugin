@@ -21,202 +21,136 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
+import React, { FC, useState } from "react";
 import { ErrorNotification, Level, Notification, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
-import { Changeset, Link, Repository } from "@scm-manager/ui-types";
+import { Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
-import { BasicPullRequest, CheckResult } from "./types/PullRequest";
-import { checkPullRequest, createChangesetUrl, createPullRequest, getChangesets } from "./pullRequest";
-import { WithTranslation, withTranslation } from "react-i18next";
+import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
+import { checkPullRequest, createChangesetUrl, getChangesets, useCreatePullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
-import { RouteComponentProps, withRouter } from "react-router-dom";
-import queryString from "query-string";
+import { useHistory } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const TopPaddingLevel = styled(Level)`
   padding-top: 1.5em;
 `;
 
-type Props = WithTranslation &
-  RouteComponentProps & {
-    repository: Repository;
-    userAutocompleteLink: string;
-  };
-
-type State = {
-  pullRequest: BasicPullRequest;
-  loading: boolean;
-  error?: Error;
-  disabled: boolean;
-  changesets: Changeset[];
-  checkResult?: CheckResult;
+type Props = {
+  repository: Repository;
 };
 
-class Create extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      pullRequest: {
-        title: "",
-        target: "",
-        source: ""
-      },
-      loading: false,
-      disabled: true,
-      changesets: []
-    };
-  }
+const Create: FC<Props> = ({ repository }) => {
+  const [t] = useTranslation("plugins");
+  const history = useHistory();
+  const [pullRequest, setPullRequest] = useState<BasicPullRequest>({ title: "", target: "", source: "" });
+  const [changesets, setChangesets] = useState([]);
+  const [disabled, setDisabled] = useState(true);
+  const [checkResult, setCheckResult] = useState<CheckResult | undefined>();
 
-  fetchChangesets = (pullRequest: BasicPullRequest) => {
-    const { repository } = this.props;
-
-    return checkPullRequest((repository._links.pullRequestCheck as Link)?.href, pullRequest)
-      .then(r => r.json())
-      .then(checkResult => {
-        this.setState({ checkResult: { status: checkResult.status } }, () => {
-          if (this.state.checkResult?.status === "PR_VALID") {
-            getChangesets(createChangesetUrl(repository, pullRequest.source, pullRequest.target))
-              .then((result: Changeset) => {
-                this.setState({ changesets: result._embedded.changesets });
-              })
-              .catch((error: Error) => this.setState({ error, loading: false }));
-          }
-        });
-      })
-      .catch(error => {
-        this.setState({ error });
-      });
-  };
-
-  pullRequestCreated = (pullRequestId: string) => {
-    const { history, repository } = this.props;
+  const pullRequestCreated = (pullRequestId: string) => {
     history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequestId}/comments`);
   };
 
-  submit = () => {
-    const { pullRequest } = this.state;
-    const { repository } = this.props;
+  const { error, isLoading, create } = useCreatePullRequest(repository, pullRequestCreated);
 
-    this.setState({
-      loading: true
-    });
-
-    if (!pullRequest) {
-      throw new Error("illegal state, no pull request defined");
-    }
-
-    createPullRequest((repository._links.pullRequest as Link).href, pullRequest)
-      .then(pullRequestId => {
-        this.setState(
-          {
-            loading: false
-          },
-          pullRequestId ? () => this.pullRequestCreated(pullRequestId) : undefined
-        );
-      })
-      .catch(error => {
-        this.setState({
-          loading: false,
-          error
-        });
+  const fetchChangesets = (basicPR: BasicPullRequest) => {
+    return checkPullRequest((repository._links.pullRequestCheck as Link)?.href, basicPR)
+      .then(r => r.json())
+      .then(checkResult => {
+        setCheckResult(checkResult);
+        if (checkResult?.status === "PR_VALID") {
+          getChangesets(createChangesetUrl(repository, basicPR.source, basicPR.target)!).then(result => {
+            setPullRequest(basicPR);
+            setChangesets(result._embedded.changesets);
+          });
+        }
       });
   };
 
-  isValid = () => {
-    return this.state.checkResult?.status === "PR_VALID";
+  const submit = () => create(pullRequest);
+
+  const isValid = () => {
+    return checkResult?.status === "PR_VALID";
   };
 
-  verify = (pullRequest: BasicPullRequest) => {
-    const { source, target, title } = pullRequest;
+  const verify = (basicPR: BasicPullRequest) => {
+    const { source, target, title } = basicPR;
     if (source && target && title) {
-      return this.isValid();
+      return isValid();
     }
     return false;
   };
 
-  shouldFetchChangesets = (pullRequest: BasicPullRequest) => {
-    return (
-      this.state.pullRequest?.source !== pullRequest.source || this.state.pullRequest.target !== pullRequest.target
-    );
+  const shouldFetchChangesets = (basicPR: BasicPullRequest) => {
+    return pullRequest?.source !== basicPR.source || pullRequest.target !== basicPR.target;
   };
 
-  handleFormChange = (pullRequest: BasicPullRequest) => {
-    if (this.shouldFetchChangesets(pullRequest)) {
-      this.fetchChangesets(pullRequest).then(() => {
-        this.setState({
-          pullRequest,
-          disabled: !this.verify(pullRequest)
-        });
+  const handleFormChange = (basicPR: BasicPullRequest) => {
+    if (shouldFetchChangesets(basicPR)) {
+      setPullRequest(basicPR);
+      fetchChangesets(basicPR).then(() => {
+        setPullRequest(pullRequest);
+        setDisabled(!verify(basicPR));
       });
     } else {
-      this.setState({
-        pullRequest,
-        disabled: !this.verify(pullRequest)
-      });
+      setPullRequest(basicPR);
+      setDisabled(!verify(basicPR));
     }
   };
 
-  render() {
-    const { repository, match, t } = this.props;
-    const { pullRequest, loading, error, disabled, checkResult } = this.state;
+  if (!repository._links.pullRequest) {
+    return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
+  }
 
-    const url = this.props.location.search;
-    const params = queryString.parse(url);
+  let notification = null;
+  if (error) {
+    notification = <ErrorNotification error={error} />;
+  }
 
-    if (!repository._links.pullRequest) {
-      return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
-    }
-
-    let notification = null;
-    if (error) {
-      notification = <ErrorNotification error={error} />;
-    }
-
-    let information = null;
-    if (!loading && pullRequest?.source && pullRequest?.target) {
-      information = (
-        <PullRequestInformation
-          repository={repository}
-          source={pullRequest.source}
-          target={pullRequest.target}
-          status="OPEN"
-          baseURL={match.url}
-          mergeHasNoConflict={true}
-          shouldFetchChangesets={this.isValid()}
-        />
-      );
-    }
-    return (
-      <div className="columns">
-        <div className="column is-clipped">
-          <Title title={t("scm-review-plugin.create.title")} />
-          <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
-          {notification}
-          {!loading && (
-            <CreateForm
-              repository={repository}
-              userAutocompleteLink={this.props.userAutocompleteLink}
-              onChange={this.handleFormChange}
-              source={params.source}
-              target={params.target}
-              checkResult={checkResult}
-            />
-          )}
-          {information}
-          <TopPaddingLevel
-            right={
-              <SubmitButton
-                label={t("scm-review-plugin.create.submitButton")}
-                action={this.submit}
-                loading={loading}
-                disabled={disabled}
-              />
-            }
-          />
-        </div>
-      </div>
+  let information = null;
+  if (!isLoading && pullRequest?.source && pullRequest?.target) {
+    information = (
+      <PullRequestInformation
+        repository={repository}
+        pullRequest={pullRequest as PullRequest}
+        status="OPEN"
+        mergeHasNoConflict={true}
+        shouldFetchChangesets={isValid()}
+        source={pullRequest.source}
+        target={pullRequest.target}
+        targetBranchDeleted={false}
+      />
     );
   }
-}
+  return (
+    <div className="columns">
+      <div className="column is-clipped">
+        <Title title={t("scm-review-plugin.create.title")} />
+        <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
+        {notification}
+        {!isLoading && (
+          <CreateForm
+            repository={repository}
+            pullRequest={pullRequest}
+            onChange={handleFormChange}
+            checkResult={checkResult}
+          />
+        )}
+        {information}
+        <TopPaddingLevel
+          right={
+            <SubmitButton
+              label={t("scm-review-plugin.create.submitButton")}
+              action={submit}
+              loading={isLoading}
+              disabled={disabled}
+            />
+          }
+        />
+      </div>
+    </div>
+  );
+};
 
-export default withRouter(withTranslation("plugins")(Create));
+export default Create;

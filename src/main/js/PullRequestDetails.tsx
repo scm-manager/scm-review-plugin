@@ -24,7 +24,6 @@
 import React, { FC, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import { useRouteMatch } from "react-router-dom";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { binder, ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
@@ -33,6 +32,7 @@ import {
   ButtonGroup,
   ConflictError,
   DateFromNow,
+  ErrorNotification,
   Icon,
   Loading,
   NotFoundError,
@@ -41,7 +41,13 @@ import {
   Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
-import { check, evaluateTagColor, invalidatePullRequest, merge, reject } from "./pullRequest";
+import {
+  check,
+  evaluateTagColor,
+  invalidatePullRequest,
+  useMergePullRequest,
+  useRejectPullRequest
+} from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -155,12 +161,21 @@ const IgnoredMergeObstacles = styled.div`
 
 const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
-  const match = useRouteMatch();
   const [loadingDryRun, setLoadingDryRun] = useState(false);
-  const [mergeButtonLoading, setMergeButtonLoading] = useState(true);
-  const [rejectButtonLoading, setRejectButtonLoading] = useState(false);
   const [targetBranchDeleted, setTargetBranchDeleted] = useState(false);
   const [mergeCheck, setMergeCheck] = useState<MergeCheck | undefined>(undefined);
+
+  const { reject, isLoading: rejectLoading, error: rejectError } = useRejectPullRequest(repository, pullRequest);
+  const { merge, isLoading: mergeLoading, error: mergeError } = useMergePullRequest(repository, pullRequest);
+
+  useEffect(() => {
+    if (mergeError && mergeError instanceof ConflictError) {
+      setMergeCheck({
+        mergeObstacles: mergeCheck ? mergeCheck.mergeObstacles : [],
+        hasConflicts: true
+      });
+    }
+  }, [mergeError]);
 
   useEffect(() => {
     getMergeDryRun(pullRequest);
@@ -176,18 +191,14 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         .then(response => {
           setMergeCheck(response);
           setTargetBranchDeleted(false);
-          setMergeButtonLoading(false);
           setLoadingDryRun(false);
         })
         .catch(err => {
           if (err instanceof NotFoundError) {
-            setMergeButtonLoading(false);
             setLoadingDryRun(false);
             setTargetBranchDeleted(true);
           } else {
-            //TODO set error?
             setLoadingDryRun(false);
-            setMergeButtonLoading(false);
           }
         });
     }
@@ -202,40 +213,15 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       ? (pullRequest?._links?.emergencyMerge as Link[])
       : (pullRequest?._links?.merge as Link[]);
 
-    setMergeButtonLoading(true);
-    merge(findStrategyLink(mergeLinks, strategy), commit)
-      .then(() => invalidatePullRequest(repository, pullRequest.id))
-      .catch(err => {
-        if (err instanceof ConflictError) {
-          setMergeCheck({
-            mergeObstacles: mergeCheck ? mergeCheck.mergeObstacles : [],
-            hasConflicts: true
-          });
-          setMergeButtonLoading(false);
-        } else {
-          //TODO Set error?
-          setMergeButtonLoading(false);
-        }
-      });
+    merge({ url: findStrategyLink(mergeLinks, strategy), mergeCommit: commit });
   };
 
-  const performReject = () => {
-    setRejectButtonLoading(true);
-    reject(pullRequest)
-      .then(() => {
-        setRejectButtonLoading(false);
-        return invalidatePullRequest(repository, pullRequest.id);
-      })
-      .catch(cause => {
-        //TODO set error
-        // new Error(`could not reject request: ${cause.message}`)
-        setRejectButtonLoading(false);
-      });
-  };
-
-  // if (error) {
-  //   return <ErrorNotification error={error} />;
-  // }
+  if (rejectError) {
+    return <ErrorNotification error={rejectError} />;
+  }
+  if (mergeError) {
+    return <ErrorNotification error={mergeError} />;
+  }
 
   if (!pullRequest._links || loadingDryRun) {
     return <Loading />;
@@ -274,13 +260,13 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   let mergeButton = null;
   let rejectButton = null;
   if (pullRequest?._links?.reject) {
-    rejectButton = <RejectButton reject={() => performReject()} loading={rejectButtonLoading} />;
+    rejectButton = <RejectButton reject={() => reject(pullRequest)} loading={rejectLoading} />;
     if (!!pullRequest._links.merge) {
       mergeButton = targetBranchDeleted ? null : (
         <MergeButton
           merge={(strategy: string, commit: MergeCommit, emergency) => performMerge(strategy, commit, emergency)}
           mergeCheck={mergeCheck}
-          loading={mergeButtonLoading}
+          loading={mergeLoading}
           repository={repository}
           pullRequest={pullRequest}
           onMergeModalClose={() => setMergeCheck(undefined)}
@@ -435,7 +421,6 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
       <PullRequestInformation
         pullRequest={pullRequest}
-        baseURL={match.url}
         repository={repository}
         source={pullRequest.source}
         target={pullRequest.target}
