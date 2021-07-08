@@ -288,7 +288,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   let subscriptionButton = null;
   if ((pullRequest?._links?.subscription as Link)?.href) {
-    subscriptionButton = <SubscriptionContainer pullRequest={pullRequest} />;
+    subscriptionButton = <SubscriptionContainer repository={repository} pullRequest={pullRequest} />;
   }
 
   const targetBranchDeletedWarning = targetBranchDeleted ? (
@@ -323,6 +323,12 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const getLabelKeyForUser = () => {
     return pullRequest.status === "MERGED" ? "mergedBy" : "rejectedBy";
   };
+
+  console.log(pullRequest)
+
+  if (!pullRequest) {
+    return null
+  }
 
   return (
     <>
@@ -376,7 +382,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
             pullRequest
           }}
         />
-        <Statusbar pullRequest={pullRequest} />
+        <Statusbar repository={repository} pullRequest={pullRequest} />
         {description}
         {ignoredMergeObstacles}
         <UserList className="media">
@@ -389,11 +395,11 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
                 pullRequest
               }}
             />
-            {userEntry("author", pullRequest.author.displayName, pullRequest.creationDate)}
+            {userEntry("author", pullRequest?.author?.displayName, pullRequest.creationDate)}
             {pullRequest.status !== "OPEN" && !!pullRequest.reviser?.displayName
-              ? userEntry(getLabelKeyForUser(), pullRequest.reviser.displayName, pullRequest.closeDate)
+              ? userEntry(getLabelKeyForUser(), pullRequest.reviser?.displayName, pullRequest.closeDate)
               : null}
-            <ReviewerList pullRequest={pullRequest} reviewer={pullRequest.reviewer} />
+            <ReviewerList pullRequest={pullRequest}/>
           </div>
         </UserList>
 

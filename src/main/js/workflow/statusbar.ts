@@ -24,15 +24,17 @@
 import { useQuery } from "react-query";
 import { apiClient } from "@scm-manager/ui-components";
 import { Result } from "../types/EngineConfig";
-import {HalRepresentation} from "@scm-manager/ui-types";
+import {HalRepresentation, Link, Repository} from "@scm-manager/ui-types";
+import {PullRequest} from "../types/PullRequest";
+import {prQueryKey} from "../pullRequest";
 
 type StatusbarResult = HalRepresentation & {
   results: Result[]
 }
 
-export const useStatusbar = (link: string) => {
-  const { error, isLoading, data } = useQuery<StatusbarResult | undefined, Error>(["pull-request", "statusbar"], () =>
-    apiClient.get(link).then(response => response.json())
+export const useStatusbar = (repository: Repository, pullRequest: PullRequest) => {
+  const { error, isLoading, data } = useQuery<StatusbarResult | undefined, Error>([...prQueryKey(repository, pullRequest.id), "status-bar"], () =>
+    apiClient.get((pullRequest._links.workflowResult as Link).href).then(response => response.json())
   );
 
   return {

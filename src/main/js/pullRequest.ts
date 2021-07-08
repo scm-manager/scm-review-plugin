@@ -33,18 +33,18 @@ import {
   PullRequestCollection
 } from "./types/PullRequest";
 import { apiClient } from "@scm-manager/ui-components";
-import { Branch, Link, Repository } from "@scm-manager/ui-types";
+import { Branch, HalRepresentation, Link, Links, Repository } from "@scm-manager/ui-types";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
 // React-Query Hooks
 
-const prQueryKey = (repository: Repository, pullRequestId: string) => {
+export const prQueryKey = (repository: Repository, pullRequestId: string) => {
   return ["repository", repository.namespace, repository.name, "pull-request", pullRequestId];
 };
 
-const prsQueryKey = (repository: Repository) => {
+export const prsQueryKey = (repository: Repository) => {
   return ["repository", repository.namespace, repository.name, "pull-requests"];
 };
 
@@ -322,6 +322,48 @@ export const usePullRequestComments = (repository: Repository, pullRequest: Pull
   };
 };
 
+export const useSubscription = (repository: Repository, pullRequest: PullRequest) => {
+  const { error, isLoading, data } = useQuery<HalRepresentation, Error>(
+    [...prQueryKey(repository, pullRequest.id), "subscription"],
+    () => {
+      if (pullRequest) {
+        return apiClient.get((pullRequest._links.subscription as Link).href).then(response => response.json());
+      }
+      return { _links: {} };
+    }
+  );
+
+  return {
+    error,
+    isLoading,
+    data
+  };
+};
+
+type UpdateSubscriptionRequest = { _links: Links; subscribe: boolean };
+
+export const useUpdateSubscription = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, UpdateSubscriptionRequest>(
+    request => {
+      if (request.subscribe) {
+        return apiClient.post((request._links.subscribe as Link).href);
+      }
+      return apiClient.post((request._links.unsubscribe as Link).href);
+    },
+    {
+      onSuccess: () => {
+        return queryClient.invalidateQueries([...prQueryKey(repository, pullRequest.id), "subscription"]);
+      }
+    }
+  );
+  return {
+    subscribe: (_links: Links, subscribe: boolean) => mutate({ _links, subscribe }),
+    isLoading,
+    error
+  };
+};
+
 export function getBranches(url: string) {
   return apiClient
     .get(url)
@@ -349,25 +391,6 @@ export function getReviewer(url: string) {
         error: err
       };
     });
-}
-
-export function getSubscription(url: string) {
-  return apiClient
-    .get(url)
-    .then(response => response.json())
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
-}
-
-export function handleSubscription(url: string) {
-  return apiClient.post(url).catch((err: Error) => {
-    return {
-      error: err
-    };
-  });
 }
 
 export function check(pullRequest: PullRequest) {

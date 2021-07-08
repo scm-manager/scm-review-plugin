@@ -25,7 +25,7 @@
 import React, { FC, useState } from "react";
 import { PullRequest } from "../types/PullRequest";
 import { ErrorNotification, Icon } from "@scm-manager/ui-components";
-import { Link } from "@scm-manager/ui-types";
+import {Link, Repository} from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import classNames from "classnames";
@@ -33,6 +33,7 @@ import StatusModalView from "./StatusModalView";
 import { useStatusbar } from "./statusbar";
 
 type Props = {
+  repository: Repository;
   pullRequest: PullRequest;
 };
 
@@ -52,9 +53,9 @@ const PaddingRightIcon = styled(Icon)`
   padding-right: 0.5rem;
 `;
 
-const Statusbar: FC<Props> = ({ pullRequest }) => {
+const Statusbar: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
-  const { data, error, isLoading } = useStatusbar((pullRequest._links.workflowResult as Link).href);
+  const { data, error, isLoading } = useStatusbar(repository, pullRequest);
   const [modalOpen, setModalOpen] = useState(false);
 
   // no workflow rules configured
