@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { Dispatch } from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
+import React, { FC, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import {
   AnnotationFactoryContext,
@@ -37,7 +37,13 @@ import {
   LoadingDiff
 } from "@scm-manager/ui-components";
 import { Comment, Location, PullRequest } from "../types/PullRequest";
-import { createHunkId, createInlineLocation } from "./locations";
+import {
+  createChangeIdFromLocation,
+  createHunkId,
+  createHunkIdFromLocation,
+  createInlineLocation,
+  isInlineLocation
+} from "./locations";
 import PullRequestComment from "../comment/PullRequestComment";
 import CreateComment from "../comment/CreateComment";
 import CommentSpacingWrapper from "../comment/CommentSpacingWrapper";
@@ -45,9 +51,8 @@ import InlineComments from "./InlineComments";
 import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
-import { DiffAction, markAsReviewed, State as DiffState, unmarkAsReviewed } from "./reducer";
-import { closeEditor, createComment, openEditor } from "../comment/actiontypes";
 import MarkReviewedButton from "./MarkReviewedButton";
+import { Repository } from "@scm-manager/ui-types";
 
 const LevelWithMargin = styled(Level)`
   margin-bottom: 1rem !important;
@@ -59,84 +64,102 @@ const CommentWrapper = styled.div`
   }
 `;
 
-type Props = WithTranslation & {
+export type FileCommentState = {
+  comments: string[];
+  editor?: boolean;
+};
+
+export type FileCommentCollection = {
+  // path
+  [key: string]: FileCommentState;
+};
+export type LineCommentCollection = {
+  // hunkid
+  [key: string]: {
+    // changeid
+    [key: string]: {
+      location: Location;
+      comments: string[];
+      editor?: boolean;
+    };
+  };
+};
+
+export type DiffState = {
+  files: FileCommentCollection;
+  lines: LineCommentCollection;
+  comments: Comment[];
+  reviewedFiles: string[];
+};
+
+type Props = {
+  repository: Repository;
+  pullRequest: PullRequest;
   diffUrl: string;
   diffState: DiffState;
+  updateDiffState: (state: DiffState) => void;
   createLink?: string;
-  dispatch: Dispatch<DiffAction>;
-  pullRequest: PullRequest;
   fileContentFactory: FileContentFactory;
 };
 
-type State = {
-  collapsed: boolean;
-  explicitlyOpenedFiles: string[];
+const openEditor = (diffState: DiffState, editor: boolean, location?: Location) => {
+  if (isInlineLocation(location)) {
+    const lineComments = diffState.lines;
+    const hunkId = createHunkIdFromLocation(location!);
+    const changeId = createChangeIdFromLocation(location!);
+    const hunkComments = lineComments[hunkId] || {};
+    const changeComments = hunkComments[changeId] || {
+      location,
+      comments: []
+    };
+
+    changeComments.editor = editor;
+    hunkComments[changeId] = changeComments;
+    lineComments[hunkId] = hunkComments;
+  } else {
+    const fileComments = diffState.files;
+    const file = location!.file;
+    const fileState = fileComments[file] || {
+      comments: []
+    };
+    fileState.editor = editor;
+    fileComments[file] = fileState;
+  }
 };
 
-class Diff extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      collapsed: false,
-      explicitlyOpenedFiles: []
-    };
+const Diff: FC<Props> = ({
+  repository,
+  pullRequest,
+  diffUrl,
+  diffState,
+  updateDiffState,
+  createLink,
+  fileContentFactory
+}) => {
+  const [t] = useTranslation("plugins");
+  const [collapsed, setCollapsed] = useState(false);
+  const [explicitlyOpenedFiles, setexplicitlyOpenedFiles] = useState<string[]>([]);
+
+  let globalCollapsedOrByMarks: DefaultCollapsedFunction;
+  if (collapsed) {
+    globalCollapsedOrByMarks = (oldPath, newPath) => !hasOpenEditor(oldPath, newPath);
+  } else {
+    globalCollapsedOrByMarks = (oldPath: string, newPath: string) =>
+      diffState ? diffState.reviewedFiles.some((path: string) => path === oldPath || path === newPath) : false;
   }
 
-  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>) {
-    return this.state.collapsed !== nextState.collapsed || this.props.diffState !== nextProps.diffState;
-  }
-
-  render() {
-    const { diffUrl, fileContentFactory, diffState, t } = this.props;
-    const { collapsed } = this.state;
-
-    let globalCollapsedOrByMarks: DefaultCollapsedFunction;
-    if (collapsed) {
-      globalCollapsedOrByMarks = (oldPath, newPath) => !this.hasOpenEditor(oldPath, newPath);
-    } else {
-      globalCollapsedOrByMarks = (oldPath: string, newPath: string) =>
-        diffState ? diffState.reviewedFiles.some(path => path === oldPath || path === newPath) : false;
-    }
-
-    return (
-      <StyledDiffWrapper commentable={this.isPermittedToComment()}>
-        <LevelWithMargin
-          right={
-            <Button
-              action={this.collapseDiffs}
-              color="default"
-              icon={collapsed ? "eye" : "eye-slash"}
-              label={t("scm-review-plugin.diff.collapseDiffs")}
-              reducedMobile={true}
-            />
-          }
-        />
-        <LoadingDiff
-          url={diffUrl}
-          defaultCollapse={globalCollapsedOrByMarks}
-          fileControlFactory={this.createFileControlsFactory(fileContentFactory)}
-          fileAnnotationFactory={this.fileAnnotationFactory}
-          annotationFactory={this.annotationFactory}
-          onClick={this.onGutterClick}
-          hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
-          refetchOnWindowFocus={false}
-        />
-      </StyledDiffWrapper>
-    );
-  }
-
-  fileAnnotationFactory = (file: File) => {
+  const fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
 
     const annotations = [];
-    const fileState = this.props.diffState.files[path] || [];
+    const fileState = diffState.files[path] || [];
     if (fileState.comments && fileState.comments.length > 0) {
-      annotations.push(this.createComments(fileState.comments));
+      annotations.push(createComments(fileState.comments));
     }
 
     if (fileState.editor) {
       annotations.push(
-        this.createNewCommentEditor({
+        createNewCommentEditor({
           file: path
         })
       );
@@ -148,49 +171,47 @@ class Diff extends React.Component<Props, State> {
     return [];
   };
 
-  hasOpenEditor = (oldPath: string, newPath: string) => {
-    const explicitlyOpenedFiles = this.state.explicitlyOpenedFiles;
+  const hasOpenEditor = (oldPath: string, newPath: string) => {
     const path = newPath === "/dev/null" ? oldPath : newPath;
-    const fileState = this.props.diffState.files[path] || [];
+    const fileState = diffState.files[path] || [];
     if (explicitlyOpenedFiles.find(o => o === path)) {
       return true;
     }
 
     if (!!fileState.editor) {
-      this.markAsExplicitlyOpened(path);
+      markAsExplicitlyOpened(path);
       return true;
     }
 
-    const lineEditor = !!Object.values(this.props.diffState.lines)
+    const lineEditor = !!Object.values(diffState.lines)
       .flatMap(line => Object.values(line))
       .filter(line => line.location.file === path)
       .find(line => line.editor);
     if (lineEditor) {
-      this.markAsExplicitlyOpened(path);
+      markAsExplicitlyOpened(path);
     }
     return lineEditor;
   };
 
-  markAsExplicitlyOpened = (file: string) => {
-    this.setState({ explicitlyOpenedFiles: [...this.state.explicitlyOpenedFiles, file] });
+  const markAsExplicitlyOpened = (file: string) => {
+    setexplicitlyOpenedFiles([...explicitlyOpenedFiles, file]);
   };
 
-  annotationFactory = (context: AnnotationFactoryContext) => {
+  const annotationFactory = (context: AnnotationFactoryContext) => {
     const annotations: { [key: string]: React.ReactNode } = {};
 
     const hunkId = createHunkId(context);
-    const hunkState = this.props.diffState.lines[hunkId];
+    const hunkState = diffState.lines[hunkId];
     if (hunkState) {
       Object.keys(hunkState).forEach((changeId: string) => {
         const lineState = hunkState[changeId];
-
         if (lineState) {
           const lineAnnotations = [];
           if (lineState.comments && lineState.comments.length > 0) {
-            lineAnnotations.push(this.createComments(lineState.comments));
+            lineAnnotations.push(createComments(lineState.comments));
           }
           if (lineState.editor) {
-            lineAnnotations.push(this.createNewCommentEditor(lineState.location));
+            lineAnnotations.push(createNewCommentEditor(lineState.location));
           }
           if (lineAnnotations.length > 0) {
             annotations[changeId] = <InlineComments>{lineAnnotations}</InlineComments>;
@@ -202,35 +223,29 @@ class Diff extends React.Component<Props, State> {
     return annotations;
   };
 
-  collapseDiffs = () => {
-    this.setState(state => ({
-      collapsed: !state.collapsed,
-      explicitlyOpenedFiles: []
-    }));
+  const collapseDiffs = () => {
+    setCollapsed(!collapsed);
+    setexplicitlyOpenedFiles([]);
   };
 
-  createFileControlsFactory = (fileContentFactory: FileContentFactory) => (
+  const createFileControlsFactory = (contentFactory: FileContentFactory) => (
     file: File,
     setCollapse: (p: boolean) => void
   ) => {
-    const { pullRequest, diffState, dispatch } = this.props;
-
     const setReviewMark = (filepath: string, reviewed: boolean) => {
       if (reviewed) {
-        dispatch(markAsReviewed(filepath));
+        updateDiffState({ ...diffState, reviewedFiles: [...diffState.reviewedFiles, filepath] });
       } else {
-        dispatch(unmarkAsReviewed(filepath));
+        updateDiffState({ ...diffState, reviewedFiles: [...diffState.reviewedFiles.filter(f => f !== filepath)] });
       }
       setCollapse(reviewed);
     };
 
-    if (this.isPermittedToComment()) {
+    if (isPermittedToComment()) {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         setCollapse(false);
-        this.openEditor({
-          file: path
-        });
+        openEditor(diffState, true, { file: path });
       };
       return (
         <ButtonGroup>
@@ -242,72 +257,60 @@ class Diff extends React.Component<Props, State> {
             diffState={diffState}
           />
           <AddCommentButton action={openFileEditor} />
-          {fileContentFactory(file)}
+          {contentFactory(file)}
         </ButtonGroup>
       );
     } else {
-      return <ButtonGroup>{fileContentFactory(file)}</ButtonGroup>;
+      return <ButtonGroup>{contentFactory(file)}</ButtonGroup>;
     }
   };
 
-  onGutterClick = (context: DiffEventContext) => {
-    if (this.isPermittedToComment() && !context.hunk.expansion) {
+  const onGutterClick = (context: DiffEventContext) => {
+    if (isPermittedToComment() && !context.hunk.expansion) {
       const location = createInlineLocation(context);
-      this.openEditor(location);
+      openEditor(diffState, true, location);
     }
   };
 
-  openEditor = (location: Location) => {
-    const { dispatch } = this.props;
-    dispatch(openEditor(location));
+  const isPermittedToComment = () => {
+    return !!createLink;
   };
 
-  closeEditor = (location: Location) => {
-    const { dispatch } = this.props;
-    dispatch(closeEditor(location));
-  };
-
-  isPermittedToComment = () => {
-    return !!this.props.createLink;
-  };
-
-  findComment = (id: string): Comment => {
-    const { diffState } = this.props;
-    const comment = diffState.comments[id];
+  const findComment = (id: string): Comment => {
+    const comment = diffState.comments.find(c => c.id === id);
     if (!comment) {
       throw new Error("could not find comment with id " + id);
     }
     return comment;
   };
 
-  createComments = (commentIds: string[]) => {
-    const { createLink, dispatch } = this.props;
+  const createComments = (commentIds: string[]) => {
     return (
       <>
         {commentIds.map((commentId: string) => (
           <CommentWrapper key={commentId} className="comment-wrapper">
-            <PullRequestComment comment={this.findComment(commentId)} createLink={createLink} dispatch={dispatch} />
+            <PullRequestComment
+              repository={repository}
+              pullRequest={pullRequest}
+              comment={findComment(commentId)}
+              createLink={createLink}
+            />
           </CommentWrapper>
         ))}
       </>
     );
   };
 
-  onCreation = (location: Location, comment: Comment) => {
-    const { dispatch } = this.props;
-    this.closeEditor(location);
-    dispatch(createComment(comment));
-  };
-
-  createNewCommentEditor = (location: Location) => {
-    if (this.props.createLink) {
+  const createNewCommentEditor = (location: Location) => {
+    if (createLink) {
       return (
         <CommentSpacingWrapper>
           <CreateComment
-            url={this.props.createLink}
+            repository={repository}
+            pullRequest={pullRequest}
+            url={createLink}
             location={location}
-            onCreation={comment => this.onCreation(location, comment)}
-            onCancel={() => this.closeEditor(location)}
+            onCancel={() => openEditor(diffState, false, location)}
             autofocus={true}
           />
         </CommentSpacingWrapper>
@@ -315,6 +318,31 @@ class Diff extends React.Component<Props, State> {
     }
     return null;
   };
-}
 
-export default withTranslation("plugins")(Diff);
+  return (
+    <StyledDiffWrapper commentable={isPermittedToComment()}>
+      <LevelWithMargin
+        right={
+          <Button
+            action={collapseDiffs}
+            color="default"
+            icon={collapsed ? "eye" : "eye-slash"}
+            label={t("scm-review-plugin.diff.collapseDiffs")}
+            reducedMobile={true}
+          />
+        }
+      />
+      <LoadingDiff
+        url={diffUrl}
+        defaultCollapse={globalCollapsedOrByMarks}
+        fileControlFactory={createFileControlsFactory(fileContentFactory)}
+        fileAnnotationFactory={fileAnnotationFactory}
+        annotationFactory={annotationFactory}
+        onClick={onGutterClick}
+        hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
+      />
+    </StyledDiffWrapper>
+  );
+};
+
+export default Diff;

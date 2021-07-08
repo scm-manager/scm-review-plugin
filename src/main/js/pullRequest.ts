@@ -25,6 +25,8 @@
 import {
   BasicComment,
   BasicPullRequest,
+  Comment,
+  Comments,
   MergeCommit,
   PossibleTransition,
   PullRequest,
@@ -44,7 +46,7 @@ const prQueryKey = (repository: Repository, pullRequestId: string) => {
 
 const prsQueryKey = (repository: Repository) => {
   return ["repository", repository.namespace, repository.name, "pull-requests"];
-}
+};
 
 export const invalidatePullRequest = async (repository: Repository, pullRequestId: string) => {
   const queryClient = useQueryClient();
@@ -231,20 +233,94 @@ export function getPullRequests(url: string): Promise<PullRequestCollection> {
   return apiClient.get(url).then(response => response.json());
 }
 
-export function createPullRequestComment(url: string, comment: BasicComment) {
-  return apiClient.post(url, comment).then(response => {
-    return response;
-  });
-}
+export const useDeletePullRequestComment = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, Comment>(
+    comment => apiClient.delete((comment._links.delete as Link).href),
+    {
+      onSuccess: () => {
+        return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
+      }
+    }
+  );
+  return {
+    deleteComment: (comment: Comment) => mutate(comment),
+    isLoading,
+    error
+  };
+};
 
-export function updatePullRequestComment(url: string, comment: BasicComment) {
-  return apiClient.put(url, comment);
-}
+export const useUpdatePullRequestComment = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, Comment>(
+    comment => apiClient.put((comment._links.update as Link).href, comment),
+    {
+      onSuccess: () => {
+        return queryClient.invalidateQueries(prQueryKey(repository, pullRequest.id));
+      }
+    }
+  );
+  return {
+    updateComment: (comment: Comment) => mutate(comment),
+    isLoading,
+    error
+  };
+};
 
-export function transformPullRequestComment(transition: PossibleTransition) {
-  const link = transition._links.transform as Link;
-  return apiClient.post(link.href, transition);
-}
+export const useTransformPullRequestComment = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, PossibleTransition>(
+    transition => apiClient.post((transition._links.transform as Link).href, transition),
+    {
+      onSuccess: () => {
+        return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
+      }
+    }
+  );
+  return {
+    transformComment: (transition: PossibleTransition) => mutate(transition),
+    isLoading,
+    error
+  };
+};
+
+type CreateCommentRequest = {
+  url: string;
+  comment: BasicComment;
+};
+
+export const useCreatePullRequestComment = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, CreateCommentRequest>(
+    request => apiClient.post(request.url, request.comment),
+    {
+      onSuccess: () => {
+        return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
+      }
+    }
+  );
+  return {
+    createComment: (url: string, comment: BasicComment) => mutate({ url, comment }),
+    isLoading,
+    error
+  };
+};
+
+const prCommentsQueryKey = (repository: Repository, pullRequest: PullRequest) => {
+  return ["repository", repository.namespace, repository.name, "pull-request", pullRequest.id, "comments"];
+};
+
+export const usePullRequestComments = (repository: Repository, pullRequest: PullRequest) => {
+  const { error, isLoading, data } = useQuery<Comments, Error>(prCommentsQueryKey(repository, pullRequest), () =>
+    apiClient.get((pullRequest._links.comments as Link).href).then(response => response.json())
+  );
+
+  return {
+    error,
+    isLoading,
+    data
+  };
+};
 
 export function getBranches(url: string) {
   return apiClient
@@ -299,10 +375,7 @@ export function check(pullRequest: PullRequest) {
 }
 
 export function getMergeStrategyInfo(url: string) {
-  return apiClient
-    .get(url)
-    .then(response => response.json())
-    .catch(err => "");
+  return apiClient.get(url).then(response => response.json());
 }
 
 export function checkPullRequest(url: string, pullRequest: BasicPullRequest) {
@@ -312,14 +385,6 @@ export function checkPullRequest(url: string, pullRequest: BasicPullRequest) {
 
 export function getChangesets(url: string) {
   return apiClient.get(url).then(response => response.json());
-}
-
-export function getPullRequestComments(url: string) {
-  return apiClient.get(url).then(response => response.json());
-}
-
-export function deletePullRequestComment(url: string) {
-  return apiClient.delete(url);
 }
 
 export function createChangesetUrl(repository: Repository, source: string, target: string) {

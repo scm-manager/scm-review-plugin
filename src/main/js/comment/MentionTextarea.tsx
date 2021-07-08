@@ -21,18 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
+import React, {FC, ReactText} from "react";
 import styled from "styled-components";
 import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
-import { mapAutocompleteToSuggestions } from "./mention";
+import { getUserSuggestions } from "./mention";
 import { BasicComment } from "../types/PullRequest";
-import { getUserAutoCompleteLink } from "../index";
-import { compose } from "redux";
-import { connect } from "react-redux";
-import { withTranslation } from "react-i18next";
+import { useUserSuggestions } from "@scm-manager/ui-api";
 
-const StyledSuggestion = styled.div`
-  background-color: ${props => props.focused && `#ccecf9`};
+const StyledSuggestion = styled.div<{ focused: boolean }>`
+  background-color: ${props => props.focused && "#ccecf9"};
   :hover {
     background-color: #ccecf9;
   }
@@ -71,9 +68,9 @@ const StyledMentionsInput = styled(MentionsInput)`
   }
   > div [class*="suggestions__item"] {
     padding: 4px;
-    borderbottom: 1px solid rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
     :focus {
-      backgroundcolor: #cee4e5;
+      background-color: #cee4e5;
     }
   }
 `;
@@ -81,25 +78,17 @@ const StyledMentionsInput = styled(MentionsInput)`
 type Props = {
   value?: string;
   placeholder?: string;
-  userAutocompleteLink: string;
   comment?: BasicComment;
-  onAddMention: (id: string, displayName: string) => void;
+  onAddMention: (id: ReactText, display: string) => void;
   onChange: (event: any) => void;
   onSubmit: () => void;
   onCancel?: () => void;
 };
 
-const MentionTextarea: FC<Props> = ({
-  value,
-  placeholder,
-  userAutocompleteLink,
-  comment,
-  onAddMention,
-  onChange,
-  onSubmit,
-  onCancel
-}) => {
-  const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention, onChange, onSubmit, onCancel }) => {
+  const userSuggestions = useUserSuggestions();
+
+  const onKeyDown = (event: any) => {
     if (onCancel && event.key === "Escape") {
       onCancel();
       return;
@@ -127,12 +116,15 @@ const MentionTextarea: FC<Props> = ({
           <Mention
             markup="@[__id__]"
             displayTransform={(id: string) => {
+              console.log(comment, id, comment?.mentions && comment.mentions.length > 0
+                ? `@${comment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
+                : `@${id}`)
               return comment?.mentions && comment.mentions.length > 0
                 ? `@${comment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
                 : `@${id}`;
             }}
             trigger="@"
-            data={(query, callback) => mapAutocompleteToSuggestions(userAutocompleteLink, query, callback)}
+            data={(query, callback) => getUserSuggestions(userSuggestions, query, callback)}
             onAdd={onAddMention}
             renderSuggestion={(
               suggestion: SuggestionDataItem,
@@ -156,13 +148,4 @@ const MentionTextarea: FC<Props> = ({
   );
 };
 
-const mapStateToProps = (state: any) => {
-  const { indexResources } = state;
-  const userAutocompleteLink = getUserAutoCompleteLink(indexResources.links);
-
-  return {
-    userAutocompleteLink
-  };
-};
-
-export default compose(connect(mapStateToProps), withTranslation("plugins"))(MentionTextarea);
+export default MentionTextarea;

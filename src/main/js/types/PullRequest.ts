@@ -22,7 +22,8 @@
  * SOFTWARE.
  */
 
-import { Collection, DisplayedUser, Links, Embedded, HalRepresentation } from "@scm-manager/ui-types";
+import { DisplayedUser, HalRepresentation, Links } from "@scm-manager/ui-types";
+import { ReactText } from "react";
 
 export type Reviewer = DisplayedUser & {
   approved: boolean;
@@ -34,22 +35,23 @@ export type BasicPullRequest = {
   title: string;
 };
 
-export type PullRequest = BasicPullRequest & HalRepresentation & {
-  description?: string;
-  author: DisplayedUser;
-  reviser?: DisplayedUser;
-  closeDate?: string;
-  id: string;
-  creationDate: string;
-  reviewer: Reviewer[];
-  status: string;
-  tasks: Tasks;
-  sourceRevision: string;
-  targetRevision: string;
-  markedAsReviewed: string[];
-  emergencyMerged: boolean;
-  ignoredMergeObstacles: string[];
-};
+export type PullRequest = BasicPullRequest &
+  HalRepresentation & {
+    description?: string;
+    author: DisplayedUser;
+    reviser?: DisplayedUser;
+    closeDate?: string;
+    id: string;
+    creationDate: string;
+    reviewer: Reviewer[];
+    status: string;
+    tasks: Tasks;
+    sourceRevision: string;
+    targetRevision: string;
+    markedAsReviewed: string[];
+    emergencyMerged: boolean;
+    ignoredMergeObstacles: string[];
+  };
 
 export type Location = {
   file: string;
@@ -59,15 +61,15 @@ export type Location = {
 };
 
 export type BasicComment = {
-  comment: string;
-  id: string;
+  comment?: string;
+  id?: string;
   type: string;
   mentions: Mention[];
+  location?: Location;
 };
 
 export type Comment = BasicComment & {
   author: DisplayedUser;
-  location?: Location;
   date: string;
   outdated: boolean;
   systemComment: boolean;
@@ -81,9 +83,8 @@ export type Comment = BasicComment & {
 };
 
 export type Mention = {
-  id: string;
+  id: ReactText;
   displayName: string;
-  mail: string;
 };
 
 export type Context = {
@@ -159,5 +160,5 @@ export type Tasks = {
 };
 
 export type CheckResult = {
-  status: "PR_VALID" | "BRANCHES_NOT_DIFFER" | "PR_ALREADY_EXISTS"
+  status: "PR_VALID" | "BRANCHES_NOT_DIFFER" | "PR_ALREADY_EXISTS";
 };

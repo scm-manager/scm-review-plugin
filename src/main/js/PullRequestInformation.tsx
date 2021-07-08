@@ -27,7 +27,7 @@ import { Icon, urls } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, useLocation, useRouteMatch } from "react-router-dom";
-import RootComments from "./comment/RootComments";
+import RootComments from "./comment/RootCommentContainer";
 import { PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
 import MergeConflicts from "./MergeConflicts";
@@ -142,7 +142,7 @@ const PullRequestInformation: FC<Props> = ({
     <Switch>
       <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
       <Route path={`${baseURL}/comments`} exact>
-        <RootComments pullRequest={pullRequest} />
+        <RootComments repository={repository} pullRequest={pullRequest} />
       </Route>
       {routeChangeset}
       {routeChangesetPagination}

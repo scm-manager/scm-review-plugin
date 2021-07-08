@@ -420,8 +420,8 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       />
 
       <PullRequestInformation
-        pullRequest={pullRequest}
         repository={repository}
+        pullRequest={pullRequest}
         source={pullRequest.source}
         target={pullRequest.target}
         status={pullRequest.status}

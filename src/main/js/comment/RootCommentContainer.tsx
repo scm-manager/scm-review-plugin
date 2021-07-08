@@ -21,23 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useReducer, useRef } from "react";
-import reducer, { initialState } from "./reducer";
-import { createComment } from "./actiontypes";
-
-import { PullRequest } from "../types/PullRequest";
+import React, { FC, useEffect, useRef } from "react";
+import { Comment, PullRequest } from "../types/PullRequest";
 
 import { ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { useLocation } from "react-router-dom";
-import { Link } from "@scm-manager/ui-types";
+import { Link, Repository } from "@scm-manager/ui-types";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
 import styled from "styled-components";
-import useComments from "./useComments";
+import { usePullRequestComments } from "../pullRequest";
 
 const COMMENT_URL_HASH_REGEX = /^#comment-(.*)$/;
 
 type Props = {
+  repository: Repository;
   pullRequest: PullRequest;
 };
 
@@ -49,14 +47,13 @@ const CommentWrapper = styled.div`
   }
 `;
 
-const RootCommentContainer: FC<Props> = ({ pullRequest }) => {
+const RootCommentContainer: FC<Props> = ({ repository, pullRequest }) => {
   const location = useLocation();
-  const [comments, dispatch] = useReducer(reducer, initialState);
-  const { error, loading, links } = useComments(pullRequest, dispatch);
+  const { data: comments, error, isLoading } = usePullRequestComments(repository, pullRequest);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!loading && contentRef.current) {
+    if (!isLoading && contentRef.current) {
       setTimeout(() => {
         const match = location.hash.match(COMMENT_URL_HASH_REGEX);
         if (match) {
@@ -66,30 +63,35 @@ const RootCommentContainer: FC<Props> = ({ pullRequest }) => {
             element.scrollIntoView();
           }
         }
-      })
+      });
     }
-  }, [loading, contentRef]);
+  }, [isLoading, contentRef]);
 
   if (error) {
     return <ErrorNotification error={error} />;
   }
 
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
-  if (!links) {
+  if (!comments) {
     return <div />;
   }
 
-  const createLink = links.create ? (links.create as Link).href : undefined;
+  const createLink = (comments._links.create as Link).href || undefined;
   return (
     <div ref={contentRef}>
-      {comments.map(rootComment => (
+      {comments._embedded.pullRequestComments?.map((rootComment: Comment) => (
         <CommentWrapper key={rootComment.id} className="comment-wrapper">
-          <PullRequestComment comment={rootComment} dispatch={dispatch} createLink={createLink} />
+          <PullRequestComment
+            repository={repository}
+            pullRequest={pullRequest}
+            comment={rootComment}
+            createLink={createLink}
+          />
         </CommentWrapper>
       ))}
-      {createLink && <CreateComment url={createLink} onCreation={c => dispatch(createComment(c))} />}
+      {createLink && <CreateComment repository={repository} pullRequest={pullRequest} url={createLink} />}
     </div>
   );
 };

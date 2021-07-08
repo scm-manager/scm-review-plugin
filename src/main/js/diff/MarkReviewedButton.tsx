@@ -27,7 +27,7 @@ import { DiffButton } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import { deleteReviewMark, postReviewMark } from "../pullRequest";
-import { State as DiffState } from "./reducer";
+import { DiffState } from "./Diff";
 
 type Props = WithTranslation & {
   pullRequest: PullRequest;
