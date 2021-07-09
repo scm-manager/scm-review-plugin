@@ -26,7 +26,8 @@ import {
   BasicComment,
   BasicPullRequest,
   Comment,
-  Comments, Conflicts,
+  Comments,
+  Conflicts,
   MergeCommit,
   PossibleTransition,
   PullRequest,
@@ -44,18 +45,9 @@ export const prQueryKey = (repository: Repository, pullRequestId: string) => {
   return ["repository", repository.namespace, repository.name, "pull-request", pullRequestId];
 };
 
-export const prsQueryKey = (repository: Repository) => {
-  return ["repository", repository.namespace, repository.name, "pull-requests"];
-};
-
 export const invalidatePullRequest = async (repository: Repository, pullRequestId: string) => {
   const queryClient = useQueryClient();
   await queryClient.invalidateQueries(prQueryKey(repository, pullRequestId));
-};
-
-export const invalidatePullRequests = async (repository: Repository) => {
-  const queryClient = useQueryClient();
-  await queryClient.invalidateQueries(prsQueryKey(repository));
 };
 
 export const usePullRequest = (repository: Repository, pullRequestId: string) => {
@@ -204,10 +196,13 @@ export const useMergePullRequest = (repository: Repository, pullRequest: PullReq
   };
 };
 
-export const usePullRequests = (repository: Repository) => {
+export const usePullRequests = (repository: Repository, status: string) => {
   const { error, isLoading, data } = useQuery<PullRequestCollection, Error>(
-    ["repository", repository.namespace, repository.name, "pull-requests"],
-    () => apiClient.get((repository._links.pullRequest as Link).href).then(response => response.json())
+    ["repository", repository.namespace, repository.name, "pull-requests", status],
+    () =>
+      apiClient
+        .get((repository._links.pullRequest as Link).href + "?status=" + status)
+        .then(response => response.json())
   );
 
   return {

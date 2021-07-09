@@ -103,9 +103,11 @@ const Create: FC<Props> = ({ repository }) => {
   };
 
   const handleFormChange = (basicPR: PullRequest) => {
-    fetchChangesets(basicPR);
-    setDisabled(!isPullRequestValid(basicPR));
     setPullRequest(basicPR);
+    setDisabled(!isPullRequestValid(basicPR));
+    if (basicPR.source != pullRequest.source || basicPR.target != pullRequest.target) {
+      fetchChangesets(basicPR);
+    }
   };
 
   if (!repository._links.pullRequest) {

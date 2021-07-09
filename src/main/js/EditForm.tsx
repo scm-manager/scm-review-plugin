@@ -38,12 +38,14 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest }) => {
   const userSuggestions = useUserSuggestions();
 
   const removeReviewer = (users: DisplayedUser[]) => {
-    const newList = pullRequest.reviewer.filter(item => users.includes(item));
-    handleFormChange({ ...pullRequest, reviewer: newList });
+    if (pullRequest.reviewer) {
+      const newList = pullRequest.reviewer.filter(item => users.includes(item));
+      handleFormChange({ ...pullRequest, reviewer: newList });
+    }
   };
 
   const selectName = (selection: SelectValue) => {
-    const newList = pullRequest.reviewer;
+    const newList = pullRequest.reviewer || [];
     newList.push({ id: selection.value.id, displayName: selection.value.displayName, mail: "", approved: false });
     handleFormChange({ ...pullRequest, reviewer: newList });
   };

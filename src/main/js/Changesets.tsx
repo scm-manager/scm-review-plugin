@@ -78,7 +78,7 @@ const Changesets: FC<Props> = ({ repository, pullRequest, source, target, should
   } else if (isLoading) {
     return <Loading />;
   } else if (changesets && changesets._embedded && changesets._embedded.changesets) {
-    if (changesets._embedded.changesets.length !== 0) {
+    if (changesets._embedded.changesets?.length !== 0) {
       return (
         <div className="panel">
           <div className="panel-block">

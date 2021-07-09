@@ -28,7 +28,7 @@ import { Repository } from "@scm-manager/ui-types";
 import { CreateButton, ErrorPage, Loading, Notification } from "@scm-manager/ui-components";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
-import { invalidatePullRequests, usePullRequests } from "./pullRequest";
+import { usePullRequests } from "./pullRequest";
 
 const ScrollingTable = styled.div`
   overflow-x: auto;
@@ -42,11 +42,10 @@ const PullRequestList: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
   const [status, setStatus] = useState("OPEN");
 
-  const { data, error, isLoading } = usePullRequests(repository);
+  const { data, error, isLoading } = usePullRequests(repository, status);
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = async (newStatus: string) => {
     setStatus(newStatus);
-    return invalidatePullRequests(repository);
   };
 
   const renderPullRequestTable = () => {
@@ -56,9 +55,13 @@ const PullRequestList: FC<Props> = ({ repository }) => {
           <StatusSelector handleTypeChange={handleStatusChange} status={status ? status : "OPEN"} />
         </div>
 
-        <ScrollingTable className="panel-block">
-          <PullRequestTable repository={repository} pullRequests={data!._embedded.pullRequests} />
-        </ScrollingTable>
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <ScrollingTable className="panel-block">
+            <PullRequestTable repository={repository} pullRequests={data!._embedded.pullRequests} />
+          </ScrollingTable>
+        )}
       </div>
     );
   };
@@ -77,13 +80,9 @@ const PullRequestList: FC<Props> = ({ repository }) => {
     );
   }
 
-  if (!data || isLoading) {
-    return <Loading />;
-  }
-
   const to = "pull-requests/add/changesets/";
 
-  const createButton = data._links.create ? (
+  const createButton = data?._links?.create ? (
     <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={to} />
   ) : null;
 
