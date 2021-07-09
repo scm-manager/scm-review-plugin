@@ -44,7 +44,6 @@ import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import {
   check,
   evaluateTagColor,
-  invalidatePullRequest,
   useMergePullRequest,
   useRejectPullRequest
 } from "./pullRequest";
@@ -333,7 +332,8 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       <ChangeNotification
         repository={repository}
         pullRequest={pullRequest}
-        reload={() => invalidatePullRequest(repository, pullRequest.id)}
+        //TODO Sebastian fragen wie der Cache invalidiert werden kann
+        // reload={() => invalidatePullRequest(repository, pullRequest.id!)}
       />
       <Container>
         <div className="media">

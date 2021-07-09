@@ -102,7 +102,12 @@ type Props = {
   fileContentFactory: FileContentFactory;
 };
 
-const openEditor = (diffState: DiffState, editor: boolean, location?: Location) => {
+const openEditor = (
+  diffState: DiffState,
+  updateDiffState: (state: DiffState) => void,
+  editor: boolean,
+  location?: Location
+) => {
   if (isInlineLocation(location)) {
     const lineComments = diffState.lines;
     const hunkId = createHunkIdFromLocation(location!);
@@ -116,6 +121,7 @@ const openEditor = (diffState: DiffState, editor: boolean, location?: Location) 
     changeComments.editor = editor;
     hunkComments[changeId] = changeComments;
     lineComments[hunkId] = hunkComments;
+    updateDiffState({ ...diffState, lines: lineComments });
   } else {
     const fileComments = diffState.files;
     const file = location!.file;
@@ -124,6 +130,7 @@ const openEditor = (diffState: DiffState, editor: boolean, location?: Location) 
     };
     fileState.editor = editor;
     fileComments[file] = fileState;
+    updateDiffState({ ...diffState, files: fileComments });
   }
 };
 
@@ -245,7 +252,7 @@ const Diff: FC<Props> = ({
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         setCollapse(false);
-        openEditor(diffState, true, { file: path });
+        openEditor(diffState, updateDiffState, true, { file: path });
       };
       return (
         <ButtonGroup>
@@ -269,7 +276,7 @@ const Diff: FC<Props> = ({
   const onGutterClick = (context: DiffEventContext) => {
     if (isPermittedToComment() && !context.hunk.expansion) {
       const location = createInlineLocation(context);
-      openEditor(diffState, true, location);
+      openEditor(diffState, updateDiffState, true, location);
     }
   };
 
@@ -311,7 +318,7 @@ const Diff: FC<Props> = ({
             pullRequest={pullRequest}
             url={createLink}
             location={location}
-            onCancel={() => openEditor(diffState, false, location)}
+            onCancel={() => openEditor(diffState, updateDiffState, false, location)}
             autofocus={true}
           />
         </CommentSpacingWrapper>

@@ -27,7 +27,7 @@ import { Branch, Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
-import { checkPullRequest, invalidatePullRequestChangesets, useCreatePullRequest } from "./pullRequest";
+import { checkPullRequest,  useCreatePullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import { useHistory, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -86,7 +86,6 @@ const Create: FC<Props> = ({ repository }) => {
         setPullRequest(basicPR);
         setDisabled(!isPullRequestValid(basicPR, result));
       })
-      .then(() => invalidatePullRequestChangesets(repository, pullRequest.source + pullRequest.target));
   };
 
   const submit = () => create(pullRequest);

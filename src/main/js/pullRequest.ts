@@ -45,11 +45,6 @@ export const prQueryKey = (repository: Repository, pullRequestId: string) => {
   return ["repository", repository.namespace, repository.name, "pull-request", pullRequestId];
 };
 
-export const invalidatePullRequest = async (repository: Repository, pullRequestId: string) => {
-  const queryClient = useQueryClient();
-  await queryClient.invalidateQueries(prQueryKey(repository, pullRequestId));
-};
-
 export const usePullRequest = (repository: Repository, pullRequestId: string) => {
   const { error, isLoading, data } = useQuery<PullRequest, Error>(prQueryKey(repository, pullRequestId), () =>
     getPullRequest((repository._links.pullRequest as Link).href + "/" + pullRequestId)
@@ -369,11 +364,6 @@ export const useUpdateReviewMark = (repository: Repository, pullRequest: PullReq
     isLoading,
     error
   };
-};
-
-export const invalidatePullRequestChangesets = async (repository: Repository, pullRequestId: string) => {
-  const queryClient = useQueryClient();
-  await queryClient.invalidateQueries([...prQueryKey(repository, pullRequestId), "changesets"]);
 };
 
 type ChangesetCollection = PagedCollection & {
