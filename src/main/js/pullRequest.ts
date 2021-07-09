@@ -26,7 +26,7 @@ import {
   BasicComment,
   BasicPullRequest,
   Comment,
-  Comments,
+  Comments, Conflicts,
   MergeCommit,
   PossibleTransition,
   PullRequest,
@@ -403,6 +403,27 @@ export const usePullRequestChangesets = (repository: Repository, pullRequest: Pu
   };
 };
 
+export const usePullRequestConflicts = (repository: Repository, pullRequest: PullRequest) => {
+  const { error, isLoading, data } = useQuery<Conflicts, Error>(
+    [...prQueryKey(repository, pullRequest.id!), "conflicts"],
+    () => {
+      return apiClient
+        .post(
+          (pullRequest._links.mergeConflicts as Link).href,
+          { sourceRevision: pullRequest.source, targetRevision: pullRequest.target },
+          "application/vnd.scmm-mergeCommand+json"
+        )
+        .then(r => r.json());
+    }
+  );
+
+  return {
+    error,
+    isLoading,
+    data
+  };
+};
+
 export function getBranches(url: string) {
   return apiClient
     .get(url)
@@ -450,17 +471,6 @@ export function createDiffUrl(repository: Repository, source: string, target: st
   } else {
     return createIncomingUrl(repository, "incomingDiff", source, target);
   }
-}
-
-export function fetchConflicts(url: string, source: string, target: string) {
-  return apiClient
-    .post(url, { sourceRevision: source, targetRevision: target }, "application/vnd.scmm-mergeCommand+json")
-    .then(response => response.json())
-    .catch(err => {
-      return {
-        error: err
-      };
-    });
 }
 
 export function evaluateTagColor(pullRequest: PullRequest) {

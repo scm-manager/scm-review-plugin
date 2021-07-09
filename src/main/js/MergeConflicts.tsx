@@ -21,117 +21,74 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Conflict, Conflicts, PullRequest } from "./types/PullRequest";
-import { Loading, Notification, DiffFile } from "@scm-manager/ui-components";
-import { Repository } from "@scm-manager/ui-types";
-import { fetchConflicts } from "./pullRequest";
+import React, { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Conflict, PullRequest } from "./types/PullRequest";
+import { DiffFile, ErrorNotification, Loading, Notification } from "@scm-manager/ui-components";
+import { FileChangeType, Repository } from "@scm-manager/ui-types";
+import { usePullRequestConflicts } from "./pullRequest";
 // @ts-ignore
 import parser from "gitdiff-parser";
 import ManualMergeInformation from "./ManualMergeInformation";
 
-type Props = WithTranslation & {
+type Props = {
   repository: Repository;
   pullRequest: PullRequest;
-  source: string;
-  target: string;
 };
 
-type State = {
-  loading: boolean;
-  error?: Error;
-  conflicts?: Conflicts;
-  mergeInformation: boolean;
-};
+const MergeConflicts: FC<Props> = ({ repository, pullRequest }) => {
+  const [t] = useTranslation("plugins");
+  const [mergeInformation, setMergeInformation] = useState(false);
 
-class MergeConflicts extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      loading: true,
-      mergeInformation: false
-    };
-  }
+  const { data, error, isLoading } = usePullRequestConflicts(repository, pullRequest);
 
-  componentDidMount() {
-    this.fetchConflicts();
-  }
-
-  fetchConflicts = () => {
-    const { pullRequest } = this.props;
-    if (pullRequest && pullRequest._links && pullRequest._links.mergeConflicts) {
-      fetchConflicts(pullRequest._links.mergeConflicts.href, pullRequest.source, pullRequest.target)
-        .then(conflicts => {
-          this.setState({
-            loading: false,
-            error: undefined,
-            conflicts
-          });
-        })
-        .catch(error =>
-          this.setState({
-            loading: false,
-            error
-          })
-        );
-    } else {
-      this.setState({
-        loading: false
-      });
-    }
+  const getTypeLabel = (type: string) => {
+    return t("scm-review-plugin.conflicts.types." + type);
   };
 
-  getTypeLabel = (type: string) => {
-    return this.props.t("scm-review-plugin.conflicts.types." + type);
-  };
-
-  createDiffComponent = (conflict: Conflict) => {
+  const createDiffComponent = (conflict: Conflict) => {
     if (conflict.diff) {
       const parsedDiff = parser.parse(conflict.diff);
       return parsedDiff
-        .map(file => ({ ...file, type: this.getTypeLabel(conflict.type) }))
-        .map(file => <DiffFile markConflicts={true} file={file} sideBySide={false} />);
+        .map((file: any) => ({ ...file, type: getTypeLabel(conflict.type) }))
+        .map((file: any) => <DiffFile markConflicts={true} file={file} sideBySide={false} />);
     } else {
       return (
         <DiffFile
-          file={{ hunks: [], newPath: conflict.path, type: this.getTypeLabel(conflict.type) }}
+          file={{ hunks: [], newPath: conflict.path, type: getTypeLabel(conflict.type) as FileChangeType }}
           sideBySide={false}
         />
       );
     }
   };
 
-  render() {
-    const { loading, conflicts, mergeInformation } = this.state;
-    const { repository, pullRequest } = this.props;
-
-    if (loading) {
-      return <Loading />;
-    }
-
-    return (
-      <>
-        <Notification type={"warning"}>
-          <div className="content">
-            <b>{this.props.t("scm-review-plugin.conflicts.hint.header")}</b>
-            <p>
-              <a onClick={() => this.setState({ mergeInformation: true })}>
-                {this.props.t("scm-review-plugin.conflicts.hint.text")}
-              </a>
-            </p>
-          </div>
-        </Notification>
-        {conflicts.conflicts.map(conflict => this.createDiffComponent(conflict))}
-        <ManualMergeInformation
-          showMergeInformation={mergeInformation}
-          repository={repository}
-          pullRequest={pullRequest}
-          onClose={() => this.setState({ mergeInformation: false })}
-        />
-      </>
-    );
+  if (error) {
+    return <ErrorNotification error={error} />;
   }
-}
 
-export default withTranslation("plugins")(MergeConflicts);
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  return (
+    <>
+      <Notification type={"warning"}>
+        <div className="content">
+          <b>{t("scm-review-plugin.conflicts.hint.header")}</b>
+          <p>
+            <a onClick={() => setMergeInformation(true)}>{t("scm-review-plugin.conflicts.hint.text")}</a>
+          </p>
+        </div>
+      </Notification>
+      {data!.conflicts.map(conflict => createDiffComponent(conflict))}
+      <ManualMergeInformation
+        showMergeInformation={mergeInformation}
+        repository={repository}
+        pullRequest={pullRequest}
+        onClose={() => setMergeInformation(false)}
+      />
+    </>
+  );
+};
+
+export default MergeConflicts;

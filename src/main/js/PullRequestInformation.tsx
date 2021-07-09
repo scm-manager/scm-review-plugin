@@ -128,7 +128,7 @@ const PullRequestInformation: FC<Props> = ({
     );
     routeConflicts = !mergeHasNoConflict && (
       <Route path={`${baseURL}/conflicts`} exact>
-        <MergeConflicts repository={repository} pullRequest={pullRequest} source={source} target={target} />
+        <MergeConflicts repository={repository} pullRequest={pullRequest} />
       </Route>
     );
     conflictsTab = !mergeHasNoConflict && (
@@ -149,11 +149,7 @@ const PullRequestInformation: FC<Props> = ({
       {routeChangeset}
       {routeChangesetPagination}
       {routeDiff}
-      {!mergeHasNoConflict && (
-        <Route path={`${baseURL}/conflicts`} exact>
-          <MergeConflicts repository={repository} pullRequest={pullRequest} source={source} target={target} />
-        </Route>
-      )}
+      {routeConflicts}
     </Switch>
   );
 
