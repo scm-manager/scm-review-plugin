@@ -324,10 +324,8 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     return pullRequest.status === "MERGED" ? "mergedBy" : "rejectedBy";
   };
 
-  console.log(pullRequest)
-
   if (!pullRequest) {
-    return null
+    return null;
   }
 
   return (
@@ -399,7 +397,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
             {pullRequest.status !== "OPEN" && !!pullRequest.reviser?.displayName
               ? userEntry(getLabelKeyForUser(), pullRequest.reviser?.displayName, pullRequest.closeDate)
               : null}
-            <ReviewerList pullRequest={pullRequest}/>
+            <ReviewerList pullRequest={pullRequest} />
           </div>
         </UserList>
 

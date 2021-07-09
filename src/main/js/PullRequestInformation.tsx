@@ -98,6 +98,7 @@ const PullRequestInformation: FC<Props> = ({
       <Route path={`${baseURL}/changesets`} exact>
         <Changesets
           repository={repository}
+          pullRequest={pullRequest}
           source={sourceRevision}
           target={targetRevision}
           shouldFetchChangesets={shouldFetchChangesets}
@@ -108,6 +109,7 @@ const PullRequestInformation: FC<Props> = ({
       <Route path={`${baseURL}/changesets/:page`} exact>
         <Changesets
           repository={repository}
+          pullRequest={pullRequest}
           source={sourceRevision}
           target={targetRevision}
           shouldFetchChangesets={shouldFetchChangesets}
@@ -142,7 +144,7 @@ const PullRequestInformation: FC<Props> = ({
     <Switch>
       <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
       <Route path={`${baseURL}/comments`} exact>
-        <RootComments repository={repository} pullRequest={pullRequest} />
+        {pullRequest ? <RootComments repository={repository} pullRequest={pullRequest} /> : null}
       </Route>
       {routeChangeset}
       {routeChangesetPagination}
@@ -155,7 +157,7 @@ const PullRequestInformation: FC<Props> = ({
     </Switch>
   );
 
-  const commentTab = pullRequest ? (
+  const commentTab = pullRequest?._links?.comments ? (
     <li className={navigationClass("comments")}>
       <Link to={`${baseURL}/comments/`}>{t("scm-review-plugin.pullRequest.tabs.comments")}</Link>
     </li>

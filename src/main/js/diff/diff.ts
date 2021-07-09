@@ -36,8 +36,8 @@ export const updateDiffStateForComments = (
     const location = comment.location;
     if (comment.id && location && !location?.newLineNumber && !location?.oldLineNumber) {
       const preUpdateFiles = files[location.file];
-      if (preUpdateFiles) {
-        files[location.file] = { ...preUpdateFiles, comments: [...preUpdateFiles.comments, comment.id] };
+      if (preUpdateFiles && preUpdateFiles.comments) {
+        files[location.file] = { ...preUpdateFiles, comments: [...preUpdateFiles?.comments, comment.id] };
       } else {
         files[location.file] = { comments: [comment.id] };
       }
@@ -51,7 +51,7 @@ export const updateDiffStateForComments = (
         if (preUpdateChanges) {
           lines[lineId] = {
             ...preUpdateLines,
-            [changeId]: { ...[preUpdateChanges], comments: [...preUpdateChanges.comments, comment.id!], location }
+            [changeId]: { ...[preUpdateChanges], comments: [...preUpdateChanges?.comments, comment.id!], location }
           };
         } else {
           lines[lineId] = {
@@ -68,7 +68,7 @@ export const updateDiffStateForComments = (
   }
   setDiffState({
     ...diffState,
-    comments: comments._embedded.pullRequestComments,
+    comments: comments?._embedded.pullRequestComments,
     files,
     lines
   });

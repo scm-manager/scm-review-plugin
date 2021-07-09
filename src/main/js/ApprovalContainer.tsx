@@ -24,7 +24,7 @@
 import React, { FC } from "react";
 import { ErrorNotification } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
-import { useApproveReviewer, useDisapproveReviewer } from "./pullRequest";
+import { useApproveReviewer } from "./pullRequest";
 import ApprovalButton from "./ApprovalButton";
 import DisapprovalButton from "./DisapprovalButton";
 import { Repository } from "@scm-manager/ui-types";
@@ -35,24 +35,16 @@ type Props = {
 };
 
 const ApprovalContainer: FC<Props> = ({ repository, pullRequest }) => {
-  const { error: approveError, isLoading: approveIsLoading, approve } = useApproveReviewer(repository, pullRequest);
-  const { error: disapproveError, isLoading: disapproveIsLoading, disapprove } = useDisapproveReviewer(
-    repository,
-    pullRequest
-  );
+  const { error, isLoading, approve } = useApproveReviewer(repository, pullRequest);
 
-  if (approveError) {
-    return <ErrorNotification error={approveError} />;
-  }
-
-  if (disapproveError) {
-    return <ErrorNotification error={disapproveError} />;
+  if (error) {
+    return <ErrorNotification error={error} />;
   }
 
   if (!!pullRequest?._links?.approve) {
-    return <ApprovalButton loading={approveIsLoading} action={approve} />;
+    return <ApprovalButton loading={isLoading} action={() => approve(true)} />;
   } else if (!!pullRequest?._links?.disapprove) {
-    return <DisapprovalButton loading={disapproveIsLoading} action={disapprove} />;
+    return <DisapprovalButton loading={isLoading} action={() => approve(false)} />;
   } else {
     return null;
   }

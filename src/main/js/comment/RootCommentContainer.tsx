@@ -78,7 +78,7 @@ const RootCommentContainer: FC<Props> = ({ repository, pullRequest }) => {
     return <div />;
   }
 
-  const createLink = (comments._links.create as Link).href || undefined;
+  const createLink = (comments?._links?.create as Link)?.href || undefined;
   return (
     <div ref={contentRef}>
       {comments._embedded.pullRequestComments?.map((rootComment: Comment) => (

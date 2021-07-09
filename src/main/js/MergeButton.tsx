@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC, useState } from "react";
-import { useTranslation, WithTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { Button, Tooltip } from "@scm-manager/ui-components";
 import ManualMergeInformation from "./ManualMergeInformation";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
@@ -30,20 +30,13 @@ import { Link, Repository } from "@scm-manager/ui-types";
 import MergeModal from "./MergeModal";
 import OverrideModal from "./OverrideModal";
 
-type Props = WithTranslation & {
+type Props = {
   merge: (strategy: string, commit: MergeCommit, emergency: boolean) => void;
   repository: Repository;
   mergeCheck?: MergeCheck;
   loading: boolean;
   pullRequest: PullRequest;
   onMergeModalClose?: () => void;
-};
-
-type State = {
-  mergeInformation: boolean;
-  showMergeModal: boolean;
-  showOverrideModal: boolean;
-  overrideMessage?: string;
 };
 
 const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, mergeCheck, onMergeModalClose }) => {

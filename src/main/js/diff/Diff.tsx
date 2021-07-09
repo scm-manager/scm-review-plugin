@@ -152,7 +152,7 @@ const Diff: FC<Props> = ({
     const path = diffs.getPath(file);
 
     const annotations = [];
-    const fileState = diffState.files[path] || [];
+    const fileState = diffState?.files[path] || [];
     if (fileState.comments && fileState.comments.length > 0) {
       annotations.push(createComments(fileState.comments));
     }
@@ -250,6 +250,7 @@ const Diff: FC<Props> = ({
       return (
         <ButtonGroup>
           <MarkReviewedButton
+            repository={repository}
             pullRequest={pullRequest}
             newPath={file.newPath}
             oldPath={file.oldPath}
@@ -277,7 +278,7 @@ const Diff: FC<Props> = ({
   };
 
   const findComment = (id: string): Comment => {
-    const comment = diffState.comments.find(c => c.id === id);
+    const comment = diffState?.comments.find(c => c.id === id);
     if (!comment) {
       throw new Error("could not find comment with id " + id);
     }

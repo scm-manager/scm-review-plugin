@@ -21,15 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { DiffButton } from "@scm-manager/ui-components";
-import { Link } from "@scm-manager/ui-types";
+import React, { FC, useState } from "react";
+import { DiffButton, ErrorNotification } from "@scm-manager/ui-components";
+import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
-import { deleteReviewMark, postReviewMark } from "../pullRequest";
+import { useUpdateReviewMark } from "../pullRequest";
 import { DiffState } from "./Diff";
+import { useTranslation } from "react-i18next";
 
-type Props = WithTranslation & {
+type Props = {
+  repository: Repository;
   pullRequest: PullRequest;
   oldPath: string;
   newPath: string;
@@ -37,21 +38,9 @@ type Props = WithTranslation & {
   diffState: DiffState;
 };
 
-type State = {
-  marked: boolean;
-};
-
-class MarkReviewedButton extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {
-      marked: props.diffState.reviewedFiles.some(mark => mark === this.determinePath())
-    };
-  }
-
-  determinePath = () => {
-    const { oldPath, newPath } = this.props;
+const MarkReviewedButton: FC<Props> = ({ repository, pullRequest, oldPath, newPath, setReviewed, diffState }) => {
+  const [t] = useTranslation("plugins");
+  const determinePath = () => {
     if (newPath !== "/dev/null") {
       return newPath;
     } else {
@@ -59,39 +48,38 @@ class MarkReviewedButton extends React.Component<Props, State> {
     }
   };
 
-  mark = () => {
-    const { pullRequest, setReviewed } = this.props;
-    const filepath = this.determinePath();
-    postReviewMark((pullRequest._links.reviewMark as Link).href, filepath);
+  const [marked, setMarked] = useState(diffState.reviewedFiles.some((markedFile: string) => markedFile === determinePath()));
+  const { mark, isLoading, error } = useUpdateReviewMark(repository, pullRequest);
+
+  const markFile = () => {
+    const filepath = determinePath();
+    mark(filepath, true);
     setReviewed(filepath, true);
-    this.setState({ marked: true });
+    setMarked(true);
   };
 
-  unmark = () => {
-    const { pullRequest, setReviewed } = this.props;
-    const filepath = this.determinePath();
-    deleteReviewMark((pullRequest._links.reviewMark as Link).href, filepath);
+  const unmarkFile = () => {
+    const filepath = determinePath();
+    mark(filepath, false);
     setReviewed(filepath, false);
-    this.setState({ marked: false });
+    setMarked(false);
   };
 
-  render() {
-    const { pullRequest, t } = this.props;
-    if (!pullRequest?._links?.reviewMark) {
-      return null;
-    }
-    if (this.state.marked) {
-      return (
-        <DiffButton
-          onClick={this.unmark}
-          tooltip={t("scm-review-plugin.diff.markNotReviewed")}
-          icon="clipboard-check"
-        />
-      );
-    } else {
-      return <DiffButton onClick={this.mark} tooltip={t("scm-review-plugin.diff.markReviewed")} icon="clipboard" />;
-    }
+  if (!pullRequest?._links?.reviewMark) {
+    return null;
   }
-}
 
-export default withTranslation("plugins")(MarkReviewedButton);
+  if (error) {
+    return <ErrorNotification error={error} />;
+  }
+
+  if (marked) {
+    return (
+      <DiffButton onClick={unmarkFile} tooltip={t("scm-review-plugin.diff.markNotReviewed")} icon="clipboard-check" />
+    );
+  } else {
+    return <DiffButton onClick={markFile} tooltip={t("scm-review-plugin.diff.markReviewed")} icon="clipboard" />;
+  }
+};
+
+export default MarkReviewedButton;

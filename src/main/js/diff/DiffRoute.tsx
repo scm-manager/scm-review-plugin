@@ -100,7 +100,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
   } else if (error) {
     return <ErrorNotification error={error} />;
   } else {
-    const createLink = (comments?._links.create as Link).href || undefined;
+    const createLink = (comments?._links?.create as Link)?.href || undefined;
     return (
       <Diff
         repository={repository}

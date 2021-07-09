@@ -37,9 +37,8 @@ const ValidationError = styled.p`
 `;
 
 type Props = {
-  repository: Repository;
-  pullRequest: BasicPullRequest;
-  handleFormChange: (pr: BasicPullRequest) => void;
+  pullRequest: PullRequest;
+  handleFormChange: (pr: PullRequest) => void;
   checkResult?: CheckResult;
   branches?: Branch[];
   branchesError?: Error | null;
@@ -47,7 +46,6 @@ type Props = {
 };
 
 const CreateForm: FC<Props> = ({
-  repository,
   pullRequest,
   handleFormChange,
   checkResult,
@@ -103,7 +101,7 @@ const CreateForm: FC<Props> = ({
         </div>
       </div>
       {renderValidationError()}
-      <EditForm handleFormChange={handleFormChange} pullRequest={pullRequest as PullRequest} />
+      <EditForm handleFormChange={handleFormChange} pullRequest={pullRequest} />
     </form>
   );
 };

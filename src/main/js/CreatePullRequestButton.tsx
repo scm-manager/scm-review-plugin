@@ -21,24 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { Repository, Branch, Link } from "@scm-manager/ui-types";
+import React, { FC } from "react";
+import { Branch, Repository } from "@scm-manager/ui-types";
 import { AddButton, Loading } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { getPullRequests } from "./pullRequest";
-import { PullRequest, PullRequestCollection } from "./types/PullRequest";
+import { useTranslation, withTranslation } from "react-i18next";
+import { PullRequest } from "./types/PullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import styled from "styled-components";
+import { usePullRequests } from "./pullRequest";
 
-type Props = WithTranslation & {
+type Props = {
   repository: Repository;
   branch: Branch;
-};
-
-type State = {
-  pullRequests: PullRequestCollection;
-  error?: Error;
-  loading: boolean;
 };
 
 const HR = styled.hr`
@@ -49,78 +43,44 @@ const ScrollingTable = styled.div`
   overflow-x: auto;
 `;
 
-class CreatePullRequestButton extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      pullRequests: { _embedded: { pullRequests: [] }, _links: {} },
-      loading: true
-    };
+const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
+  const [t] = useTranslation("plugins");
+  const { data, error, isLoading } = usePullRequests(repository);
+
+  if (!repository._links.pullRequest) {
+    return null;
   }
 
-  componentDidMount(): void {
-    if (this.props.repository._links.pullRequest) {
-      const url = (this.props.repository._links.pullRequest as Link).href;
-      this.updatePullRequests(url);
-    }
+  if (isLoading) {
+    return <Loading />;
   }
 
-  updatePullRequests = (url: string) => {
-    getPullRequests(url)
-      .then(response => {
-        this.setState({
-          pullRequests: response,
-          loading: false
-        });
-      })
-      .catch(error => {
-        this.setState({
-          loading: false,
-          error
-        });
-      });
-  };
+  if (error) {
+    return;
+  }
 
-  render() {
-    const { repository, branch, t } = this.props;
-    const { loading, error, pullRequests } = this.state;
+  const matchingPullRequests = data!._embedded.pullRequests.filter((pr: PullRequest) => pr.source === branch.name);
 
-    if (!this.props.repository._links.pullRequest) {
-      return null;
-    }
-
-    if (loading) {
-      return <Loading />;
-    }
-
-    if (error) {
-      return;
-    }
-
-    const matchingPullRequests = pullRequests._embedded.pullRequests.filter(
-      (pr: PullRequest) => pr.source === branch.name
-    );
-
-    let existing = null;
-    if (matchingPullRequests.length > 0) {
-      existing = (
-        <ScrollingTable className="mb-3">
-          <PullRequestTable repository={repository} pullRequests={matchingPullRequests} />
-        </ScrollingTable>
-      );
-    }
-    return (
-      <div>
-        <HR />
-        <h4>{t("scm-review-plugin.branch.header")}</h4>
-        {existing}
-        <AddButton
-          label={t("scm-review-plugin.branch.createPullRequest")}
-          link={`/repo/${repository.namespace}/${repository.name}/pull-requests/add?source=${branch.name}`}
-        />
-      </div>
+  let existing = null;
+  if (matchingPullRequests.length > 0) {
+    existing = (
+      <ScrollingTable className="mb-3">
+        <PullRequestTable repository={repository} pullRequests={matchingPullRequests} />
+      </ScrollingTable>
     );
   }
-}
 
-export default withTranslation("plugins")(CreatePullRequestButton);
+  return (
+    <div>
+      <HR />
+      <h4>{t("scm-review-plugin.branch.header")}</h4>
+      {existing}
+      <AddButton
+        label={t("scm-review-plugin.branch.createPullRequest")}
+        link={`/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets?source=${branch.name}`}
+      />
+    </div>
+  );
+};
+
+export default CreatePullRequestButton;

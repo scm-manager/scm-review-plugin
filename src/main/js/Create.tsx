@@ -27,7 +27,7 @@ import { Branch, Link, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
-import { checkPullRequest, createChangesetUrl, getChangesets, useCreatePullRequest } from "./pullRequest";
+import { checkPullRequest, invalidatePullRequestChangesets, useCreatePullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import { useHistory, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -45,8 +45,7 @@ type Props = {
 const Create: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
   const history = useHistory();
-  const [pullRequest, setPullRequest] = useState<BasicPullRequest>({ title: "", target: "", source: "" });
-  const [changesets, setChangesets] = useState([]);
+  const [pullRequest, setPullRequest] = useState<PullRequest>({ title: "", target: "", source: "", _links: {} });
   const [disabled, setDisabled] = useState(true);
   const [checkResult, setCheckResult] = useState<CheckResult | undefined>();
   const location = useLocation();
@@ -73,24 +72,21 @@ const Create: FC<Props> = ({ repository }) => {
       handleFormChange({
         title: "",
         source: initialSource,
-        target: initialTarget
+        target: initialTarget,
+        _links: {}
       });
     }
   }, [repository, branchesData]);
 
-  const fetchChangesets = (basicPR: BasicPullRequest) => {
+  const fetchChangesets = (basicPR: PullRequest) => {
     return checkPullRequest((repository._links.pullRequestCheck as Link)?.href, basicPR)
       .then(r => r.json())
       .then(result => {
         setCheckResult(result);
         setPullRequest(basicPR);
         setDisabled(!isPullRequestValid(basicPR, result));
-        if (result.status === "PR_VALID") {
-          getChangesets(createChangesetUrl(repository, basicPR.source, basicPR.target)!).then(r => {
-            setChangesets(r._embedded.changesets);
-          });
-        }
-      });
+      })
+      .then(() => invalidatePullRequestChangesets(repository, pullRequest.source + pullRequest.target));
   };
 
   const submit = () => create(pullRequest);
@@ -106,17 +102,10 @@ const Create: FC<Props> = ({ repository }) => {
     return !!basicPR.source && !!basicPR.target && !!basicPR.title && isValid(result);
   };
 
-  const shouldFetchChangesets = (basicPR: BasicPullRequest) => {
-    return pullRequest?.source !== basicPR.source || pullRequest.target !== basicPR.target;
-  };
-
-  const handleFormChange = (basicPR: BasicPullRequest) => {
-    if (shouldFetchChangesets(basicPR)) {
-      fetchChangesets(basicPR);
-    } else {
-      setDisabled(!isPullRequestValid(basicPR));
-      setPullRequest(basicPR);
-    }
+  const handleFormChange = (basicPR: PullRequest) => {
+    fetchChangesets(basicPR);
+    setDisabled(!isPullRequestValid(basicPR));
+    setPullRequest(basicPR);
   };
 
   if (!repository._links.pullRequest) {
@@ -133,7 +122,7 @@ const Create: FC<Props> = ({ repository }) => {
     information = (
       <PullRequestInformation
         repository={repository}
-        pullRequest={pullRequest as PullRequest}
+        pullRequest={pullRequest}
         status="OPEN"
         mergeHasNoConflict={true}
         shouldFetchChangesets={isValid()}
@@ -151,7 +140,6 @@ const Create: FC<Props> = ({ repository }) => {
         {notification}
         {!createLoading && (
           <CreateForm
-            repository={repository}
             pullRequest={pullRequest}
             branches={branchesData?._embedded.branches}
             handleFormChange={handleFormChange}

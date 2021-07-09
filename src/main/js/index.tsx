@@ -23,7 +23,7 @@
  */
 import React from "react";
 import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
-import { binder } from "@scm-manager/ui-extensions";
+import { binder, ExtensionPoint, ExtensionPointDefinition } from "@scm-manager/ui-extensions";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
 import PullRequestList from "./PullRequestList";
@@ -40,6 +40,7 @@ import PullRequestReview from "./landingpage/MyPullRequestReview";
 import RepoEngineConfig from "./workflow/RepoEngineConfig";
 import GlobalEngineConfig from "./workflow/GlobalEngineConfig";
 import ApprovedByXReviewersRuleConfiguration from "./workflow/ApprovedByXReviewersRuleConfiguration";
+import { Branch, Repository } from "@scm-manager/ui-types";
 
 const reviewSupportedPredicate = (props: object) => {
   return props.repository && props.repository._links.pullRequest;
@@ -105,9 +106,10 @@ const ShowPullRequestsRoute = ({ url, repository }) => {
 
 binder.bind("repository.route", ShowPullRequestsRoute);
 
-binder.bind("repos.branch-details.information", ({ repository, branch }) => (
-  <CreatePullRequestButton repository={repository} branch={branch} />
-));
+binder.bind<ExtensionPointDefinition<"repos.branch-details.information", { repository: Repository; branch: Branch }>>(
+  "repos.branch-details.information",
+  ({ repository, branch }) => <CreatePullRequestButton repository={repository} branch={branch} />
+);
 
 binder.bind("repository.card.quickLink", RepositoryPullRequestCardLink, reviewSupportedPredicate);
 

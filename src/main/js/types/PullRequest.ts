@@ -38,19 +38,19 @@ export type BasicPullRequest = {
 export type PullRequest = BasicPullRequest &
   HalRepresentation & {
     description?: string;
-    author: DisplayedUser;
+    author?: DisplayedUser;
     reviser?: DisplayedUser;
     closeDate?: string;
-    id: string;
-    creationDate: string;
-    reviewer: Reviewer[];
-    status: string;
-    tasks: Tasks;
-    sourceRevision: string;
-    targetRevision: string;
-    markedAsReviewed: string[];
-    emergencyMerged: boolean;
-    ignoredMergeObstacles: string[];
+    id?: string;
+    creationDate?: string;
+    reviewer?: Reviewer[];
+    status?: string;
+    tasks?: Tasks;
+    sourceRevision?: string;
+    targetRevision?: string;
+    markedAsReviewed?: string[];
+    emergencyMerged?: boolean;
+    ignoredMergeObstacles?: string[];
   };
 
 export type Location = {

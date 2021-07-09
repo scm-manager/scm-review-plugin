@@ -39,22 +39,6 @@ const SinglePullRequest: FC<Props> = ({ repository }) => {
   const match = useRouteMatch<{ pullRequestNumber: string }>();
   const { data, error, isLoading } = usePullRequest(repository, match?.params?.pullRequestNumber);
 
-  // fetchReviewer = (): void => {
-  //   const { pullRequest } = this.state;
-  //   if (pullRequest && pullRequest._links && pullRequest._links.self && (pullRequest._links.self as Link).href) {
-  //     const url = (pullRequest._links.self as Link).href + "?fields=reviewer&fields=_links";
-  //     getReviewer(url).then(response => {
-  //       if (response.error) {
-  //         this.setState({
-  //           error: response.error
-  //         });
-  //       } else {
-  //         this.setState({ pullRequest: { ...pullRequest, reviewer: response.reviewer, _links: response._links } });
-  //       }
-  //     });
-  //   }
-  // };
-
   if (!repository._links.pullRequest) {
     return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
   }
