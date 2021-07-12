@@ -23,7 +23,7 @@
  */
 import React, { FC, ReactText, useState } from "react";
 import { Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
-import { BasicComment, Location, PullRequest } from "../types/PullRequest";
+import { Location, Mention, PullRequest } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 import { useCreatePullRequestComment } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
@@ -40,24 +40,25 @@ type Props = {
   reply?: boolean;
 };
 
-const initialNewCommentState = {
-  type: "COMMENT",
-  mentions: []
-};
-
-const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCancel, autofocus, reply }) => {
+const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCancel, reply }) => {
   const [t] = useTranslation("plugins");
 
   const { createComment, isLoading, error } = useCreatePullRequestComment(repository, pullRequest);
 
-  const [newComment, setNewComment] = useState<BasicComment>(initialNewCommentState);
+  const [commentType, setCommentType] = useState("COMMENT");
+  const [commentText, setCommentText] = useState("");
+  const [mentions, setMentions] = useState<Mention[]>([]);
 
   const submit = () => {
     createComment(url, {
-      ...newComment,
+      type: commentType,
+      comment: commentText,
+      mentions: mentions,
       location
     });
-    setNewComment(initialNewCommentState);
+    setCommentText("");
+    setCommentType("COMMENT");
+    setMentions([]);
     if (onCancel) {
       onCancel();
     }
@@ -75,7 +76,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
   };
 
   const isValid = () => {
-    return newComment && newComment.comment && newComment.comment.trim() !== "";
+    return commentText && commentText.trim() !== "";
   };
 
   if (isLoading) {
@@ -96,16 +97,16 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
           <Radio
             name={`comment_type_${editorName}`}
             value="COMMENT"
-            checked={newComment?.type === "COMMENT"}
+            checked={commentType === "COMMENT"}
             label={t("scm-review-plugin.comment.type.comment")}
-            onChange={() => setNewComment({ ...newComment, type: "COMMENT" })}
+            onChange={() => setCommentType("COMMENT")}
           />
           <Radio
             name={`comment_type_${editorName}`}
             value="TASK_TODO"
-            checked={newComment?.type === "TASK_TODO"}
+            checked={commentType === "TASK_TODO"}
             label={t("scm-review-plugin.comment.type.task")}
-            onChange={() => setNewComment({ ...newComment, type: "TASK_TODO" })}
+            onChange={() => setCommentType("TASK_TODO")}
           />
         </div>
       </div>
@@ -113,7 +114,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
   }
 
   const evaluateTranslation = () => {
-    return newComment?.type === "TASK_TODO"
+    return commentType === "TASK_TODO"
       ? t("scm-review-plugin.comment.addTask")
       : t("scm-review-plugin.comment.addComment");
   };
@@ -126,18 +127,13 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
             <div className="field">
               <div className="control">
                 <MentionTextarea
-                  value={newComment?.comment}
-                  comment={newComment}
+                  value={commentText}
+                  comment={{ comment: commentText, type: commentType, mentions }}
                   placeholder={evaluateTranslation()}
                   onAddMention={(id: ReactText, displayName: string) => {
-                    setNewComment({
-                      ...newComment,
-                      mentions: [...newComment.mentions, { id, displayName, mail: "" }]
-                    });
+                    setMentions([...mentions, { id, displayName }]);
                   }}
-                  onChange={event => {
-                    setNewComment({ ...newComment, comment: event.target.value });
-                  }}
+                  onChange={event => setCommentText(event.target.value)}
                   onCancel={onCancel}
                   onSubmit={submit}
                 />
@@ -153,7 +149,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
                       <SubmitButton
                         label={evaluateTranslation()}
                         action={submit}
-                        disabled={!isValid() || !newComment}
+                        disabled={!isValid()}
                         loading={isLoading}
                         scrollToTop={false}
                       />
