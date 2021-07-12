@@ -76,16 +76,8 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
     pullRequest
   );
 
-  const { updateComment, isLoading: updateCommentLoading, error: updateCommentError } = useUpdatePullRequestComment(
-    repository,
-    pullRequest
-  );
-
-  const {
-    transformComment,
-    isLoading: transformCommentLoading,
-    error: transformCommentError
-  } = useTransformPullRequestComment(repository, pullRequest);
+  const { updateComment } = useUpdatePullRequestComment(repository, pullRequest);
+  const { transformComment } = useTransformPullRequestComment(repository, pullRequest);
 
   const startUpdate = () => {
     setEdit(true);
@@ -103,11 +95,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
       return;
     }
 
-    updateComment({
-      ...comment,
-      comment: updatedComment.comment,
-      type: updatedComment.type
-    });
+    updateComment(updatedComment);
     setEdit(false);
   };
 
@@ -177,7 +165,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
           onAddMention={(id: ReactText, display: string) => {
             setUpdatedComment({
               ...updatedComment,
-              mentions: [...updatedComment.mentions, { id: id as string, displayName: display }]
+              mentions: [...updatedComment.mentions, { id: id as string, displayName: display, mail: "" }]
             });
           }}
           onChange={handleChanges}

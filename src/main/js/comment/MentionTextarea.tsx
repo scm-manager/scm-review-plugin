@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, {FC, ReactText} from "react";
+import React, { FC, ReactText } from "react";
 import styled from "styled-components";
 import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
-import { getUserSuggestions } from "./mention";
 import { BasicComment } from "../types/PullRequest";
 import { useUserSuggestions } from "@scm-manager/ui-api";
+import { getUserSuggestions } from "./mention";
 
 const StyledSuggestion = styled.div<{ focused: boolean }>`
   background-color: ${props => props.focused && "#ccecf9"};
@@ -116,9 +116,6 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention,
           <Mention
             markup="@[__id__]"
             displayTransform={(id: string) => {
-              console.log(comment, id, comment?.mentions && comment.mentions.length > 0
-                ? `@${comment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
-                : `@${id}`)
               return comment?.mentions && comment.mentions.length > 0
                 ? `@${comment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
                 : `@${id}`;

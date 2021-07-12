@@ -230,7 +230,7 @@ export const useUpdatePullRequestComment = (repository: Repository, pullRequest:
     comment => apiClient.put((comment._links.update as Link).href, comment),
     {
       onSuccess: () => {
-        return queryClient.invalidateQueries(prQueryKey(repository, pullRequest.id!));
+        return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
       }
     }
   );

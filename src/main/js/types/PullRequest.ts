@@ -85,6 +85,7 @@ export type Comment = BasicComment & {
 export type Mention = {
   id: ReactText;
   displayName: string;
+  mail: string;
 };
 
 export type Context = {

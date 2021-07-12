@@ -132,13 +132,13 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
                   onAddMention={(id: ReactText, displayName: string) => {
                     setNewComment({
                       ...newComment,
-                      mentions: [...newComment.mentions, { id, displayName }]
+                      mentions: [...newComment.mentions, { id, displayName, mail: "" }]
                     });
-                    if (onCancel) {
-                      onCancel()
-                    }
                   }}
-                  onChange={event => setNewComment({ ...newComment, comment: event.target.value })}
+                  onChange={event => {
+                    setNewComment({ ...newComment, comment: event.target.value });
+                  }}
+                  onCancel={onCancel}
                   onSubmit={submit}
                 />
               </div>
