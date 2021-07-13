@@ -56,6 +56,10 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
     update(modifiedPullRequest);
   };
 
+  const disabled = () => {
+    return !modifiedPullRequest.title;
+  }
+
   const handleFormChange = (pr: PullRequest) => {
     setModifiedPullRequest(pr);
   };
@@ -77,7 +81,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
         {notification}
         <EditForm pullRequest={modifiedPullRequest} handleFormChange={handleFormChange} />
         <Level
-          right={<SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={submit} loading={isLoading} />}
+          right={<SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={submit} loading={isLoading} disabled={disabled()} />}
         />
       </div>
     </div>
