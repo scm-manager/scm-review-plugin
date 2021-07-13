@@ -27,7 +27,7 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { ConfirmAlert, confirmAlert, DateFromNow, ErrorNotification } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
-import { Comment, PossibleTransition, PullRequest } from "../types/PullRequest";
+import { Comment, Mention, PossibleTransition, PullRequest } from "../types/PullRequest";
 import {
   useDeletePullRequestComment,
   useTransformPullRequestComment,
@@ -68,7 +68,9 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
   const [changed, setChanged] = useState(false);
   const [contextModalOpen, setContextModalOpen] = useState(false);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
-  const [updatedComment, setUpdatedComment] = useState({ ...comment });
+  const [commentType, setCommentType] = useState(comment.type);
+  const [commentText, setCommentText] = useState(comment.comment || "");
+  const [mentions, setMentions] = useState<Mention[]>(comment.mentions || []);
   const [replyEditor, setReplyEditor] = useState<Comment>();
 
   const { deleteComment, isLoading: deleteCommentLoading, error: deleteCommentError } = useDeletePullRequestComment(
@@ -86,7 +88,9 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
 
   const cancelUpdate = () => {
     setEdit(false);
-    setUpdatedComment(comment);
+    setCommentText(comment.comment || "");
+    setCommentType(comment.type);
+    setMentions(comment.mentions);
   };
 
   const update = () => {
@@ -95,7 +99,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
       return;
     }
 
-    updateComment(updatedComment);
+    updateComment({ ...comment, type: commentType, comment: commentText, mentions });
     setEdit(false);
   };
 
@@ -134,10 +138,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
 
   const handleChanges = (event: any) => {
     setChanged(true);
-    setUpdatedComment({
-      ...updatedComment,
-      comment: event.target.value
-    });
+    setCommentText(event.target.value);
   };
 
   const createEditIcons = () => {
@@ -160,13 +161,10 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
     return (
       <>
         <MentionTextarea
-          value={updatedComment?.comment ? updatedComment.comment : ""}
-          comment={updatedComment}
+          value={commentText}
+          comment={{ ...comment, comment: commentText, type: commentType, mentions }}
           onAddMention={(id: ReactText, display: string) => {
-            setUpdatedComment({
-              ...updatedComment,
-              mentions: [...updatedComment.mentions, { id: id as string, displayName: display, mail: "" }]
-            });
+            setMentions([...mentions, { id: id as string, displayName: display, mail: "" }]);
           }}
           onChange={handleChanges}
           onSubmit={update}
