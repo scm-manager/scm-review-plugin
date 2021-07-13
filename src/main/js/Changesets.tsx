@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { useRouteMatch } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
@@ -51,20 +51,17 @@ const Changesets: FC<Props> = ({ repository, pullRequest, source, target, should
 
   const { data: changesets, error, isLoading } = usePullRequestChangesets(repository, pullRequest, page);
 
-  const getCurrentPage = (): number => {
+  useEffect(() => {
     if (match.params.page) {
-      return parseInt(match.params.page, 10);
+      setPage(parseInt(match.params.page, 10));
     }
-    return 1;
-  };
+  }, [match]);
 
   const renderPaginator = () => {
-    const currentPage = getCurrentPage();
-
     if (changesets && changesets.pageTotal > 1) {
       return (
         <div className="panel-footer">
-          <LinkPaginator collection={changesets} page={currentPage} />
+          <LinkPaginator collection={changesets} page={page} />
         </div>
       );
     }

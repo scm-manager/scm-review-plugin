@@ -374,8 +374,8 @@ type ChangesetCollection = PagedCollection & {
 
 export const usePullRequestChangesets = (repository: Repository, pullRequest: PullRequest, page: number) => {
   const url = createChangesetUrl(repository, pullRequest.source, pullRequest.target) + `?page=${page - 1}`;
-  const { error, isLoading, data } = useQuery<ChangesetCollection, Error>(
-    [...prQueryKey(repository, pullRequest?.id || pullRequest.source + pullRequest.target), "changesets"],
+  const { error, isLoading, data, refetch } = useQuery<ChangesetCollection, Error>(
+    [...prQueryKey(repository, pullRequest?.id || pullRequest.source + pullRequest.target), "changesets", page],
     () => {
       return apiClient.get(url).then(r => r.json());
     }
@@ -384,7 +384,8 @@ export const usePullRequestChangesets = (repository: Repository, pullRequest: Pu
   return {
     error,
     isLoading,
-    data
+    data,
+    refetch
   };
 };
 
