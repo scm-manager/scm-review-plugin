@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+## Changed
+- Use react-query to enable frontend caching ([#138](https://github.com/scm-manager/scm-review-plugin/pull/138))
+
 ### Fixed
 - Close toast notification after refresh ([#136](https://github.com/scm-manager/scm-review-plugin/pull/136))
 - Update comment content on refresh ([#136](https://github.com/scm-manager/scm-review-plugin/pull/136))
