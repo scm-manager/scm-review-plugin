@@ -99,8 +99,6 @@ const PullRequestInformation: FC<Props> = ({
         <Changesets
           repository={repository}
           pullRequest={pullRequest}
-          source={sourceRevision}
-          target={targetRevision}
           shouldFetchChangesets={shouldFetchChangesets}
         />
       </Route>
@@ -110,8 +108,6 @@ const PullRequestInformation: FC<Props> = ({
         <Changesets
           repository={repository}
           pullRequest={pullRequest}
-          source={sourceRevision}
-          target={targetRevision}
           shouldFetchChangesets={shouldFetchChangesets}
         />
       </Route>

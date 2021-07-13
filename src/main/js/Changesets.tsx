@@ -39,12 +39,10 @@ import { PullRequest } from "./types/PullRequest";
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
-  source: string;
-  target: string;
   shouldFetchChangesets?: boolean;
 };
 
-const Changesets: FC<Props> = ({ repository, pullRequest, source, target, shouldFetchChangesets = true }) => {
+const Changesets: FC<Props> = ({ repository, pullRequest, shouldFetchChangesets = true }) => {
   const [t] = useTranslation("plugins");
   const match = useRouteMatch<{ page: string }>();
   const [page, setPage] = useState(1);
