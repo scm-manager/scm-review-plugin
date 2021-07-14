@@ -139,7 +139,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
                 />
               </div>
             </div>
-            {error && <ErrorNotification error={error} />}
+            <ErrorNotification error={error} />
             {toggleType}
             <div className="field">
               <Level
