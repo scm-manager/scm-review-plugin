@@ -70,12 +70,8 @@ export const usePullRequest = (repository: Repository, pullRequestId?: string) =
     throw new Error("Could not fetch pull request without id");
   }
 
-  if (!repository._links.pullRequest) {
-    throw new Error("Could not fetch pull request because link is missing");
-  }
-
   const { error, isLoading, data } = useQuery<PullRequest, Error>(prQueryKey(repository, pullRequestId), () =>
-    apiClient.get((repository._links.pullRequest as Link).href + "/" + pullRequestId).then(response => response.json())
+    apiClient.get(requiredLink(repository, "pullRequest") + "/" + pullRequestId).then(response => response.json())
   );
 
   return {
@@ -95,11 +91,7 @@ export const useUpdatePullRequest = (repository: Repository, pullRequest: PullRe
   const queryClient = useQueryClient();
   const { isLoading, error, mutate } = useMutation<unknown, Error, PullRequest>(
     pr => {
-      if (!pr._links.update) {
-        throw new Error("Could not update pull request because update link is missing");
-      }
-
-      return apiClient.put((pr._links.update as Link).href, pr, CONTENT_TYPE_PULLREQUEST);
+      return apiClient.put(requiredLink(pr, "update"), pr, CONTENT_TYPE_PULLREQUEST);
     },
     {
       onSuccess: async () => {
@@ -126,14 +118,11 @@ export const useApproveReviewer = (repository: Repository, pullRequest: PullRequ
   }
 
   const queryClient = useQueryClient();
-  const { isLoading, error, mutate } = useMutation<unknown, Error, string>(
-    (link: string) => apiClient.post(link, {}),
-    {
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(prQueryKey(repository, id));
-      }
+  const { isLoading, error, mutate } = useMutation<unknown, Error, string>((link: string) => apiClient.post(link, {}), {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(prQueryKey(repository, id));
     }
-  );
+  });
 
   const approve = () => mutate((pullRequest._links.approve as Link).href);
   const disapprove = () => mutate((pullRequest._links.disapprove as Link).href);
@@ -150,10 +139,7 @@ export const useCreatePullRequest = (repository: Repository, callback?: (id: str
   const queryClient = useQueryClient();
   const { mutate, data, isLoading, error } = useMutation<PullRequest, Error, BasicPullRequest>(
     pr => {
-      if (!repository._links.pullRequest) {
-        throw new Error("Could not create pull request because create link is missing");
-      }
-      return createPullRequest((repository._links.pullRequest as Link).href, pr);
+      return createPullRequest(requiredLink(repository, "pullRequest"), pr);
     },
     {
       onSuccess: pr => {
@@ -202,10 +188,7 @@ export const useRejectPullRequest = (repository: Repository, pullRequest: PullRe
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<unknown, Error, PullRequest>(
     pr => {
-      if (!pr._links.reject) {
-        throw new Error("Could not reject pull request because reject link is missing");
-      }
-      return apiClient.post((pr._links.reject as Link).href, {});
+      return apiClient.post(requiredLink(pr, "reject"), {});
     },
     {
       onSuccess: () => {
@@ -256,18 +239,12 @@ export const useMergePullRequest = (repository: Repository, pullRequest: PullReq
 };
 
 export const usePullRequests = (repository: Repository, status?: string) => {
-  let url = (repository._links.pullRequest as Link).href;
-  if (url && status) {
-    url += "?status=" + status;
-  }
-
   const { error, isLoading, data } = useQuery<PullRequestCollection, Error>(
     ["repository", repository.namespace, repository.name, "pull-requests", status || ""],
     () => {
-      if (!url) {
-        throw new Error("Could not fetch pull requests because url is not defined");
-      }
-      return apiClient.get(url).then(response => response.json());
+      return apiClient
+        .get(requiredLink(repository, "pullRequest") + (status ? "?status=" + status : ""))
+        .then(response => response.json());
     }
   );
 
@@ -281,12 +258,7 @@ export const usePullRequests = (repository: Repository, status?: string) => {
 export const useDeleteComment = (repository: Repository, pullRequest: PullRequest) => {
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<unknown, Error, Comment>(
-    comment => {
-      if (!comment._links.delete) {
-        throw new Error("Could not delete comment because delete link is missing");
-      }
-      return apiClient.delete((comment._links.delete as Link).href);
-    },
+    comment => apiClient.delete(requiredLink(comment, "delete")),
     {
       onSuccess: () => {
         return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
@@ -309,12 +281,7 @@ export const useUpdateComment = (repository: Repository, pullRequest: PullReques
 
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<{}, Error, Comment>(
-    comment => {
-      if (!comment._links.update) {
-        throw new Error("Could not update comment because update link is missing");
-      }
-      return apiClient.put((comment._links.update as Link).href, comment);
-    },
+    comment => apiClient.put(requiredLink(comment, "update"), comment),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(prQueryKey(repository, id));
@@ -338,12 +305,7 @@ export const useTransformComment = (repository: Repository, pullRequest: PullReq
 
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<unknown, Error, PossibleTransition>(
-    transition => {
-      if (!transition._links.transform) {
-        throw new Error("Could not transform comment because transform link is missing");
-      }
-      return apiClient.post((transition._links.transform as Link).href, transition);
-    },
+    transition => apiClient.post(requiredLink(transition, "transform"), transition),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(prQueryKey(repository, id));
@@ -529,13 +491,9 @@ export const usePullRequestConflicts = (repository: Repository, pullRequest: Pul
   }
 
   const { error, isLoading, data } = useQuery<Conflicts, Error>([...prQueryKey(repository, id), "conflicts"], () => {
-    if (!pullRequest._links.mergeConflicts) {
-      throw new Error("Could not fetch pull request conflicts because link is missing");
-    }
-
     return apiClient
       .post(
-        (pullRequest._links.mergeConflicts as Link).href,
+        requiredLink(pullRequest, "mergeConflicts"),
         { sourceRevision: pullRequest.source, targetRevision: pullRequest.target },
         "application/vnd.scmm-mergeCommand+json"
       )
@@ -559,13 +517,9 @@ export const useCheckPullRequest = (
   const { error, data } = useQuery<CheckResult, Error>(
     [...prQueryKey(repository, id), "check"],
     () => {
-      if (!repository._links.pullRequestCheck) {
-        throw new Error("Could not check pull request because check link is missing");
-      }
-
       return apiClient
         .get(
-          (repository._links.pullRequestCheck as Link)?.href +
+          requiredLink(repository, "pullRequestCheck") +
             `?source=${pullRequest.source}&target=${pullRequest.target}`
         )
         .then(r => r.json());
@@ -660,3 +614,10 @@ export function evaluateTagColor(pullRequest: PullRequest) {
   }
   return "light";
 }
+
+const requiredLink = (halObject: HalRepresentation, linkName: string): string => {
+  if (!halObject._links[linkName]) {
+    throw new Error("Could not find link: " + linkName);
+  }
+  return (halObject._links[linkName] as Link).href;
+};
