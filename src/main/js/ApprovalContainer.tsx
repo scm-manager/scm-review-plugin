@@ -42,9 +42,9 @@ const ApprovalContainer: FC<Props> = ({ repository, pullRequest }) => {
   }
 
   if (approve) {
-    return <ApprovalButton loading={isLoading} action={() => approve()} />;
+    return <ApprovalButton loading={isLoading} action={approve} />;
   } else if (disapprove) {
-    return <DisapprovalButton loading={isLoading} action={() => disapprove()} />;
+    return <DisapprovalButton loading={isLoading} action={disapprove} />;
   } else {
     return null;
   }
