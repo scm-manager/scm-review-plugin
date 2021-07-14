@@ -55,9 +55,9 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
 
   useEffect(() => {
     if (comments) {
-      updateDiffStateForComments(comments, diffState, setDiffState);
+      updateDiffStateForComments(comments, setDiffState);
     }
-  }, [comments]);
+  }, [diffState, comments]);
 
   const fileContentFactory: FileContentFactory = (file: any) => {
     const baseUrl = `/repo/${repository.namespace}/${repository.name}/code/sources`;

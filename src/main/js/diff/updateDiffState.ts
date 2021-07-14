@@ -32,7 +32,6 @@ type Lines = { [key: string]: { [key: string]: { comments: string[]; location: L
 
 export const updateDiffStateForComments = (
   comments: Comments,
-  diffState: DiffState,
   setDiffState: Dispatch<SetStateAction<DiffState>>
 ) => {
   const files: Files = {};
