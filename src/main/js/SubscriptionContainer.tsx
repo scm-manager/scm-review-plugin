@@ -35,27 +35,26 @@ type Props = {
 };
 
 const SubscriptionContainer: FC<Props> = ({ repository, pullRequest }) => {
-  const { data, error, isLoading } = useSubscription(repository, pullRequest);
+  const { data, error: subscriptionError, isLoading: subscriptionLoading } = useSubscription(repository, pullRequest);
   const { isLoading: updateLoading, subscribe, unsubscribe, error: updateError } = useUpdateSubscription(
     repository,
     pullRequest,
     data || { _links: {} }
   );
 
+  const error = subscriptionError || updateError;
+  const loading = subscriptionLoading || updateLoading;
+
   if (error) {
     return <ErrorNotification error={error} />;
   }
 
-  if (updateError) {
-    return <ErrorNotification error={updateError} />;
-  }
-
   if (data) {
     if (subscribe) {
-      return <SubscribeButton loading={isLoading || updateLoading} action={subscribe} />;
+      return <SubscribeButton loading={loading} action={subscribe} />;
     }
     if (unsubscribe) {
-      return <UnsubscribeButton loading={isLoading || updateLoading} action={unsubscribe} />;
+      return <UnsubscribeButton loading={loading} action={unsubscribe} />;
     }
   }
   return null;
