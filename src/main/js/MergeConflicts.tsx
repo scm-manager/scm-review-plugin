@@ -46,17 +46,18 @@ const MergeConflicts: FC<Props> = ({ repository, pullRequest }) => {
     return t("scm-review-plugin.conflicts.types." + type);
   };
 
-  const createDiffComponent = (conflict: Conflict) => {
+  const createDiffComponent = (conflict: Conflict, index: number) => {
     if (conflict.diff) {
       const parsedDiff = parser.parse(conflict.diff);
       return parsedDiff
         .map((file: File) => ({ ...file, type: getTypeLabel(conflict.type) }))
-        .map((file: File) => <DiffFile markConflicts={true} file={file} sideBySide={false} />);
+        .map((file: File) => <DiffFile markConflicts={true} file={file} sideBySide={false} key={index} />);
     } else {
       return (
         <DiffFile
           file={{ hunks: [], newPath: conflict.path, type: getTypeLabel(conflict.type) as FileChangeType }}
           sideBySide={false}
+          key={index}
         />
       );
     }
@@ -80,7 +81,7 @@ const MergeConflicts: FC<Props> = ({ repository, pullRequest }) => {
           </p>
         </div>
       </Notification>
-      {data!.conflicts.map(conflict => createDiffComponent(conflict))}
+      {data!.conflicts.map((conflict: Conflict, index) => createDiffComponent(conflict, index))}
       <ManualMergeInformation
         showMergeInformation={mergeInformation}
         repository={repository}
