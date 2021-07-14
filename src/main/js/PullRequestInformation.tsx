@@ -60,6 +60,7 @@ const PullRequestInformation: FC<Props> = ({
   shouldFetchChangesets = true,
   pullRequest,
   mergeHasNoConflict,
+  status,
   source,
   target,
   targetBranchDeleted
