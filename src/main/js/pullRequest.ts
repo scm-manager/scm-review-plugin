@@ -308,6 +308,12 @@ export const useDeleteComment = (repository: Repository, pullRequest: PullReques
 };
 
 export const useUpdateComment = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+
+  if (!id) {
+    throw new Error("Could not update comment fpr pull request without id");
+  }
+
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<{}, Error, Comment>(
     comment => {
@@ -318,6 +324,7 @@ export const useUpdateComment = (repository: Repository, pullRequest: PullReques
     },
     {
       onSuccess: () => {
+        queryClient.invalidateQueries(prQueryKey(repository, id));
         return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
       }
     }
@@ -330,6 +337,12 @@ export const useUpdateComment = (repository: Repository, pullRequest: PullReques
 };
 
 export const useTransformComment = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+
+  if (!id) {
+    throw new Error("Could not transform comment fpr pull request without id");
+  }
+
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<unknown, Error, PossibleTransition>(
     transition => {
@@ -340,6 +353,7 @@ export const useTransformComment = (repository: Repository, pullRequest: PullReq
     },
     {
       onSuccess: () => {
+        queryClient.invalidateQueries(prQueryKey(repository, id));
         return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
       }
     }
