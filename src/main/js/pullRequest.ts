@@ -126,8 +126,8 @@ export const useApproveReviewer = (repository: Repository, pullRequest: PullRequ
   }
 
   const queryClient = useQueryClient();
-  const { isLoading: approveLoading, error: approveError, mutate: approve } = useMutation<unknown, Error, void>(
-    () => apiClient.post((pullRequest._links.approve as Link).href, {}),
+  const { isLoading, error, mutate } = useMutation<unknown, Error, string>(
+    (link: string) => apiClient.post(link, {}),
     {
       onSuccess: async () => {
         await queryClient.invalidateQueries(prQueryKey(repository, id));
@@ -135,21 +135,14 @@ export const useApproveReviewer = (repository: Repository, pullRequest: PullRequ
     }
   );
 
-  const { isLoading: disapproveLoading, error: disapproveError, mutate: disapprove } = useMutation<
-    unknown,
-    Error,
-    void
-  >(() => apiClient.post((pullRequest._links.disapprove as Link).href, {}), {
-    onSuccess: async () => {
-      await queryClient.invalidateQueries(prQueryKey(repository, id));
-    }
-  });
+  const approve = () => mutate((pullRequest._links.approve as Link).href);
+  const disapprove = () => mutate((pullRequest._links.disapprove as Link).href);
 
   return {
-    isLoading: approveLoading || disapproveLoading,
-    error: approveError || disapproveError,
-    approve: pullRequest._links.approve ? () => approve() : undefined,
-    disapprove: pullRequest._links.disapprove ? () => disapprove() : undefined
+    isLoading,
+    error,
+    approve: pullRequest._links.approve ? approve : undefined,
+    disapprove: pullRequest._links.disapprove ? disapprove : undefined
   };
 };
 
