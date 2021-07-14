@@ -23,7 +23,7 @@
  */
 
 import { SuggestionDataItem } from "react-mentions";
-import { SelectValue } from "@scm-manager/ui-types/src/index";
+import { SelectValue } from "@scm-manager/ui-types";
 
 export const getUserSuggestions = (
   userSuggestions: (p: string) => Promise<SelectValue[]>,

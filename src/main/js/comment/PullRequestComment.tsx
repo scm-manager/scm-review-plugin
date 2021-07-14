@@ -28,11 +28,7 @@ import styled from "styled-components";
 import { ConfirmAlert, confirmAlert, DateFromNow, ErrorNotification } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { Comment, Mention, PossibleTransition, PullRequest } from "../types/PullRequest";
-import {
-  useDeletePullRequestComment,
-  useTransformPullRequestComment,
-  useUpdatePullRequestComment
-} from "../pullRequest";
+import { useDeleteComment, useTransformComment, useUpdateComment } from "../pullRequest";
 import CommentSpacingWrapper from "./CommentSpacingWrapper";
 import CommentActionToolbar from "./CommentActionToolbar";
 import CommentTags from "./CommentTags";
@@ -73,13 +69,10 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
   const [mentions, setMentions] = useState<Mention[]>(comment.mentions || []);
   const [replyEditor, setReplyEditor] = useState<Comment>();
 
-  const { deleteComment, isLoading: deleteCommentLoading, error: deleteCommentError } = useDeletePullRequestComment(
-    repository,
-    pullRequest
-  );
+  const { remove, isLoading: deleteLoading, error: deleteError } = useDeleteComment(repository, pullRequest);
 
-  const { updateComment } = useUpdatePullRequestComment(repository, pullRequest);
-  const { transformComment } = useTransformPullRequestComment(repository, pullRequest);
+  const { update } = useUpdateComment(repository, pullRequest);
+  const { transform } = useTransformComment(repository, pullRequest);
 
   const startUpdate = () => {
     setEdit(true);
@@ -93,13 +86,13 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
     setMentions(comment.mentions);
   };
 
-  const update = () => {
+  const updateComment = () => {
     if (!changed) {
       setEdit(false);
       return;
     }
 
-    updateComment({ ...comment, type: commentType, comment: commentText, mentions });
+    update({ ...comment, type: commentType, comment: commentText, mentions });
     setEdit(false);
   };
 
@@ -115,7 +108,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
       throw new Error("comment does not have transition " + transition);
     }
 
-    transformComment(transformation);
+    transform(transformation);
   };
 
   const confirmTransition = (transition: string, translationKey: string) => {
@@ -150,7 +143,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
         createLink={createLink}
         onUpdate={startUpdate}
         onDelete={() => setShowConfirmDeleteModal(true)}
-        deleteLoading={deleteCommentLoading}
+        deleteLoading={deleteLoading}
         onReply={() => setReplyEditor(comment)}
         onTransitionChange={confirmTransition}
       />
@@ -167,7 +160,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
             setMentions([...mentions, { id: id as string, displayName: display, mail: "" }]);
           }}
           onChange={handleChanges}
-          onSubmit={update}
+          onSubmit={updateComment}
           onCancel={cancelUpdate}
         />
       </>
@@ -197,8 +190,8 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
     }
   };
 
-  if (deleteCommentError) {
-    return <ErrorNotification error={deleteCommentError} />;
+  if (deleteError) {
+    return <ErrorNotification error={deleteError} />;
   }
 
   let icons = null;
@@ -207,7 +200,9 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
 
   if (edit) {
     message = createMessageEditor();
-    editButtons = <EditButtons comment={comment} onSubmit={update} onCancel={cancelUpdate} changed={() => changed} />;
+    editButtons = (
+      <EditButtons comment={comment} onSubmit={updateComment} onCancel={cancelUpdate} changed={() => changed} />
+    );
   } else {
     message = !collapsed ? <CommentContent comment={comment} /> : "";
     icons = createEditIcons();
@@ -226,7 +221,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
             {
               className: "is-outlined",
               label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
-              onClick: () => deleteComment(comment)
+              onClick: () => remove(comment)
             },
             {
               label: t("scm-review-plugin.comment.confirmDeleteAlert.cancel"),

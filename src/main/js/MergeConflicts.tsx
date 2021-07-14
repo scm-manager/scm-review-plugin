@@ -24,7 +24,7 @@
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Conflict, PullRequest } from "./types/PullRequest";
-import { DiffFile, ErrorNotification, Loading, Notification } from "@scm-manager/ui-components";
+import { DiffFile, ErrorNotification, File, Loading, Notification } from "@scm-manager/ui-components";
 import { FileChangeType, Repository } from "@scm-manager/ui-types";
 import { usePullRequestConflicts } from "./pullRequest";
 // @ts-ignore
@@ -50,8 +50,8 @@ const MergeConflicts: FC<Props> = ({ repository, pullRequest }) => {
     if (conflict.diff) {
       const parsedDiff = parser.parse(conflict.diff);
       return parsedDiff
-        .map((file: any) => ({ ...file, type: getTypeLabel(conflict.type) }))
-        .map((file: any) => <DiffFile markConflicts={true} file={file} sideBySide={false} />);
+        .map((file: File) => ({ ...file, type: getTypeLabel(conflict.type) }))
+        .map((file: File) => <DiffFile markConflicts={true} file={file} sideBySide={false} />);
     } else {
       return (
         <DiffFile

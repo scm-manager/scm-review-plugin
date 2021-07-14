@@ -37,7 +37,7 @@ type Props = {
   pullRequest: PullRequest;
   source: string;
   target: string;
-  status: string;
+  status?: string;
   mergeHasNoConflict: boolean;
   targetBranchDeleted: boolean;
   shouldFetchChangesets?: boolean;

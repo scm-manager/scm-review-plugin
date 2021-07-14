@@ -56,18 +56,9 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
     update(modifiedPullRequest);
   };
 
-  const disabled = () => {
-    return !modifiedPullRequest.title;
-  }
-
   const handleFormChange = (pr: PullRequest) => {
     setModifiedPullRequest(pr);
   };
-
-  let notification = null;
-  if (error) {
-    notification = <ErrorNotification error={error} />;
-  }
 
   if (isLoading) {
     return <Loading />;
@@ -78,10 +69,10 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
       <div className="column">
         <Title title={t("scm-review-plugin.edit.title")} />
         <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
-        {notification}
+        <ErrorNotification error={error} />
         <EditForm pullRequest={modifiedPullRequest} handleFormChange={handleFormChange} />
         <Level
-          right={<SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={submit} loading={isLoading} disabled={disabled()} />}
+          right={<SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={submit} loading={isLoading} disabled={!modifiedPullRequest.title} />}
         />
       </div>
     </div>

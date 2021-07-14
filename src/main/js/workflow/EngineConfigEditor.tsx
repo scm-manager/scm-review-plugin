@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-import React, { FC, useEffect, useState } from "react";
-import { AppliedRule, EngineConfiguration, Rule } from "../types/EngineConfig";
+import React, { FC, useState } from "react";
+import { AppliedRule, EngineConfiguration } from "../types/EngineConfig";
 import { useTranslation } from "react-i18next";
 import {
   AddButton,
@@ -36,7 +36,6 @@ import {
   Title
 } from "@scm-manager/ui-components";
 import EngineConfigTable from "./EngineConfigTable";
-import { Link } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import { useEngineConfigRules } from "./config";
@@ -66,7 +65,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
   const [selectedRule, setSelectedRule] = useState("");
   const [ruleConfiguration, setRuleConfiguration] = useState<any>(undefined);
   const [ruleConfigurationValid, setRuleConfigurationValid] = useState(true);
-  const { error, isLoading, data } = useEngineConfigRules((config._links.availableRules as Link).href);
+  const { error, isLoading, data } = useEngineConfigRules(config);
 
   const onChangeDisableRepositoryConfiguration = () => {
     const newConfig = { ...config, disableRepositoryConfiguration: !config.disableRepositoryConfiguration };

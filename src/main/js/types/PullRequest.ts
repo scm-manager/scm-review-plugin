@@ -60,10 +60,12 @@ export type Location = {
   newLineNumber?: number;
 };
 
+export type CommentType = "COMMENT" | "TASK_TODO" | "TASK_DONE";
+
 export type BasicComment = {
   comment?: string;
   id?: string;
-  type: string;
+  type: CommentType;
   mentions: Mention[];
   location?: Location;
 };

@@ -31,10 +31,10 @@ import {
   Loading,
   Notification
 } from "@scm-manager/ui-components";
-import { createDiffUrl, usePullRequestComments } from "../pullRequest";
+import { createDiffUrl, useComments } from "../pullRequest";
 import { useTranslation } from "react-i18next";
 import Diff, { DiffState } from "./Diff";
-import { updateDiffStateForComments } from "./diff";
+import { updateDiffStateForComments } from "./updateDiffState";
 
 type Props = {
   repository: Repository;
@@ -45,7 +45,7 @@ type Props = {
 
 const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
   const { t } = useTranslation("plugins");
-  const { data: comments, isLoading, error } = usePullRequestComments(repository, pullRequest);
+  const { data: comments, isLoading, error } = useComments(repository, pullRequest);
   const [diffState, setDiffState] = useState<DiffState>({
     lines: {},
     files: {},
@@ -57,7 +57,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
     if (comments) {
       updateDiffStateForComments(comments, diffState, setDiffState);
     }
-  }, [repository, pullRequest, comments]);
+  }, [comments]);
 
   const fileContentFactory: FileContentFactory = (file: any) => {
     const baseUrl = `/repo/${repository.namespace}/${repository.name}/code/sources`;

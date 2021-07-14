@@ -23,11 +23,11 @@
  */
 import React, { FC, useEffect, useState } from "react";
 import { ErrorNotification, Level, Notification, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
-import { Branch, Link, Repository } from "@scm-manager/ui-types";
+import { Branch, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import styled from "styled-components";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
-import { checkPullRequest,  useCreatePullRequest } from "./pullRequest";
+import { useCheckPullRequest, useCreatePullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import { useHistory, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -47,7 +47,6 @@ const Create: FC<Props> = ({ repository }) => {
   const history = useHistory();
   const [pullRequest, setPullRequest] = useState<PullRequest>({ title: "", target: "", source: "", _links: {} });
   const [disabled, setDisabled] = useState(true);
-  const [checkResult, setCheckResult] = useState<CheckResult | undefined>();
   const location = useLocation();
 
   const pullRequestCreated = (pullRequestId: string) => {
@@ -56,6 +55,9 @@ const Create: FC<Props> = ({ repository }) => {
 
   const { data: branchesData, error: branchesError, isLoading: branchesLoading } = useBranches(repository);
   const { error: createError, isLoading: createLoading, create } = useCreatePullRequest(repository, pullRequestCreated);
+  const { data: checkResult } = useCheckPullRequest(repository, pullRequest, (result: CheckResult) => {
+    setDisabled(!isPullRequestValid(pullRequest, result));
+  });
 
   const branches = branchesData?._embedded.branches;
 
@@ -76,17 +78,7 @@ const Create: FC<Props> = ({ repository }) => {
         _links: {}
       });
     }
-  }, [repository, branchesData]);
-
-  const fetchChangesets = (basicPR: PullRequest) => {
-    return checkPullRequest((repository._links.pullRequestCheck as Link)?.href, basicPR)
-      .then(r => r.json())
-      .then(result => {
-        setCheckResult(result);
-        setPullRequest(basicPR);
-        setDisabled(!isPullRequestValid(basicPR, result));
-      })
-  };
+  }, [branchesData]);
 
   const submit = () => create(pullRequest);
 
@@ -104,9 +96,6 @@ const Create: FC<Props> = ({ repository }) => {
   const handleFormChange = (basicPR: PullRequest) => {
     setPullRequest(basicPR);
     setDisabled(!isPullRequestValid(basicPR));
-    if (basicPR.source != pullRequest.source || basicPR.target != pullRequest.target) {
-      fetchChangesets(basicPR);
-    }
   };
 
   if (!repository._links.pullRequest) {

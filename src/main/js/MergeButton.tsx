@@ -36,10 +36,9 @@ type Props = {
   mergeCheck?: MergeCheck;
   loading: boolean;
   pullRequest: PullRequest;
-  onMergeModalClose?: () => void;
 };
 
-const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, mergeCheck, onMergeModalClose }) => {
+const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, mergeCheck }) => {
   const [t] = useTranslation("plugins");
   const [mergeInformation, setMergeInformation] = useState(false);
   const [showMergeModal, setShowMergeModal] = useState(false);

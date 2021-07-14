@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { Link, Repository } from "@scm-manager/ui-types";
@@ -30,20 +30,19 @@ import {
   AstPlugin,
   Button,
   ButtonGroup,
-  ConflictError,
   DateFromNow,
   ErrorNotification,
   Icon,
   Loading,
-  NotFoundError,
   Tag,
   Title,
   Tooltip
 } from "@scm-manager/ui-components";
-import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
+import { MergeCommit, PullRequest } from "./types/PullRequest";
 import {
-  check,
   evaluateTagColor,
+  invalidatePullRequest,
+  useMergeDryRun,
   useMergePullRequest,
   useRejectPullRequest
 } from "./pullRequest";
@@ -55,9 +54,9 @@ import SubscriptionContainer from "./SubscriptionContainer";
 import ReviewerList from "./ReviewerList";
 import ChangeNotification from "./ChangeNotification";
 import ReducedMarkdownView from "./ReducedMarkdownView";
-import Statusbar from "./workflow/Statusbar";
 import OverrideModalRow from "./OverrideModalRow";
 import PullRequestTitle from "./PullRequestTitle";
+import Statusbar from "./workflow/Statusbar";
 
 type Props = {
   repository: Repository;
@@ -160,48 +159,17 @@ const IgnoredMergeObstacles = styled.div`
 
 const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
-  const [loadingDryRun, setLoadingDryRun] = useState(false);
   const [targetBranchDeleted, setTargetBranchDeleted] = useState(false);
-  const [mergeCheck, setMergeCheck] = useState<MergeCheck | undefined>(undefined);
 
   const { reject, isLoading: rejectLoading, error: rejectError } = useRejectPullRequest(repository, pullRequest);
   const { merge, isLoading: mergeLoading, error: mergeError } = useMergePullRequest(repository, pullRequest);
+  const { data: mergeCheck, isLoading: mergeDryRunLoading, error: mergeDryRunError } = useMergeDryRun(
+    repository,
+    pullRequest,
+    (targetDeleted: boolean) => setTargetBranchDeleted(targetDeleted)
+  );
 
-  useEffect(() => {
-    if (mergeError && mergeError instanceof ConflictError) {
-      setMergeCheck({
-        mergeObstacles: mergeCheck ? mergeCheck.mergeObstacles : [],
-        hasConflicts: true
-      });
-    }
-  }, [mergeError]);
-
-  useEffect(() => {
-    getMergeDryRun(pullRequest);
-  }, [repository, pullRequest]);
-
-  const shouldRunDryMerge = (pr: PullRequest) => {
-    return (pr?._links?.mergeCheck as Link)?.href && pr.status === "OPEN";
-  };
-
-  const getMergeDryRun = (pr: PullRequest) => {
-    if (shouldRunDryMerge(pr)) {
-      check(pr)
-        .then(response => {
-          setMergeCheck(response);
-          setTargetBranchDeleted(false);
-          setLoadingDryRun(false);
-        })
-        .catch(err => {
-          if (err instanceof NotFoundError) {
-            setLoadingDryRun(false);
-            setTargetBranchDeleted(true);
-          } else {
-            setLoadingDryRun(false);
-          }
-        });
-    }
-  };
+  const error = rejectError || mergeError || mergeDryRunError;
 
   const findStrategyLink = (links: Link[], strategy: string) => {
     return links?.filter(link => link.name === strategy)[0].href;
@@ -215,14 +183,11 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     merge({ url: findStrategyLink(mergeLinks, strategy), mergeCommit: commit });
   };
 
-  if (rejectError) {
-    return <ErrorNotification error={rejectError} />;
-  }
-  if (mergeError) {
-    return <ErrorNotification error={mergeError} />;
+  if (error) {
+    return <ErrorNotification error={error} />;
   }
 
-  if (!pullRequest._links || loadingDryRun) {
+  if (!pullRequest._links || mergeDryRunLoading) {
     return <Loading />;
   }
 
@@ -250,7 +215,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       <IgnoredMergeObstacles>
         <strong>{t("scm-review-plugin.pullRequest.details.ignoredMergeObstacles")}</strong>
         {pullRequest.ignoredMergeObstacles.map(o => (
-          <OverrideModalRow result={{ rule: o, failed: true }} useObstacleText={pullRequest.emergencyMerged} />
+          <OverrideModalRow result={{ rule: o, failed: true }} />
         ))}
       </IgnoredMergeObstacles>
     );
@@ -268,7 +233,6 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
           loading={mergeLoading}
           repository={repository}
           pullRequest={pullRequest}
-          onMergeModalClose={() => setMergeCheck(undefined)}
         />
       );
     }
@@ -276,8 +240,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   let editButton = null;
   if ((pullRequest?._links?.update as Link)?.href) {
-    const toEdit =
-      "/repo/" + repository.namespace + "/" + repository.name + "/pull-request/" + pullRequest.id + "/edit";
+    const toEdit = `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/edit`;
     editButton = (
       <Button link={toEdit} title={t("scm-review-plugin.pullRequest.details.buttons.edit")} color="link is-outlined">
         <Icon name="edit fa-fw" color="inherit" />
@@ -332,8 +295,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       <ChangeNotification
         repository={repository}
         pullRequest={pullRequest}
-        //TODO Sebastian fragen wie der Cache invalidiert werden kann
-        // reload={() => invalidatePullRequest(repository, pullRequest.id!)}
+        reload={() => invalidatePullRequest(repository, pullRequest.id)}
       />
       <Container>
         <div className="media">

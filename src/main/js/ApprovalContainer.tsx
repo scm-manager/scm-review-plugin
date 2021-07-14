@@ -35,16 +35,16 @@ type Props = {
 };
 
 const ApprovalContainer: FC<Props> = ({ repository, pullRequest }) => {
-  const { error, isLoading, approve } = useApproveReviewer(repository, pullRequest);
+  const { error, isLoading, approve, disapprove } = useApproveReviewer(repository, pullRequest);
 
   if (error) {
     return <ErrorNotification error={error} />;
   }
 
-  if (!!pullRequest?._links?.approve) {
-    return <ApprovalButton loading={isLoading} action={() => approve(true)} />;
-  } else if (!!pullRequest?._links?.disapprove) {
-    return <DisapprovalButton loading={isLoading} action={() => approve(false)} />;
+  if (approve) {
+    return <ApprovalButton loading={isLoading} action={() => approve()} />;
+  } else if (disapprove) {
+    return <DisapprovalButton loading={isLoading} action={() => disapprove()} />;
   } else {
     return null;
   }

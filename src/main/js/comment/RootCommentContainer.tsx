@@ -30,7 +30,7 @@ import { Link, Repository } from "@scm-manager/ui-types";
 import PullRequestComment from "./PullRequestComment";
 import CreateComment from "./CreateComment";
 import styled from "styled-components";
-import { usePullRequestComments } from "../pullRequest";
+import { useComments } from "../pullRequest";
 
 const COMMENT_URL_HASH_REGEX = /^#comment-(.*)$/;
 
@@ -49,7 +49,7 @@ const CommentWrapper = styled.div`
 
 const RootCommentContainer: FC<Props> = ({ repository, pullRequest }) => {
   const location = useLocation();
-  const { data: comments, error, isLoading } = usePullRequestComments(repository, pullRequest);
+  const { data: comments, error, isLoading } = useComments(repository, pullRequest);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

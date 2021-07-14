@@ -24,14 +24,19 @@
 import { Comments, Location } from "../types/PullRequest";
 import { createChangeIdFromLocation } from "./locations";
 import { DiffState } from "./Diff";
+import { Dispatch, SetStateAction } from "react";
+
+type Files = { [key: string]: { comments: string[] } };
+
+type Lines = { [key: string]: { [key: string]: { comments: string[]; location: Location } } };
 
 export const updateDiffStateForComments = (
   comments: Comments,
   diffState: DiffState,
-  setDiffState: (state: DiffState) => void
+  setDiffState: Dispatch<SetStateAction<DiffState>>
 ) => {
-  let files: { [key: string]: { comments: string[] } } = {};
-  let lines: { [key: string]: { [key: string]: { comments: string[]; location: Location } } } = {};
+  const files: Files = {};
+  const lines: Lines = {};
   for (const comment of comments._embedded.pullRequestComments) {
     const location = comment.location;
     if (comment.id && location && !location?.newLineNumber && !location?.oldLineNumber) {
@@ -66,10 +71,10 @@ export const updateDiffStateForComments = (
       }
     }
   }
-  setDiffState({
-    ...diffState,
+  setDiffState((currentState: DiffState) => ({
+    ...currentState,
     comments: comments?._embedded.pullRequestComments,
     files,
     lines
-  });
+  }));
 };

@@ -44,7 +44,7 @@ const PullRequestList: FC<Props> = ({ repository }) => {
 
   const { data, error, isLoading } = usePullRequests(repository, status);
 
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
   };
 

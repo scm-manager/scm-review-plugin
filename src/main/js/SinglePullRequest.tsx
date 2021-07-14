@@ -36,7 +36,7 @@ type Props = {
 
 const SinglePullRequest: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
-  const match = useRouteMatch<{ pullRequestNumber: string }>();
+  const match = useRouteMatch<{ pullRequestNumber?: string }>();
   const { data, error, isLoading } = usePullRequest(repository, match?.params?.pullRequestNumber);
 
   if (!repository._links.pullRequest) {

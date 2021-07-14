@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import {

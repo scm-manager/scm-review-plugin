@@ -26,7 +26,7 @@ import { DiffButton, ErrorNotification } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import { useUpdateReviewMark } from "../pullRequest";
-import { DiffState } from "./Diff";
+import { DiffState } from "./updateDiffState";
 import { useTranslation } from "react-i18next";
 
 type Props = {
@@ -49,19 +49,17 @@ const MarkReviewedButton: FC<Props> = ({ repository, pullRequest, oldPath, newPa
   };
 
   const [marked, setMarked] = useState(diffState.reviewedFiles.some((markedFile: string) => markedFile === determinePath()));
-  const { mark, isLoading, error } = useUpdateReviewMark(repository, pullRequest);
+  const { mark, unmark, error } = useUpdateReviewMark(repository, pullRequest, determinePath());
 
   const markFile = () => {
-    const filepath = determinePath();
-    mark(filepath, true);
-    setReviewed(filepath, true);
+    mark()
+    setReviewed(determinePath(), true);
     setMarked(true);
   };
 
   const unmarkFile = () => {
-    const filepath = determinePath();
-    mark(filepath, false);
-    setReviewed(filepath, false);
+    unmark();
+    setReviewed(determinePath(), false);
     setMarked(false);
   };
 

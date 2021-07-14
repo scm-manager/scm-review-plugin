@@ -23,9 +23,9 @@
  */
 import React, { FC, ReactText, useState } from "react";
 import { Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
-import { Location, Mention, PullRequest } from "../types/PullRequest";
+import {CommentType, Location, Mention, PullRequest} from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
-import { useCreatePullRequestComment } from "../pullRequest";
+import { useCreateComment } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
 import MentionTextarea from "./MentionTextarea";
 import { Repository } from "@scm-manager/ui-types";
@@ -43,14 +43,14 @@ type Props = {
 const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCancel, reply }) => {
   const [t] = useTranslation("plugins");
 
-  const { createComment, isLoading, error } = useCreatePullRequestComment(repository, pullRequest);
+  const { create, isLoading, error } = useCreateComment(repository, pullRequest);
 
-  const [commentType, setCommentType] = useState("COMMENT");
+  const [commentType, setCommentType] = useState<CommentType>("COMMENT");
   const [commentText, setCommentText] = useState("");
   const [mentions, setMentions] = useState<Mention[]>([]);
 
   const submit = () => {
-    createComment(url, {
+    create(url, {
       type: commentType,
       comment: commentText,
       mentions: mentions,
@@ -131,7 +131,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
                   comment={{ comment: commentText, type: commentType, mentions }}
                   placeholder={evaluateTranslation()}
                   onAddMention={(id: ReactText, displayName: string) => {
-                    setMentions([...mentions, { id, displayName }]);
+                    setMentions([...mentions, { id, displayName, mail: "" }]);
                   }}
                   onChange={event => setCommentText(event.target.value)}
                   onCancel={onCancel}

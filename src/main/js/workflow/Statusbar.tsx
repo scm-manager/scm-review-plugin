@@ -30,7 +30,7 @@ import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import classNames from "classnames";
 import StatusModalView from "./StatusModalView";
-import { useStatusbar } from "./statusbar";
+import { useStatusbar } from "./useStatusbar";
 
 type Props = {
   repository: Repository;
