@@ -21,21 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useReducer } from "react";
-import reducer, { createInitialState } from "./reducer";
+import React, { FC, useEffect, useState } from "react";
 import { PullRequest } from "../types/PullRequest";
 import { Link, Repository } from "@scm-manager/ui-types";
 import {
   ErrorNotification,
+  File,
   FileContentFactory,
   JumpToFileButton,
   Loading,
   Notification
 } from "@scm-manager/ui-components";
-import useComments from "../comment/useComments";
-import { createDiffUrl } from "../pullRequest";
+import { createDiffUrl, useComments } from "../pullRequest";
 import { useTranslation } from "react-i18next";
-import Diff from "./Diff";
+import Diff, { DiffState } from "./Diff";
+import { updateDiffStateForComments } from "./updateDiffState";
 
 type Props = {
   repository: Repository;
@@ -45,11 +45,22 @@ type Props = {
 };
 
 const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
-  const [diffState, dispatch] = useReducer(reducer, createInitialState(pullRequest?.markedAsReviewed || []));
-  const { error, loading, links } = useComments(pullRequest, dispatch);
   const { t } = useTranslation("plugins");
+  const { data: comments, isLoading, error } = useComments(repository, pullRequest);
+  const [diffState, setDiffState] = useState<DiffState>({
+    lines: {},
+    files: {},
+    comments: [],
+    reviewedFiles: pullRequest?.markedAsReviewed || []
+  });
 
-  const fileContentFactory: FileContentFactory = file => {
+  useEffect(() => {
+    if (comments) {
+      updateDiffStateForComments(comments, setDiffState);
+    }
+  }, [comments]);
+
+  const fileContentFactory: FileContentFactory = (file: File) => {
     const baseUrl = `/repo/${repository.namespace}/${repository.name}/code/sources`;
     const sourceLink = {
       url: `${baseUrl}/${pullRequest && pullRequest.source && encodeURIComponent(pullRequest.source)}/${file.newPath}/`,
@@ -79,25 +90,26 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
         }
     }
 
-    return links.map(({ url, label }) => <JumpToFileButton tooltip={label} link={url} />);
+    return links.map(({ url, label }) => <JumpToFileButton key={url} tooltip={label} link={url} />);
   };
 
   const diffUrl = createDiffUrl(repository, source, target);
   if (!diffUrl) {
     return <Notification type="danger">{t("scm-review-plugin.diff.notSupported")}</Notification>;
-  } else if (loading) {
+  } else if (isLoading) {
     return <Loading />;
   } else if (error) {
     return <ErrorNotification error={error} />;
   } else {
-    const createLink = links && links.create ? (links.create as Link).href : undefined;
+    const createLink = (comments?._links?.create as Link)?.href || undefined;
     return (
       <Diff
+        repository={repository}
+        pullRequest={pullRequest}
         diffUrl={diffUrl}
         diffState={diffState}
+        updateDiffState={setDiffState}
         createLink={createLink}
-        dispatch={dispatch}
-        pullRequest={pullRequest}
         fileContentFactory={fileContentFactory}
       />
     );

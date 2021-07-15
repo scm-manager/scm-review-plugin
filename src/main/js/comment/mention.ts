@@ -22,19 +22,22 @@
  * SOFTWARE.
  */
 
-import {SuggestionDataItem} from "react-mentions";
-import { apiClient } from "@scm-manager/ui-components";
-import {Mention} from "../types/PullRequest";
+import { SuggestionDataItem } from "react-mentions";
+import { SelectValue } from "@scm-manager/ui-types";
 
-export function mapAutocompleteToSuggestions(link: string, query: string, callback: (data: SuggestionDataItem[]) => void) {
+export const getUserSuggestions = (
+  userSuggestions: (p: string) => Promise<SelectValue[]>,
+  query: string,
+  callback: (data: SuggestionDataItem[]) => void
+) => {
   if (query && query.length > 1) {
-    const url = link + "?q=";
-    return apiClient
-      .get(url + query)
-      .then(response => response.json())
+    return userSuggestions(query)
       .then(suggestions => {
-        return suggestions.map((s: Mention) => {
-          return { id: s.id, display: s.displayName, mail: s.mail };
+        return suggestions.map((s: SelectValue) => {
+          return {
+            id: s.value.id,
+            display: s.value.displayName
+          };
         });
       })
       .then(callback);

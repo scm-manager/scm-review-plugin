@@ -26,17 +26,14 @@ import { Link, Repository } from "@scm-manager/ui-types";
 import { apiClient, Toast, ToastButtons, ToastButton } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "react-query";
-import { createDiffUrl } from "./pullRequest";
+import { createDiffUrl, useInvalidatePullRequest } from "./pullRequest";
 
 type HandlerProps = {
   url: string;
-  diffUrl?: string;
-  reload: () => void;
+  invalidatePullRequest: () => Promise<void[]>;
 };
 
-const EventNotificationHandler: FC<HandlerProps> = ({ url, diffUrl, reload }) => {
-  const queryClient = useQueryClient();
+const EventNotificationHandler: FC<HandlerProps> = ({ url, invalidatePullRequest }) => {
   const [event, setEvent] = useState<unknown>();
   useEffect(() => {
     return apiClient.subscribe(url, {
@@ -46,10 +43,7 @@ const EventNotificationHandler: FC<HandlerProps> = ({ url, diffUrl, reload }) =>
   const { t } = useTranslation("plugins");
 
   const reloadAndClose = async () => {
-    if (diffUrl) {
-      await queryClient.invalidateQueries(["link", diffUrl]);
-    }
-    reload();
+    await invalidatePullRequest();
     setEvent(null);
   };
 
@@ -75,17 +69,17 @@ const EventNotificationHandler: FC<HandlerProps> = ({ url, diffUrl, reload }) =>
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
-  reload: () => void;
 };
 
-const ChangeNotification: FC<Props> = ({ repository, pullRequest, reload }) => {
+const ChangeNotification: FC<Props> = ({ repository, pullRequest }) => {
+  const invalidatePullRequest = useInvalidatePullRequest(repository, pullRequest);
   if (pullRequest._links.events) {
     const link = pullRequest._links.events as Link;
-    let diffLink;
+    let diffLink: string;
     if (pullRequest.source && pullRequest.target) {
       diffLink = createDiffUrl(repository, pullRequest.source, pullRequest.target);
     }
-    return <EventNotificationHandler url={link.href} diffUrl={diffLink} reload={reload} />;
+    return <EventNotificationHandler url={link.href} invalidatePullRequest={() => invalidatePullRequest(diffLink)} />;
   }
   return null;
 };

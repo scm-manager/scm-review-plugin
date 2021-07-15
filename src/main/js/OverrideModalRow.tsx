@@ -30,7 +30,6 @@ import { Icon } from "@scm-manager/ui-components";
 
 type Props = WithTranslation & {
   result: Result;
-  useObstacleText: boolean;
 };
 
 const Entry = styled.div`
@@ -43,7 +42,7 @@ const PaddingRightIcon = styled(Icon)`
   padding-right: 0.5rem;
 `;
 
-const OverrideModalRow: FC<Props> = ({ result, useObstacleText }) => {
+const OverrideModalRow: FC<Props> = ({ result }) => {
   const [t] = useTranslation("plugins");
 
   return (

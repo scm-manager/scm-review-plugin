@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useMemo} from "react";
+import React, { FC, useMemo } from "react";
 import { Comment } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 import ReducedMarkdownView from "../ReducedMarkdownView";
@@ -35,7 +35,7 @@ type Props = {
 const CommentContent: FC<Props> = ({ comment }) => {
   const { t } = useTranslation("plugins");
   const message = useMemo<string>(() => {
-    let content = comment.comment;
+    let content = comment.comment!;
     if (comment.systemComment) {
       content = t(`scm-review-plugin.comment.systemMessage.${comment.comment}`);
     }

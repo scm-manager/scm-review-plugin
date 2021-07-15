@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { Dispatch } from "react";
+import React, { FC, ReactText, useState } from "react";
 import classNames from "classnames";
-import { WithTranslation, withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-import { apiClient, confirmAlert, DateFromNow, ErrorNotification, Loading } from "@scm-manager/ui-components";
-import { Link } from "@scm-manager/ui-types";
-import { BasicComment, Comment, PossibleTransition } from "../types/PullRequest";
-import { deletePullRequestComment, transformPullRequestComment, updatePullRequestComment } from "../pullRequest";
+import { ConfirmAlert, confirmAlert, DateFromNow, ErrorNotification } from "@scm-manager/ui-components";
+import { Repository } from "@scm-manager/ui-types";
+import { Comment, Mention, PossibleTransition, PullRequest } from "../types/PullRequest";
+import { useDeleteComment, useTransformComment, useUpdateComment } from "../pullRequest";
 import CommentSpacingWrapper from "./CommentSpacingWrapper";
 import CommentActionToolbar from "./CommentActionToolbar";
 import CommentTags from "./CommentTags";
@@ -39,7 +39,6 @@ import LastEdited from "./LastEdited";
 import EditButtons from "./EditButtons";
 import Replies from "./Replies";
 import ReplyEditor from "./ReplyEditor";
-import { createReply, deleteComment, deleteReply, updateComment, updateReply } from "./actiontypes";
 import MentionTextarea from "./MentionTextarea";
 
 const LinkWithInheritColor = styled.a`
@@ -50,219 +49,69 @@ const AuthorName = styled.span`
   margin-left: 5px;
 `;
 
-type Props = WithTranslation & {
+type Props = {
+  repository: Repository;
+  pullRequest: PullRequest;
   parent?: Comment;
   comment: Comment;
-  dispatch: Dispatch<any>; // ???
   createLink?: string;
 };
 
-type State = {
-  collapsed: boolean;
-  edit: boolean;
-  changed: boolean;
-  updatedComment: BasicComment;
-  loading: boolean;
-  contextModalOpen: boolean;
-  replyEditor?: Comment;
-  error?: Error;
-};
+const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, comment, createLink }) => {
+  const [t] = useTranslation("plugins");
+  const [collapsed, setCollapsed] = useState(comment.type === "TASK_DONE");
+  const [edit, setEdit] = useState(false);
+  const [changed, setChanged] = useState(false);
+  const [contextModalOpen, setContextModalOpen] = useState(false);
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+  const [commentType, setCommentType] = useState(comment.type);
+  const [commentText, setCommentText] = useState(comment.comment || "");
+  const [mentions, setMentions] = useState<Mention[]>(comment.mentions || []);
+  const [replyEditor, setReplyEditor] = useState<Comment>();
 
-class PullRequestComment extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      loading: false,
-      updatedComment: {
-        ...props.comment
-      },
-      collapsed: props.comment.type === "TASK_DONE",
-      edit: false,
-      changed: false,
-      contextModalOpen: false
-    };
-  }
+  const { remove, isLoading: deleteLoading, error: deleteError } = useDeleteComment(repository, pullRequest);
 
-  startUpdate = () => {
-    this.setState({
-      loading: false,
-      edit: true,
-      changed: false
-    });
+  const { update } = useUpdateComment(repository, pullRequest);
+  const { transform } = useTransformComment(repository, pullRequest);
+
+  const startUpdate = () => {
+    setEdit(true);
+    setChanged(false);
   };
 
-  cancelUpdate = () => {
-    this.setState({
-      loading: false,
-      edit: false,
-      updatedComment: {
-        ...this.props.comment
-      }
-    });
+  const cancelUpdate = () => {
+    setEdit(false);
+    setCommentText(comment.comment || "");
+    setCommentType(comment.type);
+    setMentions(comment.mentions);
   };
 
-  update = () => {
-    const { updatedComment, changed } = this.state;
+  const updateComment = () => {
     if (!changed) {
-      this.setState({ edit: false });
+      setEdit(false);
       return;
     }
-    const comment = {
-      ...this.props.comment,
-      comment: updatedComment.comment,
-      type: updatedComment.type
-    };
 
-    this.setState({
-      loading: true
-    });
-
-    if (!comment._links.update) {
-      throw new Error("comment has no update link");
-    }
-
-    const link = comment._links.update as Link;
-
-    updatePullRequestComment(link.href, comment)
-      .then(() => {
-        return this.fetchRefreshed(comment, this.dispatchUpdate);
-      })
-      .catch(error => {
-        this.setState({
-          loading: false,
-          error
-        });
-      });
+    update({ ...comment, type: commentType, comment: commentText, mentions });
+    setEdit(false);
   };
 
-  dispatchUpdate = (comment: Comment) => {
-    const { parent, dispatch } = this.props;
-    if (parent) {
-      dispatch(updateReply(parent.id, comment));
-    } else {
-      dispatch(updateComment(comment));
-    }
-  };
-
-  dispatchDelete = (comment: Comment) => {
-    const { parent, dispatch } = this.props;
-    if (parent) {
-      dispatch(deleteReply(parent.id, comment));
-    } else {
-      dispatch(deleteComment(comment));
-    }
-  };
-
-  fetchRefreshed = (comment: Comment, callback: (c: Comment) => void) => {
-    const link = comment._links.self as Link;
-    return apiClient
-      .get(link.href)
-      .then(response => response.json())
-      .then((c: Comment) => {
-        callback(c);
-        this.setState({
-          loading: false,
-          edit: false,
-          changed: false,
-          updatedComment: {
-            ...c
-          }
-        });
-      })
-      .catch(error => {
-        this.setState({
-          loading: false,
-          error
-        });
-      });
-  };
-
-  getChildCount = (comment: Comment) => {
-    if (comment._embedded && comment._embedded.replies) {
-      return comment._embedded.replies.length;
-    }
-    return 0;
-  };
-
-  delete = () => {
-    const { parent, comment, dispatch } = this.props;
-    if (comment._links.delete) {
-      const href = (comment._links.delete as Link).href;
-      this.setState({
-        loading: true
-      });
-
-      deletePullRequestComment(href)
-        .then(response => {
-          this.dispatchDelete(comment);
-          if (parent && this.getChildCount(parent) === 1) {
-            return this.fetchRefreshed(parent, (c: Comment) => dispatch(updateComment(c))).then(() => {
-              this.setState({
-                loading: false
-              });
-            });
-          } else {
-            this.setState({
-              loading: false
-            });
-          }
-        })
-        .catch(error => {
-          this.setState({
-            loading: false,
-            error
-          });
-        });
-    } else {
-      throw new Error("could not find required delete link");
-    }
-  };
-
-  confirmDelete = () => {
-    const { t } = this.props;
-    confirmAlert({
-      title: t("scm-review-plugin.comment.confirmDeleteAlert.title"),
-      message: t("scm-review-plugin.comment.confirmDeleteAlert.message"),
-      buttons: [
-        {
-          className: "is-outlined",
-          label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
-          onClick: () => this.delete()
-        },
-        {
-          label: t("scm-review-plugin.comment.confirmDeleteAlert.cancel"),
-          onClick: () => null
-        }
-      ]
-    });
-  };
-
-  executeTransition = (transition: string) => {
-    const { comment } = this.props;
-
+  const executeTransition = (transition: string) => {
     if (!(comment && comment._embedded && comment._embedded.possibleTransitions)) {
       throw new Error("comment has no possible transitions");
     }
 
-    const transformation = comment._embedded.possibleTransitions.find((t: PossibleTransition) => t.name === transition);
+    const transformation = comment._embedded.possibleTransitions.find(
+      (pt: PossibleTransition) => pt.name === transition
+    );
     if (!transformation) {
       throw new Error("comment does not have transition " + transition);
     }
 
-    transformPullRequestComment(transformation)
-      .then(response => {
-        return this.fetchRefreshed(comment, this.dispatchUpdate);
-      })
-      .catch(error => {
-        this.setState({
-          loading: false,
-          error
-        });
-      });
+    transform(transformation);
   };
 
-  confirmTransition = (transition: string, translationKey: string) => {
-    const { t } = this.props;
+  const confirmTransition = (transition: string, translationKey: string) => {
     confirmAlert({
       title: t(translationKey + ".title"),
       message: t(translationKey + ".message"),
@@ -270,7 +119,7 @@ class PullRequestComment extends React.Component<Props, State> {
         {
           className: "is-outlined",
           label: t(translationKey + ".submit"),
-          onClick: () => this.executeTransition(transition)
+          onClick: () => executeTransition(transition)
         },
         {
           label: t(translationKey + ".cancel"),
@@ -280,182 +129,139 @@ class PullRequestComment extends React.Component<Props, State> {
     });
   };
 
-  toggleCollapse = () => {
-    this.setState(prevState => ({
-      collapsed: !prevState.collapsed
-    }));
+  const handleChanges = (event: any) => {
+    setChanged(true);
+    setCommentText(event.target.value);
   };
 
-  handleChanges = (event: any) => {
-    this.setState({
-      changed: true,
-      updatedComment: {
-        ...this.state.updatedComment,
-        comment: event.target.value
-      }
-    });
-  };
-
-  createEditIcons = () => {
-    const { parent, comment, createLink } = this.props;
-    const { collapsed } = this.state;
+  const createEditIcons = () => {
     return (
       <CommentActionToolbar
         parent={parent}
         comment={comment}
         collapsed={collapsed}
         createLink={createLink}
-        onUpdate={this.startUpdate}
-        onDelete={this.confirmDelete}
-        onReply={() => this.reply(comment)}
-        onTransitionChange={this.confirmTransition}
+        onUpdate={startUpdate}
+        onDelete={() => setShowConfirmDeleteModal(true)}
+        deleteLoading={deleteLoading}
+        onReply={() => setReplyEditor(comment)}
+        onTransitionChange={confirmTransition}
       />
     );
   };
 
-  createMessageEditor = () => {
-    const { updatedComment, error } = this.state;
-
+  const createMessageEditor = () => {
     return (
       <>
         <MentionTextarea
-          value={updatedComment?.comment ? updatedComment.comment : ""}
-          comment={updatedComment}
-          onAddMention={(id, displayName) => {
-            this.setState(prevState => ({
-              ...prevState,
-              updatedComment: {
-                ...prevState.updatedComment,
-                mentions: [...prevState.updatedComment.mentions, { id, displayName }]
-              }
-            }));
+          value={commentText}
+          comment={{ ...comment, comment: commentText, type: commentType, mentions }}
+          onAddMention={(id: ReactText, display: string) => {
+            setMentions([...mentions, { id: id as string, displayName: display, mail: "" }]);
           }}
-          onChange={this.handleChanges}
-          onSubmit={this.update}
-          onCancel={this.cancelUpdate}
+          onChange={handleChanges}
+          onSubmit={updateComment}
+          onCancel={cancelUpdate}
         />
-        {error && <ErrorNotification error={error} />}
       </>
     );
   };
 
-  onClose = () => {
-    this.setState({
-      contextModalOpen: false
-    });
-  };
-
-  collectTags = (comment: Comment) => {
+  const collectTags = (c: Comment) => {
     let onOpenContext;
-    if (comment.context) {
-      onOpenContext = () => {
-        this.setState({
-          contextModalOpen: true
-        });
-      };
+    if (c.context) {
+      onOpenContext = () => setContextModalOpen(true);
     }
 
-    return <CommentTags comment={comment} onOpenContext={onOpenContext} />;
+    return <CommentTags comment={c} onOpenContext={onOpenContext} />;
   };
 
-  render() {
-    const { parent, comment, dispatch, t } = this.props;
-    const { loading, collapsed, edit, contextModalOpen } = this.state;
-
-    if (loading) {
-      return <Loading />;
-    }
-
-    let icons = null;
-    let editButtons = null;
-    let message = null;
-
-    if (edit) {
-      message = this.createMessageEditor();
-      editButtons = (
-        <EditButtons
-          comment={comment}
-          onSubmit={this.update}
-          onCancel={this.cancelUpdate}
-          changed={() => this.state.changed}
-        />
-      );
-    } else {
-      message = !collapsed ? <CommentContent comment={comment} /> : "";
-      icons = this.createEditIcons();
-    }
-
-    const collapseTitle = collapsed ? t("scm-review-plugin.comment.expand") : t("scm-review-plugin.comment.collapse");
-    const collapseIcon = collapsed ? "fa-angle-right" : "fa-angle-down";
-
-    return (
-      <>
-        {contextModalOpen && <ContextModal comment={comment} onClose={this.onClose} />}
-        <CommentSpacingWrapper isChildComment={!!parent}>
-          <article id={`comment-${comment.id}`} className="media">
-            <div className="media-content is-clipped content">
-              <p>
-                <LinkWithInheritColor onClick={this.toggleCollapse} title={collapseTitle}>
-                  <span className="icon is-small">
-                    <i className={classNames("fa", collapseIcon)} />
-                  </span>
-                  <AuthorName>
-                    <strong>{comment.author.displayName}</strong>{" "}
-                  </AuthorName>
-                </LinkWithInheritColor>
-                <CommentMetadata>
-                  <DateFromNow date={comment.date} /> <LastEdited comment={comment} />
-                </CommentMetadata>
-                {this.collectTags(comment)}
-                <br />
-                {message}
-              </p>
-              {editButtons}
-            </div>
-            {icons}
-          </article>
-        </CommentSpacingWrapper>
-        {!collapsed && <Replies comment={comment} createLink={this.props.createLink} dispatch={dispatch} />}
-        {this.createReplyEditorIfNeeded(comment.id)}
-      </>
-    );
-  }
-
-  reply = (comment: Comment) => {
-    this.openReplyEditor(comment);
-  };
-
-  createReplyEditorIfNeeded = (id: string) => {
-    const replyComment = this.state.replyEditor;
+  const createReplyEditorIfNeeded = (id?: string) => {
+    const replyComment = replyEditor;
     if (replyComment && replyComment.id === id) {
-      const { parent, comment } = this.props;
       return (
         <ReplyEditor
+          repository={repository}
+          pullRequest={pullRequest}
           comment={parent ? parent : comment}
-          onCreation={this.onReplyCreated}
-          onCancel={this.closeReplyEditor}
+          onCancel={() => setReplyEditor(undefined)}
         />
       );
     }
   };
 
-  onReplyCreated = (reply: Comment) => {
-    const { parent, comment, dispatch } = this.props;
-    dispatch(createReply(parent ? parent.id : comment.id, reply));
-    this.closeReplyEditor();
-  };
-
-  openReplyEditor(comment: Comment) {
-    this.setState({
-      replyEditor: comment
-    });
+  if (deleteError) {
+    return <ErrorNotification error={deleteError} />;
   }
 
-  closeReplyEditor = () => {
-    this.setState({
-      replyEditor: undefined
-    });
-  };
-}
+  let icons = null;
+  let editButtons = null;
+  let message;
 
-export default withTranslation("plugins")(PullRequestComment);
+  if (edit) {
+    message = createMessageEditor();
+    editButtons = (
+      <EditButtons comment={comment} onSubmit={updateComment} onCancel={cancelUpdate} changed={() => changed} />
+    );
+  } else {
+    message = !collapsed ? <CommentContent comment={comment} /> : "";
+    icons = createEditIcons();
+  }
+
+  const collapseTitle = collapsed ? t("scm-review-plugin.comment.expand") : t("scm-review-plugin.comment.collapse");
+  const collapseIcon = collapsed ? "fa-angle-right" : "fa-angle-down";
+
+  return (
+    <>
+      {showConfirmDeleteModal ? (
+        <ConfirmAlert
+          title={t("scm-review-plugin.comment.confirmDeleteAlert.title")}
+          message={t("scm-review-plugin.comment.confirmDeleteAlert.message")}
+          buttons={[
+            {
+              className: "is-outlined",
+              label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
+              onClick: () => remove(comment)
+            },
+            {
+              label: t("scm-review-plugin.comment.confirmDeleteAlert.cancel"),
+              onClick: () => null
+            }
+          ]}
+          close={() => setShowConfirmDeleteModal(false)}
+        />
+      ) : null}
+      {contextModalOpen ? <ContextModal comment={comment} onClose={() => setContextModalOpen(false)} /> : null}
+      <CommentSpacingWrapper isChildComment={!!parent}>
+        <article id={`comment-${comment.id}`} className="media">
+          <div className="media-content is-clipped content">
+            <p>
+              <LinkWithInheritColor onClick={() => setCollapsed(!collapsed)} title={collapseTitle}>
+                <span className="icon is-small">
+                  <i className={classNames("fa", collapseIcon)} />
+                </span>
+                <AuthorName>
+                  <strong>{comment.author.displayName}</strong>{" "}
+                </AuthorName>
+              </LinkWithInheritColor>
+              <CommentMetadata>
+                <DateFromNow date={comment.date} /> <LastEdited comment={comment} />
+              </CommentMetadata>
+              {collectTags(comment)}
+              <br />
+              {message}
+            </p>
+            {editButtons}
+          </div>
+          {icons}
+        </article>
+      </CommentSpacingWrapper>
+      {!collapsed && (
+        <Replies repository={repository} pullRequest={pullRequest} comment={comment} createLink={createLink} />
+      )}
+      {createReplyEditorIfNeeded(comment?.id)}
+    </>
+  );
+};
+
+export default PullRequestComment;

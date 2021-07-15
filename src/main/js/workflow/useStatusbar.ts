@@ -21,26 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@scm-manager/ui-components";
+import { useQuery } from "react-query";
+import { apiClient } from "@scm-manager/ui-components";
+import { Result } from "../types/EngineConfig";
+import { HalRepresentation, Link, Repository } from "@scm-manager/ui-types";
+import { PullRequest } from "../types/PullRequest";
+import { prQueryKey } from "../pullRequest";
 
-type Props = {
-  loading: boolean;
-  action: () => void;
+type StatusbarResult = HalRepresentation & {
+  results: Result[];
 };
 
-const ApprovalButton: FC<Props> = ({loading, action}) => {
-  const [t] = useTranslation("plugins");
-  return (
-    <Button
-      label={t("scm-review-plugin.pullRequest.details.buttons.approve")}
-      loading={loading}
-      action={action}
-      color="link is-outlined"
-      icon="check"
-    />
+export const useStatusbar = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+
+  if (!id) {
+    throw new Error("Could not fetch statusbar for pull request without id");
+  }
+
+  const { error, isLoading, data } = useQuery<StatusbarResult | undefined, Error>(
+    [...prQueryKey(repository, id), "statusbar"],
+    () => {
+      if (pullRequest._links.workflowResult) {
+        return apiClient.get((pullRequest._links.workflowResult as Link).href).then(response => response.json());
+      }
+      return undefined;
+    }
   );
-};
 
-export default ApprovalButton;
+  return {
+    error,
+    isLoading,
+    data
+  };
+};

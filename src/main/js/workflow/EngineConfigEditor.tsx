@@ -22,24 +22,23 @@
  * SOFTWARE.
  */
 
-import React, { FC, useEffect, useState } from "react";
-import { AppliedRule, AvailableRules, EngineConfiguration, Rule } from "../types/EngineConfig";
+import React, { FC, useState } from "react";
+import { AppliedRule, EngineConfiguration } from "../types/EngineConfig";
 import { useTranslation } from "react-i18next";
 import {
-  Checkbox,
-  Title,
-  Select,
-  apiClient,
-  Notification,
   AddButton,
+  Checkbox,
   ErrorNotification,
+  Level,
   Loading,
-  Level
+  Notification,
+  Select,
+  Title
 } from "@scm-manager/ui-components";
 import EngineConfigTable from "./EngineConfigTable";
-import { Link } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
+import { useEngineConfigRules } from "./config";
 
 type Props = {
   onConfigurationChange: (config: EngineConfiguration, valid: boolean) => void;
@@ -62,30 +61,11 @@ const RuleDetails = styled.p`
 
 const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, global }) => {
   const [t] = useTranslation("plugins");
-
   const [config, setConfig] = useState(initialConfiguration);
-  const [availableRules, setAvailableRules] = useState<Rule[]>([]);
   const [selectedRule, setSelectedRule] = useState("");
   const [ruleConfiguration, setRuleConfiguration] = useState<any>(undefined);
   const [ruleConfigurationValid, setRuleConfigurationValid] = useState(true);
-  const [error, setError] = useState<Error | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
-
-  const availableRulesHref = (config._links.availableRules as Link).href;
-
-  useEffect(() => {
-    setLoading(true);
-    apiClient
-      .get(availableRulesHref)
-      .then(r => r.json() as Promise<AvailableRules>)
-      .then(body => body.rules)
-      .then(setAvailableRules)
-      .then(() => setLoading(false))
-      .catch(err => {
-        setError(err);
-        setLoading(false);
-      });
-  }, [availableRulesHref]);
+  const { error, isLoading, data } = useEngineConfigRules(config);
 
   const onChangeDisableRepositoryConfiguration = () => {
     const newConfig = { ...config, disableRepositoryConfiguration: !config.disableRepositoryConfiguration };
@@ -109,7 +89,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
   };
 
   const deleteRule = (rule: AppliedRule) => {
-    const newRules = [...config.rules];
+    const newRules = [...config?.rules];
     const index = newRules.indexOf(rule);
     newRules.splice(index, 1);
     const newConfig = { ...config, rules: newRules };
@@ -123,20 +103,30 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
     setRuleConfigurationValid(true);
   };
 
-  const options = [
-    { label: "", value: "" },
-    ...availableRules
-      .filter(
-        availableRule => availableRule.applicableMultipleTimes || !config.rules.find(r => r.rule === availableRule.name)
-      )
-      .sort((a, b) => bySortKey(a.name, b.name, t.bind(t)))
-      .map(rule => ({ label: t(`workflow.rule.${rule.name}.name`), value: rule.name }))
-  ];
+  const createOptions = () => {
+    let options = [{ label: "", value: "" }];
+
+    if (data) {
+      options = [
+        ...options,
+        ...data?.rules
+          .filter(
+            availableRule =>
+              availableRule.applicableMultipleTimes || !config.rules.find(r => r.rule === availableRule.name)
+          )
+          .sort((a, b) => bySortKey(a.name, b.name, t.bind(t)))
+          .map(rule => ({ label: t(`workflow.rule.${rule.name}.name`), value: rule.name }))
+      ];
+    }
+    return options;
+  };
 
   const renderAddRuleForm = () => {
-    if (loading) {
+    if (isLoading) {
       return <Loading />;
     }
+
+    const options = createOptions();
 
     if (options.length > 1) {
       return (
@@ -224,7 +214,11 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
   );
 };
 
-export const bySortKey = (ruleNameA: string, ruleNameB: string, translateFn: (key: string) => string | null): number => {
+export const bySortKey = (
+  ruleNameA: string,
+  ruleNameB: string,
+  translateFn: (key: string) => string | null
+): number => {
   const [ruleASortKey, ruleATranslatedName, aSortValue] = getRuleSortKey(ruleNameA, translateFn);
   const [ruleBSortKey, ruleBTranslatedName, bSortValue] = getRuleSortKey(ruleNameB, translateFn);
   if (!aSortValue && !bSortValue) {
@@ -238,18 +232,16 @@ export const bySortKey = (ruleNameA: string, ruleNameB: string, translateFn: (ke
   } else {
     return aSortValue.localeCompare(bSortValue);
   }
-}
+};
 
-const getRuleSortKey = (name: string, translateFn: (key: string) => string | null): [string | null, string | null, string | null, boolean] => {
+const getRuleSortKey = (
+  name: string,
+  translateFn: (key: string) => string | null
+): [string | null, string | null, string | null, boolean] => {
   const sortKey = translateFn(`workflow.rule.${name}.sortKey`);
   const translatedName = translateFn(`workflow.rule.${name}.name`);
   const sortValue = sortKey || translatedName;
-  return [
-    sortKey,
-    translatedName,
-    sortValue,
-    !!sortValue
-  ];
-}
+  return [sortKey, translatedName, sortValue, !!sortValue];
+};
 
 export default EngineConfigEditor;

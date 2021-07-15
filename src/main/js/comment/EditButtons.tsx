@@ -66,7 +66,7 @@ const EditButtons: FC<Props> = ({ comment, onSubmit, onCancel, changed }) => {
             <SubmitButton
               label={t("scm-review-plugin.comment.save")}
               action={onSubmit}
-              disabled={comment.comment.trim() === ""}
+              disabled={(comment.comment || "").trim() === ""}
               scrollToTop={false}
             />
           </div>

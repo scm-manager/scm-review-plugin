@@ -21,26 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@scm-manager/ui-components";
 
-type Props = {
-  loading: boolean;
-  action: () => void;
+import { ApiResult } from "@scm-manager/ui-api";
+import { useQuery } from "react-query";
+import { apiClient } from "@scm-manager/ui-components";
+import { AvailableRules, EngineConfiguration } from "../types/EngineConfig";
+import { Link } from "@scm-manager/ui-types";
+
+export const useEngineConfigRules = (config: EngineConfiguration): ApiResult<AvailableRules> => {
+  return useQuery<AvailableRules, Error>(["workflow", "available-rules"], () => {
+    if (config._links.availableRules) {
+      return apiClient.get((config._links.availableRules as Link).href).then(response => response.json());
+    }
+    return { rules: [] };
+  });
 };
-
-const ApprovalButton: FC<Props> = ({loading, action}) => {
-  const [t] = useTranslation("plugins");
-  return (
-    <Button
-      label={t("scm-review-plugin.pullRequest.details.buttons.approve")}
-      loading={loading}
-      action={action}
-      color="link is-outlined"
-      icon="check"
-    />
-  );
-};
-
-export default ApprovalButton;

@@ -21,130 +21,50 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { apiClient, Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
-import { BasicComment, Comment, Location } from "../types/PullRequest";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { createPullRequestComment } from "../pullRequest";
+import React, { FC, ReactText, useState } from "react";
+import { Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
+import {CommentType, Location, Mention, PullRequest} from "../types/PullRequest";
+import { useTranslation } from "react-i18next";
+import { useCreateComment } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
 import MentionTextarea from "./MentionTextarea";
+import { Repository } from "@scm-manager/ui-types";
 
-type Props = WithTranslation & {
+type Props = {
+  repository: Repository;
+  pullRequest: PullRequest;
   url: string;
   location?: Location;
   onCancel?: () => void;
-  onCreation: (comment: Comment) => void;
   autofocus?: boolean;
   reply?: boolean;
 };
 
-type State = {
-  newComment?: BasicComment;
-  loading: boolean;
-  errorResult?: Error;
-};
+const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCancel, reply }) => {
+  const [t] = useTranslation("plugins");
 
-class CreateComment extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      loading: false,
-      newComment: {
-        type: "COMMENT",
-        mentions: []
-      }
-    };
-  }
+  const { create, isLoading, error } = useCreateComment(repository, pullRequest);
 
-  handleChanges = (event: any) => {
-    this.setState({
-      newComment: {
-        ...this.state.newComment,
-        comment: event.target.value
-      }
-    });
-  };
+  const [commentType, setCommentType] = useState<CommentType>("COMMENT");
+  const [commentText, setCommentText] = useState("");
+  const [mentions, setMentions] = useState<Mention[]>([]);
 
-  switchToCommentType = (value: boolean) => {
-    if (value) {
-      this.switchCommentType("COMMENT");
-    }
-  };
-
-  switchToTaskType = (value: boolean) => {
-    if (value) {
-      this.switchCommentType("TASK_TODO");
-    }
-  };
-
-  switchCommentType = (type: string) => {
-    this.setState({
-      newComment: {
-        ...this.state.newComment,
-        type
-      }
-    });
-  };
-
-  submit = () => {
-    const { newComment } = this.state;
-    if (!newComment || !this.isValid()) {
-      return;
-    }
-
-    const { url, location } = this.props;
-    this.setState({
-      loading: true
-    });
-
-    createPullRequestComment(url, {
-      ...newComment,
+  const submit = () => {
+    create(url, {
+      type: commentType,
+      comment: commentText,
+      mentions: mentions,
       location
-    })
-      .then(this.fetchCreatedComment)
-      .catch((errorResult: Error) => {
-        this.setState({
-          errorResult,
-          loading: false
-        });
-      });
-  };
-
-  fetchCreatedComment = (response: Response) => {
-    const commentHref = response.headers.get("Location");
-    if (commentHref) {
-      return apiClient
-        .get(commentHref)
-        .then(r => r.json())
-        .then(comment => {
-          if (this.props.onCreation) {
-            this.props.onCreation(comment);
-          }
-          this.finishedLoading();
-        });
-    } else {
-      throw new Error("missing location header");
+    });
+    setCommentText("");
+    setCommentType("COMMENT");
+    setMentions([]);
+    if (onCancel) {
+      onCancel();
     }
   };
 
-  finishedLoading = () => {
-    this.setState(state => {
-      let newComment;
-      if (state.newComment) {
-        newComment = {
-          ...state.newComment,
-          comment: ""
-        };
-      }
-      return {
-        loading: false,
-        newComment
-      };
-    });
-  };
-
-  createCommentEditorName = () => {
-    const { location } = this.props;
+  const createCommentEditorName = () => {
     let name = "editor";
     if (location) {
       name += location.file;
@@ -155,110 +75,97 @@ class CreateComment extends React.Component<Props, State> {
     return name;
   };
 
-  isValid() {
-    const { newComment } = this.state;
-    return newComment && newComment.comment && newComment.comment.trim() !== "";
+  const isValid = () => {
+    return commentText && commentText.trim() !== "";
+  };
+
+  if (isLoading) {
+    return <Loading />;
   }
 
-  render() {
-    const { onCancel, reply, t, url } = this.props;
-    const { loading, errorResult, newComment } = this.state;
+  let cancelButton = null;
+  if (onCancel) {
+    cancelButton = <Button label={t("scm-review-plugin.comment.cancel")} color="warning" action={onCancel} />;
+  }
 
-    if (loading) {
-      return <Loading />;
-    }
-
-    let cancelButton = null;
-    if (onCancel) {
-      cancelButton = <Button label={t("scm-review-plugin.comment.cancel")} color="warning" action={onCancel} />;
-    }
-
-    let toggleType = null;
-    if (!reply) {
-      const editorName = this.createCommentEditorName();
-      toggleType = (
-        <div className="field is-grouped">
-          <div className="control">
-            <Radio
-              name={`comment_type_${editorName}`}
-              value="COMMENT"
-              checked={newComment?.type === "COMMENT"}
-              label={t("scm-review-plugin.comment.type.comment")}
-              onChange={this.switchToCommentType}
-            />
-            <Radio
-              name={`comment_type_${editorName}`}
-              value="TASK_TODO"
-              checked={newComment?.type === "TASK_TODO"}
-              label={t("scm-review-plugin.comment.type.task")}
-              onChange={this.switchToTaskType}
-            />
-          </div>
+  let toggleType = null;
+  if (!reply) {
+    const editorName = createCommentEditorName();
+    toggleType = (
+      <div className="field is-grouped">
+        <div className="control">
+          <Radio
+            name={`comment_type_${editorName}`}
+            value="COMMENT"
+            checked={commentType === "COMMENT"}
+            label={t("scm-review-plugin.comment.type.comment")}
+            onChange={() => setCommentType("COMMENT")}
+          />
+          <Radio
+            name={`comment_type_${editorName}`}
+            value="TASK_TODO"
+            checked={commentType === "TASK_TODO"}
+            label={t("scm-review-plugin.comment.type.task")}
+            onChange={() => setCommentType("TASK_TODO")}
+          />
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    return (
-      <>
-        {url ? (
-          <article className="media">
-            <div className="media-content">
-              <div className="field">
-                <div className="control">
-                  <MentionTextarea
-                    value={newComment?.comment}
-                    comment={newComment}
-                    placeholder={t(
-                      newComment?.type === "TASK_TODO"
-                        ? "scm-review-plugin.comment.addTask"
-                        : "scm-review-plugin.comment.addComment"
-                    )}
-                    onAddMention={(id, displayName) => {
-                      this.setState(prevState => ({
-                        ...prevState,
-                        newComment: {
-                          ...prevState.newComment,
-                          mentions: [...prevState.newComment.mentions, { id, displayName }]
-                        }
-                      }));
-                    }}
-                    onChange={this.handleChanges}
-                    onSubmit={this.submit}
-                  />
-                </div>
-              </div>
-              {errorResult && <ErrorNotification error={errorResult} />}
-              {toggleType}
-              <div className="field">
-                <Level
-                  right={
-                    <>
-                      <div className="level-item">
-                        <SubmitButton
-                          label={t(
-                            newComment?.type === "TASK_TODO"
-                              ? "scm-review-plugin.comment.addTask"
-                              : "scm-review-plugin.comment.addComment"
-                          )}
-                          action={this.submit}
-                          disabled={!this.isValid()}
-                          loading={loading}
-                          scrollToTop={false}
-                        />
-                      </div>
-                      <div className="level-item">{cancelButton}</div>
-                    </>
-                  }
+  const evaluateTranslation = () => {
+    return commentType === "TASK_TODO"
+      ? t("scm-review-plugin.comment.addTask")
+      : t("scm-review-plugin.comment.addComment");
+  };
+
+  return (
+    <>
+      {url ? (
+        <article className="media">
+          <div className="media-content">
+            <div className="field">
+              <div className="control">
+                <MentionTextarea
+                  value={commentText}
+                  comment={{ comment: commentText, type: commentType, mentions }}
+                  placeholder={evaluateTranslation()}
+                  onAddMention={(id: ReactText, displayName: string) => {
+                    setMentions([...mentions, { id, displayName, mail: "" }]);
+                  }}
+                  onChange={event => setCommentText(event.target.value)}
+                  onCancel={onCancel}
+                  onSubmit={submit}
                 />
               </div>
             </div>
-          </article>
-        ) : (
-          ""
-        )}
-      </>
-    );
-  }
-}
+            <ErrorNotification error={error} />
+            {toggleType}
+            <div className="field">
+              <Level
+                right={
+                  <>
+                    <div className="level-item">
+                      <SubmitButton
+                        label={evaluateTranslation()}
+                        action={submit}
+                        disabled={!isValid()}
+                        loading={isLoading}
+                        scrollToTop={false}
+                      />
+                    </div>
+                    <div className="level-item">{cancelButton}</div>
+                  </>
+                }
+              />
+            </div>
+          </div>
+        </article>
+      ) : (
+        ""
+      )}
+    </>
+  );
+};
 
-export default withTranslation("plugins")(CreateComment);
+export default CreateComment;

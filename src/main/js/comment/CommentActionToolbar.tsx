@@ -34,6 +34,7 @@ type Props = {
   createLink?: string;
   onUpdate: () => void;
   onDelete: () => void;
+  deleteLoading: boolean;
   onReply: () => void;
   onTransitionChange: (transition: string, i18nKey: string) => void;
 };
@@ -89,7 +90,12 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
 
   if (isDeletable()) {
     icons.push(
-      <ToolbarIcon key="delete" title={t("scm-review-plugin.comment.delete")} icon="trash" onClick={actions.onDelete} />
+      <ToolbarIcon
+        key="delete"
+        title={t("scm-review-plugin.comment.delete")}
+        icon="trash"
+        onClick={actions.onDelete}
+      />
     );
   }
 
