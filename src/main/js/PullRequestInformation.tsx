@@ -55,79 +55,41 @@ export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string
   return strippedUrl === suffix;
 }
 
-const PullRequestInformation: FC<Props> = ({
-  repository,
-  shouldFetchChangesets = true,
+type TabProps = {
+  isClosed: boolean;
+  baseURL: string;
+  navigationClass: (type: string) => string;
+  pullRequest: PullRequest;
+  targetBranchDeleted: boolean;
+  mergeHasNoConflict: boolean;
+};
+
+const Tabs: FC<TabProps> = ({
+  isClosed,
   pullRequest,
-  mergeHasNoConflict,
-  status,
-  source,
-  target,
-  targetBranchDeleted
+  navigationClass,
+  baseURL,
+  targetBranchDeleted,
+  mergeHasNoConflict
 }) => {
   const [t] = useTranslation("plugins");
-  const location = useLocation();
-  const match = useRouteMatch();
-  const baseURL = match.url;
-
-  const navigationClass = (suffix: string) => {
-    if (isUrlSuffixMatching(baseURL, location.pathname, suffix)) {
-      return "is-active";
-    }
-    return "";
-  };
-
   let changesetTab = null;
   let diffTab = null;
   let conflictsTab = null;
-  let routeChangeset = null;
-  let routeChangesetPagination = null;
-  let routeDiff = null;
-  let routeConflicts = null;
 
-  const isClosedPullRequest = status === "MERGED" || status === "REJECTED";
-
-  if (!isClosedPullRequest || (pullRequest?.sourceRevision && pullRequest?.targetRevision)) {
+  if (!isClosed || (pullRequest.sourceRevision && pullRequest.targetRevision)) {
     changesetTab = (
       <li className={navigationClass("changesets")}>
         <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pullRequest.tabs.commits")}</Link>
       </li>
     );
-    const sourceRevision = isClosedPullRequest && pullRequest?.sourceRevision ? pullRequest.sourceRevision : source;
-    const targetRevision = isClosedPullRequest && pullRequest?.targetRevision ? pullRequest.targetRevision : target;
-    routeChangeset = (
-      <Route path={`${baseURL}/changesets`} exact>
-        <Changesets
-          repository={repository}
-          pullRequest={pullRequest}
-          shouldFetchChangesets={shouldFetchChangesets}
-        />
-      </Route>
-    );
-    routeChangesetPagination = (
-      <Route path={`${baseURL}/changesets/:page`} exact>
-        <Changesets
-          repository={repository}
-          pullRequest={pullRequest}
-          shouldFetchChangesets={shouldFetchChangesets}
-        />
-      </Route>
-    );
-    routeDiff = (
-      <Route path={`${baseURL}/diff`} exact>
-        <DiffRoute repository={repository} pullRequest={pullRequest} source={sourceRevision} target={targetRevision} />
-      </Route>
-    );
+
     diffTab = (
       <li className={navigationClass("diff")}>
         <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pullRequest.tabs.diff")}</Link>
       </li>
     );
-    routeConflicts = !mergeHasNoConflict && (
-      <Route path={`${baseURL}/conflicts`} exact>
-        <MergeConflicts repository={repository} pullRequest={pullRequest} />
-      </Route>
-    );
+
     conflictsTab = !mergeHasNoConflict && (
       <li className={navigationClass("conflicts")}>
         <Link to={`${baseURL}/conflicts/`}>
@@ -137,7 +99,76 @@ const PullRequestInformation: FC<Props> = ({
       </li>
     );
   }
-  const routes = (
+
+  const commentTab = pullRequest._links?.comments ? (
+    <li className={navigationClass("comments")}>
+      <Link to={`${baseURL}/comments/`}>{t("scm-review-plugin.pullRequest.tabs.comments")}</Link>
+    </li>
+  ) : null;
+
+  return (
+    <div className="tabs">
+      <ul>
+        {commentTab}
+        {changesetTab}
+        {!targetBranchDeleted && diffTab}
+        {conflictsTab}
+      </ul>
+    </div>
+  );
+};
+
+type RouteProps = {
+  repository: Repository;
+  pullRequest: PullRequest;
+  isClosed: boolean;
+  baseURL: string;
+  mergeHasNoConflict: boolean;
+  source: string;
+  target: string;
+  shouldFetchChangesets?: boolean;
+};
+
+const Routes: FC<RouteProps> = ({
+  repository,
+  source,
+  target,
+  isClosed,
+  pullRequest,
+  baseURL,
+  mergeHasNoConflict,
+  shouldFetchChangesets
+}) => {
+  let routeChangeset = null;
+  let routeChangesetPagination = null;
+  let routeDiff = null;
+  let routeConflicts = null;
+  if (!isClosed || (pullRequest.sourceRevision && pullRequest.targetRevision)) {
+    const sourceRevision = isClosed && pullRequest.sourceRevision ? pullRequest.sourceRevision : source;
+    const targetRevision = isClosed && pullRequest.targetRevision ? pullRequest.targetRevision : target;
+    routeChangeset = (
+      <Route path={`${baseURL}/changesets`} exact>
+        <Changesets repository={repository} pullRequest={pullRequest} shouldFetchChangesets={shouldFetchChangesets} />
+      </Route>
+    );
+    routeChangesetPagination = (
+      <Route path={`${baseURL}/changesets/:page`} exact>
+        <Changesets repository={repository} pullRequest={pullRequest} shouldFetchChangesets={shouldFetchChangesets} />
+      </Route>
+    );
+    routeDiff = (
+      <Route path={`${baseURL}/diff`} exact>
+        <DiffRoute repository={repository} pullRequest={pullRequest} source={sourceRevision} target={targetRevision} />
+      </Route>
+    );
+
+    routeConflicts = !mergeHasNoConflict && (
+      <Route path={`${baseURL}/conflicts`} exact>
+        <MergeConflicts repository={repository} pullRequest={pullRequest} />
+      </Route>
+    );
+  }
+  return (
     <Switch>
       <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
       <Route path={`${baseURL}/comments`} exact>
@@ -149,26 +180,45 @@ const PullRequestInformation: FC<Props> = ({
       {routeConflicts}
     </Switch>
   );
+};
 
-  const commentTab = pullRequest?._links?.comments ? (
-    <li className={navigationClass("comments")}>
-      <Link to={`${baseURL}/comments/`}>{t("scm-review-plugin.pullRequest.tabs.comments")}</Link>
-    </li>
-  ) : (
-    ""
-  );
+const PullRequestInformation: FC<Props> = ({
+  pullRequest,
+  mergeHasNoConflict,
+  status,
+  targetBranchDeleted,
+  ...restProps
+}) => {
+  const location = useLocation();
+  const match = useRouteMatch();
+  const baseURL = match.url;
+
+  const navigationClass = (suffix: string) => {
+    if (isUrlSuffixMatching(baseURL, location.pathname, suffix)) {
+      return "is-active";
+    }
+    return "";
+  };
+
+  const isClosedPullRequest = status === "MERGED" || status === "REJECTED";
 
   return (
     <>
-      <div className="tabs">
-        <ul>
-          {commentTab}
-          {changesetTab}
-          {!targetBranchDeleted && diffTab}
-          {conflictsTab}
-        </ul>
-      </div>
-      {routes}
+      <Tabs
+        isClosed={isClosedPullRequest}
+        baseURL={baseURL}
+        navigationClass={navigationClass}
+        pullRequest={pullRequest}
+        targetBranchDeleted={targetBranchDeleted}
+        mergeHasNoConflict={mergeHasNoConflict}
+      />
+      <Routes
+        {...restProps}
+        pullRequest={pullRequest}
+        isClosed={isClosedPullRequest}
+        mergeHasNoConflict={mergeHasNoConflict}
+        baseURL={baseURL}
+      />
     </>
   );
 };

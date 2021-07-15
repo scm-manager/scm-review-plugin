@@ -23,8 +23,8 @@
  */
 import React, { FC } from "react";
 import { Branch, Repository } from "@scm-manager/ui-types";
-import { AddButton, Loading } from "@scm-manager/ui-components";
-import { useTranslation, withTranslation } from "react-i18next";
+import { AddButton, ErrorNotification, Loading } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
 import { PullRequest } from "./types/PullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import styled from "styled-components";
@@ -51,15 +51,15 @@ const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
     return null;
   }
 
-  if (isLoading) {
+  if (error) {
+    return <ErrorNotification error={error} />;
+  }
+
+  if (!data || isLoading) {
     return <Loading />;
   }
 
-  if (error) {
-    return;
-  }
-
-  const matchingPullRequests = data!._embedded.pullRequests.filter((pr: PullRequest) => pr.source === branch.name);
+  const matchingPullRequests = data._embedded.pullRequests.filter((pr: PullRequest) => pr.source === branch.name);
 
   let existing = null;
   if (matchingPullRequests.length > 0) {

@@ -38,19 +38,28 @@ import {
 import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
 import { Changeset, HalRepresentation, Link, PagedCollection, Repository } from "@scm-manager/ui-types";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { MergeStrategyInfo } from "./types/MergeStrategyInfo";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
 // React-Query Hooks
 
-export const invalidatePullRequest = (repository: Repository, pullRequestId?: string) => {
-  if (!pullRequestId) {
-    throw new Error("could not invalidate pull request without id");
-  }
-
+export const useInvalidatePullRequest = (repository: Repository, pullRequest: PullRequest) => {
   const queryClient = useQueryClient();
-  queryClient.invalidateQueries(prQueryKey(repository, pullRequestId));
+  const pullRequestId = pullRequest.id;
+  if (!pullRequestId) {
+    throw new Error("pull request with found");
+  }
+  return (diffUrl?: string) => {
+    const invalidations = [
+      queryClient.invalidateQueries(prQueryKey(repository, pullRequestId)),
+      queryClient.invalidateQueries(["mergeCheck", ...prQueryKey(repository, pullRequestId)])
+    ];
+
+    if (diffUrl) {
+      invalidations.push(queryClient.invalidateQueries(["link", diffUrl]));
+    }
+    return Promise.all(invalidations);
+  };
 };
 
 export const prQueryKey = (repository: Repository, pullRequestId: string) => {
@@ -519,8 +528,7 @@ export const useCheckPullRequest = (
     () => {
       return apiClient
         .get(
-          requiredLink(repository, "pullRequestCheck") +
-            `?source=${pullRequest.source}&target=${pullRequest.target}`
+          requiredLink(repository, "pullRequestCheck") + `?source=${pullRequest.source}&target=${pullRequest.target}`
         )
         .then(r => r.json());
     },
@@ -547,7 +555,7 @@ export const useMergeDryRun = (
   const id = pullRequest.id || pullRequest.source + pullRequest.target;
 
   const { error, data, isLoading } = useQuery<MergeCheck, Error>(
-    [...prQueryKey(repository, id), "merge-check"],
+    ["merge-check", ...prQueryKey(repository, id)],
     () => {
       return apiClient.post((pullRequest._links.mergeCheck as Link).href).then(r => r.json());
     },

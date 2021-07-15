@@ -26,6 +26,7 @@ import { PullRequest } from "../types/PullRequest";
 import { Link, Repository } from "@scm-manager/ui-types";
 import {
   ErrorNotification,
+  File,
   FileContentFactory,
   JumpToFileButton,
   Loading,
@@ -57,9 +58,9 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
     if (comments) {
       updateDiffStateForComments(comments, setDiffState);
     }
-  }, [diffState, comments]);
+  }, [comments]);
 
-  const fileContentFactory: FileContentFactory = (file: any) => {
+  const fileContentFactory: FileContentFactory = (file: File) => {
     const baseUrl = `/repo/${repository.namespace}/${repository.name}/code/sources`;
     const sourceLink = {
       url: `${baseUrl}/${pullRequest && pullRequest.source && encodeURIComponent(pullRequest.source)}/${file.newPath}/`,
@@ -89,7 +90,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
         }
     }
 
-    return links.map(({ url, label }) => <JumpToFileButton tooltip={label} link={url} />);
+    return links.map(({ url, label }) => <JumpToFileButton key={url} tooltip={label} link={url} />);
   };
 
   const diffUrl = createDiffUrl(repository, source, target);

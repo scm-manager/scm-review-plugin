@@ -23,7 +23,7 @@
  */
 import React from "react";
 import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
-import { binder, ExtensionPoint, ExtensionPointDefinition } from "@scm-manager/ui-extensions";
+import { binder, ExtensionPointDefinition } from "@scm-manager/ui-extensions";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
 import PullRequestList from "./PullRequestList";
@@ -42,7 +42,11 @@ import GlobalEngineConfig from "./workflow/GlobalEngineConfig";
 import ApprovedByXReviewersRuleConfiguration from "./workflow/ApprovedByXReviewersRuleConfiguration";
 import { Branch, Repository } from "@scm-manager/ui-types";
 
-const reviewSupportedPredicate = (props: object) => {
+type PredicateProps = {
+  repository?: Repository;
+};
+
+const reviewSupportedPredicate = (props: PredicateProps) => {
   return props.repository && props.repository._links.pullRequest;
 };
 

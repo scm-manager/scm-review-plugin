@@ -41,7 +41,6 @@ import {
 import { MergeCommit, PullRequest } from "./types/PullRequest";
 import {
   evaluateTagColor,
-  invalidatePullRequest,
   useMergeDryRun,
   useMergePullRequest,
   useRejectPullRequest
@@ -117,9 +116,8 @@ const RightMarginTitle = styled(Title)`
   margin-right: 0.5rem !important;
 `;
 
-const TitleTag = styled(Tag).attrs((props: any) => ({
-  className: "is-medium",
-  color: props.color
+const TitleTag = styled(Tag).attrs(() => ({
+  className: "is-medium"
 }))`
   margin-top: 0.25rem;
 `;
@@ -156,6 +154,26 @@ const IgnoredMergeObstacles = styled.div`
   margin: 1rem 0;
   border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
 `;
+
+type UserEntryProps = {
+  labelKey: string;
+  displayName: string;
+  date?: string;
+};
+
+const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
+  const [t] = useTranslation("plugins");
+  return (
+    <div className="field is-horizontal">
+      <UserLabel>{t("scm-review-plugin.pullRequest." + labelKey)}:</UserLabel>
+      <UserField>
+        <UserInline>{displayName}</UserInline>
+        &nbsp;
+        {date ? <DateFromNow date={date} /> : null}
+      </UserField>
+    </div>
+  );
+};
 
 const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
@@ -210,12 +228,13 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   }
 
   let ignoredMergeObstacles = null;
-  if (pullRequest.ignoredMergeObstacles?.length > 0) {
+  const ignoredMergeObstaclesArray = pullRequest.ignoredMergeObstacles || [];
+  if (ignoredMergeObstaclesArray.length || -1 > 0) {
     ignoredMergeObstacles = (
       <IgnoredMergeObstacles>
         <strong>{t("scm-review-plugin.pullRequest.details.ignoredMergeObstacles")}</strong>
-        {pullRequest.ignoredMergeObstacles.map(o => (
-          <OverrideModalRow result={{ rule: o, failed: true }} />
+        {ignoredMergeObstaclesArray.map(o => (
+          <OverrideModalRow key={o} result={{ rule: o, failed: true }} />
         ))}
       </IgnoredMergeObstacles>
     );
@@ -223,7 +242,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   let mergeButton = null;
   let rejectButton = null;
-  if (pullRequest?._links?.reject) {
+  if (pullRequest._links?.reject) {
     rejectButton = <RejectButton reject={() => reject(pullRequest)} loading={rejectLoading} />;
     if (!!pullRequest._links.merge) {
       mergeButton = targetBranchDeleted ? null : (
@@ -239,7 +258,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   }
 
   let editButton = null;
-  if ((pullRequest?._links?.update as Link)?.href) {
+  if ((pullRequest._links?.update as Link)?.href) {
     const toEdit = `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/edit`;
     editButton = (
       <Button link={toEdit} title={t("scm-review-plugin.pullRequest.details.buttons.edit")} color="link is-outlined">
@@ -249,7 +268,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   }
 
   let subscriptionButton = null;
-  if ((pullRequest?._links?.subscription as Link)?.href) {
+  if ((pullRequest._links?.subscription as Link)?.href) {
     subscriptionButton = <SubscriptionContainer repository={repository} pullRequest={pullRequest} />;
   }
 
@@ -259,25 +278,13 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     </Tooltip>
   ) : null;
 
-  const userEntry = (labelKey: string, displayName: string, date?: string) => {
-    return (
-      <div className="field is-horizontal">
-        <UserLabel>{t("scm-review-plugin.pullRequest." + labelKey)}:</UserLabel>
-        <UserField>
-          <UserInline>{displayName}</UserInline>
-          &nbsp;
-          {date ? <DateFromNow date={date} /> : null}
-        </UserField>
-      </div>
-    );
-  };
-
-  const totalTasks = pullRequest?.tasks?.todo + pullRequest?.tasks?.done;
+  const tasksDone = pullRequest.tasks ? pullRequest.tasks.done : 0;
+  const totalTasks = pullRequest.tasks ? pullRequest.tasks.done + pullRequest.tasks.todo : 0;
 
   const titleTagText =
-    pullRequest?.tasks?.done < totalTasks
+    tasksDone < totalTasks
       ? t("scm-review-plugin.pullRequest.tasks.done", {
-          done: pullRequest.tasks.done,
+          done: tasksDone,
           total: totalTasks
         })
       : t("scm-review-plugin.pullRequest.tasks.allDone");
@@ -286,16 +293,11 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     return pullRequest.status === "MERGED" ? "mergedBy" : "rejectedBy";
   };
 
-  if (!pullRequest) {
-    return null;
-  }
-
   return (
     <>
       <ChangeNotification
         repository={repository}
         pullRequest={pullRequest}
-        reload={() => invalidatePullRequest(repository, pullRequest.id)}
       />
       <Container>
         <div className="media">
@@ -307,7 +309,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
               <TitleTag
                 label={titleTagText}
                 title={titleTagText}
-                color={pullRequest.tasks.done < totalTasks ? "light" : "success"}
+                color={tasksDone < totalTasks ? "light" : "success"}
               />
             )}
           </div>
@@ -355,10 +357,20 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
                 pullRequest
               }}
             />
-            {userEntry("author", pullRequest?.author?.displayName, pullRequest.creationDate)}
-            {pullRequest.status !== "OPEN" && !!pullRequest.reviser?.displayName
-              ? userEntry(getLabelKeyForUser(), pullRequest.reviser?.displayName, pullRequest.closeDate)
-              : null}
+            {pullRequest.author ? (
+              <UserEntry
+                labelKey="author"
+                displayName={pullRequest.author.displayName}
+                date={pullRequest.creationDate}
+              />
+            ) : null}
+            {pullRequest.status !== "OPEN" && !!pullRequest.reviser?.displayName ? (
+              <UserEntry
+                labelKey={getLabelKeyForUser()}
+                displayName={pullRequest.reviser?.displayName}
+                date={pullRequest.closeDate}
+              />
+            ) : null}
             <ReviewerList pullRequest={pullRequest} />
           </div>
         </UserList>
