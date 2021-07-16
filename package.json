@@ -16,7 +16,6 @@
         "@scm-manager/ui-plugins": "2.19.0",
         "classnames": "^2.2.6",
         "gitdiff-parser": "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
-        "immer": "^5.0.0",
         "query-string": "^5.0.1",
         "react": "^17.0.1",
         "react-hook-form": "^7.5.1",
