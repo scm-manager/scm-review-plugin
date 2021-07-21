@@ -28,7 +28,6 @@ import {
   AnnotationFactoryContext,
   Button,
   ButtonGroup,
-  DefaultCollapsedFunction,
   DiffEventContext,
   diffs,
   File,
@@ -53,6 +52,7 @@ import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 import MarkReviewedButton from "./MarkReviewedButton";
 import { Repository } from "@scm-manager/ui-types";
+import { useDiffCollapseState } from "./useDiffCollapseReducer";
 
 const LevelWithMargin = styled(Level)`
   margin-bottom: 1rem !important;
@@ -144,14 +144,8 @@ const Diff: FC<Props> = ({
   fileContentFactory
 }) => {
   const [t] = useTranslation("plugins");
+  const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
   const [collapsed, setCollapsed] = useState(false);
-  const [explicitlyOpenedFiles, setExplicitlyOpenedFiles] = useState<string[]>([]);
-
-  let globalCollapsedOrByMarks: DefaultCollapsedFunction = (oldPath: string, newPath: string) =>
-    collapsed
-      ? !hasOpenEditor(oldPath, newPath)
-      : !hasOpenEditor(oldPath, newPath) &&
-        diffState.reviewedFiles.some((path: string) => path === oldPath || path === newPath);
 
   const fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
@@ -174,32 +168,6 @@ const Diff: FC<Props> = ({
       return [<FileComments>{annotations}</FileComments>];
     }
     return [];
-  };
-
-  const hasOpenEditor = (oldPath: string, newPath: string) => {
-    const path = newPath === "/dev/null" ? oldPath : newPath;
-    const fileState = diffState.files[path] || [];
-    if (explicitlyOpenedFiles.find(o => o === path)) {
-      return true;
-    }
-
-    if (!!fileState.editor) {
-      markAsExplicitlyOpened(path);
-      return true;
-    }
-
-    const lineEditor = !!Object.values(diffState.lines)
-      .flatMap(line => Object.values(line))
-      .filter(line => line.location.file === path)
-      .find(line => line.editor);
-    if (lineEditor) {
-      markAsExplicitlyOpened(path);
-    }
-    return lineEditor;
-  };
-
-  const markAsExplicitlyOpened = (file: string) => {
-    setExplicitlyOpenedFiles([...explicitlyOpenedFiles, file]);
   };
 
   const annotationFactory = (context: AnnotationFactoryContext) => {
@@ -229,26 +197,27 @@ const Diff: FC<Props> = ({
   };
 
   const collapseDiffs = () => {
-    setCollapsed(!collapsed);
-    setExplicitlyOpenedFiles([]);
+    if (collapsed) {
+      actions.uncollapseAll();
+    } else {
+      actions.collapseAll();
+    }
+    setCollapsed(current => !current);
   };
 
-  const createFileControlsFactory = (contentFactory: FileContentFactory) => (
-    file: File,
-    setCollapse: (p: boolean) => void
-  ) => {
+  const createFileControlsFactory = (contentFactory: FileContentFactory) => (file: File) => {
     const setReviewMark = (filepath: string, reviewed: boolean) => {
       if (reviewed) {
-        updateDiffState({ ...diffState, reviewedFiles: [...diffState.reviewedFiles, filepath] });
+        actions.markAsReviewed(file);
       } else {
-        updateDiffState({ ...diffState, reviewedFiles: [...diffState.reviewedFiles.filter(f => f !== filepath)] });
+        actions.unmarkAsReviewed(file);
       }
     };
 
     if (isPermittedToComment()) {
       const openFileEditor = () => {
         const path = diffs.getPath(file);
-        setCollapse(false);
+        actions.openFileCommentEditor(file);
         openEditor(diffState, updateDiffState, true, { file: path });
       };
       return (
@@ -339,7 +308,8 @@ const Diff: FC<Props> = ({
       />
       <LoadingDiff
         url={diffUrl}
-        defaultCollapse={globalCollapsedOrByMarks}
+        isCollapsed={isCollapsed}
+        onCollapseStateChange={actions.toggleCollapse}
         fileControlFactory={createFileControlsFactory(fileContentFactory)}
         fileAnnotationFactory={fileAnnotationFactory}
         annotationFactory={annotationFactory}
