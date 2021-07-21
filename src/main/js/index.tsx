@@ -32,7 +32,6 @@ import PullRequestsNavLink from "./PullRequestsNavLink";
 import CreatePullRequestButton from "./CreatePullRequestButton";
 import RepositoryConfig from "./config/RepositoryConfig";
 import GlobalConfig from "./config/GlobalConfig";
-import RepositoryPullRequestCardLink from "./RepositoryPullRequestCardLink";
 import MyPullRequest from "./landingpage/MyPullRequest";
 import PullRequestCreatedEvent from "./landingpage/PullRequestCreatedEvent";
 import PullRequestTodos from "./landingpage/MyPullRequestTodos";
@@ -114,8 +113,6 @@ binder.bind<ExtensionPointDefinition<"repos.branch-details.information", { repos
   "repos.branch-details.information",
   ({ repository, branch }) => <CreatePullRequestButton repository={repository} branch={branch} />
 );
-
-binder.bind("repository.card.quickLink", RepositoryPullRequestCardLink, reviewSupportedPredicate);
 
 cfgBinder.bindRepositorySetting(
   "/review",
