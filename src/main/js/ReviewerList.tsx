@@ -21,18 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
+import React, { FC } from "react";
+import { useTranslation, WithTranslation, withTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Icon } from "@scm-manager/ui-components";
-import { PullRequest, Reviewer } from "./types/PullRequest";
+import { PullRequest } from "./types/PullRequest";
 
-type Props = WithTranslation & {
+type Props = {
   pullRequest: PullRequest;
-  reviewer: Reviewer[];
 };
-
-type State = {};
 
 const UserLabel = styled.div.attrs(() => ({
   className: "field-label is-inline-flex"
@@ -53,41 +50,41 @@ const UserInlineListItem = styled.li`
   font-weight: bold;
 `;
 
-class ReviewerList extends React.Component<Props, State> {
-  render() {
-    const { pullRequest, reviewer, t } = this.props;
-    const reviewers = reviewer ? reviewer : pullRequest.reviewer;
-    return (
-      <>
-        {reviewers.length > 0 ? (
-          <div className="field is-horizontal">
-            <UserLabel>{t("scm-review-plugin.pullRequest.reviewer")}:</UserLabel>
-            <UserField>
-              <ul className="is-separated">
-                {reviewers.map(reviewer => {
-                  if (reviewer.approved) {
-                    return (
-                      <UserInlineListItem key={reviewer.id}>
-                        {reviewer.displayName}{" "}
-                        <Icon
-                          title={t("scm-review-plugin.pullRequest.details.approved", { name: reviewer.displayName })}
-                          name="check"
-                          color="success"
-                        />
-                      </UserInlineListItem>
-                    );
-                  }
-                  return <UserInlineListItem key={reviewer.id}>{reviewer.displayName}</UserInlineListItem>;
-                })}
-              </ul>
-            </UserField>
-          </div>
-        ) : (
-          ""
-        )}
-      </>
-    );
-  }
-}
+const ReviewerList: FC<Props> = ({ pullRequest }) => {
+  const [t] = useTranslation("plugins");
 
-export default withTranslation("plugins")(ReviewerList);
+  const reviewers = pullRequest.reviewer || [];
+
+  return (
+    <>
+      {reviewers?.length > 0 ? (
+        <div className="field is-horizontal">
+          <UserLabel>{t("scm-review-plugin.pullRequest.reviewer")}:</UserLabel>
+          <UserField>
+            <ul className="is-separated">
+              {reviewers.map(reviewer => {
+                if (reviewer.approved) {
+                  return (
+                    <UserInlineListItem key={reviewer.id}>
+                      {reviewer.displayName}{" "}
+                      <Icon
+                        title={t("scm-review-plugin.pullRequest.details.approved", { name: reviewer.displayName })}
+                        name="check"
+                        color="success"
+                      />
+                    </UserInlineListItem>
+                  );
+                }
+                return <UserInlineListItem key={reviewer.id}>{reviewer.displayName}</UserInlineListItem>;
+              })}
+            </ul>
+          </UserField>
+        </div>
+      ) : (
+        ""
+      )}
+    </>
+  );
+};
+
+export default ReviewerList;

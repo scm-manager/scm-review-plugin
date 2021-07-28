@@ -29,7 +29,7 @@ plugins {
 
 dependencies {
   plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.0.0"
+  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
   optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.0.0"
   testImplementation "com.github.spullara.mustache.java:compiler:0.9.7"
 
@@ -43,7 +43,7 @@ dependencies {
 
 scmPlugin {
 //  Remove repository quicklink extension if version is >= 2.21.0
-  scmVersion = "2.19.0"
+  scmVersion = "2.21.1-SNAPSHOT"
   displayName = "Review"
   description = "Depict a review process with pull requests"
   author = "Cloudogu GmbH"

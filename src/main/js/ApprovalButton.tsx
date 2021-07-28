@@ -21,30 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@scm-manager/ui-components";
 
-type Props = WithTranslation & {
+type Props = {
   loading: boolean;
   action: () => void;
 };
 
-type State = {};
+const ApprovalButton: FC<Props> = ({loading, action}) => {
+  const [t] = useTranslation("plugins");
+  return (
+    <Button
+      label={t("scm-review-plugin.pullRequest.details.buttons.approve")}
+      loading={loading}
+      action={action}
+      color="link is-outlined"
+      icon="check"
+    />
+  );
+};
 
-class ApprovalButton extends React.Component<Props, State> {
-  render() {
-    const { loading, action, t } = this.props;
-    return (
-      <Button
-        label={t("scm-review-plugin.pullRequest.details.buttons.approve")}
-        loading={loading}
-        action={action}
-        color="link is-outlined"
-        icon="check"
-      />
-    );
-  }
-}
-
-export default withTranslation("plugins")(ApprovalButton);
+export default ApprovalButton;

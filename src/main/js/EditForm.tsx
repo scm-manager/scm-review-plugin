@@ -21,115 +21,67 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { apiClient, Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { DisplayedUser, SelectValue, AutocompleteObject } from "@scm-manager/ui-types";
+import React, { FC } from "react";
+import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
+import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
+import { useUserSuggestions } from "@scm-manager/ui-api";
+import { PullRequest } from "./types/PullRequest";
 
-type Props = WithTranslation & {
-  handleFormChange: (value: any, name: string) => void;
-  title?: string;
-  description: string;
-  reviewer: DisplayedUser[];
-  userAutocompleteLink: string;
+type Props = {
+  handleFormChange: (pr: PullRequest) => void;
+  pullRequest: PullRequest;
 };
 
-type State = {
-  title: string | undefined;
-  reviewer: DisplayedUser[];
-  description: string;
-  selectedValue?: SelectValue;
-};
+const EditForm: FC<Props> = ({ handleFormChange, pullRequest }) => {
+  const [t] = useTranslation("plugins");
+  const userSuggestions = useUserSuggestions();
 
-class EditForm extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      title: this.props.title,
-      description: this.props.description,
-      reviewer: this.props.reviewer
-    };
-  }
-
-  onChange = (value: string | DisplayedUser[], name?: string) => {
-    if (!name) {
-      throw new Error("name is required");
-    }
-    this.setState({ ...this.state, [name]: value });
-    this.props.handleFormChange(value, name);
-  };
-
-  loadUserSuggestions = (inputValue: string) => {
-    return this.loadAutocompletion(this.props.userAutocompleteLink, inputValue);
-  };
-
-  loadAutocompletion = (url: string, inputValue: string) => {
-    const link = url + "?q=";
-    return apiClient
-      .get(link + inputValue)
-      .then(response => response.json())
-      .then(json => {
-        return json.map((element: AutocompleteObject) => {
-          const label = element.displayName ? `${element.displayName} (${element.id})` : element.id;
-          return {
-            value: element,
-            label
-          };
-        });
-      });
-  };
-
-  removeReviewer = (reviewer: DisplayedUser[]) => {
-    this.onChange(reviewer, "reviewer");
-  };
-
-  selectName = (selection: SelectValue) => {
-    if (
-      this.state.reviewer &&
-      (this.state.reviewer.length === 0 ||
-        this.state.reviewer.filter(value => value.id === selection.value.id).length === 0)
-    ) {
-      this.state.reviewer.push({
-        id: selection.value.id,
-        displayName: selection.value.displayName,
-        mail: ""
-      });
-      this.props.handleFormChange(this.state.reviewer, "reviewer");
+  const removeReviewer = (users: DisplayedUser[]) => {
+    if (pullRequest.reviewer) {
+      const newList = pullRequest.reviewer.filter(item => users.includes(item));
+      handleFormChange({ ...pullRequest, reviewer: newList });
     }
   };
 
-  render() {
-    const { t } = this.props;
-    const { title, description, reviewer } = this.state;
-    return (
-      <>
-        <InputField
-          name="title"
-          value={title}
-          label={t("scm-review-plugin.pullRequest.title")}
-          validationError={title === ""}
-          errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
-          onChange={this.onChange}
-        />
-        <Textarea
-          name="description"
-          value={description}
-          label={t("scm-review-plugin.pullRequest.description")}
-          onChange={this.onChange}
-        />
-        <TagGroup items={reviewer} label={t("scm-review-plugin.pullRequest.reviewer")} onRemove={this.removeReviewer} />
-        <div className="field">
-          <div className="control">
-            <Autocomplete
-              creatable={false}
-              loadSuggestions={this.loadUserSuggestions}
-              valueSelected={this.selectName}
-              placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
-            />
-          </div>
+  const selectName = (selection: SelectValue) => {
+    const newList = pullRequest.reviewer || [];
+    newList.push({ id: selection.value.id, displayName: selection.value.displayName, mail: "", approved: false });
+    handleFormChange({ ...pullRequest, reviewer: newList });
+  };
+
+  return (
+    <>
+      <InputField
+        name="title"
+        value={pullRequest?.title}
+        label={t("scm-review-plugin.pullRequest.title")}
+        validationError={pullRequest?.title === ""}
+        errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
+        onChange={value => handleFormChange({ ...pullRequest, title: value })}
+      />
+      <Textarea
+        name="description"
+        value={pullRequest?.description}
+        label={t("scm-review-plugin.pullRequest.description")}
+        onChange={value => handleFormChange({ ...pullRequest, description: value })}
+      />
+      <TagGroup
+        items={pullRequest?.reviewer || []}
+        label={t("scm-review-plugin.pullRequest.reviewer")}
+        onRemove={removeReviewer}
+      />
+      <div className="field">
+        <div className="control">
+          <Autocomplete
+            creatable={false}
+            loadSuggestions={userSuggestions}
+            valueSelected={selectName}
+            placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
+          />
         </div>
-      </>
-    );
-  }
-}
-export default withTranslation("plugins")(EditForm);
+      </div>
+    </>
+  );
+};
+export default EditForm;

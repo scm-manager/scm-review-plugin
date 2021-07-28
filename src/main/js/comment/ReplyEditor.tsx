@@ -24,16 +24,17 @@
 import React, { FC } from "react";
 import CommentSpacingWrapper from "./CommentSpacingWrapper";
 import CreateComment from "./CreateComment";
-import { Comment } from "../types/PullRequest";
-import { Link } from "@scm-manager/ui-types";
+import { Comment, PullRequest } from "../types/PullRequest";
+import { Link, Repository } from "@scm-manager/ui-types";
 
 type Props = {
+  repository: Repository;
+  pullRequest: PullRequest;
   comment: Comment;
-  onCreation: (comment: Comment) => void;
   onCancel: () => void;
 };
 
-const ReplyEditor: FC<Props> = ({ comment, onCreation, onCancel }) => {
+const ReplyEditor: FC<Props> = ({ repository, pullRequest, comment, onCancel }) => {
   if (!comment._links.reply) {
     throw new Error("reply links is missing");
   }
@@ -41,7 +42,14 @@ const ReplyEditor: FC<Props> = ({ comment, onCreation, onCancel }) => {
   const replyLink = comment._links.reply as Link;
   return (
     <CommentSpacingWrapper>
-      <CreateComment url={replyLink.href} onCreation={onCreation} onCancel={onCancel} autofocus={true} reply={true} />
+      <CreateComment
+        repository={repository}
+        pullRequest={pullRequest}
+        url={replyLink.href}
+        onCancel={onCancel}
+        autofocus={true}
+        reply={true}
+      />
     </CommentSpacingWrapper>
   );
 };

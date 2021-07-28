@@ -21,50 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Button, confirmAlert } from "@scm-manager/ui-components";
+import React, { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button, ConfirmAlert } from "@scm-manager/ui-components";
 
-type Props = WithTranslation & {
+type Props = {
   reject: () => void;
   loading: boolean;
 };
 
-class RejectButton extends React.Component<Props> {
-  confirmReject = () => {
-    const { t, reject } = this.props;
-    confirmAlert({
-      title: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.title"),
-      message: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message"),
-      buttons: [
-        {
-          className: "is-outlined",
-          label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
-          onClick: () => reject()
-        },
-        {
-          label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel"),
-          onClick: () => null
-        }
-      ]
-    });
+const RejectButton: FC<Props> = ({ reject, loading }) => {
+  const [t] = useTranslation("plugins");
+
+  const [showModal, setShowModal] = useState(false);
+
+  const renderModalButtons = () => {
+    return [
+      {
+        className: "is-outlined",
+        label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
+        onClick: () => reject()
+      },
+      {
+        label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel"),
+        onClick: () => setShowModal(false)
+      }
+    ];
   };
 
-  render() {
-    const { loading, t } = this.props;
-    const color = "warning";
-    const action = this.confirmReject;
-    return (
-      <p className="control">
-        <Button
-          label={t("scm-review-plugin.showPullRequest.rejectButton.buttonTitle")}
-          action={action}
-          loading={loading}
-          color={color}
+  return (
+    <p className="control">
+      {showModal ? (
+        <ConfirmAlert
+          title={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.title")}
+          message={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message")}
+          buttons={renderModalButtons()}
         />
-      </p>
-    );
-  }
-}
+      ) : null}
+      <Button
+        label={t("scm-review-plugin.showPullRequest.rejectButton.buttonTitle")}
+        action={() => setShowModal(true)}
+        loading={loading}
+        color="warning"
+      />
+    </p>
+  );
+};
 
-export default withTranslation("plugins")(RejectButton);
+export default RejectButton;

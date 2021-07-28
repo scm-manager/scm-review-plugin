@@ -21,12 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { Repository, Branch, Link } from "@scm-manager/ui-types";
+import React, { FC } from "react";
+import { Branch, Repository } from "@scm-manager/ui-types";
 import { ErrorNotification, Select } from "@scm-manager/ui-components";
-import { BasicPullRequest, CheckResult } from "./types/PullRequest";
-import { getBranches } from "./pullRequest";
-import { WithTranslation, withTranslation } from "react-i18next";
+import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
+import { useTranslation } from "react-i18next";
 import EditForm from "./EditForm";
 import styled from "styled-components";
 
@@ -37,141 +36,74 @@ const ValidationError = styled.p`
   margin-bottom: 3em;
 `;
 
-type Props = WithTranslation & {
-  repository: Repository;
-  onChange: (pr: BasicPullRequest) => void;
-  userAutocompleteLink: string;
-  source?: string;
-  target?: string;
+type Props = {
+  pullRequest: PullRequest;
+  handleFormChange: (pr: PullRequest) => void;
   checkResult?: CheckResult;
+  branches?: Branch[];
+  branchesError?: Error | null;
+  branchesLoading: boolean;
 };
 
-type State = {
-  pullRequest: BasicPullRequest;
-  branches: string[];
-  loading: boolean;
-  error?: Error;
-};
+const CreateForm: FC<Props> = ({
+  pullRequest,
+  handleFormChange,
+  checkResult,
+  branches,
+  branchesError,
+  branchesLoading
+}) => {
+  const [t] = useTranslation("plugins");
 
-class CreateForm extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      pullRequest: {
-        source: "",
-        target: "",
-        title: ""
-      },
-      branches: [],
-      loading: false
-    };
-  }
-
-  componentDidMount() {
-    const { repository, source, target } = this.props;
-
-    this.setState({
-      ...this.state,
-      loading: true
-    });
-    getBranches((repository._links.branches as Link).href)
-      .then((result: Branch | any) => {
-        const initialSource = source ? source : result.branchNames[0];
-        const initialTarget = target ? target : result.defaultBranch ? result.defaultBranch.name : result[0];
-        this.setState(
-          {
-            branches: result.branchNames,
-            loading: false,
-            pullRequest: {
-              title: "",
-              source: initialSource,
-              target: initialTarget
-            }
-          },
-          this.notifyAboutChangedForm
-        );
-      })
-      .catch(error => {
-        this.setState({ error, loading: false });
-      });
-  }
-
-  handleFormChange = (value: any, name?: any) => {
-    this.setState(
-      {
-        pullRequest: {
-          ...this.state.pullRequest,
-          [name]: value
-        }
-      },
-      this.notifyAboutChangedForm
-    );
-  };
-
-  notifyAboutChangedForm = () => {
-    const { pullRequest } = this.state;
-    this.props.onChange(pullRequest);
-  };
-
-  handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   };
 
-  renderValidationError = () => {
-    const { t, checkResult } = this.props;
-
+  const renderValidationError = () => {
     if (checkResult && checkResult.status !== "PR_VALID") {
       return <ValidationError>{t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}</ValidationError>;
     }
   };
 
-  render() {
-    const { t } = this.props;
-    const { loading, error, pullRequest } = this.state;
-    const options = this.state.branches.map(branch => ({
-      label: branch,
-      value: branch
+  const createOptions = () => {
+    return branches?.map(branch => ({
+      label: branch.name,
+      value: branch.name
     }));
+  };
 
-    if (error) {
-      return <ErrorNotification error={error} />;
-    }
-
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <div className="columns">
-          <div className="column is-clipped">
-            <Select
-              name="source"
-              label={t("scm-review-plugin.pullRequest.sourceBranch")}
-              options={options}
-              onChange={this.handleFormChange}
-              loading={loading}
-              value={pullRequest ? pullRequest.source : undefined}
-            />
-          </div>
-          <div className="column is-clipped">
-            <Select
-              name="target"
-              label={t("scm-review-plugin.pullRequest.targetBranch")}
-              options={options}
-              onChange={this.handleFormChange}
-              loading={loading}
-              value={pullRequest ? pullRequest.target : undefined}
-            />
-          </div>
-        </div>
-        {this.renderValidationError()}
-        <EditForm
-          description=""
-          title={undefined}
-          reviewer={[]}
-          userAutocompleteLink={this.props.userAutocompleteLink}
-          handleFormChange={this.handleFormChange}
-        />
-      </form>
-    );
+  if (branchesError) {
+    return <ErrorNotification error={branchesError} />;
   }
-}
 
-export default withTranslation("plugins")(CreateForm);
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="columns">
+        <div className="column is-clipped">
+          <Select
+            name="source"
+            label={t("scm-review-plugin.pullRequest.sourceBranch")}
+            options={createOptions() || []}
+            onChange={value => handleFormChange({ ...pullRequest, source: value })}
+            loading={branchesLoading}
+            value={pullRequest?.source}
+          />
+        </div>
+        <div className="column is-clipped">
+          <Select
+            name="target"
+            label={t("scm-review-plugin.pullRequest.targetBranch")}
+            options={createOptions() || []}
+            onChange={value => handleFormChange({ ...pullRequest, target: value })}
+            loading={branchesLoading}
+            value={pullRequest?.target}
+          />
+        </div>
+      </div>
+      {renderValidationError()}
+      <EditForm handleFormChange={handleFormChange} pullRequest={pullRequest} />
+    </form>
+  );
+};
+
+export default CreateForm;

@@ -21,17 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { Dispatch, FC } from "react";
-import { Comment } from "../types/PullRequest";
+import React, { FC } from "react";
+import { Comment, PullRequest } from "../types/PullRequest";
 import PullRequestComment from "./PullRequestComment";
+import { Repository } from "@scm-manager/ui-types";
 
 type Props = {
+  repository: Repository;
+  pullRequest: PullRequest;
   comment: Comment;
   createLink?: string;
-  dispatch: Dispatch<any>;
 };
 
-const Replies: FC<Props> = ({ comment, createLink, dispatch }) => {
+const Replies: FC<Props> = ({ repository, pullRequest, comment, createLink }) => {
   if (!comment._embedded || !comment._embedded.replies) {
     return null;
   }
@@ -41,11 +43,12 @@ const Replies: FC<Props> = ({ comment, createLink, dispatch }) => {
     <>
       {replies.map((reply: Comment) => (
         <PullRequestComment
+          repository={repository}
+          pullRequest={pullRequest}
           key={reply.id}
           parent={comment}
           createLink={createLink}
           comment={reply}
-          dispatch={dispatch}
         />
       ))}
     </>

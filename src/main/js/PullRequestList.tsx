@@ -21,15 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-import { Repository, Link } from "@scm-manager/ui-types";
+import { Repository } from "@scm-manager/ui-types";
 import { CreateButton, ErrorPage, Loading, Notification } from "@scm-manager/ui-components";
-import { PullRequestCollection } from "./types/PullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
-import { getPullRequests } from "./pullRequest";
+import { usePullRequests } from "./pullRequest";
 
 const ScrollingTable = styled.div`
   overflow-x: auto;
@@ -41,36 +40,12 @@ type Props = {
 
 const PullRequestList: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
-  const [pullRequests, setPullRequests] = useState<PullRequestCollection | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-  const [isLoading, setLoading] = useState(true);
   const [status, setStatus] = useState("OPEN");
 
-  useEffect(() => {
-    if (repository._links.pullRequest) {
-      const url = (repository._links.pullRequest as Link).href;
-      updatePullRequests(url);
-    } else {
-      setLoading(false);
-    }
-  }, []);
+  const { data, error, isLoading } = usePullRequests(repository, status);
 
-  const updatePullRequests = (url: string) => {
-    getPullRequests(url)
-      .then(pullRequests => {
-        setPullRequests(pullRequests);
-        setLoading(false);
-      })
-      .catch(error => {
-        setError(error);
-        setLoading(false);
-      });
-  };
-
-  const handleStatusChange = (status: string) => {
-    setStatus(status);
-    const url = `${(repository._links.pullRequest as Link).href}?status=${status}`;
-    updatePullRequests(url);
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
   };
 
   const renderPullRequestTable = () => {
@@ -80,12 +55,13 @@ const PullRequestList: FC<Props> = ({ repository }) => {
           <StatusSelector handleTypeChange={handleStatusChange} status={status ? status : "OPEN"} />
         </div>
 
-        <ScrollingTable className="panel-block">
-          <PullRequestTable
-            repository={repository}
-            pullRequests={pullRequests && pullRequests._embedded.pullRequests}
-          />
-        </ScrollingTable>
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <ScrollingTable className="panel-block">
+            <PullRequestTable repository={repository} pullRequests={data!._embedded.pullRequests} />
+          </ScrollingTable>
+        )}
       </div>
     );
   };
@@ -104,13 +80,9 @@ const PullRequestList: FC<Props> = ({ repository }) => {
     );
   }
 
-  if (!pullRequests || isLoading) {
-    return <Loading />;
-  }
-
   const to = "pull-requests/add/changesets/";
 
-  const createButton = pullRequests._links.create ? (
+  const createButton = data?._links?.create ? (
     <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={to} />
   ) : null;
 

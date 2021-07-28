@@ -1,4 +1,4 @@
-/**
+/*
  * MIT License
  *
  * Copyright (c) 2020-present Cloudogu GmbH and Contributors
@@ -21,12 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-tbody.commentable .diff-gutter:hover::after {
-  font-family: "Font Awesome 5 Free";
-  content: " \f075";
-  color: #33b2e8;
-}
 
-tbody.expanded .diff-gutter {
-  cursor: default;
-}
+import { ApiResult } from "@scm-manager/ui-api";
+import { useQuery } from "react-query";
+import { apiClient } from "@scm-manager/ui-components";
+import { AvailableRules, EngineConfiguration } from "../types/EngineConfig";
+import { Link } from "@scm-manager/ui-types";
+
+export const useEngineConfigRules = (config: EngineConfiguration): ApiResult<AvailableRules> => {
+  return useQuery<AvailableRules, Error>(["workflow", "available-rules"], () => {
+    if (config._links.availableRules) {
+      return apiClient.get((config._links.availableRules as Link).href).then(response => response.json());
+    }
+    return { rules: [] };
+  });
+};

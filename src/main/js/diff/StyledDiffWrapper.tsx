@@ -23,7 +23,6 @@
  */
 import React, { Component, ReactNode } from "react";
 import styled from "styled-components";
-import "./StyledDiffWrapper.css";
 
 type Props = {
   children: ReactNode;
@@ -34,6 +33,22 @@ const CommentableWrapper = styled.div`
   & table.diff tr:hover > td {
     background-color: #fff7d5 !important; // warning-25
   }
+
+  tbody.commentable .diff-gutter:hover::after {
+    font-family: "Font Awesome 5 Free";
+    content: " \\f075";
+    color: #33b2e8;
+  }
+
+  tbody.expanded .diff-gutter {
+    cursor: default;
+  }
+`;
+
+const NotCommentableWrapper = styled.div`
+  tbody.expanded .diff-gutter {
+    cursor: default;
+  }
 `;
 
 class StyledDiffWrapper extends Component<Props> {
@@ -42,7 +57,7 @@ class StyledDiffWrapper extends Component<Props> {
     if (commentable) {
       return <CommentableWrapper>{children}</CommentableWrapper>;
     }
-    return <div>{children}</div>;
+    return <NotCommentableWrapper>{children}</NotCommentableWrapper>;
   }
 }
 
