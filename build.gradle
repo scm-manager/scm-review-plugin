@@ -43,7 +43,7 @@ dependencies {
 
 scmPlugin {
 //  Remove repository quicklink extension if version is >= 2.21.0
-  scmVersion = "2.21.1-SNAPSHOT"
+  scmVersion = "2.22.0"
   displayName = "Review"
   description = "Depict a review process with pull requests"
   author = "Cloudogu GmbH"
