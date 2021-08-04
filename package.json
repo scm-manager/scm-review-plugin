@@ -1,7 +1,7 @@
 {
     "name": "@scm-manager/scm-review-plugin",
     "private": true,
-    "version": "2.9.3-SNAPSHOT",
+    "version": "2.10.0",
     "license": "MIT",
     "main": "./src/main/js/index.tsx",
     "scripts": {
@@ -13,7 +13,7 @@
     "dependencies": {
         "@scm-manager/ui-components": "^2.19.0",
         "@scm-manager/ui-extensions": "^2.19.0",
-        "@scm-manager/ui-plugins": "2.19.0",
+        "@scm-manager/ui-plugins": "2.22.0",
         "classnames": "^2.2.6",
         "gitdiff-parser": "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
         "query-string": "^5.0.1",
