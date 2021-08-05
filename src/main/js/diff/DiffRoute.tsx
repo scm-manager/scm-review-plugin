@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useState } from "react";
+import React, { FC } from "react";
 import { PullRequest } from "../types/PullRequest";
 import { Link, Repository } from "@scm-manager/ui-types";
 import {
@@ -34,8 +34,7 @@ import {
 } from "@scm-manager/ui-components";
 import { createDiffUrl, useComments } from "../pullRequest";
 import { useTranslation } from "react-i18next";
-import Diff, { DiffState } from "./Diff";
-import { updateDiffStateForComments } from "./updateDiffState";
+import Diff from "./Diff";
 
 type Props = {
   repository: Repository;
@@ -47,18 +46,6 @@ type Props = {
 const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
   const { t } = useTranslation("plugins");
   const { data: comments, isLoading, error } = useComments(repository, pullRequest);
-  const [diffState, setDiffState] = useState<DiffState>({
-    lines: {},
-    files: {},
-    comments: [],
-    reviewedFiles: pullRequest?.markedAsReviewed || []
-  });
-
-  useEffect(() => {
-    if (comments) {
-      updateDiffStateForComments(comments, setDiffState);
-    }
-  }, [comments]);
 
   const fileContentFactory: FileContentFactory = (file: File) => {
     const baseUrl = `/repo/${repository.namespace}/${repository.name}/code/sources`;
@@ -106,10 +93,10 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
       <Diff
         repository={repository}
         pullRequest={pullRequest}
+        comments={comments}
         diffUrl={diffUrl}
-        diffState={diffState}
-        updateDiffState={setDiffState}
         createLink={createLink}
+        reviewedFiles={pullRequest?.markedAsReviewed || []}
         fileContentFactory={fileContentFactory}
       />
     );

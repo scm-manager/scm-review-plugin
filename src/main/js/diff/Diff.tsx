@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import {
@@ -35,12 +35,13 @@ import {
   Level,
   LoadingDiff
 } from "@scm-manager/ui-components";
-import { Comment, Location, PullRequest } from "../types/PullRequest";
+import { Comment, Comments, Location, PullRequest } from "../types/PullRequest";
 import {
   createChangeIdFromLocation,
   createHunkId,
   createHunkIdFromLocation,
   createInlineLocation,
+  evaluateLineNumbersForChangeId,
   isInlineLocation
 } from "./locations";
 import PullRequestComment from "../comment/PullRequestComment";
@@ -64,99 +65,81 @@ const CommentWrapper = styled.div`
   }
 `;
 
-export type FileCommentState = {
-  comments: string[];
-  editor?: boolean;
-};
-
-export type FileCommentCollection = {
-  // path
-  [key: string]: FileCommentState;
-};
-export type LineCommentCollection = {
-  // hunkid
-  [key: string]: {
-    // changeid
-    [key: string]: {
-      location: Location;
-      comments: string[];
-      editor?: boolean;
-    };
-  };
-};
-
-export type DiffState = {
-  files: FileCommentCollection;
-  lines: LineCommentCollection;
-  comments: Comment[];
-  reviewedFiles: string[];
-};
-
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
+  comments?: Comments;
   diffUrl: string;
-  diffState: DiffState;
-  updateDiffState: (state: DiffState) => void;
   createLink?: string;
   fileContentFactory: FileContentFactory;
-};
-
-const openEditor = (
-  diffState: DiffState,
-  updateDiffState: (state: DiffState) => void,
-  editor: boolean,
-  location?: Location
-) => {
-  if (isInlineLocation(location)) {
-    const lineComments = diffState.lines;
-    const hunkId = createHunkIdFromLocation(location!);
-    const changeId = createChangeIdFromLocation(location!);
-    const hunkComments = lineComments[hunkId] || {};
-    const changeComments = hunkComments[changeId] || {
-      location,
-      comments: []
-    };
-
-    changeComments.editor = editor;
-    hunkComments[changeId] = changeComments;
-    lineComments[hunkId] = hunkComments;
-    updateDiffState({ ...diffState, lines: lineComments });
-  } else {
-    const fileComments = diffState.files;
-    const file = location!.file;
-    const fileState = fileComments[file] || {
-      comments: []
-    };
-    fileState.editor = editor;
-    fileComments[file] = fileState;
-    updateDiffState({ ...diffState, files: fileComments });
-  }
+  reviewedFiles: string[];
 };
 
 const Diff: FC<Props> = ({
   repository,
   pullRequest,
+  comments,
   diffUrl,
-  diffState,
-  updateDiffState,
   createLink,
-  fileContentFactory
+  fileContentFactory,
+  reviewedFiles
 }) => {
   const [t] = useTranslation("plugins");
   const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
   const [collapsed, setCollapsed] = useState(false);
+  const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
+
+  const openEditor = (editor: boolean, location: Location) => {
+    if (isInlineLocation(location)) {
+      if (editor) {
+        const preUpdateOpenEditors = openEditors[createHunkIdFromLocation(location)] || [];
+        setOpenEditors(prevState => ({
+          ...prevState,
+          [createHunkIdFromLocation(location)]: [
+            ...preUpdateOpenEditors,
+            !preUpdateOpenEditors.includes(createChangeIdFromLocation(location))
+              ? createChangeIdFromLocation(location)
+              : ""
+          ]
+        }));
+      } else {
+        setOpenEditors(prevState => ({
+          ...prevState,
+          [createHunkIdFromLocation(location)]: [
+            ...prevState[createHunkIdFromLocation(location)].filter(l => l !== createChangeIdFromLocation(location))
+          ]
+        }));
+      }
+    } else {
+      if (editor) {
+        setOpenEditors(prevState => ({ ...prevState, [location.file]: [] }));
+      } else {
+        delete openEditors[location.file];
+        setOpenEditors(prevState => ({ ...prevState }));
+      }
+    }
+  };
+
+  const isFileEditorOpen = (path: string) => {
+    return openEditors[path];
+  };
 
   const fileAnnotationFactory = (file: File) => {
     const path = diffs.getPath(file);
-
     const annotations = [];
-    const fileState = diffState?.files[path] || [];
-    if (fileState.comments && fileState.comments.length > 0) {
-      annotations.push(createComments(fileState.comments));
+    const fileComments: Comment[] = [];
+
+    comments?._embedded.pullRequestComments.forEach(comment => {
+      if (!isInlineLocation(comment.location) && comment.location?.file === path) {
+        fileComments.push(comment);
+      }
+    });
+
+    if (fileComments && fileComments.length > 0) {
+      annotations.push(createComments(fileComments));
     }
 
-    if (fileState.editor) {
+    if (isFileEditorOpen(path)) {
       annotations.push(
         createNewCommentEditor({
           file: path
@@ -167,31 +150,57 @@ const Diff: FC<Props> = ({
     if (annotations.length > 0) {
       return [<FileComments>{annotations}</FileComments>];
     }
+
     return [];
   };
 
   const annotationFactory = (context: AnnotationFactoryContext) => {
     const annotations: { [key: string]: React.ReactNode } = {};
-
     const hunkId = createHunkId(context);
-    const hunkState = diffState.lines[hunkId];
-    if (hunkState) {
-      Object.keys(hunkState).forEach((changeId: string) => {
-        const lineState = hunkState[changeId];
-        if (lineState) {
-          const lineAnnotations = [];
-          if (lineState.comments && lineState.comments.length > 0) {
-            lineAnnotations.push(createComments(lineState.comments));
+    const commentsByLine: { [key: string]: Comment[] } = {};
+
+    comments?._embedded.pullRequestComments.forEach(comment => {
+      if (comment.location?.hunk) {
+        const hunkLocation = createHunkIdFromLocation(comment.location);
+        if (comment.location?.hunk && isInlineLocation(comment.location) && hunkLocation === hunkId) {
+          const changeId = createChangeIdFromLocation(comment.location);
+          let lineComments = commentsByLine[changeId];
+          if (!lineComments) {
+            lineComments = [];
+            commentsByLine[changeId] = lineComments;
           }
-          if (lineState.editor) {
-            lineAnnotations.push(createNewCommentEditor(lineState.location));
-          }
-          if (lineAnnotations.length > 0) {
-            annotations[changeId] = <InlineComments>{lineAnnotations}</InlineComments>;
-          }
+          lineComments.push(comment);
         }
-      });
-    }
+      }
+    });
+
+    const lineAnnotations: { [key: string]: ReactNode[] } = {};
+    Object.keys(commentsByLine).forEach(changeId => {
+      const createdComments = createComments(commentsByLine[changeId]);
+      lineAnnotations[changeId] = [createdComments];
+    });
+
+    const editors = openEditors[hunkId] || [];
+
+    editors.forEach(changeId => {
+      let line = lineAnnotations[changeId];
+      if (!line) {
+        line = [];
+        lineAnnotations[changeId] = line;
+      }
+      const lineNumbers = evaluateLineNumbersForChangeId(changeId);
+      line.push(
+        createNewCommentEditor({
+          file: diffs.getPath(context.file),
+          hunk: context.hunk.content,
+          ...lineNumbers
+        })
+      );
+    });
+
+    Object.keys(lineAnnotations).forEach(changeId => {
+      annotations[changeId] = <InlineComments>{lineAnnotations[changeId]}</InlineComments>;
+    });
 
     return annotations;
   };
@@ -218,7 +227,7 @@ const Diff: FC<Props> = ({
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         actions.openFileCommentEditor(file);
-        openEditor(diffState, updateDiffState, true, { file: path });
+        openEditor(true, { file: path });
       };
       return (
         <ButtonGroup>
@@ -228,7 +237,7 @@ const Diff: FC<Props> = ({
             newPath={file.newPath}
             oldPath={file.oldPath}
             setReviewed={setReviewMark}
-            diffState={diffState}
+            reviewedFiles={reviewedFiles}
           />
           <AddCommentButton action={openFileEditor} />
           {contentFactory(file)}
@@ -242,7 +251,7 @@ const Diff: FC<Props> = ({
   const onGutterClick = (context: DiffEventContext) => {
     if (isPermittedToComment() && !context.hunk.expansion) {
       const location = createInlineLocation(context);
-      openEditor(diffState, updateDiffState, true, location);
+      openEditor(true, location);
     }
   };
 
@@ -250,23 +259,15 @@ const Diff: FC<Props> = ({
     return !!createLink;
   };
 
-  const findComment = (id: string): Comment => {
-    const comment = diffState?.comments.find(c => c.id === id);
-    if (!comment) {
-      throw new Error("could not find comment with id " + id);
-    }
-    return comment;
-  };
-
-  const createComments = (commentIds: string[]) => {
+  const createComments = (comments: Comment[]): ReactNode => {
     return (
       <>
-        {commentIds.map((commentId: string) => (
-          <CommentWrapper key={commentId} className="comment-wrapper">
+        {comments.map((comment: Comment) => (
+          <CommentWrapper key={comment.id} className="comment-wrapper">
             <PullRequestComment
               repository={repository}
               pullRequest={pullRequest}
-              comment={findComment(commentId)}
+              comment={comment}
               createLink={createLink}
             />
           </CommentWrapper>
@@ -284,7 +285,7 @@ const Diff: FC<Props> = ({
             pullRequest={pullRequest}
             url={createLink}
             location={location}
-            onCancel={() => openEditor(diffState, updateDiffState, false, location)}
+            onCancel={() => openEditor(false, location)}
             autofocus={true}
           />
         </CommentSpacingWrapper>
