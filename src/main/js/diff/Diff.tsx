@@ -103,10 +103,12 @@ const Diff: FC<Props> = ({
           ]
         }));
       } else {
+        const hunkId = createHunkIdFromLocation(location);
+        const changeId = createChangeIdFromLocation(location);
         setOpenEditors(prevState => ({
           ...prevState,
-          [createHunkIdFromLocation(location)]: [
-            ...prevState[createHunkIdFromLocation(location)].filter(l => l !== createChangeIdFromLocation(location))
+          [hunkId]: [
+            ...prevState[hunkId].filter(l => l !== changeId)
           ]
         }));
       }
@@ -114,8 +116,10 @@ const Diff: FC<Props> = ({
       if (editor) {
         setOpenEditors(prevState => ({ ...prevState, [location.file]: [] }));
       } else {
-        delete openEditors[location.file];
-        setOpenEditors(prevState => ({ ...prevState }));
+        setOpenEditors(prevState => {
+          delete prevState[location.file];
+          return { ...prevState };
+        });
       }
     }
   };
