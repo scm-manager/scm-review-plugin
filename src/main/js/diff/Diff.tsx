@@ -89,38 +89,34 @@ const Diff: FC<Props> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
 
-  const openEditor = (editor: boolean, location: Location) => {
+  const openInlineEditor = (location: Location) => {
     if (isInlineLocation(location)) {
-      if (editor) {
-        const preUpdateOpenEditors = openEditors[createHunkIdFromLocation(location)] || [];
-        setOpenEditors(prevState => ({
-          ...prevState,
-          [createHunkIdFromLocation(location)]: [
-            ...preUpdateOpenEditors,
-            !preUpdateOpenEditors.includes(createChangeIdFromLocation(location))
-              ? createChangeIdFromLocation(location)
-              : ""
-          ]
-        }));
-      } else {
-        const hunkId = createHunkIdFromLocation(location);
-        const changeId = createChangeIdFromLocation(location);
-        setOpenEditors(prevState => ({
-          ...prevState,
-          [hunkId]: [
-            ...prevState[hunkId].filter(l => l !== changeId)
-          ]
-        }));
-      }
+      const preUpdateOpenEditors = openEditors[createHunkIdFromLocation(location)] || [];
+      setOpenEditors(prevState => ({
+        ...prevState,
+        [createHunkIdFromLocation(location)]: [
+          ...preUpdateOpenEditors,
+          !preUpdateOpenEditors.includes(createChangeIdFromLocation(location))
+            ? createChangeIdFromLocation(location)
+            : ""
+        ]
+      }));
+    }
+  };
+
+  const closeEditor = (location: Location) => {
+    if (isInlineLocation(location)) {
+      const hunkId = createHunkIdFromLocation(location);
+      const changeId = createChangeIdFromLocation(location);
+      setOpenEditors(prevState => ({
+        ...prevState,
+        [hunkId]: [...prevState[hunkId].filter(l => l !== changeId)]
+      }));
     } else {
-      if (editor) {
-        setOpenEditors(prevState => ({ ...prevState, [location.file]: [] }));
-      } else {
-        setOpenEditors(prevState => {
-          delete prevState[location.file];
-          return { ...prevState };
-        });
-      }
+      setOpenEditors(prevState => {
+        delete prevState[location.file];
+        return { ...prevState };
+      });
     }
   };
 
@@ -163,10 +159,16 @@ const Diff: FC<Props> = ({
     const hunkId = createHunkId(context);
     const commentsByLine: { [key: string]: Comment[] } = {};
 
-    comments?._embedded.pullRequestComments.forEach(comment => {
-      if (comment.location?.hunk) {
-        const hunkLocation = createHunkIdFromLocation(comment.location);
-        if (comment.location?.hunk && isInlineLocation(comment.location) && hunkLocation === hunkId) {
+    comments?._embedded.pullRequestComments
+      .filter(comment => comment.location?.hunk)
+      .filter(
+        comment =>
+          comment.location?.hunk &&
+          isInlineLocation(comment.location) &&
+          createHunkIdFromLocation(comment.location) === hunkId
+      )
+      .forEach(comment => {
+        if (comment.location) {
           const changeId = createChangeIdFromLocation(comment.location);
           let lineComments = commentsByLine[changeId];
           if (!lineComments) {
@@ -175,8 +177,7 @@ const Diff: FC<Props> = ({
           }
           lineComments.push(comment);
         }
-      }
-    });
+      });
 
     const lineAnnotations: { [key: string]: ReactNode[] } = {};
     Object.keys(commentsByLine).forEach(changeId => {
@@ -231,7 +232,7 @@ const Diff: FC<Props> = ({
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         actions.openFileCommentEditor(file);
-        openEditor(true, { file: path });
+        setOpenEditors(prevState => ({ ...prevState, [path]: [] }));
       };
       return (
         <ButtonGroup>
@@ -255,7 +256,7 @@ const Diff: FC<Props> = ({
   const onGutterClick = (context: DiffEventContext) => {
     if (isPermittedToComment() && !context.hunk.expansion) {
       const location = createInlineLocation(context);
-      openEditor(true, location);
+      openInlineEditor(location);
     }
   };
 
@@ -289,7 +290,7 @@ const Diff: FC<Props> = ({
             pullRequest={pullRequest}
             url={createLink}
             location={location}
-            onCancel={() => openEditor(false, location)}
+            onCancel={() => closeEditor(location)}
             autofocus={true}
           />
         </CommentSpacingWrapper>
