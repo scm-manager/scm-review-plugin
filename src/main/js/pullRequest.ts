@@ -37,7 +37,7 @@ import {
 } from "./types/PullRequest";
 import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
 import { Changeset, HalRepresentation, Link, PagedCollection, Repository } from "@scm-manager/ui-types";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
@@ -70,8 +70,16 @@ const prsQueryKey = (repository: Repository, status?: string) => {
   return ["repository", repository.namespace, repository.name, "pull-requests", status || ""];
 };
 
-const prCommentsQueryKey = (repository: Repository, pullRequest: PullRequest) => {
-  return ["repository", repository.namespace, repository.name, "pull-request", pullRequest.id, "comments"];
+const prCommentsQueryKey = (repository: Repository, pullRequestId: string) => {
+  return ["repository", repository.namespace, repository.name, "pull-request", pullRequestId, "comments"];
+};
+
+const prMergeCheckQueryKey = (repository: Repository, pullRequestId: string) => {
+  return ["merge-check", ...prQueryKey(repository, pullRequestId)];
+};
+
+const invalidateQueries = (queryClient: QueryClient, ...keys: string[][]): Promise<void> => {
+  return Promise.all(keys.map(key => queryClient.invalidateQueries(key))).then(() => undefined);
 };
 
 export const usePullRequest = (repository: Repository, pullRequestId?: string) => {
@@ -103,11 +111,11 @@ export const useUpdatePullRequest = (repository: Repository, pullRequest: PullRe
       return apiClient.put(requiredLink(pr, "update"), pr, CONTENT_TYPE_PULLREQUEST);
     },
     {
-      onSuccess: async () => {
+      onSuccess: () => {
         if (callback) {
           callback();
         }
-        await queryClient.invalidateQueries(prQueryKey(repository, id));
+        return queryClient.invalidateQueries(prQueryKey(repository, id));
       }
     }
   );
@@ -128,8 +136,8 @@ export const useApproveReviewer = (repository: Repository, pullRequest: PullRequ
 
   const queryClient = useQueryClient();
   const { isLoading, error, mutate } = useMutation<unknown, Error, string>((link: string) => apiClient.post(link, {}), {
-    onSuccess: async () => {
-      await queryClient.invalidateQueries(prQueryKey(repository, id));
+    onSuccess: () => {
+      return invalidateQueries(queryClient, prQueryKey(repository, id), prMergeCheckQueryKey(repository, id));
     }
   });
 
@@ -160,8 +168,7 @@ export const useCreatePullRequest = (repository: Repository, callback?: (id: str
           callback(id);
         }
         queryClient.setQueryData(prQueryKey(repository, id), pr);
-        queryClient.invalidateQueries(prsQueryKey(repository));
-        return queryClient.invalidateQueries(prQueryKey(repository, id));
+        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
       }
     }
   );
@@ -201,8 +208,7 @@ export const useRejectPullRequest = (repository: Repository, pullRequest: PullRe
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(prsQueryKey(repository));
-        return queryClient.invalidateQueries(prQueryKey(repository, id));
+        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
       }
     }
   );
@@ -235,8 +241,7 @@ export const useMergePullRequest = (repository: Repository, pullRequest: PullReq
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(prsQueryKey(repository));
-        return queryClient.invalidateQueries(prQueryKey(repository, id));
+        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
       }
     }
   );
@@ -265,12 +270,16 @@ export const usePullRequests = (repository: Repository, status?: string) => {
 };
 
 export const useDeleteComment = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+  if (!id) {
+    throw new Error("Could not delete comment for pull request without id");
+  }
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<unknown, Error, Comment>(
     comment => apiClient.delete(requiredLink(comment, "delete")),
     {
       onSuccess: () => {
-        return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
+        return invalidateQueries(queryClient, prCommentsQueryKey(repository, id), prMergeCheckQueryKey(repository, id));
       }
     }
   );
@@ -283,7 +292,6 @@ export const useDeleteComment = (repository: Repository, pullRequest: PullReques
 
 export const useUpdateComment = (repository: Repository, pullRequest: PullRequest) => {
   const id = pullRequest.id;
-
   if (!id) {
     throw new Error("Could not update comment fpr pull request without id");
   }
@@ -293,8 +301,7 @@ export const useUpdateComment = (repository: Repository, pullRequest: PullReques
     comment => apiClient.put(requiredLink(comment, "update"), comment),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(prQueryKey(repository, id));
-        return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
+        return invalidateQueries(queryClient, prQueryKey(repository, id), prCommentsQueryKey(repository, id));
       }
     }
   );
@@ -307,9 +314,8 @@ export const useUpdateComment = (repository: Repository, pullRequest: PullReques
 
 export const useTransformComment = (repository: Repository, pullRequest: PullRequest) => {
   const id = pullRequest.id;
-
   if (!id) {
-    throw new Error("Could not transform comment fpr pull request without id");
+    throw new Error("Could not transform comment for pull request without id");
   }
 
   const queryClient = useQueryClient();
@@ -317,8 +323,12 @@ export const useTransformComment = (repository: Repository, pullRequest: PullReq
     transition => apiClient.post(requiredLink(transition, "transform"), transition),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(prQueryKey(repository, id));
-        return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
+        return invalidateQueries(
+          queryClient,
+          prQueryKey(repository, id),
+          prCommentsQueryKey(repository, id),
+          prMergeCheckQueryKey(repository, id)
+        );
       }
     }
   );
@@ -335,6 +345,10 @@ type CreateCommentRequest = {
 };
 
 export const useCreateComment = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+  if (!id) {
+    throw new Error("Could not create comment for pull request without id");
+  }
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<{}, Error, CreateCommentRequest>(
     request => {
@@ -345,7 +359,7 @@ export const useCreateComment = (repository: Repository, pullRequest: PullReques
     },
     {
       onSuccess: () => {
-        return queryClient.invalidateQueries(prCommentsQueryKey(repository, pullRequest));
+        return invalidateQueries(queryClient, prCommentsQueryKey(repository, id), prMergeCheckQueryKey(repository, id));
       }
     }
   );
@@ -357,7 +371,11 @@ export const useCreateComment = (repository: Repository, pullRequest: PullReques
 };
 
 export const useComments = (repository: Repository, pullRequest: PullRequest) => {
-  const { error, isLoading, data } = useQuery<Comments, Error>(prCommentsQueryKey(repository, pullRequest), () => {
+  const id = pullRequest.id;
+  if (!id) {
+    throw new Error("Could not read comments for pull request without id");
+  }
+  const { error, isLoading, data } = useQuery<Comments, Error>(prCommentsQueryKey(repository, id), () => {
     if (pullRequest?._links?.comments) {
       return apiClient.get((pullRequest._links.comments as Link).href).then(response => response.json());
     }
@@ -372,8 +390,12 @@ export const useComments = (repository: Repository, pullRequest: PullRequest) =>
 };
 
 export const useSubscription = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+  if (!id) {
+    throw new Error("Could not read subscription for pull request without id");
+  }
   const { error, isLoading, data } = useQuery<HalRepresentation, Error>(
-    [...prQueryKey(repository, pullRequest.id!), "subscription"],
+    [...prQueryKey(repository, id), "subscription"],
     () => {
       if (pullRequest._links.subscription) {
         return apiClient.get((pullRequest._links.subscription as Link).href).then(response => response.json());
@@ -555,7 +577,7 @@ export const useMergeDryRun = (
   const id = pullRequest.id || pullRequest.source + pullRequest.target;
 
   const { error, data, isLoading } = useQuery<MergeCheck, Error>(
-    ["merge-check", ...prQueryKey(repository, id)],
+    prMergeCheckQueryKey(repository, id),
     () => {
       return apiClient.post((pullRequest._links.mergeCheck as Link).href).then(r => r.json());
     },
