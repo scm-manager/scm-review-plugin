@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ## Fixed
 - Closing comment editors on parallel changes ([#140](https://github.com/scm-manager/scm-review-plugin/pull/140))
+- Missing merge button update after approval and comment action ([#141](https://github.com/scm-manager/scm-review-plugin/pull/141))
 
 ## 2.10.0 - 2021-08-04
 ## Changed
