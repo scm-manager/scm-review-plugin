@@ -22,23 +22,22 @@
  * SOFTWARE.
  */
 
-import { BaseContext, DiffEventContext } from "@scm-manager/ui-components";
-import { diffs } from "@scm-manager/ui-components";
+import { BaseContext, DiffEventContext, diffs } from "@scm-manager/ui-components";
 import { Location } from "../types/PullRequest";
 
 export function createHunkId(context: BaseContext): string {
   return diffs.getPath(context.file) + "_" + context.hunk.content;
 }
 
-export function createHunkIdFromLocation(location: Location): string {
-  if (!location.hunk) {
+export function createHunkIdFromLocation(location?: Location): string {
+  if (!location?.hunk) {
     throw new Error("only locations with a hunk could be used");
   }
   return location.file + "_" + location.hunk;
 }
 
 export function isInlineLocation(location?: Location): boolean {
-  return !!location && !!location.hunk;
+  return !!location?.hunk;
 }
 
 export function createFileLocation(context: BaseContext): Location {
@@ -84,3 +83,20 @@ export function createChangeIdFromLocation(location: Location): string {
     throw new Error("at least one line number has to be set");
   }
 }
+
+type LineNumbers = { oldLineNumber?: number; newLineNumber?: number };
+
+export const evaluateLineNumbersForChangeId = (changeId: string): LineNumbers => {
+  const changeType = changeId.substr(0, 1);
+  const lineNumber = parseInt(changeId.substr(1, changeId.length - 1));
+  if (changeType === "N") {
+    return { oldLineNumber: lineNumber, newLineNumber: lineNumber };
+  }
+  if (changeType === "I") {
+    return { newLineNumber: lineNumber };
+  }
+  if (changeType === "D") {
+    return { oldLineNumber: lineNumber };
+  }
+  return {};
+};

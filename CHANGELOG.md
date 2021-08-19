@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ## Fixed
+- Closing comment editors on parallel changes ([#140](https://github.com/scm-manager/scm-review-plugin/pull/140))
 - Missing merge button update after approval and comment action ([#141](https://github.com/scm-manager/scm-review-plugin/pull/141))
 
 ## 2.10.0 - 2021-08-04
@@ -241,4 +242,3 @@ Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and
 - Fast-forward-if possible and squash function with custom commit message ([#9](https://github.com/scm-manager/scm-review-plugin/pull/9), [#6](https://github.com/scm-manager/scm-review-plugin/pull/6))
 - Option to remove the source branch after merge ([#8](https://github.com/scm-manager/scm-review-plugin/pull/8))
 - As a reviewer, I can explicitly give my consent to merge via "Approve"-button
-
