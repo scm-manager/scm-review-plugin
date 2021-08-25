@@ -81,6 +81,7 @@ const CreateForm: FC<Props> = ({
       <div className="columns">
         <div className="column is-clipped">
           <Select
+            className="is-fullwidth"
             name="source"
             label={t("scm-review-plugin.pullRequest.sourceBranch")}
             options={createOptions() || []}
@@ -91,6 +92,7 @@ const CreateForm: FC<Props> = ({
         </div>
         <div className="column is-clipped">
           <Select
+            className="is-fullwidth"
             name="target"
             label={t("scm-review-plugin.pullRequest.targetBranch")}
             options={createOptions() || []}
