@@ -30,13 +30,14 @@ import lombok.NoArgsConstructor;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @XmlRootElement(name = "mark")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ReviewMark {
+public class ReviewMark implements Serializable {
 
   private String file;
   private String user;

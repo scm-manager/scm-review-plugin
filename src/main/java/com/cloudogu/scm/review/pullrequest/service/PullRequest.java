@@ -30,11 +30,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import sonia.scm.search.Indexed;
+import sonia.scm.search.IndexedType;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,28 +57,42 @@ import static java.util.Collections.unmodifiableSet;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Builder(toBuilder = true)
 @ToString
-public class PullRequest {
+@IndexedType
+@SuppressWarnings("UnstableApiUsage")
+public class PullRequest implements Serializable {
+
+  static final int VERSION = 1;
 
   private String id;
+  @Indexed(analyzer = Indexed.Analyzer.IDENTIFIER)
   private String source;
+  @Indexed(analyzer = Indexed.Analyzer.IDENTIFIER)
   private String target;
+  @Indexed(boost = 1.5f, defaultQuery = true)
   private String title;
+  @Indexed(defaultQuery = true, highlighted = true)
   private String description;
   private String author;
   private String reviser;
+  @Indexed
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant closeDate;
+  @Indexed
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant creationDate;
+  @Indexed
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
+  //TODO enum support
   private PullRequestStatus status;
   private Set<String> subscriber = new HashSet<>();
   private Map<String, Boolean> reviewer = new HashMap<>();
   private String sourceRevision;
   private String targetRevision;
   private Set<ReviewMark> reviewMarks = new HashSet<>();
+  @Indexed
   private String overrideMessage;
+  @Indexed
   private boolean emergencyMerged;
   private List<String> ignoredMergeObstacles;
 
