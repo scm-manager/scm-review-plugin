@@ -33,10 +33,32 @@ public class PullRequestIndexer implements ServletContextListener {
   @Subscribe
   public void handleEvent(PullRequestEvent event) {
     if (event.getEventType() == HandlerEventType.CREATE || event.getEventType() == HandlerEventType.MODIFY) {
-      PullRequest pullRequest = event.getPullRequest();
-      Repository repository = event.getRepository();
-      searchEngine.forType(PullRequest.class).update(index -> storePullRequest(index, repository, pullRequest));
+      handleEvent(event.getRepository(), event.getPullRequest());
     }
+  }
+
+  @Subscribe
+  public void handleEvent(PullRequestUpdatedEvent event) {
+    handleEvent(event.getRepository(), event.getPullRequest());
+  }
+
+  @Subscribe
+  public void handleEvent(PullRequestMergedEvent event) {
+    handleEvent(event.getRepository(), event.getPullRequest());
+  }
+
+  @Subscribe
+  public void handleEvent(PullRequestRejectedEvent event) {
+    handleEvent(event.getRepository(), event.getPullRequest());
+  }
+
+  @Subscribe
+  public void handleEvent(PullRequestEmergencyMergedEvent event) {
+    handleEvent(event.getRepository(), event.getPullRequest());
+  }
+
+  private void handleEvent(Repository repository, PullRequest pullRequest) {
+    searchEngine.forType(PullRequest.class).update(index -> storePullRequest(index, repository, pullRequest));
   }
 
   @Override
@@ -46,7 +68,7 @@ public class PullRequestIndexer implements ServletContextListener {
 
   @Override
   public void contextDestroyed(ServletContextEvent servletContextEvent) {
-
+   // Nothing to do
   }
 
   private static void storePullRequest(Index<PullRequest> index, Repository repository, PullRequest pullRequest) {
@@ -58,7 +80,7 @@ public class PullRequestIndexer implements ServletContextListener {
   }
 
 
-  static final class ReindexAll implements IndexTask<PullRequest> {
+ static final class ReindexAll implements IndexTask<PullRequest> {
 
     private final RepositoryManager repositoryManager;
     private final IndexLogStore logStore;

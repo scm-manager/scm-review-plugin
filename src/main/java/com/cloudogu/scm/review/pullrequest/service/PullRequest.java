@@ -63,6 +63,7 @@ public class PullRequest implements Serializable {
 
   static final int VERSION = 1;
 
+  @Indexed(type = Indexed.Type.STORED_ONLY)
   private String id;
   @Indexed(analyzer = Indexed.Analyzer.IDENTIFIER)
   private String source;
@@ -83,7 +84,7 @@ public class PullRequest implements Serializable {
   @Indexed
   @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
-  //TODO enum support
+  @Indexed
   private PullRequestStatus status;
   private Set<String> subscriber = new HashSet<>();
   private Map<String, Boolean> reviewer = new HashMap<>();

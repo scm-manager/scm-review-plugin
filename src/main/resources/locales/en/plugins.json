@@ -342,6 +342,12 @@
       "globalConfig": {
         "title": "Workflow Engine"
       }
+    },
+    "search": {
+      "invalidResult": "Found incomplete pull request search result",
+      "lastModified": "Last changed",
+      "source": "Source Branch",
+      "target": "Target Branch"
     }
   },
   "mailTopics": {
@@ -509,5 +515,54 @@
         }
       }
     }
+  },
+  "search": {
+    "types": {
+      "pullRequest": {
+        "title": "Pull Request",
+        "subtitle": "Pull Request",
+        "navItem": "Pull Request",
+        "fields": {
+          "title": {
+            "exampleValue": "Awesome new button"
+          },
+          "description":  {
+            "exampleValue": "We added a new button which looks nice but does nothing at all."
+          },
+          "source": {
+            "exampleValue": "feature/new_button",
+            "hints": "Source branch"
+          },
+          "target": {
+            "exampleValue": "main",
+            "hints": "Target branch"
+          },
+          "status": {
+            "exampleValue": "OPEN",
+            "hints": "Pull request status like OPEN, MERGED, REJECTED"
+          },
+          "creationDate": {
+            "exampleValue": "1623057235",
+            "hints": "Timestamp of creation in ms since 01-01-1970. Range search possible."
+          },
+          "closeDate": {
+            "exampleValue": "1628077286",
+            "hints": "Timestamp when the pull request was closed in ms since 01-01-1970. Range search possible."
+          },
+          "lastModified": {
+            "exampleValue": "1623057235",
+            "hints": "Timestamp of last modification in ms since 01-01-1970. Range search possible."
+          },
+          "overrideMessage": {
+            "hints": "Message why the pull request was emergency merged and ignored the workflow engine rules.",
+            "exampleValue": "The PROD system was on fire so we had to emergency merge our fix."
+          },
+          "emergencyMerged": {
+            "hints": "Flag which shows if the pull request was emergency merged.",
+            "exampleValue": "true"
+          }
+        }
+      }
+    }
   }
-},
+}

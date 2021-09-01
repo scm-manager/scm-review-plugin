@@ -330,7 +330,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
           <div className="media-right">
             <Tag
               className="is-medium"
-              color={evaluateTagColor(pullRequest)}
+              color={evaluateTagColor(pullRequest.status)}
               label={t("scm-review-plugin.pullRequest.statusLabel." + pullRequest.status)}
               icon={pullRequest.emergencyMerged ? "exclamation-triangle" : undefined}
             />

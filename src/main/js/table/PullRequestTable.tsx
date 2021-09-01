@@ -104,7 +104,7 @@ class PullRequestTable extends React.Component<Props> {
           {(row: any) => (
             <Tag
               className="is-medium"
-              color={evaluateTagColor(row)}
+              color={evaluateTagColor(row.status)}
               label={t("scm-review-plugin.pullRequest.statusLabel." + row.status)}
               icon={row.emergencyMerged ? "exclamation-triangle" : undefined}
             />
