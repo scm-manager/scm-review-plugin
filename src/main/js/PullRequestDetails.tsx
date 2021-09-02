@@ -39,12 +39,7 @@ import {
   Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
-import {
-  evaluateTagColor,
-  useMergeDryRun,
-  useMergePullRequest,
-  useRejectPullRequest
-} from "./pullRequest";
+import { useMergeDryRun, useMergePullRequest, useRejectPullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -56,6 +51,8 @@ import ReducedMarkdownView from "./ReducedMarkdownView";
 import OverrideModalRow from "./OverrideModalRow";
 import PullRequestTitle from "./PullRequestTitle";
 import Statusbar from "./workflow/Statusbar";
+import BranchTag from "./BranchTag";
+import PullRequestStatusTag from "./PullRequestStatusTag";
 
 type Props = {
   repository: Repository;
@@ -100,16 +97,6 @@ const MediaWithTopBorder = styled.div.attrs(() => ({
 }))`
   padding: 0 !important;
   border-top: none !important;
-`;
-
-const ShortTag = styled(Tag).attrs(() => ({
-  className: "is-medium",
-  color: "light"
-}))`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 25em;
 `;
 
 const RightMarginTitle = styled(Title)`
@@ -295,10 +282,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   return (
     <>
-      <ChangeNotification
-        repository={repository}
-        pullRequest={pullRequest}
-      />
+      <ChangeNotification repository={repository} pullRequest={pullRequest} />
       <Container>
         <div className="media">
           <div className="media-content">
@@ -322,18 +306,13 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         </div>
         <MediaWithTopBorder>
           <div className="media-content">
-            <ShortTag label={pullRequest.source} title={pullRequest.source} />{" "}
+            <BranchTag label={pullRequest.source} title={pullRequest.source} />{" "}
             <i className="fas fa-long-arrow-alt-right" />{" "}
-            <ShortTag label={pullRequest.target} title={pullRequest.target} />
+            <BranchTag label={pullRequest.target} title={pullRequest.target} />
             {targetBranchDeletedWarning}
           </div>
           <div className="media-right">
-            <Tag
-              className="is-medium"
-              color={evaluateTagColor(pullRequest)}
-              label={t("scm-review-plugin.pullRequest.statusLabel." + pullRequest.status)}
-              icon={pullRequest.emergencyMerged ? "exclamation-triangle" : undefined}
-            />
+            <PullRequestStatusTag status={pullRequest.status || "OPEN"} emergencyMerged={pullRequest.emergencyMerged} />
           </div>
         </MediaWithTopBorder>
         <ExtensionPoint

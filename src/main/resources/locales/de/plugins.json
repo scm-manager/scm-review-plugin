@@ -344,6 +344,11 @@
       "globalConfig": {
         "title": "Workflow Engine"
       }
+    },
+    "search": {
+      "invalidResult": "Ungültige Suchergebnisse gefunden",
+      "source": "Source Branch",
+      "target": "Target Branch"
     }
   },
   "mailTopics": {
@@ -507,6 +512,55 @@
             "label": "Mindestanzahl der Freigaben",
             "helpText": "Anzahl der Reviewer, die eine Freigabe erteilen müssen.",
             "errorMessage": "Die Anzahl muss größer als 0 sein."
+          }
+        }
+      }
+    }
+  },
+  "search": {
+    "types": {
+      "pullRequest": {
+        "title": "Pull Request",
+        "subtitle": "Pull Request",
+        "navItem": "Pull Request",
+        "fields": {
+          "title": {
+            "exampleValue": "Mein neuer PR"
+          },
+          "description":  {
+            "exampleValue": "Dieser Pull Request wird später beschrieben."
+          },
+          "source": {
+            "exampleValue": "feature/new_link",
+            "hints": "Source Branch"
+          },
+          "target": {
+            "exampleValue": "main",
+            "hints": "Target Branch"
+          },
+          "status": {
+            "exampleValue": "OPEN",
+            "hints": "Pull Request Status wie z. B. OPEN, MERGED, REJECTED"
+          },
+          "creationDate": {
+            "exampleValue": "1623057235",
+            "hints": "Zeitstempel der Erstellung in Millisekunden seit 01.01.1970. Zeitraum-Suche ist möglich."
+          },
+          "closeDate": {
+            "exampleValue": "1628077286",
+            "hints": "Zeitstempel der Schließung in Millisekunden seit 01.01.1970. Zeitraum-Suche ist möglich."
+          },
+          "lastModified": {
+            "exampleValue": "1623057235",
+            "hints": "Zeitstempel der letzten Änderung in Millisekunden seit 01.01.1970. Zeitraum-Suche ist möglich."
+          },
+          "overrideMessage": {
+            "hints": "Nachricht, warum ein Pull Request im Notfall gemerged wurde und die Merge Regeln ignoriert wurden.",
+            "exampleValue": "Unser Server hat gebrannt und wir mussten dringend den Fix mergen."
+          },
+          "emergencyMerged": {
+            "hints": "Markierung, ob ein Pull Request im Notfall gemerged wurde.",
+            "exampleValue": "true"
           }
         }
       }

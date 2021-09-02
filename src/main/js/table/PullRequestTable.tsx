@@ -29,7 +29,7 @@ import { Repository } from "@scm-manager/ui-types";
 import { Column, comparators, DateFromNow, Table, Tag, TextColumn } from "@scm-manager/ui-components";
 import { Link } from "react-router-dom";
 import ReviewerIcon from "./ReviewerIcon";
-import { evaluateTagColor } from "../pullRequest";
+import PullRequestStatusTag from "../PullRequestStatusTag";
 
 type Props = WithTranslation & {
   repository: Repository;
@@ -101,14 +101,7 @@ class PullRequestTable extends React.Component<Props> {
           header={t("scm-review-plugin.pullRequest.status")}
           createComparator={() => comparators.byKey("status")}
         >
-          {(row: any) => (
-            <Tag
-              className="is-medium"
-              color={evaluateTagColor(row)}
-              label={t("scm-review-plugin.pullRequest.statusLabel." + row.status)}
-              icon={row.emergencyMerged ? "exclamation-triangle" : undefined}
-            />
-          )}
+          {(row: any) => <PullRequestStatusTag status={row.status} emergencyMerged={row.emergencyMerged} />}
         </MobileHiddenColumn>
       </StyledTable>
     );

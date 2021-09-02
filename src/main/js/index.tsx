@@ -40,6 +40,7 @@ import RepoEngineConfig from "./workflow/RepoEngineConfig";
 import GlobalEngineConfig from "./workflow/GlobalEngineConfig";
 import ApprovedByXReviewersRuleConfiguration from "./workflow/ApprovedByXReviewersRuleConfiguration";
 import { Branch, Repository } from "@scm-manager/ui-types";
+import PullRequestHitRenderer from "./search/PullRequestHitRenderer";
 
 type PredicateProps = {
   repository?: Repository;
@@ -136,3 +137,4 @@ binder.bind("landingpage.mytask", PullRequestTodos);
 binder.bind("landingpage.mytask", PullRequestReview);
 
 binder.bind("reviewPlugin.workflow.config.ApprovedByXReviewersRule", ApprovedByXReviewersRuleConfiguration);
+binder.bind("search.hit.pullRequest.renderer", PullRequestHitRenderer);
