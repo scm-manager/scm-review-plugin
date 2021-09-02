@@ -45,6 +45,7 @@ import javax.servlet.ServletContextEvent;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -156,6 +157,25 @@ class PullRequestIndexerTest {
     }
 
     @Test
+    void shouldNotReindexRepositoryIfDoesNotSupportPullRequests() {
+      Index.Deleter deleter = mock(Index.Deleter.class);
+      when(service.supportsPullRequests(repository)).thenReturn(false);
+      when(forIndex.get(PullRequest.class)).thenReturn(Optional.of(new IndexLog(42)));
+      when(index.delete()).thenReturn(deleter);
+
+      when(repositoryManager.getAll()).thenReturn(ImmutableList.of(repository));
+
+      reindexAll.update(index);
+
+      verify(deleter, times(1)).all();
+      verify(index, never()).store(
+        any(Id.class),
+        anyString(),
+        any(PullRequest.class)
+      );
+    }
+
+    @Test
     void shouldReindexAllIfLogStoreIsEmpty() {
       Index.Deleter deleter = mock(Index.Deleter.class);
       when(forIndex.get(PullRequest.class)).thenReturn(Optional.empty());
@@ -169,6 +189,7 @@ class PullRequestIndexerTest {
     @Test
     void shouldReindexAllIfLogStoreVersionDiffers() {
       Index.Deleter deleter = mock(Index.Deleter.class);
+      when(service.supportsPullRequests(repository)).thenReturn(true);
       when(forIndex.get(PullRequest.class)).thenReturn(Optional.of(new IndexLog(42)));
       when(index.delete()).thenReturn(deleter);
 

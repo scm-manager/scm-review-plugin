@@ -344,7 +344,7 @@
       }
     },
     "search": {
-      "invalidResult": "Found incomplete pull request search result",
+      "invalidResult": "Found invalid pull request search result",
       "source": "Source Branch",
       "target": "Target Branch"
     }

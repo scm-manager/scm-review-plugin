@@ -23,30 +23,12 @@
  */
 
 import React, { FC } from "react";
-import {
-  DateFromNow,
-  Hit,
-  HitProps,
-  Notification,
-  RepositoryAvatar,
-  Tag,
-  TextHitField
-} from "@scm-manager/ui-components";
+import { DateFromNow, Hit, HitProps, Notification, RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
 import { ValueHitField } from "@scm-manager/ui-types";
-import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { evaluateTagColor } from "../pullRequest";
-
-const ShortTag = styled(Tag).attrs(() => ({
-  className: "is-medium",
-  color: "light"
-}))`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 25em;
-`;
+import BranchTag from "../BranchTag";
+import PullRequestStatusTag from "../PullRequestStatusTag";
 
 const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
   const [t] = useTranslation("plugins");
@@ -76,12 +58,12 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
               <TextHitField field="description" hit={hit} truncateValueAt={1024} />
             </p>
             <p className="mt-1">
-              <ShortTag
+              <BranchTag
                 label={(hit.fields.source as ValueHitField).value as string}
                 title={t("scm-review-plugin.search.source")}
               />{" "}
               <i className="fas fa-long-arrow-alt-right" />{" "}
-              <ShortTag
+              <BranchTag
                 label={(hit.fields.target as ValueHitField).value as string}
                 title={t("scm-review-plugin.search.target")}
               />
@@ -97,11 +79,10 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
               : ((hit.fields.creationDate as ValueHitField)?.value as Date)
           }
         />
-        <Tag
-          className="is-medium mt-1"
-          color={evaluateTagColor((hit.fields.status as ValueHitField).value as string)}
-          label={t("scm-review-plugin.pullRequest.statusLabel." + (hit.fields.status as ValueHitField).value)}
-          icon={((hit.fields.emergencyMerged as ValueHitField).value as boolean) ? "exclamation-triangle" : undefined}
+        <PullRequestStatusTag
+          status={(hit.fields.status as ValueHitField).value as string}
+          emergencyMerged={(hit.fields.emergencyMerged as ValueHitField).value as boolean}
+          className="mt-1"
         />
       </Hit.Right>
     </Hit>

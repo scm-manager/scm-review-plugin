@@ -137,8 +137,10 @@ public class PullRequestIndexer implements ServletContextListener {
     }
 
     private void reindexRepository(Index<PullRequest> index, Repository repository) {
-      for (PullRequest pr : pullRequestService.getAll(repository.getNamespace(), repository.getName())) {
-        storePullRequest(index, repository, pr);
+      if (pullRequestService.supportsPullRequests(repository)) {
+        for (PullRequest pr : pullRequestService.getAll(repository.getNamespace(), repository.getName())) {
+          storePullRequest(index, repository, pr);
+        }
       }
     }
   }
