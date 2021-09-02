@@ -347,7 +347,6 @@
     },
     "search": {
       "invalidResult": "Ungültige Suchergebnisse gefunden",
-      "lastModified": "Zuletzt geändert",
       "source": "Source Branch",
       "target": "Target Branch"
     }
@@ -526,10 +525,10 @@
         "navItem": "Pull Request",
         "fields": {
           "title": {
-            "exampleValue": "Neuen Link eingebaut"
+            "exampleValue": "Mein neuer PR"
           },
           "description":  {
-            "exampleValue": "Dieser Link hat noch keine Funktion."
+            "exampleValue": "Dieser Pull Request wird später beschrieben."
           },
           "source": {
             "exampleValue": "feature/new_link",

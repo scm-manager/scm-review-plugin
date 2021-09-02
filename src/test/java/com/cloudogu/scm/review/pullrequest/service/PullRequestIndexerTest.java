@@ -34,7 +34,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
-import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.search.Id;
 import sonia.scm.search.Index;
 import sonia.scm.search.IndexLog;
@@ -43,7 +42,6 @@ import sonia.scm.search.SearchEngine;
 import sonia.scm.search.SerializableIndexTask;
 
 import javax.servlet.ServletContextEvent;
-
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -58,7 +56,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"UnstableApiUsage", "rawtypes", "unchecked"})
 class PullRequestIndexerTest {
 
-  private final Repository repository = RepositoryTestData.create42Puzzle();
+  private final Repository repository = new Repository("1", "git", "hitchhiker", "42");
 
   @Mock
   private SearchEngine searchEngine;
@@ -183,7 +181,7 @@ class PullRequestIndexerTest {
       verify(deleter, times(1)).all();
       verify(index).store(
         Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
-        "repository:readPullRequest:id-" + pullRequest.getId(),
+        "repository:readPullRequest:" + pullRequest.getId(),
         pullRequest
       );
     }

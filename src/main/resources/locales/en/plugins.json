@@ -345,7 +345,6 @@
     },
     "search": {
       "invalidResult": "Found incomplete pull request search result",
-      "lastModified": "Last changed",
       "source": "Source Branch",
       "target": "Target Branch"
     }

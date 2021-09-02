@@ -58,9 +58,11 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
 
   return (
     <Hit>
+      <Hit.Left>
+        <RepositoryAvatar repository={repository} size={48} />
+      </Hit.Left>
       <Hit.Content>
         <div className="is-flex">
-          <RepositoryAvatar repository={repository} size={48} />
           <div className="ml-2">
             <Link
               className="is-ellipsis-overflow"
