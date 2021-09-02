@@ -250,6 +250,18 @@ class StatusCheckHookTest {
     }
 
     @Test
+    void shouldSetPullRequestsWithDeletedTargetToRejected() {
+      PullRequest pullRequest = mockOpenPullRequest();
+
+      when(branchProvider.getCreatedOrModified()).thenReturn(emptyList());
+      when(branchProvider.getDeletedOrClosed()).thenReturn(singletonList("target"));
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+    }
+
+    @Test
     void shouldIgnoreHookWhenInternalMerge() {
       when(internalMergeSwitch.internalMergeRunning()).thenReturn(true);
       when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
