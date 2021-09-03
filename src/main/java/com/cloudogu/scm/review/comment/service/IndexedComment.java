@@ -57,6 +57,7 @@ public class IndexedComment implements Serializable {
   @Indexed
   private final boolean emergencyMerged;
 
+  @SuppressWarnings("java:S107")
   public IndexedComment(String pullRequestId, String id, String comment, String author, Instant date, CommentType type, boolean systemComment, boolean emergencyMerged) {
     this.pullRequestId = pullRequestId;
     this.id = id;
