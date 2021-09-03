@@ -563,6 +563,37 @@
             "exampleValue": "true"
           }
         }
+      },
+      "indexedComment": {
+        "title": "Pull Request Kommentar",
+        "subtitle": "Pull Request Kommentar",
+        "navItem": "Pull Request Kommentar",
+        "fields": {
+          "comment": {
+            "exampleValue": "Ich mag das neue Feature!",
+            "hints": "Der Kommentartext"
+          },
+          "date":  {
+            "exampleValue": "1628077286",
+            "hints": "Zeitstempel der letzten Änderung in Millisekunden seit 01.01.1970. Zeitraum-Suche ist möglich."
+          },
+          "author": {
+            "exampleValue": "scmadmin",
+            "hints": "Der Benutzername des Autors. NICHT der Anzeigename!"
+          },
+          "systemComment": {
+            "exampleValue": "true",
+            "hints": "Markierung, ob ein Kommentar automatisch erzeugt wurde."
+          },
+          "emergencyMerged": {
+            "exampleValue": "true",
+            "hints": "Markierung, ob ein Kommentar während eines Notfall-Merges erstellt wurde."
+          },
+          "type": {
+            "exampleValue": "COMMENT",
+            "hints": "Art des Kommentars wie z. B. COMMENT, TASK_TODO oder TASK_DONE"
+          }
+        }
       }
     }
   }
