@@ -33,7 +33,7 @@ import java.io.Serializable;
 public class ExecutedTransition<T extends Transition> implements Serializable {
 
   private String id;
-  private transient T transition;
+  private T transition;
   private long date;
   private String user;
 

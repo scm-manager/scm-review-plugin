@@ -38,6 +38,7 @@ import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,9 +66,17 @@ class HitEnricherTest {
   private HitEnricher enricher;
 
   @Test
+  void shouldNotEnrichHitIfNotComment() {
+    mockHit(ImmutableMap.of("author", new Hit.ValueField("trillian")));
+
+    enricher.enrich(context, appender);
+
+    verify(appender, never()).appendEmbedded(eq("user"), any(HalRepresentation.class));
+  }
+
+  @Test
   void shouldNotEnrichHitIfUserNotFound() {
-    when(context.oneByType(Hit.class))
-      .thenReturn(Optional.of(new Hit("1", "1", 1f, ImmutableMap.of("author", new Hit.ValueField("trillian")))));
+    mockHit(ImmutableMap.of("author", new Hit.ValueField("trillian"), "pullRequestId", new Hit.ValueField("1")));
 
     when(userDisplayManager.get("trillian")).thenReturn(Optional.empty());
     enricher.enrich(context, appender);
@@ -77,15 +86,19 @@ class HitEnricherTest {
 
   @Test
   void shouldEnrichHitWithDisplayUser() {
-    when(context.oneByType(Hit.class))
-      .thenReturn(Optional.of(new Hit("1", "1", 1f, ImmutableMap.of("author", new Hit.ValueField("trillian")))));
+    mockHit(ImmutableMap.of("author", new Hit.ValueField("trillian"), "pullRequestId", new Hit.ValueField("1")));
 
-    when(userDisplayManager.get("trillian")).thenReturn(Optional.of(DisplayUser.from(new User("trillian", "Tricia McMillan", "trillian@hitchhiker.org"))));
+    when(userDisplayManager.get("trillian"))
+      .thenReturn(Optional.of(DisplayUser.from(new User("trillian", "Tricia McMillan", "trillian@hitchhiker.org"))));
     enricher.enrich(context, appender);
 
     verify(appender, times(1)).appendEmbedded(eq("user"), (DisplayedUserDto) argThat(user -> {
       assertThat(((DisplayedUserDto)user).getDisplayName()).isEqualTo("Tricia McMillan");
       return true;
     }));
+  }
+
+  private void mockHit(Map<String, Hit.Field> hitMap) {
+    when(context.oneByType(Hit.class)).thenReturn(Optional.of(new Hit("1", "1", 1f, hitMap)));
   }
 }

@@ -61,10 +61,12 @@ public class CommentIndexer implements ServletContextListener {
     PullRequest pullRequest = event.getPullRequest();
     Repository repository = event.getRepository();
     if (event.getEventType() == HandlerEventType.CREATE || event.getEventType() == HandlerEventType.MODIFY) {
-      updateComment(repository, pullRequest, IndexedComment.transform(pullRequest.getId(), comment));
+      updateIndexedComment(repository, pullRequest, IndexedComment.transform(pullRequest.getId(), comment));
     } else if (event.getEventType() == HandlerEventType.DELETE) {
       Comment deletedComment = event.getOldItem();
-      searchEngine.forType(IndexedComment.class).update(index -> index.delete().byId(createCommentId(deletedComment.getId(), pullRequest.getId(), repository.getId())));
+      searchEngine
+        .forType(IndexedComment.class)
+        .update(index -> index.delete().byId(createCommentId(deletedComment.getId(), pullRequest.getId(), repository.getId())));
     }
   }
 
@@ -74,14 +76,16 @@ public class CommentIndexer implements ServletContextListener {
     PullRequest pullRequest = event.getPullRequest();
     Repository repository = event.getRepository();
     if (event.getEventType() == HandlerEventType.CREATE || event.getEventType() == HandlerEventType.MODIFY) {
-      updateComment(repository, pullRequest, IndexedComment.transform(pullRequest.getId(), comment));
+      updateIndexedComment(repository, pullRequest, IndexedComment.transform(pullRequest.getId(), comment));
     } else if (event.getEventType() == HandlerEventType.DELETE) {
       Reply deletedReply = event.getOldItem();
-      searchEngine.forType(IndexedComment.class).update(index -> index.delete().byId(createCommentId(deletedReply.getId(), pullRequest.getId(), repository.getId())));
+      searchEngine
+        .forType(IndexedComment.class)
+        .update(index -> index.delete().byId(createCommentId(deletedReply.getId(), pullRequest.getId(), repository.getId())));
     }
   }
 
-  private void updateComment(Repository repository, PullRequest pullRequest, IndexedComment comment) {
+  private void updateIndexedComment(Repository repository, PullRequest pullRequest, IndexedComment comment) {
     searchEngine.forType(IndexedComment.class).update(index -> storeComment(index, repository, pullRequest, comment));
   }
 
@@ -106,7 +110,6 @@ public class CommentIndexer implements ServletContextListener {
       comment
     );
   }
-
 
   static final class ReindexAll implements IndexTask<IndexedComment> {
 
@@ -133,7 +136,7 @@ public class CommentIndexer implements ServletContextListener {
 
     @Override
     public void afterUpdate() {
-      logStore.defaultIndex().log(PullRequest.class, IndexedComment.VERSION);
+      logStore.defaultIndex().log(IndexedComment.class, IndexedComment.VERSION);
     }
 
     private void reindexAll(Index<IndexedComment> index) {

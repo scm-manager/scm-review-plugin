@@ -51,9 +51,14 @@ public class HitEnricher implements HalEnricher {
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     Optional<Hit> hit = context.oneByType(Hit.class);
-    if (hit.isPresent() && hit.get().getFields().containsKey("author")) {
+    if (hit.isPresent() && shouldAppendDisplayUser(hit.get())) {
       appendEmbeddedUserForAuthor(appender, hit.get());
     }
+  }
+
+  private boolean shouldAppendDisplayUser(Hit hit) {
+    // We only need display users for comments so far
+    return hit.getFields().containsKey("author") && hit.getFields().containsKey("pullRequestId");
   }
 
   private void appendEmbeddedUserForAuthor(HalAppender appender, Hit hit) {
