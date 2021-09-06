@@ -21,7 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, ReactNode, useState } from "react";
+
+import React, { FC, ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import {
@@ -35,6 +36,7 @@ import {
   Level,
   LoadingDiff
 } from "@scm-manager/ui-components";
+import { useBranch } from "@scm-manager/ui-api";
 import { Comment, Comments, Location, PullRequest } from "../types/PullRequest";
 import {
   createChangeIdFromLocation,
@@ -54,6 +56,9 @@ import FileComments from "./FileComments";
 import MarkReviewedButton from "./MarkReviewedButton";
 import { Repository } from "@scm-manager/ui-types";
 import { useDiffCollapseState } from "./useDiffCollapseReducer";
+import ChangeNotificationToast from "../ChangeNotificationToast";
+import { useInvalidateDiff } from "../pullRequest";
+import { useChangeNotificationContext } from "../ChangeNotificationContext";
 
 const LevelWithMargin = styled(Level)`
   margin-bottom: 1rem !important;
@@ -75,6 +80,56 @@ type Props = {
   reviewedFiles: string[];
 };
 
+type Revisions = {
+  source: string;
+  target: string;
+  changed: boolean;
+};
+
+const useHasChanged = (repository: Repository, pullRequest: PullRequest) => {
+  const [revisions, setRevisions] = useState<Revisions>();
+  const invalidate = useInvalidateDiff(repository, pullRequest);
+
+  const { data: source } = useBranch(repository, pullRequest.source);
+  const { data: target } = useBranch(repository, pullRequest.target);
+
+  const ctx = useChangeNotificationContext();
+
+  const ignore = () => {
+    if (revisions) {
+      setRevisions({
+        ...revisions,
+        changed: false
+      });
+    }
+  };
+
+  const reload = async () => {
+    await invalidate();
+    ignore();
+  };
+
+  // clear revisions on reload triggered by ChangeNotification to avoid duplicate notification
+  useEffect(() => ctx.onReload(() => setRevisions(undefined)), [ctx]);
+
+  // show notification only when source or target revision has changed
+  useEffect(() => {
+    if (source && target) {
+      setRevisions(rev => ({
+        source: source.revision,
+        target: target.revision,
+        changed: !!(rev && (rev.source !== source.revision || rev.target !== target.revision))
+      }));
+    }
+  }, [source, target]);
+
+  return {
+    changed: revisions?.changed || false,
+    ignore,
+    reload
+  };
+};
+
 const Diff: FC<Props> = ({
   repository,
   pullRequest,
@@ -88,6 +143,7 @@ const Diff: FC<Props> = ({
   const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
   const [collapsed, setCollapsed] = useState(false);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
+  const { changed, ignore, reload } = useHasChanged(repository, pullRequest);
 
   const openInlineEditor = (location: Location) => {
     if (isInlineLocation(location)) {
@@ -301,6 +357,7 @@ const Diff: FC<Props> = ({
 
   return (
     <StyledDiffWrapper commentable={isPermittedToComment()}>
+      {changed ? <ChangeNotificationToast reload={reload} ignore={ignore} /> : null}
       <LevelWithMargin
         right={
           <Button
@@ -320,6 +377,7 @@ const Diff: FC<Props> = ({
         fileAnnotationFactory={fileAnnotationFactory}
         annotationFactory={annotationFactory}
         onClick={onGutterClick}
+        refetchOnWindowFocus={false}
         hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
       />
     </StyledDiffWrapper>

@@ -43,13 +43,19 @@ const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
 // React-Query Hooks
 
-export const useInvalidatePullRequest = (repository: Repository, pullRequest: PullRequest) => {
+export const useInvalidatePullRequest = (repository: Repository, pullRequest: PullRequest, inclusiveDiff?: boolean) => {
   const queryClient = useQueryClient();
   const pullRequestId = pullRequest.id;
   if (!pullRequestId) {
     throw new Error("pull request with found");
   }
-  return (diffUrl?: string) => {
+
+  let diffUrl: string;
+  if (inclusiveDiff && pullRequest.source && pullRequest.target) {
+    diffUrl = createDiffUrl(repository, pullRequest.source, pullRequest.target);
+  }
+
+  return () => {
     const invalidations = [
       queryClient.invalidateQueries(prQueryKey(repository, pullRequestId)),
       queryClient.invalidateQueries(["mergeCheck", ...prQueryKey(repository, pullRequestId)])
@@ -59,6 +65,16 @@ export const useInvalidatePullRequest = (repository: Repository, pullRequest: Pu
       invalidations.push(queryClient.invalidateQueries(["link", diffUrl]));
     }
     return Promise.all(invalidations);
+  };
+};
+
+export const useInvalidateDiff = (repository: Repository, pullRequest: PullRequest) => {
+  const queryClient = useQueryClient();
+  const diffUrl = createDiffUrl(repository, pullRequest.source, pullRequest.target);
+  return async () => {
+    if (diffUrl) {
+      await queryClient.invalidateQueries(["link", diffUrl]);
+    }
   };
 };
 

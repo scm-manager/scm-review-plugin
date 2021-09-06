@@ -23,45 +23,67 @@
  */
 import React, { FC, useEffect, useState } from "react";
 import { Link, Repository } from "@scm-manager/ui-types";
-import { apiClient, Toast, ToastButtons, ToastButton } from "@scm-manager/ui-components";
+import { apiClient } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
-import { useTranslation } from "react-i18next";
-import { createDiffUrl, useInvalidatePullRequest } from "./pullRequest";
+import { useInvalidatePullRequest } from "./pullRequest";
+import ChangeNotificationToast from "./ChangeNotificationToast";
+import { useChangeNotificationContext } from "./ChangeNotificationContext";
 
 type HandlerProps = {
   url: string;
   invalidatePullRequest: () => Promise<void[]>;
 };
 
-const EventNotificationHandler: FC<HandlerProps> = ({ url, invalidatePullRequest }) => {
+const useSubscription = (url: string) => {
   const [event, setEvent] = useState<unknown>();
+  const [visible, setVisible] = useState(document.hasFocus());
+
+  const onFocus = () => {
+    // clear previous toast, because react-query refetches anyways
+    setEvent(null);
+    setVisible(true);
+  };
+
+  const onBlur = () => setVisible(false);
+
   useEffect(() => {
-    return apiClient.subscribe(url, {
-      pullRequest: setEvent
-    });
-  }, [url]);
-  const { t } = useTranslation("plugins");
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("blur", onBlur);
+      document.removeEventListener("focus", onFocus);
+    };
+  }, []);
+
+  useEffect(() => {
+    // we only want to show toasts, if our tab is currently selected
+    // this avoids to many connection problems with sse and notifications for already loaded content
+    if (visible) {
+      return apiClient.subscribe(url, {
+        pullRequest: setEvent
+      });
+    }
+  }, [url, visible]);
+
+  return {
+    event,
+    clear: () => setEvent(null)
+  };
+};
+
+const EventNotificationHandler: FC<HandlerProps> = ({ url, invalidatePullRequest }) => {
+  const { event, clear } = useSubscription(url);
+  const ctx = useChangeNotificationContext();
 
   const reloadAndClose = async () => {
     await invalidatePullRequest();
-    setEvent(null);
+    // notify other listeners such as diff to avoid duplicated notifications
+    ctx.reload();
+    clear();
   };
 
   if (event) {
-    return (
-      <Toast type="warning" title={t("scm-review-plugin.changeNotification.title")}>
-        <p>{t("scm-review-plugin.changeNotification.description")}</p>
-        <p>{t("scm-review-plugin.changeNotification.modificationWarning")}</p>
-        <ToastButtons>
-          <ToastButton icon="redo" onClick={reloadAndClose}>
-            {t("scm-review-plugin.changeNotification.buttons.reload")}
-          </ToastButton>
-          <ToastButton icon="times" onClick={() => setEvent(undefined)}>
-            {t("scm-review-plugin.changeNotification.buttons.ignore")}
-          </ToastButton>
-        </ToastButtons>
-      </Toast>
-    );
+    return <ChangeNotificationToast reload={reloadAndClose} ignore={clear} />;
   }
   return null;
 };
@@ -72,14 +94,10 @@ type Props = {
 };
 
 const ChangeNotification: FC<Props> = ({ repository, pullRequest }) => {
-  const invalidatePullRequest = useInvalidatePullRequest(repository, pullRequest);
+  const invalidatePullRequest = useInvalidatePullRequest(repository, pullRequest, true);
   if (pullRequest._links.events) {
     const link = pullRequest._links.events as Link;
-    let diffLink: string;
-    if (pullRequest.source && pullRequest.target) {
-      diffLink = createDiffUrl(repository, pullRequest.source, pullRequest.target);
-    }
-    return <EventNotificationHandler url={link.href} invalidatePullRequest={() => invalidatePullRequest(diffLink)} />;
+    return <EventNotificationHandler url={link.href} invalidatePullRequest={invalidatePullRequest} />;
   }
   return null;
 };

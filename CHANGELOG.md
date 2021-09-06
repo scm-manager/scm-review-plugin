@@ -8,14 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Create index for pull requests to make them searchable ([#143](https://github.com/scm-manager/scm-review-plugin/pull/143))
 
+### Fixed
+- Do not show update notification if changes already fetched ([146](https://github.com/scm-manager/scm-review-plugin/pull/146))
+
 ## 2.10.1 - 2021-08-25
-## Fixed
+### Fixed
 - Closing comment editors on parallel changes ([#140](https://github.com/scm-manager/scm-review-plugin/pull/140))
 - Missing merge button update after approval and comment action ([#141](https://github.com/scm-manager/scm-review-plugin/pull/141))
 - Too wide branch selection when creating pr ([#142](https://github.com/scm-manager/scm-review-plugin/pull/142))
 
 ## 2.10.0 - 2021-08-04
-## Changed
+### Changed
 - Use react-query to enable frontend caching ([#138](https://github.com/scm-manager/scm-review-plugin/pull/138))
 
 ## 2.9.2 - 2021-07-06
