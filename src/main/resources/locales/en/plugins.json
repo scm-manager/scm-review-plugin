@@ -568,7 +568,7 @@
         "navItem": "Pull Request Comment",
         "fields": {
           "comment": {
-            "exampleValue": "I like this new features!",
+            "exampleValue": "I like these new features!",
             "hints": "The actual comment"
           },
           "date":  {
