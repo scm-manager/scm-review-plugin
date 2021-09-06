@@ -41,6 +41,7 @@ import GlobalEngineConfig from "./workflow/GlobalEngineConfig";
 import ApprovedByXReviewersRuleConfiguration from "./workflow/ApprovedByXReviewersRuleConfiguration";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import PullRequestHitRenderer from "./search/PullRequestHitRenderer";
+import CommentHitRenderer from "./search/CommentHitRenderer";
 
 type PredicateProps = {
   repository?: Repository;
@@ -138,3 +139,4 @@ binder.bind("landingpage.mytask", PullRequestReview);
 
 binder.bind("reviewPlugin.workflow.config.ApprovedByXReviewersRule", ApprovedByXReviewersRuleConfiguration);
 binder.bind("search.hit.pullRequest.renderer", PullRequestHitRenderer);
+binder.bind("search.hit.indexedComment.renderer", CommentHitRenderer);

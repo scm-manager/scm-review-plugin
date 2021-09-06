@@ -561,6 +561,37 @@
             "exampleValue": "true"
           }
         }
+      },
+      "indexedComment": {
+        "title": "Pull Request Comment",
+        "subtitle": "Pull Request Comment",
+        "navItem": "Pull Request Comment",
+        "fields": {
+          "comment": {
+            "exampleValue": "I like these new features!",
+            "hints": "The actual comment"
+          },
+          "date":  {
+            "exampleValue": "1628077286",
+            "hints": "Timestamp of last modification in ms since 01-01-1970. Range search possible."
+          },
+          "author": {
+            "exampleValue": "scmadmin",
+            "hints": "The username of the author. NOT the displayname!"
+          },
+          "systemComment": {
+            "exampleValue": "true",
+            "hints": "Flag if the comment was automatically created"
+          },
+          "emergencyMerged": {
+            "exampleValue": "true",
+            "hints": "Flag if the comment was created during an emergency merge"
+          },
+          "type": {
+            "exampleValue": "COMMENT",
+            "hints": "Type of the comment like COMMENT, TASK_TODO or TASK_DONE"
+          }
+        }
       }
     }
   }

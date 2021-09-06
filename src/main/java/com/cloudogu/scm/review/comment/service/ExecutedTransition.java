@@ -26,10 +26,11 @@ package com.cloudogu.scm.review.comment.service;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
 
 @XmlRootElement(name = "transition")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ExecutedTransition<T extends Transition> {
+public class ExecutedTransition<T extends Transition> implements Serializable {
 
   private String id;
   private T transition;

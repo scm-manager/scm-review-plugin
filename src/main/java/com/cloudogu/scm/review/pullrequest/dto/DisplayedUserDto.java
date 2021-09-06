@@ -24,6 +24,7 @@
 package com.cloudogu.scm.review.pullrequest.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.otto.edison.hal.HalRepresentation;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,8 +35,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
-public class DisplayedUserDto {
+@EqualsAndHashCode(callSuper = true)
+public class DisplayedUserDto extends HalRepresentation {
 
   private String id;
   private String displayName;
