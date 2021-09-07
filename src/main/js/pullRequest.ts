@@ -636,10 +636,10 @@ export function createDiffUrl(repository: Repository, source: string, target: st
   }
 }
 
-export function evaluateTagColor(pullRequest: PullRequest) {
-  if (pullRequest.status === "MERGED") {
+export function evaluateTagColor(status?: string) {
+  if (status === "MERGED") {
     return "success";
-  } else if (pullRequest.status === "REJECTED") {
+  } else if (status === "REJECTED") {
     return "danger";
   }
   return "light";

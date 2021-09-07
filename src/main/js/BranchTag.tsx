@@ -21,24 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.pullrequest.service;
+import React, { FC } from "react";
+import styled from "styled-components";
+import { Tag } from "@scm-manager/ui-components";
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+const ShortTag = styled(Tag).attrs(() => ({
+  className: "is-medium",
+  color: "light"
+}))`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 25em;
+`;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
+type Props = {
+  label: string;
+  title: string;
+};
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-@XmlRootElement(name = "mark")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class ReviewMark implements Serializable {
+const BranchTag: FC<Props> = ({ label, title }) => {
+  return <ShortTag label={label} title={title} />;
+};
 
-  private String file;
-  private String user;
-}
+export default BranchTag;

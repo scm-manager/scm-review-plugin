@@ -24,8 +24,9 @@
 package com.cloudogu.scm.review.comment.service;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.io.Serializable;
 
 @XmlJavaTypeAdapter(TransitionAdapter.class)
-public interface Transition {
+public interface Transition extends Serializable {
   String name();
 }

@@ -21,24 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.pullrequest.service;
+import React, { FC } from "react";
+import { Tag } from "@scm-manager/ui-components";
+import { evaluateTagColor } from "./pullRequest";
+import { useTranslation } from "react-i18next";
+import classNames from "classnames";
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+type Props = {
+  status: string;
+  emergencyMerged?: boolean;
+  className?: string;
+};
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
+const PullRequestStatusTag: FC<Props> = ({ status, emergencyMerged = false, className }) => {
+  const [t] = useTranslation("plugins");
+  return (
+    <Tag
+      className={classNames("is-medium", className)}
+      color={evaluateTagColor(status)}
+      label={t("scm-review-plugin.pullRequest.statusLabel." + status)}
+      icon={emergencyMerged ? "exclamation-triangle" : undefined}
+    />
+  );
+};
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-@XmlRootElement(name = "mark")
-@XmlAccessorType(XmlAccessType.FIELD)
-public class ReviewMark implements Serializable {
-
-  private String file;
-  private String user;
-}
+export default PullRequestStatusTag;
