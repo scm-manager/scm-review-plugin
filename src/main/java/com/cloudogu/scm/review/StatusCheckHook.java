@@ -128,7 +128,7 @@ public class StatusCheckHook {
         } else {
           updated(pullRequest);
         }
-      } else if (sourceBranchIsDeleted(pullRequest)) {
+      } else if (branchesWereDeleted(pullRequest)) {
         setRejected(pullRequest);
       }
     }
@@ -173,8 +173,9 @@ public class StatusCheckHook {
       }
     }
 
-    private boolean sourceBranchIsDeleted(PullRequest pullRequest) {
-      return branchProvider.getDeletedOrClosed().contains(pullRequest.getSource());
+    private boolean branchesWereDeleted(PullRequest pullRequest) {
+      return branchProvider.getDeletedOrClosed().contains(pullRequest.getSource())
+        || branchProvider.getDeletedOrClosed().contains(pullRequest.getTarget());
     }
 
     private void setRejected(PullRequest pullRequest) {

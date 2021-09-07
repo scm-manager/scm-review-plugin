@@ -118,11 +118,29 @@ public class MergeService {
           }
 
           if (repositoryService.isSupported(Command.BRANCH) && mergeCommitDto.isShouldDeleteSourceBranch()) {
-            repositoryService.getBranchCommand().delete(pullRequest.getSource());
+            String deletedSourceBranch = pullRequest.getSource();
+            Repository repository = repositoryService.getRepository();
+            repositoryService.getBranchCommand().delete(deletedSourceBranch);
+            rejectPullRequestsForDeletedBranch(repository, pullRequest, deletedSourceBranch);
           }
         }
       );
     }
+  }
+
+  private void rejectPullRequestsForDeletedBranch(Repository repository, PullRequest pullRequest, String deletedSourceBranch) {
+    List<PullRequest> pullRequests = pullRequestService.getAll(repository.getNamespace(), repository.getName());
+    pullRequests.forEach(pr -> {
+      if (shouldRejectPullRequestForDeletedBranch(pullRequest, deletedSourceBranch, pr)) {
+        pullRequestService.setRejected(repository, pr.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+      }
+    });
+  }
+
+  private boolean shouldRejectPullRequestForDeletedBranch(PullRequest pullRequest, String deletedSourceBranch, PullRequest pr) {
+    return pr.getStatus().equals(OPEN)
+      && !pr.getId().equals(pullRequest.getId())
+      && (pr.getSource().equals(deletedSourceBranch) || pr.getTarget().equals(deletedSourceBranch));
   }
 
   public Collection<MergeObstacle> verifyNoObstacles(boolean emergency, Repository repository, PullRequest pullRequest) {
@@ -144,8 +162,7 @@ public class MergeService {
     }
     if (!emergency && !obstacles.isEmpty()) {
       throw new MergeNotAllowedException(repository, pullRequest, obstacles);
-    }
-  }
+    }  }
 
   public MergeCheckResult checkMerge(NamespaceAndName namespaceAndName, String pullRequestId) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {

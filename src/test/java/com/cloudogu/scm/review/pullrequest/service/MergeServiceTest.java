@@ -84,6 +84,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -125,9 +126,9 @@ class MergeServiceTest {
   void initService() {
     service = new MergeService(serviceFactory, pullRequestService, mergeGuards, internalMergeSwitch, userDisplayManager, email);
     lenient().doAnswer(invocation -> {
-      invocation.<Runnable>getArgument(0).run();
-      return null;
-    })
+        invocation.<Runnable>getArgument(0).run();
+        return null;
+      })
       .when(internalMergeSwitch).runInternalMerge(any());
   }
 
@@ -534,6 +535,28 @@ class MergeServiceTest {
     assertThat(service.createMergeCommitMessageHint(MergeStrategy.FAST_FORWARD_IF_POSSIBLE)).isEqualTo(MergeStrategy.FAST_FORWARD_IF_POSSIBLE.name());
   }
 
+  @Test
+  void shouldClosePullRequestsWithDeletedBranchesOnMerge() {
+    PullRequest pullRequest = mockPullRequest("commit", "master", "1");
+    PullRequest pullRequest2 = mockPullRequest("master", "commit", "2");
+    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
+    when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
+    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
+    when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);
+    BranchCommandBuilder branchCommand = mock(BranchCommandBuilder.class);
+    when(repositoryService.getBranchCommand()).thenReturn(branchCommand);
+
+
+    when(pullRequestService.getAll(REPOSITORY.getNamespace(), REPOSITORY.getName())).thenReturn(ImmutableList.of(pullRequest, pullRequest2));
+
+    MergeCommitDto mergeCommit = createMergeCommit(true);
+    service.merge(REPOSITORY.getNamespaceAndName(), pullRequest.getId(), mergeCommit, MergeStrategy.MERGE_COMMIT, false);
+
+    verify(branchCommand).delete(pullRequest.getSource());
+    verify(pullRequestService, times(1)).setRejected(REPOSITORY, "2", PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+    verify(pullRequestService, never()).setRejected(REPOSITORY, "1", PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+  }
+
   private TestMergeObstacle mockMergeGuard(PullRequest pullRequest, boolean overrideable) {
     MergeGuard mergeGuard = mock(MergeGuard.class);
     mergeGuards.add(mergeGuard);
@@ -547,6 +570,7 @@ class MergeServiceTest {
     pullRequest.setId("1");
     pullRequest.setSource("squash");
     pullRequest.setTarget("master");
+    pullRequest.setStatus(OPEN);
     return pullRequest;
   }
 
@@ -560,7 +584,7 @@ class MergeServiceTest {
     pr.setSource(source);
     pr.setTarget(target);
     pr.setStatus(status);
-    when(pullRequestService.get(REPOSITORY, "1")).thenReturn(pr);
+    lenient().when(pullRequestService.get(REPOSITORY, pullRequestId)).thenReturn(pr);
     return pr;
   }
 

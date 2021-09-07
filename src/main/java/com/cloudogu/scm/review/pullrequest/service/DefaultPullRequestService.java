@@ -31,6 +31,7 @@ import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.google.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.HandlerEventType;
+import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.InternalRepositoryException;
@@ -196,14 +197,23 @@ public class DefaultPullRequestService implements PullRequestService {
   public void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.getStatus() == OPEN) {
-      pullRequest.setSourceRevision(branchResolver.resolve(repository, pullRequest.getSource()).getRevision());
-      pullRequest.setTargetRevision(branchResolver.resolve(repository, pullRequest.getTarget()).getRevision());
+      pullRequest.setSourceRevision(getBranchRevision(repository, pullRequest.getSource()));
+      pullRequest.setTargetRevision(getBranchRevision(repository, pullRequest.getTarget()));
       setPullRequestClosed(pullRequest);
       pullRequest.setStatus(REJECTED);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause));
     } else if (pullRequest.getStatus() == MERGED) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
+    }
+  }
+
+  private String getBranchRevision(Repository repository, String branch) {
+    try {
+      return branchResolver.resolve(repository, branch).getRevision();
+    } catch (NotFoundException e) {
+      // If the branch was already deleted before we cannot set the revision, so we use the branch name.
+      return branch;
     }
   }
 
