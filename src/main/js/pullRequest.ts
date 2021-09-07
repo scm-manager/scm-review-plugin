@@ -372,15 +372,15 @@ export const useCreateComment = (repository: Repository, pullRequest: PullReques
 
 export const useComments = (repository: Repository, pullRequest: PullRequest) => {
   const id = pullRequest.id;
-  if (!id) {
-    throw new Error("Could not read comments for pull request without id");
-  }
-  const { error, isLoading, data } = useQuery<Comments, Error>(prCommentsQueryKey(repository, id), () => {
-    if (pullRequest?._links?.comments) {
-      return apiClient.get((pullRequest._links.comments as Link).href).then(response => response.json());
+  const { error, isLoading, data } = useQuery<Comments, Error>(
+    prCommentsQueryKey(repository, id || "new_pull_request"),
+    () => {
+      if (pullRequest?._links?.comments) {
+        return apiClient.get((pullRequest._links.comments as Link).href).then(response => response.json());
+      }
+      return { _links: {}, _embedded: { pullRequestComments: [] } };
     }
-    return { _links: {}, _embedded: { pullRequestComments: [] } };
-  });
+  );
 
   return {
     error,

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Reject pull requests if branch was deleted on merge ([#144](https://github.com/scm-manager/scm-review-plugin/pull/144)) 
+- Error on diff view for new pull request ([#147](https://github.com/scm-manager/scm-review-plugin/pull/147))
 
 ## 2.10.1 - 2021-08-25
 ## Fixed
