@@ -32,13 +32,6 @@ dependencies {
   optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
   optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.0.0"
   testImplementation "com.github.spullara.mustache.java:compiler:0.9.7"
-
-  testImplementation "com.github.sdorra:shiro-unit:1.0.1"
-
-  testImplementation "org.jboss.resteasy:resteasy-validator-provider:4.5.8.Final"
-  testImplementation "org.hibernate.validator:hibernate-validator:6.1.6.Final"
-  testImplementation "javax.el:javax.el-api:3.0.0"
-  testImplementation "org.glassfish:javax.el:3.0.1-b11"
 }
 
 scmPlugin {
