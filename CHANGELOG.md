@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 2.11.0 - 2021-09-08
 ### Added
 - Create index for pull requests to make them searchable ([#143](https://github.com/scm-manager/scm-review-plugin/pull/143))
 - Create index for pull request comments to make them searchable ([#145](https://github.com/scm-manager/scm-review-plugin/pull/145))
@@ -12,8 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Reject pull requests if branch was deleted on merge ([#144](https://github.com/scm-manager/scm-review-plugin/pull/144)) 
 - Error on diff view for new pull request ([#147](https://github.com/scm-manager/scm-review-plugin/pull/147))
-
-### Fixed
 - Do not show update notification if changes already fetched ([146](https://github.com/scm-manager/scm-review-plugin/pull/146))
 
 ## 2.10.1 - 2021-08-25
