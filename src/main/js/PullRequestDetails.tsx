@@ -53,6 +53,7 @@ import PullRequestTitle from "./PullRequestTitle";
 import Statusbar from "./workflow/Statusbar";
 import BranchTag from "./BranchTag";
 import PullRequestStatusTag from "./PullRequestStatusTag";
+import ChangeNotificationContext from "./ChangeNotificationContext";
 
 type Props = {
   repository: Repository;
@@ -281,7 +282,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   };
 
   return (
-    <>
+    <ChangeNotificationContext>
       <ChangeNotification repository={repository} pullRequest={pullRequest} />
       <Container>
         <div className="media">
@@ -385,7 +386,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         mergeHasNoConflict={!mergeCheck?.hasConflicts}
         targetBranchDeleted={targetBranchDeleted}
       />
-    </>
+    </ChangeNotificationContext>
   );
 };
 
