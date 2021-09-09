@@ -249,7 +249,7 @@
     },
     "branch": {
       "header": "Pull Requests",
-      "createPullRequest": "Create new pull request"
+      "createPullRequest": "Create New Pull Request"
     },
     "config": {
       "title": "Pull Requests Configuration",
