@@ -37,7 +37,7 @@
       "description": "Description",
       "status": "Status",
       "statusLabel": {
-        "OPEN": "OFFEN",
+        "OPEN": "OPEN",
         "MERGED": "MERGED",
         "REJECTED": "REJECTED"
       },
