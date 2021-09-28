@@ -203,7 +203,7 @@ public class MergeService {
   public CommitDefaults createCommitDefaults(NamespaceAndName namespaceAndName, String pullRequestId, MergeStrategy strategy) {
     PullRequest pullRequest = pullRequestService.get(namespaceAndName.getNamespace(), namespaceAndName.getName(), pullRequestId);
     String message = determineDefaultMessage(namespaceAndName, pullRequest, strategy);
-    DisplayUser author = determineDefaultAuthor(pullRequest, strategy);
+    Person author = determineDefaultAuthor(pullRequest, strategy);
     return new CommitDefaults(message, author);
   }
 
@@ -221,7 +221,7 @@ public class MergeService {
     }
   }
 
-  public DisplayUser determineDefaultAuthor(PullRequest pullRequest, MergeStrategy strategy) {
+  public Person determineDefaultAuthor(PullRequest pullRequest, MergeStrategy strategy) {
     if (strategy == null) {
       return currentDisplayUser();
     }
@@ -235,9 +235,10 @@ public class MergeService {
     }
   }
 
-  private DisplayUser determineSquashAuthor(PullRequest pullRequest) {
+  private Person determineSquashAuthor(PullRequest pullRequest) {
     return userDisplayManager.get(pullRequest.getAuthor())
-      .orElseGet(MergeService::currentDisplayUser);
+      .map(d -> new Person(d.getDisplayName(), email.getMailOrFallback(d)))
+      .orElseGet(this::currentDisplayUser);
   }
 
   public boolean isCommitMessageDisabled(MergeStrategy strategy) {
@@ -295,8 +296,8 @@ public class MergeService {
   }
 
   private void appendCoAuthors(StringBuilder builder, Set<Person> contributors, DisplayUser prAuthor) {
+    Optional<DisplayUser> prAuthorDisplayUser = userDisplayManager.get(prAuthor.getId());
     for (Person contributor : contributors) {
-      Optional<DisplayUser> prAuthorDisplayUser = userDisplayManager.get(prAuthor.getId());
       if (prAuthorDisplayUser.isPresent() && !prAuthorDisplayUser.get().getDisplayName().equals(contributor.getName())) {
         Optional<DisplayUser> contributorDisplayUser = userDisplayManager.get(contributor.getName());
         if (contributorDisplayUser.isPresent()) {
@@ -342,8 +343,8 @@ public class MergeService {
     mergeCommand.setTargetBranch(pullRequest.getTarget());
     String enrichedCommitMessage = enrichCommitMessageWithTrailers(repositoryService, pullRequest, mergeCommitDto, strategy);
     mergeCommand.setMessage(enrichedCommitMessage);
-    DisplayUser author = determineDefaultAuthor(pullRequest, strategy);
-    mergeCommand.setAuthor(new Person(author.getDisplayName(), author.getMail()));
+    Person author = determineDefaultAuthor(pullRequest, strategy);
+    mergeCommand.setAuthor(new Person(author.getName(), author.getMail()));
     mergeCommand.setMergeStrategy(strategy);
   }
 
@@ -355,7 +356,7 @@ public class MergeService {
     if (shouldAppendTrailers(strategy, approvers)) {
       builder.append("\n\n");
 
-      String merger = currentDisplayUser().getDisplayName();
+      String merger = currentDisplayUser().getName();
       appendSquashCoAuthorsToCommitMessage(repositoryService, pullRequest, strategy, merger, builder);
       appendApproversToCommitMessage(builder, approvers, merger);
     }
@@ -444,8 +445,9 @@ public class MergeService {
     return mergeCommand;
   }
 
-  private static DisplayUser currentDisplayUser() {
-    return DisplayUser.from(currentUser());
+  private Person currentDisplayUser() {
+    String mailOrFallback = email.getMailOrFallback(currentUser());
+    return new Person(currentUser().getDisplayName(), mailOrFallback);
   }
 
   private static User currentUser() {
@@ -455,9 +457,9 @@ public class MergeService {
 
   public static class CommitDefaults {
     private final String commitMessage;
-    private final DisplayUser commitAuthor;
+    private final Person commitAuthor;
 
-    public CommitDefaults(String commitMessage, DisplayUser commitAuthor) {
+    public CommitDefaults(String commitMessage, Person commitAuthor) {
       this.commitMessage = commitMessage;
       this.commitAuthor = commitAuthor;
     }
@@ -466,7 +468,7 @@ public class MergeService {
       return commitMessage;
     }
 
-    public DisplayUser getCommitAuthor() {
+    public Person getCommitAuthor() {
       return commitAuthor;
     }
   }

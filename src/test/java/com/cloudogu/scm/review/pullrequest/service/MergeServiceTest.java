@@ -37,7 +37,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.Branches;
 import sonia.scm.repository.Changeset;
@@ -114,8 +113,7 @@ class MergeServiceTest {
   private InternalMergeSwitch internalMergeSwitch;
   @Mock
   private UserDisplayManager userDisplayManager;
-
-  @Mock
+  @Mock(answer = Answers.CALLS_REAL_METHODS)
   private EMail email;
 
   private final Set<MergeGuard> mergeGuards = new HashSet<>();
@@ -139,6 +137,10 @@ class MergeServiceTest {
     lenient().when(repositoryService.getMergeCommand()).thenReturn(mergeCommandBuilder);
     lenient().when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     lenient().when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
+    lenient().doAnswer(invocationOnMock -> {
+      DisplayUser displayUser = invocationOnMock.getArgument(0, DisplayUser.class);
+      return displayUser.getMail() == null ? "fake@scm-manager.org" : displayUser.getMail();
+    }).when(email).getMailOrFallback(any(DisplayUser.class));
   }
 
   @BeforeEach
@@ -466,7 +468,7 @@ class MergeServiceTest {
       "\nCo-authored-by: Arthur <dent@hitchhiker.com>");
     assertThat(commitDefaults.getCommitAuthor())
       .usingRecursiveComparison()
-      .isEqualTo(currentUser);
+      .isEqualTo(new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
   }
 
   @Test
@@ -476,7 +478,8 @@ class MergeServiceTest {
     when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
     PullRequest pullRequest = createPullRequest();
     pullRequest.setAuthor("trillian");
-    when(userDisplayManager.get("trillian")).thenReturn(Optional.of(DisplayUser.from(user)));
+    DisplayUser displayUser = DisplayUser.from(user);
+    when(userDisplayManager.get("trillian")).thenReturn(Optional.of(displayUser));
     when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
     Person author = new Person("Philip", "phil@groundhog.com");
@@ -504,7 +507,7 @@ class MergeServiceTest {
     );
     assertThat(commitDefaults.getCommitAuthor())
       .usingRecursiveComparison()
-      .isEqualTo(DisplayUser.from(new User("trillian", "Tricia McMillan", "tricia@hitchhiker.com")));
+      .isEqualTo(new Person("Tricia McMillan", "tricia@hitchhiker.com"));
   }
 
   @Test

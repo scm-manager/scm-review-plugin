@@ -38,9 +38,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Person;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.spi.MergeConflictResult;
-import sonia.scm.user.DisplayUser;
 import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
@@ -265,12 +265,12 @@ public class MergeResource {
     @QueryParam("strategy") MergeStrategy strategy
   ) {
     MergeService.CommitDefaults commitDefaults = service.createCommitDefaults(new NamespaceAndName(namespace, name), pullRequestId, strategy);
-    DisplayUser commitAuthor = commitDefaults.getCommitAuthor();
+    Person commitAuthor = commitDefaults.getCommitAuthor();
     return new MergeStrategyInfoDto(
       service.isCommitMessageDisabled(strategy),
       commitDefaults.getCommitMessage(),
       service.createMergeCommitMessageHint(strategy),
-      format("%s <%s>", commitAuthor.getDisplayName(), commitAuthor.getMail())
+      format("%s <%s>", commitAuthor.getName(), commitAuthor.getMail())
     );
   }
 }
