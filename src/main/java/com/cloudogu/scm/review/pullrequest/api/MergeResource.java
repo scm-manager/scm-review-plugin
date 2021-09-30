@@ -270,7 +270,14 @@ public class MergeResource {
       service.isCommitMessageDisabled(strategy),
       commitDefaults.getCommitMessage(),
       service.createMergeCommitMessageHint(strategy),
-      format("%s <%s>", commitAuthor.getDisplayName(), commitAuthor.getMail())
+      renderCommitAuthorIfPresent(commitAuthor)
     );
+  }
+
+  private String renderCommitAuthorIfPresent(DisplayUser commitAuthor) {
+    if (commitAuthor == null) {
+      return null;
+    }
+    return commitAuthor.getMail() == null ? commitAuthor.getDisplayName() : format("%s <%s>", commitAuthor.getDisplayName(), commitAuthor.getMail());
   }
 }
