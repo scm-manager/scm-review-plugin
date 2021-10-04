@@ -26,6 +26,7 @@ package com.cloudogu.scm.review.pullrequest.api;
 import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.MergeService.CommitDefaults;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.sdorra.shiro.SubjectAware;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
@@ -38,6 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
+import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
 
 import java.io.IOException;
@@ -52,10 +54,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.api.MergeStrategy.FAST_FORWARD_IF_POSSIBLE;
+import static sonia.scm.repository.api.MergeStrategy.MERGE_COMMIT;
 import static sonia.scm.repository.api.MergeStrategy.REBASE;
 import static sonia.scm.repository.api.MergeStrategy.SQUASH;
 
@@ -145,20 +147,42 @@ class MergeResourceTest {
   }
 
   @Test
-  void shouldGetSquashMergeStrategyInfo() throws URISyntaxException, UnsupportedEncodingException {
+  void shouldGetSquashMergeStrategyInfoWithoutMail() throws URISyntaxException {
     when(mergeService.createCommitDefaults(any(), any(), eq(SQUASH)))
       .thenReturn(new CommitDefaults("happy days", DisplayUser.from(new User("Arthur Dent"))));
     when(mergeService.isCommitMessageDisabled(SQUASH)).thenReturn(true);
     when(mergeService.createMergeCommitMessageHint(SQUASH)).thenReturn(null);
     MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/merge-strategy-info/?strategy=SQUASH");
-    MockHttpResponse response = new MockHttpResponse();
+    JsonMockHttpResponse response = new JsonMockHttpResponse();
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
-    assertThat(response.getContentAsString())
-      .contains("happy days")
-      .contains("true")
-      .contains("Arthur Dent")
-      .doesNotContain("commitMessageHint");
+    JsonNode jsonResponse = response.getContentAsJson();
+    assertThat(jsonResponse.get("commitMessageDisabled").asBoolean()).isTrue();
+    assertThat(jsonResponse.get("defaultCommitMessage").asText()).isEqualTo("happy days");
+    assertThat(jsonResponse.get("commitAuthor").asText()).isEqualTo("Arthur Dent");
+    assertThat(jsonResponse.get("commitMessageHint")).isNull();
+  }
+
+  @Test
+  void shouldGetSquashMergeStrategyInfoWithMail() throws URISyntaxException {
+    when(mergeService.createCommitDefaults(any(), any(), eq(SQUASH)))
+      .thenReturn(new CommitDefaults("happy days", DisplayUser.from(new User("dent", "Arthur Dent", "arthur@hitchhiker.com"))));
+    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/merge-strategy-info/?strategy=SQUASH");
+    JsonMockHttpResponse response = new JsonMockHttpResponse();
+    dispatcher.invoke(request, response);
+    JsonNode jsonResponse = response.getContentAsJson();
+    assertThat(jsonResponse.get("commitAuthor").asText()).isEqualTo("Arthur Dent <arthur@hitchhiker.com>");
+  }
+
+  @Test
+  void shouldNotSetCommitAuthorForNonSquash() throws URISyntaxException {
+    when(mergeService.createCommitDefaults(any(), any(), eq(MERGE_COMMIT)))
+      .thenReturn(new CommitDefaults("happy days", null));
+    MockHttpRequest request = createHttpGetRequest(MERGE_URL + "/merge-strategy-info/?strategy=MERGE_COMMIT");
+    JsonMockHttpResponse response = new JsonMockHttpResponse();
+    dispatcher.invoke(request, response);
+    JsonNode jsonResponse = response.getContentAsJson();
+    assertThat(jsonResponse.get("commitAuthor")).isNull();
   }
 
   @Test

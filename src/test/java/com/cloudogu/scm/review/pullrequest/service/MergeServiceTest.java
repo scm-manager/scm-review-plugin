@@ -153,7 +153,6 @@ class MergeServiceTest {
 
   @Test
   void shouldMergeSuccessfully() {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
@@ -283,7 +282,6 @@ class MergeServiceTest {
 
   @Test
   void shouldEmergencyMergeSuccessfully() {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
@@ -331,7 +329,6 @@ class MergeServiceTest {
 
   @Test
   void shouldDeleteBranchIfFlagIsSet() {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     mockPullRequest("squash", "master", "1");
@@ -346,7 +343,6 @@ class MergeServiceTest {
 
   @Test
   void shouldUpdatePullRequestStatus() throws IOException {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     mocksForPullRequestUpdate("master");
     mockPullRequest("squash", "master", "1");
 
@@ -383,7 +379,6 @@ class MergeServiceTest {
 
   @Test
   void shouldNotThrowExceptionIfObstacleIsOverrideable() throws IOException {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     mocksForPullRequestUpdate("master");
     PullRequest pullRequest = mockPullRequest("squash", "master", "1");
     mockMergeGuard(pullRequest, true);
@@ -470,6 +465,16 @@ class MergeServiceTest {
   }
 
   @Test
+  void shouldOmitAuthorForNonSquash() {
+    PullRequest pullRequest = createPullRequest();
+    when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
+
+    CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.MERGE_COMMIT);
+
+    assertThat(commitDefaults.getCommitAuthor()).isNull();
+  }
+
+  @Test
   void shouldCreateCommitMessageForSquashWithFallbackForMissingAuthorFromPullRequest() throws IOException {
     User user = mockUser("trillian", "Tricia McMillan", "tricia@hitchhiker.com");
     when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
@@ -539,7 +544,6 @@ class MergeServiceTest {
   void shouldClosePullRequestsWithDeletedBranchesOnMerge() {
     PullRequest pullRequest = mockPullRequest("commit", "master", "1");
     PullRequest pullRequest2 = mockPullRequest("master", "commit", "2");
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
     when(mergeCommandBuilder.isSupported(MergeStrategy.MERGE_COMMIT)).thenReturn(true);
     when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
     when(repositoryService.isSupported(Command.BRANCH)).thenReturn(true);

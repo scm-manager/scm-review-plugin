@@ -203,7 +203,7 @@ public class MergeService {
   public CommitDefaults createCommitDefaults(NamespaceAndName namespaceAndName, String pullRequestId, MergeStrategy strategy) {
     PullRequest pullRequest = pullRequestService.get(namespaceAndName.getNamespace(), namespaceAndName.getName(), pullRequestId);
     String message = determineDefaultMessage(namespaceAndName, pullRequest, strategy);
-    DisplayUser author = determineDefaultAuthor(pullRequest, strategy);
+    DisplayUser author = determineDefaultAuthorIfNotCurrentUser(pullRequest, strategy);
     return new CommitDefaults(message, author);
   }
 
@@ -221,9 +221,9 @@ public class MergeService {
     }
   }
 
-  public DisplayUser determineDefaultAuthor(PullRequest pullRequest, MergeStrategy strategy) {
+  public DisplayUser determineDefaultAuthorIfNotCurrentUser(PullRequest pullRequest, MergeStrategy strategy) {
     if (strategy == null) {
-      return currentDisplayUser();
+      return null;
     }
     switch (strategy) {
       case SQUASH:
@@ -231,7 +231,7 @@ public class MergeService {
       case FAST_FORWARD_IF_POSSIBLE:
       case MERGE_COMMIT:
       default:
-        return currentDisplayUser();
+        return null;
     }
   }
 
@@ -342,8 +342,8 @@ public class MergeService {
     mergeCommand.setTargetBranch(pullRequest.getTarget());
     String enrichedCommitMessage = enrichCommitMessageWithTrailers(repositoryService, pullRequest, mergeCommitDto, strategy);
     mergeCommand.setMessage(enrichedCommitMessage);
-    DisplayUser author = determineDefaultAuthor(pullRequest, strategy);
-    mergeCommand.setAuthor(new Person(author.getDisplayName(), author.getMail()));
+    DisplayUser author = determineDefaultAuthorIfNotCurrentUser(pullRequest, strategy);
+    mergeCommand.setAuthor(author);
     mergeCommand.setMergeStrategy(strategy);
   }
 
