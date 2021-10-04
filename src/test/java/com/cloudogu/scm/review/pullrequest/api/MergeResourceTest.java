@@ -182,7 +182,7 @@ class MergeResourceTest {
     JsonMockHttpResponse response = new JsonMockHttpResponse();
     dispatcher.invoke(request, response);
     JsonNode jsonResponse = response.getContentAsJson();
-    assertThat(jsonResponse.get("commitAuthor").isNull()).isTrue();
+    assertThat(jsonResponse.get("commitAuthor")).isNull();
   }
 
   @Test

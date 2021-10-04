@@ -36,6 +36,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import org.apache.commons.lang.StringUtils;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.MergeStrategy;
@@ -278,6 +279,6 @@ public class MergeResource {
     if (commitAuthor == null) {
       return null;
     }
-    return commitAuthor.getMail() == null ? commitAuthor.getDisplayName() : format("%s <%s>", commitAuthor.getDisplayName(), commitAuthor.getMail());
+    return StringUtils.isEmpty(commitAuthor.getMail()) ? commitAuthor.getDisplayName() : format("%s <%s>", commitAuthor.getDisplayName(), commitAuthor.getMail());
   }
 }

@@ -26,5 +26,5 @@ export interface MergeStrategyInfo {
   commitMessageDisabled: boolean;
   defaultCommitMessage: string;
   commitMessageHint: string;
-  commitAuthor: string | null;
+  commitAuthor?: string;
 }
