@@ -91,8 +91,9 @@ binder.bind("repository.route", ShowPullRequestRoute);
 // list
 
 function matches(route: any) {
-  const regex = new RegExp(".*(/pull-request)/.*");
-  return route.location.pathname.match(regex) || route.location.pathname.match(".*(pull-requests)/.*");
+  const singleRegex = new RegExp(".*(/repo)/.+/.+(/pull-request)/.*");
+  const listRegex = new RegExp(".*(/repo)/.+/.+(/pull-requests)/.*");
+  return route.location.pathname.match(singleRegex) || route.location.pathname.match(listRegex);
 }
 
 const PullRequestNavLink = ({ url }) => {
