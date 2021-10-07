@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Merges by users without configured mail address ([#149](https://github.com/scm-manager/scm-review-plugin/pull/149))
 - Correct matching of pull-request navigation entry ([#150](https://github.com/scm-manager/scm-review-plugin/pull/150))
+- Remove the Pull Request Link from the push message on a single branch repository ([#112](https://github.com/scm-manager/scm-review-plugin/issues/112))
 
 ## 2.11.0 - 2021-09-08
 ### Added
