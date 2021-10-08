@@ -75,9 +75,12 @@ public class PullRequestInformationHook {
 
   private void processBranch(PostReceiveRepositoryHookEvent event, RepositoryService repositoryService, String branch) {
     List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
-    boolean multipleBranchesFound = checkIfMultipleBranchesExist(repositoryService);
     boolean prFound = new Worker(event).process(pullRequests, branch);
-    if (!prFound && multipleBranchesFound && PermissionCheck.mayCreate(event.getRepository())) {
+    if (
+      !prFound
+        && PermissionCheck.mayCreate(event.getRepository())
+        && checkIfMultipleBranchesExist(repositoryService)
+    ) {
       sendCreateMessages(event, branch);
     }
   }

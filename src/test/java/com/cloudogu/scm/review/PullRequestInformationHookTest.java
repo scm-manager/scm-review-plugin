@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -146,7 +147,7 @@ public class PullRequestInformationHookTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldSendMessageWithoutCreateLinks() throws Exception {
-    when(branchProvider.getCreatedOrModified()).thenReturn(asList("branch_1"));
+    when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("branch_1"));
     when(service.getBranchesCommand()).thenReturn(branchesCommand);
     Branches branches = new Branches(Branch.defaultBranch("main", "", 0L));
     when(branchesCommand.getBranches()).thenReturn(branches);
@@ -156,7 +157,7 @@ public class PullRequestInformationHookTest {
     List<String> sentMessages = messageCaptor.getAllValues();
     assertThat(sentMessages)
       .filteredOn(s -> s.length() > 0)
-      .hasSize(0);
+      .isEmpty();
   }
 
   @Test
@@ -190,7 +191,7 @@ public class PullRequestInformationHookTest {
   @Test
   @SubjectAware(username = "rr")
   public void shouldSendMessageWithLinksForExistingPR() {
-    when(branchProvider.getCreatedOrModified()).thenReturn(asList("branch_X"));
+    when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("branch_X"));
 
     hook.checkForInformation(event);
 
