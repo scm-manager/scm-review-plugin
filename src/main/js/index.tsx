@@ -88,12 +88,10 @@ const ShowPullRequestRoute = props => {
 
 binder.bind("repository.route", ShowPullRequestRoute);
 
-// list
+const routeRegex = new RegExp(".*/repo/.+/.+/pull-requests?(/.*)?");
 
-function matches(route: any) {
-  const singleRegex = new RegExp(".*(/repo)/.+/.+(/pull-request)/.*");
-  const listRegex = new RegExp(".*(/repo)/.+/.+(/pull-requests)/.*");
-  return route.location.pathname.match(singleRegex) || route.location.pathname.match(listRegex);
+export function matches(route: any) {
+  return route.location.pathname.match(routeRegex);
 }
 
 const PullRequestNavLink = ({ url }) => {
