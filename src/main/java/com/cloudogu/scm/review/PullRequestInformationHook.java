@@ -31,12 +31,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
 import sonia.scm.plugin.Extension;
+import sonia.scm.repository.Branches;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -66,17 +68,29 @@ public class PullRequestInformationHook {
           LOG.trace("ignoring post receive event for repository {}", event.getRepository().getNamespaceAndName());
           return;
         }
-        readEffectedBranches(event).forEach(branch -> processBranch(event, branch));
+        readEffectedBranches(event).forEach(branch -> processBranch(event, repositoryService, branch));
       }
     }
   }
 
-  private void processBranch(PostReceiveRepositoryHookEvent event, String branch) {
+  private void processBranch(PostReceiveRepositoryHookEvent event, RepositoryService repositoryService, String branch) {
     List<PullRequest> pullRequests = service.getAll(event.getRepository().getNamespace(), event.getRepository().getName());
+    boolean multipleBranchesFound = checkIfMultipleBranchesExist(repositoryService);
     boolean prFound = new Worker(event).process(pullRequests, branch);
-    if (!prFound && PermissionCheck.mayCreate(event.getRepository())) {
+    if (!prFound && multipleBranchesFound && PermissionCheck.mayCreate(event.getRepository())) {
       sendCreateMessages(event, branch);
     }
+  }
+
+  private boolean checkIfMultipleBranchesExist(RepositoryService repositoryService) {
+	  try {
+		  Branches branches = repositoryService.getBranchesCommand().getBranches();
+		  int branchCount = branches.getBranches().size();
+		  return branchCount > 1;
+	  } catch (IOException ex) {
+		  LOG.warn("could not read branches for repository {}, assuming only one branch exists", repositoryService.getRepository());
+		  return false;
+	  }
   }
 
   private void sendCreateMessages(PostReceiveRepositoryHookEvent event, String branch) {

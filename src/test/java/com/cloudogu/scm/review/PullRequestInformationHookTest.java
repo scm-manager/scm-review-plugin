@@ -38,8 +38,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.config.ScmConfiguration;
+import sonia.scm.repository.Branch;
+import sonia.scm.repository.Branches;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.BranchesCommandBuilder;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.HookBranchProvider;
 import sonia.scm.repository.api.HookContext;
@@ -47,6 +50,7 @@ import sonia.scm.repository.api.HookMessageProvider;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -79,6 +83,8 @@ public class PullRequestInformationHookTest {
   @Mock
   private RepositoryServiceFactory serviceFactory;
   @Mock
+  private BranchesCommandBuilder branchesCommand;
+  @Mock
   private RepositoryService service;
   @Mock
   private ScmConfiguration configuration;
@@ -100,7 +106,7 @@ public class PullRequestInformationHookTest {
   private PullRequestInformationHook hook;
 
   @Before
-  public void init() {
+  public void init() throws IOException {
     hook = new PullRequestInformationHook(pullRequestService, serviceFactory, messageSenderFactory);
     when(event.getContext()).thenReturn(context);
     when(event.getRepository()).thenReturn(REPOSITORY);
@@ -113,6 +119,9 @@ public class PullRequestInformationHookTest {
     when(configuration.getBaseUrl()).thenReturn("http://example.com");
     when(pullRequestService.getAll("space", "X")).thenReturn(asList(OPEN_PULL_REQUEST, MERGED_PULL_REQUEST));
     doNothing().when(messageProvider).sendMessage(messageCaptor.capture());
+    when(service.getBranchesCommand()).thenReturn(branchesCommand);
+    Branches branches = new Branches(Branch.defaultBranch("main", "", 0L), Branch.normalBranch("x", "", 0L));
+    when(branchesCommand.getBranches()).thenReturn(branches);
   }
 
   @Test
@@ -132,6 +141,22 @@ public class PullRequestInformationHookTest {
     hook.checkForInformation(event);
 
     verify(serviceFactory, never()).create(any(Repository.class));
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldSendMessageWithoutCreateLinks() throws Exception {
+    when(branchProvider.getCreatedOrModified()).thenReturn(asList("branch_1"));
+    when(service.getBranchesCommand()).thenReturn(branchesCommand);
+    Branches branches = new Branches(Branch.defaultBranch("main", "", 0L));
+    when(branchesCommand.getBranches()).thenReturn(branches);
+
+    hook.checkForInformation(event);
+
+    List<String> sentMessages = messageCaptor.getAllValues();
+    assertThat(sentMessages)
+      .filteredOn(s -> s.length() > 0)
+      .hasSize(0);
   }
 
   @Test
