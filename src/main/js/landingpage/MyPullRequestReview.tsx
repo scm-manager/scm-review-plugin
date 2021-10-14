@@ -37,8 +37,7 @@ const PullRequestReview: FC<Props> = ({ task }) => {
   const content = t("scm-review-plugin.landingpage.review.title", pullRequest);
   const footer = (
     <>
-      {t("scm-review-plugin.landingpage.review.footer")}{" "}
-      <span className="has-text-info">{task.namespace + "/" + task.name}</span>
+      {t("scm-review-plugin.landingpage.review.footer")} {task.namespace + "/" + task.name}
     </>
   );
 
@@ -48,7 +47,11 @@ const PullRequestReview: FC<Props> = ({ task }) => {
       avatar={<SmallPullRequestIcon />}
       contentLeft={content}
       footer={footer}
-      contentRight={<DateFromNow date={pullRequest.creationDate} />}
+      contentRight={
+        <small>
+          <DateFromNow date={pullRequest.creationDate} />
+        </small>
+      }
     />
   );
 };

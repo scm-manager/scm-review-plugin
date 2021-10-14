@@ -23,10 +23,9 @@
  */
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import classNames from "classnames";
 import styled from "styled-components";
 import { binder } from "@scm-manager/ui-extensions";
-import { AvatarImage, CardColumn, Icon, Tag } from "@scm-manager/ui-components";
+import { AvatarImage, CardColumnSmall, Icon, Tag } from "@scm-manager/ui-components";
 import ReviewerIcon from "../table/ReviewerIcon";
 import { DataType } from "./DataType";
 
@@ -34,49 +33,33 @@ type Props = {
   data: DataType;
 };
 
-const PullRequestEntryWrapper = styled.div`
-  .overlay-column {
-    width: calc(50% - 2.25rem);
-
-    @media screen and (max-width: 768px) {
-      width: calc(100% - 1.5rem);
-    }
-  }
-`;
-
-const StyledCardColumn = styled(CardColumn)`
-  .level-left {
-    display: block !important;
-    overflow: hidden;
-    flex-shrink: unset;
-
-    .level-item {
-      display: block !important;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-`;
-
-const FixedSizedIcon = styled(Icon)`
-  width: 64px;
-  height: 64px;
-`;
-
 const TodoTag = styled(Tag)`
   margin-left: 0.5em;
   pointer-events: all;
 `;
 
-const ReviewerIconWrapper = styled.div`
-  position: absolute;
-  margin-top: -0.75rem;
-  margin-left: -1rem;
-`;
-
 const ReviewerIconWithPointer = styled(ReviewerIcon)`
   pointer-events: all;
+`;
+
+const BranchesContainer = styled.div`
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const TitleContainer = styled.strong`
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const SubtitleContainer = styled.span`
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 
 const MyPullRequest: FC<Props> = ({ data }) => {
@@ -86,48 +69,48 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   const link = `/repo/${namespace}/${name}/pull-request/${pullRequest.id}`;
 
   const avatar = binder.hasExtension("avatar.factory") ? (
-    <AvatarImage className="level-item" person={data.pullRequest.author} />
+    <AvatarImage className="level-item" person={data.pullRequest.author} size={48} />
   ) : (
-    <FixedSizedIcon name="code-branch fa-rotate-180 fa-fw fa-3x" color="inherit" />
+    <Icon name="code-branch" className="fa-rotate-180 fa-fw fa-lg" color="inherit" />
   );
 
   const title = (
-    <b>
+    <>
       #{pullRequest.id} {pullRequest.title}
-    </b>
+    </>
   );
   const subtitle = t("scm-review-plugin.landingpage.myPullRequests.cardSubtitle", { namespace, name });
 
-  const todos = pullRequest.tasks.todo;
+  const todos = pullRequest.tasks?.todo || 0;
   const branches = (
-    <div className="level-item">
+    <BranchesContainer className="is-hidden-mobile is-flex-grow-1 is-flex-shrink-1 mr-2">
       {pullRequest.source}&nbsp;
       <Icon name="long-arrow-alt-right" />
       &nbsp;{pullRequest.target}
       {todos > 0 && (
         <TodoTag label={`${todos}`} title={t("scm-review-plugin.pullRequest.tasks.todo", { count: todos })} />
       )}
-    </div>
+    </BranchesContainer>
   );
-  const footerRight = (
-    <ReviewerIconWrapper>
-      <ReviewerIconWithPointer reviewers={pullRequest.reviewer} />
-    </ReviewerIconWrapper>
+  const footerRight = <ReviewerIconWithPointer reviewers={pullRequest.reviewer} />;
+
+  const footer = (
+    <>
+      <SubtitleContainer>{subtitle}</SubtitleContainer>
+      <div className="is-flex is-justify-content-space-between mt-2">
+        {branches} {footerRight}
+      </div>
+    </>
   );
 
   return (
-    <div className={classNames("card-columns", "content")}>
-      <PullRequestEntryWrapper className={classNames("box", "box-link-shadow", "column")}>
-        <StyledCardColumn
-          link={link}
-          avatar={avatar}
-          title={title}
-          description={subtitle}
-          footerLeft={branches}
-          footerRight={footerRight}
-        />
-      </PullRequestEntryWrapper>
-    </div>
+    <CardColumnSmall
+      link={link}
+      contentLeft={<TitleContainer>{title}</TitleContainer>}
+      contentRight={""}
+      footer={footer}
+      avatar={avatar}
+    />
   );
 };
 

@@ -31,9 +31,8 @@ const PullRequestCreatedEvent = ({ event }) => {
   const link = `/repo/${event.namespace}/${event.name}/pull-request/${event.id}`;
   const footer = (
     <>
-      {t("scm-review-plugin.landingpage.created.footerStart")} <span className="has-text-info">{event.author}</span>{" "}
-      {t("scm-review-plugin.landingpage.created.footerMiddle")}{" "}
-      <span className="has-text-info">{event.namespace + "/" + event.name}</span>{" "}
+      {t("scm-review-plugin.landingpage.created.footerStart")} {event.author}{" "}
+      {t("scm-review-plugin.landingpage.created.footerMiddle")} {event.namespace + "/" + event.name}{" "}
       {t("scm-review-plugin.landingpage.created.footerEnd")}
     </>
   );
@@ -42,14 +41,7 @@ const PullRequestCreatedEvent = ({ event }) => {
     <CardColumnSmall
       link={link}
       avatar={<SmallPullRequestIcon />}
-      contentLeft={
-        <strong>
-          {t("scm-review-plugin.landingpage.created.header", {
-            ...event,
-            author: <span className="has-text-info">{event.author}</span>
-          })}
-        </strong>
-      }
+      contentLeft={<strong>{t("scm-review-plugin.landingpage.created.header", event)}</strong>}
       footer={footer}
       contentRight={
         <small>
