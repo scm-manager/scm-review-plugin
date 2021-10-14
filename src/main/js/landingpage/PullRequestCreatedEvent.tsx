@@ -51,7 +51,11 @@ const PullRequestCreatedEvent = ({ event }) => {
         </strong>
       }
       footer={footer}
-      contentRight={<DateFromNow date={event.date} />}
+      contentRight={
+        <small>
+          <DateFromNow date={event.date} />
+        </small>
+      }
     />
   );
 };

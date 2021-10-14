@@ -48,7 +48,7 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
           count: pullRequest.tasks.todo + pullRequest.tasks.done
         })}
       />{" "}
-      {t("scm-review-plugin.landingpage.todo.title", pullRequest)}
+      <strong>{t("scm-review-plugin.landingpage.todo.title", pullRequest)}</strong>
     </>
   );
   const footer = (
@@ -64,7 +64,7 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
       avatar={<SmallPullRequestIcon />}
       contentLeft={content}
       footer={footer}
-      contentRight={<DateFromNow date={pullRequest.creationDate} />}
+      contentRight={<small><DateFromNow date={pullRequest.creationDate} /></small>}
     />
   );
 };
