@@ -55,7 +55,7 @@ const TitleContainer = styled.strong`
   white-space: nowrap;
 `;
 
-const SubtitleContainer = styled.span`
+const SubtitleContainer = styled.div`
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
