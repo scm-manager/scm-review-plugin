@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Styling to match landing-page-plugin update ([#154](https://github.com/scm-manager/scm-review-plugin/pull/154))
 
+### Fixed
+- Fix internal server error in simple merge ([#155](https://github.com/scm-manager/scm-review-plugin/pull/155))
+
 ## 2.11.1 - 2021-10-08
 ### Fixed
 - Merges by users without configured mail address ([#149](https://github.com/scm-manager/scm-review-plugin/pull/149))
