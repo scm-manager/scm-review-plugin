@@ -147,6 +147,11 @@ class MergeServiceTest {
   }
 
   @AfterEach
+  void shouldNeverSetAuthorToNull() {
+    verify(mergeCommandBuilder, never()).setAuthor((DisplayUser) null);
+  }
+
+  @AfterEach
   void tearDownSubject() {
     ThreadContext.unbindSubject();
   }

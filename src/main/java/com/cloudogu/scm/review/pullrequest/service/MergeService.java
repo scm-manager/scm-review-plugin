@@ -203,8 +203,8 @@ public class MergeService {
   public CommitDefaults createCommitDefaults(NamespaceAndName namespaceAndName, String pullRequestId, MergeStrategy strategy) {
     PullRequest pullRequest = pullRequestService.get(namespaceAndName.getNamespace(), namespaceAndName.getName(), pullRequestId);
     String message = determineDefaultMessage(namespaceAndName, pullRequest, strategy);
-    DisplayUser author = determineDefaultAuthorIfNotCurrentUser(pullRequest, strategy);
-    return new CommitDefaults(message, author);
+    Optional<DisplayUser> author = determineDefaultAuthorIfNotCurrentUser(pullRequest, strategy);
+    return new CommitDefaults(message, author.orElse(null));
   }
 
   public String determineDefaultMessage(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
@@ -221,17 +221,17 @@ public class MergeService {
     }
   }
 
-  public DisplayUser determineDefaultAuthorIfNotCurrentUser(PullRequest pullRequest, MergeStrategy strategy) {
+  public Optional<DisplayUser> determineDefaultAuthorIfNotCurrentUser(PullRequest pullRequest, MergeStrategy strategy) {
     if (strategy == null) {
-      return null;
+      return empty();
     }
     switch (strategy) {
       case SQUASH:
-        return determineSquashAuthor(pullRequest);
+        return of(determineSquashAuthor(pullRequest));
       case FAST_FORWARD_IF_POSSIBLE:
       case MERGE_COMMIT:
       default:
-        return null;
+        return empty();
     }
   }
 
@@ -342,8 +342,8 @@ public class MergeService {
     mergeCommand.setTargetBranch(pullRequest.getTarget());
     String enrichedCommitMessage = enrichCommitMessageWithTrailers(repositoryService, pullRequest, mergeCommitDto, strategy);
     mergeCommand.setMessage(enrichedCommitMessage);
-    DisplayUser author = determineDefaultAuthorIfNotCurrentUser(pullRequest, strategy);
-    mergeCommand.setAuthor(author);
+    determineDefaultAuthorIfNotCurrentUser(pullRequest, strategy)
+      .ifPresent(mergeCommand::setAuthor);
     mergeCommand.setMergeStrategy(strategy);
   }
 
