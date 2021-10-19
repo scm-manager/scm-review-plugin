@@ -129,7 +129,7 @@ cfgBinder.bindGlobal("/workflow", "scm-review-plugin.navLink.workflow", "workflo
 binder.bind("landingpage.mydata", {
   render: (data: any, key: any) => <MyPullRequest key={key} data={data} />,
   title: "scm-review-plugin.landingpage.myPullRequests.title",
-  separatedEntries: true,
+  separatedEntries: false,
   type: "MyPullRequestData"
 });
 binder.bind("landingpage.myevents", PullRequestCreatedEvent);

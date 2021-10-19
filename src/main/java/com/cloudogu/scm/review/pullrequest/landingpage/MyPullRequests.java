@@ -33,6 +33,7 @@ import sonia.scm.plugin.Requires;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 @Extension
 @Requires("scm-landingpage-plugin")
@@ -56,5 +57,10 @@ public class MyPullRequests implements MyDataProvider {
         .forEach(pr -> result.add(new MyPullRequestData(repository, pr, mapper)))
     );
     return result;
+  }
+
+  @Override
+  public Optional<String> getType() {
+    return Optional.of(MyPullRequestData.class.getSimpleName());
   }
 }
