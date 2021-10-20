@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Changed
 - Styling to match landing-page-plugin update ([#154](https://github.com/scm-manager/scm-review-plugin/pull/154))
+### Fixed
+- "Not found" error after merge ([#156](https://github.com/scm-manager/scm-review-plugin/pull/156))
 
 ## 2.11.2 - 2021-10-19
 ### Fixed
