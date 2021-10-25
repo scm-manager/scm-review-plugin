@@ -48,8 +48,9 @@ public class WorkflowMergeGuard implements MergeGuard {
 
   @Override
   public Collection<MergeObstacle> getObstacles(Repository repository, PullRequest pullRequest) {
-    if (!engine.validate(repository, pullRequest).isValid()) {
-      return engine.validate(repository, pullRequest)
+    Results validation = engine.validate(repository, pullRequest);
+    if (!validation.isValid()) {
+      return validation
         .getRuleResults()
         .stream()
         .filter(Result::isFailed)

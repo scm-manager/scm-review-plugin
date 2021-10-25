@@ -221,10 +221,12 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
         appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
     }
-    linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
     linksBuilder.single(link("sourceBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getSource())));
     linksBuilder.single(link("targetBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getTarget())));
+    if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
+      linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
+    }
 
     Embedded.Builder embeddedBuilder = embeddedBuilder();
     applyEnrichers(new EdisonHalAppender(linksBuilder, embeddedBuilder), pullRequest, repository);
