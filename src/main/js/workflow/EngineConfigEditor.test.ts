@@ -24,7 +24,7 @@
 import { bySortKey } from "./EngineConfigEditor";
 
 describe("test bySortKey", () => {
-  const translations: {[key: string]: string} = {
+  const translations: { [key: string]: string } = {
     "workflow.rule.first.name": "first",
     "workflow.rule.first.sortKey": "aaa",
     "workflow.rule.second.name": "second",
@@ -40,7 +40,7 @@ describe("test bySortKey", () => {
     "workflow.rule.sortKeyWithFirstName.name": "aaa",
     "workflow.rule.sortKeyWithFirstName.sortKey": "sortKey",
     "workflow.rule.sortKeyWithLastName.name": "zzz",
-    "workflow.rule.sortKeyWithLastName.sortKey": "sortKey",
+    "workflow.rule.sortKeyWithLastName.sortKey": "sortKey"
   };
 
   const translateFn = (key: string) => translations[key];
@@ -57,7 +57,7 @@ describe("test bySortKey", () => {
     ["these rules", "dont exist"], // both dont exist
     ["nameOnlyFirst", "sortKeyOnlyFirst"], // name of a is same as sort key of b
     ["sortKeyOnlyLast", "nameOnlyLast"] // sort key of a is same as name of b
-  ]
+  ];
 
   it("should sort rule a before rule b", () => {
     tests.forEach(([a, b]) => expect(bySortKey(a, b, translateFn)).toBe(-1));

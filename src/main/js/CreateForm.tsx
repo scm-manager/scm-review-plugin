@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { Branch, Repository } from "@scm-manager/ui-types";
+import { Branch } from "@scm-manager/ui-types";
 import { ErrorNotification, Select } from "@scm-manager/ui-components";
-import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
+import { CheckResult, PullRequest } from "./types/PullRequest";
 import { useTranslation } from "react-i18next";
 import EditForm from "./EditForm";
 import styled from "styled-components";

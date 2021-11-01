@@ -42,7 +42,7 @@ const RadioList = styled.div`
 `;
 
 class MergeStrategies extends React.Component<Props> {
-  isSelected = (strategyLink: String) => {
+  isSelected = (strategyLink: string) => {
     return this.props.selectedStrategy === strategyLink;
   };
 

@@ -72,7 +72,14 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
         <ErrorNotification error={error} />
         <EditForm pullRequest={modifiedPullRequest} handleFormChange={handleFormChange} />
         <Level
-          right={<SubmitButton label={t("scm-review-plugin.edit.submitButton")} action={submit} loading={isLoading} disabled={!modifiedPullRequest.title} />}
+          right={
+            <SubmitButton
+              label={t("scm-review-plugin.edit.submitButton")}
+              action={submit}
+              loading={isLoading}
+              disabled={!modifiedPullRequest.title}
+            />
+          }
         />
       </div>
     </div>

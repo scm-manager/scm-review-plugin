@@ -30,7 +30,7 @@ type Props = {
   action: () => void;
 };
 
-const ApprovalButton: FC<Props> = ({loading, action}) => {
+const ApprovalButton: FC<Props> = ({ loading, action }) => {
   const [t] = useTranslation("plugins");
   return (
     <Button

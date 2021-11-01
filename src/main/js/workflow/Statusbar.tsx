@@ -25,7 +25,7 @@
 import React, { FC, useState } from "react";
 import { PullRequest } from "../types/PullRequest";
 import { ErrorNotification, Icon } from "@scm-manager/ui-components";
-import {Link, Repository} from "@scm-manager/ui-types";
+import { Repository } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import classNames from "classnames";
@@ -80,7 +80,7 @@ const Statusbar: FC<Props> = ({ repository, pullRequest }) => {
     <>
       {modalOpen && <StatusModalView onClose={toggleModal} result={data.results} failed={failed} />}
       <Notification
-        className={classNames("media", `notification is-grey-lighter`, "has-cursor-pointer")}
+        className={classNames("media", "notification is-grey-lighter", "has-cursor-pointer")}
         onClick={() => toggleModal()}
       >
         <PaddingRightIcon className="fa-lg" color={color} name={icon} />

@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-import React, {FC} from "react";
-import {PullRequest} from "./types/PullRequest";
+import React, { FC } from "react";
+import { PullRequest } from "./types/PullRequest";
 import { useBinder } from "@scm-manager/ui-extensions";
 import { SplitAndReplace, Replacement } from "@scm-manager/ui-components";
 
@@ -31,7 +31,7 @@ type Props = {
   pullRequest: PullRequest;
 };
 
-const PullRequestTitle: FC<Props> = ({pullRequest}) => {
+const PullRequestTitle: FC<Props> = ({ pullRequest }) => {
   const binder = useBinder();
   const value = pullRequest.title || "";
 

@@ -44,9 +44,9 @@ export type AppliedRule = {
 
 export type AvailableRules = {
   rules: Rule[];
-}
+};
 
 export type Rule = {
   name: string;
   applicableMultipleTimes: boolean;
-}
+};

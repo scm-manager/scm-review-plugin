@@ -79,10 +79,11 @@ class MergeForm extends React.Component<Props> {
       t
     } = this.props;
 
-    const renderCommitAuthor = (author: string) =>
+    const renderCommitAuthor = (author: string) => (
       <span className="mb-2">
         <strong>{t("scm-review-plugin.showPullRequest.mergeModal.commitAuthor")}</strong> {author}
-      </span>;
+      </span>
+    );
 
     const commitMessageElement = this.isCommitMessageVisible() && (
       <>
@@ -100,9 +101,7 @@ class MergeForm extends React.Component<Props> {
             <span>{t("scm-review-plugin.showPullRequest.mergeModal.commitMessageHint." + commitMessageHint)}</span>
           </CommitMessageInfo>
         )}
-        <MarginBottom>
-          {commitAuthor? renderCommitAuthor(commitAuthor): <CommitAuthor />}
-        </MarginBottom>
+        <MarginBottom>{commitAuthor ? renderCommitAuthor(commitAuthor) : <CommitAuthor />}</MarginBottom>
         <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage} />
         <hr />
       </>
