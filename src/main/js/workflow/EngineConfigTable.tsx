@@ -64,13 +64,13 @@ const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
             </td>
             <td>{t(`workflow.rule.${appliedRule.rule}.description`, appliedRule.configuration)}</td>
             <VCenteredTd>
-              <span
-                className="icon is-small level-item"
+              <Icon
+                name="trash"
+                color="inherit"
                 onClick={() => deleteRule(appliedRule)}
                 title={t("scm-review-plugin.workflow.deleteRule")}
-              >
-                <Icon name="trash" color="inherit" />
-              </span>
+                className="is-clickable"
+              />
             </VCenteredTd>
           </tr>
         ))}
