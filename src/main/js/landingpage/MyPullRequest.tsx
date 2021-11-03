@@ -67,9 +67,12 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   const { namespace, name, pullRequest } = data;
 
   const link = `/repo/${namespace}/${name}/pull-request/${pullRequest.id}`;
-
+  const person = {
+    name: data.pullRequest.author?.displayName,
+    mail: data.pullRequest.author?.mail
+  };
   const avatar = binder.hasExtension("avatar.factory") ? (
-    <AvatarImage className="level-item" person={data.pullRequest.author} size={48} />
+    <AvatarImage className="level-item" person={person} />
   ) : (
     <Icon name="code-branch" className="fa-rotate-180 fa-fw fa-lg" color="inherit" />
   );
