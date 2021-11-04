@@ -66,7 +66,9 @@ type ClickableTagProps = {
   onClick?: () => void;
 };
 
-export const EmergencyMergeTag = () => <TranslatedTag icon="exclamation-triangle" label="emergencyMerged" color="danger"/>;
+export const EmergencyMergeTag = () => (
+  <TranslatedTag icon="exclamation-triangle" label="emergencyMerged" color="danger" />
+);
 
 export const SystemTag = () => <TranslatedTag icon="bolt" label="system" />;
 export const OutdatedTag = ({ onClick }: ClickableTagProps) => (

@@ -90,12 +90,7 @@ const CommentActionToolbar: FC<Props> = ({ parent, comment, createLink, collapse
 
   if (isDeletable()) {
     icons.push(
-      <ToolbarIcon
-        key="delete"
-        title={t("scm-review-plugin.comment.delete")}
-        icon="trash"
-        onClick={actions.onDelete}
-      />
+      <ToolbarIcon key="delete" title={t("scm-review-plugin.comment.delete")} icon="trash" onClick={actions.onDelete} />
     );
   }
 

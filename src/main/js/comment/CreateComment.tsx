@@ -23,7 +23,7 @@
  */
 import React, { FC, ReactText, useState } from "react";
 import { Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
-import {CommentType, Location, Mention, PullRequest} from "../types/PullRequest";
+import { CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 import { useCreateComment } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
