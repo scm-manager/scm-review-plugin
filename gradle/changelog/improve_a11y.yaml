@@ -1,2 +1,0 @@
-- type: fixed
-  description: Fix eslint errors and replace <a> without href ([#159](https://github.com/scm-manager/scm-review-plugin/pull/159))
