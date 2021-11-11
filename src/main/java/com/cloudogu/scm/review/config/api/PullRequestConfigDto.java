@@ -41,4 +41,11 @@ public class PullRequestConfigDto extends HalRepresentation {
   private boolean preventMergeFromAuthor;
   private boolean restrictBranchWriteAccess;
   private List<String> protectedBranchPatterns;
+  private List<ExceptionEntryDto> protectedBranchExceptions;
+
+  @Getter @Setter
+  public static class ExceptionEntryDto {
+    private String name;
+    private boolean group;
+  }
 }

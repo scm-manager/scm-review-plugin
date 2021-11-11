@@ -23,6 +23,8 @@
  */
 package com.cloudogu.scm.review.config.service;
 
+import org.apache.shiro.SecurityUtils;
+import sonia.scm.group.GroupCollector;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
@@ -31,6 +33,7 @@ import sonia.scm.util.GlobUtil;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
+import java.util.Set;
 
 import static java.util.Collections.emptyList;
 
@@ -41,11 +44,13 @@ public class ConfigService {
 
   private final ConfigurationStoreFactory storeFactory;
   private final ConfigurationStore<GlobalPullRequestConfig> globalStore;
+  private final GroupCollector groupCollector;
 
   @Inject
-  public ConfigService(ConfigurationStoreFactory storeFactory) {
+  public ConfigService(ConfigurationStoreFactory storeFactory, GroupCollector groupCollector) {
     this.storeFactory = storeFactory;
     globalStore = storeFactory.withType(GlobalPullRequestConfig.class).withName(STORE_NAME).build();
+    this.groupCollector = groupCollector;
   }
 
   public PullRequestConfig getRepositoryPullRequestConfig(Repository repository) {
@@ -83,11 +88,28 @@ public class ConfigService {
 
   private Collection<String> getProtectedBranches(Repository repository) {
     if (getRepositoryPullRequestConfig(repository).isRestrictBranchWriteAccess() && !getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
-      return getRepositoryPullRequestConfig(repository).getProtectedBranchPatterns();
+      return getProtectedBranches(getRepositoryPullRequestConfig(repository));
     } else if (getGlobalPullRequestConfig().isRestrictBranchWriteAccess()) {
-      return getGlobalPullRequestConfig().getProtectedBranchPatterns();
+      return getProtectedBranches(getGlobalPullRequestConfig());
     } else {
       return emptyList();
+    }
+  }
+
+  private Collection<String> getProtectedBranches(PullRequestConfig config) {
+    String user = SecurityUtils.getSubject().getPrincipal().toString();
+    Set<String> groups = groupCollector.collect(user);
+    if (config.getProtectedBranchExceptions().stream().anyMatch(exceptionEntry -> exceptionMatchesUser(exceptionEntry, user, groups))) {
+      return emptyList();
+    }
+    return config.getProtectedBranchPatterns();
+  }
+
+  private boolean exceptionMatchesUser(PullRequestConfig.ExceptionEntry exception, String user, Set<String> groups) {
+    if (exception.isGroup()) {
+      return groups.contains(exception.getName());
+    } else {
+      return user.equals(exception.getName());
     }
   }
 

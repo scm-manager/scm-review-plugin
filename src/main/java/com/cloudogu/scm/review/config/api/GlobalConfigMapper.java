@@ -24,7 +24,9 @@
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.config.api.PullRequestConfigDto.ExceptionEntryDto;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
+import com.cloudogu.scm.review.config.service.PullRequestConfig.ExceptionEntry;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
@@ -33,6 +35,7 @@ import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 
 @Mapper
 public abstract class GlobalConfigMapper {
@@ -40,6 +43,12 @@ public abstract class GlobalConfigMapper {
   public abstract GlobalPullRequestConfigDto map(GlobalPullRequestConfig globalPullRequestConfig, @Context UriInfo uriInfo);
 
   public abstract GlobalPullRequestConfig map(GlobalPullRequestConfigDto configDto);
+
+  abstract List<ExceptionEntry> map(List<ExceptionEntryDto> entryDtos);
+  abstract ExceptionEntry map(ExceptionEntryDto entryDto);
+
+  abstract ExceptionEntryDto map(ExceptionEntry entry);
+  abstract List<ExceptionEntryDto> mapToDto(List<ExceptionEntry> entrys);
 
   @ObjectFactory
   GlobalPullRequestConfigDto createForGlobal(@Context UriInfo uriInfo) {
