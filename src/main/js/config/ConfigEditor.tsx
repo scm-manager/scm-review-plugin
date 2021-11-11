@@ -25,8 +25,9 @@ import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Title, Checkbox, Subtitle } from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
-import { Config } from "../types/Config";
+import { Config, ExceptionEntry } from "../types/Config";
 import styled from "styled-components";
+import ExceptionsList from "./ExceptionsList";
 
 type Props = WithTranslation & {
   onConfigurationChange: (config: State, valid: boolean) => void;
@@ -82,11 +83,21 @@ class ConfigEditor extends React.Component<Props, State> {
     );
   };
 
+  onChangeExceptions = (newExceptions: ExceptionEntry[]) => {
+    this.setState(
+      {
+        protectedBranchExceptions: newExceptions
+      },
+      () => this.props.onConfigurationChange(this.state, true)
+    );
+  };
+
   render() {
     const { global, t } = this.props;
     const {
       restrictBranchWriteAccess,
       protectedBranchPatterns,
+      protectedBranchExceptions,
       preventMergeFromAuthor,
       disableRepositoryConfiguration
     } = this.state;
@@ -118,9 +129,12 @@ class ConfigEditor extends React.Component<Props, State> {
         {restrictBranchWriteAccess && (
           <>
             <hr />
-            <Subtitle subtitle={t("scm-review-plugin.config.subtitle")} />
-            <BottomMarginText>{t("scm-review-plugin.config.note")}</BottomMarginText>
+            <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
+            <BottomMarginText>{t("scm-review-plugin.config.branchProtection.branches.note")}</BottomMarginText>
             <BranchList branches={protectedBranchPatterns} onChange={this.onChangeBranches} />
+            <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.exceptions.subtitle")} />
+            <BottomMarginText>{t("scm-review-plugin.config.branchProtection.exceptions.note")}</BottomMarginText>
+            <ExceptionsList exceptions={protectedBranchExceptions} onChange={this.onChangeExceptions} />
           </>
         )}
       </>

@@ -22,9 +22,15 @@
  * SOFTWARE.
  */
 
+export type ExceptionEntry = {
+  name: string;
+  group: boolean;
+};
+
 export type Config = {
   disableRepositoryConfiguration?: boolean;
   restrictBranchWriteAccess: boolean;
   protectedBranchPatterns: string[];
+  protectedBranchExceptions: ExceptionEntry[];
   preventMergeFromAuthor: boolean;
 };

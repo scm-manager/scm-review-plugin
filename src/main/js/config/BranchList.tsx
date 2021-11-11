@@ -80,12 +80,12 @@ class BranchList extends React.Component<Props, State> {
     const { newBranch } = this.state;
     const table =
       branches.length === 0 ? (
-        <Notification type={"info"}>{t("scm-review-plugin.config.noBranches")}</Notification>
+        <Notification type={"info"}>{t("scm-review-plugin.config.branchProtection.branches.noBranches")}</Notification>
       ) : (
         <table className="card-table table is-hoverable is-fullwidth">
           <thead>
             <tr>
-              <th>{t("scm-review-plugin.config.newBranch.pattern")}</th>
+              <th>{t("scm-review-plugin.config.branchProtection.branches.newBranch.pattern")}</th>
               <th />
             </tr>
           </thead>
@@ -97,7 +97,7 @@ class BranchList extends React.Component<Props, State> {
                   <a
                     className="level-item"
                     onClick={() => this.deleteBranch(branch)}
-                    title={t("scm-review-plugin.config.deleteBranch")}
+                    title={t("scm-review-plugin.config.branchProtection.branches.deleteBranch")}
                   >
                     <span className="icon is-small">
                       <Icon name="trash" color="inherit" />
@@ -116,17 +116,17 @@ class BranchList extends React.Component<Props, State> {
         <StyledLevel
           children={
             <FullWidthInputField
-              label={t("scm-review-plugin.config.newBranch.label")}
+              label={t("scm-review-plugin.config.branchProtection.branches.newBranch.label")}
               onChange={this.handleNewBranchChange}
               value={newBranch}
-              helpText={t("scm-review-plugin.config.newBranch.helpText")}
+              helpText={t("scm-review-plugin.config.branchProtection.branches.newBranch.helpText")}
             />
           }
           right={
             <FlexEndField>
               <AddButton
-                title={t("scm-review-plugin.config.newBranch.add.helpText")}
-                label={t("scm-review-plugin.config.newBranch.add.label")}
+                title={t("scm-review-plugin.config.branchProtection.branches.newBranch.add.helpText")}
+                label={t("scm-review-plugin.config.branchProtection.branches.newBranch.add.label")}
                 action={this.addBranch}
                 disabled={newBranch.trim().length === 0}
               />
