@@ -16,7 +16,7 @@ Punkt "Pull Request Konfiguration nicht für einzelne Repositories erlauben" akt
 Die anderen Einstellungen sind für die globale und Repository-spezifische Konfiguration identisch.
 Alle Änderungen müssen mit "Speichern" aktiviert werden.
 
-![Configuration for protected branches](assets/pull_request_configuration.png)
+![Konfiguration für Pull Requests](assets/pull_request_configuration.png)
 
 ## Beschränkungen für Branches
 

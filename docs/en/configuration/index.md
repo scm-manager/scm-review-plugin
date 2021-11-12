@@ -16,7 +16,7 @@ If you want to prevent repository specific settings, you can disable them in the
 The other settings are identical for global and repository specific configurations. All changes have to be
 committed with the "Submit" button.
 
-![Configuration for protected branches](assets/pull_request_configuration.png)
+![Configuration for pull requests](assets/pull_request_configuration.png)
 
 ## Branch Protection
 
