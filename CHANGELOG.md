@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- Exclude users from branch protection ([#167](https://github.com/scm-manager/scm-review-plugin/pull/167))
+
 ## 2.12.1 - 2021-11-05
 ### Fixed
 - Fix eslint errors and replace <a> without href ([#159](https://github.com/scm-manager/scm-review-plugin/pull/159))
