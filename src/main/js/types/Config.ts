@@ -22,9 +22,15 @@
  * SOFTWARE.
  */
 
+export type ProtectionBypass = {
+  name: string;
+  group: boolean;
+};
+
 export type Config = {
   disableRepositoryConfiguration?: boolean;
   restrictBranchWriteAccess: boolean;
   protectedBranchPatterns: string[];
+  branchProtectionBypasses: ProtectionBypass[];
   preventMergeFromAuthor: boolean;
 };

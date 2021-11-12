@@ -24,7 +24,9 @@
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.config.api.PullRequestConfigDto.ProtectionBypassDto;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
+import com.cloudogu.scm.review.config.service.PullRequestConfig.ProtectionBypass;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
@@ -33,6 +35,7 @@ import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 
 @Mapper
 public abstract class GlobalConfigMapper {
@@ -40,6 +43,12 @@ public abstract class GlobalConfigMapper {
   public abstract GlobalPullRequestConfigDto map(GlobalPullRequestConfig globalPullRequestConfig, @Context UriInfo uriInfo);
 
   public abstract GlobalPullRequestConfig map(GlobalPullRequestConfigDto configDto);
+
+  abstract List<ProtectionBypass> map(List<PullRequestConfigDto.ProtectionBypassDto> bypassDtos);
+  abstract ProtectionBypass map(PullRequestConfigDto.ProtectionBypassDto bypassDto);
+
+  abstract ProtectionBypassDto map(ProtectionBypass bypass);
+  abstract List<PullRequestConfigDto.ProtectionBypassDto> mapToDto(List<ProtectionBypass> bypasses);
 
   @ObjectFactory
   GlobalPullRequestConfigDto createForGlobal(@Context UriInfo uriInfo) {

@@ -255,8 +255,6 @@
     },
     "config": {
       "title": "Pull Requests Konfiguration",
-      "subtitle": "Beschränkungen für Branches",
-      "note": "Branches, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
       "restrictBranchWriteAccess": {
         "label": "Branch-Schutz aktiviert",
         "helpText": "Aktiviert den Branch-Schutz, so dass Branches nur durch Pull Requests geändert werden können."
@@ -265,17 +263,37 @@
         "label": "Pull Request Konfiguration nicht für einzelne Repositories erlauben",
         "helpText": "Repository Owner dürfen Pull Requests nicht individuell konfigurieren."
       },
-      "newBranch": {
-        "label": "Muster für Branches hinzufügen",
-        "helpText": "Fügt ein Muster zu der Liste der geschützten Branches hinzu.",
-        "pattern": "Muster",
-        "add": {
-          "label": "Hinzufügen",
-          "helpText": "Fügt das gegebene Muster zu der Liste der geschützten Branches hinzu."
+      "branchProtection": {
+        "branches": {
+          "subtitle": "Beschränkungen für Branches",
+          "note": "Branches, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
+          "noBranches": "Keine Muster für Branches definiert.",
+          "deleteBranch": "Dieses Muster löschen",
+          "newBranch": {
+            "label": "Muster für Branches hinzufügen",
+            "helpText": "Fügt ein Muster zu der Liste der geschützten Branches hinzu.",
+            "pattern": "Muster",
+            "add": {
+              "label": "Hinzufügen",
+              "helpText": "Fügt das gegebene Muster zu der Liste der geschützten Branches hinzu."
+            }
+          }
+        },
+        "bypasses": {
+          "subtitle": "Ausnahmen von den Beschränkungen",
+          "note": "Hier aufgelistete Benutzer oder Gruppen können die obigen Branches weiterhin direkt ändern:",
+          "bypassType": "Typ",
+          "userBypass": "Benutzer",
+          "groupBypass": "Gruppe",
+          "add": {
+            "label": "Hinzufügen",
+            "helpText": "Fügt diesen Benutzer oder diese Gruppe zu den Ausnahmen hinzu."
+          },
+          "bypassedUserOrGroup": "Ausgenommener Benutzer bzw. Gruppe",
+          "deleteBypass": "Ausnahme löschen",
+          "noBypasses": "Keine Ausnahmen von den Beschränkungen definiert."
         }
       },
-      "noBranches": "Keine Muster für Branches definiert.",
-      "deleteBranch": "Dieses Muster löschen",
       "preventMergeFromAuthor": {
         "label": "Verhindern, dass Autoren ihre eigenen Pull Requests mergen",
         "helpText": "Aktivieren Sie diese Option, damit Entwickler nicht von ihnen selbst erstellte Pull Requests mergen können. Dieses kann durch die Berechtigung zum Emergency Merge überschrieben werden."

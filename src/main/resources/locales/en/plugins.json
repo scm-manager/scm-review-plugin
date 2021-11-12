@@ -253,8 +253,6 @@
     },
     "config": {
       "title": "Pull Requests Configuration",
-      "subtitle": "Restrictions on branches",
-      "note": "Branches matching the following patterns will only be writable by pull requests:",
       "restrictBranchWriteAccess": {
         "label": "Branch protection enabled",
         "helpText": "Enables branch protection, so that branches are only modifiable with pull requests."
@@ -263,17 +261,37 @@
         "label": "Do not allow repository configuration",
         "helpText": "Do not allow repository owners to configure pull requests."
       },
-      "newBranch": {
-        "label": "Add branch pattern",
-        "helpText": "Add a new branch pattern to the list of protected branches.",
-        "pattern": "Pattern",
-        "add": {
-          "label": "Add",
-          "helpText": "Add the given branch to the list of protected branches."
+      "branchProtection": {
+        "branches": {
+          "subtitle": "Restrictions on Branches",
+          "note": "Branches matching the following patterns will only be writable by pull requests:",
+          "noBranches": "No branch patterns defined.",
+          "deleteBranch": "Delete this branch pattern",
+          "newBranch": {
+            "label": "Add branch pattern",
+            "helpText": "Add a new branch pattern to the list of protected branches.",
+            "pattern": "Pattern",
+            "add": {
+              "label": "Add",
+              "helpText": "Add the given branch to the list of protected branches."
+            }
+          }
+        },
+        "bypasses": {
+          "subtitle": "Exceptions from Restrictions",
+          "note": "Users or groups listed here will still be able to write to the branches above:",
+          "bypassType": "Type",
+          "userBypass": "User",
+          "groupBypass": "Group",
+          "add": {
+            "label": "Add",
+            "helpText": "Adds this user or group to the list of exceptions."
+          },
+          "bypassedUserOrGroup": "Excepted user or group",
+          "deleteBypass": "Delete exception",
+          "noBypasses": "No exceptions from restrictions defined."
         }
       },
-      "noBranches": "No branch patterns defined.",
-      "deleteBranch": "Delete this branch pattern",
       "preventMergeFromAuthor": {
         "label": "Prevent authors from merging own pull requests",
         "helpText": "Check this to prevent authors to merge pull requests created by them. This can be overridden with the emergency merge permission."

@@ -23,8 +23,13 @@
  */
 package com.cloudogu.scm.review.config.service;
 
+import com.cloudogu.scm.review.config.service.PullRequestConfig.ProtectionBypass;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import sonia.scm.group.GroupCollector;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.ConfigurationStore;
@@ -32,7 +37,11 @@ import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.store.InMemoryConfigurationStoreFactory;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ConfigServiceTest {
 
@@ -41,11 +50,13 @@ class ConfigServiceTest {
   ConfigService service;
   ConfigurationStore<PullRequestConfig> repositoryStore;
   ConfigurationStore<PullRequestConfig> globalStore;
+  GroupCollector groupCollector;
 
   @BeforeEach
   public void init() {
+    groupCollector = mock(GroupCollector.class);
     ConfigurationStoreFactory storeFactory = new InMemoryConfigurationStoreFactory();
-    service = new ConfigService(storeFactory);
+    service = new ConfigService(storeFactory, groupCollector);
     repositoryStore = storeFactory
       .withType(PullRequestConfig.class)
       .withName("pullRequestConfig")
@@ -55,6 +66,18 @@ class ConfigServiceTest {
       .withType(PullRequestConfig.class)
       .withName("pullRequestConfig")
       .build();
+  }
+
+  @BeforeEach
+  void mockUser() {
+    Subject subject = mock(Subject.class);
+    when(subject.getPrincipal()).thenReturn("trillian");
+    ThreadContext.bind(subject);
+  }
+
+  @AfterEach
+  void cleanupContext() {
+    ThreadContext.unbindSubject();
   }
 
   @Test
@@ -158,6 +181,44 @@ class ConfigServiceTest {
   }
 
   @Test
+  void shouldNotProtectBranchForBypassedUserInGlobalConfig() {
+    GlobalPullRequestConfig globalConfig = mockGlobalConfig(true, false, "master");
+    globalConfig.setBranchProtectionBypasses(singletonList(new PullRequestConfig.ProtectionBypass("trillian", false)));
+    mockRepoConfig(false);
+
+    assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
+  }
+
+  @Test
+  void shouldNotProtectBranchForBypassedUserInRepositoryConfig() {
+    mockGlobalConfig(true, false, "master");
+    PullRequestConfig config = mockRepoConfig(true, "master");
+    config.setBranchProtectionBypasses(singletonList(new PullRequestConfig.ProtectionBypass("trillian", false)));
+
+    assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
+  }
+
+  @Test
+  void shouldNotProtectBranchForBypassedGroupInGlobalConfig() {
+    GlobalPullRequestConfig globalConfig = mockGlobalConfig(true, false, "master");
+    globalConfig.setBranchProtectionBypasses(singletonList(new ProtectionBypass("hitchhikers", true)));
+    when(groupCollector.collect("trillian")).thenReturn(singleton("hitchhikers"));
+    mockRepoConfig(false);
+
+    assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
+  }
+
+  @Test
+  void shouldNotProtectBranchForBypassedGroupInRepositoryConfig() {
+    mockGlobalConfig(true, false, "master");
+    PullRequestConfig config = mockRepoConfig(true, "master");
+    config.setBranchProtectionBypasses(singletonList(new PullRequestConfig.ProtectionBypass("hitchhikers", true)));
+    when(groupCollector.collect("trillian")).thenReturn(singleton("hitchhikers"));
+
+    assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
+  }
+
+  @Test
   void shouldNotPreventMergesFromAuthorByDefault() {
     assertThat(service.isPreventMergeFromAuthor(REPOSITORY)).isFalse();
   }
@@ -193,18 +254,20 @@ class ConfigServiceTest {
     assertThat(service.isPreventMergeFromAuthor(REPOSITORY)).isFalse();
   }
 
-  private void mockGlobalConfig(boolean enabled, boolean disableRepositoryConfig, String... protectedBranches) {
+  private GlobalPullRequestConfig mockGlobalConfig(boolean enabled, boolean disableRepositoryConfig, String... protectedBranches) {
     GlobalPullRequestConfig globalConfig = new GlobalPullRequestConfig();
     globalConfig.setRestrictBranchWriteAccess(enabled);
     globalConfig.setDisableRepositoryConfiguration(disableRepositoryConfig);
     globalConfig.setProtectedBranchPatterns(asList(protectedBranches));
     service.setGlobalPullRequestConfig(globalConfig);
+    return globalConfig;
   }
 
-  private void mockRepoConfig(boolean enabled, String... protectedBranches) {
+  private PullRequestConfig mockRepoConfig(boolean enabled, String... protectedBranches) {
     PullRequestConfig config = new PullRequestConfig();
     config.setRestrictBranchWriteAccess(enabled);
     config.setProtectedBranchPatterns(asList(protectedBranches));
     service.setRepositoryPullRequestConfig(REPOSITORY, config);
+    return config;
   }
 }

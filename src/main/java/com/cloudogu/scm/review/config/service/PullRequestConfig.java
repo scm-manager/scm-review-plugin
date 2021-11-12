@@ -23,6 +23,11 @@
  */
 package com.cloudogu.scm.review.config.service;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -32,34 +37,25 @@ import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "config")
+@Getter
+@Setter
 public class PullRequestConfig {
 
   private boolean restrictBranchWriteAccess = false;
   @XmlElement(name = "protected-branch-patterns")
   private List<String> protectedBranchPatterns = new ArrayList<>();
+  @XmlElement(name = "protection-bypasses")
+  private List<ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
   private boolean preventMergeFromAuthor = false;
 
-  public boolean isRestrictBranchWriteAccess() {
-    return restrictBranchWriteAccess;
-  }
-
-  public void setRestrictBranchWriteAccess(boolean restrictBranchWriteAccess) {
-    this.restrictBranchWriteAccess = restrictBranchWriteAccess;
-  }
-
-  public List<String> getProtectedBranchPatterns() {
-    return protectedBranchPatterns;
-  }
-
-  public void setProtectedBranchPatterns(List<String> protectedBranchPatterns) {
-    this.protectedBranchPatterns = protectedBranchPatterns;
-  }
-
-  public boolean isPreventMergeFromAuthor() {
-    return preventMergeFromAuthor;
-  }
-
-  public void setPreventMergeFromAuthor(boolean preventMergeFromAuthor) {
-    this.preventMergeFromAuthor = preventMergeFromAuthor;
+  @Getter
+  @Setter
+  @XmlRootElement(name = "bypass")
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class ProtectionBypass {
+    private String name;
+    private boolean group;
   }
 }
