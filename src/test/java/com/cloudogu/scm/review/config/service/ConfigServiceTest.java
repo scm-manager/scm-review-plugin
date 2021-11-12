@@ -23,7 +23,7 @@
  */
 package com.cloudogu.scm.review.config.service;
 
-import com.cloudogu.scm.review.config.service.PullRequestConfig.ExceptionEntry;
+import com.cloudogu.scm.review.config.service.PullRequestConfig.ProtectionBypass;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
@@ -181,27 +181,27 @@ class ConfigServiceTest {
   }
 
   @Test
-  void shouldNotProtectBranchForExcludedUserInGlobalConfig() {
+  void shouldNotProtectBranchForBypassedUserInGlobalConfig() {
     GlobalPullRequestConfig globalConfig = mockGlobalConfig(true, false, "master");
-    globalConfig.setProtectedBranchExceptions(singletonList(new ExceptionEntry("trillian", false)));
+    globalConfig.setBranchProtectionBypasses(singletonList(new PullRequestConfig.ProtectionBypass("trillian", false)));
     mockRepoConfig(false);
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
   }
 
   @Test
-  void shouldNotProtectBranchForExcludedUserInRepositoryConfig() {
+  void shouldNotProtectBranchForBypassedUserInRepositoryConfig() {
     mockGlobalConfig(true, false, "master");
     PullRequestConfig config = mockRepoConfig(true, "master");
-    config.setProtectedBranchExceptions(singletonList(new ExceptionEntry("trillian", false)));
+    config.setBranchProtectionBypasses(singletonList(new PullRequestConfig.ProtectionBypass("trillian", false)));
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
   }
 
   @Test
-  void shouldNotProtectBranchForExcludedGroupInGlobalConfig() {
+  void shouldNotProtectBranchForBypassedGroupInGlobalConfig() {
     GlobalPullRequestConfig globalConfig = mockGlobalConfig(true, false, "master");
-    globalConfig.setProtectedBranchExceptions(singletonList(new ExceptionEntry("hitchhikers", true)));
+    globalConfig.setBranchProtectionBypasses(singletonList(new ProtectionBypass("hitchhikers", true)));
     when(groupCollector.collect("trillian")).thenReturn(singleton("hitchhikers"));
     mockRepoConfig(false);
 
@@ -209,10 +209,10 @@ class ConfigServiceTest {
   }
 
   @Test
-  void shouldNotProtectBranchForExcludedGroupInRepositoryConfig() {
+  void shouldNotProtectBranchForBypassedGroupInRepositoryConfig() {
     mockGlobalConfig(true, false, "master");
     PullRequestConfig config = mockRepoConfig(true, "master");
-    config.setProtectedBranchExceptions(singletonList(new ExceptionEntry("hitchhikers", true)));
+    config.setBranchProtectionBypasses(singletonList(new PullRequestConfig.ProtectionBypass("hitchhikers", true)));
     when(groupCollector.collect("trillian")).thenReturn(singleton("hitchhikers"));
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();

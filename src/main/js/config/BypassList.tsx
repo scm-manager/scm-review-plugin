@@ -23,7 +23,7 @@
  */
 
 import React, { FC, useState } from "react";
-import { ExceptionEntry } from "../types/Config";
+import { ProtectionBypass } from "../types/Config";
 import { useTranslation } from "react-i18next";
 import { Radio, GroupAutocomplete, UserAutocomplete, Button, Notification, Icon } from "@scm-manager/ui-components";
 import { Link, SelectValue } from "@scm-manager/ui-types";
@@ -43,39 +43,37 @@ const useAutoCompleteLinks = () => {
   };
 };
 
-const PermissionIcon: FC<{ exception: ExceptionEntry }> = ({ exception }) => {
+const PermissionIcon: FC<{ bypass: ProtectionBypass }> = ({ bypass }) => {
   const [t] = useTranslation("plugins");
-  if (exception.group) {
-    return (
-      <Icon title={t("scm-review-plugin.config.branchProtection.exceptions.groupException")} name="user-friends" />
-    );
+  if (bypass.group) {
+    return <Icon title={t("scm-review-plugin.config.branchProtection.bypasses.groupBypass")} name="user-friends" />;
   } else {
-    return <Icon title={t("scm-review-plugin.config.branchProtection.exceptions.userException")} name="user" />;
+    return <Icon title={t("scm-review-plugin.config.branchProtection.bypasses.userBypass")} name="user" />;
   }
 };
 
-const ExceptionsList: FC<{
-  exceptions: ExceptionEntry[];
-  onChange: (newExceptions: ExceptionEntry[]) => void;
+const BypassList: FC<{
+  bypasses: ProtectionBypass[];
+  onChange: (newBypass: ProtectionBypass[]) => void;
   readOnly?: boolean;
-}> = ({ exceptions, onChange, readOnly = false }) => {
+}> = ({ bypasses, onChange, readOnly = false }) => {
   const [t] = useTranslation("plugins");
-  const [exceptionToAddIsGroup, setExceptionToAddIsGroup] = useState(false);
+  const [bypassToAddIsGroup, setBypassToAddIsGroup] = useState(false);
   const [nameToAdd, setNameToAdd] = useState("");
   const [selectedAutocompleteValue, setSelectedAutocompleteValue] = useState<SelectValue>();
   const links = useAutoCompleteLinks();
 
-  const changeToUserException = (value: boolean) => {
+  const changeToUserBypass = (value: boolean) => {
     if (value) {
-      setExceptionToAddIsGroup(false);
+      setBypassToAddIsGroup(false);
       setNameToAdd("");
       setSelectedAutocompleteValue(undefined);
     }
   };
 
-  const changeToGroupException = (value: boolean) => {
+  const changeToGroupBypass = (value: boolean) => {
     if (value) {
-      setExceptionToAddIsGroup(true);
+      setBypassToAddIsGroup(true);
       setNameToAdd("");
       setSelectedAutocompleteValue(undefined);
     }
@@ -87,7 +85,7 @@ const ExceptionsList: FC<{
   };
 
   const renderAutocomplete = () => {
-    if (exceptionToAddIsGroup) {
+    if (bypassToAddIsGroup) {
       return (
         <GroupAutocomplete
           autocompleteLink={links.groups?.href}
@@ -105,42 +103,42 @@ const ExceptionsList: FC<{
     );
   };
 
-  const addException = () => {
-    onChange([...exceptions, { name: nameToAdd, group: exceptionToAddIsGroup }]);
+  const addBypass = () => {
+    onChange([...bypasses, { name: nameToAdd, group: bypassToAddIsGroup }]);
   };
 
-  const deleteException = (removedException: ExceptionEntry) => {
+  const deleteBypass = (removedBypass: ProtectionBypass) => {
     onChange(
-      exceptions.filter(
-        exception => exception.name !== removedException.name || exception.group !== removedException.group
+      bypasses.filter(
+        bypass => bypass.name !== removedBypass.name || bypass.group !== removedBypass.group
       )
     );
   };
 
   const table =
-    exceptions.length === 0 ? (
+    bypasses.length === 0 ? (
       <Notification type={"info"}>
-        {t("scm-review-plugin.config.branchProtection.exceptions.noExceptions")}
+        {t("scm-review-plugin.config.branchProtection.bypasses.noBypasses")}
       </Notification>
     ) : (
       <table className="card-table table is-hoverable is-fullwidth">
         <thead>
           <tr>
-            <th>{t("scm-review-plugin.config.branchProtection.exceptions.exceptedUserOrGroup")}</th>
+            <th>{t("scm-review-plugin.config.branchProtection.bypasses.bypassedUserOrGroup")}</th>
             <th />
           </tr>
         </thead>
         <tbody>
-          {exceptions.map(exception => (
+          {bypasses.map(bypass => (
             <tr>
               <td>
-                <PermissionIcon exception={exception} /> {exception.name}
+                <PermissionIcon bypass={bypass} /> {bypass.name}
               </td>
               <VCenteredTd className="is-darker">
                 <a
                   className="level-item"
-                  onClick={() => deleteException(exception)}
-                  title={t("scm-review-plugin.config.branchProtection.exceptions.deleteException")}
+                  onClick={() => deleteBypass(bypass)}
+                  title={t("scm-review-plugin.config.branchProtection.bypasses.deleteBypass")}
                 >
                   <span className="icon is-small">
                     <Icon name="trash" color="inherit" />
@@ -156,22 +154,22 @@ const ExceptionsList: FC<{
   const addDialog = (
     <div className="columns">
       <div className="column is-narrow">
-        <label className="label">{t("scm-review-plugin.config.branchProtection.exceptions.exceptionType")}</label>
+        <label className="label">{t("scm-review-plugin.config.branchProtection.bypasses.bypassType")}</label>
         <div className="field is-grouped">
           <div className="control">
             <Radio
-              label={t("scm-review-plugin.config.branchProtection.exceptions.userException")}
-              name="exception_scope"
-              value="USER_PERMISSION"
-              checked={!exceptionToAddIsGroup}
-              onChange={changeToUserException}
+              label={t("scm-review-plugin.config.branchProtection.bypasses.userBypass")}
+              name="bypass_scope"
+              value="USER_BYPASS"
+              checked={!bypassToAddIsGroup}
+              onChange={changeToUserBypass}
             />
             <Radio
-              label={t("scm-review-plugin.config.branchProtection.exceptions.groupException")}
-              name="exception_scope"
-              value="GROUP_PERMISSION"
-              checked={exceptionToAddIsGroup}
-              onChange={changeToGroupException}
+              label={t("scm-review-plugin.config.branchProtection.bypasses.groupBypass")}
+              name="bypass_scope"
+              value="GROUP_BYPASS"
+              checked={bypassToAddIsGroup}
+              onChange={changeToGroupBypass}
             />
           </div>
         </div>
@@ -179,11 +177,11 @@ const ExceptionsList: FC<{
       <div className="column">{renderAutocomplete()}</div>
       <div className="column is-narrow">
         <Button
-          title={t("scm-review-plugin.config.branchProtection.exceptions.add.helpText")}
-          label={t("scm-review-plugin.config.branchProtection.exceptions.add.label")}
+          title={t("scm-review-plugin.config.branchProtection.bypasses.add.helpText")}
+          label={t("scm-review-plugin.config.branchProtection.bypasses.add.label")}
           disabled={readOnly || !nameToAdd}
           icon="plus"
-          action={addException}
+          action={addBypass}
           className="label-icon-spacing"
         />
       </div>
@@ -198,4 +196,4 @@ const ExceptionsList: FC<{
   );
 };
 
-export default ExceptionsList;
+export default BypassList;

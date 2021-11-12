@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-export type ExceptionEntry = {
+export type ProtectionBypass = {
   name: string;
   group: boolean;
 };
@@ -31,6 +31,6 @@ export type Config = {
   disableRepositoryConfiguration?: boolean;
   restrictBranchWriteAccess: boolean;
   protectedBranchPatterns: string[];
-  protectedBranchExceptions: ExceptionEntry[];
+  branchProtectionBypasses: ProtectionBypass[];
   preventMergeFromAuthor: boolean;
 };

@@ -277,19 +277,19 @@
             }
           }
         },
-        "exceptions": {
+        "bypasses": {
           "subtitle": "Exceptions from Restrictions",
           "note": "Users or groups listed here will still be able to write to the branches above:",
-          "exceptionType": "Type",
-          "userException": "User",
-          "groupException": "Group",
+          "bypassType": "Type",
+          "userBypass": "User",
+          "groupBypass": "Group",
           "add": {
             "label": "Add",
             "helpText": "Adds this user or group to the list of exceptions."
           },
-          "exceptedUserOrGroup": "Excepted user or group",
-          "deleteException": "Delete exception",
-          "noExceptions": "No exceptions from restrictions defined."
+          "bypassedUserOrGroup": "Excepted user or group",
+          "deleteBypass": "Delete exception",
+          "noBypasses": "No exceptions from restrictions defined."
         }
       },
       "preventMergeFromAuthor": {

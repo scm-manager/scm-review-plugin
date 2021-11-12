@@ -99,17 +99,23 @@ public class ConfigService {
   private Collection<String> getProtectedBranches(PullRequestConfig config) {
     String user = SecurityUtils.getSubject().getPrincipal().toString();
     Set<String> groups = groupCollector.collect(user);
-    if (config.getProtectedBranchExceptions().stream().anyMatch(exceptionEntry -> exceptionMatchesUser(exceptionEntry, user, groups))) {
+    if (userCanBypassProtection(config, user, groups)) {
       return emptyList();
     }
     return config.getProtectedBranchPatterns();
   }
 
-  private boolean exceptionMatchesUser(PullRequestConfig.ExceptionEntry exception, String user, Set<String> groups) {
-    if (exception.isGroup()) {
-      return groups.contains(exception.getName());
+  private boolean userCanBypassProtection(PullRequestConfig config, String user, Set<String> groups) {
+    return config.getBranchProtectionBypasses()
+      .stream()
+      .anyMatch(bypass -> bypassMatchesUser(bypass, user, groups));
+  }
+
+  private boolean bypassMatchesUser(PullRequestConfig.ProtectionBypass bypass, String user, Set<String> groups) {
+    if (bypass.isGroup()) {
+      return groups.contains(bypass.getName());
     } else {
-      return user.equals(exception.getName());
+      return user.equals(bypass.getName());
     }
   }
 

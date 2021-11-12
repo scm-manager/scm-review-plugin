@@ -279,19 +279,19 @@
             }
           }
         },
-        "exceptions": {
+        "bypasses": {
           "subtitle": "Ausnahmen von den Beschränkungen",
           "note": "Hier aufgelistete Benutzer oder Gruppen können die obigen Branches weiterhin direkt ändern:",
-          "exceptionType": "Typ",
-          "userException": "Benutzer",
-          "groupException": "Gruppe",
+          "bypassType": "Typ",
+          "userBypass": "Benutzer",
+          "groupBypass": "Gruppe",
           "add": {
             "label": "Hinzufügen",
             "helpText": "Fügt diesen Benutzer oder diese Gruppe zu den Ausnahmen hinzu."
           },
-          "exceptedUserOrGroup": "Ausgenommener Benutzer bzw. Gruppe",
-          "deleteException": "Ausnahme löschen",
-          "noExceptions": "Keine Ausnahmen von den Beschränkungen definiert."
+          "bypassedUserOrGroup": "Ausgenommener Benutzer bzw. Gruppe",
+          "deleteBypass": "Ausnahme löschen",
+          "noBypasses": "Keine Ausnahmen von den Beschränkungen definiert."
         }
       },
       "preventMergeFromAuthor": {

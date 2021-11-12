@@ -25,9 +25,9 @@ import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Title, Checkbox, Subtitle } from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
-import { Config, ExceptionEntry } from "../types/Config";
+import { Config, ProtectionBypass } from "../types/Config";
 import styled from "styled-components";
-import ExceptionsList from "./ExceptionsList";
+import BypassList from "./BypassList";
 
 type Props = WithTranslation & {
   onConfigurationChange: (config: State, valid: boolean) => void;
@@ -83,10 +83,10 @@ class ConfigEditor extends React.Component<Props, State> {
     );
   };
 
-  onChangeExceptions = (newExceptions: ExceptionEntry[]) => {
+  onChangeBypasses = (newBypasses: ProtectionBypass[]) => {
     this.setState(
       {
-        protectedBranchExceptions: newExceptions
+        branchProtectionBypasses: newBypasses
       },
       () => this.props.onConfigurationChange(this.state, true)
     );
@@ -97,7 +97,7 @@ class ConfigEditor extends React.Component<Props, State> {
     const {
       restrictBranchWriteAccess,
       protectedBranchPatterns,
-      protectedBranchExceptions,
+      branchProtectionBypasses,
       preventMergeFromAuthor,
       disableRepositoryConfiguration
     } = this.state;
@@ -132,9 +132,9 @@ class ConfigEditor extends React.Component<Props, State> {
             <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
             <BottomMarginText>{t("scm-review-plugin.config.branchProtection.branches.note")}</BottomMarginText>
             <BranchList branches={protectedBranchPatterns} onChange={this.onChangeBranches} />
-            <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.exceptions.subtitle")} />
-            <BottomMarginText>{t("scm-review-plugin.config.branchProtection.exceptions.note")}</BottomMarginText>
-            <ExceptionsList exceptions={protectedBranchExceptions} onChange={this.onChangeExceptions} />
+            <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
+            <BottomMarginText>{t("scm-review-plugin.config.branchProtection.bypasses.note")}</BottomMarginText>
+            <BypassList bypasses={branchProtectionBypasses} onChange={this.onChangeBypasses} />
           </>
         )}
       </>

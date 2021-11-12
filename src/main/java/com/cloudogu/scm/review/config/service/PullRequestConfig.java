@@ -44,17 +44,17 @@ public class PullRequestConfig {
   private boolean restrictBranchWriteAccess = false;
   @XmlElement(name = "protected-branch-patterns")
   private List<String> protectedBranchPatterns = new ArrayList<>();
-  @XmlElement(name = "protected-branch-exceptions")
-  private List<ExceptionEntry> protectedBranchExceptions = new ArrayList<>();
+  @XmlElement(name = "protection-bypasses")
+  private List<ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
   private boolean preventMergeFromAuthor = false;
 
   @Getter
   @Setter
-  @XmlRootElement(name = "exception")
+  @XmlRootElement(name = "bypass")
   @XmlAccessorType(XmlAccessType.FIELD)
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class ExceptionEntry {
+  public static class ProtectionBypass {
     private String name;
     private boolean group;
   }

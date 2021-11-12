@@ -24,9 +24,9 @@
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.config.api.PullRequestConfigDto.ExceptionEntryDto;
+import com.cloudogu.scm.review.config.api.PullRequestConfigDto.ProtectionBypassDto;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
-import com.cloudogu.scm.review.config.service.PullRequestConfig.ExceptionEntry;
+import com.cloudogu.scm.review.config.service.PullRequestConfig.ProtectionBypass;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
@@ -44,11 +44,11 @@ public abstract class GlobalConfigMapper {
 
   public abstract GlobalPullRequestConfig map(GlobalPullRequestConfigDto configDto);
 
-  abstract List<ExceptionEntry> map(List<ExceptionEntryDto> entryDtos);
-  abstract ExceptionEntry map(ExceptionEntryDto entryDto);
+  abstract List<ProtectionBypass> map(List<PullRequestConfigDto.ProtectionBypassDto> bypassDtos);
+  abstract ProtectionBypass map(PullRequestConfigDto.ProtectionBypassDto bypassDto);
 
-  abstract ExceptionEntryDto map(ExceptionEntry entry);
-  abstract List<ExceptionEntryDto> mapToDto(List<ExceptionEntry> entrys);
+  abstract ProtectionBypassDto map(ProtectionBypass bypass);
+  abstract List<PullRequestConfigDto.ProtectionBypassDto> mapToDto(List<ProtectionBypass> bypasses);
 
   @ObjectFactory
   GlobalPullRequestConfigDto createForGlobal(@Context UriInfo uriInfo) {
