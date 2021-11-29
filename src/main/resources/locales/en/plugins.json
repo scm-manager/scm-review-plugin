@@ -23,7 +23,10 @@
       "addComment": "Add comment for file",
       "jumpToSource": "Jump to source",
       "jumpToTarget": "Jump to target",
-      "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} comments."
+      "moreDiffsAvailable": "There are more diffs available.",
+      "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} recent comment.",
+      "partialMoreDiffsAvailable_plural": "There are more diffs available and among them {{count}} recent comments.",
+      "loadMore": "Load more"
     },
     "noRequests": "No pull requests matching the selected criteria found",
     "pullRequest": {

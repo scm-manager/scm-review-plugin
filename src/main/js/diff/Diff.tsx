@@ -25,19 +25,24 @@
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import { useBranch, useDiff } from "@scm-manager/ui-api";
+import { Repository, Hunk } from "@scm-manager/ui-types";
 import {
   AnnotationFactoryContext,
   Button,
   ButtonGroup,
+  Diff as CoreDiff,
   DiffEventContext,
   diffs,
+  ErrorNotification,
   File,
   FileContentFactory,
   Level,
-  LoadingDiff,
-  Notification
+  Loading,
+  NotFoundError,
+  Notification,
+  DiffObjectProps
 } from "@scm-manager/ui-components";
-import { useBranch } from "@scm-manager/ui-api";
 import { Comment, Comments, Location, PullRequest } from "../types/PullRequest";
 import {
   createChangeIdFromLocation,
@@ -55,7 +60,6 @@ import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 import MarkReviewedButton from "./MarkReviewedButton";
-import { Repository } from "@scm-manager/ui-types";
 import { useDiffCollapseState } from "./useDiffCollapseReducer";
 import ChangeNotificationToast from "../ChangeNotificationToast";
 import { useInvalidateDiff } from "../pullRequest";
@@ -141,6 +145,10 @@ const Diff: FC<Props> = ({
   reviewedFiles
 }) => {
   const [t] = useTranslation("plugins");
+  const { error, isLoading, data, fetchNextPage, isFetchingNextPage } = useDiff(diffUrl, {
+    limit: 25,
+    refetchOnWindowFocus: false
+  });
   const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
   const [collapsed, setCollapsed] = useState(false);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
@@ -148,18 +156,15 @@ const Diff: FC<Props> = ({
   const [partialCommentCount, setPartialCommentCount] = useState(0);
 
   const uniqueInlineComments: string[] = [];
-  const pushUniqueInlineComments = (commentId?: string) => {
-    if (commentId && uniqueInlineComments.indexOf(commentId) === -1) {
-      uniqueInlineComments.push(commentId);
+  const pushUniqueInlineComments = (comment?: Comment) => {
+    if (comment?.outdated === false) {
+      const commentId = comment?.id;
+      if (commentId && uniqueInlineComments.indexOf(commentId) === -1) {
+        uniqueInlineComments.push(commentId);
+      }
+      setPartialCommentCount(uniqueInlineComments.length);
     }
-    setPartialCommentCount(uniqueInlineComments.length);
   };
-
-  /*
-  useEffect(() => {
-    pushUniqueInlineComments();
-  }, [pushUniqueInlineComments]);
-  */
 
   const openInlineEditor = (location: Location) => {
     if (isInlineLocation(location)) {
@@ -203,7 +208,7 @@ const Diff: FC<Props> = ({
 
     comments?._embedded.pullRequestComments.forEach(comment => {
       if (!isInlineLocation(comment.location) && comment.location?.file === path) {
-        pushUniqueInlineComments(comment.id);
+        pushUniqueInlineComments(comment);
         fileComments.push(comment);
       }
     });
@@ -248,7 +253,7 @@ const Diff: FC<Props> = ({
             lineComments = [];
             commentsByLine[changeId] = lineComments;
           }
-          pushUniqueInlineComments(comment.id);
+          pushUniqueInlineComments(comment);
           lineComments.push(comment);
         }
       });
@@ -373,41 +378,77 @@ const Diff: FC<Props> = ({
     return null;
   };
 
-  const createPartialCommentNotification = (children: ReactNode) => {
-    const totalCommentCount = comments?._embedded.pullRequestComments.filter(comment => !!comment.location).length || 0;
-    if (partialCommentCount < totalCommentCount) {
-      return (
-        <Notification className="mt-5" type="warning">
-          <div className="columns is-centered">
-            <div className="column">
-              {t("scm-review-plugin.diff.partialMoreDiffsAvailable", {
-                count: totalCommentCount - partialCommentCount
-              })}
-            </div>
-            {children}
+  type PartialNotificationProps = {
+    fetchNextPage: () => void;
+    isFetchingNextPage: boolean;
+  };
+
+  const PartialNotification: FC<PartialNotificationProps> = ({ fetchNextPage, isFetchingNextPage }) => {
+    const totalCommentCount =
+      comments?._embedded.pullRequestComments.filter(comment => !!comment.location).filter(comment => !comment.outdated)
+        .length || 0;
+    const notificationType = partialCommentCount < totalCommentCount ? "warning" : "info";
+
+    return (
+      <Notification className="mt-5" type={notificationType}>
+        <div className="columns is-centered is-align-items-center">
+          <div className="column">
+            {partialCommentCount < totalCommentCount
+              ? t("scm-review-plugin.diff.partialMoreDiffsAvailable", {
+                  count: totalCommentCount - partialCommentCount
+                })
+              : t("scm-review-plugin.diff.moreDiffsAvailable")}
           </div>
-        </Notification>
-      );
+          <Button label={t("scm-review-plugin.diff.loadMore")} action={fetchNextPage} loading={isFetchingNextPage} />
+        </div>
+      </Notification>
+    );
+  };
+
+  type LoadingDiffProps = DiffObjectProps & {
+    refetchOnWindowFocus?: boolean;
+  };
+
+  const LoadingDiff: FC<LoadingDiffProps> = ({ ...props }) => {
+    if (error) {
+      if (error instanceof NotFoundError) {
+        return <Notification type="info">{t("scm-review-plugin.diff.noChangesets")}</Notification>;
+      }
+      return <ErrorNotification error={error} />;
+    } else if (isLoading) {
+      return <Loading />;
+    } else if (!data?.files) {
+      return null;
     }
-    return null;
+    return (
+      <>
+        <LevelWithMargin
+          right={
+            <Button
+              action={collapseDiffs}
+              color="default"
+              icon={collapsed ? "eye" : "eye-slash"}
+              label={t("scm-review-plugin.diff.collapseDiffs")}
+              reducedMobile={true}
+            />
+          }
+        />
+        <CoreDiff diff={data.files} {...props} />
+        {data.partial ? (
+          <PartialNotification fetchNextPage={fetchNextPage} isFetchingNextPage={isFetchingNextPage} />
+        ) : null}
+      </>
+    );
+  };
+
+  LoadingDiff.defaultProps = {
+    sideBySide: false
   };
 
   return (
     <StyledDiffWrapper commentable={isPermittedToComment()}>
       {changed ? <ChangeNotificationToast reload={reload} ignore={ignore} /> : null}
-      <LevelWithMargin
-        right={
-          <Button
-            action={collapseDiffs}
-            color="default"
-            icon={collapsed ? "eye" : "eye-slash"}
-            label={t("scm-review-plugin.diff.collapseDiffs")}
-            reducedMobile={true}
-          />
-        }
-      />
       <LoadingDiff
-        url={diffUrl}
         isCollapsed={isCollapsed}
         onCollapseStateChange={actions.toggleCollapse}
         fileControlFactory={createFileControlsFactory(fileContentFactory)}
@@ -415,8 +456,7 @@ const Diff: FC<Props> = ({
         annotationFactory={annotationFactory}
         onClick={onGutterClick}
         refetchOnWindowFocus={false}
-        hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
-        partialCommentNotification={createPartialCommentNotification}
+        hunkClass={(hunk: Hunk) => (hunk.expansion ? "expanded" : "commentable")}
       />
     </StyledDiffWrapper>
   );
