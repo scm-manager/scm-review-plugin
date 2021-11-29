@@ -34,7 +34,8 @@ import {
   File,
   FileContentFactory,
   Level,
-  LoadingDiff
+  LoadingDiff,
+  Notification
 } from "@scm-manager/ui-components";
 import { useBranch } from "@scm-manager/ui-api";
 import { Comment, Comments, Location, PullRequest } from "../types/PullRequest";
@@ -144,6 +145,21 @@ const Diff: FC<Props> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
   const { changed, ignore, reload } = useHasChanged(repository, pullRequest);
+  const [partialCommentCount, setPartialCommentCount] = useState(0);
+
+  const uniqueInlineComments: string[] = [];
+  const pushUniqueInlineComments = (commentId?: string) => {
+    if (commentId && uniqueInlineComments.indexOf(commentId) === -1) {
+      uniqueInlineComments.push(commentId);
+    }
+    setPartialCommentCount(uniqueInlineComments.length);
+  };
+
+  /*
+  useEffect(() => {
+    pushUniqueInlineComments();
+  }, [pushUniqueInlineComments]);
+  */
 
   const openInlineEditor = (location: Location) => {
     if (isInlineLocation(location)) {
@@ -187,6 +203,7 @@ const Diff: FC<Props> = ({
 
     comments?._embedded.pullRequestComments.forEach(comment => {
       if (!isInlineLocation(comment.location) && comment.location?.file === path) {
+        pushUniqueInlineComments(comment.id);
         fileComments.push(comment);
       }
     });
@@ -231,6 +248,7 @@ const Diff: FC<Props> = ({
             lineComments = [];
             commentsByLine[changeId] = lineComments;
           }
+          pushUniqueInlineComments(comment.id);
           lineComments.push(comment);
         }
       });
@@ -355,6 +373,25 @@ const Diff: FC<Props> = ({
     return null;
   };
 
+  const createPartialCommentNotification = (children: ReactNode) => {
+    const totalCommentCount = comments?._embedded.pullRequestComments.filter(comment => !!comment.location).length || 0;
+    if (partialCommentCount < totalCommentCount) {
+      return (
+        <Notification className="mt-5" type="warning">
+          <div className="columns is-centered">
+            <div className="column">
+              {t("scm-review-plugin.diff.partialMoreDiffsAvailable", {
+                count: totalCommentCount - partialCommentCount
+              })}
+            </div>
+            {children}
+          </div>
+        </Notification>
+      );
+    }
+    return null;
+  };
+
   return (
     <StyledDiffWrapper commentable={isPermittedToComment()}>
       {changed ? <ChangeNotificationToast reload={reload} ignore={ignore} /> : null}
@@ -379,6 +416,7 @@ const Diff: FC<Props> = ({
         onClick={onGutterClick}
         refetchOnWindowFocus={false}
         hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
+        partialCommentNotification={createPartialCommentNotification}
       />
     </StyledDiffWrapper>
   );
