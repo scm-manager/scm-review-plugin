@@ -153,18 +153,6 @@ const Diff: FC<Props> = ({
   const [collapsed, setCollapsed] = useState(false);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
   const { changed, ignore, reload } = useHasChanged(repository, pullRequest);
-  const [partialCommentCount, setPartialCommentCount] = useState(0);
-
-  const uniqueInlineComments: string[] = [];
-  const pushUniqueInlineComments = (comment?: Comment) => {
-    if (comment?.outdated === false) {
-      const commentId = comment?.id;
-      if (commentId && uniqueInlineComments.indexOf(commentId) === -1) {
-        uniqueInlineComments.push(commentId);
-      }
-      setPartialCommentCount(uniqueInlineComments.length);
-    }
-  };
 
   const openInlineEditor = (location: Location) => {
     if (isInlineLocation(location)) {
@@ -208,7 +196,6 @@ const Diff: FC<Props> = ({
 
     comments?._embedded.pullRequestComments.forEach(comment => {
       if (!isInlineLocation(comment.location) && comment.location?.file === path) {
-        pushUniqueInlineComments(comment);
         fileComments.push(comment);
       }
     });
@@ -253,7 +240,6 @@ const Diff: FC<Props> = ({
             lineComments = [];
             commentsByLine[changeId] = lineComments;
           }
-          pushUniqueInlineComments(comment);
           lineComments.push(comment);
         }
       });
@@ -384,8 +370,13 @@ const Diff: FC<Props> = ({
   };
 
   const PartialNotification: FC<PartialNotificationProps> = ({ fetchNextPage, isFetchingNextPage }) => {
-    const totalCommentCount =
-      comments?._embedded.pullRequestComments.filter(comment => !!comment.location).filter(comment => !comment.outdated)
+    const pullRequestComments = comments?._embedded.pullRequestComments.filter(
+      comment => !comment.outdated && !!comment.location
+    );
+    const totalCommentCount = pullRequestComments?.length || 0;
+    const partialFiles = data?.files.map(file => (file.newPath !== "/dev/null" ? file.newPath : file.oldPath));
+    const partialCommentCount =
+      pullRequestComments?.filter(comment => !!comment.location && partialFiles?.includes(comment.location.file))
         .length || 0;
     const notificationType = partialCommentCount < totalCommentCount ? "warning" : "info";
 
