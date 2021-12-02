@@ -114,6 +114,7 @@ class ConfigEditor extends React.Component<Props, State> {
             />
           </>
         )}
+        {!global && <Subtitle>{t("scm-review-plugin.config.title")}</Subtitle>}
         <Checkbox
           checked={restrictBranchWriteAccess}
           onChange={this.onChangeRestrictBranchWriteAccess}
