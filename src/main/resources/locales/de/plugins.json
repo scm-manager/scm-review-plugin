@@ -6,12 +6,10 @@
     },
     "repositoryCardTooltip": "Pull Requests",
     "create": {
-      "title": "Pull Request",
       "subtitle": "Erstellt einen neuen Pull Request für {{repositoryName}}",
       "submitButton": "Pull Request erstellen"
     },
     "edit": {
-      "title": "Pull Request",
       "subtitle": "Pull Request ändern für {{repositoryName}}",
       "submitButton": "Pull Request ändern"
     },

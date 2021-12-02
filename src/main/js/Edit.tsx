@@ -67,7 +67,6 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
   return (
     <div className="columns">
       <div className="column">
-        <Title title={t("scm-review-plugin.edit.title")} />
         <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
         <ErrorNotification error={error} />
         <EditForm pullRequest={modifiedPullRequest} handleFormChange={handleFormChange} />

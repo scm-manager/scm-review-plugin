@@ -35,7 +35,6 @@ import {
   Icon,
   Loading,
   Tag,
-  Title,
   Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
@@ -100,16 +99,6 @@ const MediaWithTopBorder = styled.div.attrs(() => ({
   border-top: none !important;
 `;
 
-const RightMarginTitle = styled(Title)`
-  margin-right: 0.5rem !important;
-`;
-
-const TitleTag = styled(Tag).attrs(() => ({
-  className: "is-medium"
-}))`
-  margin-top: 0.25rem;
-`;
-
 const MobileFlexButtonGroup = styled(ButtonGroup)`
   @media screen and (max-width: 768px) {
     flex-direction: column;
@@ -119,10 +108,6 @@ const MobileFlexButtonGroup = styled(ButtonGroup)`
       margin-bottom: 0.75rem !important;
     }
   }
-`;
-
-const UserList = styled.div`
-  margin-bottom: 1rem;
 `;
 
 const LevelWrapper = styled.div`
@@ -287,11 +272,12 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       <Container>
         <div className="media">
           <div className="media-content">
-            <RightMarginTitle className="is-inline is-marginless">
+            <h2 className="is-inline has-text-weight-medium is-size-3 mr-2">
               #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />
-            </RightMarginTitle>
+            </h2>
             {totalTasks > 0 && (
-              <TitleTag
+              <Tag
+                className="is-medium mt-1"
                 label={titleTagText}
                 title={titleTagText}
                 color={tasksDone < totalTasks ? "light" : "success"}
@@ -327,7 +313,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         <Statusbar repository={repository} pullRequest={pullRequest} />
         {description}
         {ignoredMergeObstacles}
-        <UserList className="media">
+        <div className="media mb-4">
           <div className="media-content">
             <ExtensionPoint
               name="reviewPlugin.pullrequest.userList"
@@ -353,7 +339,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
             ) : null}
             <ReviewerList pullRequest={pullRequest} />
           </div>
-        </UserList>
+        </div>
 
         <LevelWrapper className="level">
           <div className="level-left">

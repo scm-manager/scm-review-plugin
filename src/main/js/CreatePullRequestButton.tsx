@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { Branch, Repository } from "@scm-manager/ui-types";
-import { AddButton, ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
+import { Branch, Repository } from "@scm-manager/ui-types";
+import { SubSubtitle, AddButton, ErrorNotification, Loading } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
 import PullRequestTable from "./table/PullRequestTable";
 import styled from "styled-components";
@@ -73,7 +73,7 @@ const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
   return (
     <div>
       <HR />
-      <h4>{t("scm-review-plugin.branch.header")}</h4>
+      <SubSubtitle>{t("scm-review-plugin.branch.header")}</SubSubtitle>
       {existing}
       <AddButton
         label={t("scm-review-plugin.branch.createPullRequest")}
