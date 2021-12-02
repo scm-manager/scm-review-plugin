@@ -125,7 +125,6 @@ const Create: FC<Props> = ({ repository }) => {
   return (
     <div className="columns">
       <div className="column is-clipped">
-        <Title title={t("scm-review-plugin.create.title")} />
         <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
         {notification}
         {!createLoading && (
