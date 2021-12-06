@@ -4,6 +4,13 @@
       "pullRequest": "Pull Requests",
       "workflow": "Workflow Engine"
     },
+    "branchDetails": {
+      "pullRequest": {
+        "pending": "{{count}} ausstehend",
+        "create": "PR erstellen",
+        "popover": "Pull Requests"
+      }
+    },
     "repositoryCardTooltip": "Pull Requests",
     "create": {
       "subtitle": "Erstellt einen neuen Pull Request für {{repositoryName}}",
