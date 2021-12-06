@@ -8,7 +8,8 @@
       "pullRequest": {
         "pending": "{{count}} pending",
         "create": "Create PR",
-        "popover": "Pull Requests"
+        "popover": "Pull Requests",
+        "targetBranch": "Target"
       }
     },
     "repositoryCardTooltip": "Pull Requests",
