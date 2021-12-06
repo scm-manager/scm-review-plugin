@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -136,7 +137,7 @@ class PullRequestIndexerTest {
     @Mock
     private IndexLogStore.ForIndex forIndex;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Index<PullRequest> index;
 
     @InjectMocks
@@ -188,10 +189,8 @@ class PullRequestIndexerTest {
 
     @Test
     void shouldReindexAllIfLogStoreVersionDiffers() {
-      Index.Deleter deleter = mock(Index.Deleter.class);
       when(service.supportsPullRequests(repository)).thenReturn(true);
       when(forIndex.get(PullRequest.class)).thenReturn(Optional.of(new IndexLog(42)));
-      when(index.delete()).thenReturn(deleter);
 
       PullRequest pullRequest = createPullRequest();
       when(repositoryManager.getAll()).thenReturn(ImmutableList.of(repository));
@@ -199,7 +198,7 @@ class PullRequestIndexerTest {
 
       reindexAll.update(index);
 
-      verify(deleter, times(1)).all();
+      verify(index.delete()).all();
       verify(index).store(
         Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
         "repository:readPullRequest:" + pullRequest.getId(),
@@ -208,6 +207,35 @@ class PullRequestIndexerTest {
     }
   }
 
+  @Nested
+  class ReindexRepositoryTests {
+
+    @Mock
+    private PullRequestService service;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Index<PullRequest> index;
+
+    @Test
+    void shouldReindex() {
+      when(service.supportsPullRequests(repository)).thenReturn(true);
+
+      PullRequest pullRequest = createPullRequest();
+      when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pullRequest));
+
+      PullRequestIndexer.ReindexRepository reindexRepository = new PullRequestIndexer.ReindexRepository(repository);
+      reindexRepository.setPullRequestService(service);
+
+      reindexRepository.update(index);
+
+      verify(index.delete()).by(repository);
+      verify(index).store(
+        Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
+        "repository:readPullRequest:" + pullRequest.getId(),
+        pullRequest
+      );
+    }
+  }
 
   private PullRequest createPullRequest() {
     return new PullRequest.PullRequestBuilder().id("1").build();

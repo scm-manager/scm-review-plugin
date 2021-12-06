@@ -35,7 +35,9 @@ import sonia.scm.search.Index;
 import sonia.scm.search.IndexLog;
 import sonia.scm.search.IndexLogStore;
 import sonia.scm.search.IndexTask;
+import sonia.scm.search.ReindexRepositoryEvent;
 import sonia.scm.search.SearchEngine;
+import sonia.scm.search.SerializableIndexTask;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContextEvent;
@@ -80,6 +82,11 @@ public class PullRequestIndexer implements ServletContextListener {
     handleEvent(event.getRepository(), event.getPullRequest());
   }
 
+  @Subscribe
+  public void handleEvent(ReindexRepositoryEvent event) {
+    searchEngine.forType(PullRequest.class).update(new PullRequestIndexer.ReindexRepository(event.getRepository()));
+  }
+
   private void handleEvent(Repository repository, PullRequest pullRequest) {
     searchEngine.forType(PullRequest.class).update(index -> storePullRequest(index, repository, pullRequest));
   }
@@ -101,7 +108,6 @@ public class PullRequestIndexer implements ServletContextListener {
       pullRequest
     );
   }
-
 
  static final class ReindexAll implements IndexTask<PullRequest> {
 
@@ -132,15 +138,37 @@ public class PullRequestIndexer implements ServletContextListener {
     private void reindexAll(Index<PullRequest> index) {
       index.delete().all();
       for (Repository repo : repositoryManager.getAll()) {
-        reindexRepository(index, repo);
+        reindexRepository(pullRequestService, index, repo);
       }
     }
+  }
 
-    private void reindexRepository(Index<PullRequest> index, Repository repository) {
-      if (pullRequestService.supportsPullRequests(repository)) {
-        for (PullRequest pr : pullRequestService.getAll(repository.getNamespace(), repository.getName())) {
-          storePullRequest(index, repository, pr);
-        }
+ static final class ReindexRepository implements SerializableIndexTask<PullRequest> {
+
+   private transient PullRequestService pullRequestService;
+
+   private final Repository repository;
+
+   ReindexRepository(Repository repository) {
+     this.repository = repository;
+   }
+
+    @Override
+    public void update(Index<PullRequest> index) {
+      index.delete().by(repository);
+      reindexRepository(pullRequestService, index, repository);
+    }
+
+    @Inject
+   public void setPullRequestService(PullRequestService pullRequestService) {
+     this.pullRequestService = pullRequestService;
+   }
+ }
+
+  private static void reindexRepository(PullRequestService pullRequestService, Index<PullRequest> index, Repository repository) {
+    if (pullRequestService.supportsPullRequests(repository)) {
+      for (PullRequest pr : pullRequestService.getAll(repository.getNamespace(), repository.getName())) {
+        storePullRequest(index, repository, pr);
       }
     }
   }
