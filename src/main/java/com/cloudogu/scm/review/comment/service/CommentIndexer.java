@@ -37,7 +37,9 @@ import sonia.scm.search.Index;
 import sonia.scm.search.IndexLog;
 import sonia.scm.search.IndexLogStore;
 import sonia.scm.search.IndexTask;
+import sonia.scm.search.ReindexRepositoryEvent;
 import sonia.scm.search.SearchEngine;
+import sonia.scm.search.SerializableIndexTask;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContextEvent;
@@ -85,6 +87,11 @@ public class CommentIndexer implements ServletContextListener {
     }
   }
 
+  @Subscribe
+  public void handleEvent(ReindexRepositoryEvent event) {
+    searchEngine.forType(IndexedComment.class).update(new ReindexRepository(event.getRepository()));
+  }
+
   private void updateIndexedComment(Repository repository, PullRequest pullRequest, IndexedComment comment) {
     searchEngine.forType(IndexedComment.class).update(index -> storeComment(index, repository, pullRequest, comment));
   }
@@ -109,6 +116,16 @@ public class CommentIndexer implements ServletContextListener {
       RepositoryPermissions.custom(PermissionCheck.READ_PULL_REQUEST, repository).asShiroString(),
       comment
     );
+  }
+
+  private static void reindexRepository(PullRequestService pullRequestService, CommentService commentService, Index<IndexedComment> index, Repository repository) {
+    if (pullRequestService.supportsPullRequests(repository)) {
+      for (PullRequest pr : pullRequestService.getAll(repository.getNamespace(), repository.getName())) {
+        for (Comment comment : commentService.getAll(repository.getNamespace(), repository.getName(), pr.getId())) {
+          storeComment(index, repository, pr, IndexedComment.transform(pr.getId(), comment));
+        }
+      }
+    }
   }
 
   static final class ReindexAll implements IndexTask<IndexedComment> {
@@ -142,18 +159,36 @@ public class CommentIndexer implements ServletContextListener {
     private void reindexAll(Index<IndexedComment> index) {
       index.delete().all();
       for (Repository repo : repositoryManager.getAll()) {
-        reindexRepository(index, repo);
+        reindexRepository(pullRequestService, commentService, index, repo);
       }
     }
+  }
 
-    private void reindexRepository(Index<IndexedComment> index, Repository repository) {
-      if (pullRequestService.supportsPullRequests(repository)) {
-        for (PullRequest pr : pullRequestService.getAll(repository.getNamespace(), repository.getName())) {
-          for (Comment comment : commentService.getAll(repository.getNamespace(), repository.getName(), pr.getId())) {
-            storeComment(index, repository, pr, IndexedComment.transform(pr.getId(), comment));
-          }
-        }
-      }
+  static final class ReindexRepository implements SerializableIndexTask<IndexedComment> {
+
+    private transient PullRequestService pullRequestService;
+    private transient CommentService commentService;
+
+    private final Repository repository;
+
+    ReindexRepository(Repository repository) {
+      this.repository = repository;
+    }
+
+    @Override
+    public void update(Index<IndexedComment> index) {
+      index.delete().by(repository);
+      reindexRepository(pullRequestService, commentService, index, repository);
+    }
+
+    @Inject
+    public void setPullRequestService(PullRequestService pullRequestService) {
+      this.pullRequestService = pullRequestService;
+    }
+
+    @Inject
+    public void setCommentService(CommentService commentService) {
+      this.commentService = commentService;
     }
   }
 }
