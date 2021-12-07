@@ -90,7 +90,7 @@ public class CommentIndexer implements ServletContextListener {
   @Subscribe
   public void handleEvent(RepositoryImportEvent event) {
     if (!event.isFailed()) {
-      searchEngine.forType(IndexedComment.class).update(new ReindexRepository(event.getItem()));
+      searchEngine.forType(IndexedComment.class).update(new IndexRepository(event.getItem()));
     }
   }
 
@@ -166,20 +166,19 @@ public class CommentIndexer implements ServletContextListener {
     }
   }
 
-  static final class ReindexRepository implements SerializableIndexTask<IndexedComment> {
+  static final class IndexRepository implements SerializableIndexTask<IndexedComment> {
 
     private transient PullRequestService pullRequestService;
     private transient CommentService commentService;
 
     private final Repository repository;
 
-    ReindexRepository(Repository repository) {
+    IndexRepository(Repository repository) {
       this.repository = repository;
     }
 
     @Override
     public void update(Index<IndexedComment> index) {
-      index.delete().by(repository);
       reindexRepository(pullRequestService, commentService, index, repository);
     }
 

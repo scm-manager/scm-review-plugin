@@ -23,7 +23,7 @@
  */
 package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.comment.service.CommentIndexer.ReindexRepository;
+import com.cloudogu.scm.review.comment.service.CommentIndexer.IndexRepository;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.common.collect.ImmutableList;
@@ -37,6 +37,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryImportEvent;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.search.Id;
 import sonia.scm.search.Index;
@@ -56,7 +57,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -85,7 +85,7 @@ class CommentIndexerTest {
     Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
     indexer.handleEvent(new CommentEvent(repository, pr, comment, comment, HandlerEventType.CREATE));
 
-    verify(forType, times(1)).update(any(SerializableIndexTask.class));
+    verify(forType).update(any(SerializableIndexTask.class));
   }
 
   @Test
@@ -94,7 +94,7 @@ class CommentIndexerTest {
     Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
     indexer.handleEvent(new CommentEvent(repository, pr, null, comment, HandlerEventType.DELETE));
 
-    verify(forType, times(1)).update(any(SerializableIndexTask.class));
+    verify(forType).update(any(SerializableIndexTask.class));
   }
 
   @Test
@@ -104,7 +104,7 @@ class CommentIndexerTest {
     Reply reply = Reply.createReply("1", "first reply", "trillian");
     indexer.handleEvent(new ReplyEvent(repository, pr, reply, reply, comment, HandlerEventType.CREATE));
 
-    verify(forType, times(1)).update(any(SerializableIndexTask.class));
+    verify(forType).update(any(SerializableIndexTask.class));
   }
 
   @Test
@@ -114,7 +114,7 @@ class CommentIndexerTest {
     Reply reply = Reply.createReply("1", "first one", "trillian");
     indexer.handleEvent(new ReplyEvent(repository, pr, null, reply, comment, HandlerEventType.DELETE));
 
-    verify(forType, times(1)).update(any(SerializableIndexTask.class));
+    verify(forType).update(any(SerializableIndexTask.class));
   }
 
   @Test
@@ -123,6 +123,20 @@ class CommentIndexerTest {
     indexer.contextInitialized(event);
 
     verify(forType).update(CommentIndexer.ReindexAll.class);
+  }
+
+  @Test
+  void shouldCreateIndexAfterSuccessfulImport() {
+    indexer.handleEvent(new RepositoryImportEvent(repository, false));
+
+    verify(forType).update(any(SerializableIndexTask.class));
+  }
+
+  @Test
+  void shouldNotCreateIndexAfterFailedImport() {
+    indexer.handleEvent(new RepositoryImportEvent(repository, true));
+
+    verify(forType, never()).update(any(SerializableIndexTask.class));
   }
 
   @Nested
@@ -211,7 +225,7 @@ class CommentIndexerTest {
   }
 
   @Nested
-  class ReindexRepositoryTests {
+  class IndexRepositoryTests {
 
     @Mock
     private PullRequestService pullRequestService;
@@ -222,10 +236,10 @@ class CommentIndexerTest {
     private Index<IndexedComment> index;
 
     @Test
-    void shouldReindexRepository() {
-      ReindexRepository reindexRepository = new ReindexRepository(repository);
-      reindexRepository.setCommentService(commentService);
-      reindexRepository.setPullRequestService(pullRequestService);
+    void shouldIndexRepository() {
+      IndexRepository indexRepository = new IndexRepository(repository);
+      indexRepository.setCommentService(commentService);
+      indexRepository.setPullRequestService(pullRequestService);
 
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(true);
 
@@ -234,9 +248,7 @@ class CommentIndexerTest {
       Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
       when(commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId())).thenReturn(ImmutableList.of(comment));
 
-      reindexRepository.update(index);
-
-      verify(index.delete()).by(repository);
+      indexRepository.update(index);
 
       verify(index).store(
         eq(Id.of(IndexedComment.class, comment.getId()).and(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId())),

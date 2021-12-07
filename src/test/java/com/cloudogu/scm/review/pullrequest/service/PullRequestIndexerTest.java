@@ -34,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryImportEvent;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.search.Id;
 import sonia.scm.search.Index;
@@ -126,6 +127,20 @@ class PullRequestIndexerTest {
     verify(forType).update(PullRequestIndexer.ReindexAll.class);
   }
 
+  @Test
+  void shouldCreateIndexAfterSuccessfulImport() {
+    indexer.handleEvent(new RepositoryImportEvent(repository, false));
+
+    verify(forType).update(any(SerializableIndexTask.class));
+  }
+
+  @Test
+  void shouldNotCreateIndexAfterFailedImport() {
+    indexer.handleEvent(new RepositoryImportEvent(repository, true));
+
+    verify(forType, never()).update(any(SerializableIndexTask.class));
+  }
+
   @Nested
   class ReindexAllTests {
     @Mock
@@ -208,7 +223,7 @@ class PullRequestIndexerTest {
   }
 
   @Nested
-  class ReindexRepositoryTests {
+  class IndexRepositoryTests {
 
     @Mock
     private PullRequestService service;
@@ -223,12 +238,11 @@ class PullRequestIndexerTest {
       PullRequest pullRequest = createPullRequest();
       when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pullRequest));
 
-      PullRequestIndexer.ReindexRepository reindexRepository = new PullRequestIndexer.ReindexRepository(repository);
-      reindexRepository.setPullRequestService(service);
+      PullRequestIndexer.IndexRepository indexRepository = new PullRequestIndexer.IndexRepository(repository);
+      indexRepository.setPullRequestService(service);
 
-      reindexRepository.update(index);
+      indexRepository.update(index);
 
-      verify(index.delete()).by(repository);
       verify(index).store(
         Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
         "repository:readPullRequest:" + pullRequest.getId(),

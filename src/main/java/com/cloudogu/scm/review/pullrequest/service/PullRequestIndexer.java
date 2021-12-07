@@ -85,7 +85,7 @@ public class PullRequestIndexer implements ServletContextListener {
   @Subscribe
   public void handleEvent(RepositoryImportEvent event) {
     if (!event.isFailed()) {
-      searchEngine.forType(PullRequest.class).update(new PullRequestIndexer.ReindexRepository(event.getItem()));
+      searchEngine.forType(PullRequest.class).update(new IndexRepository(event.getItem()));
     }
   }
 
@@ -145,27 +145,26 @@ public class PullRequestIndexer implements ServletContextListener {
     }
   }
 
- static final class ReindexRepository implements SerializableIndexTask<PullRequest> {
+  static final class IndexRepository implements SerializableIndexTask<PullRequest> {
 
-   private transient PullRequestService pullRequestService;
+    private transient PullRequestService pullRequestService;
 
-   private final Repository repository;
+    private final Repository repository;
 
-   ReindexRepository(Repository repository) {
-     this.repository = repository;
-   }
+    IndexRepository(Repository repository) {
+      this.repository = repository;
+    }
 
     @Override
     public void update(Index<PullRequest> index) {
-      index.delete().by(repository);
       reindexRepository(pullRequestService, index, repository);
     }
 
     @Inject
-   public void setPullRequestService(PullRequestService pullRequestService) {
-     this.pullRequestService = pullRequestService;
-   }
- }
+    public void setPullRequestService(PullRequestService pullRequestService) {
+      this.pullRequestService = pullRequestService;
+    }
+  }
 
   private static void reindexRepository(PullRequestService pullRequestService, Index<PullRequest> index, Repository repository) {
     if (pullRequestService.supportsPullRequests(repository)) {
