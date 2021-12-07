@@ -22,8 +22,8 @@
       "jumpToSource": "Jump to source",
       "jumpToTarget": "Jump to target",
       "moreDiffsAvailable": "There are more diffs available.",
-      "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} recent comment.",
-      "partialMoreDiffsAvailable_plural": "There are more diffs available and among them {{count}} recent comments.",
+      "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} comment.",
+      "partialMoreDiffsAvailable_plural": "There are more diffs available and among them {{count}} comments.",
       "loadMore": "Load more"
     },
     "noRequests": "No pull requests matching the selected criteria found",

@@ -22,8 +22,8 @@
       "jumpToSource": "Zur Quelldatei springen",
       "jumpToTarget": "Zur Zieldatei springen",
       "moreDiffsAvailable": "Es sind weitere Diffs verfügbar.",
-      "partialMoreDiffsAvailable": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} aktueller Kommentar.",
-      "partialMoreDiffsAvailable_plural": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} aktuelle Kommentare.",
+      "partialMoreDiffsAvailable": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentar.",
+      "partialMoreDiffsAvailable_plural": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentare.",
       "loadMore": "Weitere laden"
     },
     "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
