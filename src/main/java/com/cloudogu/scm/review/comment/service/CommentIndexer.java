@@ -30,6 +30,7 @@ import com.github.legman.Subscribe;
 import sonia.scm.HandlerEventType;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryImportEvent;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.search.Id;
@@ -37,7 +38,6 @@ import sonia.scm.search.Index;
 import sonia.scm.search.IndexLog;
 import sonia.scm.search.IndexLogStore;
 import sonia.scm.search.IndexTask;
-import sonia.scm.search.ReindexRepositoryEvent;
 import sonia.scm.search.SearchEngine;
 import sonia.scm.search.SerializableIndexTask;
 
@@ -88,8 +88,10 @@ public class CommentIndexer implements ServletContextListener {
   }
 
   @Subscribe
-  public void handleEvent(ReindexRepositoryEvent event) {
-    searchEngine.forType(IndexedComment.class).update(new ReindexRepository(event.getRepository()));
+  public void handleEvent(RepositoryImportEvent event) {
+    if (!event.isFailed()) {
+      searchEngine.forType(IndexedComment.class).update(new ReindexRepository(event.getItem()));
+    }
   }
 
   private void updateIndexedComment(Repository repository, PullRequest pullRequest, IndexedComment comment) {
