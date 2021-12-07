@@ -24,23 +24,15 @@
 
 import React, { FC } from "react";
 import { Branch, BranchDetails, Repository } from "@scm-manager/ui-types";
-import {
-  Icon,
-  SmallLoadingSpinner,
-  usePopover,
-  Popover,
-  CardColumnSmall,
-  DateFromNow,
-  AvatarImage
-} from "@scm-manager/ui-components";
+import { AvatarImage, DateFromNow, Icon, Popover, SmallLoadingSpinner, usePopover } from "@scm-manager/ui-components";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { PullRequest } from "./types/PullRequest";
 
-const StyledText = styled.span.attrs(() => ({
-  className: "has-text-grey is-size-7"
-}))``;
+const PullRequestEntry = styled.div`
+  border-radius: 5px;
+`;
 
 const UnbreakableText = styled.span`
   word-break: keep-all;
@@ -59,6 +51,7 @@ type PRListProps = {
 
 const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
   const [t] = useTranslation("plugins");
+  const history = useHistory();
 
   return (
     <>
@@ -68,35 +61,33 @@ const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
         }
         return (
           <>
-            <CardColumnSmall
+            <PullRequestEntry
               key={key}
-              link={`/repo/${repository.namespace}/${repository.name}/pull-request/${pr.id}`}
-              contentLeft={
-                <div className="pb-2 has-text-grey">
-                  <strong className="has-text-grey-dark">{pr.title}</strong>
-                  <div className="is-flex is-justify-content-space-between">
-                    <div className="is-flex is-flex-direction-row is-align-items-center is-justify-content-center">
-                      <AvatarImage
-                        className="image is-16x16 mr-1"
-                        person={{ name: pr.author?.displayName || "", mail: pr.author?.mail }}
-                        representation="rounded-border"
-                      />
-                      <span className="has-size-7">{pr.author?.displayName || pr.author?.mail || ""}</span>
-                    </div>
-                    <DateFromNow date={pr.creationDate} className="is-justify-content-flex-end" />
+              onClick={() => history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pr.id}`)}
+              className="is-clickable p-1 has-hover-background-blue"
+            >
+              <div className="px-2 pb-2">
+                <strong className="is-size-6">{pr.title}</strong>
+                <div className="is-flex is-justify-content-space-between is-size-7">
+                  <div className="is-flex is-flex-direction-row is-align-items-center is-justify-content-center">
+                    <AvatarImage
+                      className="image is-16x16 mr-1"
+                      person={{ name: pr.author?.displayName || "", mail: pr.author?.mail }}
+                      representation="rounded-border"
+                    />
+                    <span>{pr.author?.displayName || pr.author?.mail || ""}</span>
                   </div>
+                  <DateFromNow date={pr.creationDate} className="is-justify-content-flex-end" />
                 </div>
-              }
-              contentRight={
-                <div className="has-text-grey is-flex is-justify-content-space-between">
+                <div className="is-flex is-justify-content-space-between is-size-7">
                   <UnbreakableText className="pr-1">
                     {t("scm-review-plugin.branchDetails.pullRequest.targetBranch")}
                     {": "}
                   </UnbreakableText>
                   <span className="is-flex-grow-0 is-ellipsis-overflow">{pr.target}</span>
                 </div>
-              }
-            />
+              </div>
+            </PullRequestEntry>
             {key < pullRequests.length - 1 && key < 2 ? <hr className="m-0" /> : null}
           </>
         );
@@ -134,13 +125,13 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) =
         >
           <PullRequestList repository={repository} pullRequests={prs} />
         </Popover>
-        <div {...triggerProps}>
-          <Icon name="code-branch" className="is-size-7" />
-          <StyledText>
+        <div {...triggerProps} className="is-size-7">
+          <Icon name="code-branch" />
+          <span>
             {t("scm-review-plugin.branchDetails.pullRequest.pending", {
               count: prs.length
             })}
-          </StyledText>
+          </span>
         </div>
       </div>
     );
@@ -148,7 +139,7 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) =
 
   return (
     <div
-      className="is-clickable"
+      className="is-clickable is-size-7"
       onClick={() =>
         history.push(
           `/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets/?source=${encodeURI(
@@ -157,8 +148,8 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) =
         )
       }
     >
-      <Icon name="code-branch" className="is-size-7" />
-      <StyledText>{t("scm-review-plugin.branchDetails.pullRequest.create")}</StyledText>
+      <Icon name="code-branch" />
+      <span>{t("scm-review-plugin.branchDetails.pullRequest.create")}</span>
     </div>
   );
 };
