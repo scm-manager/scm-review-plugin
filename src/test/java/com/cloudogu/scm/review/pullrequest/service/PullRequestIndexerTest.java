@@ -28,11 +28,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryImportEvent;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.search.Id;
 import sonia.scm.search.Index;
@@ -125,6 +127,20 @@ class PullRequestIndexerTest {
     verify(forType).update(PullRequestIndexer.ReindexAll.class);
   }
 
+  @Test
+  void shouldCreateIndexAfterSuccessfulImport() {
+    indexer.handleEvent(new RepositoryImportEvent(repository, false));
+
+    verify(forType).update(any(SerializableIndexTask.class));
+  }
+
+  @Test
+  void shouldNotCreateIndexAfterFailedImport() {
+    indexer.handleEvent(new RepositoryImportEvent(repository, true));
+
+    verify(forType, never()).update(any(SerializableIndexTask.class));
+  }
+
   @Nested
   class ReindexAllTests {
     @Mock
@@ -136,7 +152,7 @@ class PullRequestIndexerTest {
     @Mock
     private IndexLogStore.ForIndex forIndex;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Index<PullRequest> index;
 
     @InjectMocks
@@ -188,10 +204,8 @@ class PullRequestIndexerTest {
 
     @Test
     void shouldReindexAllIfLogStoreVersionDiffers() {
-      Index.Deleter deleter = mock(Index.Deleter.class);
       when(service.supportsPullRequests(repository)).thenReturn(true);
       when(forIndex.get(PullRequest.class)).thenReturn(Optional.of(new IndexLog(42)));
-      when(index.delete()).thenReturn(deleter);
 
       PullRequest pullRequest = createPullRequest();
       when(repositoryManager.getAll()).thenReturn(ImmutableList.of(repository));
@@ -199,7 +213,7 @@ class PullRequestIndexerTest {
 
       reindexAll.update(index);
 
-      verify(deleter, times(1)).all();
+      verify(index.delete()).all();
       verify(index).store(
         Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
         "repository:readPullRequest:" + pullRequest.getId(),
@@ -208,6 +222,34 @@ class PullRequestIndexerTest {
     }
   }
 
+  @Nested
+  class IndexRepositoryTests {
+
+    @Mock
+    private PullRequestService service;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Index<PullRequest> index;
+
+    @Test
+    void shouldReindex() {
+      when(service.supportsPullRequests(repository)).thenReturn(true);
+
+      PullRequest pullRequest = createPullRequest();
+      when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pullRequest));
+
+      PullRequestIndexer.IndexRepository indexRepository = new PullRequestIndexer.IndexRepository(repository);
+      indexRepository.setPullRequestService(service);
+
+      indexRepository.update(index);
+
+      verify(index).store(
+        Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
+        "repository:readPullRequest:" + pullRequest.getId(),
+        pullRequest
+      );
+    }
+  }
 
   private PullRequest createPullRequest() {
     return new PullRequest.PullRequestBuilder().id("1").build();

@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.comment.service;
 
+import com.cloudogu.scm.review.comment.service.CommentIndexer.IndexRepository;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.common.collect.ImmutableList;
@@ -30,11 +31,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryImportEvent;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.search.Id;
 import sonia.scm.search.Index;
@@ -54,12 +57,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"UnstableApiUsage", "rawtypes", "unchecked"})
+@SuppressWarnings({"UnstableApiUsage", "unchecked"})
 class CommentIndexerTest {
 
   private final Repository repository = new Repository("1", "git", "hitchhiker", "42");
@@ -83,7 +85,7 @@ class CommentIndexerTest {
     Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
     indexer.handleEvent(new CommentEvent(repository, pr, comment, comment, HandlerEventType.CREATE));
 
-    verify(forType, times(1)).update(any(SerializableIndexTask.class));
+    verify(forType).update(any(SerializableIndexTask.class));
   }
 
   @Test
@@ -92,7 +94,7 @@ class CommentIndexerTest {
     Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
     indexer.handleEvent(new CommentEvent(repository, pr, null, comment, HandlerEventType.DELETE));
 
-    verify(forType, times(1)).update(any(SerializableIndexTask.class));
+    verify(forType).update(any(SerializableIndexTask.class));
   }
 
   @Test
@@ -102,7 +104,7 @@ class CommentIndexerTest {
     Reply reply = Reply.createReply("1", "first reply", "trillian");
     indexer.handleEvent(new ReplyEvent(repository, pr, reply, reply, comment, HandlerEventType.CREATE));
 
-    verify(forType, times(1)).update(any(SerializableIndexTask.class));
+    verify(forType).update(any(SerializableIndexTask.class));
   }
 
   @Test
@@ -112,7 +114,7 @@ class CommentIndexerTest {
     Reply reply = Reply.createReply("1", "first one", "trillian");
     indexer.handleEvent(new ReplyEvent(repository, pr, null, reply, comment, HandlerEventType.DELETE));
 
-    verify(forType, times(1)).update(any(SerializableIndexTask.class));
+    verify(forType).update(any(SerializableIndexTask.class));
   }
 
   @Test
@@ -121,6 +123,20 @@ class CommentIndexerTest {
     indexer.contextInitialized(event);
 
     verify(forType).update(CommentIndexer.ReindexAll.class);
+  }
+
+  @Test
+  void shouldCreateIndexAfterSuccessfulImport() {
+    indexer.handleEvent(new RepositoryImportEvent(repository, false));
+
+    verify(forType).update(any(SerializableIndexTask.class));
+  }
+
+  @Test
+  void shouldNotCreateIndexAfterFailedImport() {
+    indexer.handleEvent(new RepositoryImportEvent(repository, true));
+
+    verify(forType, never()).update(any(SerializableIndexTask.class));
   }
 
   @Nested
@@ -136,7 +152,7 @@ class CommentIndexerTest {
     @Mock
     private IndexLogStore.ForIndex forIndex;
 
-    @Mock
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Index<IndexedComment> index;
 
     @InjectMocks
@@ -158,16 +174,14 @@ class CommentIndexerTest {
 
     @Test
     void shouldNotReindexRepositoryIfDoesNotSupportPullRequests() {
-      Index.Deleter deleter = mock(Index.Deleter.class);
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(false);
       when(forIndex.get(IndexedComment.class)).thenReturn(Optional.of(new IndexLog(42)));
-      when(index.delete()).thenReturn(deleter);
 
       when(repositoryManager.getAll()).thenReturn(ImmutableList.of(repository));
 
       reindexAll.update(index);
 
-      verify(deleter, times(1)).all();
+      verify(index.delete()).all();
       verify(index, never()).store(
         any(Id.class),
         anyString(),
@@ -177,21 +191,17 @@ class CommentIndexerTest {
 
     @Test
     void shouldReindexAllIfLogStoreIsEmpty() {
-      Index.Deleter deleter = mock(Index.Deleter.class);
       when(forIndex.get(IndexedComment.class)).thenReturn(Optional.empty());
-      when(index.delete()).thenReturn(deleter);
 
       reindexAll.update(index);
 
-      verify(deleter, times(1)).all();
+      verify(index.delete()).all();
     }
 
     @Test
     void shouldReindexAllIfLogStoreVersionDiffers() {
-      Index.Deleter deleter = mock(Index.Deleter.class);
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(true);
       when(forIndex.get(IndexedComment.class)).thenReturn(Optional.of(new IndexLog(42)));
-      when(index.delete()).thenReturn(deleter);
 
       PullRequest pullRequest = createPullRequest();
       Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
@@ -201,7 +211,45 @@ class CommentIndexerTest {
 
       reindexAll.update(index);
 
-      verify(deleter, times(1)).all();
+      verify(index.delete()).all();
+      verify(index).store(
+        eq(Id.of(IndexedComment.class, comment.getId()).and(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId())),
+        eq("repository:readPullRequest:" + pullRequest.getId()),
+        argThat(indexedComment -> {
+          assertThat(indexedComment.getId()).isEqualTo(comment.getId());
+          assertThat(indexedComment.getComment()).isEqualTo(comment.getComment());
+          return true;
+        })
+      );
+    }
+  }
+
+  @Nested
+  class IndexRepositoryTests {
+
+    @Mock
+    private PullRequestService pullRequestService;
+    @Mock
+    private CommentService commentService;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Index<IndexedComment> index;
+
+    @Test
+    void shouldIndexRepository() {
+      IndexRepository indexRepository = new IndexRepository(repository);
+      indexRepository.setCommentService(commentService);
+      indexRepository.setPullRequestService(pullRequestService);
+
+      when(pullRequestService.supportsPullRequests(repository)).thenReturn(true);
+
+      PullRequest pullRequest = createPullRequest();
+      when(pullRequestService.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pullRequest));
+      Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
+      when(commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId())).thenReturn(ImmutableList.of(comment));
+
+      indexRepository.update(index);
+
       verify(index).store(
         eq(Id.of(IndexedComment.class, comment.getId()).and(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId())),
         eq("repository:readPullRequest:" + pullRequest.getId()),
