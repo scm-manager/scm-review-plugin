@@ -24,9 +24,9 @@
 
 package com.cloudogu.scm.review;
 
-import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import de.otto.edison.hal.HalRepresentation;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
@@ -64,7 +64,7 @@ public class BranchDetailsEnricher implements HalEnricher {
     String branchName = context.oneRequireByType(String.class);
     return service.getAll(repository.getNamespace(), repository.getName())
       .stream()
-      .filter(pr -> pr.getSource().equals(branchName))
+      .filter(pr -> pr.getSource().equals(branchName) && pr.getStatus() == PullRequestStatus.OPEN)
       .map(mapper::map)
       .collect(Collectors.toList());
   }

@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.collect.ImmutableList;
 import de.otto.edison.hal.HalRepresentation;
 import org.junit.jupiter.api.Test;
@@ -69,6 +70,7 @@ class BranchDetailsEnricherTest {
   @Test
   void shouldEnrichWithEmbedded() {
     PullRequest pr = new PullRequest("1", "main", "develop");
+    pr.setStatus(PullRequestStatus.OPEN);
     PullRequestDto dto = new PullRequestDto();
     dto.setId("1");
     dto.setSource("main");
@@ -93,8 +95,25 @@ class BranchDetailsEnricherTest {
 
     enricher.enrich(HalEnricherContext.of(repository, "main"), appender);
 
-    verify(appender).appendEmbedded(eq("pullRequests"), (List<HalRepresentation>) argThat(hr -> {
-      assertThat(((List<HalRepresentation>) hr)).isEmpty();
+    verify(appender).appendEmbedded(eq("pullRequests"), (List<HalRepresentation>) argThat(hrs -> {
+      assertThat(((List<HalRepresentation>) hrs)).isEmpty();
+      return true;
+    }));
+  }
+
+  @Test
+  void shouldNotEnrichIfPrNotOpen() {
+    PullRequest pr = new PullRequest("1", "main", "develop");
+    pr.setStatus(PullRequestStatus.MERGED);
+    PullRequestDto dto = new PullRequestDto();
+    dto.setId("1");
+    dto.setSource("main");
+    when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pr));
+
+    enricher.enrich(HalEnricherContext.of(repository, "main"), appender);
+
+    verify(appender).appendEmbedded(eq("pullRequests"), (List<HalRepresentation>) argThat(hrs -> {
+      assertThat(((List<HalRepresentation>) hrs)).isEmpty();
       return true;
     }));
   }

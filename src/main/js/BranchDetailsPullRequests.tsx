@@ -72,8 +72,8 @@ const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
               key={key}
               link={`/repo/${repository.namespace}/${repository.name}/pull-request/${pr.id}`}
               contentLeft={
-                <div className="has-text-grey pb-2">
-                  <strong>{pr.title}</strong>
+                <div className="pb-2 has-text-grey">
+                  <strong className="has-text-grey-dark">{pr.title}</strong>
                   <div className="is-flex is-justify-content-space-between">
                     <div className="is-flex is-flex-direction-row is-align-items-center is-justify-content-center">
                       <AvatarImage
