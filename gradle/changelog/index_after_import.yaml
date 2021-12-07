@@ -1,0 +1,2 @@
+- type: fixed
+  description: Missing search index for imported repositories ([#173](https://github.com/scm-manager/scm-review-plugin/pull/173))
