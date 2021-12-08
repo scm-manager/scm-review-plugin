@@ -38,6 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricherContext;
+import sonia.scm.repository.BranchDetails;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
@@ -77,7 +78,7 @@ class BranchDetailsEnricherTest {
     when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pr));
     when(mapper.map(pr)).thenReturn(dto);
 
-    enricher.enrich(HalEnricherContext.of(repository, "main"), appender);
+    enricher.enrich(HalEnricherContext.of(repository, new BranchDetails("main")), appender);
 
     verify(appender).appendEmbedded(eq("pullRequests"), (List<HalRepresentation>) argThat(prs -> {
       List<HalRepresentation> list = (List<HalRepresentation>) prs;
@@ -93,7 +94,7 @@ class BranchDetailsEnricherTest {
     PullRequest pr = new PullRequest("1", "develop", "main");
     when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pr));
 
-    enricher.enrich(HalEnricherContext.of(repository, "main"), appender);
+    enricher.enrich(HalEnricherContext.of(repository, new BranchDetails("main")), appender);
 
     verify(appender).appendEmbedded(eq("pullRequests"), (List<HalRepresentation>) argThat(hrs -> {
       assertThat(((List<HalRepresentation>) hrs)).isEmpty();
@@ -110,7 +111,7 @@ class BranchDetailsEnricherTest {
     dto.setSource("main");
     when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pr));
 
-    enricher.enrich(HalEnricherContext.of(repository, "main"), appender);
+    enricher.enrich(HalEnricherContext.of(repository, new BranchDetails("main")), appender);
 
     verify(appender).appendEmbedded(eq("pullRequests"), (List<HalRepresentation>) argThat(hrs -> {
       assertThat(((List<HalRepresentation>) hrs)).isEmpty();

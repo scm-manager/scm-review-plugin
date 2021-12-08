@@ -33,15 +33,15 @@ import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
 import sonia.scm.api.v2.resources.HalEnricherContext;
 import sonia.scm.plugin.Extension;
+import sonia.scm.repository.BranchDetails;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.BranchDetailsCommandResult;
 
 import javax.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Extension
-@Enrich(BranchDetailsCommandResult.class)
+@Enrich(BranchDetails.class)
 public class BranchDetailsEnricher implements HalEnricher {
 
   private final PullRequestMapper mapper;
@@ -61,7 +61,7 @@ public class BranchDetailsEnricher implements HalEnricher {
 
   private List<HalRepresentation> getPullRequestDtos(HalEnricherContext context) {
     Repository repository = context.oneRequireByType(Repository.class);
-    String branchName = context.oneRequireByType(String.class);
+    String branchName = context.oneRequireByType(BranchDetails.class).getBranchName();
     return service.getAll(repository.getNamespace(), repository.getName())
       .stream()
       .filter(pr -> pr.getSource().equals(branchName) && pr.getStatus() == PullRequestStatus.OPEN)
