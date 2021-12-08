@@ -55,13 +55,15 @@ public class BranchDetailsEnricher implements HalEnricher {
 
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
-    List<HalRepresentation> pullRequestDtos = getPullRequestDtos(context);
-    appender.appendEmbedded("pullRequests", pullRequestDtos);
-  }
-
-  private List<HalRepresentation> getPullRequestDtos(HalEnricherContext context) {
     Repository repository = context.oneRequireByType(Repository.class);
     String branchName = context.oneRequireByType(BranchDetails.class).getBranchName();
+    if (service.supportsPullRequests(repository)) {
+      List<HalRepresentation> pullRequestDtos = getPullRequestDtos(repository, branchName);
+      appender.appendEmbedded("pullRequests", pullRequestDtos);
+    }
+  }
+
+  private List<HalRepresentation> getPullRequestDtos(Repository repository, String branchName) {
     return service.getAll(repository.getNamespace(), repository.getName())
       .stream()
       .filter(pr -> pr.getSource().equals(branchName) && pr.getStatus() == PullRequestStatus.OPEN)

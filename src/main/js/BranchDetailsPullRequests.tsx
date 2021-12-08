@@ -109,7 +109,11 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) =
     return <SmallLoadingSpinner />;
   }
 
-  const prs: PullRequest[] = (details._embedded?.pullRequests as PullRequest[]) || [];
+  if (!details._embedded?.pullRequests) {
+    return null;
+  }
+
+  const prs: PullRequest[] = details._embedded.pullRequests as PullRequest[];
 
   if (prs.length > 0) {
     return (
