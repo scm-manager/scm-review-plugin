@@ -20,7 +20,11 @@
       "markNotReviewed": "Remove review mark from file.",
       "addComment": "Add comment for file",
       "jumpToSource": "Jump to source",
-      "jumpToTarget": "Jump to target"
+      "jumpToTarget": "Jump to target",
+      "moreDiffsAvailable": "There are more diffs available.",
+      "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} comment.",
+      "partialMoreDiffsAvailable_plural": "There are more diffs available and among them {{count}} comments.",
+      "loadMore": "Load more"
     },
     "noRequests": "No pull requests matching the selected criteria found",
     "pullRequest": {
@@ -541,7 +545,7 @@
           "title": {
             "exampleValue": "Awesome new button"
           },
-          "description":  {
+          "description": {
             "exampleValue": "We added a new button which looks nice but does nothing at all."
           },
           "source": {
@@ -587,7 +591,7 @@
             "exampleValue": "I like these new features!",
             "hints": "The actual comment"
           },
-          "date":  {
+          "date": {
             "exampleValue": "1628077286",
             "hints": "Timestamp of last modification in ms since 01-01-1970. Range search possible."
           },

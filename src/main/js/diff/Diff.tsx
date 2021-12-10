@@ -23,20 +23,17 @@
  */
 
 import React, { FC, ReactNode, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import { useBranch } from "@scm-manager/ui-api";
+import { Hunk, Repository } from "@scm-manager/ui-types";
 import {
   AnnotationFactoryContext,
-  Button,
   ButtonGroup,
   DiffEventContext,
   diffs,
   File,
-  FileContentFactory,
-  Level,
-  LoadingDiff
+  FileContentFactory
 } from "@scm-manager/ui-components";
-import { useBranch } from "@scm-manager/ui-api";
 import { Comment, Comments, Location, PullRequest } from "../types/PullRequest";
 import {
   createChangeIdFromLocation,
@@ -54,15 +51,11 @@ import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 import MarkReviewedButton from "./MarkReviewedButton";
-import { Repository } from "@scm-manager/ui-types";
 import { useDiffCollapseState } from "./useDiffCollapseReducer";
 import ChangeNotificationToast from "../ChangeNotificationToast";
 import { useInvalidateDiff } from "../pullRequest";
 import { useChangeNotificationContext } from "../ChangeNotificationContext";
-
-const LevelWithMargin = styled(Level)`
-  margin-bottom: 1rem !important;
-`;
+import LoadingDiff from "./LoadingDiff";
 
 const CommentWrapper = styled.div`
   & .inline-comment + .inline-comment {
@@ -139,9 +132,7 @@ const Diff: FC<Props> = ({
   fileContentFactory,
   reviewedFiles
 }) => {
-  const [t] = useTranslation("plugins");
   const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
-  const [collapsed, setCollapsed] = useState(false);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
   const { changed, ignore, reload } = useHasChanged(repository, pullRequest);
 
@@ -266,15 +257,6 @@ const Diff: FC<Props> = ({
     return annotations;
   };
 
-  const collapseDiffs = () => {
-    if (collapsed) {
-      actions.uncollapseAll();
-    } else {
-      actions.collapseAll();
-    }
-    setCollapsed(current => !current);
-  };
-
   const createFileControlsFactory = (contentFactory: FileContentFactory) => (file: File) => {
     const setReviewMark = (filepath: string, reviewed: boolean) => {
       if (reviewed) {
@@ -358,19 +340,7 @@ const Diff: FC<Props> = ({
   return (
     <StyledDiffWrapper commentable={isPermittedToComment()}>
       {changed ? <ChangeNotificationToast reload={reload} ignore={ignore} /> : null}
-      <LevelWithMargin
-        right={
-          <Button
-            action={collapseDiffs}
-            color="default"
-            icon={collapsed ? "eye" : "eye-slash"}
-            label={t("scm-review-plugin.diff.collapseDiffs")}
-            reducedMobile={true}
-          />
-        }
-      />
       <LoadingDiff
-        url={diffUrl}
         isCollapsed={isCollapsed}
         onCollapseStateChange={actions.toggleCollapse}
         fileControlFactory={createFileControlsFactory(fileContentFactory)}
@@ -378,7 +348,10 @@ const Diff: FC<Props> = ({
         annotationFactory={annotationFactory}
         onClick={onGutterClick}
         refetchOnWindowFocus={false}
-        hunkClass={hunk => (hunk.expansion ? "expanded" : "commentable")}
+        hunkClass={(hunk: Hunk) => (hunk.expansion ? "expanded" : "commentable")}
+        diffUrl={diffUrl}
+        actions={actions}
+        pullRequestComments={comments?._embedded.pullRequestComments || []}
       />
     </StyledDiffWrapper>
   );

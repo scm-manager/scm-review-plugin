@@ -20,7 +20,11 @@
       "markNotReviewed": "Entferne Review-Markierung",
       "addComment": "Kommentar für Datei hinzufügen",
       "jumpToSource": "Zur Quelldatei springen",
-      "jumpToTarget": "Zur Zieldatei springen"
+      "jumpToTarget": "Zur Zieldatei springen",
+      "moreDiffsAvailable": "Es sind weitere Diffs verfügbar.",
+      "partialMoreDiffsAvailable": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentar.",
+      "partialMoreDiffsAvailable_plural": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentare.",
+      "loadMore": "Weitere laden"
     },
     "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
     "pullRequest": {
@@ -543,7 +547,7 @@
           "title": {
             "exampleValue": "Mein neuer PR"
           },
-          "description":  {
+          "description": {
             "exampleValue": "Dieser Pull Request wird später beschrieben."
           },
           "source": {
@@ -589,7 +593,7 @@
             "exampleValue": "Ich mag das neue Feature!",
             "hints": "Der Kommentartext"
           },
-          "date":  {
+          "date": {
             "exampleValue": "1628077286",
             "hints": "Zeitstempel der letzten Änderung in Millisekunden seit 01.01.1970. Zeitraum-Suche ist möglich."
           },
