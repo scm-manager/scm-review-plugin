@@ -1,0 +1,2 @@
+- type: fixed
+  description: Invalidate pr cache if task added or deleted ([#177](https://github.com/scm-manager/scm-review-plugin/pull/177))

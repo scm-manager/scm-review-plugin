@@ -295,7 +295,12 @@ export const useDeleteComment = (repository: Repository, pullRequest: PullReques
     comment => apiClient.delete(requiredLink(comment, "delete")),
     {
       onSuccess: () => {
-        return invalidateQueries(queryClient, prCommentsQueryKey(repository, id), prMergeCheckQueryKey(repository, id));
+        return invalidateQueries(
+          queryClient,
+          prQueryKey(repository, id),
+          prCommentsQueryKey(repository, id),
+          prMergeCheckQueryKey(repository, id)
+        );
       }
     }
   );
@@ -375,7 +380,12 @@ export const useCreateComment = (repository: Repository, pullRequest: PullReques
     },
     {
       onSuccess: () => {
-        return invalidateQueries(queryClient, prCommentsQueryKey(repository, id), prMergeCheckQueryKey(repository, id));
+        return invalidateQueries(
+          queryClient,
+          prQueryKey(repository, id),
+          prCommentsQueryKey(repository, id),
+          prMergeCheckQueryKey(repository, id)
+        );
       }
     }
   );
