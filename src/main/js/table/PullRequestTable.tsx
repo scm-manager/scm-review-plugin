@@ -42,10 +42,6 @@ const StyledTable = styled(Table)`
   }
 `;
 
-const TodoTag = styled(Tag)`
-  margin-left: 0.5em;
-`;
-
 const MobileHiddenColumn = styled(Column).attrs(() => ({
   className: "is-hidden-mobile"
 }))``;
@@ -62,7 +58,13 @@ class PullRequestTable extends React.Component<Props> {
     if (todos === 0) {
       return null;
     }
-    return <TodoTag label={`${todos}`} title={t("scm-review-plugin.pullRequest.tasks.todo", { count: todos })} />;
+    return (
+      <Tag
+        className="ml-2"
+        label={`${todos}`}
+        title={t("scm-review-plugin.pullRequest.tasks.todo", { count: todos })}
+      />
+    );
   };
 
   render() {

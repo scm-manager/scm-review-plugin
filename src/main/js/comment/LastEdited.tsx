@@ -31,10 +31,12 @@ type Props = {
   comment: Comment;
 };
 
+//TODO prüfen
 const Wrapper = styled.small`
   color: #9a9a9a; // dark-50
 `;
 
+//TODO prüfen
 const Editor = styled.span`
   color: #9a9a9a; // dark-50
 `;

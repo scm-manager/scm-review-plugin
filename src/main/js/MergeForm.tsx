@@ -24,9 +24,8 @@
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
 import { Link } from "@scm-manager/ui-types";
-import MergeStrategies from "./MergeStrategies";
 import { Button, Checkbox, CommitAuthor, Textarea } from "@scm-manager/ui-components";
-import styled from "styled-components";
+import MergeStrategies from "./MergeStrategies";
 
 type Props = WithTranslation & {
   strategyLinks: Link[];
@@ -42,14 +41,6 @@ type Props = WithTranslation & {
   onChangeDeleteSourceBranch: (value: boolean) => void;
   loading: boolean;
 };
-
-const CommitMessageInfo = styled.div`
-  margin-bottom: 1em;
-`;
-
-const MarginBottom = styled.div`
-  margin-bottom: 0.5rem;
-`;
 
 class MergeForm extends React.Component<Props> {
   isCommitMessageDisabled = () => {
@@ -94,14 +85,14 @@ class MergeForm extends React.Component<Props> {
           onChange={onChangeCommitMessage}
         />
         {this.isShowMessageHint() && (
-          <CommitMessageInfo className="is-size-7">
+          <div className="is-size-7 mb-4">
             <span className="icon is-small has-text-info">
               <i className="fas fa-info-circle" />
             </span>{" "}
             <span>{t("scm-review-plugin.showPullRequest.mergeModal.commitMessageHint." + commitMessageHint)}</span>
-          </CommitMessageInfo>
+          </div>
         )}
-        <MarginBottom>{commitAuthor ? renderCommitAuthor(commitAuthor) : <CommitAuthor />}</MarginBottom>
+        <div className="mb-2">{commitAuthor ? renderCommitAuthor(commitAuthor) : <CommitAuthor />}</div>
         <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage} />
         <hr />
       </>

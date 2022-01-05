@@ -46,12 +46,7 @@ type Props = {
   global: boolean;
 };
 
-const AddRuleLevel = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
+//TODO prüfen
 const RuleDetails = styled.p`
   flex: 1;
   padding: 1rem;
@@ -181,7 +176,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
 
           {renderAddRuleForm()}
           {selectedRule && (
-            <AddRuleLevel>
+            <div className="is-flex is-justify-content-space-between is-align-items-center">
               <RuleDetails>
                 <h4>{t("workflow.rule." + selectedRule + ".description", ruleConfiguration)}</h4>
                 <ExtensionPoint
@@ -206,7 +201,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
                   }
                 />
               </RuleDetails>
-            </AddRuleLevel>
+            </div>
           )}
         </>
       )}

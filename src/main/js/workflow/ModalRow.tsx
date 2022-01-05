@@ -27,17 +27,13 @@ import { useTranslation, withTranslation, WithTranslation } from "react-i18next"
 import styled from "styled-components";
 import { Result } from "../types/EngineConfig";
 import { Icon } from "@scm-manager/ui-components";
+import classNames from "classnames";
 
 type Props = WithTranslation & {
   result: Result;
 };
 
 const Entry = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding: 1rem 0rem;
-  justify-content: space-between;
-
   // css adjacent with same component
   & + & {
     border-top: 1px solid rgba(219, 219, 219, 0.5);
@@ -51,10 +47,6 @@ const Left = styled.div`
 
 const Right = styled.div`
   flex: 1;
-`;
-
-const PaddingRightIcon = styled(Icon)`
-  padding-right: 0.5rem;
 `;
 
 function getTranslationKey(result: Result): string {
@@ -77,9 +69,12 @@ const ModalRow: FC<Props> = ({ result }) => {
   const [t] = useTranslation("plugins");
 
   return (
-    <Entry>
+    <Entry
+      className={classNames("is-flex", "is-flex-direction-row", "is-justify-content-space-between", "px-0", "py-4")}
+    >
       <Left>
-        <PaddingRightIcon
+        <Icon
+          className="pr-2"
           color={result?.failed ? "warning" : "success"}
           name={result?.failed ? "exclamation-triangle" : "check-circle"}
         />

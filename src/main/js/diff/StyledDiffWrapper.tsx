@@ -29,6 +29,7 @@ type Props = {
   commentable: boolean;
 };
 
+//TODO: Ersetzen!
 const CommentableWrapper = styled.div`
   & table.diff tr:hover > td {
     background-color: #fff7d5 !important; // warning-25

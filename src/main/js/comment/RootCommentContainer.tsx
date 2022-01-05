@@ -39,6 +39,7 @@ type Props = {
   pullRequest: PullRequest;
 };
 
+//TODO: Ersetzen
 const CommentWrapper = styled.div`
   border-top: 1px solid #dbdbdb;
 

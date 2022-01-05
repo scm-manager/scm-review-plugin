@@ -28,6 +28,7 @@ import { BasicComment } from "../types/PullRequest";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { getUserSuggestions } from "./mention";
 
+//TODO prüfen
 const StyledSuggestion = styled.div<{ focused: boolean }>`
   background-color: ${props => props.focused && "#ccecf9"};
   :hover {
@@ -35,6 +36,7 @@ const StyledSuggestion = styled.div<{ focused: boolean }>`
   }
 `;
 
+//TODO prüfen
 const StyledMentionsInput = styled(MentionsInput)`
   min-height: 110px;
   & * {

@@ -32,14 +32,11 @@ type Props = WithTranslation & {
   result: Result;
 };
 
+//TODO ÜBERPRÜFEN
 const Entry = styled.div`
   display: flex;
   padding: 0.3rem 0;
   align-items: center;
-`;
-
-const PaddingRightIcon = styled(Icon)`
-  padding-right: 0.5rem;
 `;
 
 const OverrideModalRow: FC<Props> = ({ result }) => {
@@ -47,7 +44,7 @@ const OverrideModalRow: FC<Props> = ({ result }) => {
 
   return (
     <Entry>
-      <PaddingRightIcon color={"warning"} name={"exclamation-triangle"} />
+      <Icon className="pr-2" color="warning" name="exclamation-triangle" />
       <p>{t(result?.rule)}</p>
     </Entry>
   );

@@ -80,11 +80,7 @@ const UserField = styled.div.attrs(() => ({
   flex-grow: 8;
 `;
 
-const UserInline = styled.div`
-  display: inline-block;
-  font-weight: bold;
-`;
-
+//TODO PRÜFEN
 const Container = styled.div`
   margin-bottom: 2rem;
   padding: 1rem;
@@ -122,9 +118,8 @@ const LevelWrapper = styled.div`
   }
 `;
 
+//TODO Überprüfen
 const IgnoredMergeObstacles = styled.div`
-  padding: 1rem 0;
-  margin: 1rem 0;
   border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
 `;
 
@@ -140,7 +135,7 @@ const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
     <div className="field is-horizontal">
       <UserLabel>{t("scm-review-plugin.pullRequest." + labelKey)}:</UserLabel>
       <UserField>
-        <UserInline>{displayName}</UserInline>
+        <div className="is-inline-block has-text-weight-bold">{displayName}</div>
         &nbsp;
         {date ? <DateFromNow date={date} /> : null}
       </UserField>
@@ -204,7 +199,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const ignoredMergeObstaclesArray = pullRequest.ignoredMergeObstacles || [];
   if (ignoredMergeObstaclesArray.length || -1 > 0) {
     ignoredMergeObstacles = (
-      <IgnoredMergeObstacles>
+      <IgnoredMergeObstacles className="mx-0 my-4 px-0 py-4">
         <strong>{t("scm-review-plugin.pullRequest.details.ignoredMergeObstacles")}</strong>
         {ignoredMergeObstaclesArray.map(o => (
           <OverrideModalRow key={o} result={{ rule: o, failed: true }} />
