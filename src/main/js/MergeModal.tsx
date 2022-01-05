@@ -200,6 +200,7 @@ class MergeModal extends React.Component<Props, State> {
           commitMessageDisabled={commitStrategyInfos[mergeStrategy]?.commitMessageDisabled}
           commitMessageHint={commitStrategyInfos[mergeStrategy]?.commitMessageHint}
           commitAuthor={commitStrategyInfos[mergeStrategy]?.commitAuthor}
+          onSubmit={() => !this.shouldDisableMergeButton() && this.performMerge(emergencyMerge)}
         />
         {mergeFailed && (
           <>

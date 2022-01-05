@@ -40,6 +40,7 @@ type Props = WithTranslation & {
   shouldDeleteSourceBranch: boolean;
   onChangeDeleteSourceBranch: (value: boolean) => void;
   loading: boolean;
+  onSubmit: () => void;
 };
 
 class MergeForm extends React.Component<Props> {
@@ -67,7 +68,8 @@ class MergeForm extends React.Component<Props> {
       onResetCommitMessage,
       commitMessageHint,
       commitAuthor,
-      t
+      t,
+      onSubmit
     } = this.props;
 
     const renderCommitAuthor = (author: string) => (
@@ -83,6 +85,7 @@ class MergeForm extends React.Component<Props> {
           disabled={this.isCommitMessageDisabled()}
           value={commitMessage}
           onChange={onChangeCommitMessage}
+          onSubmit={onSubmit}
         />
         {this.isShowMessageHint() && (
           <div className="is-size-7 mb-4">
