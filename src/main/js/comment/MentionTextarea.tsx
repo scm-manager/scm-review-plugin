@@ -29,12 +29,21 @@ import { useUserSuggestions } from "@scm-manager/ui-api";
 import { getUserSuggestions } from "./mention";
 import classNames from "classnames";
 
+const StyledSuggestion = styled.div<{ focused: boolean }>`
+  background-color: ${props => props.focused && "var(--scm-shade-link-relative)"};
+  :hover {
+    background-color: var(--scm-shade-link-relative);
+  }
+`;
+
 const StyledMentionsInput = styled(MentionsInput)`
   min-height: 110px;
+
   & * {
     border: none;
   }
   > div [class*="__control"] {
+    background-color: var(--scm-secondary-least);
     font-size: 14px;
     font-weight: normal;
     font-family: "monospace";
@@ -54,15 +63,20 @@ const StyledMentionsInput = styled(MentionsInput)`
     top: 20px !important;
   }
   > div [class*="suggestions__list"] {
+    background-color: var(--scm-secondary-least);
     width: max-content;
-    border: 1px solid rgba(0, 0, 0, 0.15);
+    border: var(--scm-border);
     font-size: 14px;
   }
   > div [class*="suggestions__item"] {
     padding: 4px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    border-bottom: var(--scm-border);
     :focus {
+      background-color: var(--scm-shade-link-relative);
     }
+  }
+  textarea {
+    color: var(--scm-secondary-most);
   }
 `;
 
@@ -94,7 +108,7 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention,
     <div className="field">
       <div className="control">
         <StyledMentionsInput
-          className="textarea review-mention-textarea"
+          className="textarea"
           value={value}
           onKeyDown={onKeyDown}
           onChange={onChange}
@@ -121,9 +135,9 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention,
               index: number,
               focused: boolean
             ) => (
-              <div className={classNames("user", "review-mention-textarea-user", { "focused": focused })} index={index}>
+              <StyledSuggestion className={classNames("user", { focused: focused })} index={index}>
                 {highlightedDisplay}
-              </div>
+              </StyledSuggestion>
             )}
             style={{
               color: "transparent"

@@ -32,6 +32,10 @@ const Comments = styled.div`
   border-top: 1px solid #dbdbdb; // $border
   border-bottom: 1px solid #dbdbdb; // $border
 
+  & > * {
+    background-color: var(--scm-secondary-least);
+  }
+
   /* reply on same line as inline comment */
   & .comment-wrapper + .inline-comment {
     border-top: 1px solid #dbdbdb; // $border
@@ -41,7 +45,7 @@ const Comments = styled.div`
 class InlineComments extends Component<Props> {
   render() {
     const { children } = this.props;
-    return <Comments className="review-inline-comments is-indented-line has-background-secondary-less">{children}</Comments>;
+    return <Comments className="is-indented-line has-background-secondary-less">{children}</Comments>;
   }
 }
 
