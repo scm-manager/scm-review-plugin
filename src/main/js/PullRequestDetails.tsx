@@ -80,7 +80,6 @@ const UserField = styled.div.attrs(() => ({
   flex-grow: 8;
 `;
 
-//TODO PRÜFEN
 const Container = styled.div`
   margin-bottom: 2rem;
   padding: 1rem;
@@ -118,7 +117,6 @@ const LevelWrapper = styled.div`
   }
 `;
 
-//TODO Überprüfen
 const IgnoredMergeObstacles = styled.div`
   border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
 `;

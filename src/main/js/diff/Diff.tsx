@@ -57,7 +57,6 @@ import { useInvalidateDiff } from "../pullRequest";
 import { useChangeNotificationContext } from "../ChangeNotificationContext";
 import LoadingDiff from "./LoadingDiff";
 
-//TODO prüfen
 const CommentWrapper = styled.div`
   & .inline-comment + .inline-comment {
     border-top: 1px solid #dbdbdb;

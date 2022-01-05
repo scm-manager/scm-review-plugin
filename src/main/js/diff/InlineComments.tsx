@@ -28,7 +28,6 @@ type Props = {
   children: ReactNode;
 };
 
-//TODO prüfen
 const Comments = styled.div`
   background-color: whitesmoke; // $background
   border-top: 1px solid #dbdbdb; // $border

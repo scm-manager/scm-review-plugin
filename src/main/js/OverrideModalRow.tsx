@@ -24,29 +24,21 @@
 
 import React, { FC } from "react";
 import { useTranslation, withTranslation, WithTranslation } from "react-i18next";
-import styled from "styled-components";
-import { Result } from "./types/EngineConfig";
 import { Icon } from "@scm-manager/ui-components";
+import { Result } from "./types/EngineConfig";
 
 type Props = WithTranslation & {
   result: Result;
 };
 
-//TODO ÜBERPRÜFEN
-const Entry = styled.div`
-  display: flex;
-  padding: 0.3rem 0;
-  align-items: center;
-`;
-
 const OverrideModalRow: FC<Props> = ({ result }) => {
   const [t] = useTranslation("plugins");
 
   return (
-    <Entry>
+    <div className="is-flex is-align-items-center py-1">
       <Icon className="pr-2" color="warning" name="exclamation-triangle" />
       <p>{t(result?.rule)}</p>
-    </Entry>
+    </div>
   );
 };
 
