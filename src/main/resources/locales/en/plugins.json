@@ -342,11 +342,11 @@
         }
       },
       "newRule": {
-        "label": "Add new rule",
+        "label": "Add new Rule",
         "helpText": "Adds a new rule to validate pull requests."
       },
       "addRule": {
-        "label": "Add rule"
+        "label": "Add Rule"
       },
       "deleteRule": "Delete rule",
       "noMoreRulesAvailable": "No more rules available.",
