@@ -29,16 +29,10 @@ type Props = {
   commentable: boolean;
 };
 
-//TODO: Ersetzen!
 const CommentableWrapper = styled.div`
-  & table.diff tr:hover > td {
-    background-color: #fff7d5 !important; // warning-25
-  }
-
   tbody.commentable .diff-gutter:hover::after {
     font-family: "Font Awesome 5 Free";
     content: " \\f075";
-    color: #33b2e8;
   }
 
   tbody.expanded .diff-gutter {
@@ -56,7 +50,7 @@ class StyledDiffWrapper extends Component<Props> {
   render() {
     const { children, commentable } = this.props;
     if (commentable) {
-      return <CommentableWrapper>{children}</CommentableWrapper>;
+      return <CommentableWrapper className="review-styled-diff-wrapper">{children}</CommentableWrapper>;
     }
     return <NotCommentableWrapper>{children}</NotCommentableWrapper>;
   }

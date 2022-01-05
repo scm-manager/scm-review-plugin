@@ -27,23 +27,14 @@ import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
 import { BasicComment } from "../types/PullRequest";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { getUserSuggestions } from "./mention";
+import classNames from "classnames";
 
-//TODO prüfen
-const StyledSuggestion = styled.div<{ focused: boolean }>`
-  background-color: ${props => props.focused && "#ccecf9"};
-  :hover {
-    background-color: #ccecf9;
-  }
-`;
-
-//TODO prüfen
 const StyledMentionsInput = styled(MentionsInput)`
   min-height: 110px;
   & * {
     border: none;
   }
   > div [class*="__control"] {
-    background-color: white;
     font-size: 14px;
     font-weight: normal;
     font-family: "monospace";
@@ -63,7 +54,6 @@ const StyledMentionsInput = styled(MentionsInput)`
     top: 20px !important;
   }
   > div [class*="suggestions__list"] {
-    background-color: white;
     width: max-content;
     border: 1px solid rgba(0, 0, 0, 0.15);
     font-size: 14px;
@@ -72,7 +62,6 @@ const StyledMentionsInput = styled(MentionsInput)`
     padding: 4px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.15);
     :focus {
-      background-color: #cee4e5;
     }
   }
 `;
@@ -105,7 +94,7 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention,
     <div className="field">
       <div className="control">
         <StyledMentionsInput
-          className="textarea"
+          className="textarea review-mention-textarea"
           value={value}
           onKeyDown={onKeyDown}
           onChange={onChange}
@@ -132,9 +121,9 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention,
               index: number,
               focused: boolean
             ) => (
-              <StyledSuggestion className="user" focused={focused} index={index}>
+              <div className={classNames("user", "review-mention-textarea-user", { "focused": focused })} index={index}>
                 {highlightedDisplay}
-              </StyledSuggestion>
+              </div>
             )}
             style={{
               color: "transparent"
