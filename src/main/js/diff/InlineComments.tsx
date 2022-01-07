@@ -33,7 +33,7 @@ const Comments = styled.div`
   border-bottom: 1px solid #dbdbdb; // $border
 
   & > * {
-    background-color: var(--scm-secondary-least);
+    background-color: var(--scm-secondary-background);
   }
 
   /* reply on same line as inline comment */

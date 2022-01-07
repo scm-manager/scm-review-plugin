@@ -30,9 +30,9 @@ import { getUserSuggestions } from "./mention";
 import classNames from "classnames";
 
 const StyledSuggestion = styled.div<{ focused: boolean }>`
-  background-color: ${props => props.focused && "var(--scm-shade-link-relative)"};
+  background-color: ${props => props.focused && "var(--scm-column-selection)"};
   :hover {
-    background-color: var(--scm-shade-link-relative);
+    background-color: var(--scm-column-selection);
   }
 `;
 
@@ -43,7 +43,7 @@ const StyledMentionsInput = styled(MentionsInput)`
     border: none;
   }
   > div [class*="__control"] {
-    background-color: var(--scm-secondary-least);
+    background-color: var(--scm-secondary-background);
     font-size: 14px;
     font-weight: normal;
     font-family: "monospace";
@@ -63,7 +63,7 @@ const StyledMentionsInput = styled(MentionsInput)`
     top: 20px !important;
   }
   > div [class*="suggestions__list"] {
-    background-color: var(--scm-secondary-least);
+    background-color: var(--scm-secondary-background);
     width: max-content;
     border: var(--scm-border);
     font-size: 14px;
@@ -72,11 +72,11 @@ const StyledMentionsInput = styled(MentionsInput)`
     padding: 4px;
     border-bottom: var(--scm-border);
     :focus {
-      background-color: var(--scm-shade-link-relative);
+      background-color: var(--scm-column-selection);
     }
   }
   textarea {
-    color: var(--scm-secondary-most);
+    color: var(--scm-secondary-text);
   }
 `;
 
