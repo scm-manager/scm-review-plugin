@@ -119,7 +119,8 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
         {
           className: "is-outlined",
           label: t(translationKey + ".submit"),
-          onClick: () => executeTransition(transition)
+          onClick: () => executeTransition(transition),
+          autofocus: true
         },
         {
           label: t(translationKey + ".cancel"),
@@ -221,7 +222,8 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
             {
               className: "is-outlined",
               label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
-              onClick: () => remove(comment)
+              onClick: () => remove(comment),
+              autofocus: true
             },
             {
               label: t("scm-review-plugin.comment.confirmDeleteAlert.cancel"),
