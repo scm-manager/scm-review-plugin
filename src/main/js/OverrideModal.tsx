@@ -21,21 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
+import React, { FC, useState } from "react";
 import { Button, Modal, SubmitButton, Textarea } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { MergeCheck } from "./types/PullRequest";
 import styled from "styled-components";
 import OverrideModalRow from "./OverrideModalRow";
 
-type Props = WithTranslation & {
+type Props = {
   close: () => void;
   proceed: (overrideMessage: string) => void;
   mergeCheck?: MergeCheck;
-};
-
-type State = {
-  overrideMessage: string;
 };
 
 const StyledModal = styled(Modal)`
@@ -49,64 +45,57 @@ const Description = styled.p`
   margin-bottom: -1rem;
 `;
 
-class OverrideModal extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      overrideMessage: ""
-    };
-  }
+const OverrideModal: FC<Props> = ({ mergeCheck, close, proceed }) => {
+  const [t] = useTranslation("plugins");
+  const [overrideMessage, setOverrideMessage] = useState("");
+  const [initialFocusNode, setInitialFocusNode] = useState<HTMLTextAreaElement | null>(null);
 
-  onChangeOverrideMessage = (newMessage: string) => {
-    this.setState({ overrideMessage: newMessage });
-  };
-
-  render() {
-    const { mergeCheck, close, proceed, t } = this.props;
-    const { overrideMessage } = this.state;
-
-    const footer = (
-      <>
-        <SubmitButton
-          color="danger"
-          icon="exclamation-triangle"
-          label={t("scm-review-plugin.showPullRequest.overrideModal.continue")}
-          action={() => proceed(overrideMessage)}
-        />
-        <Button label={t("scm-review-plugin.showPullRequest.overrideModal.cancel")} action={() => close()} />
-      </>
-    );
-
-    const obstacles = (
-      <>
-        {mergeCheck?.mergeObstacles.map(obstacle => (
-          <OverrideModalRow result={{ rule: obstacle.key, failed: true }} useObstacleText={true} />
-        ))}
-      </>
-    );
-
-    const body = (
-      <>
-        <div className="content">
-          {t("scm-review-plugin.showPullRequest.overrideModal.introduction")}
-          {obstacles}
-          <Description>{t("scm-review-plugin.showPullRequest.overrideModal.addMessageText")}</Description>
-        </div>
-        <Textarea onChange={this.onChangeOverrideMessage} />
-      </>
-    );
-
-    return (
-      <StyledModal
-        title={t("scm-review-plugin.showPullRequest.overrideModal.title")}
-        active={true}
-        body={body}
-        closeFunction={close}
-        footer={footer}
-        headColor="danger"
+  const footer = (
+    <>
+      <SubmitButton
+        color="danger"
+        icon="exclamation-triangle"
+        label={t("scm-review-plugin.showPullRequest.overrideModal.continue")}
+        action={() => proceed(overrideMessage)}
       />
-    );
-  }
-}
+      <Button label={t("scm-review-plugin.showPullRequest.overrideModal.cancel")} action={() => close()} />
+    </>
+  );
 
-export default withTranslation("plugins")(OverrideModal);
+  const obstacles = (
+    <>
+      {mergeCheck?.mergeObstacles.map(obstacle => (
+        <OverrideModalRow result={{ rule: obstacle.key, failed: true }} useObstacleText={true} />
+      ))}
+    </>
+  );
+
+  const body = (
+    <>
+      <div className="content">
+        {t("scm-review-plugin.showPullRequest.overrideModal.introduction")}
+        {obstacles}
+        <Description>{t("scm-review-plugin.showPullRequest.overrideModal.addMessageText")}</Description>
+      </div>
+      <Textarea
+        onChange={event => setOverrideMessage(event.target.value)}
+        onSubmit={() => proceed(overrideMessage)}
+        ref={setInitialFocusNode}
+      />
+    </>
+  );
+
+  return (
+    <StyledModal
+      title={t("scm-review-plugin.showPullRequest.overrideModal.title")}
+      active={true}
+      body={body}
+      closeFunction={close}
+      footer={footer}
+      headColor="danger"
+      initialFocusNode={initialFocusNode}
+    />
+  );
+};
+
+export default OverrideModal;
