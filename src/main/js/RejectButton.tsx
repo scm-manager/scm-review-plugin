@@ -41,6 +41,7 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
         <ConfirmAlert
           title={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.title")}
           message={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message")}
+          close={() => setShowModal(false)}
           buttons={[
             {
               className: "is-outlined",
