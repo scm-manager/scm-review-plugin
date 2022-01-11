@@ -29,12 +29,11 @@ type Props = {
 };
 
 const Comments = styled.div`
-  background-color: whitesmoke; // $background
   border-top: 1px solid #dbdbdb; // $border
   border-bottom: 1px solid #dbdbdb; // $border
 
   & > * {
-    background-color: white;
+    background-color: var(--scm-secondary-background);
   }
 
   /* reply on same line as inline comment */
@@ -46,7 +45,7 @@ const Comments = styled.div`
 class InlineComments extends Component<Props> {
   render() {
     const { children } = this.props;
-    return <Comments className="is-indented-line">{children}</Comments>;
+    return <Comments className="is-indented-line has-background-secondary-less">{children}</Comments>;
   }
 }
 

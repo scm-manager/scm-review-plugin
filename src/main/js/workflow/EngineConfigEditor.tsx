@@ -46,16 +46,9 @@ type Props = {
   global: boolean;
 };
 
-const AddRuleLevel = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
 const RuleDetails = styled.p`
   flex: 1;
   padding: 1rem;
-  background: #f5f5f5;
   border-radius: 4px;
 `;
 
@@ -181,8 +174,8 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
 
           {renderAddRuleForm()}
           {selectedRule && (
-            <AddRuleLevel>
-              <RuleDetails>
+            <div className="is-flex is-justify-content-space-between is-align-items-center">
+              <RuleDetails className="has-background-secondary-less">
                 <h4>{t("workflow.rule." + selectedRule + ".description", ruleConfiguration)}</h4>
                 <ExtensionPoint
                   name={`reviewPlugin.workflow.config.${selectedRule}`}
@@ -206,7 +199,7 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
                   }
                 />
               </RuleDetails>
-            </AddRuleLevel>
+            </div>
           )}
         </>
       )}

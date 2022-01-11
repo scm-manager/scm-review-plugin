@@ -34,10 +34,6 @@ import { useTranslation } from "react-i18next";
 import { useBranches } from "@scm-manager/ui-api";
 import queryString from "query-string";
 
-const TopPaddingLevel = styled(Level)`
-  padding-top: 1.5em;
-`;
-
 type Props = {
   repository: Repository;
 };
@@ -138,7 +134,8 @@ const Create: FC<Props> = ({ repository }) => {
           />
         )}
         {information}
-        <TopPaddingLevel
+        <Level
+          className="pt-5"
           right={
             <SubmitButton
               label={t("scm-review-plugin.create.submitButton")}

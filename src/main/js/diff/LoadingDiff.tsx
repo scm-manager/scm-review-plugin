@@ -24,7 +24,6 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import styled from "styled-components";
 import { useDiff } from "@scm-manager/ui-api";
 import {
   Button,
@@ -45,10 +44,6 @@ type LoadingDiffProps = DiffObjectProps & {
   pullRequestComments: Comment[];
   refetchOnWindowFocus?: boolean;
 };
-
-const LevelWithMargin = styled(Level)`
-  margin-bottom: 1rem !important;
-`;
 
 const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, ...props }) => {
   const [t] = useTranslation("plugins");
@@ -79,7 +74,8 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
   }
   return (
     <>
-      <LevelWithMargin
+      <Level
+        className="mb-4"
         right={
           <Button
             action={collapseDiffs}

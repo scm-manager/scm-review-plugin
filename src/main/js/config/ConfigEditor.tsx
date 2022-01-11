@@ -26,7 +26,6 @@ import { WithTranslation, withTranslation } from "react-i18next";
 import { Title, Checkbox, Subtitle } from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
 import { Config, ProtectionBypass } from "../types/Config";
-import styled from "styled-components";
 import BypassList from "./BypassList";
 
 type Props = WithTranslation & {
@@ -36,10 +35,6 @@ type Props = WithTranslation & {
 };
 
 type State = Config;
-
-const BottomMarginText = styled.p`
-  margin-bottom: 1rem;
-`;
 
 class ConfigEditor extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -131,10 +126,10 @@ class ConfigEditor extends React.Component<Props, State> {
           <>
             <hr />
             <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
-            <BottomMarginText>{t("scm-review-plugin.config.branchProtection.branches.note")}</BottomMarginText>
+            <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
             <BranchList branches={protectedBranchPatterns} onChange={this.onChangeBranches} />
             <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
-            <BottomMarginText>{t("scm-review-plugin.config.branchProtection.bypasses.note")}</BottomMarginText>
+            <p className="mb-4">{t("scm-review-plugin.config.branchProtection.bypasses.note")}</p>
             <BypassList bypasses={branchProtectionBypasses} onChange={this.onChangeBypasses} />
           </>
         )}

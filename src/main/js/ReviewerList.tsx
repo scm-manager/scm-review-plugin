@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { useTranslation, WithTranslation, withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Icon } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
@@ -45,11 +45,6 @@ const UserField = styled.div.attrs(() => ({
   flex-grow: 8;
 `;
 
-const UserInlineListItem = styled.li`
-  display: inline-block;
-  font-weight: bold;
-`;
-
 const ReviewerList: FC<Props> = ({ pullRequest }) => {
   const [t] = useTranslation("plugins");
 
@@ -65,17 +60,21 @@ const ReviewerList: FC<Props> = ({ pullRequest }) => {
               {reviewers.map(reviewer => {
                 if (reviewer.approved) {
                   return (
-                    <UserInlineListItem key={reviewer.id}>
+                    <li className="is-inline-block has-text-weight-bold" key={reviewer.id}>
                       {reviewer.displayName}{" "}
                       <Icon
                         title={t("scm-review-plugin.pullRequest.details.approved", { name: reviewer.displayName })}
                         name="check"
                         color="success"
                       />
-                    </UserInlineListItem>
+                    </li>
                   );
                 }
-                return <UserInlineListItem key={reviewer.id}>{reviewer.displayName}</UserInlineListItem>;
+                return (
+                  <li className="is-inline-block has-text-weight-bold" key={reviewer.id}>
+                    {reviewer.displayName}
+                  </li>
+                );
               })}
             </ul>
           </UserField>

@@ -27,21 +27,23 @@ import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
 import { BasicComment } from "../types/PullRequest";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { getUserSuggestions } from "./mention";
+import classNames from "classnames";
 
 const StyledSuggestion = styled.div<{ focused: boolean }>`
-  background-color: ${props => props.focused && "#ccecf9"};
+  background-color: ${props => props.focused && "var(--scm-column-selection)"};
   :hover {
-    background-color: #ccecf9;
+    background-color: var(--scm-column-selection);
   }
 `;
 
 const StyledMentionsInput = styled(MentionsInput)`
   min-height: 110px;
+
   & * {
     border: none;
   }
   > div [class*="__control"] {
-    background-color: white;
+    background-color: var(--scm-secondary-background);
     font-size: 14px;
     font-weight: normal;
     font-family: "monospace";
@@ -61,17 +63,20 @@ const StyledMentionsInput = styled(MentionsInput)`
     top: 20px !important;
   }
   > div [class*="suggestions__list"] {
-    background-color: white;
+    background-color: var(--scm-secondary-background);
     width: max-content;
-    border: 1px solid rgba(0, 0, 0, 0.15);
+    border: var(--scm-border);
     font-size: 14px;
   }
   > div [class*="suggestions__item"] {
     padding: 4px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    border-bottom: var(--scm-border);
     :focus {
-      background-color: #cee4e5;
+      background-color: var(--scm-column-selection);
     }
+  }
+  textarea {
+    color: var(--scm-secondary-text);
   }
 `;
 
@@ -130,7 +135,7 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention,
               index: number,
               focused: boolean
             ) => (
-              <StyledSuggestion className="user" focused={focused} index={index}>
+              <StyledSuggestion className={classNames("user", { focused: focused })} index={index}>
                 {highlightedDisplay}
               </StyledSuggestion>
             )}

@@ -34,8 +34,6 @@ type Props = WithTranslation & {
 };
 
 const RadioList = styled.div`
-  display: flex;
-  flex-direction: column;
   > label:not(:last-child) {
     margin-bottom: 0.75rem;
   }
@@ -50,7 +48,7 @@ class MergeStrategies extends React.Component<Props> {
     const { strategyLinks, selectStrategy, t } = this.props;
     return (
       <>
-        <RadioList>
+        <RadioList className="is-flex is-flex-direction-column">
           {strategyLinks &&
             strategyLinks.map(link => {
               return (

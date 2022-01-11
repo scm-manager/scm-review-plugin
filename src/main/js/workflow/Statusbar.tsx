@@ -37,20 +37,12 @@ type Props = {
   pullRequest: PullRequest;
 };
 
-const AngleRight = styled.i`
-  margin: 0 0.5rem;
-`;
-
 const Notification = styled.div`
   margin-top: 1rem;
   margin-bottom: 0 !important;
   padding: 1rem 1.25rem;
   line-height: 1;
   border-top: none !important;
-`;
-
-const PaddingRightIcon = styled(Icon)`
-  padding-right: 0.5rem;
 `;
 
 const Statusbar: FC<Props> = ({ repository, pullRequest }) => {
@@ -83,13 +75,13 @@ const Statusbar: FC<Props> = ({ repository, pullRequest }) => {
         className={classNames("media", "notification is-grey-lighter", "has-cursor-pointer")}
         onClick={() => toggleModal()}
       >
-        <PaddingRightIcon className="fa-lg" color={color} name={icon} />
+        <Icon className="fa-lg pr-2" color={color} name={icon} />
         <span className="has-text-weight-bold">
           {t("scm-review-plugin.workflow.statusbar.rules", {
             count: data?.results && data.results.length
           })}
         </span>
-        <AngleRight className="fas fa-angle-right" />
+        <i className="fas fa-angle-right mx-2 my-0" />
         <span>
           {failedRules === 0
             ? t("scm-review-plugin.workflow.statusbar.noFailedRules")

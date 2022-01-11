@@ -40,20 +40,9 @@ const VCenteredTd = styled.td`
   vertical-align: middle !important;
 `;
 
-const StyledLevel = styled(Level)`
-  align-items: stretch;
-  margin-bottom: 1rem !important; // same margin as field
-`;
-
 const FullWidthInputField = styled(InputField)`
   width: 100%;
   margin-right: 1.5rem;
-`;
-
-const FlexEndField = styled.div.attrs(() => ({
-  className: "field"
-}))`
-  align-self: flex-end;
 `;
 
 class BranchList extends React.Component<Props, State> {
@@ -113,7 +102,8 @@ class BranchList extends React.Component<Props, State> {
     return (
       <>
         {table}
-        <StyledLevel
+        <Level
+          className="is-align-items-stretch mb-4"
           children={
             <FullWidthInputField
               label={t("scm-review-plugin.config.branchProtection.branches.newBranch.label")}
@@ -123,14 +113,14 @@ class BranchList extends React.Component<Props, State> {
             />
           }
           right={
-            <FlexEndField>
+            <div className="field is-align-self-flex-end">
               <AddButton
                 title={t("scm-review-plugin.config.branchProtection.branches.newBranch.add.helpText")}
                 label={t("scm-review-plugin.config.branchProtection.branches.newBranch.add.label")}
                 action={this.addBranch}
                 disabled={newBranch.trim().length === 0}
               />
-            </FlexEndField>
+            </div>
           }
         />
       </>

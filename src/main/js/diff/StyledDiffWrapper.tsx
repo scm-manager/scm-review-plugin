@@ -31,13 +31,13 @@ type Props = {
 
 const CommentableWrapper = styled.div`
   & table.diff tr:hover > td {
-    background-color: #fff7d5 !important; // warning-25
+    background-color: var(--sh-selected-color) !important;
   }
 
   tbody.commentable .diff-gutter:hover::after {
     font-family: "Font Awesome 5 Free";
     content: " \\f075";
-    color: #33b2e8;
+    color: var(--scm-column-selection);
   }
 
   tbody.expanded .diff-gutter {
