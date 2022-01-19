@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useRef, useState } from "react";
 import { Button, Modal, SubmitButton, Textarea } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { MergeCheck } from "./types/PullRequest";
@@ -48,7 +48,7 @@ const Description = styled.p`
 const OverrideModal: FC<Props> = ({ mergeCheck, close, proceed }) => {
   const [t] = useTranslation("plugins");
   const [overrideMessage, setOverrideMessage] = useState("");
-  const [initialFocusNode, setInitialFocusNode] = useState<HTMLTextAreaElement | null>(null);
+  const initialFocusRef = useRef<HTMLTextAreaElement>(null);
 
   const footer = (
     <>
@@ -80,7 +80,7 @@ const OverrideModal: FC<Props> = ({ mergeCheck, close, proceed }) => {
       <Textarea
         onChange={event => setOverrideMessage(event.target.value)}
         onSubmit={() => proceed(overrideMessage)}
-        ref={setInitialFocusNode}
+        ref={initialFocusRef}
       />
     </>
   );
@@ -93,7 +93,7 @@ const OverrideModal: FC<Props> = ({ mergeCheck, close, proceed }) => {
       closeFunction={close}
       footer={footer}
       headColor="danger"
-      initialFocusNode={initialFocusNode}
+      initialFocusRef={initialFocusRef}
     />
   );
 };

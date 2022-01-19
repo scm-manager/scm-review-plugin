@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useRef, useState } from "react";
 import { Button, Modal, Notification, SubmitButton } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
@@ -58,7 +58,7 @@ const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, merg
     shouldDeleteSourceBranch: false
   });
   const [commitStrategyInfos, setCommitStrategyInfos] = useState<{ [key: string]: MergeStrategyInfo }>({});
-  const [initialFocusNode, setInitialFocusNode] = useState<HTMLInputElement | null>(null);
+  const initialFocusRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (messageChanged) {
@@ -157,7 +157,7 @@ const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, merg
         commitMessageHint={commitStrategyInfos[mergeStrategy]?.commitMessageHint}
         commitAuthor={commitStrategyInfos[mergeStrategy]?.commitAuthor}
         onSubmit={() => !shouldDisableMergeButton() && performMerge(emergencyMerge)}
-        ref={setInitialFocusNode}
+        ref={initialFocusRef}
       />
       {mergeFailed && (
         <>
@@ -179,7 +179,7 @@ const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, merg
       body={body}
       closeFunction={close}
       footer={footer}
-      initialFocusNode={initialFocusNode}
+      initialFocusRef={initialFocusRef}
     />
   );
 };
