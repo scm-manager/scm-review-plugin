@@ -119,12 +119,12 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
         {
           className: "is-outlined",
           label: t(translationKey + ".submit"),
-          onClick: () => executeTransition(transition),
-          autofocus: true
+          onClick: () => executeTransition(transition)
         },
         {
           label: t(translationKey + ".cancel"),
-          onClick: () => null
+          onClick: () => null,
+          autofocus: true
         }
       ]
     });
