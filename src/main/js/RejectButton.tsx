@@ -46,12 +46,12 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
             {
               className: "is-outlined",
               label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
-              onClick: () => reject(),
-              autofocus: true
+              onClick: () => reject()
             },
             {
               label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel"),
-              onClick: () => setShowModal(false)
+              onClick: () => setShowModal(false),
+              autofocus: true
             }
           ]}
         />
