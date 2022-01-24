@@ -1,0 +1,2 @@
+- type: added
+  description: Improve modal accessibility ([#180](https://github.com/scm-manager/scm-review-plugin/pull/180))

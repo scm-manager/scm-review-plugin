@@ -123,7 +123,8 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
         },
         {
           label: t(translationKey + ".cancel"),
-          onClick: () => null
+          onClick: () => null,
+          autofocus: true
         }
       ]
     });
@@ -225,7 +226,8 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
             },
             {
               label: t("scm-review-plugin.comment.confirmDeleteAlert.cancel"),
-              onClick: () => null
+              onClick: () => null,
+              autofocus: true
             }
           ]}
           close={() => setShowConfirmDeleteModal(false)}

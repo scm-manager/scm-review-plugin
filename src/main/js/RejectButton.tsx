@@ -35,27 +35,25 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
 
   const [showModal, setShowModal] = useState(false);
 
-  const renderModalButtons = () => {
-    return [
-      {
-        className: "is-outlined",
-        label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
-        onClick: () => reject()
-      },
-      {
-        label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel"),
-        onClick: () => setShowModal(false)
-      }
-    ];
-  };
-
   return (
     <p className="control">
       {showModal ? (
         <ConfirmAlert
           title={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.title")}
           message={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message")}
-          buttons={renderModalButtons()}
+          close={() => setShowModal(false)}
+          buttons={[
+            {
+              className: "is-outlined",
+              label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
+              onClick: () => reject()
+            },
+            {
+              label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel"),
+              onClick: () => setShowModal(false),
+              autofocus: true
+            }
+          ]}
         />
       ) : null}
       <Button
