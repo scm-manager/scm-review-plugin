@@ -61,7 +61,11 @@ const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, merg
   const initialFocusRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (messageChanged) {
+    updateMergeStrategyInfo();
+  }, []);
+
+  useEffect(() => {
+    if (!messageChanged) {
       updateMergeStrategyInfo();
     }
   }, [mergeStrategy]);
@@ -83,6 +87,7 @@ const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, merg
       setLoadingDefaultMessage(true);
       getMergeStrategyInfo((pullRequest._links.mergeStrategyInfo as Link).href + "?strategy=" + mergeStrategy)
         .then((commitStrategyInfo: MergeStrategyInfo) => {
+          console.log("NEW MERGE STRATEGY INFO", commitStrategyInfo);
           commitStrategyInfos[mergeStrategy] = commitStrategyInfo;
           setCommitStrategyInfos(commitStrategyInfos);
           setMergeCommit({ ...mergeCommit, commitMessage: commitStrategyInfo.defaultCommitMessage });
