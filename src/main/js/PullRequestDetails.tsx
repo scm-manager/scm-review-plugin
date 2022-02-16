@@ -28,6 +28,7 @@ import { Link, Repository } from "@scm-manager/ui-types";
 import { binder, ExtensionPoint } from "@scm-manager/ui-extensions";
 import {
   AstPlugin,
+  BackendError,
   Button,
   ButtonGroup,
   DateFromNow,
@@ -153,8 +154,6 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     (targetDeleted: boolean) => setTargetBranchDeleted(targetDeleted)
   );
 
-  const error = rejectError || mergeError || mergeDryRunError;
-
   const findStrategyLink = (links: Link[], strategy: string) => {
     return links?.filter(link => link.name === strategy)[0].href;
   };
@@ -167,6 +166,11 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     merge({ url: findStrategyLink(mergeLinks, strategy), mergeCommit: commit });
   };
 
+  const error =
+    rejectError ||
+    mergeError ||
+    // Prevent dry-run error for closed pull request with stale cache data
+    (mergeDryRunError instanceof BackendError && mergeDryRunError.errorCode === "FTRhcI0To1" ? null : mergeDryRunError);
   if (error) {
     return <ErrorNotification error={error} />;
   }

@@ -1,0 +1,2 @@
+- type: fixed
+  description: Catch merge check error which is caused by stale cache data ([#186](https://github.com/scm-manager/scm-review-plugin/pull/186))
