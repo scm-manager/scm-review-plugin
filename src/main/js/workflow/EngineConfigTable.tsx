@@ -53,7 +53,7 @@ const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
         <tr>
           <th>{t("scm-review-plugin.workflow.rule.column.name")}</th>
           <th>{t("scm-review-plugin.workflow.rule.column.description")}</th>
-          <th>{""}</th>
+          <td className="has-no-style" />
         </tr>
       </thead>
       <tbody>
