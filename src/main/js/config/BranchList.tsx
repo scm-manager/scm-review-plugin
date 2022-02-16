@@ -23,7 +23,7 @@
  */
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Icon, Level, InputField, AddButton, Notification } from "@scm-manager/ui-components";
+import { AddButton, Icon, InputField, Level, Notification } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = WithTranslation & {
@@ -75,7 +75,7 @@ class BranchList extends React.Component<Props, State> {
           <thead>
             <tr>
               <th>{t("scm-review-plugin.config.branchProtection.branches.newBranch.pattern")}</th>
-              <th />
+              <td className="has-no-style" />
             </tr>
           </thead>
           <tbody>
