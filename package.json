@@ -63,7 +63,7 @@
         "@types/styled-components": "^5.1.0",
         "fetch-mock": "^8.0.0",
         "jest": "^24.9.0",
-        "node-fetch": "^2.6.1",
+        "node-fetch": "^2.6.7",
         "tabbable": "^5.2.1"
     }
 }
