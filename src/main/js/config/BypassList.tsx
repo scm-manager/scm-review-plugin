@@ -25,7 +25,7 @@
 import React, { FC, useState } from "react";
 import { ProtectionBypass } from "../types/Config";
 import { useTranslation } from "react-i18next";
-import { Radio, GroupAutocomplete, UserAutocomplete, Button, Notification, Icon } from "@scm-manager/ui-components";
+import { Button, GroupAutocomplete, Icon, Notification, Radio, UserAutocomplete } from "@scm-manager/ui-components";
 import { Link, SelectValue } from "@scm-manager/ui-types";
 import { useIndexLinks } from "@scm-manager/ui-api";
 import styled from "styled-components";
@@ -108,24 +108,18 @@ const BypassList: FC<{
   };
 
   const deleteBypass = (removedBypass: ProtectionBypass) => {
-    onChange(
-      bypasses.filter(
-        bypass => bypass.name !== removedBypass.name || bypass.group !== removedBypass.group
-      )
-    );
+    onChange(bypasses.filter(bypass => bypass.name !== removedBypass.name || bypass.group !== removedBypass.group));
   };
 
   const table =
     bypasses.length === 0 ? (
-      <Notification type={"info"}>
-        {t("scm-review-plugin.config.branchProtection.bypasses.noBypasses")}
-      </Notification>
+      <Notification type={"info"}>{t("scm-review-plugin.config.branchProtection.bypasses.noBypasses")}</Notification>
     ) : (
       <table className="card-table table is-hoverable is-fullwidth">
         <thead>
           <tr>
             <th>{t("scm-review-plugin.config.branchProtection.bypasses.bypassedUserOrGroup")}</th>
-            <th />
+            <td className="has-no-style" />
           </tr>
         </thead>
         <tbody>
