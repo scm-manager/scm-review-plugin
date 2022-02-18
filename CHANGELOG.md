@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.16.2 - 2022-02-18
+### Fixed
+- Improve accessibility ([#187](https://github.com/scm-manager/scm-review-plugin/pull/187))
+- Catch merge check error which is caused by stale cache data ([#186](https://github.com/scm-manager/scm-review-plugin/pull/186))
+
 ## 2.16.1 - 2022-02-08
 ### Fixed
 - Default commit message in commit dialog ([#184](https://github.com/scm-manager/scm-review-plugin/pull/184))
