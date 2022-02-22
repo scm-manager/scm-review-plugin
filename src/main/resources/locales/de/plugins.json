@@ -32,7 +32,8 @@
       "moreDiffsAvailable": "Es sind weitere Diffs verfügbar.",
       "partialMoreDiffsAvailable": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentar.",
       "partialMoreDiffsAvailable_plural": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentare.",
-      "loadMore": "Weitere laden"
+      "loadMore": "Weitere laden",
+      "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein."
     },
     "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
     "pullRequest": {
