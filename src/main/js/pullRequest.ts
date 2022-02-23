@@ -576,7 +576,8 @@ export const useCheckPullRequest = (
     () => {
       return apiClient
         .get(
-          requiredLink(repository, "pullRequestCheck") + `?source=${pullRequest.source}&target=${pullRequest.target}`
+          requiredLink(repository, "pullRequestCheck") +
+            `?source=${encodeURIComponent(pullRequest.source)}&target=${encodeURIComponent(pullRequest.target)}`
         )
         .then(r => r.json());
     },
