@@ -1,0 +1,2 @@
+- type: fixed
+  description: Add missing comment model to email's for task actions ([#190](https://github.com/scm-manager/scm-review-plugin/pull/190))
