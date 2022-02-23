@@ -37,7 +37,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.Branches;
 import sonia.scm.repository.Changeset;
@@ -64,7 +63,6 @@ import sonia.scm.user.UserDisplayManager;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -189,99 +187,6 @@ class MergeServiceTest {
       "42\n\n" +
         "Reviewed-by: Arthur Dent <dent@hitchhiker.org>\n" +
         "Reviewed-by: Tricia McMillan <trillian@hitchhiker.org>\n"
-    );
-  }
-
-  @Test
-  void shouldEnrichCommitMessageWithCoAuthoredBy() throws IOException {
-    mockUser("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org");
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    ImmutableList<Changeset> changesets = ImmutableList.of(
-      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org")),
-      new Changeset("2", 2L, new Person("Tricia McMillan", "trillian@hitchhiker.org"))
-    );
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
-    mockPullRequest("squash", "master", "1");
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    mergeCommit.setCommitMessage("42");
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessage(
-      "42\n\n" +
-        "Co-authored-by: Arthur Dent <dent@hitchhiker.org>\n" +
-        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
-    );
-  }
-
-  @Test
-  void shouldEnrichCommitMessageWithCoAuthorsOfSquashedCommits() throws IOException {
-    mockUser("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org");
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    ImmutableList<Changeset> changesets = ImmutableList.of(
-      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
-      new Changeset("2", 2L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Arthur Dent <dent@hitchhiker.org>")
-    );
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
-    pullRequest.setAuthor("Zaphod Beetlebrox");
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    mergeCommit.setCommitMessage("42");
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessage(
-      "42\n\n" +
-        "Co-authored-by: Arthur Dent <dent@hitchhiker.org>\n" +
-        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
-    );
-  }
-
-  @Test
-  void shouldNotEnrichCommitMessageWithMergerAsReviewer() throws IOException {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    ImmutableList<Changeset> changesets = ImmutableList.of(
-      new Changeset("1", 1L, new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
-      new Changeset("2", 2L, new Person("Tricia McMillan", "trillian@hitchhiker.org"), "42\n\n")
-    );
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
-    pullRequest.setAuthor("Arthur Dent");
-    HashMap<String, Boolean> reviewers = new HashMap<>();
-    reviewers.put("dent", true);
-    pullRequest.setReviewer(reviewers);
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    mergeCommit.setCommitMessage("42");
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessage(
-      "42\n\n" +
-        "Co-authored-by: Zaphod Beeblebrox <zaphod@hitchhiker.org>\n" +
-        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
-    );
-  }
-
-  @Test
-  void shouldNotEnrichCommitMessageWithMergerAsCoAuthor() throws IOException {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    ImmutableList<Changeset> changesets = ImmutableList.of(
-      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
-      new Changeset("2", 2L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Arthur Dent <dent@hitchhiker.org>")
-    );
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
-    pullRequest.setAuthor("Arthur Dent");
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    mergeCommit.setCommitMessage("42");
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessage(
-      "42\n\n" +
-        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
     );
   }
 
@@ -444,9 +349,9 @@ class MergeServiceTest {
     Person author = new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.com");
 
     ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
-      new Changeset("1", 1L, author, "first commit"),
+      new Changeset("3", 3L, new Person("Arthur", "dent@hitchhiker.com"), "third commit"),
       new Changeset("2", 2L, author, "second commit\nwith multiple lines"),
-      new Changeset("3", 3L, new Person("Arthur", "dent@hitchhiker.com"), "third commit")
+      new Changeset("1", 1L, author, "first commit")
     ));
 
     when(logCommandBuilder.getChangesets()).thenReturn(changesets);
@@ -493,9 +398,9 @@ class MergeServiceTest {
     when(userDisplayManager.get("Philip")).thenReturn(Optional.of(DisplayUser.from(new User("Philip", "Philip Groundhog", "phil@groundhog.com"))));
 
     ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
-      new Changeset("1", 1L, author, "first commit"),
+      new Changeset("3", 3L, author, "third commit"),
       new Changeset("2", 2L, author, "second commit\nwith multiple lines"),
-      new Changeset("3", 3L, author, "third commit")
+      new Changeset("1", 1L, author, "first commit")
     ));
 
     when(logCommandBuilder.getChangesets()).thenReturn(changesets);
