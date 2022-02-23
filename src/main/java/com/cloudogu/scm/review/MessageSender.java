@@ -28,6 +28,7 @@ import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.api.HookMessageProvider;
+import sonia.scm.util.HttpUtil;
 
 import java.util.Arrays;
 
@@ -64,7 +65,7 @@ class ProviderMessageSender implements MessageSender {
       configuration.getBaseUrl(),
       repository.getNamespace(),
       repository.getName(),
-      source);
+      HttpUtil.encode(source));
   }
 
   private String createPullRequestLink(PullRequest pullRequest) {

@@ -77,7 +77,9 @@ const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
       {existing}
       <AddButton
         label={t("scm-review-plugin.branch.createPullRequest")}
-        link={`/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets?source=${branch.name}`}
+        link={`/repo/${repository.namespace}/${
+          repository.name
+        }/pull-requests/add/changesets?source=${encodeURIComponent(branch.name)}`}
       />
     </div>
   );
