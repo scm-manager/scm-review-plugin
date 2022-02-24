@@ -1,0 +1,2 @@
+- type: fixed
+  description: URL encondings for branches ([#188](https://github.com/scm-manager/scm-review-plugin/pull/188))

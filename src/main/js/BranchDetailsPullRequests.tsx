@@ -146,7 +146,7 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) =
       className="is-clickable is-size-7"
       onClick={() =>
         history.push(
-          `/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets/?source=${encodeURI(
+          `/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets/?source=${encodeURIComponent(
             branch.name
           )}`
         )
