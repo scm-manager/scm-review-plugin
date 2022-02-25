@@ -349,14 +349,15 @@ class MergeServiceTest {
       when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
       when(userDisplayManager.get("zaphod")).thenReturn(Optional.of(pullRequestAuthor));
-      Person commitAuthor = new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.com");
+      Person pullRequestAuthor = new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.com");
 
-      Changeset changesetWithContributor = new Changeset("2", 2L, commitAuthor, "second commit\nwith multiple lines");
+      Changeset changesetWithContributor = new Changeset("2", 2L, pullRequestAuthor, "second commit\nwith multiple lines");
       changesetWithContributor.addContributor(new Contributor(Contributor.CO_AUTHORED_BY, new Person("Ford", "prefect@hitchhiker.org")));
+      changesetWithContributor.addContributor(new Contributor(Contributor.COMMITTED_BY, new Person("Marvin", "marvin@example.org")));
       ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
         new Changeset("3", 3L, new Person("Arthur", "dent@hitchhiker.com"), "third commit"),
         changesetWithContributor,
-        new Changeset("1", 1L, commitAuthor, "first commit")
+        new Changeset("1", 1L, pullRequestAuthor, "first commit")
       ));
 
       when(logCommandBuilder.getChangesets()).thenReturn(changesets);
@@ -414,8 +415,6 @@ class MergeServiceTest {
 
       @Test
       void shouldHaveCommitterFromSingleCommits() {
-        mockUser("Phil", "Phil Groundhog", "phil@groundhog.com");
-
         CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
 
         assertThat(commitDefaults.getCommitMessage()).contains("Co-authored-by: Arthur <dent@hitchhiker.com>");
@@ -423,11 +422,16 @@ class MergeServiceTest {
 
       @Test
       void shouldHaveCoAuthorFromSingleCommits() {
-        mockUser("Phil", "Phil Groundhog", "phil@groundhog.com");
-
         CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
 
         assertThat(commitDefaults.getCommitMessage()).contains("Co-authored-by: Ford <prefect@hitchhiker.org>");
+      }
+
+      @Test
+      void shouldNotHaveOtherContributorsThanCoAuthoredFromCommits() {
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+        assertThat(commitDefaults.getCommitMessage()).doesNotContain("marvin@example.org");
       }
     }
 

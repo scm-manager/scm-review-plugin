@@ -297,7 +297,7 @@ public class MergeService {
   private void appendCoAuthors(StringBuilder builder, Set<Contributor> contributors, DisplayUser prAuthor) {
     for (Contributor contributor : contributors) {
       Person contributorPerson = contributor.getPerson();
-      if (!prAuthor.getDisplayName().equals(contributorPerson.getName())) {
+      if (!prAuthor.getDisplayName().equals(contributorPerson.getName()) && Contributor.CO_AUTHORED_BY.equals(contributor.getType())) {
         appendCoAuthor(builder, contributorPerson.getName(), contributorPerson.getMail());
       }
     }
