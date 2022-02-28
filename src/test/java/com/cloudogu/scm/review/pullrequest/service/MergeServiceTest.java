@@ -32,16 +32,17 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.OngoingStubbing;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.Branches;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
+import sonia.scm.repository.Contributor;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
@@ -64,7 +65,6 @@ import sonia.scm.user.UserDisplayManager;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -74,6 +74,7 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -139,6 +140,7 @@ class MergeServiceTest {
     lenient().when(repositoryService.getMergeCommand()).thenReturn(mergeCommandBuilder);
     lenient().when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     lenient().when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
+    lenient().when(email.getMailOrFallback(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0, User.class).getMail());
   }
 
   @BeforeEach
@@ -189,99 +191,6 @@ class MergeServiceTest {
       "42\n\n" +
         "Reviewed-by: Arthur Dent <dent@hitchhiker.org>\n" +
         "Reviewed-by: Tricia McMillan <trillian@hitchhiker.org>\n"
-    );
-  }
-
-  @Test
-  void shouldEnrichCommitMessageWithCoAuthoredBy() throws IOException {
-    mockUser("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org");
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    ImmutableList<Changeset> changesets = ImmutableList.of(
-      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org")),
-      new Changeset("2", 2L, new Person("Tricia McMillan", "trillian@hitchhiker.org"))
-    );
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
-    mockPullRequest("squash", "master", "1");
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    mergeCommit.setCommitMessage("42");
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessage(
-      "42\n\n" +
-        "Co-authored-by: Arthur Dent <dent@hitchhiker.org>\n" +
-        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
-    );
-  }
-
-  @Test
-  void shouldEnrichCommitMessageWithCoAuthorsOfSquashedCommits() throws IOException {
-    mockUser("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.org");
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    ImmutableList<Changeset> changesets = ImmutableList.of(
-      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
-      new Changeset("2", 2L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Arthur Dent <dent@hitchhiker.org>")
-    );
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
-    pullRequest.setAuthor("Zaphod Beetlebrox");
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    mergeCommit.setCommitMessage("42");
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessage(
-      "42\n\n" +
-        "Co-authored-by: Arthur Dent <dent@hitchhiker.org>\n" +
-        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
-    );
-  }
-
-  @Test
-  void shouldNotEnrichCommitMessageWithMergerAsReviewer() throws IOException {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    ImmutableList<Changeset> changesets = ImmutableList.of(
-      new Changeset("1", 1L, new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
-      new Changeset("2", 2L, new Person("Tricia McMillan", "trillian@hitchhiker.org"), "42\n\n")
-    );
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
-    pullRequest.setAuthor("Arthur Dent");
-    HashMap<String, Boolean> reviewers = new HashMap<>();
-    reviewers.put("dent", true);
-    pullRequest.setReviewer(reviewers);
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    mergeCommit.setCommitMessage("42");
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessage(
-      "42\n\n" +
-        "Co-authored-by: Zaphod Beeblebrox <zaphod@hitchhiker.org>\n" +
-        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
-    );
-  }
-
-  @Test
-  void shouldNotEnrichCommitMessageWithMergerAsCoAuthor() throws IOException {
-    mockUser("arthur", "Arthur Dent", "dent@hitchhiker.org");
-    when(mergeCommandBuilder.isSupported(MergeStrategy.SQUASH)).thenReturn(true);
-    when(mergeCommandBuilder.executeMerge()).thenReturn(MergeCommandResult.success("1", "2", "123"));
-    ImmutableList<Changeset> changesets = ImmutableList.of(
-      new Changeset("1", 1L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Tricia McMillan <trillian@hitchhiker.org>"),
-      new Changeset("2", 2L, new Person("Arthur Dent", "dent@hitchhiker.org"), "42\n\nCo-authored-by: Arthur Dent <dent@hitchhiker.org>")
-    );
-    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(1, changesets));
-    PullRequest pullRequest = mockPullRequest("squash", "master", "1");
-    pullRequest.setAuthor("Arthur Dent");
-
-    MergeCommitDto mergeCommit = createMergeCommit(false);
-    mergeCommit.setCommitMessage("42");
-    service.merge(REPOSITORY.getNamespaceAndName(), "1", mergeCommit, MergeStrategy.SQUASH, false);
-    verify(mergeCommandBuilder).setMessage(
-      "42\n\n" +
-        "Co-authored-by: Tricia McMillan <trillian@hitchhiker.org>\n"
     );
   }
 
@@ -426,47 +335,114 @@ class MergeServiceTest {
     assertThat(mergeCheckResult.hasConflicts()).isTrue();
   }
 
-  @Test
-  void shouldCreateCommitMessageForSquashWithAuthorFromPullRequest() throws IOException {
-    User user = mockUser("Phil", "Phil Groundhog", "phil@groundhog.com");
-    when(email.getMailOrFallback(user)).thenReturn("phil@groundhog.com");
+  @Nested
+  class WithSquashMerge {
 
-    DisplayUser currentUser = DisplayUser.from(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
-    when(userDisplayManager.get("zaphod")).thenReturn(of(currentUser));
+    private final DisplayUser pullRequestAuthor = DisplayUser.from(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
 
-    when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
-    when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
-    PullRequest pullRequest = createPullRequest();
-    pullRequest.setAuthor("zaphod");
-    when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
-    when(userDisplayManager.get("zaphod")).thenReturn(Optional.of(currentUser));
+    @BeforeEach
+    void preparePullRequest() throws IOException {
+      when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
+      when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
+      PullRequest pullRequest = createPullRequest();
+      pullRequest.setAuthor("zaphod");
+      when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
-    Person author = new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.com");
+      when(userDisplayManager.get("zaphod")).thenReturn(Optional.of(pullRequestAuthor));
+      Person pullRequestAuthor = new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.com");
 
-    ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
-      new Changeset("1", 1L, author, "first commit"),
-      new Changeset("2", 2L, author, "second commit\nwith multiple lines"),
-      new Changeset("3", 3L, new Person("Arthur", "dent@hitchhiker.com"), "third commit")
-    ));
+      Changeset changesetWithContributor = new Changeset("2", 2L, pullRequestAuthor, "second commit\nwith multiple lines");
+      changesetWithContributor.addContributor(new Contributor(Contributor.CO_AUTHORED_BY, new Person("Ford", "prefect@hitchhiker.org")));
+      changesetWithContributor.addContributor(new Contributor(Contributor.COMMITTED_BY, new Person("Marvin", "marvin@example.org")));
+      ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
+        new Changeset("3", 3L, new Person("Arthur", "dent@hitchhiker.com"), "third commit"),
+        changesetWithContributor,
+        new Changeset("1", 1L, pullRequestAuthor, "first commit")
+      ));
 
-    when(logCommandBuilder.getChangesets()).thenReturn(changesets);
-    CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-    assertThat(commitDefaults.getCommitMessage()).isEqualTo("Squash commits of branch squash:\n" +
-      "\n" +
-      "- first commit\n" +
-      "\n" +
-      "- second commit\n" +
-      "with multiple lines\n" +
-      "\n" +
-      "- third commit\n" +
-      "\n" +
-      "\n" +
-      "Author: Zaphod Beeblebrox <zaphod@hitchhiker.com>" +
-      "\nCommitted-by: Phil Groundhog <phil@groundhog.com>" +
-      "\nCo-authored-by: Arthur <dent@hitchhiker.com>");
-    assertThat(commitDefaults.getCommitAuthor())
-      .usingRecursiveComparison()
-      .isEqualTo(currentUser);
+      when(logCommandBuilder.getChangesets()).thenReturn(changesets);
+    }
+
+    @Nested
+    class WithCurrentUserNotPullRequestAuthor {
+
+      private User user;
+
+      @BeforeEach
+      void setCurrentUser() {
+        user = mockUser("Phil", "Phil Groundhog", "phil@groundhog.com");
+      }
+
+      @Test
+      void shouldContainCommitMessagesFromSingleCommits() {
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+        assertThat(commitDefaults.getCommitMessage()).startsWith("Squash commits of branch squash:\n" +
+          "\n" +
+          "- first commit\n" +
+          "\n" +
+          "- second commit\n" +
+          "with multiple lines\n" +
+          "\n" +
+          "- third commit\n");
+      }
+
+      @Test
+      void shouldHaveAuthorFromPullRequest() {
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+        assertThat(commitDefaults.getCommitAuthor())
+          .usingRecursiveComparison()
+          .isEqualTo(pullRequestAuthor);
+      }
+
+      @Test
+      void shouldUseCurrentUserAsAuthorWhenPullRequestAuthorIsUnknown() {
+        when(userDisplayManager.get("zaphod")).thenReturn(empty());
+
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+        assertThat(commitDefaults.getCommitAuthor())
+          .usingRecursiveComparison()
+          .isEqualTo(DisplayUser.from(user));
+      }
+
+      @Test
+      void shouldHaveCommitterFromCurrentUserIsDifferentThanPullRequestAuthor() {
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+        assertThat(commitDefaults.getCommitMessage()).contains("Committed-by: Phil Groundhog <phil@groundhog.com>");
+      }
+
+      @Test
+      void shouldHaveCommitterFromSingleCommits() {
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+        assertThat(commitDefaults.getCommitMessage()).contains("Co-authored-by: Arthur <dent@hitchhiker.com>");
+      }
+
+      @Test
+      void shouldHaveCoAuthorFromSingleCommits() {
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+        assertThat(commitDefaults.getCommitMessage()).contains("Co-authored-by: Ford <prefect@hitchhiker.org>");
+      }
+
+      @Test
+      void shouldNotHaveOtherContributorsThanCoAuthoredFromCommits() {
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+        assertThat(commitDefaults.getCommitMessage()).doesNotContain("marvin@example.org");
+      }
+    }
+
+    @Test
+    void shouldNotHaveCommitterWhenCurrentUserIsPullRequestAuthor() {
+      mockUser(pullRequestAuthor.getId(), pullRequestAuthor.getDisplayName(), pullRequestAuthor.getMail());
+
+      CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+      assertThat(commitDefaults.getCommitMessage()).doesNotContain("Committed-by");
+    }
   }
 
   @Test
@@ -477,44 +453,6 @@ class MergeServiceTest {
     CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.MERGE_COMMIT);
 
     assertThat(commitDefaults.getCommitAuthor()).isNull();
-  }
-
-  @Test
-  void shouldCreateCommitMessageForSquashWithFallbackForMissingAuthorFromPullRequest() throws IOException {
-    User user = mockUser("trillian", "Tricia McMillan", "tricia@hitchhiker.com");
-    when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
-    when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
-    PullRequest pullRequest = createPullRequest();
-    pullRequest.setAuthor("trillian");
-    when(userDisplayManager.get("trillian")).thenReturn(Optional.of(DisplayUser.from(user)));
-    when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
-
-    Person author = new Person("Philip", "phil@groundhog.com");
-    when(userDisplayManager.get("Philip")).thenReturn(Optional.of(DisplayUser.from(new User("Philip", "Philip Groundhog", "phil@groundhog.com"))));
-
-    ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
-      new Changeset("1", 1L, author, "first commit"),
-      new Changeset("2", 2L, author, "second commit\nwith multiple lines"),
-      new Changeset("3", 3L, author, "third commit")
-    ));
-
-    when(logCommandBuilder.getChangesets()).thenReturn(changesets);
-    CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-    assertThat(commitDefaults.getCommitMessage()).isEqualTo("Squash commits of branch squash:\n" +
-      "\n" +
-      "- first commit\n" +
-      "\n" +
-      "- second commit\n" +
-      "with multiple lines\n" +
-      "\n" +
-      "- third commit\n" +
-      "\n\n" +
-      "Author: Tricia McMillan <tricia@hitchhiker.com>" +
-      "\nCo-authored-by: Philip Groundhog <phil@groundhog.com>"
-    );
-    assertThat(commitDefaults.getCommitAuthor())
-      .usingRecursiveComparison()
-      .isEqualTo(DisplayUser.from(new User("trillian", "Tricia McMillan", "tricia@hitchhiker.com")));
   }
 
   @Test
