@@ -100,6 +100,9 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicC
         model.put("oldComment", commentEvent.getOldItem());
         break;
       case COMMENT_CREATED:
+      case TASK_CREATED:
+      case TASK_REOPEN:
+      case TASK_DONE:
         model.put("comment", commentEvent.getItem());
         break;
       case TEXT_MODIFIED:
