@@ -60,7 +60,11 @@ const CreateForm: FC<Props> = ({
 
   const renderValidationError = () => {
     if (checkResult && checkResult.status !== "PR_VALID") {
-      return <ValidationError className="has-text-danger">{t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}</ValidationError>;
+      return (
+        <ValidationError className="has-text-danger">
+          {t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}
+        </ValidationError>
+      );
     }
   };
 

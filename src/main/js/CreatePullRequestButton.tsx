@@ -59,7 +59,9 @@ const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
     return <Loading />;
   }
 
-  const matchingPullRequests = data._embedded.pullRequests.filter((pr: PullRequest) => pr.source === branch.name);
+  const matchingPullRequests = (data._embedded?.pullRequests as PullRequest[]).filter(
+    (pr: PullRequest) => pr.source === branch.name
+  );
 
   let existing = null;
   if (matchingPullRequests.length > 0) {

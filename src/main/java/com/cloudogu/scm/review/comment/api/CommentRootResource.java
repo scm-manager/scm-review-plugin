@@ -24,7 +24,6 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
-import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.Comment;
@@ -32,7 +31,9 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -62,8 +63,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.cloudogu.scm.review.HalRepresentations.createCollection;
 import static com.cloudogu.scm.review.comment.api.RevisionChecker.checkRevision;
+import static de.otto.edison.hal.Link.link;
 
 public class CommentRootResource {
 
@@ -171,12 +172,12 @@ public class CommentRootResource {
       .stream()
       .map(comment -> mapper.map(comment, repository, pullRequestId, service.possibleTransitions(namespace, name, pullRequestId, comment.getId()), revisions))
       .collect(Collectors.toList());
-    boolean permission = PermissionCheck.mayComment(repository);
-    return createCollection(
-        permission,
-        resourceLinks.pullRequestComments().all(namespace, name, pullRequestId),
-        resourceLinks.pullRequestComments().create(namespace, name, pullRequestId, revisions),
-        dtoList,
-        "pullRequestComments");
+
+    Links.Builder linkBuilder = Links.linkingTo().self(resourceLinks.pullRequestComments().all(namespace, name, pullRequestId));
+    if (PermissionCheck.mayComment(repository)) {
+      linkBuilder.single(link("create", resourceLinks.pullRequestComments().create(namespace, name, pullRequestId, revisions)));
+    }
+
+    return new HalRepresentation(linkBuilder.build(), Embedded.embedded("pullRequestComments", dtoList));
   }
 }

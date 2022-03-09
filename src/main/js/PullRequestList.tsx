@@ -21,14 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Repository } from "@scm-manager/ui-types";
-import { CreateButton, ErrorPage, Loading, Notification } from "@scm-manager/ui-components";
+import { CreateButton, ErrorPage, LinkPaginator, Loading, Notification, urls } from "@scm-manager/ui-components";
 import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
 import { usePullRequests } from "./pullRequest";
+import { PullRequest } from "./types/PullRequest";
+import { useRouteMatch } from "react-router-dom";
 
 const ScrollingTable = styled.div`
   overflow-x: auto;
@@ -41,8 +43,14 @@ type Props = {
 const PullRequestList: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
   const [status, setStatus] = useState("OPEN");
+  const match: { params: { page: string } } = useRouteMatch();
+  const page = useMemo(() => urls.getPageFromMatch(match), [match]);
 
-  const { data, error, isLoading } = usePullRequests(repository, status);
+  const { data, error, isLoading } = usePullRequests(repository, { page, status, pageSize: 10 });
+
+  if (isLoading || !data) {
+    return <Loading />;
+  }
 
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
@@ -59,7 +67,8 @@ const PullRequestList: FC<Props> = ({ repository }) => {
           <Loading />
         ) : (
           <ScrollingTable className="panel-block">
-            <PullRequestTable repository={repository} pullRequests={data!._embedded.pullRequests} />
+            <PullRequestTable repository={repository} pullRequests={data._embedded?.pullRequests as PullRequest[]} />
+            <LinkPaginator collection={data} page={page} />
           </ScrollingTable>
         )}
       </div>
@@ -80,7 +89,7 @@ const PullRequestList: FC<Props> = ({ repository }) => {
     );
   }
 
-  const to = "pull-requests/add/changesets/";
+  const to = `/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets/`;
 
   const createButton = data?._links?.create ? (
     <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={to} />

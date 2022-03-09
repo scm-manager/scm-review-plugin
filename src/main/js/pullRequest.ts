@@ -31,9 +31,9 @@ import {
   Conflicts,
   MergeCheck,
   MergeCommit,
+  PagedPullRequestCollection,
   PossibleTransition,
-  PullRequest,
-  PullRequestCollection
+  PullRequest
 } from "./types/PullRequest";
 import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
 import { Changeset, HalRepresentation, Link, PagedCollection, Repository } from "@scm-manager/ui-types";
@@ -268,13 +268,21 @@ export const useMergePullRequest = (repository: Repository, pullRequest: PullReq
   };
 };
 
-export const usePullRequests = (repository: Repository, status?: string) => {
-  const { error, isLoading, data } = useQuery<PullRequestCollection, Error>(
-    ["repository", repository.namespace, repository.name, "pull-requests", status || ""],
+type UsePullRequestsRequest = {
+  status?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export const usePullRequests = (repository: Repository, request?: UsePullRequestsRequest) => {
+  const status = request?.status || "OPEN";
+  const page = request?.page ? request.page - 1 : 0;
+  const pageSize = request?.pageSize || 10;
+  const { error, isLoading, data } = useQuery<PagedPullRequestCollection, Error>(
+    ["repository", repository.namespace, repository.name, "pull-requests", status, page],
     () => {
-      return apiClient
-        .get(requiredLink(repository, "pullRequest") + (status ? "?status=" + status : ""))
-        .then(response => response.json());
+      const link = requiredLink(repository, "pullRequest") + `?status=${status}&page=${page}&pageSize=${pageSize}`;
+      return apiClient.get(link).then(response => response.json());
     }
   );
 

@@ -36,7 +36,7 @@ class PullRequestsNavLink extends React.Component<Props> {
 
     return (
       <SecondaryNavigationItem
-        to={`${url}/pull-requests`}
+        to={`${url}/pull-requests/`}
         icon="fas fa-code-branch fa-rotate-180"
         label={t("scm-review-plugin.navLink.pullRequest")}
         activeWhenMatch={activeWhenMatch}
