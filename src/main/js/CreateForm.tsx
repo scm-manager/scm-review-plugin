@@ -31,7 +31,6 @@ import styled from "styled-components";
 
 const ValidationError = styled.p`
   font-size: 0.75rem;
-  color: #ff3860;
   margin-top: -3em;
   margin-bottom: 3em;
 `;
@@ -61,7 +60,11 @@ const CreateForm: FC<Props> = ({
 
   const renderValidationError = () => {
     if (checkResult && checkResult.status !== "PR_VALID") {
-      return <ValidationError>{t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}</ValidationError>;
+      return (
+        <ValidationError className="has-text-danger">
+          {t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}
+        </ValidationError>
+      );
     }
   };
 

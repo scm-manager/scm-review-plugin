@@ -22,10 +22,9 @@
  * SOFTWARE.
  */
 import React, { FC, useEffect, useState } from "react";
-import { ErrorNotification, Level, Notification, SubmitButton, Subtitle, Title } from "@scm-manager/ui-components";
+import { ErrorNotification, Level, Notification, SubmitButton, Subtitle } from "@scm-manager/ui-components";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
-import styled from "styled-components";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
 import { useCheckPullRequest, useCreatePullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
@@ -55,7 +54,7 @@ const Create: FC<Props> = ({ repository }) => {
     setDisabled(!isPullRequestValid(pullRequest, result));
   });
 
-  const branches = branchesData?._embedded.branches;
+  const branches = branchesData?._embedded?.branches;
 
   useEffect(() => {
     if (branchesData) {
@@ -126,7 +125,7 @@ const Create: FC<Props> = ({ repository }) => {
         {!createLoading && (
           <CreateForm
             pullRequest={pullRequest}
-            branches={branchesData?._embedded.branches}
+            branches={branchesData?._embedded?.branches}
             handleFormChange={handleFormChange}
             checkResult={checkResult}
             branchesLoading={branchesLoading}

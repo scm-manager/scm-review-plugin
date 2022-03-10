@@ -45,44 +45,31 @@ import CommentHitRenderer from "./search/CommentHitRenderer";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 
 type PredicateProps = {
-  repository?: Repository;
+  repository: Repository;
 };
 
 const reviewSupportedPredicate = (props: PredicateProps) => {
-  return props.repository && props.repository._links.pullRequest;
+  return props.repository && !!props.repository._links.pullRequest;
 };
 
 // new
 
-const NewPullRequestRoute = props => {
+type RepoRouteProps = { repository: Repository; url: string };
+
+const NewPullRequestRoute = ({ url, repository }: RepoRouteProps) => {
   return (
-    <Route path={`${props.url}/pull-requests/add`}>
-      <Create repository={props.repository} userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)} />
+    <Route path={`${url}/pull-requests/add`}>
+      <Create repository={repository} />
     </Route>
   );
 };
 
-binder.bind("repository.route", NewPullRequestRoute);
+binder.bind("repository.route", NewPullRequestRoute, { priority: 10000 });
 
-//  show single pullRequest
-
-export function getUserAutoCompleteLink(indexLinks) {
-  if (indexLinks && indexLinks.autocomplete) {
-    const link = indexLinks.autocomplete.find(i => i.name === "users");
-    if (link) {
-      return link.href;
-    }
-  }
-  return "";
-}
-
-const ShowPullRequestRoute = props => {
+const ShowPullRequestRoute = ({ url, repository }: RepoRouteProps) => {
   return (
-    <Route path={`${props.url}/pull-request/:pullRequestNumber`}>
-      <SinglePullRequest
-        repository={props.repository}
-        userAutocompleteLink={getUserAutoCompleteLink(props.indexLinks)}
-      />
+    <Route path={`${url}/pull-request/:pullRequestNumber`}>
+      <SinglePullRequest repository={repository} />
     </Route>
   );
 };
@@ -95,17 +82,22 @@ export function matches(route: any) {
   return route.location.pathname.match(routeRegex);
 }
 
-const PullRequestNavLink = ({ url }) => {
+const PullRequestNavLink = ({ url }: { url: string }) => {
   return <PullRequestsNavLink url={url} activeWhenMatch={matches} />;
 };
 
 binder.bind("repository.navigation", PullRequestNavLink, reviewSupportedPredicate);
 
-const ShowPullRequestsRoute = ({ url, repository }) => {
+const ShowPullRequestsRoute = ({ url, repository }: RepoRouteProps) => {
   return (
-    <Route path={`${url}/pull-requests/`} exact>
-      <PullRequestList repository={repository} />
-    </Route>
+    <>
+      <Route path={`${url}/pull-requests/`} exact>
+        <PullRequestList repository={repository} />
+      </Route>
+      <Route path={`${url}/pull-requests/:page`} exact>
+        <PullRequestList repository={repository} />
+      </Route>
+    </>
   );
 };
 

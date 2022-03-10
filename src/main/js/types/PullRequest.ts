@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { DisplayedUser, HalRepresentation, Links } from "@scm-manager/ui-types";
+import { DisplayedUser, HalRepresentation, Links, PagedCollection } from "@scm-manager/ui-types";
 import { ReactText } from "react";
 
 export type Reviewer = DisplayedUser & {
@@ -105,6 +105,8 @@ export type Reply = BasicComment & {
   date: string;
   _links: Links;
 };
+
+export type PagedPullRequestCollection = PagedCollection<PullRequestCollection>;
 
 export type PullRequestCollection = HalRepresentation & {
   _embedded: {

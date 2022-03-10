@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.pullrequest.api;
 
+import com.cloudogu.scm.review.PagedCollections;
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
@@ -33,8 +34,11 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.google.common.collect.Lists;
+import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
+import de.otto.edison.hal.paging.NumberedPaging;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -72,10 +76,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.cloudogu.scm.review.HalRepresentations.createCollection;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.BRANCHES_NOT_DIFFER;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_ALREADY_EXISTS;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
+import static de.otto.edison.hal.Link.link;
+import static de.otto.edison.hal.paging.NumberedPaging.zeroBasedNumberedPaging;
 import static java.util.Optional.ofNullable;
 import static sonia.scm.AlreadyExistsException.alreadyExists;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
@@ -181,7 +186,14 @@ public class PullRequestRootResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public HalRepresentation getAll(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("status") @DefaultValue("OPEN") PullRequestSelector pullRequestSelector) {
+  public Response getAll(
+    @Context UriInfo uriInfo,
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @QueryParam("status") @DefaultValue("OPEN") PullRequestSelector pullRequestSelector,
+    @DefaultValue("0") @QueryParam("page") int page,
+    @DefaultValue("10") @QueryParam("pageSize") int pageSize
+  ) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)
@@ -192,9 +204,43 @@ public class PullRequestRootResource {
       .collect(Collectors.toList());
 
     PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
-    boolean permission = PermissionCheck.mayCreate(repository);
-    return
-      createCollection(permission, resourceLinks.pullRequestCollection().all(namespace, name), resourceLinks.pullRequestCollection().create(namespace, name), pullRequestDtos, "pullRequests");
+    NumberedPaging paging = zeroBasedNumberedPaging(page, pageSize, pullRequestDtos.size());
+    Links.Builder linkBuilder = PagedCollections.createPagedSelfLinks(paging, resourceLinks.pullRequestCollection()
+      .all(namespace, name));
+
+    if (PermissionCheck.mayCreate(repository)) {
+      linkBuilder.single(link("create", resourceLinks.pullRequestCollection().create(namespace, name)));
+    }
+
+    if (pullRequestDtos.isEmpty()) {
+      return Response.ok(
+        PagedCollections.createPagedCollection(
+          createHalRepresentation(linkBuilder, pullRequestDtos),
+          page,
+          0
+        )).build();
+    }
+
+    List<List<PullRequestDto>> pagedPullRequestDtos = Lists.partition(pullRequestDtos, pageSize);
+    return Response.ok(
+      PagedCollections.createPagedCollection(
+        createHalRepresentation(linkBuilder, pagedPullRequestDtos.get(page)),
+        page,
+        pagedPullRequestDtos.size()
+      )).build();
+  }
+
+  public Response getAll(
+    UriInfo uriInfo,
+    String namespace,
+    String name,
+    PullRequestSelector pullRequestSelector
+  ) {
+    return getAll(uriInfo, namespace, name, pullRequestSelector, 0, 9999);
+  }
+
+  private HalRepresentation createHalRepresentation(Links.Builder linkBuilder, List<PullRequestDto> pullRequestDtos) {
+    return new HalRepresentation(linkBuilder.build(), Embedded.embedded("pullRequests", pullRequestDtos));
   }
 
   @GET

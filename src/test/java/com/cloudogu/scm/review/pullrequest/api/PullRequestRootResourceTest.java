@@ -131,7 +131,6 @@ public class PullRequestRootResourceTest {
   private final MockHttpResponse response = new MockHttpResponse();
   private final Subject subject = mock(Subject.class);
 
-  private PullRequestRootResource pullRequestRootResource;
   private static final String REPOSITORY_NAME = "repo";
   private static final String REPOSITORY_ID = "repo_ID";
   private static final String REPOSITORY_NAMESPACE = "ns";
@@ -166,7 +165,7 @@ public class PullRequestRootResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     when(pullRequestService.getRepository(repository.getNamespace(), repository.getName())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
-    pullRequestRootResource = new PullRequestRootResource(mapper, service, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, service, null, null, channelRegistry)));
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(mapper, service, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, service, null, null, channelRegistry)));
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -399,6 +398,10 @@ public class PullRequestRootResourceTest {
     assertThat(pr_1.get("id").asText()).isEqualTo(lastPR);
     assertThat(pr_2.get("id").asText()).isEqualTo(toDayUpdatedPR);
     assertThat(pr_3.get("id").asText()).isEqualTo(firstPR);
+
+    // Check with default values
+    assertThat(jsonNode.get("page").asText()).isEqualTo("0");
+    assertThat(jsonNode.get("pageTotal").asText()).isEqualTo("1");
   }
 
   @Test
@@ -411,7 +414,7 @@ public class PullRequestRootResourceTest {
     when(store.getAll()).thenReturn(pullRequests);
 
     // request all PRs without filter
-    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME);
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"id\":\"" + id_1 + "\"");
@@ -424,6 +427,33 @@ public class PullRequestRootResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"id\":\"" + id_1 + "\"");
     assertThat(response.getContentAsString()).contains("\"id\":\"" + id_2 + "\"");
+  }
+
+  @Test
+  @SubjectAware(username = "rr")
+  public void shouldGetAllPullRequestsWithPagination() throws URISyntaxException, UnsupportedEncodingException {
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    String id_1 = "id_1";
+    String id_2 = "ABC ID 2";
+    List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(id_1), createPullRequest(id_2));
+    when(store.getAll()).thenReturn(pullRequests);
+
+    // Results for first page
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "?page=0&pageSize=1");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"id\":\"" + id_1 + "\"");
+    assertThat(response.getContentAsString()).contains("\"page\":0");
+    assertThat(response.getContentAsString()).contains("\"pageTotal\":2");
+
+    // Results for second page
+    request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "?page=1&pageSize=1");
+    response.reset();
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"id\":\"" + id_2 + "\"");
+    assertThat(response.getContentAsString()).contains("\"page\":1");
+    assertThat(response.getContentAsString()).contains("\"pageTotal\":2");
   }
 
   @Test
