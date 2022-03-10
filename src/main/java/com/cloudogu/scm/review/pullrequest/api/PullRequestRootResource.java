@@ -230,6 +230,15 @@ public class PullRequestRootResource {
       )).build();
   }
 
+  public Response getAll(
+    UriInfo uriInfo,
+    String namespace,
+    String name,
+    PullRequestSelector pullRequestSelector
+  ) {
+    return getAll(uriInfo, namespace, name, pullRequestSelector, 0, 9999);
+  }
+
   private HalRepresentation createHalRepresentation(Links.Builder linkBuilder, List<PullRequestDto> pullRequestDtos) {
     return new HalRepresentation(linkBuilder.build(), Embedded.embedded("pullRequests", pullRequestDtos));
   }
