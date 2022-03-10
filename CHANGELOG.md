@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.17.0 - 2022-03-10
+### Added
+- Implement pagination for pull request list ([#191](https://github.com/scm-manager/scm-review-plugin/pull/191))
+
+### Fixed
+- URL encondings for branches ([#188](https://github.com/scm-manager/scm-review-plugin/pull/188))
+- Commit message for squash ([#189](https://github.com/scm-manager/scm-review-plugin/pull/189))
+- Missing comment text in emails for task actions ([#190](https://github.com/scm-manager/scm-review-plugin/pull/190))
+
 ## 2.16.2 - 2022-02-18
 ### Fixed
 - Improve accessibility ([#187](https://github.com/scm-manager/scm-review-plugin/pull/187))
