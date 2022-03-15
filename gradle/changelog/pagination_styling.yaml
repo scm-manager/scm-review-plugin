@@ -1,0 +1,4 @@
+- type: fixed
+  description: Separate pagination from list visually ([#192](https://github.com/scm-manager/scm-review-plugin/pull/192))
+- type: fixed
+  description: Fix server error on not existing pagination number ([#192](https://github.com/scm-manager/scm-review-plugin/pull/192))

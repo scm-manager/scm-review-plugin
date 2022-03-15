@@ -72,6 +72,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -211,17 +212,16 @@ public class PullRequestRootResource {
     if (PermissionCheck.mayCreate(repository)) {
       linkBuilder.single(link("create", resourceLinks.pullRequestCollection().create(namespace, name)));
     }
-
-    if (pullRequestDtos.isEmpty()) {
+    List<List<PullRequestDto>> pagedPullRequestDtos = Lists.partition(pullRequestDtos, pageSize);
+    if (pullRequestDtos.isEmpty() || page >= pagedPullRequestDtos.size()) {
       return Response.ok(
         PagedCollections.createPagedCollection(
-          createHalRepresentation(linkBuilder, pullRequestDtos),
+          createHalRepresentation(linkBuilder, Collections.emptyList()),
           page,
           0
         )).build();
     }
 
-    List<List<PullRequestDto>> pagedPullRequestDtos = Lists.partition(pullRequestDtos, pageSize);
     return Response.ok(
       PagedCollections.createPagedCollection(
         createHalRepresentation(linkBuilder, pagedPullRequestDtos.get(page)),

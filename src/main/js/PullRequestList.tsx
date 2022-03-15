@@ -66,10 +66,14 @@ const PullRequestList: FC<Props> = ({ repository }) => {
         {isLoading ? (
           <Loading />
         ) : (
-          <ScrollingTable className="panel-block">
-            <PullRequestTable repository={repository} pullRequests={data._embedded?.pullRequests as PullRequest[]} />
-            <LinkPaginator collection={data} page={page} />
-          </ScrollingTable>
+          <>
+            <ScrollingTable className="panel-block">
+              <PullRequestTable repository={repository} pullRequests={data._embedded?.pullRequests as PullRequest[]} />
+            </ScrollingTable>
+            <div className="panel-footer">
+              <LinkPaginator collection={data} page={page} />
+            </div>
+          </>
         )}
       </div>
     );
