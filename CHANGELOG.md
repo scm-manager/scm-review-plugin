@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.17.1 - 2022-03-17
+### Fixed
+- Pagination with status filters ([#193](https://github.com/scm-manager/scm-review-plugin/pull/193))
+- Separate pagination from list visually ([#192](https://github.com/scm-manager/scm-review-plugin/pull/192))
+- Fix server error on not existing pagination number ([#192](https://github.com/scm-manager/scm-review-plugin/pull/192))
+
 ## 2.17.0 - 2022-03-10
 ### Added
 - Implement pagination for pull request list ([#191](https://github.com/scm-manager/scm-review-plugin/pull/191))
