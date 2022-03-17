@@ -30,7 +30,7 @@ import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
 import { usePullRequests } from "./pullRequest";
 import { PullRequest } from "./types/PullRequest";
-import { useRouteMatch } from "react-router-dom";
+import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
 
 const ScrollingTable = styled.div`
   overflow-x: auto;
@@ -42,25 +42,28 @@ type Props = {
 
 const PullRequestList: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
-  const [status, setStatus] = useState("OPEN");
+  const location = useLocation();
+  const search = urls.getQueryStringFromLocation(location);
   const match: { params: { page: string } } = useRouteMatch();
+  const [statusFilter, setStatusFilter] = useState<string>(search || "OPEN");
+  const history = useHistory();
   const page = useMemo(() => urls.getPageFromMatch(match), [match]);
-
-  const { data, error, isLoading } = usePullRequests(repository, { page, status, pageSize: 10 });
+  const { data, error, isLoading } = usePullRequests(repository, { page, status: statusFilter, pageSize: 10 });
 
   if (isLoading || !data) {
     return <Loading />;
   }
 
   const handleStatusChange = (newStatus: string) => {
-    setStatus(newStatus);
+    setStatusFilter(newStatus);
+    history.replace(`1?q=${newStatus}`);
   };
 
   const renderPullRequestTable = () => {
     return (
       <div className="panel">
         <div className="panel-heading">
-          <StatusSelector handleTypeChange={handleStatusChange} status={status ? status : "OPEN"} />
+          <StatusSelector handleTypeChange={handleStatusChange} status={statusFilter} />
         </div>
 
         {isLoading ? (
@@ -71,7 +74,7 @@ const PullRequestList: FC<Props> = ({ repository }) => {
               <PullRequestTable repository={repository} pullRequests={data._embedded?.pullRequests as PullRequest[]} />
             </ScrollingTable>
             <div className="panel-footer">
-              <LinkPaginator collection={data} page={page} />
+              <LinkPaginator collection={data} page={page} filter={statusFilter} />
             </div>
           </>
         )}
