@@ -180,11 +180,17 @@ export const useCreatePullRequest = (repository: Repository, callback?: (id: str
         if (!id) {
           throw new Error("created pull request missing id");
         }
-        if (callback) {
-          callback(id);
-        }
         queryClient.setQueryData(prQueryKey(repository, id), pr);
-        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
+        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id), [
+          "repository",
+          repository.namespace,
+          repository.name,
+          "branch-details"
+        ]).then(() => {
+          if (callback) {
+            callback(id);
+          }
+        });
       }
     }
   );
@@ -224,7 +230,13 @@ export const useRejectPullRequest = (repository: Repository, pullRequest: PullRe
     },
     {
       onSuccess: () => {
-        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
+        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id), [
+          "repository",
+          repository.namespace,
+          repository.name,
+          "branch-details",
+          "_"
+        ]);
       }
     }
   );
