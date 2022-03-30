@@ -130,7 +130,7 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) =
           <PullRequestList repository={repository} pullRequests={prs} />
         </Popover>
         <div {...triggerProps} className="is-size-7">
-          <Icon name="code-branch" />
+          <Icon name="code-branch" className="fa-rotate-180" />
           <span>
             {t("scm-review-plugin.branchDetails.pullRequest.pending", {
               count: prs.length
@@ -152,7 +152,7 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) =
         )
       }
     >
-      <Icon name="code-branch" />
+      <Icon name="code-branch" className="fa-rotate-180" />
       <span>{t("scm-review-plugin.branchDetails.pullRequest.create")}</span>
     </div>
   );
