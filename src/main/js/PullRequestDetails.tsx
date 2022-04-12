@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { Link, Repository } from "@scm-manager/ui-types";
@@ -153,6 +153,15 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     pullRequest,
     (targetDeleted: boolean) => setTargetBranchDeleted(targetDeleted)
   );
+  const astPlugins = useMemo(
+    () =>
+      binder
+        .getExtensions("pullrequest.description.plugins", {
+          halObject: pullRequest
+        })
+        .map(pluginFactory => pluginFactory({ halObject: pullRequest }) as AstPlugin),
+    [pullRequest]
+  );
 
   const findStrategyLink = (links: Link[], strategy: string) => {
     return links?.filter(link => link.name === strategy)[0].href;
@@ -184,14 +193,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     description = (
       <div className="media">
         <MediaContent>
-          <ReducedMarkdownView
-            content={pullRequest.description}
-            plugins={binder
-              .getExtensions("pullrequest.description.plugins", {
-                halObject: pullRequest
-              })
-              .map(pluginFactory => pluginFactory({ halObject: pullRequest }) as AstPlugin)}
-          />
+          <ReducedMarkdownView content={pullRequest.description} plugins={astPlugins} />
         </MediaContent>
       </div>
     );
