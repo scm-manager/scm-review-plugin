@@ -45,17 +45,17 @@ const CommentContent: FC<Props> = ({ comment }) => {
     });
     return content;
   }, [t, comment.systemComment, comment.comment, comment.mentions]);
-
-  return (
-    <ReducedMarkdownView
-      content={message}
-      plugins={binder
+  const astPlugins = useMemo(
+    () =>
+      binder
         .getExtensions("pullrequest.comment.plugins", {
           halObject: comment
         })
-        .map(pluginFactory => pluginFactory({ halObject: comment }) as AstPlugin)}
-    />
+        .map(pluginFactory => pluginFactory({ halObject: comment }) as AstPlugin),
+    [comment]
   );
+
+  return <ReducedMarkdownView content={message} plugins={astPlugins} />;
 };
 
 export default CommentContent;
