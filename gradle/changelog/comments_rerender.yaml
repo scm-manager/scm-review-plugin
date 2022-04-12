@@ -1,0 +1,2 @@
+- type: fixed
+  description: Unnecessary re-render of comments ([#197](https://github.com/scm-manager/scm-review-plugin/pull/197))
