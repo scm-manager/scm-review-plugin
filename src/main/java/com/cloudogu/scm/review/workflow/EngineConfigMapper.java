@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import sonia.scm.api.v2.resources.BaseMapper;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
 public abstract class EngineConfigMapper<A extends EngineConfiguration, B extends RepositoryEngineConfigDto> extends BaseMapper<A, B> {
 
@@ -41,8 +42,8 @@ public abstract class EngineConfigMapper<A extends EngineConfiguration, B extend
   AppliedRuleDto map(AppliedRule appliedRule) {
     AppliedRuleDto dto = new AppliedRuleDto();
     dto.setRule(appliedRule.getRule());
-    Rule rule = availableRules.ruleOf(appliedRule.getRule());
-    if (rule.getConfigurationType().isPresent()) {
+    Optional<Rule> rule = availableRules.ruleOf(appliedRule.getRule());
+    if (rule.isPresent() && rule.get().getConfigurationType().isPresent()) {
       dto.setConfiguration(new ObjectMapper().valueToTree(appliedRule.getConfiguration()));
     }
     return dto;
@@ -50,10 +51,12 @@ public abstract class EngineConfigMapper<A extends EngineConfiguration, B extend
 
   AppliedRule map(AppliedRuleDto dto) {
     AppliedRule appliedRule = new AppliedRule();
-    Rule rule = availableRules.ruleOf(dto.getRule());
-    rule.getConfigurationType()
-      .ifPresent(configurationType -> appliedRule.configuration = parseConfiguration(dto, rule, configurationType));
-    appliedRule.rule = dto.getRule();
+    Optional<Rule> rule = availableRules.ruleOf(dto.getRule());
+    if (rule.isPresent()) {
+      rule.get().getConfigurationType()
+        .ifPresent(configurationType -> appliedRule.configuration = parseConfiguration(dto, rule.get(), configurationType));
+      appliedRule.rule = dto.getRule();
+    }
     return appliedRule;
   }
 
