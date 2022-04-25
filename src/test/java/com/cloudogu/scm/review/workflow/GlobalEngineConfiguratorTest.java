@@ -81,14 +81,24 @@ class GlobalEngineConfiguratorTest {
     configurator.setEngineConfiguration(config(false));
     List<EngineConfigurator.RuleInstance> rules = configurator.getRules();
 
-    assertThat(rules.isEmpty()).isTrue();
+    assertThat(rules).isEmpty();
   }
 
   @Test
   void shouldReturnEmptyListIfNoConfigurationExistsYet() {
     EngineConfiguration engineConfiguration = configurator.getEngineConfiguration();
 
-    assertThat(engineConfiguration.getRules().isEmpty()).isTrue();
+    assertThat(engineConfiguration.getRules()).isEmpty();
+  }
+
+  @Test
+  void shouldRemoveUnknownRulesOnStore() {
+    ImmutableList<AppliedRule> rules = ImmutableList.of(new AppliedRule(null, null));
+    configurator.setEngineConfiguration(new GlobalEngineConfiguration(rules, true, true));
+
+    List<EngineConfigurator.RuleInstance> storedRules = configurator.getRules();
+
+    assertThat(storedRules).isEmpty();
   }
 
   public static class RuleWithInjection implements Rule {

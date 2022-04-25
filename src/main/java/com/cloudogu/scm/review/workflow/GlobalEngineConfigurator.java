@@ -30,6 +30,7 @@ import sonia.scm.store.ConfigurationStoreFactory;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GlobalEngineConfigurator extends EngineConfigurator {
 
@@ -48,7 +49,8 @@ public class GlobalEngineConfigurator extends EngineConfigurator {
   }
 
   public void setEngineConfiguration(GlobalEngineConfiguration engineConfiguration) {
-    createStore().set(engineConfiguration);
+    List<AppliedRule> rules = engineConfiguration.getRules().stream().filter(r -> r.rule != null).collect(Collectors.toList());
+    createStore().set(new GlobalEngineConfiguration(rules, engineConfiguration.isEnabled(), engineConfiguration.isDisableRepositoryConfiguration()));
   }
 
   public List<RuleInstance> getRules() {
