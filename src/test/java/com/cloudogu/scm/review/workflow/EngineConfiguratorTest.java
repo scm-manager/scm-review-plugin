@@ -49,7 +49,7 @@ class EngineConfiguratorTest {
     EngineConfiguration configuration = new EngineConfiguration(appliedRules, false);
     List<RuleInstance> rules = engineConfigurator.getRules(configuration);
 
-    assertThat(rules.isEmpty()).isTrue();
+    assertThat(rules).isEmpty();
   }
 
   @Test
@@ -61,18 +61,8 @@ class EngineConfiguratorTest {
     EngineConfiguration configuration = new EngineConfiguration(appliedRules, true);
     List<RuleInstance> rules = engineConfigurator.getRules(configuration);
 
-    assertThat(rules.size()).isEqualTo(2);
+    assertThat(rules).hasSize(2);
     assertThat(rules.get(0).getRule()).isInstanceOfAny(FailureRule.class, SuccessRule.class);
-  }
-
-  @Test
-  void shouldThrowUnknownRuleException() {
-    AvailableRules availableRules = AvailableRules.of(new SuccessRule());
-    final EngineConfigurator engineConfigurator = createEngineConfigurator(availableRules);
-    List<AppliedRule> appliedRules = of(FailureRule.class.getSimpleName(), SuccessRule.class.getSimpleName()).stream().map(AppliedRule::new).collect(Collectors.toList());
-
-    EngineConfiguration configuration = new EngineConfiguration(appliedRules, true);
-    assertThrows(UnknownRuleException.class, () -> engineConfigurator.getRules(configuration));
   }
 
   static class SuccessRule implements Rule {

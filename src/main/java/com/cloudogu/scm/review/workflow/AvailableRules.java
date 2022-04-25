@@ -28,6 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import javax.inject.Inject;
+import java.util.Optional;
 import java.util.Set;
 
 public class AvailableRules {
@@ -45,11 +46,10 @@ public class AvailableRules {
     return new AvailableRules(ImmutableSet.copyOf(rules));
   }
 
-  public Rule ruleOf(String name) {
+  public Optional<Rule> ruleOf(String name) {
     return rules.stream()
       .filter(rule -> rule.getClass().getSimpleName().equals(name))
-      .findFirst()
-      .orElseThrow(() -> new UnknownRuleException(name));
+      .findFirst();
   }
 
   public static String nameOf(Rule rule) {

@@ -30,7 +30,7 @@ import java.util.List;
 @Getter
 public class Results {
 
-  private List<Result> ruleResults;
+  private final List<Result> ruleResults;
 
   public Results(List<Result> results) {
     this.ruleResults = results;

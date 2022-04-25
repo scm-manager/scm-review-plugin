@@ -27,6 +27,7 @@ import lombok.Getter;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -58,13 +59,15 @@ public abstract class EngineConfigurator {
     return configuration.getRules()
       .stream()
       .map(this::createRuleInstance)
+      .filter(Optional::isPresent)
+      .map(Optional::get)
       .collect(Collectors.toList());
   }
 
-  private RuleInstance createRuleInstance(AppliedRule appliedRule) {
-    Rule rule = availableRules.ruleOf(appliedRule.getRule());
+  private Optional<RuleInstance> createRuleInstance(AppliedRule appliedRule) {
+    Optional<Rule> rule = availableRules.ruleOf(appliedRule.getRule());
     Object configuration = appliedRule.getConfiguration();
-    return new RuleInstance(rule, configuration);
+    return rule.map(r -> new RuleInstance(r, configuration));
   }
 
   @Getter
