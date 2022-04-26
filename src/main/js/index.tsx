@@ -21,8 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
+import React, { FC } from "react";
+import { CardColumnSmall, ConfigurationBinder as cfgBinder, Icon, NavLink } from "@scm-manager/ui-components";
 import { binder, ExtensionPointDefinition } from "@scm-manager/ui-extensions";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
@@ -43,6 +43,7 @@ import { Branch, Repository } from "@scm-manager/ui-types";
 import PullRequestHitRenderer from "./search/PullRequestHitRenderer";
 import CommentHitRenderer from "./search/CommentHitRenderer";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
+import { useTranslation } from "react-i18next";
 
 type PredicateProps = {
   repository: Repository;
@@ -101,6 +102,16 @@ const ShowPullRequestsRoute = ({ url, repository }: RepoRouteProps) => {
   );
 };
 
+const AllPullRequestsLink: FC = () => {
+  const [t] = useTranslation("plugins");
+  return <CardColumnSmall
+      link="/search/pullRequest/?q=status:OPEN"
+      contentLeft={t("scm-review-plugin.landingpage.myPullRequests.allPullRequestsLinkTitle")}
+      contentRight=""
+      avatar={<Icon name="noop" className="fa-fw fa-lg" />}
+  />;
+};
+
 binder.bind("repository.route", ShowPullRequestsRoute);
 
 binder.bind<ExtensionPointDefinition<"repos.branch-details.information", { repository: Repository; branch: Branch }>>(
@@ -121,6 +132,7 @@ cfgBinder.bindGlobal("/workflow", "scm-review-plugin.navLink.workflow", "workflo
 
 binder.bind("landingpage.mydata", {
   render: (data: any, key: any) => <MyPullRequest key={key} data={data} />,
+  beforeData: <AllPullRequestsLink />,
   title: "scm-review-plugin.landingpage.myPullRequests.title",
   separatedEntries: false,
   type: "MyPullRequestData"

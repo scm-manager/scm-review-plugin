@@ -312,7 +312,8 @@
     "landingpage": {
       "myPullRequests": {
         "title": "My pull requests",
-        "cardSubtitle": "in repository {{namespace}}/{{name}}"
+        "cardSubtitle": "in repository {{namespace}}/{{name}}",
+        "allPullRequestsLinkTitle": "All Pull Requests"
       },
       "created": {
         "header": "New pull request: #{{id}} {{title}}",
