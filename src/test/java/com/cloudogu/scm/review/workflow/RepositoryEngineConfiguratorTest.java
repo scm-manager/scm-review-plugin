@@ -97,14 +97,24 @@ class RepositoryEngineConfiguratorTest {
     configurator.setEngineConfiguration(repository, config(false));
     List<EngineConfigurator.RuleInstance> rules = configurator.getRules(repository);
 
-    assertThat(rules.isEmpty()).isTrue();
+    assertThat(rules).isEmpty();
   }
 
   @Test
   void shouldReturnEmptyListIfNoConfigurationExistYet() {
     EngineConfiguration engineConfiguration = configurator.getEngineConfiguration(repository);
 
-    assertThat(engineConfiguration.getRules().isEmpty()).isTrue();
+    assertThat(engineConfiguration.getRules()).isEmpty();
+  }
+
+  @Test
+  void shouldRemoveUnknownRulesOnStore() {
+    ImmutableList<AppliedRule> rules = ImmutableList.of(new AppliedRule(null, null));
+    configurator.setEngineConfiguration(repository, new EngineConfiguration(rules, true));
+
+    List<EngineConfigurator.RuleInstance> storedRules = configurator.getRules(repository);
+
+    assertThat(storedRules).isEmpty();
   }
 
   public static class RuleWithConfiguration implements Rule {
