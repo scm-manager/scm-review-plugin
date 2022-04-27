@@ -35,6 +35,10 @@ type State = {
   newBranch: string;
 };
 
+const WidthTd = styled.td`
+  width: 7.5rem;
+`;
+
 const FullWidthInputField = styled(InputField)`
   width: 100%;
   margin-right: 1.5rem;
@@ -77,7 +81,7 @@ class BranchList extends React.Component<Props, State> {
             {branches.map(branch => (
               <tr>
                 <td>{branch}</td>
-                <td className="has-text-centered">
+                <WidthTd className="has-text-centered">
                   <span
                     className="icon is-small is-clickable"
                     onClick={() => this.deleteBranch(branch)}
@@ -85,7 +89,7 @@ class BranchList extends React.Component<Props, State> {
                   >
                     <Icon name="trash" className="has-hover-secondary-invert p-1" />
                   </span>
-                </td>
+                </WidthTd>
               </tr>
             ))}
           </tbody>

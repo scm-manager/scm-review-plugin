@@ -30,6 +30,10 @@ import { Link, SelectValue } from "@scm-manager/ui-types";
 import { useIndexLinks } from "@scm-manager/ui-api";
 import styled from "styled-components";
 
+const WidthTd = styled.td`
+  width: 7.5rem;
+`;
+
 const useAutoCompleteLinks = () => {
   const links = useIndexLinks()?.autocomplete as Link[];
   return {
@@ -123,7 +127,7 @@ const BypassList: FC<{
               <td>
                 <PermissionIcon bypass={bypass} /> {bypass.name}
               </td>
-              <td className="has-text-centered">
+              <WidthTd className="has-text-centered">
                 <span
                   className="icon is-small is-clickable"
                   onClick={() => deleteBypass(bypass)}
@@ -131,7 +135,7 @@ const BypassList: FC<{
                 >
                   <Icon name="trash" className="has-hover-secondary-invert p-1" />
                 </span>
-              </td>
+              </WidthTd>
             </tr>
           ))}
         </tbody>
