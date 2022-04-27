@@ -314,7 +314,8 @@
     "landingpage": {
       "myPullRequests": {
         "title": "Meine Pull Requests",
-        "cardSubtitle": "im Repository {{namespace}}/{{name}}"
+        "cardSubtitle": "im Repository {{namespace}}/{{name}}",
+        "allPullRequestsLinkTitle": "Alle Pull Requests"
       },
       "created": {
         "header": "Neuer Pull Request: #{{id}} {{title}}",
