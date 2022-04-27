@@ -35,11 +35,6 @@ type State = {
   newBranch: string;
 };
 
-const VCenteredTd = styled.td`
-  display: table-cell;
-  vertical-align: middle !important;
-`;
-
 const FullWidthInputField = styled(InputField)`
   width: 100%;
   margin-right: 1.5rem;
@@ -82,17 +77,15 @@ class BranchList extends React.Component<Props, State> {
             {branches.map(branch => (
               <tr>
                 <td>{branch}</td>
-                <VCenteredTd className="is-darker">
-                  <a
-                    className="level-item"
+                <td className="has-text-centered">
+                  <span
+                    className="icon is-small is-clickable"
                     onClick={() => this.deleteBranch(branch)}
                     title={t("scm-review-plugin.config.branchProtection.branches.deleteBranch")}
                   >
-                    <span className="icon is-small">
-                      <Icon name="trash" color="inherit" />
-                    </span>
-                  </a>
-                </VCenteredTd>
+                    <Icon name="trash" className="has-hover-secondary-invert p-1" />
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>

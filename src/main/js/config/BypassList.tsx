@@ -30,11 +30,6 @@ import { Link, SelectValue } from "@scm-manager/ui-types";
 import { useIndexLinks } from "@scm-manager/ui-api";
 import styled from "styled-components";
 
-const VCenteredTd = styled.td`
-  display: table-cell;
-  vertical-align: middle !important;
-`;
-
 const useAutoCompleteLinks = () => {
   const links = useIndexLinks()?.autocomplete as Link[];
   return {
@@ -128,17 +123,15 @@ const BypassList: FC<{
               <td>
                 <PermissionIcon bypass={bypass} /> {bypass.name}
               </td>
-              <VCenteredTd className="is-darker">
-                <a
-                  className="level-item"
+              <td className="has-text-centered">
+                <span
+                  className="icon is-small is-clickable"
                   onClick={() => deleteBypass(bypass)}
                   title={t("scm-review-plugin.config.branchProtection.bypasses.deleteBypass")}
                 >
-                  <span className="icon is-small">
-                    <Icon name="trash" color="inherit" />
-                  </span>
-                </a>
-              </VCenteredTd>
+                  <Icon name="trash" className="has-hover-secondary-invert p-1" />
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>
