@@ -28,7 +28,6 @@ import { useBranch } from "@scm-manager/ui-api";
 import { Hunk, Repository } from "@scm-manager/ui-types";
 import {
   AnnotationFactoryContext,
-  ButtonGroup,
   DiffEventContext,
   diffs,
   File,
@@ -273,7 +272,7 @@ const Diff: FC<Props> = ({
         setOpenEditors(prevState => ({ ...prevState, [path]: [] }));
       };
       return (
-        <ButtonGroup>
+        <>
           <MarkReviewedButton
             repository={repository}
             pullRequest={pullRequest}
@@ -284,10 +283,10 @@ const Diff: FC<Props> = ({
           />
           <AddCommentButton action={openFileEditor} />
           {contentFactory(file)}
-        </ButtonGroup>
+        </>
       );
     } else {
-      return <ButtonGroup>{contentFactory(file)}</ButtonGroup>;
+      return <>{contentFactory(file)}</>;
     }
   };
 

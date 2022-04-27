@@ -1,0 +1,2 @@
+- type: fixed
+  description: Remove duplicate Buttongroup since it is already set in core ([#200](https://github.com/scm-manager/scm-review-plugin/pull/200))
