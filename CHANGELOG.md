@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.18.0 - 2022-04-29
+### Added
+- Add link to all open pull requests to landing page tile ([#199](https://github.com/scm-manager/scm-review-plugin/pull/199))
+
+### Fixed
+- Handle unknown rules ([#198](https://github.com/scm-manager/scm-review-plugin/pull/198))
+- Unnecessary re-render of comments ([#197](https://github.com/scm-manager/scm-review-plugin/pull/197))
+- Remove duplicate Buttongroup since it is already set in core ([#200](https://github.com/scm-manager/scm-review-plugin/pull/200))
+- Rotate pr icon in branch detail table ([#195](https://github.com/scm-manager/scm-review-plugin/pull/195))
+
 ## 2.17.1 - 2022-03-17
 ### Fixed
 - Pagination with status filters ([#193](https://github.com/scm-manager/scm-review-plugin/pull/193))
