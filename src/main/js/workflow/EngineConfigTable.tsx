@@ -25,7 +25,7 @@
 import React, { FC } from "react";
 import { AppliedRule, EngineConfiguration } from "../types/EngineConfig";
 import { useTranslation } from "react-i18next";
-import { Icon } from "@scm-manager/ui-components";
+import { Button } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = {
@@ -59,17 +59,17 @@ const EngineConfigTable: FC<Props> = ({ configuration, deleteRule }) => {
       <tbody>
         {configuration.rules?.map(appliedRule => (
           <tr>
-            <td>
-              <strong>{t(`workflow.rule.${appliedRule.rule}.name`)}</strong>
-            </td>
-            <td>{t(`workflow.rule.${appliedRule.rule}.description`, appliedRule.configuration)}</td>
             <VCenteredTd>
-              <Icon
-                name="trash"
-                color="inherit"
-                onClick={() => deleteRule(appliedRule)}
+              <strong>{t(`workflow.rule.${appliedRule.rule}.name`)}</strong>
+            </VCenteredTd>
+            <VCenteredTd>{t(`workflow.rule.${appliedRule.rule}.description`, appliedRule.configuration)}</VCenteredTd>
+            <VCenteredTd>
+              <Button
+                color="text"
+                icon="trash"
+                action={() => deleteRule(appliedRule)}
                 title={t("scm-review-plugin.workflow.deleteRule")}
-                className="is-clickable"
+                className="px-2"
               />
             </VCenteredTd>
           </tr>
