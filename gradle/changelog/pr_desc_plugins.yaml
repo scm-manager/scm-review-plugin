@@ -1,0 +1,2 @@
+- type: fixed
+  description: Render pr description plugins only if pr links exist ([#204](https://github.com/scm-manager/scm-review-plugin/pull/204))
