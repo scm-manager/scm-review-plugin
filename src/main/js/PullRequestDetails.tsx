@@ -153,15 +153,16 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     pullRequest,
     (targetDeleted: boolean) => setTargetBranchDeleted(targetDeleted)
   );
-  const astPlugins = useMemo(
-    () =>
-      binder
+  const astPlugins = useMemo(() => {
+    if (!!pullRequest._links) {
+      return binder
         .getExtensions("pullrequest.description.plugins", {
           halObject: pullRequest
         })
-        .map(pluginFactory => pluginFactory({ halObject: pullRequest }) as AstPlugin),
-    [pullRequest]
-  );
+        .map(pluginFactory => pluginFactory({ halObject: pullRequest }) as AstPlugin);
+    }
+    return [];
+  }, [pullRequest]);
 
   const findStrategyLink = (links: Link[], strategy: string) => {
     return links?.filter(link => link.name === strategy)[0].href;
