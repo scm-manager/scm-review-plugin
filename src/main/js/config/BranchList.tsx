@@ -23,7 +23,7 @@
  */
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { AddButton, Icon, InputField, Level, Notification } from "@scm-manager/ui-components";
+import { AddButton, Button, InputField, Level, Notification } from "@scm-manager/ui-components";
 import styled from "styled-components";
 
 type Props = WithTranslation & {
@@ -36,8 +36,11 @@ type State = {
 };
 
 const VCenteredTd = styled.td`
-  display: table-cell;
   vertical-align: middle !important;
+`;
+
+const WidthVCenteredTd = styled(VCenteredTd)`
+  width: 5rem;
 `;
 
 const FullWidthInputField = styled(InputField)`
@@ -81,18 +84,16 @@ class BranchList extends React.Component<Props, State> {
           <tbody>
             {branches.map(branch => (
               <tr>
-                <td>{branch}</td>
-                <VCenteredTd className="is-darker">
-                  <a
-                    className="level-item"
-                    onClick={() => this.deleteBranch(branch)}
+                <VCenteredTd>{branch}</VCenteredTd>
+                <WidthVCenteredTd className="has-text-centered">
+                  <Button
+                    color="text"
+                    icon="trash"
+                    action={() => this.deleteBranch(branch)}
                     title={t("scm-review-plugin.config.branchProtection.branches.deleteBranch")}
-                  >
-                    <span className="icon is-small">
-                      <Icon name="trash" color="inherit" />
-                    </span>
-                  </a>
-                </VCenteredTd>
+                    className="px-2"
+                  />
+                </WidthVCenteredTd>
               </tr>
             ))}
           </tbody>
