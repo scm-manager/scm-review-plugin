@@ -122,6 +122,10 @@ const IgnoredMergeObstacles = styled.div`
   border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
 `;
 
+const PRArrow = styled.i`
+  vertical-align: super;
+`;
+
 type UserEntryProps = {
   labelKey: string;
   displayName: string;
@@ -294,7 +298,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         <MediaWithTopBorder>
           <div className="media-content">
             <BranchTag label={pullRequest.source} title={pullRequest.source} />{" "}
-            <i className="fas fa-long-arrow-alt-right" />{" "}
+            <PRArrow className="fas fa-long-arrow-alt-right" />{" "}
             <BranchTag label={pullRequest.target} title={pullRequest.target} />
             {targetBranchDeletedWarning}
           </div>
