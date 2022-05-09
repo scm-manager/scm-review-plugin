@@ -35,7 +35,6 @@ const ShortTag = styled(Tag).attrs(() => ({
   max-width: 25em;
   justify-content: left !important;
   display: inline-block !important;
-  direction: rtl;
 `;
 
 type Props = {
