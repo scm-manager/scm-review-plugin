@@ -70,7 +70,6 @@ const StyledMentionsInput = styled(MentionsInput)`
   }
   > div [class*="suggestions__item"] {
     padding: 4px;
-    border-bottom: var(--scm-border);
     :focus {
       background-color: var(--scm-column-selection);
     }
@@ -135,7 +134,7 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention,
               index: number,
               focused: boolean
             ) => (
-              <StyledSuggestion className={classNames("user", { focused: focused })} index={index}>
+              <StyledSuggestion className={classNames("", { focused: focused })} index={index}>
                 {highlightedDisplay}
               </StyledSuggestion>
             )}
