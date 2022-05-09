@@ -1,0 +1,2 @@
+- type: fixed
+  description: PR hit renderer column gets necessary width ([#207](https://github.com/scm-manager/scm-review-plugin/pull/207))
