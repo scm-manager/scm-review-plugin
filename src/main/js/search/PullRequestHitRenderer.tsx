@@ -71,7 +71,7 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
           </div>
         </div>
       </Hit.Content>
-      <Hit.Right className="is-flex is-flex-direction-column">
+      <Hit.Right className="is-flex is-flex-direction-column is-align-items-flex-end">
         <DateFromNow
           date={
             hit.fields.lastModified
