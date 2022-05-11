@@ -1,0 +1,2 @@
+- type: fixed
+  description: Add portal and hierarchy independent styling of diff-file elements ([#209](https://github.com/scm-manager/scm-review-plugin/pull/209))
