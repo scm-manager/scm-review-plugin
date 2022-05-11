@@ -51,9 +51,9 @@ import ReducedMarkdownView from "./ReducedMarkdownView";
 import OverrideModalRow from "./OverrideModalRow";
 import PullRequestTitle from "./PullRequestTitle";
 import Statusbar from "./workflow/Statusbar";
-import BranchTag from "./BranchTag";
 import PullRequestStatusTag from "./PullRequestStatusTag";
 import ChangeNotificationContext from "./ChangeNotificationContext";
+import SourceTargetBranchDisplay from "./SourceTargetBranchDisplay";
 
 type Props = {
   repository: Repository;
@@ -296,12 +296,9 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
           </div>
         </div>
         <MediaWithTopBorder>
-          <div className="media-content">
-            <BranchTag label={pullRequest.source} title={pullRequest.source} />{" "}
-            <PRArrow className="fas fa-long-arrow-alt-right" />{" "}
-            <BranchTag label={pullRequest.target} title={pullRequest.target} />
+          <SourceTargetBranchDisplay source={pullRequest.source} target={pullRequest.target} className="media-content">
             {targetBranchDeletedWarning}
-          </div>
+          </SourceTargetBranchDisplay>
           <div className="media-right">
             <PullRequestStatusTag status={pullRequest.status || "OPEN"} emergencyMerged={pullRequest.emergencyMerged} />
           </div>

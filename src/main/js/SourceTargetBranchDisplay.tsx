@@ -21,34 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
-import styled from "styled-components";
-import { Tag } from "@scm-manager/ui-components";
 
-const ShortTag = styled(Tag).attrs(() => ({
-  className: "is-medium",
-  color: "light"
-}))`
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 25em;
-  height: initial !important;
-  display: inline-block !important;
-  padding: 0.25em 0.75em;
-`;
+import React, { FC } from "react";
+import BranchTag from "./BranchTag";
+import classNames from "classnames";
 
 type Props = {
-  label: string;
-  title: string;
+  className?: string;
+  wrapper?: React.ElementType;
+  source: string;
+  target: string;
 };
 
-const BranchTag: FC<Props> = ({ label, title }) => {
-  return (
-    <span className="is-flex align-items-center">
-      <ShortTag title={title}>{label}</ShortTag>
-    </span>
+const SourceTargetBranchDisplay: FC<Props> = ({ className, children, source, target, wrapper = "div" }) => {
+  const content = (
+    <>
+      <BranchTag label={source} title={source} />
+      <i className="fas fa-long-arrow-alt-right m-1" />
+      <BranchTag label={target} title={target} />
+    </>
+  );
+  return React.createElement(
+    wrapper,
+    { className: classNames(className, "is-flex", "is-align-items-center", "is-flex-wrap-wrap") },
+    content,
+    children
   );
 };
 
-export default BranchTag;
+export default SourceTargetBranchDisplay;
