@@ -1,0 +1,7 @@
+.diff-file table.diff tr:hover > td {
+  background-color: var(--sh-selected-color) !important;
+}
+
+.diff-file tbody.expanded .diff-gutter {
+  cursor: default;
+}

@@ -21,44 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { Component, ReactNode } from "react";
-import styled from "styled-components";
+import React, { FC, ReactNode } from "react";
+import "./DiffFileStyle.css";
 
 type Props = {
   children: ReactNode;
   commentable: boolean;
 };
 
-const CommentableWrapper = styled.div`
-  & table.diff tr:hover > td {
-    background-color: var(--sh-selected-color) !important;
-  }
+const CommentableDiffFileStyle = React.lazy(() => import("./CommentableDiffFileStyle"));
 
-  tbody.commentable .diff-gutter:hover::after {
-    font-family: "Font Awesome 5 Free";
-    content: " \\f075";
-    color: var(--scm-column-selection);
-  }
-
-  tbody.expanded .diff-gutter {
-    cursor: default;
-  }
-`;
-
-const NotCommentableWrapper = styled.div`
-  tbody.expanded .diff-gutter {
-    cursor: default;
-  }
-`;
-
-class StyledDiffWrapper extends Component<Props> {
-  render() {
-    const { children, commentable } = this.props;
-    if (commentable) {
-      return <CommentableWrapper>{children}</CommentableWrapper>;
-    }
-    return <NotCommentableWrapper>{children}</NotCommentableWrapper>;
-  }
-}
+const StyledDiffWrapper: FC<Props> = ({ children, commentable }) => {
+  return (
+    <>
+      {commentable && <CommentableDiffFileStyle />}
+      {children}
+    </>
+  );
+};
 
 export default StyledDiffWrapper;

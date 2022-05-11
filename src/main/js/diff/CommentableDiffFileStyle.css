@@ -1,0 +1,5 @@
+.diff-file tbody.commentable .diff-gutter:hover::after {
+  font-family: "Font Awesome 5 Free";
+  content: " \f075";
+  color: var(--scm-column-selection);
+}
