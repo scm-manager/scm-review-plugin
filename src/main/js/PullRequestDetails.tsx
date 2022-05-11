@@ -123,7 +123,7 @@ const IgnoredMergeObstacles = styled.div`
 `;
 
 const PRArrow = styled.i`
-  vertical-align: super;
+  vertical-align: 0.55rem;
 `;
 
 type UserEntryProps = {

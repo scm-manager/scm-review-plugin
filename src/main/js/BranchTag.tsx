@@ -33,7 +33,6 @@ const ShortTag = styled(Tag).attrs(() => ({
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 25em;
-  justify-content: left !important;
   display: inline-block !important;
 `;
 
