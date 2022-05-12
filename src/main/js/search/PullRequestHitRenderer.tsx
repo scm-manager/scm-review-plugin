@@ -27,8 +27,8 @@ import { DateFromNow, Hit, HitProps, Notification, RepositoryAvatar, TextHitFiel
 import { ValueHitField } from "@scm-manager/ui-types";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import BranchTag from "../BranchTag";
 import PullRequestStatusTag from "../PullRequestStatusTag";
+import SourceTargetBranchDisplay from "../SourceTargetBranchDisplay";
 
 const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
   const [t] = useTranslation("plugins");
@@ -57,17 +57,12 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
             <p>
               <TextHitField field="description" hit={hit} truncateValueAt={1024} />
             </p>
-            <p className="mt-1">
-              <BranchTag
-                label={(hit.fields.source as ValueHitField).value as string}
-                title={t("scm-review-plugin.search.source")}
-              />{" "}
-              <i className="fas fa-long-arrow-alt-right" />{" "}
-              <BranchTag
-                label={(hit.fields.target as ValueHitField).value as string}
-                title={t("scm-review-plugin.search.target")}
-              />
-            </p>
+            <SourceTargetBranchDisplay
+              wrapper="p"
+              className="mt-1"
+              source={(hit.fields.source as ValueHitField).value as string}
+              target={(hit.fields.target as ValueHitField).value as string}
+            />
           </div>
         </div>
       </Hit.Content>
