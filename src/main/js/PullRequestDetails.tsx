@@ -250,9 +250,11 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   }
 
   const targetBranchDeletedWarning = targetBranchDeleted ? (
-    <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
-      <i className="fas fa-exclamation-triangle" />
-    </Tooltip>
+    <span className="ml-2">
+      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
+        <i className="fas fa-exclamation-triangle" />
+      </Tooltip>
+    </span>
   ) : null;
 
   const tasksDone = pullRequest.tasks ? pullRequest.tasks.done : 0;
