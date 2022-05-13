@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.18.2 - 2022-05-13
+### Fixed
+- Remove mention item underlining ([#206](https://github.com/scm-manager/scm-review-plugin/pull/206))
+- PR hit renderer column gets necessary width ([#207](https://github.com/scm-manager/scm-review-plugin/pull/207))
+- Remove card-table action area ([#201](https://github.com/scm-manager/scm-review-plugin/pull/201))
+- Branch name in PR view is clipped at the end and the clipping is marked with ellipsis ([#208](https://github.com/scm-manager/scm-review-plugin/pull/208))
+
 ## 2.18.1 - 2022-05-05
 ### Fixed
 - Render pr description plugins only if pr links exist ([#204](https://github.com/scm-manager/scm-review-plugin/pull/204))
@@ -51,7 +58,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - High contrast mode findings ([#178](https://github.com/scm-manager/scm-review-plugin/pull/178))
 
 ## 2.15.0 - 2022-01-07
-
 ## 2.14.0 - 2021-12-22
 ### Added
 - Note for comments in partial diffs ([#169](https://github.com/scm-manager/scm-review-plugin/pull/169))
@@ -339,3 +345,4 @@ Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and
 - Fast-forward-if possible and squash function with custom commit message ([#9](https://github.com/scm-manager/scm-review-plugin/pull/9), [#6](https://github.com/scm-manager/scm-review-plugin/pull/6))
 - Option to remove the source branch after merge ([#8](https://github.com/scm-manager/scm-review-plugin/pull/8))
 - As a reviewer, I can explicitly give my consent to merge via 'Approve'-button
+
