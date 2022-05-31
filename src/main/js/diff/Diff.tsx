@@ -46,7 +46,6 @@ import PullRequestComment from "../comment/PullRequestComment";
 import CreateComment from "../comment/CreateComment";
 import CommentSpacingWrapper from "../comment/CommentSpacingWrapper";
 import InlineComments from "./InlineComments";
-import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 import MarkReviewedButton from "./MarkReviewedButton";
@@ -337,7 +336,7 @@ const Diff: FC<Props> = ({
   };
 
   return (
-    <StyledDiffWrapper commentable={isPermittedToComment()}>
+    <>
       {changed ? <ChangeNotificationToast reload={reload} ignore={ignore} /> : null}
       <LoadingDiff
         isCollapsed={isCollapsed}
@@ -347,12 +346,13 @@ const Diff: FC<Props> = ({
         annotationFactory={annotationFactory}
         onClick={onGutterClick}
         refetchOnWindowFocus={false}
-        hunkClass={(hunk: Hunk) => (hunk.expansion ? "expanded" : "commentable")}
+        hunkGutterHoverIcon={isPermittedToComment() ? "\\f075" : ""}
+        highlightLineOnHover={isPermittedToComment()}
         diffUrl={diffUrl}
         actions={actions}
         pullRequestComments={comments?._embedded.pullRequestComments || []}
       />
-    </StyledDiffWrapper>
+    </>
   );
 };
 
