@@ -1,0 +1,2 @@
+- type: fixed
+  description: Enlarge color difference between options in Confirm Alert ([#211](https://github.com/scm-manager/scm-review-plugin/pull/211))
