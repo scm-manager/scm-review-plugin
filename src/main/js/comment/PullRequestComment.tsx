@@ -220,11 +220,11 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
           message={t("scm-review-plugin.comment.confirmDeleteAlert.message")}
           buttons={[
             {
-              className: "is-outlined",
               label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
               onClick: () => remove(comment)
             },
             {
+              className: "is-info",
               label: t("scm-review-plugin.comment.confirmDeleteAlert.cancel"),
               onClick: () => null,
               autofocus: true

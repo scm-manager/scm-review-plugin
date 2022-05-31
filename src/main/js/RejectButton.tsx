@@ -44,11 +44,11 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
           close={() => setShowModal(false)}
           buttons={[
             {
-              className: "is-outlined",
               label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
               onClick: () => reject()
             },
             {
+              className: "is-info",
               label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel"),
               onClick: () => setShowModal(false),
               autofocus: true
