@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.18.3 - 2022-06-02
+### Fixed
+- Enlarge color difference between options in Confirm Alert ([#211](https://github.com/scm-manager/scm-review-plugin/pull/211))
+
 ## 2.18.2 - 2022-05-13
 ### Fixed
 - Remove mention item underlining ([#206](https://github.com/scm-manager/scm-review-plugin/pull/206))
