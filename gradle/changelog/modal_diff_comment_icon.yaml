@@ -1,0 +1,2 @@
+- type: fixed
+  description: Styling of diff interaction not working in modal ([#210](https://github.com/scm-manager/scm-review-plugin/pull/210))
