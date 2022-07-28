@@ -32,6 +32,7 @@ import ReviewerIcon from "./ReviewerIcon";
 import PullRequestStatusTag from "../PullRequestStatusTag";
 import { binder } from "@scm-manager/ui-extensions";
 import { PullRequestTableColumn } from "../types/ExtensionPoints";
+import Statusbar from "../workflow/Statusbar";
 
 type Props = WithTranslation & {
   repository: Repository;
@@ -107,6 +108,9 @@ class PullRequestTable extends React.Component<Props> {
         createComparator={() => comparators.byKey("status")}
       >
         {(row: PullRequest) => <PullRequestStatusTag status={row.status} emergencyMerged={row.emergencyMerged} />}
+      </MobileHiddenColumn>,
+      <MobileHiddenColumn header={t("scm-review-plugin.workflow.globalConfig.title")}>
+        {(row: PullRequest) => <Statusbar pullRequest={row} repository={repository} />}
       </MobileHiddenColumn>
     ];
     const additionalColumns = binder.getExtensions<PullRequestTableColumn>("pull-requests.table.column").map(ext =>
