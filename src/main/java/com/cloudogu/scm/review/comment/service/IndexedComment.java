@@ -32,7 +32,7 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 
-@IndexedType
+@IndexedType(repositoryScoped = true, namespaceScoped = true)
 @Getter
 @SuppressWarnings({"UnstableApiUsage"})
 public class IndexedComment implements Serializable {
