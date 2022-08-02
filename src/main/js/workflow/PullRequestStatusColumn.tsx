@@ -53,13 +53,17 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
     return null;
   }
 
+  const icon = <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} />;
+
+  if (!data.results.length) {
+    return icon;
+  }
+
   return (
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger asChild={true}>
-          <NoStyleButton>
-            <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} />
-          </NoStyleButton>
+          <NoStyleButton>{icon}</NoStyleButton>
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Content>

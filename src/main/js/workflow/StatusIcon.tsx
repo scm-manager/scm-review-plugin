@@ -53,7 +53,7 @@ const StatusIcon: FC<Props> = ({ color = "secondary", icon = "circle-notch", siz
 };
 
 export const getColor = (results: Result[]) => {
-  if (results) {
+  if (results && results.length) {
     if (results.some(it => it.failed)) {
       return "danger";
     } else {
@@ -65,7 +65,7 @@ export const getColor = (results: Result[]) => {
 };
 
 export const getIcon = (results: Result[]) => {
-  if (results) {
+  if (results && results.length) {
     if (results.some(it => it.failed)) {
       return "times-circle";
     } else {
