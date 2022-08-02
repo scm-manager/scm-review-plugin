@@ -33,8 +33,7 @@ import PullRequestStatusTag from "../PullRequestStatusTag";
 import { binder } from "@scm-manager/ui-extensions";
 import { PullRequestTableColumn } from "../types/ExtensionPoints";
 import PullRequestStatusColumn from "../workflow/PullRequestStatusColumn";
-import { useJsonResource } from "@scm-manager/ui-api";
-import { EngineConfiguration } from "../types/EngineConfig";
+import useEngineConfig from "../workflow/useEngineConfig";
 
 type Props = {
   repository: Repository;
@@ -53,12 +52,7 @@ const MobileHiddenColumn = styled(Column).attrs(() => ({
 
 const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
   const [t] = useTranslation("plugins");
-  const { data, error } = useJsonResource<EngineConfiguration>(repository, "workflowConfig", [
-    "repository",
-    repository.namespace,
-    repository.name,
-    "workflowConfig"
-  ]);
+  const { data, error } = useEngineConfig(repository);
 
   const to = (pullRequest: PullRequest) => {
     return `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`;
