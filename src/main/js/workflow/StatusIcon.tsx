@@ -76,10 +76,4 @@ export const getIcon = (results: Result[]) => {
   }
 };
 
-export const SuccessIcon: React.SFC<BaseProps> = props => <StatusIcon color="success" icon="check-circle" {...props} />;
-export const FailureIcon: React.SFC<BaseProps> = props => <StatusIcon color="danger" icon="times-circle" {...props} />;
-export const UnstableIcon: React.SFC<BaseProps> = props => (
-  <StatusIcon color="warning" icon="exclamation-circle" {...props} />
-);
-
 export default StatusIcon;
