@@ -112,7 +112,7 @@ const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
     </MobileHiddenColumn>
   ];
 
-  if (!error && data?.enabled) {
+  if (!error && data?.enabled && data?.rules.length) {
     baseColumns.push(
       <MobileHiddenColumn header={t("scm-review-plugin.workflow.globalConfig.title")}>
         {(row: PullRequest) => <PullRequestStatusColumn pullRequest={row} repository={repository} />}
