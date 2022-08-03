@@ -36,7 +36,7 @@ const StyledArrow = styled(Tooltip.Arrow)`
   fill: var(--scm-popover-border-color);
 `;
 
-const PopoverWrapper = styled.div`
+const StyledContent = styled(Tooltip.Content)`
   z-index: 500;
 `;
 
@@ -69,14 +69,12 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
           <NoStyleButton>{icon}</NoStyleButton>
         </Tooltip.Trigger>
         <Tooltip.Portal>
-          <Tooltip.Content>
-            <PopoverWrapper className="box m-0 popover">
-              {data.results.map(r => (
-                <ModalRow result={r} />
-              ))}
-            </PopoverWrapper>
+          <StyledContent className="box m-0 popover">
+            {data.results.map(r => (
+              <ModalRow result={r} />
+            ))}
             <StyledArrow />
-          </Tooltip.Content>
+          </StyledContent>
         </Tooltip.Portal>
       </Tooltip.Root>
     </Tooltip.Provider>
