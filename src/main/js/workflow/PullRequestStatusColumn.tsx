@@ -44,7 +44,6 @@ type Props = {
 const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
   const { data, error, isLoading } = useStatusbar(repository, pullRequest);
 
-  // no workflow rules configured
   if (isLoading) {
     return <SmallLoadingSpinner />;
   }
