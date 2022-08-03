@@ -1,0 +1,4 @@
+- type: added
+  description: Workflow engine information in pr table ([#215](https://github.com/scm-manager/scm-review-plugin/pull/215))
+- type: added
+  description: Extension point for adding columns to pr table ([#215](https://github.com/scm-manager/scm-review-plugin/pull/215))
