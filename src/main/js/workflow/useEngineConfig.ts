@@ -22,29 +22,15 @@
  * SOFTWARE.
  */
 
-plugins {
-  id 'org.scm-manager.smp' version '0.11.1'
-}
+import { apiClient, ApiResult, objectLink, useRequiredIndexLink } from "@scm-manager/ui-api";
+import { EngineConfiguration } from "../types/EngineConfig";
+import { Repository } from "@scm-manager/ui-types";
+import { useQuery } from "react-query";
 
-dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.10.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-}
-
-scmPlugin {
-  scmVersion = "2.35.0"
-  displayName = "Review"
-  description = "Depict a review process with pull requests"
-  author = "Cloudogu GmbH"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.review.pullrequest.api",
-      "com.cloudogu.scm.review.config.api",
-      "com.cloudogu.scm.review.workflow",
-    ]
-  }
-}
+export default (repository: Repository): ApiResult<EngineConfiguration> => {
+  const globalConfigLink = useRequiredIndexLink("workflowConfig");
+  return useQuery<EngineConfiguration, Error>(
+    ["repository", repository.namespace, repository.name, "workflowConfig"],
+    () => apiClient.get(objectLink(repository, "workflowConfig") ?? globalConfigLink).then(response => response.json())
+  );
+};

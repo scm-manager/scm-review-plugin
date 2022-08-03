@@ -25,6 +25,8 @@
 import { DisplayedUser, HalRepresentation, Links, PagedCollection } from "@scm-manager/ui-types";
 import { ReactText } from "react";
 
+export type PullRequestStatus = "OPEN" | "MERGED" | "REJECTED";
+
 export type Reviewer = DisplayedUser & {
   approved: boolean;
 };
@@ -44,7 +46,7 @@ export type PullRequest = BasicPullRequest &
     id?: string;
     creationDate?: string;
     reviewer?: Reviewer[];
-    status?: string;
+    status: PullRequestStatus;
     tasks?: Tasks;
     sourceRevision?: string;
     targetRevision?: string;

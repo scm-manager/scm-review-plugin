@@ -74,7 +74,7 @@ const ModalRow: FC<Props> = ({ result }) => {
     >
       <Left>
         <Icon
-          className="pr-2"
+          className="mr-2"
           color={result?.failed ? "warning" : "success"}
           name={result?.failed ? "exclamation-triangle" : "check-circle"}
         />
