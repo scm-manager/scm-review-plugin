@@ -1,2 +1,0 @@
-- type: fixed
-  description: Fix paging for too large page numbers ([#213](https://github.com/scm-manager/scm-review-plugin/pull/213))
