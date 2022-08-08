@@ -57,7 +57,7 @@ import static java.util.Collections.unmodifiableSet;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Builder(toBuilder = true)
 @ToString
-@IndexedType
+@IndexedType(repositoryScoped = true, namespaceScoped = true)
 @SuppressWarnings("UnstableApiUsage")
 public class PullRequest implements Serializable {
 
