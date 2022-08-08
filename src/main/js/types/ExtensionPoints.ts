@@ -22,29 +22,29 @@
  * SOFTWARE.
  */
 
-plugins {
-  id 'org.scm-manager.smp' version '0.11.1'
-}
+import { ExtensionPointDefinition } from "@scm-manager/ui-extensions";
+import { ReactElement, ReactNode } from "react";
+import { PullRequest } from "./PullRequest";
+import { Repository } from "@scm-manager/ui-types";
 
-dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.10.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-}
+type PullRequestTableExtension = {
+  header: ReactNode;
+  createComparator?: (columnIndex: number) => (a: PullRequest, b: PullRequest) => number;
+  ascendingIcon?: string;
+  descendingIcon?: string;
+  className?: string;
+  children: (row: PullRequest, columnIndex: number) => ReactNode;
+};
 
-scmPlugin {
-  scmVersion = "2.38.0"
-  displayName = "Review"
-  description = "Depict a review process with pull requests"
-  author = "Cloudogu GmbH"
-  category = "Workflow"
+type FactoryProps = {
+  repository: Repository;
+  t: Function;
+};
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.review.pullrequest.api",
-      "com.cloudogu.scm.review.config.api",
-      "com.cloudogu.scm.review.workflow",
-    ]
-  }
-}
+/**
+ * @since 2.19.0
+ */
+export type PullRequestTableColumn = ExtensionPointDefinition<
+  "pull-requests.table.column",
+  (props: FactoryProps) => ReactElement<PullRequestTableExtension>
+>;

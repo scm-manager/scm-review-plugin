@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC, useEffect, useState } from "react";
-import { useRouteMatch } from "react-router-dom";
+import { Redirect, useRouteMatch } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
 import { usePullRequestChangesets } from "./pullRequest";
@@ -72,6 +72,9 @@ const Changesets: FC<Props> = ({ repository, pullRequest, shouldFetchChangesets 
     return <ErrorNotification error={error} />;
   } else if (isLoading) {
     return <Loading />;
+  } else if (changesets && changesets.pageTotal < page && page > 1) {
+    const url = `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/changesets/${changesets.pageTotal}`;
+    return <Redirect to={url} />;
   } else if (changesets && changesets._embedded && changesets._embedded.changesets) {
     if (changesets._embedded.changesets?.length !== 0) {
       return (

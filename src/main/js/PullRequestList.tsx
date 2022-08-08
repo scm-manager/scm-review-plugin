@@ -30,7 +30,7 @@ import PullRequestTable from "./table/PullRequestTable";
 import StatusSelector from "./table/StatusSelector";
 import { usePullRequests } from "./pullRequest";
 import { PullRequest } from "./types/PullRequest";
-import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
+import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 
 const ScrollingTable = styled.div`
   overflow-x: auto;
@@ -96,10 +96,14 @@ const PullRequestList: FC<Props> = ({ repository }) => {
     );
   }
 
-  const to = `/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets/`;
+  const url = `/repo/${repository.namespace}/${repository.name}/pull-requests`;
+
+  if (data && data.pageTotal < page && page > 1) {
+    return <Redirect to={`${url}/${data.pageTotal}`} />;
+  }
 
   const createButton = data?._links?.create ? (
-    <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={to} />
+    <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={`${url}/add/changesets/`} />
   ) : null;
 
   return (
