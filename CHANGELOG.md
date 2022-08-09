@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.20.0 - 2022-08-09
+### Changed
+- Declare pull request and comments as repository-scoped for global search ([#214](https://github.com/scm-manager/scm-review-plugin/pull/214))
+
+### Fixed
+- Disable workflow engine information in pr table from 2.19.0 due to permission issue
+
 ## 2.19.0 - 2022-08-05
 ### Added
 - Workflow engine information in pr table ([#215](https://github.com/scm-manager/scm-review-plugin/pull/215))
