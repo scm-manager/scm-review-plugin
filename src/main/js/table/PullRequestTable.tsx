@@ -32,8 +32,6 @@ import ReviewerIcon from "./ReviewerIcon";
 import PullRequestStatusTag from "../PullRequestStatusTag";
 import { binder } from "@scm-manager/ui-extensions";
 import { PullRequestTableColumn } from "../types/ExtensionPoints";
-import PullRequestStatusColumn from "../workflow/PullRequestStatusColumn";
-import useEngineConfig from "../workflow/useEngineConfig";
 
 type Props = {
   repository: Repository;
@@ -52,7 +50,9 @@ const MobileHiddenColumn = styled(Column).attrs(() => ({
 
 const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
   const [t] = useTranslation("plugins");
-  const { data, error } = useEngineConfig(repository);
+
+  // TODO: Fix implementation for users without permission to configure workflow engine
+  // const { data, error } = useEngineConfig(repository);
 
   const to = (pullRequest: PullRequest) => {
     return `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`;
@@ -112,13 +112,14 @@ const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
     </MobileHiddenColumn>
   ];
 
-  if (!error && data?.enabled && data?.rules.length) {
-    baseColumns.push(
-      <MobileHiddenColumn header={t("scm-review-plugin.workflow.globalConfig.title")}>
-        {(row: PullRequest) => <PullRequestStatusColumn pullRequest={row} repository={repository} />}
-      </MobileHiddenColumn>
-    );
-  }
+  // TODO: Fix implementation - see comment above
+  // if (!error && data?.enabled && data?.rules.length) {
+  //   baseColumns.push(
+  //     <MobileHiddenColumn header={t("scm-review-plugin.workflow.globalConfig.title")}>
+  //       {(row: PullRequest) => <PullRequestStatusColumn pullRequest={row} repository={repository} />}
+  //     </MobileHiddenColumn>
+  //   );
+  // }
 
   const additionalColumns = binder.getExtensions<PullRequestTableColumn>("pull-requests.table.column").map(ext =>
     ext({
