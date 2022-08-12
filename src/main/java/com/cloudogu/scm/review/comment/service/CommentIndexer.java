@@ -25,6 +25,7 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestIndexer;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.github.legman.Subscribe;
 import sonia.scm.HandlerEventType;
@@ -38,6 +39,7 @@ import sonia.scm.search.Index;
 import sonia.scm.search.IndexLog;
 import sonia.scm.search.IndexLogStore;
 import sonia.scm.search.IndexTask;
+import sonia.scm.search.ReindexRepositoryEvent;
 import sonia.scm.search.SearchEngine;
 import sonia.scm.search.SerializableIndexTask;
 
@@ -92,6 +94,11 @@ public class CommentIndexer implements ServletContextListener {
     if (!event.isFailed()) {
       searchEngine.forType(IndexedComment.class).update(new IndexRepository(event.getItem()));
     }
+  }
+
+  @Subscribe
+  public void handleEvent(ReindexRepositoryEvent event) {
+    searchEngine.forType(IndexedComment.class).update(new IndexRepository(event.getItem()));
   }
 
   private void updateIndexedComment(Repository repository, PullRequest pullRequest, IndexedComment comment) {

@@ -36,6 +36,7 @@ import sonia.scm.search.Index;
 import sonia.scm.search.IndexLog;
 import sonia.scm.search.IndexLogStore;
 import sonia.scm.search.IndexTask;
+import sonia.scm.search.ReindexRepositoryEvent;
 import sonia.scm.search.SearchEngine;
 import sonia.scm.search.SerializableIndexTask;
 
@@ -80,6 +81,11 @@ public class PullRequestIndexer implements ServletContextListener {
   @Subscribe
   public void handleEvent(PullRequestEmergencyMergedEvent event) {
     handleEvent(event.getRepository(), event.getPullRequest());
+  }
+
+  @Subscribe
+  public void handleEvent(ReindexRepositoryEvent event) {
+    searchEngine.forType(PullRequest.class).update(new IndexRepository(event.getItem()));
   }
 
   @Subscribe
