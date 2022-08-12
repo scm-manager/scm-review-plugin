@@ -25,7 +25,6 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestIndexer;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.github.legman.Subscribe;
 import sonia.scm.HandlerEventType;
@@ -92,13 +91,13 @@ public class CommentIndexer implements ServletContextListener {
   @Subscribe
   public void handleEvent(RepositoryImportEvent event) {
     if (!event.isFailed()) {
-      searchEngine.forType(IndexedComment.class).update(new IndexRepository(event.getItem()));
+      searchEngine.forType(IndexedComment.class).update(new IndexRepositoryTask(event.getItem()));
     }
   }
 
   @Subscribe
   public void handleEvent(ReindexRepositoryEvent event) {
-    searchEngine.forType(IndexedComment.class).update(new IndexRepository(event.getItem()));
+    searchEngine.forType(IndexedComment.class).update(new ReindexRepositoryTask(event.getRepository()));
   }
 
   private void updateIndexedComment(Repository repository, PullRequest pullRequest, IndexedComment comment) {
@@ -127,7 +126,7 @@ public class CommentIndexer implements ServletContextListener {
     );
   }
 
-  private static void reindexRepository(PullRequestService pullRequestService, CommentService commentService, Index<IndexedComment> index, Repository repository) {
+  private static void indexRepository(PullRequestService pullRequestService, CommentService commentService, Index<IndexedComment> index, Repository repository) {
     if (pullRequestService.supportsPullRequests(repository)) {
       for (PullRequest pr : pullRequestService.getAll(repository.getNamespace(), repository.getName())) {
         for (Comment comment : commentService.getAll(repository.getNamespace(), repository.getName(), pr.getId())) {
@@ -168,25 +167,53 @@ public class CommentIndexer implements ServletContextListener {
     private void reindexAll(Index<IndexedComment> index) {
       index.delete().all();
       for (Repository repo : repositoryManager.getAll()) {
-        reindexRepository(pullRequestService, commentService, index, repo);
+        indexRepository(pullRequestService, commentService, index, repo);
       }
     }
   }
 
-  static final class IndexRepository implements SerializableIndexTask<IndexedComment> {
+  static final class IndexRepositoryTask implements SerializableIndexTask<IndexedComment> {
 
     private transient PullRequestService pullRequestService;
     private transient CommentService commentService;
 
     private final Repository repository;
 
-    IndexRepository(Repository repository) {
+    IndexRepositoryTask(Repository repository) {
       this.repository = repository;
     }
 
     @Override
     public void update(Index<IndexedComment> index) {
-      reindexRepository(pullRequestService, commentService, index, repository);
+      indexRepository(pullRequestService, commentService, index, repository);
+    }
+
+    @Inject
+    public void setPullRequestService(PullRequestService pullRequestService) {
+      this.pullRequestService = pullRequestService;
+    }
+
+    @Inject
+    public void setCommentService(CommentService commentService) {
+      this.commentService = commentService;
+    }
+  }
+
+  static final class ReindexRepositoryTask implements SerializableIndexTask<IndexedComment> {
+
+    private transient PullRequestService pullRequestService;
+    private transient CommentService commentService;
+
+    private final Repository repository;
+
+    ReindexRepositoryTask(Repository repository) {
+      this.repository = repository;
+    }
+
+    @Override
+    public void update(Index<IndexedComment> index) {
+      index.delete().by(Repository.class, repository).execute();
+      indexRepository(pullRequestService, commentService, index, repository);
     }
 
     @Inject

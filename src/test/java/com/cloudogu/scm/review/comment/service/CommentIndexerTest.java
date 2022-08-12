@@ -23,7 +23,7 @@
  */
 package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.comment.service.CommentIndexer.IndexRepository;
+import com.cloudogu.scm.review.comment.service.CommentIndexer.IndexRepositoryTask;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.common.collect.ImmutableList;
@@ -225,7 +225,7 @@ class CommentIndexerTest {
   }
 
   @Nested
-  class IndexRepositoryTests {
+  class IndexRepositoryTaskTaskTests {
 
     @Mock
     private PullRequestService pullRequestService;
@@ -237,9 +237,9 @@ class CommentIndexerTest {
 
     @Test
     void shouldIndexRepository() {
-      IndexRepository indexRepository = new IndexRepository(repository);
-      indexRepository.setCommentService(commentService);
-      indexRepository.setPullRequestService(pullRequestService);
+      IndexRepositoryTask indexRepositoryTask = new IndexRepositoryTask(repository);
+      indexRepositoryTask.setCommentService(commentService);
+      indexRepositoryTask.setPullRequestService(pullRequestService);
 
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(true);
 
@@ -248,7 +248,7 @@ class CommentIndexerTest {
       Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
       when(commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId())).thenReturn(ImmutableList.of(comment));
 
-      indexRepository.update(index);
+      indexRepositoryTask.update(index);
 
       verify(index).store(
         eq(Id.of(IndexedComment.class, comment.getId()).and(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId())),
