@@ -251,6 +251,36 @@ class PullRequestIndexerTest {
     }
   }
 
+  @Nested
+  class ReIndexRepositoryTaskTaskTests {
+
+    @Mock
+    private PullRequestService service;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Index<PullRequest> index;
+
+    @Test
+    void shouldReindex() {
+      when(service.supportsPullRequests(repository)).thenReturn(true);
+
+      PullRequest pullRequest = createPullRequest();
+      when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pullRequest));
+
+      PullRequestIndexer.ReindexRepositoryTask reindexRepositoryTask = new PullRequestIndexer.ReindexRepositoryTask(repository);
+      reindexRepositoryTask.setPullRequestService(service);
+
+      reindexRepositoryTask.update(index);
+
+      verify(index.delete()).by(Repository.class, repository);
+      verify(index).store(
+        Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
+        "repository:readPullRequest:" + pullRequest.getId(),
+        pullRequest
+      );
+    }
+  }
+
   private PullRequest createPullRequest() {
     return new PullRequest.PullRequestBuilder().id("1").build();
   }
