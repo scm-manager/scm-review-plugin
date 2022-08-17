@@ -252,7 +252,7 @@ class PullRequestIndexerTest {
   }
 
   @Nested
-  class ReIndexRepositoryTaskTaskTests {
+  class ReIndexRepositoryTaskTests {
 
     @Mock
     private PullRequestService service;

@@ -264,7 +264,7 @@ class CommentIndexerTest {
   }
 
   @Nested
-  class ReIndexRepositoryTaskTaskTests {
+  class ReIndexRepositoryTaskTests {
 
     @Mock
     private PullRequestService pullRequestService;
