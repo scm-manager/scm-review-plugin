@@ -23,7 +23,8 @@
  */
 package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.comment.service.CommentIndexer.IndexRepository;
+import com.cloudogu.scm.review.comment.service.CommentIndexer.IndexRepositoryTask;
+import com.cloudogu.scm.review.comment.service.CommentIndexer.ReindexRepositoryTask;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.common.collect.ImmutableList;
@@ -225,7 +226,7 @@ class CommentIndexerTest {
   }
 
   @Nested
-  class IndexRepositoryTests {
+  class IndexRepositoryTaskTaskTests {
 
     @Mock
     private PullRequestService pullRequestService;
@@ -237,9 +238,9 @@ class CommentIndexerTest {
 
     @Test
     void shouldIndexRepository() {
-      IndexRepository indexRepository = new IndexRepository(repository);
-      indexRepository.setCommentService(commentService);
-      indexRepository.setPullRequestService(pullRequestService);
+      IndexRepositoryTask indexRepositoryTask = new IndexRepositoryTask(repository);
+      indexRepositoryTask.setCommentService(commentService);
+      indexRepositoryTask.setPullRequestService(pullRequestService);
 
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(true);
 
@@ -248,8 +249,47 @@ class CommentIndexerTest {
       Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
       when(commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId())).thenReturn(ImmutableList.of(comment));
 
-      indexRepository.update(index);
+      indexRepositoryTask.update(index);
 
+      verify(index).store(
+        eq(Id.of(IndexedComment.class, comment.getId()).and(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId())),
+        eq("repository:readPullRequest:" + pullRequest.getId()),
+        argThat(indexedComment -> {
+          assertThat(indexedComment.getId()).isEqualTo(comment.getId());
+          assertThat(indexedComment.getComment()).isEqualTo(comment.getComment());
+          return true;
+        })
+      );
+    }
+  }
+
+  @Nested
+  class ReIndexRepositoryTaskTests {
+
+    @Mock
+    private PullRequestService pullRequestService;
+    @Mock
+    private CommentService commentService;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Index<IndexedComment> index;
+
+    @Test
+    void shouldReindex() {
+      ReindexRepositoryTask indexRepositoryTask = new ReindexRepositoryTask(repository);
+      indexRepositoryTask.setCommentService(commentService);
+      indexRepositoryTask.setPullRequestService(pullRequestService);
+
+      when(pullRequestService.supportsPullRequests(repository)).thenReturn(true);
+
+      PullRequest pullRequest = createPullRequest();
+      when(pullRequestService.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pullRequest));
+      Comment comment = Comment.createComment("1", "first one", "trillian", new Location());
+      when(commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId())).thenReturn(ImmutableList.of(comment));
+
+      indexRepositoryTask.update(index);
+
+      verify(index.delete()).by(Repository.class, repository);
       verify(index).store(
         eq(Id.of(IndexedComment.class, comment.getId()).and(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId())),
         eq("repository:readPullRequest:" + pullRequest.getId()),

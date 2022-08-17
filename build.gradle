@@ -34,7 +34,7 @@ dependencies {
 }
 
 scmPlugin {
-  scmVersion = "2.38.1"
+  scmVersion = "2.38.2-SNAPSHOT"
   displayName = "Review"
   description = "Depict a review process with pull requests"
   author = "Cloudogu GmbH"

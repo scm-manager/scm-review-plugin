@@ -223,7 +223,7 @@ class PullRequestIndexerTest {
   }
 
   @Nested
-  class IndexRepositoryTests {
+  class IndexRepositoryTaskTaskTests {
 
     @Mock
     private PullRequestService service;
@@ -238,11 +238,41 @@ class PullRequestIndexerTest {
       PullRequest pullRequest = createPullRequest();
       when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pullRequest));
 
-      PullRequestIndexer.IndexRepository indexRepository = new PullRequestIndexer.IndexRepository(repository);
-      indexRepository.setPullRequestService(service);
+      PullRequestIndexer.IndexRepositoryTask indexRepositoryTask = new PullRequestIndexer.IndexRepositoryTask(repository);
+      indexRepositoryTask.setPullRequestService(service);
 
-      indexRepository.update(index);
+      indexRepositoryTask.update(index);
 
+      verify(index).store(
+        Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
+        "repository:readPullRequest:" + pullRequest.getId(),
+        pullRequest
+      );
+    }
+  }
+
+  @Nested
+  class ReIndexRepositoryTaskTests {
+
+    @Mock
+    private PullRequestService service;
+
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private Index<PullRequest> index;
+
+    @Test
+    void shouldReindex() {
+      when(service.supportsPullRequests(repository)).thenReturn(true);
+
+      PullRequest pullRequest = createPullRequest();
+      when(service.getAll(repository.getNamespace(), repository.getName())).thenReturn(ImmutableList.of(pullRequest));
+
+      PullRequestIndexer.ReindexRepositoryTask reindexRepositoryTask = new PullRequestIndexer.ReindexRepositoryTask(repository);
+      reindexRepositoryTask.setPullRequestService(service);
+
+      reindexRepositoryTask.update(index);
+
+      verify(index.delete()).by(Repository.class, repository);
       verify(index).store(
         Id.of(PullRequest.class, pullRequest.getId()).and(Repository.class, repository.getId()),
         "repository:readPullRequest:" + pullRequest.getId(),
