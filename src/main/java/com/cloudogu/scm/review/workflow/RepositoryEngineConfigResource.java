@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.review.workflow;
 
-import com.cloudogu.scm.review.PermissionCheck;
 import de.otto.edison.hal.HalRepresentation;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,7 +48,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.Set;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
@@ -64,16 +62,14 @@ public class RepositoryEngineConfigResource {
   public static final String WORKFLOW_CONFIG_PATH = "v2/workflow";
 
   private final RepositoryManager repositoryManager;
-  private final RepositoryEngineConfigurator configurator;
+  private final EngineConfigService engineConfigService;
   private final RepositoryEngineConfigMapper mapper;
-  private final Set<Rule> availableRules;
 
   @Inject
-  public RepositoryEngineConfigResource(RepositoryManager repositoryManager, RepositoryEngineConfigurator configurator, RepositoryEngineConfigMapper mapper, Set<Rule> availableRules) {
+  public RepositoryEngineConfigResource(RepositoryManager repositoryManager, EngineConfigService engineConfigService, RepositoryEngineConfigMapper mapper) {
     this.repositoryManager = repositoryManager;
-    this.configurator = configurator;
+    this.engineConfigService = engineConfigService;
     this.mapper = mapper;
-    this.availableRules = availableRules;
   }
 
   @GET
@@ -107,8 +103,41 @@ public class RepositoryEngineConfigResource {
                                                              @PathParam("namespace") String namespace,
                                                              @PathParam("name") String name) {
     Repository repository = loadRepository(namespace, name);
-    PermissionCheck.checkReadWorkflowConfig(repository);
-    return mapper.map(configurator.getEngineConfiguration(repository), repository, uriInfo);
+    return mapper.map(engineConfigService.getRepositoryEngineConfig(repository), repository, uriInfo);
+  }
+
+  @GET
+  @Path("{namespace}/{name}")
+  @Produces(WORKFLOW_MEDIA_TYPE)
+  @Operation(
+    summary = "Effective workflow engine configuration",
+    description = "Returns the effective repository specific workflow engine configuration.",
+    tags = "Workflow Engine",
+    operationId = "review_get_effective_repository_workflow_configuration"
+  )
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = MediaType.APPLICATION_JSON,
+      schema = @Schema(implementation = HalRepresentation.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"repository:readWorkflowConfig\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public RepositoryEngineConfigDto getEffectiveRepositoryEngineConfig(@Context UriInfo uriInfo,
+                                                             @PathParam("namespace") String namespace,
+                                                             @PathParam("name") String name) {
+    Repository repository = loadRepository(namespace, name);
+    return mapper.map(engineConfigService.getEffectiveEngineConfig(repository));
   }
 
   @PUT
@@ -133,8 +162,7 @@ public class RepositoryEngineConfigResource {
   )
   public void setRepositoryEngineConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryEngineConfigDto configDto) {
     Repository repository = loadRepository(namespace, name);
-    PermissionCheck.checkWriteWorkflowConfig(repository);
-    configurator.setEngineConfiguration(repository, mapper.map(configDto));
+    engineConfigService.setRepositoryEngineConfig(repository, mapper.map(configDto));
   }
 
   private Repository loadRepository(String namespace, String name) {

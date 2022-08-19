@@ -61,7 +61,7 @@ import static org.mockito.Mockito.when;
 class GlobalEngineConfigResourceTest {
 
   @Mock
-  private GlobalEngineConfigurator configurator;
+  private EngineConfigService engineConfigService;
   @Mock
   private UriInfo uriInfo;
 
@@ -78,7 +78,7 @@ class GlobalEngineConfigResourceTest {
     availableRules = new LinkedHashSet<>();
     GlobalEngineConfigMapperImpl mapper = new GlobalEngineConfigMapperImpl();
     mapper.availableRules = AvailableRules.of(new SuccessRule());
-    GlobalEngineConfigResource globalEngineConfigResource = new GlobalEngineConfigResource(mapper, configurator, availableRules);
+    GlobalEngineConfigResource globalEngineConfigResource = new GlobalEngineConfigResource(mapper, engineConfigService, availableRules);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(globalEngineConfigResource);
@@ -97,18 +97,8 @@ class GlobalEngineConfigResourceTest {
   }
 
   @Test
-  void shouldCheckPermissionReadWorkflowConfig() throws URISyntaxException {
-    MockHttpRequest request = MockHttpRequest.get("/v2/workflow/config");
-    doThrow(new AuthorizationException()).when(subject).checkPermission("configuration:read:workflowConfig");
-
-    dispatcher.invoke(request, response);
-
-    assertThat(response.getStatus()).isEqualTo(403);
-  }
-
-  @Test
   void shouldReturnConfiguration() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AppliedRule.of(SuccessRule.class)), true, false));
+    when(engineConfigService.getGlobalEngineConfig()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AppliedRule.of(SuccessRule.class)), true, false));
     when(subject.isPermitted("configuration:write:workflowConfig")).thenReturn(true);
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/config");
@@ -124,7 +114,7 @@ class GlobalEngineConfigResourceTest {
 
   @Test
   void shouldReturnConfigurationWithUpdateLink() throws URISyntaxException, UnsupportedEncodingException {
-    when(configurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AppliedRule.of(SuccessRule.class)), true, false));
+    when(engineConfigService.getGlobalEngineConfig()).thenReturn(new GlobalEngineConfiguration(ImmutableList.of(AppliedRule.of(SuccessRule.class)), true, false));
     when(subject.isPermitted("configuration:write:workflowConfig")).thenReturn(true);
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/config");
@@ -138,19 +128,6 @@ class GlobalEngineConfigResourceTest {
   }
 
   @Test
-  void shouldCheckPermissionWriteWorkflowConfig() throws URISyntaxException {
-    doThrow(new AuthorizationException()).when(subject).checkPermission("configuration:write:workflowConfig");
-    MockHttpRequest request = MockHttpRequest.put("/v2/workflow/config")
-      .content("{\"rules\":[{\"rule\":\"SuccessRule\"}],\"enabled\":true, \"disableRepositoryConfiguration\":false}".getBytes())
-      .contentType(WORKFLOW_MEDIA_TYPE);
-
-    dispatcher.invoke(request, response);
-
-    assertThat(response.getStatus()).isEqualTo(403);
-    verify(configurator, never()).setEngineConfiguration(any(GlobalEngineConfiguration.class));
-  }
-
-  @Test
   void shouldSetEngineConfiguration() throws URISyntaxException {
     MockHttpRequest request = MockHttpRequest.put("/v2/workflow/config")
       .content("{\"rules\":[{\"rule\":\"SuccessRule\"}],\"enabled\":true, \"disableRepositoryConfiguration\":false}".getBytes())
@@ -158,7 +135,7 @@ class GlobalEngineConfigResourceTest {
 
     dispatcher.invoke(request, response);
 
-    verify(configurator).setEngineConfiguration(any(GlobalEngineConfiguration.class));
+    verify(engineConfigService).setGlobalEngineConfig(any(GlobalEngineConfiguration.class));
     assertThat(response.getStatus()).isEqualTo(204);
   }
 
@@ -179,11 +156,11 @@ class GlobalEngineConfigResourceTest {
     final JsonNode successRule = rules.get(0);
     assertThat(successRule).isNotNull();
     assertThat(successRule.get("name").asText()).isEqualTo(SuccessRule.class.getSimpleName());
-    assertThat(successRule.get("applicableMultipleTimes").asBoolean()).isEqualTo(false);
+    assertThat(successRule.get("applicableMultipleTimes").asBoolean()).isFalse();
     final JsonNode failureRule = rules.get(1);
     assertThat(failureRule).isNotNull();
     assertThat(failureRule.get("name").asText()).isEqualTo(FailureRule.class.getSimpleName());
-    assertThat(failureRule.get("applicableMultipleTimes").asBoolean()).isEqualTo(false);
+    assertThat(failureRule.get("applicableMultipleTimes").asBoolean()).isFalse();
   }
 
   public static class SuccessRule implements Rule {
