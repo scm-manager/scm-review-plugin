@@ -124,6 +124,7 @@ const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
   const additionalColumns = binder.getExtensions<PullRequestTableColumn>("pull-requests.table.column").map(ext =>
     ext({
       repository,
+      pullRequests,
       t
     })
   );

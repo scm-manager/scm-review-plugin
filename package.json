@@ -7,7 +7,6 @@
     "scripts": {
         "build": "plugin-scripts build",
         "watch": "plugin-scripts watch",
-        "test": "jest src/main/js",
         "postinstall": "plugin-scripts postinstall"
     },
     "dependencies": {
