@@ -48,5 +48,6 @@ type FactoryProps = {
  */
 export type PullRequestTableColumn = ExtensionPointDefinition<
   "pull-requests.table.column",
-  (props: FactoryProps) => ReactElement<PullRequestTableExtension>
+  (props: FactoryProps) => ReactElement<PullRequestTableExtension>,
+  FactoryProps
 >;

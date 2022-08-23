@@ -121,13 +121,19 @@ const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
     );
   }
 
-  const additionalColumns = binder.getExtensions<PullRequestTableColumn>("pull-requests.table.column").map(ext =>
-    ext({
+  const additionalColumns = binder
+    .getExtensions<PullRequestTableColumn>("pull-requests.table.column", {
       repository,
       pullRequests,
       t
     })
-  );
+    .map(ext =>
+      ext({
+        repository,
+        pullRequests,
+        t
+      })
+    );
   const columns = baseColumns.concat(...additionalColumns);
   return (
     <StyledTable data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
