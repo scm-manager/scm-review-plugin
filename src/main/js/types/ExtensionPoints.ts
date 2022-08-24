@@ -26,6 +26,7 @@ import { ExtensionPointDefinition } from "@scm-manager/ui-extensions";
 import { ReactElement, ReactNode } from "react";
 import { PullRequest } from "./PullRequest";
 import { Repository } from "@scm-manager/ui-types";
+import i18next from "i18next";
 
 type PullRequestTableExtension = {
   header: ReactNode;
@@ -38,7 +39,8 @@ type PullRequestTableExtension = {
 
 type FactoryProps = {
   repository: Repository;
-  t: Function;
+  pullRequests: PullRequest[];
+  t: typeof i18next.t;
 };
 
 /**
@@ -46,5 +48,6 @@ type FactoryProps = {
  */
 export type PullRequestTableColumn = ExtensionPointDefinition<
   "pull-requests.table.column",
-  (props: FactoryProps) => ReactElement<PullRequestTableExtension>
+  (props: FactoryProps) => ReactElement<PullRequestTableExtension>,
+  FactoryProps
 >;

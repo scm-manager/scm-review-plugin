@@ -22,15 +22,16 @@
  * SOFTWARE.
  */
 
-import { apiClient, ApiResult, objectLink, useRequiredIndexLink } from "@scm-manager/ui-api";
+import { apiClient, ApiResult, objectLink } from "@scm-manager/ui-api";
 import { EngineConfiguration } from "../types/EngineConfig";
 import { Repository } from "@scm-manager/ui-types";
 import { useQuery } from "react-query";
 
 export default (repository: Repository): ApiResult<EngineConfiguration> => {
-  const globalConfigLink = useRequiredIndexLink("workflowConfig");
+  const configLink = objectLink(repository, "effectiveWorkflowConfig") || "";
   return useQuery<EngineConfiguration, Error>(
-    ["repository", repository.namespace, repository.name, "workflowConfig"],
-    () => apiClient.get(objectLink(repository, "workflowConfig") ?? globalConfigLink).then(response => response.json())
+    ["repository", repository.namespace, repository.name, "effectiveWorkflowConfig"],
+    () => apiClient.get(configLink).then(response => response.json()),
+    { enabled: !!configLink }
   );
 };

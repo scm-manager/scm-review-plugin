@@ -24,7 +24,6 @@
 
 package com.cloudogu.scm.review.workflow;
 
-import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
@@ -32,6 +31,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.web.VndMediaType;
@@ -58,13 +58,13 @@ public class GlobalEngineConfigResource {
   public static final String WORKFLOW_CONFIG_PATH = "v2/workflow";
 
   private final GlobalEngineConfigMapper mapper;
-  private final GlobalEngineConfigurator configurator;
+  private final EngineConfigService engineConfigService;
   private final Set<Rule> availableRules;
 
   @Inject
-  public GlobalEngineConfigResource(GlobalEngineConfigMapper mapper, GlobalEngineConfigurator configurator, Set<Rule> availableRules) {
+  public GlobalEngineConfigResource(GlobalEngineConfigMapper mapper, EngineConfigService engineConfigService, Set<Rule> availableRules) {
     this.mapper = mapper;
-    this.configurator = configurator;
+    this.engineConfigService = engineConfigService;
     this.availableRules = availableRules;
   }
 
@@ -96,8 +96,7 @@ public class GlobalEngineConfigResource {
     )
   )
   public GlobalEngineConfigDto getGlobalEngineConfig(@Context UriInfo uriInfo) {
-    PermissionCheck.checkReadWorkflowEngineGlobalConfig();
-    return mapper.map(configurator.getEngineConfiguration(), uriInfo);
+    return mapper.map(engineConfigService.getGlobalEngineConfig(), uriInfo);
   }
 
   @PUT
@@ -122,8 +121,7 @@ public class GlobalEngineConfigResource {
     )
   )
   public void setGlobalEngineConfig(@Valid GlobalEngineConfigDto configDto) {
-    PermissionCheck.checkWriteWorkflowEngineGlobalConfig();
-    configurator.setEngineConfiguration(mapper.map(configDto));
+    engineConfigService.setGlobalEngineConfig(mapper.map(configDto));
   }
 
   @GET

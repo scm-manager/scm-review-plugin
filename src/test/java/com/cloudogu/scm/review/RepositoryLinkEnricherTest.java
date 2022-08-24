@@ -26,6 +26,9 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.workflow.EngineConfigService;
+import com.cloudogu.scm.review.workflow.EngineConfiguration;
+import com.cloudogu.scm.review.workflow.GlobalEngineConfiguration;
 import com.cloudogu.scm.review.workflow.GlobalEngineConfigurator;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
@@ -47,6 +50,7 @@ import sonia.scm.repository.Repository;
 import java.net.URI;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyByte;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,8 +71,8 @@ public class RepositoryLinkEnricherTest {
   private HalAppender appender;
   @Mock
   private ConfigService configService;
-  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-  private GlobalEngineConfigurator globalEngineConfigurator;
+  @Mock
+  private EngineConfigService engineConfigService;
   private RepositoryLinkEnricher enricher;
 
   public RepositoryLinkEnricherTest() {
@@ -88,13 +92,16 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldEnrichRepositoriesWithBranchSupport() {
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, globalEngineConfigurator);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
 
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(false);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
+    when(engineConfigService.getGlobalEngineConfig()).thenReturn(new GlobalEngineConfiguration());
+
     enricher.enrich(context, appender);
+
     verify(appender).appendLink("pullRequest", "https://scm-manager.org/scm/api/v2/pull-requests/space/name");
     verify(appender).appendLink("pullRequestConfig", "https://scm-manager.org/scm/api/v2/pull-requests/space/name/config");
   }
@@ -102,13 +109,18 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldNotEnrichRepositoriesForConfigWhenRepositoryConfigIsDisabled() {
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, globalEngineConfigurator);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
 
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(true);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
+    GlobalEngineConfiguration globalEngineConfiguration = new GlobalEngineConfiguration();
+    globalEngineConfiguration.setDisableRepositoryConfiguration(true);
+    when(engineConfigService.getGlobalEngineConfig()).thenReturn(globalEngineConfiguration);
+
     enricher.enrich(context, appender);
+
     verify(appender).appendLink("pullRequest", "https://scm-manager.org/scm/api/v2/pull-requests/space/name");
     verify(appender, never()).appendLink(eq("pullRequestConfig"), any());
   }
@@ -117,12 +129,13 @@ public class RepositoryLinkEnricherTest {
     GlobalPullRequestConfig globalConfig = new GlobalPullRequestConfig();
     globalConfig.setDisableRepositoryConfiguration(disableRepoConfig);
     when(configService.getGlobalPullRequestConfig()).thenReturn(globalConfig);
+
   }
 
   @Test
   @SubjectAware(username = "dent", password = "secret")
   public void shouldNotEnrichRepositoriesWithoutBranchSupport() {
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, globalEngineConfigurator);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
 
     when(pullRequestService.supportsPullRequests(any())).thenReturn(false);
     Repository repo = new Repository("id", "type", "space", "name");
@@ -134,7 +147,7 @@ public class RepositoryLinkEnricherTest {
   @Test
   @SubjectAware(username = "trillian", password = "secret")
   public void shouldNotEnrichBecauseOfMissingPermission() {
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, globalEngineConfigurator);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
     enricher.enrich(context, appender);
@@ -146,8 +159,9 @@ public class RepositoryLinkEnricherTest {
   public void shouldEnrichWorkflowConfigLink() {
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(true);
+    when(engineConfigService.getGlobalEngineConfig()).thenReturn(new GlobalEngineConfiguration());
 
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, globalEngineConfigurator);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
     enricher.enrich(context, appender);
@@ -159,8 +173,9 @@ public class RepositoryLinkEnricherTest {
   public void shouldEnrichPullRequestCheckLink() {
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(true);
+    when(engineConfigService.getGlobalEngineConfig()).thenReturn(new GlobalEngineConfiguration());
 
-    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, globalEngineConfigurator);
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
     enricher.enrich(context, appender);

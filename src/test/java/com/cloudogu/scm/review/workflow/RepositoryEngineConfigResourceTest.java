@@ -71,7 +71,7 @@ class RepositoryEngineConfigResourceTest {
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
 
   @Mock
-  private RepositoryEngineConfigurator repositoryEngineConfigurator;
+  private EngineConfigService engineConfigService;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private GlobalEngineConfigurator globalEngineConfigurator;
   @Mock
@@ -96,7 +96,7 @@ class RepositoryEngineConfigResourceTest {
     mapper.availableRules = new AvailableRules(availableRules);
     mapper.configurationValidator = configurationValidator;
     mapper.globalEngineConfigurator = globalEngineConfigurator;
-    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, repositoryEngineConfigurator, mapper, availableRules);
+    RepositoryEngineConfigResource repositoryEngineConfigResource = new RepositoryEngineConfigResource(repositoryManager, engineConfigService, mapper);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(repositoryEngineConfigResource);
@@ -121,19 +121,9 @@ class RepositoryEngineConfigResourceTest {
   }
 
   @Test
-  void shouldCheckRepositoryPermissionReadWorkflowConfig() throws URISyntaxException {
-    MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
-    doThrow(new AuthorizationException()).when(subject).checkPermission("repository:readWorkflowConfig:1");
-
-    dispatcher.invoke(request, response);
-
-    assertThat(response.getStatus()).isEqualTo(403);
-  }
-
-  @Test
   void shouldReturnConfigurationForRepository() throws URISyntaxException, UnsupportedEncodingException {
     AppliedRule appliedRule = new AppliedRule(AvailableRules.nameOf(SuccessRule.class), null);
-    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(new EngineConfiguration(ImmutableList.of(appliedRule), true));
+    when(engineConfigService.getRepositoryEngineConfig(REPOSITORY)).thenReturn(new EngineConfiguration(ImmutableList.of(appliedRule), true));
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
 
@@ -150,7 +140,7 @@ class RepositoryEngineConfigResourceTest {
   void shouldReturnConfigurationWithConfiguredRuleForRepository() throws URISyntaxException, UnsupportedEncodingException {
     ConfigurationForRule configurationForRule = new ConfigurationForRule(42, "haxor");
     AppliedRule appliedRule = new AppliedRule(AvailableRules.nameOf(ConfigurableRule.class), configurationForRule);
-    when(repositoryEngineConfigurator.getEngineConfiguration(any())).thenReturn(new EngineConfiguration(ImmutableList.of(appliedRule), true));
+    when(engineConfigService.getRepositoryEngineConfig(any())).thenReturn(new EngineConfiguration(ImmutableList.of(appliedRule), true));
 
     MockHttpRequest request = MockHttpRequest.get("/v2/workflow/space/X/config");
 
@@ -174,7 +164,7 @@ class RepositoryEngineConfigResourceTest {
 
   @Test
   void shouldReturnConfigurationForRepositoryWithUpdateLink() throws URISyntaxException, UnsupportedEncodingException {
-    when(repositoryEngineConfigurator.getEngineConfiguration(REPOSITORY)).thenReturn(new EngineConfiguration(ImmutableList.of(new AppliedRule(AvailableRules.nameOf(SuccessRule.class), null)), true));
+    when(engineConfigService.getRepositoryEngineConfig(REPOSITORY)).thenReturn(new EngineConfiguration(ImmutableList.of(new AppliedRule(AvailableRules.nameOf(SuccessRule.class), null)), true));
     when(globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration()).thenReturn(false);
     when(subject.isPermitted("repository:writeWorkflowConfig:1")).thenReturn(true);
 
@@ -186,19 +176,6 @@ class RepositoryEngineConfigResourceTest {
     assertThat(response.getContentAsString())
       .contains("\"update\":{\"href\":\"/v2/workflow/space/X/config\"}")
       .contains("\"availableRules\":{\"href\":\"/v2/workflow/rules\"}");
-  }
-
-  @Test
-  void shouldCheckRepositoryPermissionWriteWorkflowConfig() throws URISyntaxException {
-    doThrow(new AuthorizationException()).when(subject).checkPermission("repository:writeWorkflowConfig:1");
-    MockHttpRequest request = MockHttpRequest.put("/v2/workflow/space/X/config")
-      .content("{\"rules\":[{\"rule\":\"SimpleRule\"}],\"enabled\":true}".getBytes())
-      .contentType(WORKFLOW_MEDIA_TYPE);
-
-    dispatcher.invoke(request, response);
-
-    assertThat(response.getStatus()).isEqualTo(403);
-    verify(repositoryEngineConfigurator, never()).setEngineConfiguration(any(Repository.class), any(EngineConfiguration.class));
   }
 
   @Test
@@ -220,9 +197,9 @@ class RepositoryEngineConfigResourceTest {
 
     dispatcher.invoke(request, response);
 
-    verify(repositoryEngineConfigurator).setEngineConfiguration(any(), argThat(engineConfiguration -> {
+    verify(engineConfigService).setRepositoryEngineConfig(any(), argThat(engineConfiguration -> {
       assertThat(engineConfiguration).isNotNull();
-      assertThat(engineConfiguration.getRules().size()).isEqualTo(1);
+      assertThat(engineConfiguration.getRules()).hasSize(1);
       final AppliedRule appliedRule = engineConfiguration.getRules().get(0);
       assertThat(appliedRule.rule).isEqualTo(SuccessRule.class.getSimpleName());
       return true;
@@ -239,7 +216,7 @@ class RepositoryEngineConfigResourceTest {
 
     dispatcher.invoke(request, response);
 
-    verify(repositoryEngineConfigurator).setEngineConfiguration(any(), argThat(engineConfiguration -> {
+    verify(engineConfigService).setRepositoryEngineConfig(any(), argThat(engineConfiguration -> {
       assertThat(engineConfiguration).isNotNull();
       assertThat(engineConfiguration.getRules()).hasSize(1);
       AppliedRule appliedRule = engineConfiguration.getRules().get(0);
@@ -275,7 +252,7 @@ class RepositoryEngineConfigResourceTest {
 
     dispatcher.invoke(request, response);
 
-    verify(repositoryEngineConfigurator, never()).setEngineConfiguration(any(), any());
+    verify(engineConfigService, never()).setRepositoryEngineConfig(any(), any());
     assertThat(response.getStatus()).isEqualTo(400);
   }
 

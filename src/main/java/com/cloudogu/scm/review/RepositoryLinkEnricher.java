@@ -27,7 +27,7 @@ import com.cloudogu.scm.review.config.api.RepositoryConfigResource;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
-import com.cloudogu.scm.review.workflow.GlobalEngineConfigurator;
+import com.cloudogu.scm.review.workflow.EngineConfigService;
 import com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
@@ -54,14 +54,15 @@ public class RepositoryLinkEnricher implements HalEnricher {
   private final Provider<ScmPathInfoStore> scmPathInfoStore;
   private final PullRequestService pullRequestService;
   private final ConfigService configService;
-  private final GlobalEngineConfigurator globalEngineConfigurator;
+  private final EngineConfigService engineConfigService;
+
 
   @Inject
-  public RepositoryLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, PullRequestService pullRequestService, ConfigService configService, GlobalEngineConfigurator globalEngineConfigurator) {
+  public RepositoryLinkEnricher(Provider<ScmPathInfoStore> scmPathInfoStore, PullRequestService pullRequestService, ConfigService configService, EngineConfigService engineConfigService) {
     this.scmPathInfoStore = scmPathInfoStore;
     this.pullRequestService = pullRequestService;
     this.configService = configService;
-    this.globalEngineConfigurator = globalEngineConfigurator;
+    this.engineConfigService = engineConfigService;
   }
 
   @Override
@@ -84,11 +85,15 @@ public class RepositoryLinkEnricher implements HalEnricher {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
         appender.appendLink("workflowConfig", linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
       }
+      if (engineConfigService.isEngineActiveForRepository(repository)) {
+        LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
+        appender.appendLink("effectiveWorkflowConfig", linkBuilder.method("getEffectiveRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
+      }
     }
   }
 
   private boolean isWorkflowEngineConfigurable(Repository repository) {
-    return isWorkflowRepositoryConfigurationEnabled() && isPermittedToConfigureWorkflow(repository);
+    return isPermittedToConfigureWorkflow(repository) && isWorkflowRepositoryConfigurationEnabled();
   }
 
   private boolean isPermittedToConfigureWorkflow(Repository repository) {
@@ -96,6 +101,6 @@ public class RepositoryLinkEnricher implements HalEnricher {
   }
 
   private boolean isWorkflowRepositoryConfigurationEnabled() {
-    return !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration();
+    return !engineConfigService.getGlobalEngineConfig().isDisableRepositoryConfiguration();
   }
 }
