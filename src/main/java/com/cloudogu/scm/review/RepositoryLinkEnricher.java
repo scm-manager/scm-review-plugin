@@ -93,14 +93,10 @@ public class RepositoryLinkEnricher implements HalEnricher {
   }
 
   private boolean isWorkflowEngineConfigurable(Repository repository) {
-    return isPermittedToConfigureWorkflow(repository) && isWorkflowRepositoryConfigurationEnabled();
+    return isPermittedToConfigureWorkflow(repository) && engineConfigService.isWorkflowRepositoryConfigurationEnabled();
   }
 
   private boolean isPermittedToConfigureWorkflow(Repository repository) {
     return mayReadWorkflowConfig(repository) || mayConfigureWorkflowConfig(repository);
-  }
-
-  private boolean isWorkflowRepositoryConfigurationEnabled() {
-    return !engineConfigService.getGlobalEngineConfig().isDisableRepositoryConfiguration();
   }
 }

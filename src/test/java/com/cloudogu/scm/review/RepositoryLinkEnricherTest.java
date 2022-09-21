@@ -30,16 +30,19 @@ import com.cloudogu.scm.review.workflow.EngineConfigService;
 import com.cloudogu.scm.review.workflow.EngineConfiguration;
 import com.cloudogu.scm.review.workflow.GlobalEngineConfiguration;
 import com.cloudogu.scm.review.workflow.GlobalEngineConfigurator;
+import com.cloudogu.scm.review.workflow.RepositoryEngineConfigurator;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.api.v2.resources.HalAppender;
@@ -49,9 +52,7 @@ import sonia.scm.repository.Repository;
 
 import java.net.URI;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyByte;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,7 +72,13 @@ public class RepositoryLinkEnricherTest {
   private HalAppender appender;
   @Mock
   private ConfigService configService;
+
   @Mock
+  private RepositoryEngineConfigurator repositoryEngineConfigurator;
+
+  @Mock
+  private GlobalEngineConfigurator globalEngineConfigurator;
+  @InjectMocks
   private EngineConfigService engineConfigService;
   private RepositoryLinkEnricher enricher;
 
@@ -87,6 +94,8 @@ public class RepositoryLinkEnricherTest {
     ScmPathInfoStore scmPathInfoStore = new ScmPathInfoStore();
     scmPathInfoStore.set(() -> URI.create("https://scm-manager.org/scm/api/"));
     scmPathInfoStoreProvider = Providers.of(scmPathInfoStore);
+
+    when(repositoryEngineConfigurator.getEngineConfiguration(any())).thenReturn(new EngineConfiguration());
   }
 
   @Test
@@ -98,7 +107,7 @@ public class RepositoryLinkEnricherTest {
     mockGlobalConfig(false);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
-    when(engineConfigService.getGlobalEngineConfig()).thenReturn(new GlobalEngineConfiguration());
+    when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration());
 
     enricher.enrich(context, appender);
 
@@ -117,7 +126,7 @@ public class RepositoryLinkEnricherTest {
     HalEnricherContext context = HalEnricherContext.of(repo);
     GlobalEngineConfiguration globalEngineConfiguration = new GlobalEngineConfiguration();
     globalEngineConfiguration.setDisableRepositoryConfiguration(true);
-    when(engineConfigService.getGlobalEngineConfig()).thenReturn(globalEngineConfiguration);
+    when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(globalEngineConfiguration);
 
     enricher.enrich(context, appender);
 
@@ -159,7 +168,7 @@ public class RepositoryLinkEnricherTest {
   public void shouldEnrichWorkflowConfigLink() {
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(true);
-    when(engineConfigService.getGlobalEngineConfig()).thenReturn(new GlobalEngineConfiguration());
+    when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration());
 
     enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
     Repository repo = new Repository("id", "type", "space", "name");
@@ -173,13 +182,27 @@ public class RepositoryLinkEnricherTest {
   public void shouldEnrichPullRequestCheckLink() {
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(true);
-    when(engineConfigService.getGlobalEngineConfig()).thenReturn(new GlobalEngineConfiguration());
+    when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration());
 
     enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
     enricher.enrich(context, appender);
     verify(appender).appendLink("pullRequestCheck", "https://scm-manager.org/scm/api/v2/pull-requests/space/name/check");
+  }
+
+  @Test
+  @SubjectAware(username = "workflowReadUser", password = "secret")
+  public void shouldNotBreakWithOnlyWorkflowConfigReadPermission() {
+    when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
+    when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration());
+
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
+    Repository repo = new Repository("id", "type", "space", "name");
+    HalEnricherContext context = HalEnricherContext.of(repo);
+    enricher.enrich(context, appender);
+
+    verify(appender).appendLink(eq("workflowConfig"), anyString());
   }
 
 }

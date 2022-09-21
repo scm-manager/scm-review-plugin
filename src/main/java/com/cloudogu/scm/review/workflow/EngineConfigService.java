@@ -77,4 +77,8 @@ public class EngineConfigService {
       && repositoryEngineConfiguration.isEnabled())
       || globalEngineConfiguration.isEnabled();
   }
+
+  public boolean isWorkflowRepositoryConfigurationEnabled() {
+    return !globalEngineConfigurator.getEngineConfiguration().isDisableRepositoryConfiguration();
+  }
 }
