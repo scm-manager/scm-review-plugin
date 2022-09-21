@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.21.1 - 2022-09-21
+### Fixed
+- Workflow engine permission check changed in 2.21.0 breaks repository overview
+
 ## 2.21.0 - 2022-09-15
 ### Added
 - Implement reindex event ([#216](https://github.com/scm-manager/scm-review-plugin/pull/216))
