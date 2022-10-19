@@ -626,5 +626,9 @@
         }
       }
     }
+  },
+  "shortcuts": {
+    "previousPullRequest": "Bewege den Fokus auf den nächsten Pull-Request",
+    "nextPullRequest": "Bewege den Fokus auf den vorherigen Pull-Request"
   }
 }

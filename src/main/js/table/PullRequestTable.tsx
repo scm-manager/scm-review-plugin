@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
+import React, { FC, useRef } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { PullRequest } from "../types/PullRequest";
@@ -34,6 +34,7 @@ import { binder } from "@scm-manager/ui-extensions";
 import { PullRequestTableColumn } from "../types/ExtensionPoints";
 import useEngineConfig from "../workflow/useEngineConfig";
 import PullRequestStatusColumn from "../workflow/PullRequestStatusColumn";
+import { KeyboardNavigationContextProvider, useKeyboardNavigationTarget } from "../keyboardNavigation";
 
 type Props = {
   repository: Repository;
@@ -50,14 +51,30 @@ const MobileHiddenColumn = styled(Column).attrs(() => ({
   className: "is-hidden-mobile"
 }))``;
 
+const to = (pullRequest: PullRequest, repository: Repository) => {
+  return `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`;
+};
+
+type PullRequestLinkProps = {
+  pullRequest: PullRequest;
+  repository: Repository;
+  rowIndex: number;
+};
+
+const PullRequestLink: FC<PullRequestLinkProps> = ({ pullRequest, repository, rowIndex }) => {
+  const ref = useRef<HTMLAnchorElement>(null);
+  useKeyboardNavigationTarget(rowIndex, () => ref.current?.focus());
+  return (
+    <Link ref={ref} to={to(pullRequest, repository)}>
+      {pullRequest.title}
+    </Link>
+  );
+};
+
 const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
   const [t] = useTranslation("plugins");
 
   const { data, error } = useEngineConfig(repository);
-
-  const to = (pullRequest: PullRequest) => {
-    return `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`;
-  };
 
   const todoTag = (pullRequest: PullRequest) => {
     const todos = pullRequest.tasks?.todo;
@@ -80,7 +97,9 @@ const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
       ascendingIcon="sort-alpha-down-alt"
       descendingIcon="sort-alpha-down"
     >
-      {(row: PullRequest) => <Link to={to(row)}>{row.title}</Link>}
+      {(row: PullRequest, _, rowIndex) => (
+        <PullRequestLink pullRequest={row} repository={repository} rowIndex={rowIndex} />
+      )}
     </Column>,
     <Column header="">{(row: PullRequest) => <>{todoTag(row)}</>}</Column>,
     <TextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />,
@@ -136,9 +155,11 @@ const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
     );
   const columns = baseColumns.concat(...additionalColumns);
   return (
-    <StyledTable data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
-      {columns}
-    </StyledTable>
+    <KeyboardNavigationContextProvider>
+      <StyledTable data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
+        {columns}
+      </StyledTable>
+    </KeyboardNavigationContextProvider>
   );
 };
 

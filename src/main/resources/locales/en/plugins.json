@@ -624,5 +624,9 @@
         }
       }
     }
+  },
+  "shortcuts": {
+    "previousPullRequest": "Move focus to previous pull request",
+    "nextPullRequest": "Move focus to next pull request"
   }
 }
