@@ -377,6 +377,9 @@
       "invalidResult": "Found invalid pull request search result",
       "source": "Source Branch",
       "target": "Target Branch"
+    },
+    "shortcuts": {
+      "pullRequests": "Pull Requests"
     }
   },
   "mailTopics": {
