@@ -381,7 +381,7 @@
       "target": "Target Branch"
     },
     "shortcuts": {
-      "pullRequests": "Pull-Requests"
+      "pullRequests": "Wechsel zu den Pull-Requests"
     }
   },
   "mailTopics": {

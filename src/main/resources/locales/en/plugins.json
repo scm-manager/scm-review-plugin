@@ -379,7 +379,7 @@
       "target": "Target Branch"
     },
     "shortcuts": {
-      "pullRequests": "Pull Requests"
+      "pullRequests": "Switch to pull requests"
     }
   },
   "mailTopics": {
