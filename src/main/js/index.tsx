@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { CardColumnSmall, ConfigurationBinder as cfgBinder, Icon } from "@scm-manager/ui-components";
+import { CardColumnSmall, ConfigurationBinder as cfgBinder, Icon, useShortcut } from "@scm-manager/ui-components";
 import { binder, ExtensionPointDefinition, extensionPoints } from "@scm-manager/ui-extensions";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
@@ -44,7 +44,6 @@ import PullRequestHitRenderer from "./search/PullRequestHitRenderer";
 import CommentHitRenderer from "./search/CommentHitRenderer";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 import { useTranslation } from "react-i18next";
-import { useShortcut } from "@scm-manager/ui-components";
 
 type PredicateProps = {
   repository: Repository;
