@@ -1,0 +1,2 @@
+- type: changed
+  description: Add keyboard shortcut to navigate to the pull request overview ([#219](https://github.com/scm-manager/scm-review-plugin/pull/219))
