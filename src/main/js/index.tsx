@@ -22,12 +22,12 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { CardColumnSmall, ConfigurationBinder as cfgBinder, Icon, NavLink } from "@scm-manager/ui-components";
-import { binder, ExtensionPointDefinition } from "@scm-manager/ui-extensions";
+import { CardColumnSmall, ConfigurationBinder as cfgBinder, Icon, useShortcut } from "@scm-manager/ui-components";
+import { binder, ExtensionPointDefinition, extensionPoints } from "@scm-manager/ui-extensions";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
 import PullRequestList from "./PullRequestList";
-import { Route } from "react-router-dom";
+import { Route, useHistory } from "react-router-dom";
 import PullRequestsNavLink from "./PullRequestsNavLink";
 import CreatePullRequestButton from "./CreatePullRequestButton";
 import RepositoryConfig from "./config/RepositoryConfig";
@@ -83,11 +83,21 @@ export function matches(route: any) {
   return route.location.pathname.match(routeRegex);
 }
 
-const PullRequestNavLink = ({ url }: { url: string }) => {
+const PullRequestNavLink: extensionPoints.RepositoryNavigation["type"] = ({ url, repository }) => {
+  const [t] = useTranslation("plugins");
+  const history = useHistory();
+  useShortcut("g p", () => history.push(`${url}/pull-requests/`), {
+    active: !!repository?._links["pullRequest"],
+    description: t("scm-review-plugin.shortcuts.pullRequests")
+  });
   return <PullRequestsNavLink url={url} activeWhenMatch={matches} />;
 };
 
-binder.bind("repository.navigation", PullRequestNavLink, reviewSupportedPredicate);
+binder.bind<extensionPoints.RepositoryNavigation>(
+  "repository.navigation",
+  PullRequestNavLink,
+  reviewSupportedPredicate
+);
 
 const ShowPullRequestsRoute = ({ url, repository }: RepoRouteProps) => {
   return (

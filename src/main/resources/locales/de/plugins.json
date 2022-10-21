@@ -379,6 +379,9 @@
       "invalidResult": "Ungültige Suchergebnisse gefunden",
       "source": "Source Branch",
       "target": "Target Branch"
+    },
+    "shortcuts": {
+      "pullRequests": "Wechsel zu den Pull-Requests"
     }
   },
   "mailTopics": {
