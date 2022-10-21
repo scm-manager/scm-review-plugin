@@ -131,7 +131,7 @@ public class MergeService {
     List<PullRequest> pullRequests = pullRequestService.getAll(repository.getNamespace(), repository.getName());
     pullRequests.forEach(pr -> {
       if (shouldRejectPullRequestForDeletedBranch(pullRequest, deletedSourceBranch, pr)) {
-        pullRequestService.setRejected(repository, pr.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+        pullRequestService.setRejected(repository, pr.getId(), PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED);
       }
     });
   }

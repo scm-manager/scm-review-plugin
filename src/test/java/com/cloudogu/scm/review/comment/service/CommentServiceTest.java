@@ -710,15 +710,28 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "dent")
-  public void shouldAddCommentOnRejectEventByDeletedBranch() {
+  public void shouldAddCommentOnRejectEventByDeletedSourceBranch() {
     PullRequest pullRequest = mockPullRequest();
     when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, pullRequest, PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED));
+    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, pullRequest, PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED));
 
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getComment()).isEqualTo("sourceDeleted");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldAddCommentOnRejectEventByDeletedTargetBranch() {
+    PullRequest pullRequest = mockPullRequest();
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+
+    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, pullRequest, PullRequestRejectedEvent.RejectionCause.TARGET_BRANCH_DELETED));
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getComment()).isEqualTo("targetDeleted");
   }
 
   private PullRequest mockPullRequest() {

@@ -41,7 +41,8 @@ public class PullRequestRejectedEvent extends BasicPullRequestEvent {
   }
 
   public enum RejectionCause {
-    BRANCH_DELETED,
+    SOURCE_BRANCH_DELETED,
+    TARGET_BRANCH_DELETED,
     REJECTED_BY_USER
   }
 }

@@ -248,7 +248,7 @@ class EventListenerTest {
     return new PullRequestRejectedEvent(
       repository,
       pullRequest,
-      PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED
+      PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED
     );
   }
 

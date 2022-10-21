@@ -86,6 +86,8 @@ describe("Pull Request Details", () => {
       visitPullRequest(this.namespace, this.repoName, this.pullRequestId);
 
       // Then
+      cy.contains("REJECTED").should("exist");
+      cy.contains("The source branch of the pull request has been deleted.").should("exist");
     });
 
     it("should work when target branch is deleted", function() {
@@ -94,6 +96,8 @@ describe("Pull Request Details", () => {
       visitPullRequest(this.namespace, this.repoName, this.pullRequestId);
 
       // Then
+      cy.contains("REJECTED").should("exist");
+      cy.contains("The target branch of the pull request has been deleted.").should("exist");
     });
   });
 });

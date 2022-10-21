@@ -128,8 +128,10 @@ public class StatusCheckHook {
         } else {
           updated(pullRequest);
         }
-      } else if (branchesWereDeleted(pullRequest)) {
-        setRejected(pullRequest);
+      } else if (targetBranchWasDeleted(pullRequest)) {
+        setRejected(pullRequest, PullRequestRejectedEvent.RejectionCause.TARGET_BRANCH_DELETED);
+      } else if (sourceBranchWasDeleted(pullRequest)) {
+        setRejected(pullRequest, PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED);
       }
     }
 
@@ -173,16 +175,19 @@ public class StatusCheckHook {
       }
     }
 
-    private boolean branchesWereDeleted(PullRequest pullRequest) {
-      return branchProvider.getDeletedOrClosed().contains(pullRequest.getSource())
-        || branchProvider.getDeletedOrClosed().contains(pullRequest.getTarget());
+    private boolean targetBranchWasDeleted(PullRequest pullRequest) {
+      return branchProvider.getDeletedOrClosed().contains(pullRequest.getTarget());
     }
 
-    private void setRejected(PullRequest pullRequest) {
+    private boolean sourceBranchWasDeleted(PullRequest pullRequest) {
+      return branchProvider.getDeletedOrClosed().contains(pullRequest.getSource());
+    }
+
+    private void setRejected(PullRequest pullRequest, PullRequestRejectedEvent.RejectionCause cause) {
       LOG.info("setting pull request {} to status REJECTED", pullRequest.getId());
       String message = format("Rejected pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
-      pullRequestService.setRejected(repository, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+      pullRequestService.setRejected(repository, pullRequest.getId(), cause);
     }
 
     private void updated(PullRequest pullRequest) {
