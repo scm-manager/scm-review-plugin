@@ -23,7 +23,7 @@
  */
 import React, { FC } from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { Icon, urls, createAttributesForTesting } from "@scm-manager/ui-components";
+import { Icon, urls } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, useLocation, useRouteMatch } from "react-router-dom";
@@ -79,19 +79,19 @@ const Tabs: FC<TabProps> = ({
 
   if (!isClosed || (pullRequest.sourceRevision && pullRequest.targetRevision)) {
     changesetTab = (
-      <li className={navigationClass("changesets")} {...createAttributesForTesting("changesets")}>
+      <li className={navigationClass("changesets")}>
         <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pullRequest.tabs.commits")}</Link>
       </li>
     );
 
     diffTab = (
-      <li className={navigationClass("diff")} {...createAttributesForTesting("diff")}>
+      <li className={navigationClass("diff")}>
         <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pullRequest.tabs.diff")}</Link>
       </li>
     );
 
     conflictsTab = !mergeHasNoConflict && (
-      <li className={navigationClass("conflicts")} {...createAttributesForTesting("conflicts")}>
+      <li className={navigationClass("conflicts")}>
         <Link to={`${baseURL}/conflicts/`}>
           {t("scm-review-plugin.pullRequest.tabs.conflicts")} &nbsp;{" "}
           <Icon color={"warning"} name={"exclamation-triangle"} />
