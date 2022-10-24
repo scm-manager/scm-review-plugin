@@ -7,7 +7,6 @@
   "scripts": {
     "build": "plugin-scripts build",
     "watch": "plugin-scripts watch",
-    "test": "jest --passWithNoTests",
     "postinstall": "plugin-scripts postinstall",
     "e2e": "integration-test-runner run -u scmadmin -p scmadmin -O ../../../build/target/ -d ./src/test/e2e"
   },
