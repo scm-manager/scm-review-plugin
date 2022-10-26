@@ -500,8 +500,8 @@ class MergeServiceTest {
     service.merge(REPOSITORY.getNamespaceAndName(), pullRequest.getId(), mergeCommit, MergeStrategy.MERGE_COMMIT, false);
 
     verify(branchCommand).delete(pullRequest.getSource());
-    verify(pullRequestService, times(1)).setRejected(REPOSITORY, "2", PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
-    verify(pullRequestService, never()).setRejected(REPOSITORY, "1", PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+    verify(pullRequestService, times(1)).setRejected(REPOSITORY, "2", PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED);
+    verify(pullRequestService, never()).setRejected(REPOSITORY, "1", PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED);
   }
 
   private TestMergeObstacle mockMergeGuard(PullRequest pullRequest, boolean overrideable) {

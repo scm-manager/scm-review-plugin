@@ -370,8 +370,10 @@ public class CommentService {
 
   private SystemCommentType getCommentType(PullRequestRejectedEvent.RejectionCause cause) {
     switch (cause) {
-      case BRANCH_DELETED:
+      case SOURCE_BRANCH_DELETED:
         return SystemCommentType.SOURCE_DELETED;
+      case TARGET_BRANCH_DELETED:
+        return SystemCommentType.TARGET_DELETED;
       case REJECTED_BY_USER:
         return SystemCommentType.REJECTED;
       default:

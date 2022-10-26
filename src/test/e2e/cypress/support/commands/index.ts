@@ -21,28 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.pullrequest.service;
 
-import sonia.scm.event.Event;
-import sonia.scm.repository.Repository;
-
-@Event
-public class PullRequestRejectedEvent extends BasicPullRequestEvent {
-
-  private final RejectionCause cause;
-
-  public PullRequestRejectedEvent(Repository repository, PullRequest pullRequest, RejectionCause cause) {
-    super(repository, pullRequest);
-    this.cause = cause;
-  }
-
-  public RejectionCause getCause() {
-    return cause;
-  }
-
-  public enum RejectionCause {
-    SOURCE_BRANCH_DELETED,
-    TARGET_BRANCH_DELETED,
-    REJECTED_BY_USER
-  }
-}
+// This file is a template, please update the contents with commands specific to your plugin.
+// You can leave it blank, but do not add any other files to this directory or any of its subdirectories.

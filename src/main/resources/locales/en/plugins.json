@@ -219,6 +219,7 @@
         "merged": "The pull request has been merged.",
         "rejected": "The pull request has been rejected.",
         "sourceDeleted": "The source branch of the pull request has been deleted.",
+        "targetDeleted": "The target branch of the pull request has been deleted.",
         "emergencyMerged": "The pull request has been merged with an emergency merge. The workflow engine rules has been ignored."
       },
       "type": {

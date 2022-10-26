@@ -122,10 +122,6 @@ const IgnoredMergeObstacles = styled.div`
   border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
 `;
 
-const PRArrow = styled.i`
-  vertical-align: 0.55rem;
-`;
-
 type UserEntryProps = {
   labelKey: string;
   displayName: string;

@@ -246,7 +246,7 @@ class StatusCheckHookTest {
 
       hook.checkStatus(event);
 
-      verify(pullRequestService).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+      verify(pullRequestService).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED);
     }
 
     @Test
@@ -258,7 +258,7 @@ class StatusCheckHookTest {
 
       hook.checkStatus(event);
 
-      verify(pullRequestService).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.BRANCH_DELETED);
+      verify(pullRequestService).setRejected(REPOSITORY, pullRequest.getId(), PullRequestRejectedEvent.RejectionCause.TARGET_BRANCH_DELETED);
     }
 
     @Test
