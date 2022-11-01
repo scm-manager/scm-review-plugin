@@ -21,12 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useRef } from "react";
+import React, { FC } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { PullRequest } from "../types/PullRequest";
 import { Repository } from "@scm-manager/ui-types";
-import { Column, comparators, DateFromNow, Table, Tag, TextColumn } from "@scm-manager/ui-components";
+import {
+  Column,
+  comparators,
+  DateFromNow,
+  KeyboardIterator,
+  Table,
+  Tag,
+  TextColumn,
+  useKeyboardIteratorTarget
+} from "@scm-manager/ui-components";
 import { Link } from "react-router-dom";
 import ReviewerIcon from "./ReviewerIcon";
 import PullRequestStatusTag from "../PullRequestStatusTag";
@@ -34,7 +43,6 @@ import { binder } from "@scm-manager/ui-extensions";
 import { PullRequestTableColumn } from "../types/ExtensionPoints";
 import useEngineConfig from "../workflow/useEngineConfig";
 import PullRequestStatusColumn from "../workflow/PullRequestStatusColumn";
-import { KeyboardNavigationContextProvider, useKeyboardNavigationTarget } from "../keyboardNavigation";
 
 type Props = {
   repository: Repository;
@@ -58,12 +66,10 @@ const to = (pullRequest: PullRequest, repository: Repository) => {
 type PullRequestLinkProps = {
   pullRequest: PullRequest;
   repository: Repository;
-  rowIndex: number;
 };
 
-const PullRequestLink: FC<PullRequestLinkProps> = ({ pullRequest, repository, rowIndex }) => {
-  const ref = useRef<HTMLAnchorElement>(null);
-  useKeyboardNavigationTarget(rowIndex, () => ref.current?.focus());
+const PullRequestLink: FC<PullRequestLinkProps> = ({ pullRequest, repository }) => {
+  const ref = useKeyboardIteratorTarget();
   return (
     <Link ref={ref} to={to(pullRequest, repository)}>
       {pullRequest.title}
@@ -97,9 +103,7 @@ const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
       ascendingIcon="sort-alpha-down-alt"
       descendingIcon="sort-alpha-down"
     >
-      {(row: PullRequest, _, rowIndex) => (
-        <PullRequestLink pullRequest={row} repository={repository} rowIndex={rowIndex} />
-      )}
+      {(row: PullRequest, _) => <PullRequestLink pullRequest={row} repository={repository} />}
     </Column>,
     <Column header="">{(row: PullRequest) => <>{todoTag(row)}</>}</Column>,
     <TextColumn header={t("scm-review-plugin.pullRequest.sourceBranch")} dataKey="source" />,
@@ -155,11 +159,11 @@ const PullRequestTable: FC<Props> = ({ repository, pullRequests }) => {
     );
   const columns = baseColumns.concat(...additionalColumns);
   return (
-    <KeyboardNavigationContextProvider>
+    <KeyboardIterator>
       <StyledTable data={pullRequests} emptyMessage={t("scm-review-plugin.noRequests")}>
         {columns}
       </StyledTable>
-    </KeyboardNavigationContextProvider>
+    </KeyboardIterator>
   );
 };
 
