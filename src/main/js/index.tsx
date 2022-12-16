@@ -145,7 +145,8 @@ binder.bind("landingpage.mydata", {
   beforeData: <AllPullRequestsLink />,
   title: "scm-review-plugin.landingpage.myPullRequests.title",
   separatedEntries: false,
-  type: "MyPullRequestData"
+  type: "MyPullRequestData",
+  emptyMessage: "scm-review-plugin.landingpage.myPullRequests.emptyMessage"
 });
 binder.bind("landingpage.myevents", PullRequestCreatedEvent);
 binder.bind("landingpage.mytask", PullRequestTodos);

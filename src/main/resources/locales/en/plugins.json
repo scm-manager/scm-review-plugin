@@ -314,7 +314,8 @@
       "myPullRequests": {
         "title": "My pull requests",
         "cardSubtitle": "in repository {{namespace}}/{{name}}",
-        "allPullRequestsLinkTitle": "All Pull Requests"
+        "allPullRequestsLinkTitle": "All Pull Requests",
+        "emptyMessage": "No active pull requests found."
       },
       "created": {
         "header": "New pull request: #{{id}} {{title}}",

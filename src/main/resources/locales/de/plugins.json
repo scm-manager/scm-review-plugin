@@ -316,7 +316,8 @@
       "myPullRequests": {
         "title": "Meine Pull Requests",
         "cardSubtitle": "im Repository {{namespace}}/{{name}}",
-        "allPullRequestsLinkTitle": "Alle Pull Requests"
+        "allPullRequestsLinkTitle": "Alle Pull Requests",
+        "emptyMessage": "Keine aktiven Pull Requests gefunden."
       },
       "created": {
         "header": "Neuer Pull Request: #{{id}} {{title}}",
