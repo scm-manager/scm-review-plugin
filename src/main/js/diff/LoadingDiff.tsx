@@ -86,7 +86,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
           />
         }
       />
-      <CoreDiff diff={data.files} {...props} />
+      <CoreDiff diff={data.files} {...props} stickyHeader={true} />
       {data.partial ? (
         <PartialNotification
           pullRequestComments={pullRequestComments}
