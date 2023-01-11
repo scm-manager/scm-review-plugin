@@ -54,6 +54,7 @@ import Statusbar from "./workflow/Statusbar";
 import PullRequestStatusTag from "./PullRequestStatusTag";
 import ChangeNotificationContext from "./ChangeNotificationContext";
 import SourceTargetBranchDisplay from "./SourceTargetBranchDisplay";
+import DeleteSourceBranchButton from "./DeleteSourceBranchButton";
 
 type Props = {
   repository: Repository;
@@ -215,6 +216,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   let mergeButton = null;
   let rejectButton = null;
+  let deleteSourceButton = null;
   if (pullRequest._links?.reject) {
     rejectButton = <RejectButton reject={() => reject(pullRequest)} loading={rejectLoading} />;
     if (!!pullRequest._links.merge) {
@@ -228,6 +230,11 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         />
       );
     }
+  }
+  if (!pullRequest._links.reject && !pullRequest._links.merge) {
+    deleteSourceButton = (
+      <DeleteSourceBranchButton pullRequest={pullRequest} repository={repository} loading={mergeDryRunLoading} />
+    );
   }
 
   let editButton = null;
@@ -349,6 +356,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
           <div className="level-right">
             <div className="level-item">{rejectButton}</div>
             <div className="level-item">{mergeButton}</div>
+            <div className="level-item">{deleteSourceButton}</div>
           </div>
         </LevelWrapper>
       </Container>

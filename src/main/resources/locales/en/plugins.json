@@ -151,6 +151,21 @@
         "continue": "Merge Pull Request",
         "introduction": "Some rules are broken:",
         "addMessageText": "Additionally to the merge message in the next step you should add a comment, why you want to performe the emergency merge:"
+      },
+      "deleteSourceBranchButton": {
+        "buttonTitle": "Delete Source Branch",
+        "deleteModal": {
+          "title": "Delete Source Branch?",
+          "message": "Really delete the source branch '{{branch}}'?",
+          "messageForDifferentRevision": "The branch has diverged from the revision that was merged with this pull request. The last change on the branch '{{branch}}' was {{lastCommitDate}}.",
+          "submit": "Delete",
+          "cancel": "Cancel"
+        },
+        "deleteErrorModal": {
+          "title": "Delete Source Branch",
+          "message": "There was an error deleting the branch '{{branch}}'.",
+          "cancel": "Cancel"
+        }
       }
     },
     "pullRequests": {

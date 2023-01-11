@@ -38,6 +38,7 @@ import {
 import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
 import { Changeset, HalRepresentation, Link, PagedCollection, Repository } from "@scm-manager/ui-types";
 import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
+import { useBranches } from "@scm-manager/ui-api";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
@@ -647,6 +648,12 @@ export const useMergeDryRun = (
 export function getMergeStrategyInfo(url: string) {
   return apiClient.get(url).then(response => response.json());
 }
+
+export const useSourceBranch = (repository: Repository, pullRequest: PullRequest) => {
+  const { data, isLoading } = useBranches(repository);
+  const branch = !isLoading && data?._embedded?.branches.find(b => b.name === pullRequest.source);
+  return { sourceBranch: branch, isLoading };
+};
 
 function createIncomingUrl(repository: Repository, linkName: string, source: string, target: string) {
   const link = repository._links[linkName];

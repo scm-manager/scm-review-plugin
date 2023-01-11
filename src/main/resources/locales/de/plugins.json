@@ -151,6 +151,21 @@
         "continue": "Pull Request mergen",
         "introduction": "Einige Regeln wurden nicht eingehalten:",
         "addMessageText": "Zusätzlich zu der Merge Nachricht im nächsten Schritt sollten Sie hier einen Kommentar zum Emergency Merge erfassen:"
+      },
+      "deleteSourceBranchButton": {
+        "buttonTitle": "Source Branch löschen",
+        "deleteModal": {
+          "title": "Source Branch löschen?",
+          "message": "Soll der Branch '{{branch}}' wirklich gelöscht werden?",
+          "messageForDifferentRevision": "Der Branch hat einen anderen Stand als zu dem Zeitpunkt, als der Merge des Pull Request durchgeführt wurde. Die letzte Änderung auf dem Branch '{{branch}}' war {{lastCommitDate}}.",
+          "submit": "Löschen",
+          "cancel": "Abbrechen"
+        },
+        "deleteErrorModal": {
+          "title": "Source Branch löschen",
+          "message": "Beim Löschen des Branches '{{branch}}' ist ein Fehler aufgetreten.",
+          "cancel": "Abbrechen"
+        }
       }
     },
     "pullRequests": {
