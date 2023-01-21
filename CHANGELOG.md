@@ -313,10 +313,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make navigation item collapsable ([#55](https://github.com/scm-manager/scm-review-plugin/pull/55))
 
 ## 2.0.0-rc5 - 2020-02-18
-Re-release of 2.0.0-rc3
+### Changed
+- Re-release of 2.0.0-rc3
 
 ## 2.0.0-rc4 - 2020-02-18
-Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and [#53](https://github.com/scm-manager/scm-review-plugin/pull/53) to 2.0.0-rc2
+### Changed
+- Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and [#53](https://github.com/scm-manager/scm-review-plugin/pull/53) to 2.0.0-rc2
 
 ## 2.0.0-rc3 - 2020-02-14
 ### Added
