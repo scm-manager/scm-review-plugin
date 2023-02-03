@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
@@ -45,6 +46,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.sse.ChannelRegistry;
+import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.RestDispatcher;
 
 import javax.servlet.http.HttpServletResponse;
@@ -89,6 +91,10 @@ public class CommentResourceTest {
   private BranchRevisionResolver branchRevisionResolver;
   @Mock
   private ChannelRegistry channelRegistry;
+  @Mock
+  private ConfigService configService;
+  @Mock
+  private UserDisplayManager userDisplayManager;
 
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock("https://scm-manager.org/scm/api/v2");
 
@@ -120,8 +126,8 @@ public class CommentResourceTest {
           null,
           channelRegistry
         )
-      )
-    );
+      ),
+            configService, userDisplayManager);
     dispatcher.addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);

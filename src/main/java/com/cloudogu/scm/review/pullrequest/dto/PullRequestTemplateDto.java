@@ -21,32 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.config.api;
 
+package com.cloudogu.scm.review.pullrequest.dto;
+
+import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
-@Getter @Setter @NoArgsConstructor
-public class PullRequestConfigDto extends HalRepresentation {
+@Getter
+public class PullRequestTemplateDto extends HalRepresentation {
+  private final Set<DisplayedUserDto> defaultReviewers;
 
-  public PullRequestConfigDto(Links links) {
-    super(links);
-  }
-
-  private boolean preventMergeFromAuthor;
-  private boolean restrictBranchWriteAccess;
-  private List<String> protectedBranchPatterns;
-  private List<ProtectionBypassDto> branchProtectionBypasses;
-  private List<String> defaultReviewers;
-
-  @Getter @Setter
-  public static class ProtectionBypassDto {
-    private String name;
-    private boolean group;
+  public PullRequestTemplateDto(Links links, Embedded embedded, Set<DisplayedUserDto> defaultReviewers) {
+    super(links, embedded);
+    this.defaultReviewers = defaultReviewers;
   }
 }

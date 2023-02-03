@@ -30,6 +30,9 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Location;
+import com.cloudogu.scm.review.config.service.ConfigService;
+import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
+import com.cloudogu.scm.review.config.service.PullRequestConfig;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -93,9 +96,7 @@ import java.util.Optional;
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonMap;
+import static java.util.Collections.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -150,6 +151,8 @@ public class PullRequestRootResourceTest {
   private CommentService commentService;
   @Mock
   private ChannelRegistry channelRegistry;
+  @Mock
+  private ConfigService configService;
 
   @InjectMocks
   private PullRequestMapperImpl mapper;
@@ -165,7 +168,7 @@ public class PullRequestRootResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     when(pullRequestService.getRepository(repository.getNamespace(), repository.getName())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
-    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(mapper, service, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, service, null, null, channelRegistry)));
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(mapper, service, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, service, null, null, channelRegistry)), configService, userDisplayManager);
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -974,6 +977,23 @@ public class PullRequestRootResourceTest {
     assertThat(response.getContentAsString()).contains("\"_links\":{\"self\":{\"href\":\"/v2/pull-requests/ns/repo/check?source=develop&target=master\"}}");
   }
 
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldReturnPullRequestTemplate() throws URISyntaxException, IOException {
+    PullRequestConfig config = new PullRequestConfig();
+    config.setDefaultReviewers(singletonList("dent"));
+
+    when(configService.getRepositoryPullRequestConfig(repository)).thenReturn(config);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/template");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"defaultReviewers\":[{\"id\":\"dent\",\"displayName\":\"dent\"}]");
+    assertThat(response.getContentAsString()).contains("\"_links\":{\"self\":{\"href\":\"/v2/pull-requests/ns/repo/template\"}}");
+  }
+
   private void mockLogCommandForPullRequestCheck(List<Changeset> changesets) throws IOException {
     when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
@@ -993,7 +1013,7 @@ public class PullRequestRootResourceTest {
 
   private void initPullRequestRootResource() {
     PullRequestRootResource rootResource =
-      new PullRequestRootResource(mapper, pullRequestService, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, pullRequestService, null, null, channelRegistry)));
+      new PullRequestRootResource(mapper, pullRequestService, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, pullRequestService, null, null, channelRegistry)), configService, userDisplayManager);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(rootResource);

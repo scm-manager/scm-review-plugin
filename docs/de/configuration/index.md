@@ -38,3 +38,8 @@ hinzugefügt werden.
 In den meisten Fällen werden Pull Requests nicht von denjenigen gemerged, die sie erstellt haben. Dieses kann
 daher auch konkret verhindert werden. Hierzu dient die Option "Verhindern, dass Autoren ihre eigenen Pull
 Requests mergen".
+
+## Standard-Reviewer
+
+Für jedes Repository kann eine Auswahl an Standard-Reviewern konfiguriert werden.
+Das Reviewer-Feld im Pull Request-Erstellungsformular wird dadurch automatisch vorausgefüllt.

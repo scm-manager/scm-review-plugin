@@ -282,6 +282,13 @@
     },
     "config": {
       "title": "Pull Requests Konfiguration",
+      "defaultReviewers": {
+        "label": "Standard-Reviewer",
+        "addButton": "Hinzufügen",
+        "placeholder": "Standard-Reviewer hinzufügen",
+        "loading": "Suche ...",
+        "noOptions": "Kein Vorschlag für Benutzername verfügbar"
+      },
       "restrictBranchWriteAccess": {
         "label": "Branch-Schutz aktiviert",
         "helpText": "Aktiviert den Branch-Schutz, so dass Branches nur durch Pull Requests geändert werden können."

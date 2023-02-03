@@ -28,9 +28,12 @@ import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
+import com.cloudogu.scm.review.config.service.ConfigService;
+import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestTemplateDto;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -48,10 +51,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.ChangesetPagingResult;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.User;
+import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.VndMediaType;
 
 import javax.inject.Inject;
@@ -67,6 +72,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
@@ -75,16 +81,19 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.BRANCHES_NOT_DIFFER;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_ALREADY_EXISTS;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
 import static de.otto.edison.hal.Link.link;
+import static de.otto.edison.hal.Links.linkingTo;
 import static de.otto.edison.hal.paging.NumberedPaging.zeroBasedNumberedPaging;
 import static java.util.Optional.ofNullable;
 import static sonia.scm.AlreadyExistsException.alreadyExists;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
+import static sonia.scm.NotFoundException.notFound;
 
 @OpenAPIDefinition(tags = {
   @Tag(name = "Pull Request", description = "Pull request endpoints provided by the review-plugin")
@@ -98,13 +107,49 @@ public class PullRequestRootResource {
   private final PullRequestService service;
   private final RepositoryServiceFactory serviceFactory;
   private final Provider<PullRequestResource> pullRequestResourceProvider;
+  private final ConfigService configService;
+
+  private final UserDisplayManager userDisplayManager;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, RepositoryServiceFactory serviceFactory, Provider<PullRequestResource> pullRequestResourceProvider) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, RepositoryServiceFactory serviceFactory, Provider<PullRequestResource> pullRequestResourceProvider, ConfigService configService, UserDisplayManager userDisplayManager) {
     this.mapper = mapper;
     this.service = service;
     this.serviceFactory = serviceFactory;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
+    this.configService = configService;
+    this.userDisplayManager = userDisplayManager;
+  }
+
+  @GET
+  @Path("{namespace}/{name}/template")
+  @Produces(MediaType.APPLICATION_JSON)
+  public PullRequestTemplateDto getPullRequestTemplate(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
+    Repository repository = service.getRepository(namespace, name);
+    if (repository == null) {
+      throw notFound(entity(new NamespaceAndName(namespace, name)));
+    }
+    PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
+    return new PullRequestTemplateDto(
+      linkingTo().self(pullRequestResourceLinks.pullRequestCollection().template(namespace, name)).build(),
+      null,
+      getDefaultReviewers(repository)
+    );
+  }
+
+  private Set<DisplayedUserDto> getDefaultReviewers(Repository repository) {
+    return configService
+      .getRepositoryPullRequestConfig(repository)
+      .getDefaultReviewers()
+      .stream()
+      .map(this::getDisplayedUserDto)
+      .collect(Collectors.toSet());
+  }
+
+  private DisplayedUserDto getDisplayedUserDto(String userId) {
+    return userDisplayManager.get(userId)
+      .map(displayUser -> new DisplayedUserDto(displayUser.getId(), displayUser.getDisplayName(), displayUser.getMail()))
+      .orElse(new DisplayedUserDto(userId, userId, null));
   }
 
   @Path("{namespace}/{name}/{pullRequestId}")

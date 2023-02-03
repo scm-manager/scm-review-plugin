@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -41,6 +42,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
+import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.RestDispatcher;
 
 import java.io.UnsupportedEncodingException;
@@ -69,6 +71,10 @@ class EngineResultResourceTest {
   private Engine engine;
   @Mock
   private PullRequestService pullRequestService;
+  @Mock
+  private ConfigService configService;
+  @Mock
+  private UserDisplayManager userDisplayManager;
 
   @InjectMocks
   private EngineResultResource resource;
@@ -76,7 +82,7 @@ class EngineResultResourceTest {
   @BeforeEach
   void setUpResource() {
     PullRequestResource pullRequestResource = new PullRequestResource(null, null, null, Providers.of(resource), null);
-    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(null, null, null, Providers.of(pullRequestResource));
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(null, null, null, Providers.of(pullRequestResource), configService, userDisplayManager);
 
     dispatcher.addSingletonResource(pullRequestRootResource);
   }

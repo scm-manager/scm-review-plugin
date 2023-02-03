@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
 import { ErrorNotification, Level, Notification, SubmitButton, Subtitle } from "@scm-manager/ui-components";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
@@ -32,6 +32,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useBranches } from "@scm-manager/ui-api";
 import queryString from "query-string";
+import useRepositoryTemplate from "./config/useRepositoryTemplate";
 
 type Props = {
   repository: Repository;
@@ -53,11 +54,33 @@ const Create: FC<Props> = ({ repository }) => {
   const { data: checkResult } = useCheckPullRequest(repository, pullRequest, (result: CheckResult) => {
     setDisabled(!isPullRequestValid(pullRequest, result));
   });
+  const { data: pullRequestTemplate, isLoading: isLoadingPullRequestTemplate } = useRepositoryTemplate(repository);
+  const isValid = useCallback(
+    (result?: CheckResult) => {
+      if (result) {
+        return result?.status === "PR_VALID";
+      }
+      return checkResult?.status === "PR_VALID";
+    },
+    [checkResult]
+  );
+  const isPullRequestValid = useCallback(
+    (basicPR: BasicPullRequest, result?: CheckResult) =>
+      !!basicPR.source && !!basicPR.target && !!basicPR.title && isValid(result),
+    [isValid]
+  );
+  const handleFormChange = useCallback(
+    (basicPR: PullRequest) => {
+      setPullRequest(basicPR);
+      setDisabled(!isPullRequestValid(basicPR));
+    },
+    [isPullRequestValid]
+  );
 
   const branches = branchesData?._embedded?.branches;
 
   useEffect(() => {
-    if (branchesData) {
+    if (branchesData && pullRequestTemplate) {
       const url = location.search;
       const params = queryString.parse(url);
       const branchNames = branches?.map((b: Branch) => b.name);
@@ -70,28 +93,13 @@ const Create: FC<Props> = ({ repository }) => {
         title: "",
         source: initialSource,
         target: initialTarget,
+        reviewer: pullRequestTemplate?.defaultReviewers.map(it => ({ ...it, approved: false })),
         _links: {}
       });
     }
-  }, [branchesData]);
+  }, [branchesData, pullRequestTemplate]);
 
   const submit = () => create(pullRequest);
-
-  const isValid = (result?: CheckResult) => {
-    if (result) {
-      return result?.status === "PR_VALID";
-    }
-    return checkResult?.status === "PR_VALID";
-  };
-
-  const isPullRequestValid = (basicPR: BasicPullRequest, result?: CheckResult) => {
-    return !!basicPR.source && !!basicPR.target && !!basicPR.title && isValid(result);
-  };
-
-  const handleFormChange = (basicPR: PullRequest) => {
-    setPullRequest(basicPR);
-    setDisabled(!isPullRequestValid(basicPR));
-  };
 
   if (!repository._links.pullRequest) {
     return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
@@ -122,7 +130,7 @@ const Create: FC<Props> = ({ repository }) => {
       <div className="column is-clipped">
         <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
         {notification}
-        {!createLoading && (
+        {!createLoading && !isLoadingPullRequestTemplate && (
           <CreateForm
             pullRequest={pullRequest}
             branches={branchesData?._embedded?.branches}

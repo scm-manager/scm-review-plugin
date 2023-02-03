@@ -280,6 +280,13 @@
     },
     "config": {
       "title": "Pull Requests Configuration",
+      "defaultReviewers": {
+        "label": "Default Reviewers",
+        "addButton": "Add",
+        "placeholder": "Add default reviewer",
+        "loading": "Loading ...",
+        "noOptions": "No suggestion available"
+      },
       "restrictBranchWriteAccess": {
         "label": "Branch protection enabled",
         "helpText": "Enables branch protection, so that branches are only modifiable with pull requests."

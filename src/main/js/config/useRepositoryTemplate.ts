@@ -21,32 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.config.api;
 
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import { DisplayedUser, HalRepresentation, Repository } from "@scm-manager/ui-types";
+import { useJsonResource } from "@scm-manager/ui-api";
 
-import java.util.List;
+export type PullRequestTemplate = HalRepresentation & {
+  defaultReviewers: DisplayedUser[];
+};
 
-@Getter @Setter @NoArgsConstructor
-public class PullRequestConfigDto extends HalRepresentation {
-
-  public PullRequestConfigDto(Links links) {
-    super(links);
-  }
-
-  private boolean preventMergeFromAuthor;
-  private boolean restrictBranchWriteAccess;
-  private List<String> protectedBranchPatterns;
-  private List<ProtectionBypassDto> branchProtectionBypasses;
-  private List<String> defaultReviewers;
-
-  @Getter @Setter
-  public static class ProtectionBypassDto {
-    private String name;
-    private boolean group;
-  }
+export default function usePullRequestTemplate(repository: Repository) {
+  return useJsonResource<PullRequestTemplate>(repository, "pullRequestTemplate", [
+    "repository",
+    repository.namespace,
+    repository.name,
+    "pullRequestTemplate"
+  ]);
 }

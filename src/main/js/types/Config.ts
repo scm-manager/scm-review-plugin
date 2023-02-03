@@ -33,4 +33,5 @@ export type Config = {
   protectedBranchPatterns: string[];
   branchProtectionBypasses: ProtectionBypass[];
   preventMergeFromAuthor: boolean;
+  defaultReviewers: string[];
 };

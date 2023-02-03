@@ -81,6 +81,10 @@ public class RepositoryLinkEnricher implements HalEnricher {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryConfigResource.class);
         appender.appendLink("pullRequestConfig", linkBuilder.method("getRepositoryConfig").parameters(repository.getNamespace(), repository.getName()).href());
       }
+      if (!configService.getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
+        LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
+        appender.appendLink("pullRequestTemplate", linkBuilder.method("getPullRequestTemplate").parameters(repository.getNamespace(), repository.getName()).href());
+      }
       if (isWorkflowEngineConfigurable(repository)) {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
         appender.appendLink("workflowConfig", linkBuilder.method("getRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());

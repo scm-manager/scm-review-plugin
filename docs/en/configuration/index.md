@@ -36,3 +36,8 @@ search for display names in the component), and then add it to the table.
 
 In most scenarios, pull requests will not be merged by the authors themselves. This can even be prevented
 by checking "Prevent authors from merging own pull requests".
+
+## Default Reviewers
+
+For convenience, a set of default reviewers can be configured for each repository. The reviewer field in the
+pull request creation form is automatically pre-populated from that list.

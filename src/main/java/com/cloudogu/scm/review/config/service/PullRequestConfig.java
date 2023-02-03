@@ -47,6 +47,7 @@ public class PullRequestConfig {
   @XmlElement(name = "protection-bypasses")
   private List<ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
   private boolean preventMergeFromAuthor = false;
+  private List<String> defaultReviewers = new ArrayList<>();
 
   @Getter
   @Setter
