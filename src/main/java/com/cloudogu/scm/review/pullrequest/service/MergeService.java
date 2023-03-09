@@ -71,7 +71,7 @@ public class MergeService {
     "",
     "Automatic merge by SCM-Manager.");
   private static final String SQUASH_COMMIT_MESSAGE_TEMPLATE = String.join("\n",
-    "Squash commits of branch {0}:",
+    "{3}",
     "",
     "{2}");
 
@@ -261,6 +261,7 @@ public class MergeService {
           StringBuilder builder = new StringBuilder();
           Set<Contributor> contributors = new HashSet<>();
           List<Changeset> changesetsFromLogCommand = getChangesetsFromLogCommand(pullRequest, repositoryService);
+          builder.append("Squash commits of branch ").append(pullRequest.getSource()).append(":\n\n");
           for (int i = changesetsFromLogCommand.size() - 1; i >= 0; --i) {
             Changeset changeset = changesetsFromLogCommand.get(i);
             contributors.add(new Contributor(Contributor.CO_AUTHORED_BY, changeset.getAuthor()));
@@ -270,9 +271,14 @@ public class MergeService {
               contributors.addAll(contributorsFromChangeset);
             }
           }
+
+          if (pullRequest.getDescription() != null && !pullRequest.getDescription().isEmpty()) {
+            builder = new StringBuilder(pullRequest.getDescription());
+          }
+
           appendSquashContributors(builder, pullRequest, contributors);
 
-          return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString());
+          return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString(), pullRequest.getTitle());
         } catch (IOException e) {
           throw new InternalRepositoryException(entity("Branch", pullRequest.getSource()).in(repositoryService.getRepository()),
             "Could not read changesets from repository");
@@ -284,6 +290,7 @@ public class MergeService {
   }
 
   private void appendSquashContributors(StringBuilder builder, PullRequest pullRequest, Set<Contributor> contributors) {
+    builder.append("\n");
     userDisplayManager.get(pullRequest.getAuthor()).ifPresent(prAuthor -> {
       User currentUser = currentUser();
       String committerMail = email.getMailOrFallback(currentUser);

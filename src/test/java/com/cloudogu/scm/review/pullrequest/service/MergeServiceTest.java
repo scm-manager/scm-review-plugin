@@ -339,13 +339,17 @@ class MergeServiceTest {
   class WithSquashMerge {
 
     private final DisplayUser pullRequestAuthor = DisplayUser.from(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
+    private final String pullRequestTitle = "Replace variable X with Y";
+    private PullRequest pullRequest;
 
     @BeforeEach
     void preparePullRequest() throws IOException {
       when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
       when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
-      PullRequest pullRequest = createPullRequest();
+      pullRequest = createPullRequest();
       pullRequest.setAuthor("zaphod");
+      pullRequest.setTitle(pullRequestTitle);
+
       when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
       when(userDisplayManager.get("zaphod")).thenReturn(Optional.of(pullRequestAuthor));
@@ -374,9 +378,19 @@ class MergeServiceTest {
       }
 
       @Test
+      void shouldContainPullRequestTitle() {
+
+        when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
+
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+        assertThat(commitDefaults.getCommitMessage()).startsWith(pullRequestTitle + "\n\n");
+      }
+
+      @Test
       void shouldContainCommitMessagesFromSingleCommits() {
         CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-        assertThat(commitDefaults.getCommitMessage()).startsWith("Squash commits of branch squash:\n" +
+        assertThat(commitDefaults.getCommitMessage()).startsWith(pullRequestTitle + "\n\n" +
+          "Squash commits of branch squash:\n" +
           "\n" +
           "- first commit\n" +
           "\n" +
@@ -384,6 +398,16 @@ class MergeServiceTest {
           "with multiple lines\n" +
           "\n" +
           "- third commit\n");
+      }
+
+      @Test
+      void shouldContainPullRequestDescription() {
+        final String pullRequestDescription = "This pull request is to replace all occurring variables X with equivalent variables Y.";
+        pullRequest.setDescription(pullRequestDescription);
+
+        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+        assertThat(commitDefaults.getCommitMessage()).startsWith(pullRequestTitle + "\n\n" +
+          pullRequestDescription);
       }
 
       @Test
