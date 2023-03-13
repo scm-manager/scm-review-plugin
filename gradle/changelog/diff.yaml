@@ -1,0 +1,2 @@
+- type: fixed
+  description: Fix scroll position after sticky diff "marked as reviewed"
