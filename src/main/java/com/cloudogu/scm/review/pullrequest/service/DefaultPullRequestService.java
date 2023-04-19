@@ -260,6 +260,8 @@ public class DefaultPullRequestService implements PullRequestService {
     PullRequest pullRequest = get(repository, pullRequestId);
 
     if (pullRequest.getStatus() == OPEN) {
+      removeAllApprover(repository, pullRequest);
+
       eventBus.post(new PullRequestUpdatedEvent(repository, pullRequest));
     }
   }
@@ -361,6 +363,13 @@ public class DefaultPullRequestService implements PullRequestService {
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       return repositoryService.isSupported(Command.MERGE);
     }
+  }
+
+  private void removeAllApprover(Repository repository, PullRequest pullRequest) {
+    pullRequest.getReviewer()
+      .keySet()
+      .forEach(pullRequest::removeApprover);
+    getStore(repository).update(pullRequest);
   }
 
   private User getCurrentUser() {

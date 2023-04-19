@@ -12,7 +12,7 @@ Sind beide Workflow Engine Konfigurationen aktiv, gilt die spezifischere Konfigu
 ### Regeln
 Die Workflow Engine unterstützt derzeit folgende Regeln, die teilweise auch nur in Kombination mit anderen Plugins verfügbar sind:
 
-####Allgemein
+#### Allgemein
 - `Anzahl an Freigaben`: Es müssen mindestens X Freigaben von Reviewern erfolgt sein
 - `Durch alle Reviewer freigegeben`: Alle eingetragenen Reviewer müssen den Pull Request freigegeben haben
 - `Alle Aufgaben erledigt`: Es gibt keine offenen Aufgaben an diesem Pull Request

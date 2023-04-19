@@ -58,7 +58,6 @@ import sonia.scm.user.User;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -74,6 +73,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -532,6 +532,22 @@ class DefaultPullRequestServiceTest {
       service.updated(REPOSITORY, pullRequest.getId());
 
       assertThat(eventCaptor.getAllValues()).isEmpty();
+    }
+
+    @Test
+    void shouldResetApprovalOnCodeChanges() {
+      PullRequest pullRequest = createPullRequest("pr1", Instant.ofEpochSecond(1_000_000), null);
+
+      Map<String, Boolean> reviewers = new HashMap<>();
+      reviewers.put("reviewer1", true);
+      reviewers.put("reviewer2", false);
+      pullRequest.setReviewer(reviewers);
+      when(store.get("pr1")).thenReturn(pullRequest);
+
+      service.updated(REPOSITORY, pullRequest.getId());
+
+      PullRequest storedPullRequest = service.get(REPOSITORY, "pr1");
+      assertThat(storedPullRequest.getReviewer()).containsOnly(entry("reviewer1", false), entry("reviewer2", false));
     }
 
     @Test

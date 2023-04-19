@@ -10,7 +10,10 @@ Der Autor kann beim Erstellen bzw. Editieren seines Pull Requests Wunsch-Reviewe
 Oben rechts auf der Pull Request Detailseite kann ein Reviewer mit einem Klick auf den "+" (Plus) bzw. "-" (Minus) Button diesen Pull Request abonnieren / deabonnieren.  Der Abonnent wird über Änderungen an diesem Pull Request und neue Kommentare per E-Mail benachrichtigt.
 
 ### Pull Request freigeben
-Nach einem Review kann der Reviewer den Pull Request für den Merge freigeben. Die Freigabe gilt vorerst nur als Informationen für den Autor über das durchgeführte Review. Eine tatsächliche Freigabe im Sinne eines Entsperrens findet noch nicht statt. Sobald ein Reviewer auf "Freigeben" klickt, wird hinter seinem Namen in der Reviewer-Liste ein grüner Haken hinterlegt.
+Nach einem Review kann der Reviewer den Pull Request für den Merge freigeben. Die Freigabe gilt vorerst nur als Informationen für den Autor über das durchgeführte Review. Sobald ein Reviewer auf "Freigeben" klickt, wird hinter seinem Namen in der Reviewer-Liste ein grüner Haken angezeigt.
+Wenn später Änderungen am Code vorgenommen werden, wird der Reviewstatus zurückgesetzt.
+
+Mit Hilfe der [Workflow Engine](../workflow_engine/) können Regeln definiert werden, die im Rahmen des Review-Prozesses Freigaben von Reviewern erfordern.
 
 ### Diff erweitern
 Innerhalb des Pull Request werden die Änderungen in verkürzten Diffs pro Datei angezeigt. 

@@ -11,6 +11,9 @@ Reviewers can subscribe ("+") or unsubscribe ("-") from a pull request in the up
 
 ### Approve pull request
 After a successful review, the reviewer can approve the pull request for a merge. At this point, the approval is merely an information for the author that the review is done. Once a reviewer approved a review, there is a green checkmark behind his name in the list of reviewers.
+As soon as further changes are made to the code, the review status will be reset.
+
+The [Workflow Engine](../workflow_engine/) can be used to define rules that require approvals from reviewers as part of the review process.
 
 ### Expand diff
 In the pull request all changes are shown as diff per file. This shortened view may be expanded gradually or completely.
