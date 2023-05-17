@@ -71,6 +71,7 @@ import sonia.scm.repository.Branch;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.LogCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
@@ -90,6 +91,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -992,6 +994,49 @@ public class PullRequestRootResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"defaultReviewers\":[{\"id\":\"dent\",\"displayName\":\"dent\"}]");
     assertThat(response.getContentAsString()).contains("\"_links\":{\"self\":{\"href\":\"/v2/pull-requests/ns/repo/template\"}}");
+    assertThat(response.getContentAsString()).contains("\"title\":\"\"");
+    assertThat(response.getContentAsString()).contains("\"description\":\"\"");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldReturnPullRequestTemplateWithTitleAndDescriptionForSingleChangeset() throws URISyntaxException, IOException {
+    PullRequestConfig config = new PullRequestConfig();
+
+    when(configService.getRepositoryPullRequestConfig(repository)).thenReturn(config);
+    when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
+    when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(0, singletonList(new Changeset("hashtag", Instant.now().getEpochSecond(), new Person("Test"), "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.\nMore Text"))));
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/template?source=develop&target=master");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"title\":\"");
+    assertThat(response.getContentAsString()).contains("\"description\":\"...");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldReturnPullRequestTemplateWithTitleAndDescriptionForMultipleChangesets() throws URISyntaxException, IOException {
+    PullRequestConfig config = new PullRequestConfig();
+
+    when(configService.getRepositoryPullRequestConfig(repository)).thenReturn(config);
+    when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
+    when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
+    when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(0, asList(
+        new Changeset("hashtag", Instant.now().getEpochSecond(), new Person("Test"), "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.\nMore Text"),
+        new Changeset("another", Instant.now().getEpochSecond(), new Person("someguy"), "Another important description")
+    )));
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/template?source=develop&target=master");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"title\":\"\"");
+    assertThat(response.getContentAsString()).contains("\"description\":\"\"");
   }
 
   private void mockLogCommandForPullRequestCheck(List<Changeset> changesets) throws IOException {

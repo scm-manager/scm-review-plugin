@@ -32,7 +32,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useBranches } from "@scm-manager/ui-api";
 import queryString from "query-string";
-import useRepositoryTemplate from "./config/useRepositoryTemplate";
+import usePullRequestTemplate from "./config/usePullRequestTemplate";
 
 type Props = {
   repository: Repository;
@@ -41,7 +41,12 @@ type Props = {
 const Create: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
   const history = useHistory();
-  const [pullRequest, setPullRequest] = useState<PullRequest>({ title: "", target: "", source: "", _links: {} });
+  const [pullRequest, setPullRequest] = useState<PullRequest>({
+    title: "",
+    description: "",
+    target: "",
+    source: ""
+  });
   const [disabled, setDisabled] = useState(true);
   const location = useLocation();
 
@@ -54,7 +59,11 @@ const Create: FC<Props> = ({ repository }) => {
   const { data: checkResult } = useCheckPullRequest(repository, pullRequest, (result: CheckResult) => {
     setDisabled(!isPullRequestValid(pullRequest, result));
   });
-  const { data: pullRequestTemplate, isLoading: isLoadingPullRequestTemplate } = useRepositoryTemplate(repository);
+  const { data: pullRequestTemplate, isLoading: isLoadingPullRequestTemplate } = usePullRequestTemplate(
+    repository,
+    pullRequest.source,
+    pullRequest.target
+  );
   const isValid = useCallback(
     (result?: CheckResult) => {
       if (result) {
@@ -69,18 +78,17 @@ const Create: FC<Props> = ({ repository }) => {
       !!basicPR.source && !!basicPR.target && !!basicPR.title && isValid(result),
     [isValid]
   );
-  const handleFormChange = useCallback(
-    (basicPR: PullRequest) => {
-      setPullRequest(basicPR);
-      setDisabled(!isPullRequestValid(basicPR));
-    },
-    [isPullRequestValid]
-  );
-
-  const branches = branchesData?._embedded?.branches;
+  const handleFormChange = useCallback((basicPR: Partial<PullRequest>) => {
+    setPullRequest(prevPr => ({ ...prevPr, ...basicPR }));
+  }, []);
 
   useEffect(() => {
-    if (branchesData && pullRequestTemplate) {
+    setDisabled(!isPullRequestValid(pullRequest));
+  }, [isPullRequestValid, pullRequest]);
+
+  useEffect(() => {
+    if (branchesData) {
+      const branches = branchesData?._embedded?.branches;
       const url = location.search;
       const params = queryString.parse(url);
       const branchNames = branches?.map((b: Branch) => b.name);
@@ -88,16 +96,23 @@ const Create: FC<Props> = ({ repository }) => {
 
       const initialSource = params.source || (branchNames && branchNames[0]);
       const initialTarget = params.target || defaultBranch?.name;
-
+      
       handleFormChange({
-        title: "",
         source: initialSource,
-        target: initialTarget,
-        reviewer: pullRequestTemplate?.defaultReviewers.map(it => ({ ...it, approved: false })),
-        _links: {}
+        target: initialTarget
       });
     }
-  }, [branchesData, pullRequestTemplate]);
+  }, [branchesData]);
+
+  useEffect(() => {
+    if (pullRequestTemplate) {
+      handleFormChange({
+        title: pullRequestTemplate.title ?? "",
+        description: pullRequestTemplate.description,
+        reviewer: pullRequestTemplate?.defaultReviewers.map(it => ({ ...it, approved: false }))
+      });
+    }
+  }, [pullRequestTemplate]);
 
   const submit = () => create(pullRequest);
 
@@ -130,7 +145,7 @@ const Create: FC<Props> = ({ repository }) => {
       <div className="column is-clipped">
         <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
         {notification}
-        {!createLoading && !isLoadingPullRequestTemplate && (
+        {!createLoading && (
           <CreateForm
             pullRequest={pullRequest}
             branches={branchesData?._embedded?.branches}
@@ -138,6 +153,7 @@ const Create: FC<Props> = ({ repository }) => {
             checkResult={checkResult}
             branchesLoading={branchesLoading}
             branchesError={branchesError}
+            disabled={isLoadingPullRequestTemplate}
           />
         )}
         {information}
@@ -148,7 +164,7 @@ const Create: FC<Props> = ({ repository }) => {
               label={t("scm-review-plugin.create.submitButton")}
               action={submit}
               loading={createLoading}
-              disabled={disabled}
+              disabled={disabled || isLoadingPullRequestTemplate}
             />
           }
         />

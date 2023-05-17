@@ -22,18 +22,35 @@
  * SOFTWARE.
  */
 
-import { DisplayedUser, HalRepresentation, Repository } from "@scm-manager/ui-types";
-import { useJsonResource } from "@scm-manager/ui-api";
+package com.cloudogu.scm.review.pullrequest;
 
-export type PullRequestTemplate = HalRepresentation & {
-  defaultReviewers: DisplayedUser[];
-};
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-export default function usePullRequestTemplate(repository: Repository) {
-  return useJsonResource<PullRequestTemplate>(repository, "pullRequestTemplate", [
-    "repository",
-    repository.namespace,
-    repository.name,
-    "pullRequestTemplate"
-  ]);
+public final class PullRequestUtil {
+  private PullRequestUtil() {}
+
+  public static PullRequestTitleAndDescription determineTitleAndDescription(String changesetDescription) {
+    String[] split = changesetDescription.split("\\R", 2);
+    String title = split[0];
+    String description = "";
+
+    if (split.length > 1) {
+      description = split[1];
+    }
+
+    if (title.length() > 80) {
+      description = "..." + title.substring(69).trim() + System.lineSeparator() + description;
+      title = title.substring(0, 69).trim() + "...";
+    }
+
+    return new PullRequestTitleAndDescription(title.trim(), description.trim());
+  }
+
+  @AllArgsConstructor
+  @Getter
+  public static class PullRequestTitleAndDescription {
+    private final String title;
+    private final String description;
+  }
 }

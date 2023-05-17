@@ -37,11 +37,12 @@ const ValidationError = styled.p`
 
 type Props = {
   pullRequest: PullRequest;
-  handleFormChange: (pr: PullRequest) => void;
+  handleFormChange: (pr: Partial<PullRequest>) => void;
   checkResult?: CheckResult;
   branches?: Branch[];
   branchesError?: Error | null;
   branchesLoading: boolean;
+  disabled?: boolean;
 };
 
 const CreateForm: FC<Props> = ({
@@ -50,7 +51,8 @@ const CreateForm: FC<Props> = ({
   checkResult,
   branches,
   branchesError,
-  branchesLoading
+  branchesLoading,
+  disabled
 }) => {
   const [t] = useTranslation("plugins");
 
@@ -88,7 +90,7 @@ const CreateForm: FC<Props> = ({
             name="source"
             label={t("scm-review-plugin.pullRequest.sourceBranch")}
             options={createOptions() || []}
-            onChange={value => handleFormChange({ ...pullRequest, source: value })}
+            onChange={value => handleFormChange({ source: value })}
             loading={branchesLoading}
             value={pullRequest?.source}
           />
@@ -99,14 +101,14 @@ const CreateForm: FC<Props> = ({
             name="target"
             label={t("scm-review-plugin.pullRequest.targetBranch")}
             options={createOptions() || []}
-            onChange={value => handleFormChange({ ...pullRequest, target: value })}
+            onChange={value => handleFormChange({ target: value })}
             loading={branchesLoading}
             value={pullRequest?.target}
           />
         </div>
       </div>
       {renderValidationError()}
-      <EditForm handleFormChange={handleFormChange} pullRequest={pullRequest} />
+      <EditForm handleFormChange={handleFormChange} pullRequest={pullRequest} disabled={disabled} />
     </form>
   );
 };

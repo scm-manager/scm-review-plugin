@@ -22,25 +22,24 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.review.pullrequest.dto;
+import { DisplayedUser, HalRepresentation, Repository } from "@scm-manager/ui-types";
+import { apiClient, ApiResult, getResponseJson, requiredLink } from "@scm-manager/ui-api";
+import { useQuery } from "react-query";
 
-import de.otto.edison.hal.Embedded;
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Links;
-import lombok.Getter;
+export type PullRequestTemplate = HalRepresentation & {
+  defaultReviewers: DisplayedUser[];
+  title?: string;
+  description?: string;
+};
 
-import java.util.Set;
-
-@Getter
-public class PullRequestTemplateDto extends HalRepresentation {
-  private final String title;
-  private final String description;
-  private final Set<DisplayedUserDto> defaultReviewers;
-
-  public PullRequestTemplateDto(Links links, Embedded embedded, String title, String description, Set<DisplayedUserDto> defaultReviewers) {
-    super(links, embedded);
-    this.title = title;
-    this.description = description;
-    this.defaultReviewers = defaultReviewers;
-  }
+export default function usePullRequestTemplate(
+  repository: Repository,
+  source: string,
+  target: string
+): ApiResult<PullRequestTemplate> {
+  const link = requiredLink(repository, "pullRequestTemplate");
+  return useQuery<PullRequestTemplate, Error>(
+    ["repository", repository.namespace, repository.name, "pullRequestTemplate", source, target],
+    () => apiClient.get(`${link}?source=${source}&target=${target}`).then(getResponseJson)
+  );
 }

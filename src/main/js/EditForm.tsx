@@ -29,25 +29,26 @@ import { useUserSuggestions } from "@scm-manager/ui-api";
 import { PullRequest } from "./types/PullRequest";
 
 type Props = {
-  handleFormChange: (pr: PullRequest) => void;
+  handleFormChange: (pr: Partial<PullRequest>) => void;
   pullRequest: PullRequest;
+  disabled?: boolean;
 };
 
-const EditForm: FC<Props> = ({ handleFormChange, pullRequest }) => {
+const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled }) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
 
   const removeReviewer = (users: DisplayedUser[]) => {
     if (pullRequest.reviewer) {
       const newList = pullRequest.reviewer.filter(item => users.includes(item));
-      handleFormChange({ ...pullRequest, reviewer: newList });
+      handleFormChange({ reviewer: newList });
     }
   };
 
   const selectName = (selection: SelectValue) => {
     const newList = pullRequest.reviewer || [];
     newList.push({ id: selection.value.id, displayName: selection.value.displayName, mail: "", approved: false });
-    handleFormChange({ ...pullRequest, reviewer: newList });
+    handleFormChange({ reviewer: newList });
   };
 
   return (
@@ -58,13 +59,15 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest }) => {
         label={t("scm-review-plugin.pullRequest.title")}
         validationError={pullRequest?.title === ""}
         errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
-        onChange={value => handleFormChange({ ...pullRequest, title: value })}
+        onChange={value => handleFormChange({ title: value })}
+        disabled={disabled}
       />
       <Textarea
         name="description"
         value={pullRequest?.description}
         label={t("scm-review-plugin.pullRequest.description")}
-        onChange={value => handleFormChange({ ...pullRequest, description: value })}
+        onChange={value => handleFormChange({ description: value })}
+        disabled={disabled}
       />
       <TagGroup
         items={pullRequest?.reviewer || []}
@@ -78,6 +81,7 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest }) => {
             loadSuggestions={userSuggestions}
             valueSelected={selectName}
             placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
+            disabled={disabled}
           />
         </div>
       </div>

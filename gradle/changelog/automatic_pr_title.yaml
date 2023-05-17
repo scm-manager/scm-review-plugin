@@ -1,0 +1,2 @@
+- type: changed
+  description: Pre-populate title and description fields in pull request creation form if diff contains only single commit

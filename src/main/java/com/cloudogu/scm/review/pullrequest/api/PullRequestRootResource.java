@@ -37,6 +37,7 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestTemplateDto;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
@@ -50,6 +51,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.api.v2.resources.ErrorDto;
+import sonia.scm.repository.Changeset;
 import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -84,6 +86,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.cloudogu.scm.review.pullrequest.PullRequestUtil.*;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.BRANCHES_NOT_DIFFER;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_ALREADY_EXISTS;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
@@ -124,16 +127,27 @@ public class PullRequestRootResource {
   @GET
   @Path("{namespace}/{name}/template")
   @Produces(MediaType.APPLICATION_JSON)
-  public PullRequestTemplateDto getPullRequestTemplate(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
+  public PullRequestTemplateDto getPullRequestTemplate(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @QueryParam("source") String source, @QueryParam("target") String target) throws IOException {
     Repository repository = service.getRepository(namespace, name);
     if (repository == null) {
       throw notFound(entity(new NamespaceAndName(namespace, name)));
     }
+    String description = "";
+    String title = "";
+    if (!Strings.isNullOrEmpty(source) && !Strings.isNullOrEmpty(target)) {
+      try(RepositoryService repositoryService = serviceFactory.create(repository)) {
+        List<Changeset> changesets = repositoryService.getLogCommand().setAncestorChangeset(target).setStartChangeset(source).getChangesets().getChangesets();
+        if (changesets.size() == 1) {
+          PullRequestTitleAndDescription titleAndDescription = determineTitleAndDescription(changesets.get(0).getDescription());
+          description = titleAndDescription.getDescription();
+          title = titleAndDescription.getTitle();
+        }
+      }
+    }
     PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
     return new PullRequestTemplateDto(
       linkingTo().self(pullRequestResourceLinks.pullRequestCollection().template(namespace, name)).build(),
-      null,
-      getDefaultReviewers(repository)
+      null, title, description, getDefaultReviewers(repository)
     );
   }
 
