@@ -25,7 +25,6 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +120,7 @@ public class PullRequestInformationHook {
     private boolean process(List<PullRequest> pullRequests, String branch) {
       pullRequests
         .stream()
-        .filter(this::pullRequestHasStatusOpen)
+        .filter(PullRequest::isOpen)
         .filter(pr -> branch.equals(pr.getSource()))
         .forEach(this::messageForExistingPullRequest);
       return prFound;
@@ -136,10 +135,5 @@ public class PullRequestInformationHook {
       String message = format("Check existing pull request #%s (%s -> %s):", pullRequest.getId(), pullRequest.getSource(), pullRequest.getTarget());
       messageSender.sendMessageForPullRequest(pullRequest, message);
     }
-
-    private boolean pullRequestHasStatusOpen(PullRequest pullRequest) {
-      return pullRequest.getStatus() == PullRequestStatus.OPEN;
-    }
-
   }
 }

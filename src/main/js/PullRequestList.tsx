@@ -45,7 +45,7 @@ const PullRequestList: FC<Props> = ({ repository }) => {
   const location = useLocation();
   const search = urls.getQueryStringFromLocation(location);
   const match: { params: { page: string } } = useRouteMatch();
-  const [statusFilter, setStatusFilter] = useState<string>(search || "OPEN");
+  const [statusFilter, setStatusFilter] = useState<string>(search || "IN_PROGRESS");
   const history = useHistory();
   const page = useMemo(() => urls.getPageFromMatch(match), [match]);
   const { data, error, isLoading } = usePullRequests(repository, { page, status: statusFilter, pageSize: 10 });

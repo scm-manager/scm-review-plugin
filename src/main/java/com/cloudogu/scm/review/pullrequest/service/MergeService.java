@@ -58,7 +58,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.apache.shiro.SecurityUtils.getSubject;
@@ -137,7 +136,7 @@ public class MergeService {
   }
 
   private boolean shouldRejectPullRequestForDeletedBranch(PullRequest pullRequest, String deletedSourceBranch, PullRequest pr) {
-    return pr.getStatus().equals(OPEN)
+    return pr.isInProgress()
       && !pr.getId().equals(pullRequest.getId())
       && (pr.getSource().equals(deletedSourceBranch) || pr.getTarget().equals(deletedSourceBranch));
   }
@@ -175,7 +174,7 @@ public class MergeService {
   }
 
   private Optional<MergeDryRunCommandResult> dryRun(RepositoryService repositoryService, PullRequest pullRequest) {
-    assertPullRequestIsOpen(repositoryService.getRepository(), pullRequest);
+    assertPullRequestNotClosed(repositoryService.getRepository(), pullRequest);
     if (RepositoryPermissions.push(repositoryService.getRepository()).isPermitted()) {
       MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, pullRequest.getSource(), pullRequest.getTarget());
       return of(mergeCommandBuilder.dryRun());
@@ -323,7 +322,13 @@ public class MergeService {
   }
 
   private void assertPullRequestIsOpen(Repository repository, PullRequest pullRequest) {
-    if (pullRequest.getStatus() != OPEN) {
+    if (!pullRequest.isOpen()) {
+      throw new CannotMergeNotOpenPullRequestException(repository, pullRequest);
+    }
+  }
+
+  private void assertPullRequestNotClosed(Repository repository, PullRequest pullRequest) {
+    if (pullRequest.isClosed()) {
       throw new CannotMergeNotOpenPullRequestException(repository, pullRequest);
     }
   }

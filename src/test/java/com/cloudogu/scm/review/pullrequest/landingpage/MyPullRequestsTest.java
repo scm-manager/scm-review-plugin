@@ -92,7 +92,7 @@ class MyPullRequestsTest {
           .accept(PR_REPOSITORY, asList(OPEN_PR_FOR_USER, OPEN_PR_FOR_OTHER).stream());
         return null;
       }
-    ).when(pullRequestProvider).findOpenPullRequests(any());
+    ).when(pullRequestProvider).findOpenAndDraftPullRequests(any());
     Iterable<MyData> data = myPullRequests.getData();
     assertThat(data).extracting("pullRequest").extracting("id").containsExactly("open_dent");
   }

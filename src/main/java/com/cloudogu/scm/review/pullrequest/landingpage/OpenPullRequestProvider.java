@@ -27,6 +27,7 @@ package com.cloudogu.scm.review.pullrequest.landingpage;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.api.Command;
@@ -37,7 +38,9 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.DRAFT;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
+import static java.util.Arrays.asList;
 
 class OpenPullRequestProvider {
 
@@ -52,7 +55,15 @@ class OpenPullRequestProvider {
     this.repositoryManager = repositoryManager;
   }
 
+  void findOpenAndDraftPullRequests(RepositoryAndPullRequestConsumer forEachPullRequest) {
+    findPullRequestsWithStatus(forEachPullRequest, OPEN, DRAFT);
+  }
+
   void findOpenPullRequests(RepositoryAndPullRequestConsumer forEachPullRequest) {
+    findPullRequestsWithStatus(forEachPullRequest, OPEN);
+  }
+
+  void findPullRequestsWithStatus(RepositoryAndPullRequestConsumer forEachPullRequest, PullRequestStatus... status) {
     repositoryManager.getAll()
       .stream()
       .filter(PermissionCheck::mayRead)
@@ -61,7 +72,7 @@ class OpenPullRequestProvider {
         repository ->
           forEachPullRequest.accept(
             repository,
-            allPullRequestsFor(repository).stream().filter(pr -> pr.getStatus() == OPEN)
+            allPullRequestsFor(repository).stream().filter(pr -> asList(status).contains(pr.getStatus()))
           )
       );
   }

@@ -48,6 +48,10 @@ const BranchesContainer = styled.div`
   text-overflow: ellipsis;
 `;
 
+const Title = styled.div`
+  border: 0 !important;
+`;
+
 const TitleContainer = styled.strong`
   min-width: 0;
   overflow: hidden;
@@ -106,15 +110,14 @@ const MyPullRequest: FC<Props> = ({ data }) => {
     </>
   );
 
-  return (
-    <CardColumnSmall
-      link={link}
-      contentLeft={<TitleContainer>{title}</TitleContainer>}
-      contentRight={""}
-      footer={footer}
-      avatar={avatar}
-    />
+  const titleComponent = (
+    <Title className="media">
+      <TitleContainer className="media-content">{title}</TitleContainer>
+      <Tag>{pullRequest.status}</Tag>
+    </Title>
   );
+
+  return <CardColumnSmall link={link} contentLeft={titleComponent} contentRight={""} footer={footer} avatar={avatar} />;
 };
 
 export default MyPullRequest;

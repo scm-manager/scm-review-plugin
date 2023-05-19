@@ -24,7 +24,6 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import org.apache.shiro.SecurityUtils;
 
 import java.util.function.Predicate;
@@ -37,10 +36,10 @@ public enum PullRequestSelector implements Predicate<PullRequest> {
       return true;
     }
   },
-  OPEN {
+  IN_PROGRESS {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return PullRequestStatus.OPEN.equals(pullRequest.getStatus());
+      return pullRequest.isInProgress();
     }
   },
   MINE {
@@ -52,20 +51,20 @@ public enum PullRequestSelector implements Predicate<PullRequest> {
   REVIEWER {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return PullRequestStatus.OPEN.equals(pullRequest.getStatus())
+      return pullRequest.isOpen()
         && pullRequest.getReviewer().containsKey(currentUser());
     }
   },
   MERGED {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return PullRequestStatus.MERGED.equals(pullRequest.getStatus());
+      return pullRequest.isMerged();
     }
   },
   REJECTED {
     @Override
     public boolean test(PullRequest pullRequest) {
-      return PullRequestStatus.REJECTED.equals(pullRequest.getStatus());
+      return pullRequest.isRejected();
     }
   };
 

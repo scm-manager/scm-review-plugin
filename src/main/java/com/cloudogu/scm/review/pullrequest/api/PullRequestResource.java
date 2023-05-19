@@ -71,6 +71,7 @@ import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 
 import static de.otto.edison.hal.Links.linkingTo;
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 public class PullRequestResource {
 
@@ -343,7 +344,12 @@ public class PullRequestResource {
     if (!PermissionCheck.mayModifyPullRequest(repository, service.get(namespace, name, pullRequestId))) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
+
+    doThrow().violation("illegal status", "pullRequest", "status")
+      .when(service.get(repository, pullRequestId).isClosed());
+
     PullRequest pullRequest = mapper.map(pullRequestDto);
+
     service.update(repository, pullRequestId, pullRequest);
     return Response.noContent().build();
   }
@@ -366,6 +372,26 @@ public class PullRequestResource {
   public void reject(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     service.reject(repository, pullRequestId, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
+  }
+
+  @POST
+  @Path("convert-to-pr")
+  @Operation(summary = "Convert draft to pull request", description = "Converts a draft pull request to a pull request.", tags = "Pull Request")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"mergePullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no pull request with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public void convertToPR(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+    Repository repository = service.getRepository(namespace, name);
+    service.convertToPR(repository, pullRequestId);
   }
 
   @GET

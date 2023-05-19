@@ -25,7 +25,7 @@
 import { DisplayedUser, HalRepresentation, Links, PagedCollection } from "@scm-manager/ui-types";
 import { ReactText } from "react";
 
-export type PullRequestStatus = "OPEN" | "MERGED" | "REJECTED";
+export type PullRequestStatus = "OPEN" | "MERGED" | "REJECTED" | "DRAFT";
 
 export type Reviewer = DisplayedUser & {
   approved: boolean;

@@ -269,6 +269,31 @@ export const useMergePullRequest = (repository: Repository, pullRequest: PullReq
   };
 };
 
+export const useReadyForReviewPullRequest = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+
+  if (!id) {
+    throw new Error("Could not modify pull request without id");
+  }
+
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<unknown, Error, PullRequest>(
+    pr => {
+      return apiClient.post(requiredLink(pr, "convertToPR"), {});
+    },
+    {
+      onSuccess: () => {
+        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
+      }
+    }
+  );
+  return {
+    readyForReview: (pr: PullRequest) => mutate(pr),
+    isLoading,
+    error
+  };
+};
+
 type UsePullRequestsRequest = {
   status?: string;
   page?: number;
@@ -276,7 +301,7 @@ type UsePullRequestsRequest = {
 };
 
 export const usePullRequests = (repository: Repository, request?: UsePullRequestsRequest) => {
-  const status = request?.status || "OPEN";
+  const status = request?.status || "IN_PROGRESS";
   const page = request?.page ? request.page - 1 : 0;
   const pageSize = request?.pageSize || 10;
   const { error, isLoading, data } = useQuery<PagedPullRequestCollection, Error>(
@@ -634,7 +659,7 @@ export const useMergeDryRun = (
           };
         }
       },
-      enabled: pullRequest.status === "OPEN" && !!pullRequest?._links?.mergeCheck
+      enabled: !!pullRequest?._links?.mergeCheck
     }
   );
 

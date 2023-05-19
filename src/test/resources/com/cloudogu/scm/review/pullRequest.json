@@ -3,5 +3,6 @@
   "target": "targetBranch",
   "title": "pull request",
   "description": "description",
-  "reviewer" : []
+  "reviewer" : [],
+  "status": "OPEN"
 }

@@ -33,6 +33,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
@@ -69,8 +70,17 @@ public class EmailNotificationHook {
     Set<String> subscriberWithoutReviewers = eMailRecipientHelper.getSubscriberWithoutReviewers();
     Set<String> reviewers = eMailRecipientHelper.getSubscribingReviewers();
 
-    handleEvent(event, new PullRequestEventMailTextResolver(event, false), pullRequest, subscriberWithoutReviewers);
-    handleEvent(event, new PullRequestEventMailTextResolver(event, true), pullRequest, reviewers);
+    PullRequestEvent eventForNotification;
+    if (event.getEventType().equals(HandlerEventType.MODIFY) &&
+      event.getPullRequest().isOpen() &&
+      event.getOldItem().isDraft()) {
+      eventForNotification = new PullRequestEvent(event.getRepository(), event.getPullRequest(), null, HandlerEventType.CREATE);
+    } else {
+      eventForNotification = event;
+    }
+
+    handleEvent(eventForNotification, new PullRequestEventMailTextResolver(eventForNotification, false), pullRequest, subscriberWithoutReviewers);
+    handleEvent(eventForNotification, new PullRequestEventMailTextResolver(eventForNotification, true), pullRequest, reviewers);
   }
 
   @Subscribe
@@ -145,6 +155,11 @@ public class EmailNotificationHook {
   }
 
   private void handleEvent(BasicPullRequestEvent event, MailTextResolver mailTextResolver, PullRequest pullRequest, Set<String> recipients) {
+    if (event.getPullRequest() != null && event.getPullRequest().getStatus() == PullRequestStatus.DRAFT) {
+      // Do not send updates for draft pull requests
+      return;
+    }
+
     Repository repository = event.getRepository();
     if (pullRequest == null || repository == null) {
       log.warn("Repository or Pull Request not found in the event {}", event);

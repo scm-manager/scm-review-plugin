@@ -47,10 +47,14 @@
       },
       "description": "Description",
       "status": "Status",
+      "createAsDraft": "Create as draft",
+      "changeToDraft": "Change to draft",
+      "changeToDraftHelpText": "When converting to a draft, the approvals by users are deleted.",
       "statusLabel": {
         "OPEN": "OPEN",
         "MERGED": "MERGED",
-        "REJECTED": "REJECTED"
+        "REJECTED": "REJECTED",
+        "DRAFT": "DRAFT"
       },
       "id": "ID",
       "author": "Author",
@@ -86,7 +90,7 @@
         }
       },
       "selector": {
-        "OPEN": "open",
+        "IN_PROGRESS": "open/draft",
         "MINE": "mine",
         "REVIEWER": "to be reviewed",
         "ALL": "all",
@@ -144,6 +148,9 @@
           "submit": "Yes",
           "cancel": "No"
         }
+      },
+      "convertDraftButton": {
+        "buttonTitle": "Ready for Review"
       },
       "overrideModal": {
         "title": "Workflow Engine",
@@ -341,6 +348,13 @@
       },
       "created": {
         "header": "New pull request: #{{id}} {{title}}",
+        "draftHeader": "New draft pull request: #{{id}} {{title}}",
+        "footerStart": "Created by",
+        "footerMiddle": "in repository",
+        "footerEnd": ""
+      },
+      "draftToOpen": {
+        "header": "Open for review: #{{id}} {{title}}",
         "footerStart": "Created by",
         "footerMiddle": "in repository",
         "footerEnd": ""

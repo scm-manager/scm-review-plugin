@@ -67,7 +67,7 @@ public interface PullRequestService {
    *
    * @return the pull request with the given repository, source, target and status
    */
-  Optional<PullRequest> get(Repository repository, String source, String target, PullRequestStatus status);
+  Optional<PullRequest> getInProgress(Repository repository, String source, String target);
 
   /**
    * Return all pull requests related to the given repository
@@ -161,4 +161,6 @@ public interface PullRequestService {
   void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved);
 
   boolean supportsPullRequests(Repository repository);
+
+  void convertToPR(Repository repository, String pullRequestId);
 }

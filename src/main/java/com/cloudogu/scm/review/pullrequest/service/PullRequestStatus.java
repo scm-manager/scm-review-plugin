@@ -24,7 +24,22 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 public enum PullRequestStatus {
-  OPEN,
-  MERGED,
-  REJECTED
+  DRAFT(false),
+  OPEN(false),
+  MERGED(true),
+  REJECTED(true);
+
+  private final boolean closed;
+
+  PullRequestStatus(boolean closed) {
+    this.closed = closed;
+  }
+
+  public boolean isInProgress() {
+    return !closed;
+  }
+
+  public boolean isClosed() {
+    return closed;
+  }
 }

@@ -28,7 +28,6 @@ import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,14 +113,14 @@ public class StatusCheckHook {
     }
 
     private void process(PullRequest pullRequest) {
-      if (hasStatusOpen(pullRequest)) {
-        processOpen(pullRequest);
+      if (pullRequest.isInProgress()) {
+        processInProgress(pullRequest);
       } else {
         LOG.debug("ignoring pull request {}, because it in status {}", pullRequest.getId(), pullRequest.getStatus());
       }
     }
 
-    private void processOpen(PullRequest pullRequest) {
+    private void processInProgress(PullRequest pullRequest) {
       if (branchesAreModified(pullRequest)) {
         if (isMerged(pullRequest)) {
           setMerged(pullRequest);
@@ -133,10 +132,6 @@ public class StatusCheckHook {
       } else if (sourceBranchWasDeleted(pullRequest)) {
         setRejected(pullRequest, PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED);
       }
-    }
-
-    private boolean hasStatusOpen(PullRequest pullRequest) {
-      return pullRequest.getStatus() == PullRequestStatus.OPEN;
     }
 
     private boolean branchesAreModified(PullRequest pullRequest) {

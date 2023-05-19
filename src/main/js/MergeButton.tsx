@@ -155,7 +155,7 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
   }
 
   return (
-    <p className="control">
+    <>
       {renderButton()}
       <ManualMergeInformation
         showMergeInformation={mergeInformation}
@@ -163,7 +163,7 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
         pullRequest={pullRequest}
         onClose={() => setMergeInformation(false)}
       />
-    </p>
+    </>
   );
 };
 

@@ -52,7 +52,7 @@ public class MyPullRequests implements MyDataProvider {
   public Iterable<MyData> getData() {
     String subject = SecurityUtils.getSubject().getPrincipal().toString();
     Collection<MyData> result = new ArrayList<>();
-    pullRequestProvider.findOpenPullRequests((repository, stream) -> stream
+    pullRequestProvider.findOpenAndDraftPullRequests((repository, stream) -> stream
         .filter(pr -> pr.getAuthor().equals(subject))
         .forEach(pr -> result.add(new MyPullRequestData(repository, pr, mapper)))
     );

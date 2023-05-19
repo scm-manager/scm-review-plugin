@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -61,6 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_PR_CHANGED;
 import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_PR_UPDATED;
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
@@ -90,17 +92,16 @@ class EmailNotificationHookTest {
   EmailNotificationHook emailNotificationHook;
 
   private PullRequest pullRequest;
-  private Set<String> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
   private Comment comment;
   private Comment oldComment;
-  private Map<String, Boolean> reviewers = new HashMap<>();
+  private final Map<String, Boolean> reviewers = new HashMap<>();
 
   @BeforeEach
   void setUp() {
     pullRequest = TestData.createPullRequest();
-    subscriber = of(currentUser, subscribedButNotReviewer, subscribedAndReviewer);
+    Set<String> subscriber = of(currentUser, subscribedButNotReviewer, subscribedAndReviewer);
     pullRequest.setSubscriber(subscriber);
 
     reviewers.put(subscribedAndReviewer, Boolean.FALSE);
@@ -199,6 +200,19 @@ class EmailNotificationHookTest {
   }
 
   @Test
+  void shouldSendEmailsAfterUpdatingDraftToPullRequest() throws Exception {
+    PullRequest oldPullRequest = pullRequest.toBuilder().status(PullRequestStatus.DRAFT).build();
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+
+    ArgumentCaptor<PullRequestEventMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestEventMailTextResolver.class);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), captor.capture());
+    PullRequestEventMailTextResolver resolver = captor.getValue();
+    assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR created");
+    assertThat(resolver.getTopic()).isEqualTo(TOPIC_PR_CHANGED);
+  }
+
+  @Test
   void shouldSendEmailsAfterMergingPullRequest() throws Exception {
     PullRequestMergedEvent event = new PullRequestMergedEvent(repository, pullRequest);
     emailNotificationHook.handleMergedPullRequest(event);
@@ -270,6 +284,15 @@ class EmailNotificationHookTest {
 
     verify(service).sendEmail(eq(newMentions), isA(MentionEventMailTextResolver.class));
     verify(service).sendEmail(eq(Collections.emptySet()), isA(MentionEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldNotSendEmailsAfterRejectingDraft() throws Exception {
+    pullRequest.setStatus(PullRequestStatus.DRAFT);
+    PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
+    emailNotificationHook.handleRejectedPullRequest(event);
+
+    verify(service, never()).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestRejectedMailTextResolver.class));
   }
 
   @BeforeEach

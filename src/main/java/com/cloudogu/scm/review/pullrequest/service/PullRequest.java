@@ -133,4 +133,28 @@ public class PullRequest implements Serializable {
   public void removeSubscriber(String recipient) {
     this.subscriber.remove(recipient);
   }
+
+  public boolean isInProgress() {
+    return status.isInProgress();
+  }
+
+  public boolean isClosed() {
+    return status.isClosed();
+  }
+
+  public boolean isOpen() {
+    return status == PullRequestStatus.OPEN;
+  }
+
+  public boolean isDraft() {
+    return status == PullRequestStatus.DRAFT;
+  }
+
+  public boolean isRejected() {
+    return status == PullRequestStatus.REJECTED;
+  }
+
+  public boolean isMerged() {
+    return status == PullRequestStatus.MERGED;
+  }
 }

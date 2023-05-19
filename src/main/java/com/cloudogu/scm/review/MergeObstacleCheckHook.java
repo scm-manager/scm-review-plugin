@@ -28,7 +28,6 @@ import com.cloudogu.scm.review.pullrequest.service.MergeNotAllowedException;
 import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +102,7 @@ public class MergeObstacleCheckHook {
     }
 
     private void process(PullRequest pullRequest) {
-      if (hasStatusOpen(pullRequest)) {
+      if (pullRequest.isOpen()) {
         processOpen(pullRequest);
       } else {
         LOG.debug("ignoring pull request {}, because it in status {}", pullRequest.getId(), pullRequest.getStatus());
@@ -138,10 +137,6 @@ public class MergeObstacleCheckHook {
           throw e;
         }
       }
-    }
-
-    private boolean hasStatusOpen(PullRequest pullRequest) {
-      return pullRequest.getStatus() == PullRequestStatus.OPEN;
     }
 
     private boolean branchesAreModified(PullRequest pullRequest) {

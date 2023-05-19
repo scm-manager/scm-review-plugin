@@ -62,9 +62,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER;
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.*;
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -290,7 +288,7 @@ class DefaultPullRequestServiceTest {
     void mockOldPullRequest() {
       oldPullRequest = createPullRequest("changed", Instant.ofEpochSecond(1_000_000), null);
       oldPullRequest.setSubscriber(singleton("subscriber"));
-      oldPullRequest.setReviewer(singletonMap("reviewer", false));
+      oldPullRequest.setReviewer(Map.of("reviewer", false, "otherReviewer", true));
       when(store.get("changed")).thenReturn(oldPullRequest);
     }
 
@@ -326,12 +324,28 @@ class DefaultPullRequestServiceTest {
     @Test
     void shouldNotChangeApprovalOfExistingReviewers() {
       PullRequest pullRequest = createPullRequest("changed", null, null);
-      pullRequest.setReviewer(singletonMap("reviewer", true));
+      pullRequest.setReviewer(Map.of("reviewer", true, "otherReviewer", false));
 
       service.update(REPOSITORY, "changed", pullRequest);
 
       verify(store).update(argThat(pr -> {
         assertThat(pr.getReviewer().get("reviewer")).isFalse();
+        assertThat(pr.getReviewer().get("otherReviewer")).isTrue();
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldResetApprovalsWhenConvertedToDraft() {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setReviewer(Map.of("reviewer", false, "otherReviewer", true));
+      pullRequest.setStatus(DRAFT);
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewer().get("reviewer")).isFalse();
+        assertThat(pr.getReviewer().get("otherReviewer")).isFalse();
         return true;
       }));
     }

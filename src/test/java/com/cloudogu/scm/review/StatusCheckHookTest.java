@@ -151,6 +151,17 @@ class StatusCheckHookTest {
     }
 
     @Test
+    void shouldSetMergedDraftPullRequestToMerged() {
+      PullRequest pullRequest = mockOpenPullRequest();
+      pullRequest.setStatus(PullRequestStatus.DRAFT);
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(true);
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService).setMerged(REPOSITORY, pullRequest.getId());
+    }
+
+    @Test
     void shouldSetMergedPullRequestToMergedEvenWhenSourceBranchHasBeenChanged() {
       when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("source"));
 

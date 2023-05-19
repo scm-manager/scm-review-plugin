@@ -36,7 +36,7 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <p className="control">
+    <>
       {showModal ? (
         <ConfirmAlert
           title={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.title")}
@@ -62,7 +62,7 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
         loading={loading}
         color="warning"
       />
-    </p>
+    </>
   );
 };
 

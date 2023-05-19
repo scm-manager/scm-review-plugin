@@ -23,8 +23,8 @@
  */
 package com.cloudogu.scm.review.pullrequest.api;
 
-import com.cloudogu.scm.review.PagedCollections;
 import com.cloudogu.scm.review.CurrentUserResolver;
+import com.cloudogu.scm.review.PagedCollections;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
@@ -36,7 +36,6 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestTemplateDto;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import de.otto.edison.hal.Embedded;
@@ -86,7 +85,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.cloudogu.scm.review.pullrequest.PullRequestUtil.*;
+import static com.cloudogu.scm.review.pullrequest.PullRequestUtil.PullRequestTitleAndDescription;
+import static com.cloudogu.scm.review.pullrequest.PullRequestUtil.determineTitleAndDescription;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.BRANCHES_NOT_DIFFER;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_ALREADY_EXISTS;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
@@ -97,6 +97,7 @@ import static java.util.Optional.ofNullable;
 import static sonia.scm.AlreadyExistsException.alreadyExists;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 @OpenAPIDefinition(tags = {
   @Tag(name = "Pull Request", description = "Pull request endpoints provided by the review-plugin")
@@ -135,7 +136,7 @@ public class PullRequestRootResource {
     String description = "";
     String title = "";
     if (!Strings.isNullOrEmpty(source) && !Strings.isNullOrEmpty(target)) {
-      try(RepositoryService repositoryService = serviceFactory.create(repository)) {
+      try (RepositoryService repositoryService = serviceFactory.create(repository)) {
         List<Changeset> changesets = repositoryService.getLogCommand().setAncestorChangeset(target).setStartChangeset(source).getChangesets().getChangesets();
         if (changesets.size() == 1) {
           PullRequestTitleAndDescription titleAndDescription = determineTitleAndDescription(changesets.get(0).getDescription());
@@ -196,10 +197,13 @@ public class PullRequestRootResource {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
 
+    doThrow().violation("illegal status", "pullRequest", "status")
+      .when(pullRequestDto.getStatus().isClosed());
+
     String source = pullRequestDto.getSource();
     String target = pullRequestDto.getTarget();
 
-    service.get(repository, source, target, PullRequestStatus.OPEN)
+    service.getInProgress(repository, source, target)
       .ifPresent(pullRequest -> {
         throw alreadyExists(entity(repository).in("pull request", pullRequest.getId()).in(repository));
       });
@@ -210,7 +214,7 @@ public class PullRequestRootResource {
     verifyBranchesDiffer(source, target);
 
     User user = CurrentUserResolver.getCurrentUser();
-    pullRequestDto.setStatus(PullRequestStatus.OPEN);
+
     PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
     pullRequest.setAuthor(user.getId());
 
@@ -250,7 +254,7 @@ public class PullRequestRootResource {
     @Context UriInfo uriInfo,
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @QueryParam("status") @DefaultValue("OPEN") PullRequestSelector pullRequestSelector,
+    @QueryParam("status") @DefaultValue("IN_PROGRESS") PullRequestSelector pullRequestSelector,
     @DefaultValue("0") @QueryParam("page") int page,
     @DefaultValue("10") @QueryParam("pageSize") int pageSize
   ) {
@@ -348,7 +352,7 @@ public class PullRequestRootResource {
       return BRANCHES_NOT_DIFFER.create(links);
     }
 
-    if (service.get(repository, source, target, PullRequestStatus.OPEN).isPresent()) {
+    if (service.getInProgress(repository, source, target).isPresent()) {
       return PR_ALREADY_EXISTS.create(links);
     }
 
@@ -383,8 +387,7 @@ public class PullRequestRootResource {
   }
 
   private void verifyBranchesDiffer(String source, String target) {
-    ScmConstraintViolationException.Builder
-      .doThrow()
+    doThrow()
       .violation("source branch and target branch must differ", "pullRequest", "source")
       .violation("source branch and target branch must differ", "pullRequest", "target")
       .when(source.equals(target));

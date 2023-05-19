@@ -31,7 +31,6 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.config.service.ConfigService;
-import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
 import com.cloudogu.scm.review.config.service.PullRequestConfig;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -91,14 +90,16 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -248,13 +249,14 @@ public class PullRequestRootResourceTest {
     pr.setId("id");
     when(store.getAll()).thenReturn(Lists.newArrayList(pr));
 
-    byte[] pullRequestJson = "{\"source\": \"source\", \"target\": \"target\", \"title\": \"pull request\"}".getBytes();
+    byte[] pullRequestJson = "{\"source\": \"source\", \"target\": \"target\", \"title\": \"pull request\", \"status\": \"OPEN\"}".getBytes();
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
     MockHttpRequest request = MockHttpRequest
       .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME)
       .content(pullRequestJson)
       .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_CONFLICT);
     assertThat(response.getContentAsString()).containsPattern("pull request with id id in repository with id .* already exists");
   }
 
@@ -464,7 +466,7 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "rr")
   public void shouldGetOpenedPullRequests() throws URISyntaxException, IOException {
-    verifyFilteredPullRequests(PullRequestSelector.OPEN.name());
+    verifyFilteredPullRequests(PullRequestSelector.IN_PROGRESS.name(), PullRequestStatus.OPEN.name());
   }
 
   @Test
@@ -595,11 +597,12 @@ public class PullRequestRootResourceTest {
   public void shouldUpdatePullRequestSuccessfully() throws URISyntaxException {
     PullRequest existingPullRequest = new PullRequest();
     existingPullRequest.setAuthor("somebody");
+    existingPullRequest.setStatus(PullRequestStatus.OPEN);
     when(store.get("1")).thenReturn(existingPullRequest);
 
     MockHttpRequest request = MockHttpRequest
       .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1")
-      .content("{\"title\": \"new Title\", \"description\": \"new description\"}".getBytes())
+      .content("{\"title\": \"new Title\", \"description\": \"new description\", \"status\": \"OPEN\"}".getBytes())
       .contentType(PullRequestMediaType.PULL_REQUEST);
     dispatcher.invoke(request, response);
 
@@ -734,15 +737,18 @@ public class PullRequestRootResourceTest {
   }
 
   private void verifyFilteredPullRequests(String status) throws URISyntaxException, IOException {
+    verifyFilteredPullRequests(status, status);
+  }
+  private void verifyFilteredPullRequests(String filter, String expectedStatus) throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
-    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=" + status);
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=" + filter);
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
     JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
     assertThat(prNode.elements().hasNext()).isTrue();
-    prNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(status));
+    prNode.elements().forEachRemaining(node -> assertThat(node.get("status").asText()).isEqualTo(expectedStatus));
   }
 
   private void initRepoWithPRs(String namespace, String name) throws IOException {

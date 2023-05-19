@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { ErrorNotification, Level, Notification, SubmitButton, Subtitle } from "@scm-manager/ui-components";
+import { Checkbox, ErrorNotification, Level, Notification, SubmitButton, Subtitle } from "@scm-manager/ui-components";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
@@ -45,7 +45,9 @@ const Create: FC<Props> = ({ repository }) => {
     title: "",
     description: "",
     target: "",
-    source: ""
+    source: "",
+    status: "OPEN",
+    _links: {}
   });
   const [disabled, setDisabled] = useState(true);
   const location = useLocation();
@@ -96,10 +98,12 @@ const Create: FC<Props> = ({ repository }) => {
 
       const initialSource = params.source || (branchNames && branchNames[0]);
       const initialTarget = params.target || defaultBranch?.name;
+      const initialStatus = "OPEN";
       
       handleFormChange({
         source: initialSource,
-        target: initialTarget
+        target: initialTarget,
+        status: initialStatus,
       });
     }
   }, [branchesData]);
@@ -158,14 +162,20 @@ const Create: FC<Props> = ({ repository }) => {
         )}
         {information}
         <Level
-          className="pt-5"
           right={
-            <SubmitButton
-              label={t("scm-review-plugin.create.submitButton")}
-              action={submit}
-              loading={createLoading}
-              disabled={disabled || isLoadingPullRequestTemplate}
-            />
+            <div className="is-flex is-flex-direction-column is-align-items-end">
+              <Checkbox
+                checked={pullRequest?.status === "DRAFT"}
+                onChange={value => handleFormChange({ status: value ? "DRAFT" : "OPEN" })}
+                label={t("scm-review-plugin.pullRequest.createAsDraft")}
+              />
+              <SubmitButton
+                label={t("scm-review-plugin.create.submitButton")}
+                action={submit}
+                loading={createLoading}
+                disabled={disabled || isLoadingPullRequestTemplate}
+              />
+            </div>
           }
         />
       </div>

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC, useState } from "react";
-import { ErrorNotification, Level, SubmitButton, Subtitle, Title, Loading } from "@scm-manager/ui-components";
+import { Checkbox, ErrorNotification, Level, Loading, SubmitButton, Subtitle } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import EditForm from "./EditForm";
@@ -70,6 +70,16 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
         <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
         <ErrorNotification error={error} />
         <EditForm pullRequest={modifiedPullRequest} handleFormChange={handleFormChange} />
+        {pullRequest.status === "OPEN" ? (
+          <Checkbox
+            checked={modifiedPullRequest?.status === "DRAFT"}
+            onChange={value => setModifiedPullRequest({ ...modifiedPullRequest, status: value ? "DRAFT" : "OPEN" })}
+            label={t("scm-review-plugin.pullRequest.changeToDraft")}
+            title={t("scm-review-plugin.pullRequest.status")}
+            helpText={t("scm-review-plugin.pullRequest.changeToDraftHelpText")}
+            disabled={modifiedPullRequest.status === "MERGED" || modifiedPullRequest.status === "REJECTED"}
+          />
+        ) : null}
         <Level
           right={
             <SubmitButton

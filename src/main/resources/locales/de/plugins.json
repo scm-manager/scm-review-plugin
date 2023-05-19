@@ -47,10 +47,14 @@
       },
       "description": "Beschreibung",
       "status": "Status",
+      "createAsDraft": "Als Entwurf erstellen",
+      "changeToDraft": "Zu Entwurf ändern",
+      "changeToDraftHelpText": "Beim Umwandeln in einen Entwurf werden die Freigaben durch Nutzer gelöscht.",
       "statusLabel": {
         "OPEN": "OFFEN",
         "MERGED": "GEMERGED",
-        "REJECTED": "ABGELEHNT"
+        "REJECTED": "ABGELEHNT",
+        "DRAFT": "ENTWURF"
       },
       "id": "ID",
       "author": "Autor",
@@ -86,7 +90,7 @@
         }
       },
       "selector": {
-        "OPEN": "offen",
+        "IN_PROGRESS": "offen/Entwurf",
         "MINE": "meine",
         "REVIEWER": "zu reviewen",
         "ALL": "alle",
@@ -144,6 +148,9 @@
           "submit": "Ja",
           "cancel": "Nein"
         }
+      },
+      "convertDraftButton": {
+        "buttonTitle": "Bereit zum Review"
       },
       "overrideModal": {
         "title": "Workflow Engine",
@@ -343,7 +350,13 @@
       },
       "created": {
         "header": "Neuer Pull Request: #{{id}} {{title}}",
-        "title": "#{{id}}: {{title}}",
+        "draftHeader": "Neuer Pull Request Entwurf: #{{id}} {{title}}",
+        "footerStart": "Erstellt von",
+        "footerMiddle": "im Repository",
+        "footerEnd": ""
+      },
+      "draftToOpen": {
+        "header": "Zum Review freigegeben: #{{id}} {{title}}",
         "footerStart": "Erstellt von",
         "footerMiddle": "im Repository",
         "footerEnd": ""

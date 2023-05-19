@@ -183,6 +183,19 @@ class PullRequestMapperTest {
   }
 
   @Test
+  void shouldAddLinkForWorkflowResultIfPullRequestIsDraft() {
+    PullRequest pullRequest = TestData.createPullRequest();
+    pullRequest.setStatus(PullRequestStatus.DRAFT);
+
+    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+    assertThat(dto.getLinks().getLinkBy("workflowResult"))
+      .get()
+      .extracting("href")
+      .isEqualTo("/v2/pull-requests/space/x/id/workflow/");
+  }
+
+  @Test
   void shouldNotAddLinkForWorkflowResultIfPullRequestIsRejected() {
     PullRequest pullRequest = TestData.createPullRequest();
     pullRequest.setStatus(PullRequestStatus.REJECTED);

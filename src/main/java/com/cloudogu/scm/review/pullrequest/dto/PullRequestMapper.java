@@ -189,7 +189,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     linksBuilder.single(link("events", pullRequestResourceLinks.pullRequest()
       .events(namespace, name, pullRequestId)));
     if (PermissionCheck.mayComment(repository) && CurrentUserResolver.getCurrentUser() != null) {
-      if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
+      if (pullRequest.isOpen()) {
         if (pullRequestService.hasUserApproved(repository, pullRequest.getId())) {
           linksBuilder.single(link("disapprove", pullRequestResourceLinks.pullRequest().disapprove(namespace, name, pullRequestId)));
         } else {
@@ -202,29 +202,34 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
           .subscription(namespace, name, pullRequestId)));
       }
     }
-    if (PermissionCheck.mayModifyPullRequest(repository, pullRequest)) {
+    if (PermissionCheck.mayModifyPullRequest(repository, pullRequest) && pullRequest.isInProgress()) {
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest()
         .update(namespace, name, pullRequestId)));
     }
-    if (PermissionCheck.mayMerge(repository) && pullRequest.getStatus() == PullRequestStatus.OPEN) {
+    if (PermissionCheck.mayMerge(repository) && pullRequest.isInProgress()) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest()
         .reject(namespace, name, pullRequestId)));
 
-      if (RepositoryPermissions.push(repository).isPermitted() && pullRequest.getStatus() == PullRequestStatus.OPEN) {
+      if (RepositoryPermissions.push(repository).isPermitted()) {
         linksBuilder.single(link("mergeCheck", pullRequestResourceLinks.mergeLinks()
           .check(namespace, name, pullRequest.getId())));
         linksBuilder.single(link("mergeConflicts", pullRequestResourceLinks.mergeLinks()
           .conflicts(namespace, name, pullRequest.getId())));
-        linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
-          .createDefaultCommitMessage(namespace, name, pullRequest.getId())));
-        linksBuilder.single(link("mergeStrategyInfo", pullRequestResourceLinks.mergeLinks().getMergeStrategyInfo(namespace, name, pullRequestId)));
-        appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
+        if (pullRequest.isOpen()) {
+          linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
+            .createDefaultCommitMessage(namespace, name, pullRequest.getId())));
+          linksBuilder.single(link("mergeStrategyInfo", pullRequestResourceLinks.mergeLinks().getMergeStrategyInfo(namespace, name, pullRequestId)));
+          appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
+        }
       }
     }
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
+    if (PermissionCheck.mayMerge(repository) && pullRequest.getStatus() == PullRequestStatus.DRAFT) {
+      linksBuilder.single(link("convertToPR", pullRequestResourceLinks.pullRequest().convertToPR(namespace, name, pullRequestId)));
+    }
     linksBuilder.single(link("sourceBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getSource())));
     linksBuilder.single(link("targetBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getTarget())));
-    if (pullRequest.getStatus() == PullRequestStatus.OPEN) {
+    if (pullRequest.isInProgress()) {
       linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
     }
 

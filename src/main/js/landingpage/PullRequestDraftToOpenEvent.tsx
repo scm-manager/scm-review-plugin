@@ -26,14 +26,14 @@ import { useTranslation } from "react-i18next";
 import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
 import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 
-const PullRequestCreatedEvent = ({ event }) => {
+const PullRequestDraftToOpenEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
   const link = `/repo/${event.namespace}/${event.name}/pull-request/${event.id}`;
   const footer = (
     <>
-      {t("scm-review-plugin.landingpage.created.footerStart")} {event.author}{" "}
-      {t("scm-review-plugin.landingpage.created.footerMiddle")} {event.namespace + "/" + event.name}{" "}
-      {t("scm-review-plugin.landingpage.created.footerEnd")}
+      {t("scm-review-plugin.landingpage.draftToOpen.footerStart")} {event.author}{" "}
+      {t("scm-review-plugin.landingpage.draftToOpen.footerMiddle")} {event.namespace + "/" + event.name}{" "}
+      {t("scm-review-plugin.landingpage.draftToOpen.footerEnd")}
     </>
   );
 
@@ -41,13 +41,7 @@ const PullRequestCreatedEvent = ({ event }) => {
     <CardColumnSmall
       link={link}
       avatar={<SmallPullRequestIcon />}
-      contentLeft={
-        <strong>
-          {event.status === "DRAFT"
-            ? t("scm-review-plugin.landingpage.created.draftHeader", event)
-            : t("scm-review-plugin.landingpage.created.header", event)}
-        </strong>
-      }
+      contentLeft={<strong>{t("scm-review-plugin.landingpage.draftToOpen.header", event)}</strong>}
       footer={footer}
       contentRight={
         <small>
@@ -58,6 +52,6 @@ const PullRequestCreatedEvent = ({ event }) => {
   );
 };
 
-PullRequestCreatedEvent.type = "PullRequestCreatedEvent";
+PullRequestDraftToOpenEvent.type = "PullRequestDraftToOpenEvent";
 
-export default PullRequestCreatedEvent;
+export default PullRequestDraftToOpenEvent;

@@ -34,6 +34,7 @@ import RepositoryConfig from "./config/RepositoryConfig";
 import GlobalConfig from "./config/GlobalConfig";
 import MyPullRequest from "./landingpage/MyPullRequest";
 import PullRequestCreatedEvent from "./landingpage/PullRequestCreatedEvent";
+import PullRequestDraftToOpenEvent from "./landingpage/PullRequestDraftToOpenEvent";
 import PullRequestTodos from "./landingpage/MyPullRequestTodos";
 import PullRequestReview from "./landingpage/MyPullRequestReview";
 import RepoEngineConfig from "./workflow/RepoEngineConfig";
@@ -115,7 +116,7 @@ const ShowPullRequestsRoute = ({ url, repository }: RepoRouteProps) => {
 const AllPullRequestsLink: FC = () => {
   const [t] = useTranslation("plugins");
   return <CardColumnSmall
-      link="/search/pullRequest/?q=status:OPEN"
+      link="/search/pullRequest/?q=status:IN_PROGRESS"
       contentLeft={t("scm-review-plugin.landingpage.myPullRequests.allPullRequestsLinkTitle")}
       contentRight=""
       avatar={<Icon name="noop" className="fa-fw fa-lg" />}
@@ -149,6 +150,7 @@ binder.bind("landingpage.mydata", {
   emptyMessage: "scm-review-plugin.landingpage.myPullRequests.emptyMessage"
 });
 binder.bind("landingpage.myevents", PullRequestCreatedEvent);
+binder.bind("landingpage.myevents", PullRequestDraftToOpenEvent);
 binder.bind("landingpage.mytask", PullRequestTodos);
 binder.bind("landingpage.mytask", PullRequestReview);
 

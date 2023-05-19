@@ -32,6 +32,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ public class PullRequestDto extends HalRepresentation {
   private String description;
   private Instant creationDate;
   private Instant lastModified;
+  @NotNull
   private PullRequestStatus status;
   private Set<ReviewerDto> reviewer = new HashSet<>();
   private TasksDto tasks;

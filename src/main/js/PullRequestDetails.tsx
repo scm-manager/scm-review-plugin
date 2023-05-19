@@ -39,7 +39,7 @@ import {
   Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
-import { useMergeDryRun, useMergePullRequest, useRejectPullRequest } from "./pullRequest";
+import { useMergeDryRun, useMergePullRequest, useReadyForReviewPullRequest, useRejectPullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -148,6 +148,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [targetBranchDeleted, setTargetBranchDeleted] = useState(false);
 
   const { reject, isLoading: rejectLoading, error: rejectError } = useRejectPullRequest(repository, pullRequest);
+  const { readyForReview, isLoading: readyForReviewLoading, error: readyForReviewError } = useReadyForReviewPullRequest(repository, pullRequest);
   const { merge, isLoading: mergeLoading, error: mergeError } = useMergePullRequest(repository, pullRequest);
   const { data: mergeCheck, isLoading: mergeDryRunLoading, error: mergeDryRunError } = useMergeDryRun(
     repository,
@@ -180,6 +181,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const error =
     rejectError ||
     mergeError ||
+    readyForReviewError ||
     // Prevent dry-run error for closed pull request with stale cache data
     (mergeDryRunError instanceof BackendError && mergeDryRunError.errorCode === "FTRhcI0To1" ? null : mergeDryRunError);
   if (error) {
@@ -217,6 +219,8 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   let mergeButton = null;
   let rejectButton = null;
   let deleteSourceButton = null;
+  let readyForReviewButton = null;
+
   if (pullRequest._links?.reject) {
     rejectButton = <RejectButton reject={() => reject(pullRequest)} loading={rejectLoading} />;
     if (!!pullRequest._links.merge) {
@@ -234,6 +238,16 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   if (!pullRequest._links.reject && !pullRequest._links.merge) {
     deleteSourceButton = (
       <DeleteSourceBranchButton pullRequest={pullRequest} repository={repository} loading={mergeDryRunLoading} />
+    );
+  }
+  if (pullRequest._links?.convertToPR) {
+    readyForReviewButton = (
+      <Button
+        label={t("scm-review-plugin.showPullRequest.convertDraftButton.buttonTitle")}
+        action={() => readyForReview(pullRequest)}
+        loading={readyForReviewLoading}
+        color="primary"
+      />
     );
   }
 
@@ -354,9 +368,12 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
             </div>
           </div>
           <div className="level-right">
-            <div className="level-item">{rejectButton}</div>
-            <div className="level-item">{mergeButton}</div>
-            <div className="level-item">{deleteSourceButton}</div>
+            <div className="buttons">
+              {rejectButton}
+              {mergeButton}
+              {deleteSourceButton}
+              {readyForReviewButton}
+            </div>
           </div>
         </LevelWrapper>
       </Container>

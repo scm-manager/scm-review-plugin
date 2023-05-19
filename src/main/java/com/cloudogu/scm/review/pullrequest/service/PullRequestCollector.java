@@ -41,7 +41,7 @@ public class PullRequestCollector {
   public List<PullRequest> collectAffectedPullRequests(Repository repository, List<String> affectedBranches) {
     return pullRequestService.getAll(repository.getNamespace(), repository.getName())
       .stream()
-      .filter(pr -> pr.getStatus() == PullRequestStatus.OPEN)
+      .filter(PullRequest::isInProgress)
       .filter(pr -> affectedBranches.contains(pr.getSource()) || affectedBranches.contains(pr.getTarget()))
       .collect(Collectors.toList());
   }

@@ -35,7 +35,7 @@ type Props = {
 
 const StatusSelector: FC<Props> = ({ handleTypeChange, status, label, helpText, loading }) => {
   const [t] = useTranslation("plugins");
-  const types = ["OPEN", "MINE", "REVIEWER", "ALL", "REJECTED", "MERGED"];
+  const types = ["IN_PROGRESS", "MINE", "REVIEWER", "ALL", "REJECTED", "MERGED"];
 
   const createSelectOptions = () => {
     return types.map(singleStatus => {
@@ -49,7 +49,7 @@ const StatusSelector: FC<Props> = ({ handleTypeChange, status, label, helpText, 
   return (
     <Select
       onChange={handleTypeChange}
-      value={status ? status : "OPEN"}
+      value={status ? status : "IN_PROGRESS"}
       options={createSelectOptions()}
       loading={loading}
       label={label}

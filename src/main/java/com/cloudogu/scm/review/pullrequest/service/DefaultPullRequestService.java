@@ -58,6 +58,8 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEve
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 
 public class DefaultPullRequestService implements PullRequestService {
 
@@ -123,6 +125,13 @@ public class DefaultPullRequestService implements PullRequestService {
     newSubscriber.addAll(addedReviewers);
 
     Map<String, Boolean> newReviewers = new HashMap<>(oldPullRequest.getReviewer());
+
+    if (oldPullRequest.isOpen() && pullRequest.isDraft()) {
+      newReviewers
+        .keySet()
+        .forEach(reviewer -> newReviewers.put(reviewer, false));
+    }
+
     addedReviewers.forEach(reviewer -> newReviewers.putIfAbsent(reviewer, false));
     removedReviewers.forEach(newReviewers::remove);
 
@@ -133,6 +142,11 @@ public class DefaultPullRequestService implements PullRequestService {
       .lastModified(Instant.now())
       .reviewer(newReviewers)
       .build();
+
+    if (oldPullRequest.isInProgress()) {
+      newPullRequest.setStatus(pullRequest.getStatus());
+    }
+
     newPullRequest.setSubscriber(newSubscriber);
     store.update(newPullRequest);
     eventBus.post(new PullRequestEvent(repository, newPullRequest, oldPullRequest, HandlerEventType.MODIFY));
@@ -167,11 +181,14 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public Optional<PullRequest> get(Repository repository, String source, String target, PullRequestStatus status) {
+  public Optional<PullRequest> getInProgress(Repository repository, String source, String target) {
+    List<PullRequestStatus> inProgressStatus = stream(PullRequestStatus.values())
+      .filter(PullRequestStatus::isInProgress)
+      .collect(toList());
     return getStore(repository).getAll()
       .stream()
       .filter(pullRequest ->
-        pullRequest.getStatus().equals(status) &&
+        inProgressStatus.contains(pullRequest.getStatus()) &&
           pullRequest.getSource().equals(source) &&
           pullRequest.getTarget().equals(target))
       .findFirst();
@@ -196,14 +213,14 @@ public class DefaultPullRequestService implements PullRequestService {
   @Override
   public void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
     PullRequest pullRequest = get(repository, pullRequestId);
-    if (pullRequest.getStatus() == OPEN) {
+    if (pullRequest.isInProgress()) {
       pullRequest.setSourceRevision(getBranchRevision(repository, pullRequest.getSource()));
       pullRequest.setTargetRevision(getBranchRevision(repository, pullRequest.getTarget()));
       setPullRequestClosed(pullRequest);
       pullRequest.setStatus(REJECTED);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause));
-    } else if (pullRequest.getStatus() == MERGED) {
+    } else if (pullRequest.isMerged()) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
     }
   }
@@ -228,12 +245,12 @@ public class DefaultPullRequestService implements PullRequestService {
   @Override
   public void setMerged(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
-    if (pullRequest.getStatus() == OPEN) {
+    if (pullRequest.isInProgress()) {
       pullRequest.setStatus(MERGED);
       setPullRequestClosed(pullRequest);
       getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
-    } else if (pullRequest.getStatus() == REJECTED) {
+    } else if (pullRequest.isRejected()) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
     }
   }
@@ -259,7 +276,7 @@ public class DefaultPullRequestService implements PullRequestService {
   public void updated(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
 
-    if (pullRequest.getStatus() == OPEN) {
+    if (pullRequest.isInProgress()) {
       removeAllApprover(repository, pullRequest);
 
       eventBus.post(new PullRequestUpdatedEvent(repository, pullRequest));
@@ -362,6 +379,20 @@ public class DefaultPullRequestService implements PullRequestService {
   public boolean supportsPullRequests(Repository repository) {
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       return repositoryService.isSupported(Command.MERGE);
+    }
+  }
+
+  @Override
+  public void convertToPR(Repository repository, String pullRequestId) {
+    PermissionCheck.checkMerge(repository);
+    PullRequest pullRequest = get(repository, pullRequestId);
+    if (pullRequest.isDraft()) {
+      PullRequest oldPullRequest = pullRequest.toBuilder().build();
+      pullRequest.setStatus(OPEN);
+      getStore(repository).update(pullRequest);
+      eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
+    } else {
+      throw new StatusChangeNotAllowedException(repository, pullRequest);
     }
   }
 

@@ -174,6 +174,13 @@ public class PullRequestResourceLinks {
         .href()
         .replace("PATH", "{path}");
     }
+
+    public String convertToPR(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("convertToPR").parameters(namespace, name, pullRequestId)
+        .href();
+    }
   }
 
   public PullRequestCommentsLinks pullRequestComments() {
