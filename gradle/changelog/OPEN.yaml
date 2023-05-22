@@ -1,0 +1,2 @@
+- type: fixed
+  description: Re-add OPEN selector for external usage of REST api

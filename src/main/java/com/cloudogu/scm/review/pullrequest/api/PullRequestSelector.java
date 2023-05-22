@@ -42,6 +42,16 @@ public enum PullRequestSelector implements Predicate<PullRequest> {
       return pullRequest.isInProgress();
     }
   },
+  /**
+   * @deprecated Replaced with {@link #IN_PROGRESS}
+   */
+  @Deprecated
+  OPEN {
+    @Override
+    public boolean test(PullRequest pullRequest) {
+      return IN_PROGRESS.test(pullRequest);
+    }
+  },
   MINE {
     @Override
     public boolean test(PullRequest pullRequest) {
