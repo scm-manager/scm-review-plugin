@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useCallback, useState } from "react";
 import { Checkbox, ErrorNotification, Level, Loading, SubmitButton, Subtitle } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
@@ -41,23 +41,23 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
   const history = useHistory();
   const [modifiedPullRequest, setModifiedPullRequest] = useState<PullRequest>(pullRequest);
 
-  const pullRequestUpdated = () => {
+  const pullRequestUpdated = useCallback(() => {
     history.push({
       pathname: `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments`,
       state: {
         from: match.url + "/updated"
       }
     });
-  };
+  }, [history, match, pullRequest, repository]);
 
   const { error, isLoading, update } = useUpdatePullRequest(repository, pullRequest, pullRequestUpdated);
 
+  const handleFormChange = useCallback((pr: Partial<PullRequest>) => {
+    setModifiedPullRequest(prev => ({ ...prev, ...pr }));
+  }, []);
+
   const submit = () => {
     update(modifiedPullRequest);
-  };
-
-  const handleFormChange = (pr: PullRequest) => {
-    setModifiedPullRequest(pr);
   };
 
   if (isLoading) {
@@ -73,7 +73,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
         {pullRequest.status === "OPEN" ? (
           <Checkbox
             checked={modifiedPullRequest?.status === "DRAFT"}
-            onChange={value => setModifiedPullRequest({ ...modifiedPullRequest, status: value ? "DRAFT" : "OPEN" })}
+            onChange={value => handleFormChange({ status: value ? "DRAFT" : "OPEN" })}
             label={t("scm-review-plugin.pullRequest.changeToDraft")}
             title={t("scm-review-plugin.pullRequest.status")}
             helpText={t("scm-review-plugin.pullRequest.changeToDraftHelpText")}
