@@ -45,6 +45,7 @@ import PullRequestHitRenderer from "./search/PullRequestHitRenderer";
 import CommentHitRenderer from "./search/CommentHitRenderer";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 import { useTranslation } from "react-i18next";
+import NamespaceConfig from "./config/NamespaceConfig";
 
 type PredicateProps = {
   repository: Repository;
@@ -115,12 +116,14 @@ const ShowPullRequestsRoute = ({ url, repository }: RepoRouteProps) => {
 
 const AllPullRequestsLink: FC = () => {
   const [t] = useTranslation("plugins");
-  return <CardColumnSmall
+  return (
+    <CardColumnSmall
       link="/search/pullRequest/?q=status:IN_PROGRESS"
       contentLeft={t("scm-review-plugin.landingpage.myPullRequests.allPullRequestsLinkTitle")}
       contentRight=""
       avatar={<Icon name="noop" className="fa-fw fa-lg" />}
-  />;
+    />
+  );
 };
 
 binder.bind("repository.route", ShowPullRequestsRoute);
@@ -135,6 +138,12 @@ cfgBinder.bindRepositorySetting(
   "scm-review-plugin.navLink.pullRequest",
   "pullRequestConfig",
   RepositoryConfig
+);
+cfgBinder.bindNamespaceSetting(
+  "/review",
+  "scm-review-plugin.navLink.pullRequest",
+  "pullRequestConfig",
+  NamespaceConfig
 );
 cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink.pullRequest", "pullRequestConfig", GlobalConfig);
 

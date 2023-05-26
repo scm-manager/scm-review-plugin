@@ -23,40 +23,21 @@
  */
 package com.cloudogu.scm.review.config.service;
 
-import lombok.AllArgsConstructor;
+import com.cloudogu.scm.review.config.OverwritableConfig;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
-import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "config")
 @Getter
 @Setter
-public class PullRequestConfig {
+public class RepositoryPullRequestConfig extends BasePullRequestConfig implements OverwritableConfig {
 
-  private boolean restrictBranchWriteAccess = false;
-  @XmlElement(name = "protected-branch-patterns")
-  private List<String> protectedBranchPatterns = new ArrayList<>();
-  @XmlElement(name = "protection-bypasses")
-  private List<ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
-  private boolean preventMergeFromAuthor = false;
-  private List<String> defaultReviewers = new ArrayList<>();
-
-  @Getter
-  @Setter
-  @XmlRootElement(name = "bypass")
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class ProtectionBypass {
-    private String name;
-    private boolean group;
-  }
+  @XmlElement(name = "overwrite-parent-configuration")
+  private boolean overwriteParentConfig = false;
 }

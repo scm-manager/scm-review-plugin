@@ -29,6 +29,7 @@ export type ProtectionBypass = {
 
 export type Config = {
   disableRepositoryConfiguration?: boolean;
+  overwriteParentConfig?: boolean;
   restrictBranchWriteAccess: boolean;
   protectedBranchPatterns: string[];
   branchProtectionBypasses: ProtectionBypass[];

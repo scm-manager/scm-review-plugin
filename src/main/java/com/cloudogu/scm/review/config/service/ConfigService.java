@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.config.service;
 
+import com.cloudogu.scm.review.config.ConfigEvaluator;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.group.GroupCollector;
 import sonia.scm.repository.Repository;
@@ -53,13 +54,28 @@ public class ConfigService {
     this.groupCollector = groupCollector;
   }
 
-  public PullRequestConfig getRepositoryPullRequestConfig(Repository repository) {
-    ConfigurationStore<PullRequestConfig> store = getStore(repository);
-    return store.getOptional().orElse(new PullRequestConfig());
+  public BasePullRequestConfig evaluateConfig(Repository repository) {
+    GlobalPullRequestConfig globalConfig = globalStore.getOptional().orElse(new GlobalPullRequestConfig());
+    NamespacePullRequestConfig namespaceConfig = getNamespacePullRequestConfig(repository.getNamespace());
+    RepositoryPullRequestConfig repositoryConfig = getStore(repository).getOptional().orElse(new RepositoryPullRequestConfig());
+
+    return ConfigEvaluator.evaluate(globalConfig, namespaceConfig, repositoryConfig);
   }
 
-  public void setRepositoryPullRequestConfig(Repository repository, PullRequestConfig pullRequestConfig) {
-    getStore(repository).set(pullRequestConfig);
+  public RepositoryPullRequestConfig getRepositoryPullRequestConfig(Repository repository) {
+    return getStore(repository).getOptional().orElse(new RepositoryPullRequestConfig());
+  }
+
+  public void setRepositoryPullRequestConfig(Repository repository, RepositoryPullRequestConfig repositoryPullRequestConfig) {
+    getStore(repository).set(repositoryPullRequestConfig);
+  }
+
+  public NamespacePullRequestConfig getNamespacePullRequestConfig(String namespace) {
+    return getStore(namespace).getOptional().orElse(new NamespacePullRequestConfig());
+  }
+
+  public void setNamespacePullRequestConfig(String namespace, NamespacePullRequestConfig pullRequestConfig) {
+    getStore(namespace).set(pullRequestConfig);
   }
 
   public GlobalPullRequestConfig getGlobalPullRequestConfig() {
@@ -71,7 +87,8 @@ public class ConfigService {
   }
 
   public boolean isEnabled(Repository repository) {
-    return getGlobalPullRequestConfig().isRestrictBranchWriteAccess() || (!getGlobalPullRequestConfig().isDisableRepositoryConfiguration() && getRepositoryPullRequestConfig(repository).isRestrictBranchWriteAccess());
+    return getGlobalPullRequestConfig().isRestrictBranchWriteAccess()
+      || (!getGlobalPullRequestConfig().isDisableRepositoryConfiguration() && getRepositoryPullRequestConfig(repository).isRestrictBranchWriteAccess());
   }
 
   public boolean isBranchProtected(Repository repository, String branch) {
@@ -96,7 +113,7 @@ public class ConfigService {
     }
   }
 
-  private Collection<String> getProtectedBranches(PullRequestConfig config) {
+  private Collection<String> getProtectedBranches(BasePullRequestConfig config) {
     String user = SecurityUtils.getSubject().getPrincipal().toString();
     Set<String> groups = groupCollector.collect(user);
     if (userCanBypassProtection(config, user, groups)) {
@@ -105,13 +122,13 @@ public class ConfigService {
     return config.getProtectedBranchPatterns();
   }
 
-  private boolean userCanBypassProtection(PullRequestConfig config, String user, Set<String> groups) {
+  private boolean userCanBypassProtection(BasePullRequestConfig config, String user, Set<String> groups) {
     return config.getBranchProtectionBypasses()
       .stream()
       .anyMatch(bypass -> bypassMatchesUser(bypass, user, groups));
   }
 
-  private boolean bypassMatchesUser(PullRequestConfig.ProtectionBypass bypass, String user, Set<String> groups) {
+  private boolean bypassMatchesUser(RepositoryPullRequestConfig.ProtectionBypass bypass, String user, Set<String> groups) {
     if (bypass.isGroup()) {
       return groups.contains(bypass.getName());
     } else {
@@ -123,7 +140,11 @@ public class ConfigService {
     return GlobUtil.matches(branchPattern, branch);
   }
 
-  private ConfigurationStore<PullRequestConfig> getStore(Repository repository) {
-    return storeFactory.withType(PullRequestConfig.class).withName(STORE_NAME).forRepository(repository).build();
+  private ConfigurationStore<RepositoryPullRequestConfig> getStore(Repository repository) {
+    return storeFactory.withType(RepositoryPullRequestConfig.class).withName(STORE_NAME).forRepository(repository).build();
+  }
+
+  private ConfigurationStore<NamespacePullRequestConfig> getStore(String namespace) {
+    return storeFactory.withType(NamespacePullRequestConfig.class).withName(STORE_NAME).forNamespace(namespace).build();
   }
 }

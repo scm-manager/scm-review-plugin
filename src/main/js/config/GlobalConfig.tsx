@@ -32,7 +32,7 @@ type Props = {
 class GlobalConfig extends React.Component<Props> {
   render() {
     const { link } = this.props;
-    return <Configuration link={link} render={props => <ConfigEditor {...props} global={true} />} />;
+    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="global" />} />;
   }
 }
 

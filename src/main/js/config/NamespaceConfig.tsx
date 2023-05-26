@@ -21,30 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+import React from "react";
+import { Configuration } from "@scm-manager/ui-components";
+import ConfigEditor from "./ConfigEditor";
 
-plugins {
-  id 'org.scm-manager.smp' version '0.15.0'
-}
+type Props = {
+  link: string;
+};
 
-dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.10.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-}
-
-scmPlugin {
-  scmVersion = "2.43.2-SNAPSHOT"
-  displayName = "Review"
-  description = "Depict a review process with pull requests"
-  author = "Cloudogu GmbH"
-  category = "Workflow"
-
-  openapi {
-    packages = [
-      "com.cloudogu.scm.review.pullrequest.api",
-      "com.cloudogu.scm.review.config.api",
-      "com.cloudogu.scm.review.workflow",
-    ]
+class NamespaceConfig extends React.Component<Props> {
+  render() {
+    const { link } = this.props;
+    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="namespace" />} />;
   }
 }
+
+export default NamespaceConfig;

@@ -31,7 +31,7 @@ import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.config.service.ConfigService;
-import com.cloudogu.scm.review.config.service.PullRequestConfig;
+import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -988,10 +988,10 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldReturnPullRequestTemplate() throws URISyntaxException, IOException {
-    PullRequestConfig config = new PullRequestConfig();
+    RepositoryPullRequestConfig config = new RepositoryPullRequestConfig();
     config.setDefaultReviewers(singletonList("dent"));
 
-    when(configService.getRepositoryPullRequestConfig(repository)).thenReturn(config);
+    when(configService.evaluateConfig(repository)).thenReturn(config);
 
     MockHttpRequest request = MockHttpRequest
       .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/template");
@@ -1007,9 +1007,9 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldReturnPullRequestTemplateWithTitleAndDescriptionForSingleChangeset() throws URISyntaxException, IOException {
-    PullRequestConfig config = new PullRequestConfig();
+    RepositoryPullRequestConfig config = new RepositoryPullRequestConfig();
 
-    when(configService.getRepositoryPullRequestConfig(repository)).thenReturn(config);
+    when(configService.evaluateConfig(repository)).thenReturn(config);
     when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(0, singletonList(new Changeset("hashtag", Instant.now().getEpochSecond(), new Person("Test"), "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.\nMore Text"))));
@@ -1026,9 +1026,9 @@ public class PullRequestRootResourceTest {
   @Test
   @SubjectAware(username = "dent")
   public void shouldReturnPullRequestTemplateWithTitleAndDescriptionForMultipleChangesets() throws URISyntaxException, IOException {
-    PullRequestConfig config = new PullRequestConfig();
+    RepositoryPullRequestConfig config = new RepositoryPullRequestConfig();
 
-    when(configService.getRepositoryPullRequestConfig(repository)).thenReturn(config);
+    when(configService.evaluateConfig(repository)).thenReturn(config);
     when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
     when(logCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(0, asList(

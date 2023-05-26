@@ -24,7 +24,7 @@
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.config.service.ConfigService;
-import com.cloudogu.scm.review.config.service.PullRequestConfig;
+import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -85,7 +85,7 @@ class RepositoryConfigResourceTest {
 
     lenient().when(uriInfo.getBaseUri()).thenReturn(URI.create("localhost/scm/api"));
 
-    lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new PullRequestConfig());
+    lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new RepositoryPullRequestConfig());
   }
 
   @Nested
@@ -179,7 +179,7 @@ class RepositoryConfigResourceTest {
     @BeforeEach
     void initRepositoryManager() {
       when(repositoryManager.get(new NamespaceAndName("space", "X"))).thenReturn(REPOSITORY);
-      lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new PullRequestConfig());
+      lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new RepositoryPullRequestConfig());
     }
 
     @AfterEach

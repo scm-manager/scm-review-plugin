@@ -154,7 +154,7 @@ public class PullRequestRootResource {
 
   private Set<DisplayedUserDto> getDefaultReviewers(Repository repository) {
     return configService
-      .getRepositoryPullRequestConfig(repository)
+      .evaluateConfig(repository)
       .getDefaultReviewers()
       .stream()
       .map(this::getDisplayedUserDto)

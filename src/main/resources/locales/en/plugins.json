@@ -299,8 +299,20 @@
         "helpText": "Enables branch protection, so that branches are only modifiable with pull requests."
       },
       "disableRepositoryConfiguration": {
-        "label": "Do not allow repository configuration",
-        "helpText": "Do not allow repository owners to configure pull requests."
+        "label": "Disable repository configuration",
+        "helpText": "Repository owners may not configure pull requests on repository level."
+      },
+      "disableRepositoryAndNamespaceConfiguration": {
+        "label": "Disable repository and namespace configuration",
+        "helpText": "Repository owners may not configure pull requests on namespace or repository level."
+      },
+      "overwriteAll": {
+        "label": "Override parent configuration",
+        "helpText": "Global and namespace specific configuration is overridden by the repository configuration."
+      },
+      "overwriteGlobal": {
+        "label": "Override global configuration",
+        "helpText": "Global configuration is overridden by the namespace configuration."
       },
       "branchProtection": {
         "branches": {

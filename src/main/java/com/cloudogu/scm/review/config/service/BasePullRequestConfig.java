@@ -21,21 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.config.api;
 
-import de.otto.edison.hal.Links;
+package com.cloudogu.scm.review.config.service;
+
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
-public class GlobalPullRequestConfigDto extends BasePullRequestConfigDto {
+@XmlAccessorType(XmlAccessType.FIELD)
+public class BasePullRequestConfig {
+  private boolean restrictBranchWriteAccess = false;
+  @XmlElement(name = "protected-branch-patterns")
+  private List<String> protectedBranchPatterns = new ArrayList<>();
+  @XmlElement(name = "protection-bypasses")
+  private List<BasePullRequestConfig.ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
+  private boolean preventMergeFromAuthor = false;
+  private List<String> defaultReviewers = new ArrayList<>();
 
-  public GlobalPullRequestConfigDto(Links links) {
-    super(links);
+  @Getter
+  @Setter
+  @XmlRootElement(name = "bypass")
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class ProtectionBypass {
+    private String name;
+    private boolean group;
   }
-
-  private boolean disableRepositoryConfiguration;
 }

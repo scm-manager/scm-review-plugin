@@ -64,12 +64,12 @@ const UserList: FC<{ values: string[]; onChange: OnChangeFunction }> = ({ values
 type Props = WithTranslation & {
   onConfigurationChange: (config: State, valid: boolean) => void;
   initialConfiguration: Config;
-  global: boolean;
+  configType: "global" | "namespace" | "repository";
 };
 
 type State = Config;
 
-const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, global }) => {
+const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, configType }) => {
   const [t] = useTranslation("plugins");
   const [state, setState] = useState(initialConfiguration);
   const onChange = useCallback(<K extends keyof Config>(prop: K, val: Config[K]) => {
@@ -87,47 +87,83 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
     branchProtectionBypasses,
     preventMergeFromAuthor,
     disableRepositoryConfiguration,
+    overwriteParentConfig,
     defaultReviewers
   } = state;
 
   return (
     <>
-      {global && (
+      {configType === "global" ? (
+        <Title title={t("scm-review-plugin.config.title")} />
+      ) : (
+        <Subtitle>{t("scm-review-plugin.config.title")}</Subtitle>
+      )}
+      {configType !== "repository" ? (
+        <Checkbox
+          checked={!!disableRepositoryConfiguration}
+          onChange={val => onChange("disableRepositoryConfiguration", val)}
+          label={
+            configType === "global"
+              ? t("scm-review-plugin.config.disableRepositoryAndNamespaceConfiguration.label")
+              : t("scm-review-plugin.config.disableRepositoryConfiguration.label")
+          }
+          helpText={
+            configType === "global"
+              ? t("scm-review-plugin.config.disableRepositoryAndNamespaceConfiguration.helpText")
+              : t("scm-review-plugin.config.disableRepositoryConfiguration.helpText")
+          }
+        />
+      ) : null}
+      {configType !== "global" ? (
+        <Checkbox
+          checked={!!overwriteParentConfig}
+          onChange={val => onChange("overwriteParentConfig", val)}
+          label={
+            configType === "namespace"
+              ? t("scm-review-plugin.config.overwriteGlobal.label")
+              : t("scm-review-plugin.config.overwriteAll.label")
+          }
+          helpText={
+            configType === "namespace"
+              ? t("scm-review-plugin.config.overwriteGlobal.helpText")
+              : t("scm-review-plugin.config.overwriteAll.helpText")
+          }
+        />
+      ) : null}
+      {!!overwriteParentConfig || configType === "global" ? (
         <>
-          <Title title={t("scm-review-plugin.config.title")} />
+          <UserList values={defaultReviewers} onChange={onChange} />
           <Checkbox
-            checked={!!disableRepositoryConfiguration}
-            onChange={val => onChange("disableRepositoryConfiguration", val)}
-            label={t("scm-review-plugin.config.disableRepositoryConfiguration.label")}
-            helpText={t("scm-review-plugin.config.disableRepositoryConfiguration.helpText")}
+            checked={preventMergeFromAuthor}
+            onChange={val => onChange("preventMergeFromAuthor", val)}
+            label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
+            helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
           />
+          <Checkbox
+            checked={restrictBranchWriteAccess}
+            onChange={val => onChange("restrictBranchWriteAccess", val)}
+            label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
+            helpText={t("scm-review-plugin.config.restrictBranchWriteAccess.helpText")}
+          />
+          {restrictBranchWriteAccess && (
+            <>
+              <hr />
+              <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
+              <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
+              <BranchList
+                branches={protectedBranchPatterns}
+                onChange={val => onChange("protectedBranchPatterns", val)}
+              />
+              <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
+              <p className="mb-4">{t("scm-review-plugin.config.branchProtection.bypasses.note")}</p>
+              <BypassList
+                bypasses={branchProtectionBypasses}
+                onChange={val => onChange("branchProtectionBypasses", val)}
+              />
+            </>
+          )}
         </>
-      )}
-      {!global && <Subtitle>{t("scm-review-plugin.config.title")}</Subtitle>}
-      <UserList values={defaultReviewers} onChange={onChange} />
-      <Checkbox
-        checked={preventMergeFromAuthor}
-        onChange={val => onChange("preventMergeFromAuthor", val)}
-        label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
-        helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
-      />
-      <Checkbox
-        checked={restrictBranchWriteAccess}
-        onChange={val => onChange("restrictBranchWriteAccess", val)}
-        label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
-        helpText={t("scm-review-plugin.config.restrictBranchWriteAccess.helpText")}
-      />
-      {restrictBranchWriteAccess && (
-        <>
-          <hr />
-          <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
-          <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
-          <BranchList branches={protectedBranchPatterns} onChange={val => onChange("protectedBranchPatterns", val)} />
-          <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
-          <p className="mb-4">{t("scm-review-plugin.config.branchProtection.bypasses.note")}</p>
-          <BypassList bypasses={branchProtectionBypasses} onChange={val => onChange("branchProtectionBypasses", val)} />
-        </>
-      )}
+      ) : null}
     </>
   );
 };

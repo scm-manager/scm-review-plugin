@@ -21,30 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.review.config.service;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.15.0'
-}
+import com.cloudogu.scm.review.config.OverwritableConfig;
+import com.cloudogu.scm.review.config.WithDisableConfig;
+import lombok.Getter;
+import lombok.Setter;
 
-dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.10.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-}
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
-scmPlugin {
-  scmVersion = "2.43.2-SNAPSHOT"
-  displayName = "Review"
-  description = "Depict a review process with pull requests"
-  author = "Cloudogu GmbH"
-  category = "Workflow"
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "namespace-config")
+@Getter
+@Setter
+public class NamespacePullRequestConfig extends BasePullRequestConfig implements WithDisableConfig, OverwritableConfig {
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.review.pullrequest.api",
-      "com.cloudogu.scm.review.config.api",
-      "com.cloudogu.scm.review.workflow",
-    ]
-  }
+  @XmlElement(name = "disable-repository-configuration")
+  private boolean disableRepositoryConfiguration = false;
+
+  @XmlElement(name = "overwrite-parent-configuration")
+  private boolean overwriteParentConfig = false;
 }

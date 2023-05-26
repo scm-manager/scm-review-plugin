@@ -25,7 +25,7 @@ package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
-import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
+import com.cloudogu.scm.review.config.service.NamespacePullRequestConfig;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import org.mapstruct.Context;
@@ -37,11 +37,11 @@ import javax.ws.rs.core.UriInfo;
 import java.util.List;
 
 @Mapper
-public abstract class GlobalConfigMapper {
+public abstract class NamespaceConfigMapper {
 
-  public abstract GlobalPullRequestConfigDto map(GlobalPullRequestConfig globalPullRequestConfig, @Context UriInfo uriInfo);
+  public abstract NamespacePullRequestConfigDto map(NamespacePullRequestConfig config, @Context String namespace, @Context UriInfo uriInfo);
 
-  public abstract GlobalPullRequestConfig map(GlobalPullRequestConfigDto configDto);
+  public abstract NamespacePullRequestConfig map(NamespacePullRequestConfigDto configDto);
 
   abstract List<BasePullRequestConfig.ProtectionBypass> map(List<BasePullRequestConfigDto.ProtectionBypassDto> bypassDtos);
   abstract BasePullRequestConfig.ProtectionBypass map(BasePullRequestConfigDto.ProtectionBypassDto bypassDto);
@@ -50,15 +50,15 @@ public abstract class GlobalConfigMapper {
   abstract List<BasePullRequestConfigDto.ProtectionBypassDto> mapToDto(List<BasePullRequestConfig.ProtectionBypass> bypasses);
 
   @ObjectFactory
-  GlobalPullRequestConfigDto createForGlobal(@Context UriInfo uriInfo) {
-    LinkBuilder linkBuilder = new LinkBuilder(uriInfo::getBaseUri, GlobalConfigResource.class);
+  NamespacePullRequestConfigDto createForNamespace(@Context String namespace, @Context UriInfo uriInfo) {
+    LinkBuilder linkBuilder = new LinkBuilder(uriInfo::getBaseUri, NamespaceConfigResource.class);
     Links.Builder halLinks = new Links.Builder();
 
-    halLinks.self(linkBuilder.method("getGlobalConfig").parameters().href());
+    halLinks.self(linkBuilder.method("getNamespaceConfig").parameters(namespace).href());
 
-    if (PermissionCheck.mayWriteGlobalConfig()) {
-      halLinks.single(Link.link("update", linkBuilder.method("setGlobalConfig").parameters().href()));
+    if (PermissionCheck.mayConfigure(namespace)) {
+      halLinks.single(Link.link("update", linkBuilder.method("setNamespaceConfig").parameters(namespace).href()));
     }
-    return new GlobalPullRequestConfigDto(halLinks.build());
+    return new NamespacePullRequestConfigDto(halLinks.build());
   }
 }

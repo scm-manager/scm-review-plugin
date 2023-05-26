@@ -41,6 +41,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -50,25 +51,25 @@ import javax.ws.rs.core.UriInfo;
   @Tag(name = "Pull Request Configuration", description = "Pull request configuration endpoints provided by review-plugin")
 })
 @Path(PullRequestRootResource.PULL_REQUESTS_PATH_V2)
-public class GlobalConfigResource {
+public class NamespaceConfigResource {
 
   private final ConfigService configService;
-  private final GlobalConfigMapper globalConfigMapper;
+  private final NamespaceConfigMapper namespaceConfigMapper;
 
   @Inject
-  public GlobalConfigResource(ConfigService configService, GlobalConfigMapper globalConfigMapper) {
+  public NamespaceConfigResource(ConfigService configService, NamespaceConfigMapper namespaceConfigMapper) {
     this.configService = configService;
-    this.globalConfigMapper = globalConfigMapper;
+    this.namespaceConfigMapper = namespaceConfigMapper;
   }
 
   @GET
-  @Path("config")
+  @Path("{namespace}/config")
   @Produces(MediaType.APPLICATION_JSON)
   @Operation(
-    summary = "Global pull request configuration",
-    description = "Returns the global pull request configuration.",
+    summary = "Namespace pull request configuration",
+    description = "Returns the namespace pull request configuration.",
     tags = "Pull Request Configuration",
-    operationId = "review_get_global_config"
+    operationId = "review_get_namespace_config"
   )
   @ApiResponse(
     responseCode = "200",
@@ -88,19 +89,19 @@ public class GlobalConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public GlobalPullRequestConfigDto getGlobalConfig(@Context UriInfo uriInfo) {
-    PermissionCheck.checkReadGlobalConfig();
-    return globalConfigMapper.map(configService.getGlobalPullRequestConfig(), uriInfo);
+  public NamespacePullRequestConfigDto getNamespaceConfig(@Context UriInfo uriInfo, @PathParam("namespace") String namespace) {
+    PermissionCheck.checkModify(namespace);
+    return namespaceConfigMapper.map(configService.getNamespacePullRequestConfig(namespace), namespace, uriInfo);
   }
 
   @PUT
-  @Path("config")
+  @Path("{namespace}/config")
   @Consumes(MediaType.APPLICATION_JSON)
   @Operation(
-    summary = "Update global pull request configuration",
-    description = "Modifies the global pull request configuration.",
+    summary = "Update namespace pull request configuration",
+    description = "Modifies the namespace pull request configuration.",
     tags = "Pull Request Configuration",
-    operationId = "review_put_global_config"
+    operationId = "review_put_namespace_config"
 
   )
   @ApiResponse(responseCode = "204", description = "update success")
@@ -114,8 +115,8 @@ public class GlobalConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public void setGlobalConfig(@Valid GlobalPullRequestConfigDto configDto) {
-    PermissionCheck.checkWriteGlobalConfig();
-    configService.setGlobalPullRequestConfig(globalConfigMapper.map(configDto));
+  public void setNamespaceConfig(@Valid NamespacePullRequestConfigDto configDto, @PathParam("namespace") String namespace) {
+    PermissionCheck.checkModify(namespace);
+    configService.setNamespacePullRequestConfig(namespace, namespaceConfigMapper.map(configDto));
   }
 }

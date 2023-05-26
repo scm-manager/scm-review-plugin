@@ -32,7 +32,7 @@ type Props = {
 class RepositoryConfig extends React.Component<Props> {
   render() {
     const { link } = this.props;
-    return <Configuration link={link} render={props => <ConfigEditor {...props} global={false} />} />;
+    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="repository" />} />;
   }
 }
 

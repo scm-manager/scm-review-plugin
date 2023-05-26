@@ -22,29 +22,30 @@
  * SOFTWARE.
  */
 
-plugins {
-  id 'org.scm-manager.smp' version '0.15.0'
-}
+package com.cloudogu.scm.review.config;
 
-dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.10.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-}
 
-scmPlugin {
-  scmVersion = "2.43.2-SNAPSHOT"
-  displayName = "Review"
-  description = "Depict a review process with pull requests"
-  author = "Cloudogu GmbH"
-  category = "Workflow"
+public class ConfigEvaluator {
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.review.pullrequest.api",
-      "com.cloudogu.scm.review.config.api",
-      "com.cloudogu.scm.review.workflow",
-    ]
+  public static  <
+    T,
+    GLOBAL extends  WithDisableConfig,
+    NAMESPACE extends WithDisableConfig & OverwritableConfig,
+    REPOSITORY extends OverwritableConfig
+    > T evaluate(GLOBAL globalConfig, NAMESPACE namespaceConfig, REPOSITORY repositoryConfig) {
+    if (globalConfig.isDisableRepositoryConfiguration()) {
+      return (T) globalConfig;
+    }
+
+    if (namespaceConfig.isOverwriteParentConfig()) {
+      if (!namespaceConfig.isDisableRepositoryConfiguration() && repositoryConfig.isOverwriteParentConfig()) {
+        return (T) repositoryConfig;
+      }
+      return (T) namespaceConfig;
+    } else if (repositoryConfig.isOverwriteParentConfig() && !namespaceConfig.isDisableRepositoryConfiguration()) {
+      return (T) repositoryConfig;
+    }
+
+    return (T) globalConfig;
   }
 }

@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import sonia.scm.config.ConfigurationPermissions;
+import sonia.scm.repository.NamespacePermissions;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 
@@ -135,6 +136,14 @@ public final class PermissionCheck {
     return RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).isPermitted();
   }
 
+  public static boolean mayConfigure(String namespace) {
+    return NamespacePermissions.custom(CONFIGURE_PULL_REQUEST, namespace).isPermitted();
+  }
+
+  public static void checkModify(String namespace) {
+    NamespacePermissions.custom(CONFIGURE_PULL_REQUEST, namespace).check();
+  }
+
   public static boolean mayReadGlobalConfig() {
     return ConfigurationPermissions.read(CONFIGURE_PERMISSION).isPermitted();
   }
@@ -147,11 +156,11 @@ public final class PermissionCheck {
     RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).check();
   }
 
-  public static void checkReadGlobalkConfig() {
+  public static void checkReadGlobalConfig() {
     ConfigurationPermissions.read(CONFIGURE_PERMISSION).check();
   }
 
-  public static void checkWriteGlobalkConfig() {
+  public static void checkWriteGlobalConfig() {
     ConfigurationPermissions.write(CONFIGURE_PERMISSION).check();
   }
 

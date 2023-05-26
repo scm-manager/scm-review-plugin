@@ -32,9 +32,9 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter @Setter @NoArgsConstructor
-public class PullRequestConfigDto extends HalRepresentation {
+public class BasePullRequestConfigDto extends HalRepresentation {
 
-  public PullRequestConfigDto(Links links) {
+  public BasePullRequestConfigDto(Links links) {
     super(links);
   }
 

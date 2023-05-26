@@ -81,7 +81,7 @@ public class RepositoryConfigResource {
     description = "success",
     content = @Content(
       mediaType = MediaType.APPLICATION_JSON,
-      schema = @Schema(implementation = PullRequestConfigDto.class)
+      schema = @Schema(implementation = RepositoryPullRequestConfigDto.class)
     )
   )
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
@@ -94,7 +94,7 @@ public class RepositoryConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public PullRequestConfigDto getRepositoryConfig(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
+  public RepositoryPullRequestConfigDto getRepositoryConfig(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
       throw notFound(entity(new NamespaceAndName(namespace, name)));
@@ -123,7 +123,7 @@ public class RepositoryConfigResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public void setRepositoryConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid PullRequestConfigDto configDto) {
+  public void setRepositoryConfig(@PathParam("namespace") String namespace, @PathParam("name") String name, @Valid RepositoryPullRequestConfigDto configDto) {
     Repository repository = repositoryManager.get(new NamespaceAndName(namespace, name));
     if (repository == null) {
       throw notFound(entity(new NamespaceAndName(namespace, name)));

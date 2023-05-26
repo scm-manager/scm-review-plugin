@@ -21,30 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.review.config.api;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.15.0'
-}
+import de.otto.edison.hal.Links;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.10.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-}
+@Getter
+@Setter
+@NoArgsConstructor
+public class NamespacePullRequestConfigDto extends BasePullRequestConfigDto {
 
-scmPlugin {
-  scmVersion = "2.43.2-SNAPSHOT"
-  displayName = "Review"
-  description = "Depict a review process with pull requests"
-  author = "Cloudogu GmbH"
-  category = "Workflow"
+  private boolean disableRepositoryConfiguration;
+  private boolean overwriteParentConfig;
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.review.pullrequest.api",
-      "com.cloudogu.scm.review.config.api",
-      "com.cloudogu.scm.review.workflow",
-    ]
+  public NamespacePullRequestConfigDto(Links links) {
+    super(links);
   }
 }

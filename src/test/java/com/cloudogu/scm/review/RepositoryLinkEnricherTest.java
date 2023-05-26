@@ -25,6 +25,7 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
+import com.cloudogu.scm.review.config.service.NamespacePullRequestConfig;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.workflow.EngineConfigService;
 import com.cloudogu.scm.review.workflow.EngineConfiguration;
@@ -35,24 +36,25 @@ import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.inject.Provider;
 import com.google.inject.util.Providers;
-import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricherContext;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
 import java.net.URI;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -105,6 +107,7 @@ public class RepositoryLinkEnricherTest {
 
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(false);
+    when(configService.getNamespacePullRequestConfig(any())).thenReturn(new NamespacePullRequestConfig());
     Repository repo = new Repository("id", "type", "space", "name");
     HalEnricherContext context = HalEnricherContext.of(repo);
     when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration());
@@ -134,11 +137,34 @@ public class RepositoryLinkEnricherTest {
     verify(appender, never()).appendLink(eq("pullRequestConfig"), any());
   }
 
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldNotEnrichRepositoriesForConfigWhenRepositoryConfigForNamespaceIsDisabled() {
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
+
+    when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
+    mockGlobalConfig(false);
+    NamespacePullRequestConfig namespacePullRequestConfig = new NamespacePullRequestConfig();
+    namespacePullRequestConfig.setDisableRepositoryConfiguration(true);
+    when(configService.getNamespacePullRequestConfig(any())).thenReturn(namespacePullRequestConfig);
+
+    Repository repo = new Repository("id", "type", "space", "name");
+    HalEnricherContext context = HalEnricherContext.of(repo);
+    GlobalEngineConfiguration globalEngineConfiguration = new GlobalEngineConfiguration();
+    globalEngineConfiguration.setDisableRepositoryConfiguration(true);
+    when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(globalEngineConfiguration);
+
+    enricher.enrich(context, appender);
+
+    verify(appender).appendLink("pullRequest", "https://scm-manager.org/scm/api/v2/pull-requests/space/name");
+    verify(appender, never()).appendLink(eq("pullRequestConfig"), any());
+  }
+
+
   private void mockGlobalConfig(boolean disableRepoConfig) {
     GlobalPullRequestConfig globalConfig = new GlobalPullRequestConfig();
     globalConfig.setDisableRepositoryConfiguration(disableRepoConfig);
     when(configService.getGlobalPullRequestConfig()).thenReturn(globalConfig);
-
   }
 
   @Test
@@ -211,6 +237,7 @@ public class RepositoryLinkEnricherTest {
   public void shouldEnrichPullRequestTemplateLink() {
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(false);
+    when(configService.getNamespacePullRequestConfig(any())).thenReturn(new NamespacePullRequestConfig());
     when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration());
 
     enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
@@ -221,8 +248,8 @@ public class RepositoryLinkEnricherTest {
   }
 
   @Test
-  @SubjectAware(username = "dent", password = "secret")
-  public void shouldNotEnrichPullRequestTemplateLinkIfRepoConfigDisabled() {
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldNotEnrichPullRequestTemplateLinkIfUserNotPermitted() {
     when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
     mockGlobalConfig(true);
     when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration());
