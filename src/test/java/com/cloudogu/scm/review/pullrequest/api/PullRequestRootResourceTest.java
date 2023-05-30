@@ -30,6 +30,7 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Location;
+import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
@@ -180,6 +181,7 @@ public class PullRequestRootResourceTest {
     dispatcher.addSingletonResource(pullRequestRootResource);
     lenient().when(repositoryServiceFactory.create(any(Repository.class))).thenReturn(repositoryService);
     lenient().when(userDisplayManager.get("reviewer")).thenReturn(Optional.of(DisplayUser.from(new User("reviewer", "reviewer", ""))));
+    when(configService.evaluateConfig(repository)).thenReturn(new BasePullRequestConfig());
   }
 
   @After

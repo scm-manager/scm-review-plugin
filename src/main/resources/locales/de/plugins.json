@@ -304,6 +304,14 @@
         "label": "Pull Request Konfiguration für einzelne Repositories deaktivieren",
         "helpText": "Repository Owner dürfen Pull Requests nicht auf der Repository-Ebene konfigurieren."
       },
+      "deleteBranchOnMerge": {
+        "label": "Source Branch beim Merge löschen",
+        "helpText": "Im Merge-Modal wird die Option zum Löschen des Source Branches standardmäßig aktiviert."
+      },
+      "defaultMergeStrategy": {
+        "label": "Standard-Merge-Strategie",
+        "helpText": "Die vorausgewählte Merge-Strategie im Merge-Modal"
+      },
       "disableRepositoryAndNamespaceConfiguration": {
         "label": "Pull Request Konfiguration für einzelne Repositories und Namespaces deaktivieren",
         "helpText": "Repository Owner dürfen Pull Requests nicht auf der Namespace- oder Repository-Ebene konfigurieren."

@@ -26,6 +26,8 @@ package com.cloudogu.scm.review.pullrequest.dto;
 
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
+import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
@@ -68,6 +70,8 @@ class PullRequestMapperTest {
   @Mock
   private BranchLinkProvider branchLinkProvider;
   @Mock
+  private ConfigService configService;
+  @Mock
   private UserDisplayManager userDisplayManager;
   @Mock
   private PullRequestService pullRequestService;
@@ -95,6 +99,7 @@ class PullRequestMapperTest {
   void mockDefaults() {
     when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("dent");
     when(branchLinkProvider.get(any(NamespaceAndName.class), anyString())).thenReturn("link");
+    when(configService.evaluateConfig(REPOSITORY)).thenReturn(new BasePullRequestConfig());
   }
 
   @Test
@@ -112,6 +117,11 @@ class PullRequestMapperTest {
     assertThat(dto.getLinks().isEmpty()).isFalse();
     assertThat(dto.getLinks().getLinkBy("merge")).isPresent();
     assertThat(dto.getLinks().getLinkBy("defaultCommitMessage")).isPresent();
+
+    PullRequestMapper.DefaultConfigDto defaultConfig = dto.getEmbedded().getItemsBy("defaultConfig", PullRequestMapper.DefaultConfigDto.class).get(0);
+    assertThat(defaultConfig.getMergeStrategy()).isEqualTo("MERGE_COMMIT");
+    assertThat(defaultConfig.isDeleteBranchOnMerge()).isFalse();
+
   }
 
   @Test
@@ -215,5 +225,20 @@ class PullRequestMapperTest {
 
     assertThat(dto.getLinks().getLinkBy("workflowResult"))
       .isEmpty();
+  }
+
+  @Test
+  void shouldEmbedDefaultConfig() {
+    BasePullRequestConfig config = new BasePullRequestConfig();
+    config.setDefaultMergeStrategy(MergeStrategy.REBASE);
+    config.setDeleteBranchOnMerge(true);
+    when(configService.evaluateConfig(REPOSITORY)).thenReturn(config);
+    PullRequest pullRequest = TestData.createPullRequest();
+
+    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+    PullRequestMapper.DefaultConfigDto defaultConfig = dto.getEmbedded().getItemsBy("defaultConfig", PullRequestMapper.DefaultConfigDto.class).get(0);
+    assertThat(defaultConfig.getMergeStrategy()).isEqualTo("REBASE");
+    assertThat(defaultConfig.isDeleteBranchOnMerge()).isTrue();
   }
 }

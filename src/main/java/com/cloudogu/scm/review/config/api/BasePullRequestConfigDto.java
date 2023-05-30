@@ -28,6 +28,7 @@ import de.otto.edison.hal.Links;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sonia.scm.repository.api.MergeStrategy;
 
 import java.util.List;
 
@@ -38,6 +39,8 @@ public class BasePullRequestConfigDto extends HalRepresentation {
     super(links);
   }
 
+  private MergeStrategy defaultMergeStrategy;
+  private boolean deleteBranchOnMerge;
   private boolean preventMergeFromAuthor;
   private boolean restrictBranchWriteAccess;
   private List<String> protectedBranchPatterns;

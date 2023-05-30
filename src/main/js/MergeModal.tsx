@@ -38,6 +38,11 @@ type Props = {
   mergeCheck?: MergeCheck;
 };
 
+type DefaultConfig = {
+  mergeStrategy: string;
+  deleteBranchOnMerge: boolean;
+};
+
 const extractFirstMergeStrategy: (mergeStrategyLinks: Link[]) => string = mergeStrategyLinks => {
   if (mergeStrategyLinks && mergeStrategyLinks.length > 0 && mergeStrategyLinks[0].name) {
     return mergeStrategyLinks[0].name;
@@ -48,14 +53,14 @@ const extractFirstMergeStrategy: (mergeStrategyLinks: Link[]) => string = mergeS
 
 const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, mergeCheck }) => {
   const [t] = useTranslation("plugins");
-  const [mergeStrategy, setMergeStrategy] = useState(extractFirstMergeStrategy(pullRequest._links.merge as Link[]));
+  const [mergeStrategy, setMergeStrategy] = useState((pullRequest._embedded?.defaultConfig as DefaultConfig).mergeStrategy || extractFirstMergeStrategy(pullRequest._links.merge as Link[]));
   const [loading, setLoading] = useState(false);
   const [loadingDefaultMessage, setLoadingDefaultMessage] = useState(false);
   const [messageChanged, setMessageChanged] = useState(false);
   const [mergeFailed, setMergeFailed] = useState(false);
   const [mergeCommit, setMergeCommit] = useState<MergeCommit>({
     commitMessage: "",
-    shouldDeleteSourceBranch: false
+    shouldDeleteSourceBranch: (pullRequest._embedded?.defaultConfig as DefaultConfig).deleteBranchOnMerge || false
   });
   const [commitStrategyInfos, setCommitStrategyInfos] = useState<{ [key: string]: MergeStrategyInfo }>({});
   const initialFocusRef = useRef<HTMLInputElement>(null);

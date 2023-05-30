@@ -29,14 +29,19 @@ import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
+import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
+import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.Embedded;
+import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -80,7 +85,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @Inject
   private UserDisplayManager userDisplayManager;
-
+  @Inject
+  private ConfigService configService;
   @Inject
   private PullRequestService pullRequestService;
   @Inject
@@ -234,8 +240,14 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     }
 
     Embedded.Builder embeddedBuilder = embeddedBuilder();
+    embedDefaultConfig(repository, embeddedBuilder);
     applyEnrichers(new EdisonHalAppender(linksBuilder, embeddedBuilder), pullRequest, repository);
     return new PullRequestDto(linksBuilder.build(), embeddedBuilder.build());
+  }
+
+  private void embedDefaultConfig(Repository repository, Embedded.Builder embeddedBuilder) {
+    BasePullRequestConfig basePullRequestConfig = configService.evaluateConfig(repository);
+    embeddedBuilder.with("defaultConfig", new DefaultConfigDto(basePullRequestConfig.getDefaultMergeStrategy().name(), basePullRequestConfig.isDeleteBranchOnMerge()));
   }
 
   private void appendMergeStrategyLinks(Links.Builder linksBuilder, Repository repository, PullRequest pullRequest) {
@@ -283,5 +295,13 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       strategy
       )
     ).withName(strategy.name()).build();
+  }
+
+  @AllArgsConstructor
+  @Getter
+  @SuppressWarnings("java:S2160") // we do not need equals or hashcode
+  static class DefaultConfigDto extends HalRepresentation {
+    private String mergeStrategy;
+    private boolean deleteBranchOnMerge;
   }
 }

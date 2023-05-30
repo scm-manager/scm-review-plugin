@@ -28,6 +28,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sonia.scm.repository.api.MergeStrategy;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -41,6 +42,8 @@ import java.util.List;
 @NoArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
 public class BasePullRequestConfig {
+  private MergeStrategy defaultMergeStrategy = MergeStrategy.MERGE_COMMIT;
+  private boolean deleteBranchOnMerge = false;
   private boolean restrictBranchWriteAccess = false;
   @XmlElement(name = "protected-branch-patterns")
   private List<String> protectedBranchPatterns = new ArrayList<>();

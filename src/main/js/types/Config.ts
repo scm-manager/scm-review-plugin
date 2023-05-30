@@ -27,7 +27,12 @@ export type ProtectionBypass = {
   group: boolean;
 };
 
+export const MERGE_STRATEGIES = ["MERGE_COMMIT", "FAST_FORWARD_IF_POSSIBLE", "SQUASH", "REBASE"] as const;
+export type MergeStrategy = typeof MERGE_STRATEGIES[number];
+
 export type Config = {
+  defaultMergeStrategy: MergeStrategy;
+  deleteBranchOnMerge: boolean;
   disableRepositoryConfiguration?: boolean;
   overwriteParentConfig?: boolean;
   restrictBranchWriteAccess: boolean;

@@ -302,6 +302,14 @@
         "label": "Disable repository configuration",
         "helpText": "Repository owners may not configure pull requests on repository level."
       },
+      "deleteBranchOnMerge": {
+        "label": "Delete source branch on merge",
+        "helpText": "The source branch delete option is activated by default."
+      },
+      "defaultMergeStrategy": {
+        "label": "Default merge strategy",
+        "helpText": "The preselected merge strategy in the merge modal."
+      },
       "disableRepositoryAndNamespaceConfiguration": {
         "label": "Disable repository and namespace configuration",
         "helpText": "Repository owners may not configure pull requests on namespace or repository level."

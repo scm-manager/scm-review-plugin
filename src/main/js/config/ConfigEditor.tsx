@@ -23,9 +23,16 @@
  */
 import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation, WithTranslation } from "react-i18next";
-import { AutocompleteAddEntryToTableField, Checkbox, Subtitle, TagGroup, Title } from "@scm-manager/ui-components";
+import {
+  AutocompleteAddEntryToTableField,
+  Checkbox,
+  Select,
+  Subtitle,
+  TagGroup,
+  Title
+} from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
-import { Config } from "../types/Config";
+import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { DisplayedUser } from "@scm-manager/ui-types";
@@ -82,6 +89,8 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
   useEffect(() => onConfigurationChange(state, true), [onConfigurationChange, state]);
 
   const {
+    defaultMergeStrategy,
+    deleteBranchOnMerge,
     restrictBranchWriteAccess,
     protectedBranchPatterns,
     branchProtectionBypasses,
@@ -138,6 +147,22 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
             onChange={val => onChange("preventMergeFromAuthor", val)}
             label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
             helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
+          />
+          <Checkbox
+            checked={deleteBranchOnMerge}
+            onChange={val => onChange("deleteBranchOnMerge", val)}
+            label={t("scm-review-plugin.config.deleteBranchOnMerge.label")}
+            helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
+          />
+          <Select
+            options={MERGE_STRATEGIES.map(strategy => ({
+              label: t("scm-review-plugin.showPullRequest.mergeStrategies." + strategy),
+              value: strategy
+            }))}
+            onChange={val => onChange("defaultMergeStrategy", val as MergeStrategy)}
+            label={t("scm-review-plugin.config.defaultMergeStrategy.label")}
+            helpText={t("scm-review-plugin.config.defaultMergeStrategy.helpText")}
+            value={defaultMergeStrategy}
           />
           <Checkbox
             checked={restrictBranchWriteAccess}
