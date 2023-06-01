@@ -96,18 +96,13 @@ public class ConfigService {
   }
 
   public boolean isPreventMergeFromAuthor(Repository repository) {
-    if (getRepositoryPullRequestConfig(repository).isPreventMergeFromAuthor() && !getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
-      return true;
-    } else {
-      return getGlobalPullRequestConfig().isPreventMergeFromAuthor();
-    }
+    return evaluateConfig(repository).isPreventMergeFromAuthor();
   }
 
   private Collection<String> getProtectedBranches(Repository repository) {
-    if (getRepositoryPullRequestConfig(repository).isRestrictBranchWriteAccess() && !getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
-      return getProtectedBranches(getRepositoryPullRequestConfig(repository));
-    } else if (getGlobalPullRequestConfig().isRestrictBranchWriteAccess()) {
-      return getProtectedBranches(getGlobalPullRequestConfig());
+    BasePullRequestConfig config = evaluateConfig(repository);
+    if (config.isRestrictBranchWriteAccess()) {
+      return getProtectedBranches(config);
     } else {
       return emptyList();
     }

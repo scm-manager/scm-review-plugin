@@ -167,7 +167,7 @@ class ConfigServiceTest {
   @Test
   void shouldProtectBranchFromGlobalConfig() {
     mockGlobalConfig(true, false, "master");
-    mockRepoConfig(false, true);
+    mockRepoConfig(false, false);
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isTrue();
   }
@@ -176,6 +176,15 @@ class ConfigServiceTest {
   void shouldProtectBranchFromRepoConfig() {
     mockGlobalConfig(true, false, "master");
     mockRepoConfig(true, true, "develop");
+
+    assertThat(service.isBranchProtected(REPOSITORY, "develop")).isTrue();
+  }
+
+  @Test
+  void shouldProtectBranchFromNamespaceConfig() {
+    NamespacePullRequestConfig namespacePullRequestConfig = mockNamespaceConfig(true, false);
+    namespacePullRequestConfig.setRestrictBranchWriteAccess(true);
+    namespacePullRequestConfig.setProtectedBranchPatterns(singletonList("develop"));
 
     assertThat(service.isBranchProtected(REPOSITORY, "develop")).isTrue();
   }
@@ -223,9 +232,6 @@ class ConfigServiceTest {
 
   @Test
   void shouldNotProtectBranchForBypassedGroupInGlobalConfig() {
-    GlobalPullRequestConfig globalConfig = mockGlobalConfig(true, false, "master");
-    globalConfig.setBranchProtectionBypasses(singletonList(new BasePullRequestConfig.ProtectionBypass("hitchhikers", true)));
-    when(groupCollector.collect("trillian")).thenReturn(singleton("hitchhikers"));
     mockRepoConfig(false, true);
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
@@ -259,7 +265,18 @@ class ConfigServiceTest {
   void shouldPreventMergesFromAuthorIfSetInRepositoryConfig() {
     RepositoryPullRequestConfig repositoryPullRequestConfig = new RepositoryPullRequestConfig();
     repositoryPullRequestConfig.setPreventMergeFromAuthor(true);
+    repositoryPullRequestConfig.setOverwriteParentConfig(true);
     when(repositoryStore.getOptional()).thenReturn(Optional.of(repositoryPullRequestConfig));
+
+    assertThat(service.isPreventMergeFromAuthor(REPOSITORY)).isTrue();
+  }
+
+  @Test
+  void shouldPreventMergesFromAuthorIfSetInNamespaceConfig() {
+    NamespacePullRequestConfig namespacePullRequestConfig = new NamespacePullRequestConfig();
+    namespacePullRequestConfig.setOverwriteParentConfig(true);
+    namespacePullRequestConfig.setPreventMergeFromAuthor(true);
+    when(namespaceStore.getOptional()).thenReturn(Optional.of(namespacePullRequestConfig));
 
     assertThat(service.isPreventMergeFromAuthor(REPOSITORY)).isTrue();
   }
