@@ -87,6 +87,9 @@ public class PullRequest implements Serializable {
   @Indexed
   private PullRequestStatus status;
   private Set<String> subscriber = new HashSet<>();
+  //TODO Identifier?
+//  @Indexed(type = Indexed.Type.SEARCHABLE)
+  private Set<String> labels = new HashSet<>();
   private Map<String, Boolean> reviewer = new HashMap<>();
   private String sourceRevision;
   private String targetRevision;
@@ -132,6 +135,18 @@ public class PullRequest implements Serializable {
 
   public void removeSubscriber(String recipient) {
     this.subscriber.remove(recipient);
+  }
+
+  public Set<String> getLabels() {
+    return labels;
+  }
+
+  public void addLabel(String label) {
+    this.labels.add(label);
+  }
+
+  public void removeLabel(String label) {
+    this.labels.remove(label);
   }
 
   public boolean isInProgress() {

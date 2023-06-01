@@ -241,6 +241,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
     Embedded.Builder embeddedBuilder = embeddedBuilder();
     embedDefaultConfig(repository, embeddedBuilder);
+    embeddedBuilder.with("availableLabels", new LabelsDto(configService.evaluateConfig(repository).getLabels()));
     applyEnrichers(new EdisonHalAppender(linksBuilder, embeddedBuilder), pullRequest, repository);
     return new PullRequestDto(linksBuilder.build(), embeddedBuilder.build());
   }

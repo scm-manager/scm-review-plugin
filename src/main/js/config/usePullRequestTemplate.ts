@@ -28,6 +28,7 @@ import { useQuery } from "react-query";
 
 export type PullRequestTemplate = HalRepresentation & {
   defaultReviewers: DisplayedUser[];
+  availableLabels: string[];
   title?: string;
   description?: string;
 };

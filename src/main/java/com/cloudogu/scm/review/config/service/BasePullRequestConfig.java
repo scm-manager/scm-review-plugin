@@ -35,7 +35,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -51,6 +53,7 @@ public class BasePullRequestConfig {
   private List<BasePullRequestConfig.ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
   private boolean preventMergeFromAuthor = false;
   private List<String> defaultReviewers = new ArrayList<>();
+  private Set<String> labels = new HashSet<>();
 
   @Getter
   @Setter

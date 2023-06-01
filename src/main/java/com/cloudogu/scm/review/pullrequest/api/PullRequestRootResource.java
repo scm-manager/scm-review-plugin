@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.PagedCollections;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
+import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
@@ -146,10 +147,11 @@ public class PullRequestRootResource {
       }
     }
     PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
+    BasePullRequestConfig config = configService.evaluateConfig(repository);
     return new PullRequestTemplateDto(
       linkingTo().self(pullRequestResourceLinks.pullRequestCollection().template(namespace, name)).build(),
-      null, title, description, getDefaultReviewers(repository)
-    );
+      null, title, description, getDefaultReviewers(repository),
+      config.getLabels());
   }
 
   private Set<DisplayedUserDto> getDefaultReviewers(Repository repository) {

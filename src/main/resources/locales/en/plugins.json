@@ -63,6 +63,7 @@
       "date": "Date",
       "reviewer": "Reviewers",
       "addReviewer": "Add Reviewer",
+      "labels": "Labels",
       "tabs": {
         "commits": "Commits",
         "diff": "Diff",
@@ -287,6 +288,11 @@
     },
     "config": {
       "title": "Pull Requests Configuration",
+      "labels": {
+        "label": "Labels",
+        "ariaLabel": "Enter a new label",
+        "placeholder": "Enter a new label"
+      },
       "defaultReviewers": {
         "label": "Default Reviewers",
         "addButton": "Add",

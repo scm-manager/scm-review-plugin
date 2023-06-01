@@ -22,7 +22,13 @@
  * SOFTWARE.
  */
 
-import { DisplayedUser, HalRepresentation, Links, PagedCollection } from "@scm-manager/ui-types";
+import {
+  DisplayedUser,
+  HalRepresentation,
+  HalRepresentationWithEmbedded,
+  Links,
+  PagedCollection
+} from "@scm-manager/ui-types";
 import { ReactText } from "react";
 
 export type PullRequestStatus = "OPEN" | "MERGED" | "REJECTED" | "DRAFT";
@@ -38,7 +44,7 @@ export type BasicPullRequest = {
 };
 
 export type PullRequest = BasicPullRequest &
-  HalRepresentation & {
+  HalRepresentationWithEmbedded<{ availableLabels: { availableLabels: string[] } }> & {
     description?: string;
     author?: DisplayedUser;
     reviser?: DisplayedUser;
@@ -46,6 +52,7 @@ export type PullRequest = BasicPullRequest &
     id?: string;
     creationDate?: string;
     reviewer?: Reviewer[];
+    labels: string[];
     status: PullRequestStatus;
     tasks?: Tasks;
     sourceRevision?: string;

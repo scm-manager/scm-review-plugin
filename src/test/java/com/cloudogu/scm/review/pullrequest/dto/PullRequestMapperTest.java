@@ -37,6 +37,7 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -53,6 +54,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.UserDisplayManager;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -95,150 +97,185 @@ class PullRequestMapperTest {
     ThreadContext.unbindSubject();
   }
 
-  @BeforeEach
-  void mockDefaults() {
-    when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("dent");
-    when(branchLinkProvider.get(any(NamespaceAndName.class), anyString())).thenReturn("link");
-    when(configService.evaluateConfig(REPOSITORY)).thenReturn(new BasePullRequestConfig());
+  @Nested
+  class WithDefaults {
+
+    @BeforeEach
+    void mockDefaults() {
+      when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("dent");
+      when(branchLinkProvider.get(any(NamespaceAndName.class), anyString())).thenReturn("link");
+      when(configService.evaluateConfig(REPOSITORY)).thenReturn(new BasePullRequestConfig());
+    }
+
+    @Test
+    void shouldMapPullRequestWithMergeLink() {
+      when(serviceFactory.create(REPOSITORY)).thenReturn(service);
+      when(service.isSupported(Command.MERGE)).thenReturn(true);
+      when(service.getMergeCommand().getSupportedMergeStrategies()).thenReturn(ImmutableSet.of(MergeStrategy.MERGE_COMMIT));
+      when(subject.isPermitted("repository:commentPullRequest:id-1")).thenReturn(true);
+      when(subject.isPermitted("repository:push:id-1")).thenReturn(true);
+      when(subject.isPermitted("repository:mergePullRequest:id-1")).thenReturn(true);
+
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.addLabel("preview");
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().isEmpty()).isFalse();
+      assertThat(dto.getLinks().getLinkBy("merge")).isPresent();
+      assertThat(dto.getLinks().getLinkBy("defaultCommitMessage")).isPresent();
+
+      PullRequestMapper.DefaultConfigDto defaultConfig = dto.getEmbedded().getItemsBy("defaultConfig", PullRequestMapper.DefaultConfigDto.class).get(0);
+      assertThat(defaultConfig.getMergeStrategy()).isEqualTo("MERGE_COMMIT");
+      assertThat(defaultConfig.isDeleteBranchOnMerge()).isFalse();
+
+    }
+
+    @Test
+    void shouldMapPullRequestWithEmergencyMergeLink() {
+      when(serviceFactory.create(REPOSITORY)).thenReturn(service);
+      when(service.isSupported(Command.MERGE)).thenReturn(true);
+      when(service.getMergeCommand().getSupportedMergeStrategies()).thenReturn(ImmutableSet.of(MergeStrategy.MERGE_COMMIT));
+      when(subject.isPermitted("repository:commentPullRequest:id-1")).thenReturn(true);
+      when(subject.isPermitted("repository:push:id-1")).thenReturn(true);
+      when(subject.isPermitted("repository:mergePullRequest:id-1")).thenReturn(true);
+      when(subject.isPermitted("repository:performEmergencyMerge:id-1")).thenReturn(true);
+
+      PullRequest pullRequest = TestData.createPullRequest();
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().isEmpty()).isFalse();
+      assertThat(dto.getLinks().getLinkBy("emergencyMerge")).isPresent();
+    }
+
+    @Test
+    void shouldAppendSourceAndTargetBranchLinks() {
+      String sourceLink = "/api/v2/source";
+      String targetLink = "/api/v2/target";
+      when(branchLinkProvider.get(REPOSITORY.getNamespaceAndName(), "develop")).thenReturn(sourceLink);
+      when(branchLinkProvider.get(REPOSITORY.getNamespaceAndName(), "master")).thenReturn(targetLink);
+
+      PullRequest pullRequest = TestData.createPullRequest();
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().isEmpty()).isFalse();
+      Optional<Link> sourceBranch = dto.getLinks().getLinkBy("sourceBranch");
+      assertThat(sourceBranch).isPresent();
+      assertThat(sourceBranch.get().getHref()).isEqualTo(sourceLink);
+      Optional<Link> targetBranch = dto.getLinks().getLinkBy("targetBranch");
+      assertThat(targetBranch).isPresent();
+      assertThat(targetBranch.get().getHref()).isEqualTo(targetLink);
+    }
+
+    @Test
+    void shouldAppendAvailableLabelsAsEmbedded() {
+      BasePullRequestConfig config = new BasePullRequestConfig();
+      config.setLabels(Set.of("1", "2"));
+      when(configService.evaluateConfig(REPOSITORY)).thenReturn(config);
+      PullRequestDto dto = mapper.map(TestData.createPullRequest(), REPOSITORY);
+
+      assertThat(dto.getEmbedded().hasItem("availableLabels")).isTrue();
+      LabelsDto labelsDto = (LabelsDto) dto.getEmbedded().getItemsBy("availableLabels").get(0);
+      assertThat(labelsDto.getAvailableLabels()).hasSize(2);
+    }
+
+    @Test
+    void shouldMapPullRequestApprover() {
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.addApprover("deletedUser");
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getReviewer()).extracting("id").containsExactly("deletedUser");
+    }
+
+    @Test
+    void shouldMapPullRequestReviser() {
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setReviser("trillian");
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getReviser().getDisplayName()).isEqualTo("trillian");
+    }
+
+    @Test
+    void shouldAddLinkForWorkflowResultIfPullRequestIsOpen() {
+      PullRequest pullRequest = TestData.createPullRequest();
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("workflowResult"))
+        .get()
+        .extracting("href")
+        .isEqualTo("/v2/pull-requests/space/x/id/workflow/");
+    }
+
+    @Test
+    void shouldAddLinkForWorkflowResultIfPullRequestIsDraft() {
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.DRAFT);
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("workflowResult"))
+        .get()
+        .extracting("href")
+        .isEqualTo("/v2/pull-requests/space/x/id/workflow/");
+    }
+
+    @Test
+    void shouldNotAddLinkForWorkflowResultIfPullRequestIsRejected() {
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.REJECTED);
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("workflowResult"))
+        .isEmpty();
+    }
+
+    @Test
+    void shouldNotAddLinkForWorkflowResultIfPullRequestIsMerged() {
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.MERGED);
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("workflowResult"))
+        .isEmpty();
+    }
+
+    @Test
+    void shouldEmbedDefaultConfig() {
+      BasePullRequestConfig config = new BasePullRequestConfig();
+      config.setDefaultMergeStrategy(MergeStrategy.REBASE);
+      config.setDeleteBranchOnMerge(true);
+      when(configService.evaluateConfig(REPOSITORY)).thenReturn(config);
+      PullRequest pullRequest = TestData.createPullRequest();
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      PullRequestMapper.DefaultConfigDto defaultConfig = dto.getEmbedded().getItemsBy("defaultConfig", PullRequestMapper.DefaultConfigDto.class).get(0);
+      assertThat(defaultConfig.getMergeStrategy()).isEqualTo("REBASE");
+      assertThat(defaultConfig.isDeleteBranchOnMerge()).isTrue();
+    }
   }
 
   @Test
-  void shouldMapPullRequestWithMergeLink() {
-    when(serviceFactory.create(REPOSITORY)).thenReturn(service);
-    when(service.isSupported(Command.MERGE)).thenReturn(true);
-    when(service.getMergeCommand().getSupportedMergeStrategies()).thenReturn(ImmutableSet.of(MergeStrategy.MERGE_COMMIT));
-    when(subject.isPermitted("repository:commentPullRequest:id-1")).thenReturn(true);
-    when(subject.isPermitted("repository:push:id-1")).thenReturn(true);
-    when(subject.isPermitted("repository:mergePullRequest:id-1")).thenReturn(true);
-
+  void shouldMapLabels() {
     PullRequest pullRequest = TestData.createPullRequest();
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+    pullRequest.addLabel("1");
+    pullRequest.addLabel("2");
 
-    assertThat(dto.getLinks().isEmpty()).isFalse();
-    assertThat(dto.getLinks().getLinkBy("merge")).isPresent();
-    assertThat(dto.getLinks().getLinkBy("defaultCommitMessage")).isPresent();
+    PullRequestDto dto = mapper.map(pullRequest);
+    assertThat(dto.getLabels()).hasSize(2);
+    assertThat(dto.getLabels()).containsExactly("1", "2");
 
-    PullRequestMapper.DefaultConfigDto defaultConfig = dto.getEmbedded().getItemsBy("defaultConfig", PullRequestMapper.DefaultConfigDto.class).get(0);
-    assertThat(defaultConfig.getMergeStrategy()).isEqualTo("MERGE_COMMIT");
-    assertThat(defaultConfig.isDeleteBranchOnMerge()).isFalse();
+    pullRequest.removeLabel("1");
 
-  }
+    dto = mapper.map(pullRequest);
 
-  @Test
-  void shouldMapPullRequestWithEmergencyMergeLink() {
-    when(serviceFactory.create(REPOSITORY)).thenReturn(service);
-    when(service.isSupported(Command.MERGE)).thenReturn(true);
-    when(service.getMergeCommand().getSupportedMergeStrategies()).thenReturn(ImmutableSet.of(MergeStrategy.MERGE_COMMIT));
-    when(subject.isPermitted("repository:commentPullRequest:id-1")).thenReturn(true);
-    when(subject.isPermitted("repository:push:id-1")).thenReturn(true);
-    when(subject.isPermitted("repository:mergePullRequest:id-1")).thenReturn(true);
-    when(subject.isPermitted("repository:performEmergencyMerge:id-1")).thenReturn(true);
-
-    PullRequest pullRequest = TestData.createPullRequest();
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    assertThat(dto.getLinks().isEmpty()).isFalse();
-    assertThat(dto.getLinks().getLinkBy("emergencyMerge")).isPresent();
-  }
-
-  @Test
-  void shouldAppendSourceAndTargetBranchLinks() {
-    String sourceLink = "/api/v2/source";
-    String targetLink = "/api/v2/target";
-    when(branchLinkProvider.get(REPOSITORY.getNamespaceAndName(), "develop")).thenReturn(sourceLink);
-    when(branchLinkProvider.get(REPOSITORY.getNamespaceAndName(), "master")).thenReturn(targetLink);
-
-    PullRequest pullRequest = TestData.createPullRequest();
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    assertThat(dto.getLinks().isEmpty()).isFalse();
-    Optional<Link> sourceBranch = dto.getLinks().getLinkBy("sourceBranch");
-    assertThat(sourceBranch).isPresent();
-    assertThat(sourceBranch.get().getHref()).isEqualTo(sourceLink);
-    Optional<Link> targetBranch = dto.getLinks().getLinkBy("targetBranch");
-    assertThat(targetBranch).isPresent();
-    assertThat(targetBranch.get().getHref()).isEqualTo(targetLink);
-  }
-
-  @Test
-  void shouldMapPullRequestApprover() {
-    PullRequest pullRequest = TestData.createPullRequest();
-    pullRequest.addApprover("deletedUser");
-
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    assertThat(dto.getReviewer()).extracting("id").containsExactly("deletedUser");
-  }
-
-  @Test
-  void shouldMapPullRequestReviser() {
-    PullRequest pullRequest = TestData.createPullRequest();
-    pullRequest.setReviser("trillian");
-
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    assertThat(dto.getReviser().getDisplayName()).isEqualTo("trillian");
-  }
-
-  @Test
-  void shouldAddLinkForWorkflowResultIfPullRequestIsOpen() {
-    PullRequest pullRequest = TestData.createPullRequest();
-
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    assertThat(dto.getLinks().getLinkBy("workflowResult"))
-      .get()
-      .extracting("href")
-      .isEqualTo("/v2/pull-requests/space/x/id/workflow/");
-  }
-
-  @Test
-  void shouldAddLinkForWorkflowResultIfPullRequestIsDraft() {
-    PullRequest pullRequest = TestData.createPullRequest();
-    pullRequest.setStatus(PullRequestStatus.DRAFT);
-
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    assertThat(dto.getLinks().getLinkBy("workflowResult"))
-      .get()
-      .extracting("href")
-      .isEqualTo("/v2/pull-requests/space/x/id/workflow/");
-  }
-
-  @Test
-  void shouldNotAddLinkForWorkflowResultIfPullRequestIsRejected() {
-    PullRequest pullRequest = TestData.createPullRequest();
-    pullRequest.setStatus(PullRequestStatus.REJECTED);
-
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    assertThat(dto.getLinks().getLinkBy("workflowResult"))
-      .isEmpty();
-  }
-
-  @Test
-  void shouldNotAddLinkForWorkflowResultIfPullRequestIsMerged() {
-    PullRequest pullRequest = TestData.createPullRequest();
-    pullRequest.setStatus(PullRequestStatus.MERGED);
-
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    assertThat(dto.getLinks().getLinkBy("workflowResult"))
-      .isEmpty();
-  }
-
-  @Test
-  void shouldEmbedDefaultConfig() {
-    BasePullRequestConfig config = new BasePullRequestConfig();
-    config.setDefaultMergeStrategy(MergeStrategy.REBASE);
-    config.setDeleteBranchOnMerge(true);
-    when(configService.evaluateConfig(REPOSITORY)).thenReturn(config);
-    PullRequest pullRequest = TestData.createPullRequest();
-
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
-
-    PullRequestMapper.DefaultConfigDto defaultConfig = dto.getEmbedded().getItemsBy("defaultConfig", PullRequestMapper.DefaultConfigDto.class).get(0);
-    assertThat(defaultConfig.getMergeStrategy()).isEqualTo("REBASE");
-    assertThat(defaultConfig.isDeleteBranchOnMerge()).isTrue();
+    assertThat(dto.getLabels()).hasSize(1);
+    assertThat(dto.getLabels()).contains( "2");
   }
 }

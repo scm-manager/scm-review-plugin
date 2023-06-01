@@ -47,6 +47,7 @@ const Create: FC<Props> = ({ repository }) => {
     target: "",
     source: "",
     status: "OPEN",
+    labels: [],
     _links: {}
   });
   const [disabled, setDisabled] = useState(true);
@@ -158,6 +159,7 @@ const Create: FC<Props> = ({ repository }) => {
             branchesLoading={branchesLoading}
             branchesError={branchesError}
             disabled={isLoadingPullRequestTemplate}
+            availableLabels={pullRequestTemplate?.availableLabels ?? []}
           />
         )}
         {information}

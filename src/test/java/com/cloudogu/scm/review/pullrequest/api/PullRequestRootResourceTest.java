@@ -1004,6 +1004,7 @@ public class PullRequestRootResourceTest {
     assertThat(response.getContentAsString()).contains("\"_links\":{\"self\":{\"href\":\"/v2/pull-requests/ns/repo/template\"}}");
     assertThat(response.getContentAsString()).contains("\"title\":\"\"");
     assertThat(response.getContentAsString()).contains("\"description\":\"\"");
+    assertThat(response.getContentAsString()).contains("\"availableLabels\":[]");
   }
 
   @Test

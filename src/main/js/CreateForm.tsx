@@ -43,6 +43,7 @@ type Props = {
   branchesError?: Error | null;
   branchesLoading: boolean;
   disabled?: boolean;
+  availableLabels: string[];
 };
 
 const CreateForm: FC<Props> = ({
@@ -52,7 +53,8 @@ const CreateForm: FC<Props> = ({
   branches,
   branchesError,
   branchesLoading,
-  disabled
+  disabled,
+  availableLabels
 }) => {
   const [t] = useTranslation("plugins");
 
@@ -108,7 +110,12 @@ const CreateForm: FC<Props> = ({
         </div>
       </div>
       {renderValidationError()}
-      <EditForm handleFormChange={handleFormChange} pullRequest={pullRequest} disabled={disabled} />
+      <EditForm
+        handleFormChange={handleFormChange}
+        pullRequest={pullRequest}
+        disabled={disabled}
+        availableLabels={availableLabels}
+      />
     </form>
   );
 };

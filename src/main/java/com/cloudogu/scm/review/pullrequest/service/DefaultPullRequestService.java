@@ -141,6 +141,7 @@ public class DefaultPullRequestService implements PullRequestService {
       .description(pullRequest.getDescription())
       .lastModified(Instant.now())
       .reviewer(newReviewers)
+      .labels(pullRequest.getLabels())
       .build();
 
     if (oldPullRequest.isInProgress()) {

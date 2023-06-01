@@ -22,23 +22,45 @@
  * SOFTWARE.
  */
 
-export type ProtectionBypass = {
-  name: string;
-  group: boolean;
-};
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
+import styled from "styled-components";
 
-export const MERGE_STRATEGIES = ["MERGE_COMMIT", "FAST_FORWARD_IF_POSSIBLE", "SQUASH", "REBASE"] as const;
-export type MergeStrategy = typeof MERGE_STRATEGIES[number];
-
-export type Config = {
-  defaultMergeStrategy: MergeStrategy;
-  deleteBranchOnMerge: boolean;
-  disableRepositoryConfiguration?: boolean;
-  overwriteParentConfig?: boolean;
-  restrictBranchWriteAccess: boolean;
-  protectedBranchPatterns: string[];
-  branchProtectionBypasses: ProtectionBypass[];
-  preventMergeFromAuthor: boolean;
-  defaultReviewers: string[];
+type Props = {
   labels: string[];
 };
+
+const Label = styled.div.attrs(() => ({
+  className: "field-label is-inline-flex"
+}))`
+  text-align: left;
+  margin-right: 0;
+  min-width: 5.5em;
+`;
+
+const Field = styled.div.attrs(() => ({
+  className: "field-body is-inline-flex"
+}))`
+  flex-grow: 8;
+`;
+
+const LabelsList: FC<Props> = ({ labels }) => {
+  const [t] = useTranslation("plugins");
+
+  return labels?.length > 0 ? (
+    <div className="field is-horizontal">
+      <Label>{t("scm-review-plugin.pullRequest.labels")}:</Label>
+      <Field>
+        <ul className="is-separated">
+          {labels.map(label => (
+            <li className="is-inline-block has-text-weight-bold" key={label}>
+              {label}
+            </li>
+          ))}
+        </ul>
+      </Field>
+    </div>
+  ) : null;
+};
+
+export default LabelsList;

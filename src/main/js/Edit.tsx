@@ -69,7 +69,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
       <div className="column">
         <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
         <ErrorNotification error={error} />
-        <EditForm pullRequest={modifiedPullRequest} handleFormChange={handleFormChange} />
+        <EditForm pullRequest={modifiedPullRequest} handleFormChange={handleFormChange} availableLabels={pullRequest?._embedded?.availableLabels.availableLabels ?? []} />
         {pullRequest.status === "OPEN" ? (
           <Checkbox
             checked={modifiedPullRequest?.status === "DRAFT"}

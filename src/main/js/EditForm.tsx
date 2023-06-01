@@ -23,6 +23,7 @@
  */
 import React, { FC } from "react";
 import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
+import { SelectField } from "@scm-manager/ui-forms";
 import { useTranslation } from "react-i18next";
 import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
 import { useUserSuggestions } from "@scm-manager/ui-api";
@@ -32,9 +33,10 @@ type Props = {
   handleFormChange: (pr: Partial<PullRequest>) => void;
   pullRequest: PullRequest;
   disabled?: boolean;
+  availableLabels: string[];
 };
 
-const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled }) => {
+const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled, availableLabels }) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
 
@@ -85,6 +87,18 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled }) => {
           />
         </div>
       </div>
+      {availableLabels.length > 0 ? (
+        <SelectField
+          label={t("scm-review-plugin.pullRequest.labels")}
+          options={availableLabels.map(label => ({ value: label, label }))}
+          onChange={event =>
+            handleFormChange({ labels: Array.from(event.target.selectedOptions).map(option => option.value) })
+          }
+          value={pullRequest?.labels}
+          disabled={disabled}
+          multiple
+        />
+      ) : null}
     </>
   );
 };

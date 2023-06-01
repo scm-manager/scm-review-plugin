@@ -26,11 +26,12 @@ import { useTranslation, WithTranslation } from "react-i18next";
 import {
   AutocompleteAddEntryToTableField,
   Checkbox,
-  Select,
   Subtitle,
+  Select,
   TagGroup,
   Title
 } from "@scm-manager/ui-components";
+import { ChipInputField } from "@scm-manager/ui-forms";
 import BranchList from "./BranchList";
 import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
@@ -89,15 +90,16 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
   useEffect(() => onConfigurationChange(state, true), [onConfigurationChange, state]);
 
   const {
-    defaultMergeStrategy,
-    deleteBranchOnMerge,
     restrictBranchWriteAccess,
     protectedBranchPatterns,
     branchProtectionBypasses,
     preventMergeFromAuthor,
     disableRepositoryConfiguration,
     overwriteParentConfig,
-    defaultReviewers
+    defaultReviewers,
+    deleteBranchOnMerge,
+    defaultMergeStrategy,
+    labels
   } = state;
 
   return (
@@ -141,6 +143,13 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
       ) : null}
       {!!overwriteParentConfig || configType === "global" ? (
         <>
+          <ChipInputField
+            value={labels}
+            onChange={(newValue: string[]) => onChange("labels", newValue)}
+            label={t("scm-review-plugin.config.labels.label")}
+            placeholder={t("scm-review-plugin.config.labels.placeholder")}
+            aria-label={t("scm-review-plugin.config.labels.ariaLabel")}
+          />
           <UserList values={defaultReviewers} onChange={onChange} />
           <Checkbox
             checked={preventMergeFromAuthor}

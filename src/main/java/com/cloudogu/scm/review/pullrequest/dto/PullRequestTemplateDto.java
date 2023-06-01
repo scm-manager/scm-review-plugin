@@ -36,11 +36,13 @@ public class PullRequestTemplateDto extends HalRepresentation {
   private final String title;
   private final String description;
   private final Set<DisplayedUserDto> defaultReviewers;
+  private final Set<String> availableLabels;
 
-  public PullRequestTemplateDto(Links links, Embedded embedded, String title, String description, Set<DisplayedUserDto> defaultReviewers) {
+  public PullRequestTemplateDto(Links links, Embedded embedded, String title, String description, Set<DisplayedUserDto> defaultReviewers, Set<String> availableLabels) {
     super(links, embedded);
     this.title = title;
     this.description = description;
     this.defaultReviewers = defaultReviewers;
+    this.availableLabels = availableLabels;
   }
 }

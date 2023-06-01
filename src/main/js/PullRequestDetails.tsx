@@ -55,6 +55,7 @@ import PullRequestStatusTag from "./PullRequestStatusTag";
 import ChangeNotificationContext from "./ChangeNotificationContext";
 import SourceTargetBranchDisplay from "./SourceTargetBranchDisplay";
 import DeleteSourceBranchButton from "./DeleteSourceBranchButton";
+import LabelsList from "./LabelsList";
 
 type Props = {
   repository: Repository;
@@ -358,6 +359,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
               />
             ) : null}
             <ReviewerList pullRequest={pullRequest} />
+            <LabelsList labels={pullRequest.labels} />
           </div>
         </div>
 

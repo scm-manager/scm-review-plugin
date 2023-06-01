@@ -31,6 +31,7 @@ import lombok.Setter;
 import sonia.scm.repository.api.MergeStrategy;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter @Setter @NoArgsConstructor
 public class BasePullRequestConfigDto extends HalRepresentation {
@@ -46,6 +47,7 @@ public class BasePullRequestConfigDto extends HalRepresentation {
   private List<String> protectedBranchPatterns;
   private List<ProtectionBypassDto> branchProtectionBypasses;
   private List<String> defaultReviewers;
+  private Set<String> labels;
 
   @Getter @Setter
   public static class ProtectionBypassDto {
