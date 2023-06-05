@@ -172,7 +172,7 @@ public class PullRequestRootResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     when(pullRequestService.getRepository(repository.getNamespace(), repository.getName())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
-    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(mapper, service, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, service, null, null, channelRegistry)), configService, userDisplayManager);
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(mapper, service, commentService, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, service, null, null, channelRegistry)), configService, userDisplayManager);
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -992,6 +992,7 @@ public class PullRequestRootResourceTest {
   public void shouldReturnPullRequestTemplate() throws URISyntaxException, IOException {
     RepositoryPullRequestConfig config = new RepositoryPullRequestConfig();
     config.setDefaultReviewers(singletonList("dent"));
+    config.setDefaultTasks(List.of("first task", "second"));
 
     when(configService.evaluateConfig(repository)).thenReturn(config);
 
@@ -1005,6 +1006,7 @@ public class PullRequestRootResourceTest {
     assertThat(response.getContentAsString()).contains("\"title\":\"\"");
     assertThat(response.getContentAsString()).contains("\"description\":\"\"");
     assertThat(response.getContentAsString()).contains("\"availableLabels\":[]");
+    assertThat(response.getContentAsString()).contains("\"defaultTasks\":[\"first task\",\"second\"]");
   }
 
   @Test
@@ -1067,7 +1069,7 @@ public class PullRequestRootResourceTest {
 
   private void initPullRequestRootResource() {
     PullRequestRootResource rootResource =
-      new PullRequestRootResource(mapper, pullRequestService, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, pullRequestService, null, null, channelRegistry)), configService, userDisplayManager);
+      new PullRequestRootResource(mapper, pullRequestService, commentService, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, pullRequestService, null, null, channelRegistry)), configService, userDisplayManager);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(rootResource);

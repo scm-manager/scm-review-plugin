@@ -29,6 +29,10 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
+import com.cloudogu.scm.review.comment.service.Comment;
+import com.cloudogu.scm.review.comment.service.CommentService;
+import com.cloudogu.scm.review.comment.service.CommentType;
+import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
@@ -110,6 +114,7 @@ public class PullRequestRootResource {
 
   private final PullRequestMapper mapper;
   private final PullRequestService service;
+  private final CommentService commentService;
   private final RepositoryServiceFactory serviceFactory;
   private final Provider<PullRequestResource> pullRequestResourceProvider;
   private final ConfigService configService;
@@ -117,9 +122,10 @@ public class PullRequestRootResource {
   private final UserDisplayManager userDisplayManager;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, RepositoryServiceFactory serviceFactory, Provider<PullRequestResource> pullRequestResourceProvider, ConfigService configService, UserDisplayManager userDisplayManager) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, CommentService commentService, RepositoryServiceFactory serviceFactory, Provider<PullRequestResource> pullRequestResourceProvider, ConfigService configService, UserDisplayManager userDisplayManager) {
     this.mapper = mapper;
     this.service = service;
+    this.commentService = commentService;
     this.serviceFactory = serviceFactory;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
     this.configService = configService;
@@ -151,7 +157,7 @@ public class PullRequestRootResource {
     return new PullRequestTemplateDto(
       linkingTo().self(pullRequestResourceLinks.pullRequestCollection().template(namespace, name)).build(),
       null, title, description, getDefaultReviewers(repository),
-      config.getLabels());
+      config.getLabels(), config.getDefaultTasks());
   }
 
   private Set<DisplayedUserDto> getDefaultReviewers(Repository repository) {
@@ -221,8 +227,19 @@ public class PullRequestRootResource {
     pullRequest.setAuthor(user.getId());
 
     String id = service.add(repository, pullRequest);
+
+    createInitialTasks(namespace, name, id, pullRequestDto.getInitialTasks());
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
+  }
+
+  private void createInitialTasks(String namespace, String name, String id, List<String> initialTasks) {
+    for (String task : initialTasks) {
+      Comment comment = new Comment();
+      comment.setComment(task);
+      comment.setType(CommentType.TASK_TODO);
+      commentService.add(namespace, name, id, comment);
+    }
   }
 
   @GET

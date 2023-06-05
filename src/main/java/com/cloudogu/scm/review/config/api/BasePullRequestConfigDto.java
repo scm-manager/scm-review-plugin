@@ -45,6 +45,7 @@ public class BasePullRequestConfigDto extends HalRepresentation {
   private boolean preventMergeFromAuthor;
   private boolean restrictBranchWriteAccess;
   private List<String> protectedBranchPatterns;
+  private List<String> defaultTasks;
   private List<ProtectionBypassDto> branchProtectionBypasses;
   private List<String> defaultReviewers;
   private Set<String> labels;

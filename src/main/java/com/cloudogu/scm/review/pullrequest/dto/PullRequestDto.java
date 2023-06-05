@@ -34,6 +34,7 @@ import lombok.Setter;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +68,7 @@ public class PullRequestDto extends HalRepresentation {
   private Collection<String> markedAsReviewed;
   private boolean emergencyMerged;
   private List<String> ignoredMergeObstacles;
+  private List<String> initialTasks = new ArrayList<>();
 
   public PullRequestDto(Links links, Embedded embedded) {
     super(links, embedded);

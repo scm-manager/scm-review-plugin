@@ -26,8 +26,8 @@ import { useTranslation, WithTranslation } from "react-i18next";
 import {
   AutocompleteAddEntryToTableField,
   Checkbox,
-  Subtitle,
   Select,
+  Subtitle,
   TagGroup,
   Title
 } from "@scm-manager/ui-components";
@@ -37,6 +37,7 @@ import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { DisplayedUser } from "@scm-manager/ui-types";
+import DefaultTaskEditor from "./DefaultTaskEditor";
 
 type OnChangeFunction = <K extends keyof Config>(prop: K, val: Config[K]) => void;
 
@@ -143,59 +144,85 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
       ) : null}
       {!!overwriteParentConfig || configType === "global" ? (
         <>
-          <ChipInputField
-            value={labels}
-            onChange={(newValue: string[]) => onChange("labels", newValue)}
-            label={t("scm-review-plugin.config.labels.label")}
-            placeholder={t("scm-review-plugin.config.labels.placeholder")}
-            aria-label={t("scm-review-plugin.config.labels.ariaLabel")}
-          />
-          <UserList values={defaultReviewers} onChange={onChange} />
-          <Checkbox
-            checked={preventMergeFromAuthor}
-            onChange={val => onChange("preventMergeFromAuthor", val)}
-            label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
-            helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
-          />
-          <Checkbox
-            checked={deleteBranchOnMerge}
-            onChange={val => onChange("deleteBranchOnMerge", val)}
-            label={t("scm-review-plugin.config.deleteBranchOnMerge.label")}
-            helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
-          />
-          <Select
-            options={MERGE_STRATEGIES.map(strategy => ({
-              label: t("scm-review-plugin.showPullRequest.mergeStrategies." + strategy),
-              value: strategy
-            }))}
-            onChange={val => onChange("defaultMergeStrategy", val as MergeStrategy)}
-            label={t("scm-review-plugin.config.defaultMergeStrategy.label")}
-            helpText={t("scm-review-plugin.config.defaultMergeStrategy.helpText")}
-            value={defaultMergeStrategy}
-          />
-          <Checkbox
-            checked={restrictBranchWriteAccess}
-            onChange={val => onChange("restrictBranchWriteAccess", val)}
-            label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
-            helpText={t("scm-review-plugin.config.restrictBranchWriteAccess.helpText")}
-          />
-          {restrictBranchWriteAccess && (
-            <>
-              <hr />
-              <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
-              <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
-              <BranchList
-                branches={protectedBranchPatterns}
-                onChange={val => onChange("protectedBranchPatterns", val)}
-              />
-              <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
-              <p className="mb-4">{t("scm-review-plugin.config.branchProtection.bypasses.note")}</p>
-              <BypassList
-                bypasses={branchProtectionBypasses}
-                onChange={val => onChange("branchProtectionBypasses", val)}
-              />
-            </>
-          )}
+          <hr className="my-4" />
+          <fieldset>
+            <legend className="is-size-5 mb-4">{t("scm-review-plugin.config.legends.mergeDialog")}</legend>
+            <Select
+              options={MERGE_STRATEGIES.map(strategy => ({
+                label: t("scm-review-plugin.showPullRequest.mergeStrategies." + strategy),
+                value: strategy
+              }))}
+              onChange={val => onChange("defaultMergeStrategy", val as MergeStrategy)}
+              label={t("scm-review-plugin.config.defaultMergeStrategy.label")}
+              helpText={t("scm-review-plugin.config.defaultMergeStrategy.helpText")}
+              value={defaultMergeStrategy}
+            />
+            <Checkbox
+              checked={deleteBranchOnMerge}
+              onChange={val => onChange("deleteBranchOnMerge", val)}
+              label={t("scm-review-plugin.config.deleteBranchOnMerge.label")}
+              helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
+            />
+          </fieldset>
+          <hr className="my-4" />
+          <fieldset>
+            <legend className="is-size-5 mb-2">{t("scm-review-plugin.config.legends.creation")}</legend>
+            <ChipInputField
+              value={labels}
+              onChange={newValue => onChange("labels", newValue)}
+              label={t("scm-review-plugin.config.availableLabels.label")}
+              placeholder={t("scm-review-plugin.config.labels.placeholder")}
+              aria-label={t("scm-review-plugin.config.labels.ariaLabel")}
+            />
+            <DefaultTaskEditor
+              defaultTasks={state.defaultTasks}
+              addTask={newDefaultTask => setState({ ...state, defaultTasks: [...state.defaultTasks, newDefaultTask] })}
+              editTask={(task: string, index: number) =>
+                setState(prevState => {
+                  const newTasks = [...prevState.defaultTasks];
+                  newTasks[index] = task;
+                  return { ...prevState, defaultTasks: newTasks };
+                })
+              }
+              removeTask={defaultTask =>
+                setState({ ...state, defaultTasks: state.defaultTasks.filter(t => t !== defaultTask) })
+              }
+            />
+            <UserList values={defaultReviewers} onChange={onChange} />
+          </fieldset>
+          <hr className="my-4" />
+          <fieldset>
+            <legend className="is-size-5 mb-4">{t("scm-review-plugin.config.legends.restrictions")}</legend>
+            <Checkbox
+              checked={preventMergeFromAuthor}
+              onChange={val => onChange("preventMergeFromAuthor", val)}
+              label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
+              helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
+            />
+            <Checkbox
+              checked={restrictBranchWriteAccess}
+              onChange={val => onChange("restrictBranchWriteAccess", val)}
+              label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
+              helpText={t("scm-review-plugin.config.restrictBranchWriteAccess.helpText")}
+            />
+            {restrictBranchWriteAccess && (
+              <>
+                <hr />
+                <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
+                <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
+                <BranchList
+                  branches={protectedBranchPatterns}
+                  onChange={val => onChange("protectedBranchPatterns", val)}
+                />
+                <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
+                <p className="mb-4">{t("scm-review-plugin.config.branchProtection.bypasses.note")}</p>
+                <BypassList
+                  bypasses={branchProtectionBypasses}
+                  onChange={val => onChange("branchProtectionBypasses", val)}
+                />
+              </>
+            )}
+          </fieldset>
         </>
       ) : null}
     </>

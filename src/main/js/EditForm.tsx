@@ -49,7 +49,7 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled, availabl
 
   const selectName = (selection: SelectValue) => {
     const newList = pullRequest.reviewer || [];
-    newList.push({ id: selection.value.id, displayName: selection.value.displayName, mail: "", approved: false });
+    newList.push({ id: selection.value.id, displayName: selection.value.displayName || "", mail: "", approved: false });
     handleFormChange({ reviewer: newList });
   };
 

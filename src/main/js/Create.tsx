@@ -48,6 +48,7 @@ const Create: FC<Props> = ({ repository }) => {
     source: "",
     status: "OPEN",
     labels: [],
+    initialTasks: [],
     _links: {}
   });
   const [disabled, setDisabled] = useState(true);
@@ -114,7 +115,8 @@ const Create: FC<Props> = ({ repository }) => {
       handleFormChange({
         title: pullRequestTemplate.title ?? "",
         description: pullRequestTemplate.description,
-        reviewer: pullRequestTemplate?.defaultReviewers.map(it => ({ ...it, approved: false }))
+        reviewer: pullRequestTemplate?.defaultReviewers.map(it => ({ ...it, approved: false })),
+        initialTasks: pullRequestTemplate.defaultTasks
       });
     }
   }, [pullRequestTemplate]);
@@ -160,6 +162,7 @@ const Create: FC<Props> = ({ repository }) => {
             branchesError={branchesError}
             disabled={isLoadingPullRequestTemplate}
             availableLabels={pullRequestTemplate?.availableLabels ?? []}
+            pullRequestTemplate={pullRequestTemplate}
           />
         )}
         {information}

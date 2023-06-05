@@ -28,6 +28,8 @@ import { CheckResult, PullRequest } from "./types/PullRequest";
 import { useTranslation } from "react-i18next";
 import EditForm from "./EditForm";
 import styled from "styled-components";
+import InitialTasks from "./InitialTasks";
+import { PullRequestTemplate } from "./config/usePullRequestTemplate";
 
 const ValidationError = styled.p`
   font-size: 0.75rem;
@@ -37,6 +39,7 @@ const ValidationError = styled.p`
 
 type Props = {
   pullRequest: PullRequest;
+  pullRequestTemplate?: PullRequestTemplate;
   handleFormChange: (pr: Partial<PullRequest>) => void;
   checkResult?: CheckResult;
   branches?: Branch[];
@@ -54,6 +57,7 @@ const CreateForm: FC<Props> = ({
   branchesError,
   branchesLoading,
   disabled,
+  pullRequestTemplate,
   availableLabels
 }) => {
   const [t] = useTranslation("plugins");
@@ -116,6 +120,9 @@ const CreateForm: FC<Props> = ({
         disabled={disabled}
         availableLabels={availableLabels}
       />
+      {pullRequestTemplate ? (
+        <InitialTasks value={pullRequest.initialTasks} onChange={value => handleFormChange({ initialTasks: value })} />
+      ) : null}
     </form>
   );
 };

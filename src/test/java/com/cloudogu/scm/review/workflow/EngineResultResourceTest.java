@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
@@ -74,6 +75,8 @@ class EngineResultResourceTest {
   @Mock
   private ConfigService configService;
   @Mock
+  private CommentService commentService;
+  @Mock
   private UserDisplayManager userDisplayManager;
 
   @InjectMocks
@@ -82,7 +85,7 @@ class EngineResultResourceTest {
   @BeforeEach
   void setUpResource() {
     PullRequestResource pullRequestResource = new PullRequestResource(null, null, null, Providers.of(resource), null);
-    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(null, null, null, Providers.of(pullRequestResource), configService, userDisplayManager);
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(null, null, commentService, null, Providers.of(pullRequestResource), configService, userDisplayManager);
 
     dispatcher.addSingletonResource(pullRequestRootResource);
   }

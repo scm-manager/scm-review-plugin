@@ -41,4 +41,5 @@ export type Config = {
   preventMergeFromAuthor: boolean;
   defaultReviewers: string[];
   labels: string[];
+  defaultTasks: string[];
 };

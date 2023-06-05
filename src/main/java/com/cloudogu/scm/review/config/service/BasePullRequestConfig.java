@@ -49,6 +49,7 @@ public class BasePullRequestConfig {
   private boolean restrictBranchWriteAccess = false;
   @XmlElement(name = "protected-branch-patterns")
   private List<String> protectedBranchPatterns = new ArrayList<>();
+  private List<String> defaultTasks = new ArrayList<>();
   @XmlElement(name = "protection-bypasses")
   private List<BasePullRequestConfig.ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
   private boolean preventMergeFromAuthor = false;

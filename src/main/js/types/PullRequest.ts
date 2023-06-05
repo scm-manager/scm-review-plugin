@@ -60,6 +60,7 @@ export type PullRequest = BasicPullRequest &
     markedAsReviewed?: string[];
     emergencyMerged?: boolean;
     ignoredMergeObstacles?: string[];
+    initialTasks: string[];
   };
 
 export type Location = {

@@ -32,6 +32,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.collect.ImmutableSet;
+import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.internal.exceptions.stacktrace.ConditionalStackTraceFilter;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.BranchLinkProvider;
 import sonia.scm.repository.NamespaceAndName;
@@ -53,12 +55,14 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.UserDisplayManager;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -118,7 +122,7 @@ class PullRequestMapperTest {
 
       PullRequest pullRequest = TestData.createPullRequest();
       pullRequest.addLabel("preview");
-      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
 
       assertThat(dto.getLinks().isEmpty()).isFalse();
       assertThat(dto.getLinks().getLinkBy("merge")).isPresent();

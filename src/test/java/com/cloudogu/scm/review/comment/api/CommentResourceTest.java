@@ -94,6 +94,8 @@ public class CommentResourceTest {
   @Mock
   private ConfigService configService;
   @Mock
+  private CommentService commentService;
+  @Mock
   private UserDisplayManager userDisplayManager;
 
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock("https://scm-manager.org/scm/api/v2");
@@ -108,7 +110,7 @@ public class CommentResourceTest {
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(
       new PullRequestMapperImpl(),
       null,
-            serviceFactory, Providers.of(
+            commentService, serviceFactory, Providers.of(
         new PullRequestResource(
           new PullRequestMapperImpl(),
           null,

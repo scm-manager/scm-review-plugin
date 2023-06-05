@@ -288,10 +288,18 @@
     },
     "config": {
       "title": "Pull Requests Configuration",
+      "legends": {
+        "mergeDialog": "Merge Dialog",
+        "creation": "Creation",
+        "restrictions": "Restrictions"
+      },
       "labels": {
         "label": "Labels",
         "ariaLabel": "Enter a new label",
         "placeholder": "Enter a new label"
+      },
+      "availableLabels": {
+        "label": "Available Labels"
       },
       "defaultReviewers": {
         "label": "Default Reviewers",
@@ -362,6 +370,22 @@
       "preventMergeFromAuthor": {
         "label": "Prevent authors from merging own pull requests",
         "helpText": "Check this to prevent authors to merge pull requests created by them. This can be overridden with the emergency merge permission."
+      },
+      "defaultTasks": {
+        "label": "Default tasks",
+        "addTask": "Add task",
+        "deleteTask": "Delete task",
+        "editTask": "Edit task",
+        "noTasks": "No default tasks configured.",
+        "modal": {
+          "createTitle": "Create new default task",
+          "editTitle": "Edit default task",
+          "input": "Input",
+          "preview": "MarkDown Preview",
+          "addTask": "Create task",
+          "editTask": "Edit task",
+          "cancel": "Cancel"
+        }
       }
     },
     "obstacle": "This branch can only be modified by pull requests.",

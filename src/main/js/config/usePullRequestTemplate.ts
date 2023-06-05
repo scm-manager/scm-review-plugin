@@ -31,6 +31,7 @@ export type PullRequestTemplate = HalRepresentation & {
   availableLabels: string[];
   title?: string;
   description?: string;
+  defaultTasks: string[];
 };
 
 export default function usePullRequestTemplate(

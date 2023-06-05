@@ -295,6 +295,14 @@
         "ariaLabel": "Neues Label eingeben",
         "placeholder": "Neues Label eingeben"
       },
+      "legends": {
+        "mergeDialog": "Merge Dialog",
+        "creation": "Erstellung",
+        "restrictions": "Einschränkungen"
+      },
+      "availableLabels": {
+        "label": "Verfügbare Labels"
+      },
       "defaultReviewers": {
         "label": "Standard-Reviewer",
         "addButton": "Hinzufügen",
@@ -364,6 +372,22 @@
       "preventMergeFromAuthor": {
         "label": "Verhindern, dass Autoren ihre eigenen Pull Requests mergen",
         "helpText": "Aktivieren Sie diese Option, damit Entwickler nicht von ihnen selbst erstellte Pull Requests mergen können. Dieses kann durch die Berechtigung zum Emergency Merge überschrieben werden."
+      },
+      "defaultTasks": {
+        "label": "Standard Aufgaben",
+        "addTask": "Aufgabe hinzufügen",
+        "deleteTask": "Aufgabe löschen",
+        "editTask": "Aufgabe ändern",
+        "noTasks": "Keine Standard Aufgaben definiert.",
+        "modal": {
+          "createTitle": "Neue Standard Aufgabe erstellen",
+          "editTitle": "Standard Aufgabe ändern",
+          "input": "Eingabe",
+          "preview": "MarkDown Vorschau",
+          "addTask": "Aufgabe erstellen",
+          "editTask": "Aufgabe ändern",
+          "cancel": "Abbrechen"
+        }
       }
     },
     "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden.",
