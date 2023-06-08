@@ -72,6 +72,7 @@ public class RepositoryLinkEnricher implements HalEnricher {
       if (mayRead(repository)) {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
         appender.appendLink("pullRequest", linkBuilder.method("getAll").parameters(repository.getNamespace(), repository.getName()).href());
+        appender.appendLink("pullRequestTemplate", linkBuilder.method("getPullRequestTemplate").parameters(repository.getNamespace(), repository.getName()).href());
       }
       if (mayCreate(repository)) {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
@@ -80,10 +81,6 @@ public class RepositoryLinkEnricher implements HalEnricher {
       if (mayConfigure(repository) && !configService.getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryConfigResource.class);
         appender.appendLink("pullRequestConfig", linkBuilder.method("getRepositoryConfig").parameters(repository.getNamespace(), repository.getName()).href());
-      }
-      if (!configService.getGlobalPullRequestConfig().isDisableRepositoryConfiguration()) {
-        LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestRootResource.class);
-        appender.appendLink("pullRequestTemplate", linkBuilder.method("getPullRequestTemplate").parameters(repository.getNamespace(), repository.getName()).href());
       }
       if (isWorkflowEngineConfigurable(repository)) {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
