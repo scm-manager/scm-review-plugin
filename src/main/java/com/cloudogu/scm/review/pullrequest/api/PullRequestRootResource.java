@@ -41,6 +41,7 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestTemplateDto;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import de.otto.edison.hal.Embedded;
@@ -205,8 +206,12 @@ public class PullRequestRootResource {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
 
-    doThrow().violation("illegal status", "pullRequest", "status")
-      .when(pullRequestDto.getStatus().isClosed());
+    if (pullRequestDto.getStatus() == null) {
+      pullRequestDto.setStatus(PullRequestStatus.OPEN);
+    } else {
+      doThrow().violation("illegal status", "pullRequest", "status")
+        .when(pullRequestDto.getStatus().isClosed());
+    }
 
     String source = pullRequestDto.getSource();
     String target = pullRequestDto.getTarget();

@@ -58,7 +58,6 @@ public class PullRequestDto extends HalRepresentation {
   private String description;
   private Instant creationDate;
   private Instant lastModified;
-  @NotNull
   private PullRequestStatus status;
   private Set<ReviewerDto> reviewer = new HashSet<>();
   private Set<String> labels = new HashSet<>();

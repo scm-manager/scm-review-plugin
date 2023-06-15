@@ -95,6 +95,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -208,6 +209,28 @@ public class PullRequestRootResourceTest {
     assertThat(response.getOutputHeaders().getFirst("Location")).hasToString("/v2/pull-requests/space/name/1");
     PullRequest pullRequest = pullRequestStoreCaptor.getValue();
     assertThat(pullRequest.getAuthor()).isEqualTo("user1");
+  }
+
+  @Test
+  @SubjectAware(username = "slarti")
+  public void shouldCreateNewPullRequestWithDefaultStatusOpen() throws URISyntaxException, IOException {
+    mockPrincipal();
+    mockChangesets("sourceBranch", "targetBranch", new Changeset());
+
+    byte[] pullRequestJson = loadJson("com/cloudogu/scm/review/pullRequest_without_status.json");
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name")
+        .content(pullRequestJson)
+        .contentType(PullRequestMediaType.PULL_REQUEST);
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+    assertThat(response.getOutputHeaders().getFirst("Location")).hasToString("/v2/pull-requests/space/name/1");
+    PullRequest pullRequest = pullRequestStoreCaptor.getValue();
+    assertThat(pullRequest.getAuthor()).isEqualTo("user1");
+    assertThat(pullRequest.getStatus()).isEqualTo(OPEN);
   }
 
   @Test
