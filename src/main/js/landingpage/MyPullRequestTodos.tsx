@@ -72,6 +72,4 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
   );
 };
 
-PullRequestTodos.type = "MyPullRequestTodos";
-
-export default PullRequestTodos;
+export default Object.assign(PullRequestTodos, { type: "MyPullRequestTodos" });

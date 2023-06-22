@@ -25,6 +25,7 @@
 import { PullRequest } from "../types/PullRequest";
 
 export type DataType = {
+  type: string;
   namespace: string;
   name: string;
   pullRequest: PullRequest;

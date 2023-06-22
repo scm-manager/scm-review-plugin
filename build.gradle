@@ -29,12 +29,12 @@ plugins {
 dependencies {
   plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
   optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.10.0"
+  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.12.1-SNAPSHOT"
   testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
 }
 
 scmPlugin {
-  scmVersion = "2.44.0"
+  scmVersion = "2.44.2-SNAPSHOT"
   displayName = "Review"
   description = "Depict a review process with pull requests"
   author = "Cloudogu GmbH"

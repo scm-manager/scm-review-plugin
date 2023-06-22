@@ -46,6 +46,8 @@ import CommentHitRenderer from "./search/CommentHitRenderer";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 import { useTranslation } from "react-i18next";
 import NamespaceConfig from "./config/NamespaceConfig";
+import { DataType } from "./landingpage/DataType";
+import { MyDataExtension, MyEventExtension, MyTaskExtension } from "@scm-manager/scm-landingpage-plugin";
 
 type PredicateProps = {
   repository: Repository;
@@ -150,18 +152,18 @@ cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink.pullRequest", "pullRe
 cfgBinder.bindRepositorySetting("/workflow", "scm-review-plugin.navLink.workflow", "workflowConfig", RepoEngineConfig);
 cfgBinder.bindGlobal("/workflow", "scm-review-plugin.navLink.workflow", "workflowConfig", GlobalEngineConfig);
 
-binder.bind("landingpage.mydata", {
-  render: (data: any, key: any) => <MyPullRequest key={key} data={data} />,
+binder.bind<MyDataExtension<DataType>>("landingpage.mydata", {
+  render: data => <MyPullRequest key={data.pullRequest.id} data={data} />,
   beforeData: <AllPullRequestsLink />,
   title: "scm-review-plugin.landingpage.myPullRequests.title",
   separatedEntries: false,
   type: "MyPullRequestData",
   emptyMessage: "scm-review-plugin.landingpage.myPullRequests.emptyMessage"
 });
-binder.bind("landingpage.myevents", PullRequestCreatedEvent);
-binder.bind("landingpage.myevents", PullRequestDraftToOpenEvent);
-binder.bind("landingpage.mytask", PullRequestTodos);
-binder.bind("landingpage.mytask", PullRequestReview);
+binder.bind<MyEventExtension>("landingpage.myevents", PullRequestCreatedEvent);
+binder.bind<MyEventExtension>("landingpage.myevents", PullRequestDraftToOpenEvent);
+binder.bind<MyTaskExtension<DataType>>("landingpage.mytask", PullRequestTodos);
+binder.bind<MyTaskExtension<DataType>>("landingpage.mytask", PullRequestReview);
 
 binder.bind("reviewPlugin.workflow.config.ApprovedByXReviewersRule", ApprovedByXReviewersRuleConfiguration);
 binder.bind("search.hit.pullRequest.renderer", PullRequestHitRenderer);

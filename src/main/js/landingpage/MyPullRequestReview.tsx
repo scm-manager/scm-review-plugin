@@ -56,6 +56,4 @@ const PullRequestReview: FC<Props> = ({ task }) => {
   );
 };
 
-PullRequestReview.type = "MyPullRequestReview";
-
-export default PullRequestReview;
+export default Object.assign(PullRequestReview, { type: "MyPullRequestReview" });
