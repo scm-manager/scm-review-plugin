@@ -115,6 +115,8 @@ class MergeServiceTest {
   private InternalMergeSwitch internalMergeSwitch;
   @Mock
   private UserDisplayManager userDisplayManager;
+  @Mock
+  private MergeCommitMessageService mergeCommitMessageService;
 
   @Mock
   private EMail email;
@@ -125,7 +127,7 @@ class MergeServiceTest {
 
   @BeforeEach
   void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, internalMergeSwitch, userDisplayManager, email);
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, internalMergeSwitch, userDisplayManager, mergeCommitMessageService);
     lenient().doAnswer(invocation -> {
         invocation.<Runnable>getArgument(0).run();
         return null;
@@ -344,8 +346,6 @@ class MergeServiceTest {
 
     @BeforeEach
     void preparePullRequest() throws IOException {
-      when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
-      when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
       pullRequest = createPullRequest();
       pullRequest.setAuthor("zaphod");
       pullRequest.setTitle(pullRequestTitle);
@@ -363,8 +363,6 @@ class MergeServiceTest {
         changesetWithContributor,
         new Changeset("1", 1L, pullRequestAuthor, "first commit")
       ));
-
-      when(logCommandBuilder.getChangesets()).thenReturn(changesets);
     }
 
     @Nested
@@ -378,48 +376,6 @@ class MergeServiceTest {
       }
 
       @Test
-      void shouldContainPullRequestTitle() {
-
-        when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
-
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-        assertThat(commitDefaults.getCommitMessage()).startsWith(pullRequestTitle + "\n\n");
-      }
-
-      @Test
-      void shouldContainCommitMessagesFromSingleCommits() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-        assertThat(commitDefaults.getCommitMessage()).startsWith(pullRequestTitle + "\n\n" +
-          "Squash commits of branch squash:\n" +
-          "\n" +
-          "- first commit\n" +
-          "\n" +
-          "- second commit\n" +
-          "with multiple lines\n" +
-          "\n" +
-          "- third commit\n");
-      }
-
-      @Test
-      void shouldContainPullRequestDescription() {
-        final String pullRequestDescription = "This pull request is to replace all occurring variables X with equivalent variables Y.";
-        pullRequest.setDescription(pullRequestDescription);
-
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-        assertThat(commitDefaults.getCommitMessage()).startsWith(pullRequestTitle + "\n\n" +
-          pullRequestDescription);
-      }
-
-      @Test
-      void shouldHaveAuthorFromPullRequest() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitAuthor())
-          .usingRecursiveComparison()
-          .isEqualTo(pullRequestAuthor);
-      }
-
-      @Test
       void shouldUseCurrentUserAsAuthorWhenPullRequestAuthorIsUnknown() {
         when(userDisplayManager.get("zaphod")).thenReturn(empty());
 
@@ -429,43 +385,25 @@ class MergeServiceTest {
           .usingRecursiveComparison()
           .isEqualTo(DisplayUser.from(user));
       }
-
-      @Test
-      void shouldHaveCommitterFromCurrentUserIsDifferentThanPullRequestAuthor() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitMessage()).contains("Committed-by: Phil Groundhog <phil@groundhog.com>");
-      }
-
-      @Test
-      void shouldHaveCommitterFromSingleCommits() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitMessage()).contains("Co-authored-by: Arthur <dent@hitchhiker.com>");
-      }
-
-      @Test
-      void shouldHaveCoAuthorFromSingleCommits() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitMessage()).contains("Co-authored-by: Ford <prefect@hitchhiker.org>");
-      }
-
-      @Test
-      void shouldNotHaveOtherContributorsThanCoAuthoredFromCommits() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitMessage()).doesNotContain("marvin@example.org");
-      }
     }
 
     @Test
-    void shouldNotHaveCommitterWhenCurrentUserIsPullRequestAuthor() {
-      mockUser(pullRequestAuthor.getId(), pullRequestAuthor.getDisplayName(), pullRequestAuthor.getMail());
+    void shouldHaveAuthorFromPullRequest() {
+      CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+      assertThat(commitDefaults.getCommitAuthor())
+        .usingRecursiveComparison()
+        .isEqualTo(pullRequestAuthor);
+    }
+
+    @Test
+    void shouldTakeCommitMessageFromService() {
+      when(mergeCommitMessageService.determineDefaultMessage(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH))
+        .thenReturn("Great message");
 
       CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
 
-      assertThat(commitDefaults.getCommitMessage()).doesNotContain("Committed-by");
+      assertThat(commitDefaults.getCommitMessage()).isEqualTo("Great message");
     }
   }
 

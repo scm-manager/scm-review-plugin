@@ -22,13 +22,15 @@
  * SOFTWARE.
  */
 import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslation, WithTranslation } from "react-i18next";
+import { Trans, useTranslation, WithTranslation } from "react-i18next";
 import {
   AutocompleteAddEntryToTableField,
   Checkbox,
+  Icon,
   Select,
   Subtitle,
   TagGroup,
+  Textarea,
   Title
 } from "@scm-manager/ui-components";
 import { ChipInputField } from "@scm-manager/ui-forms";
@@ -100,7 +102,9 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
     defaultReviewers,
     deleteBranchOnMerge,
     defaultMergeStrategy,
-    labels
+    labels,
+    overwriteDefaultCommitMessage,
+    commitMessageTemplate
   } = state;
 
   return (
@@ -163,6 +167,28 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
               label={t("scm-review-plugin.config.deleteBranchOnMerge.label")}
               helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
             />
+            <Checkbox
+              checked={overwriteDefaultCommitMessage}
+              onChange={val => onChange("overwriteDefaultCommitMessage", val)}
+              label={t("scm-review-plugin.config.overwriteDefaultCommitMessage.label")}
+              helpText={t("scm-review-plugin.config.overwriteDefaultCommitMessage.helpText")}
+            />
+            {overwriteDefaultCommitMessage && (
+              <>
+                <Textarea
+                  label={t("scm-review-plugin.config.commitMessageTemplate.label")}
+                  helpText={t("scm-review-plugin.config.commitMessageTemplate.helpText")}
+                  value={commitMessageTemplate}
+                  onChange={val => onChange("commitMessageTemplate", val)}
+                />
+                <span>
+                  <Icon name="info-circle" color="blue-light" />
+                  <Trans t={t} i18nKey="scm-review-plugin.config.commitMessageTemplate.hint">
+                    See the <a href="https://scm-manager.org/plugins/scm-review-plugin/docs/latest/en/configuration">description</a>.
+                  </Trans>
+                </span>
+              </>
+            )}
           </fieldset>
           <hr className="my-4" />
           <fieldset>

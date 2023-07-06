@@ -26,9 +26,7 @@ package com.cloudogu.scm.review.pullrequest.service;
 import com.cloudogu.scm.review.InternalMergeSwitch;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
-import sonia.scm.repository.Changeset;
 import sonia.scm.repository.Contributor;
-import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
@@ -43,15 +41,11 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.repository.spi.MergeConflictResult;
 import sonia.scm.user.DisplayUser;
-import sonia.scm.user.EMail;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
 import javax.inject.Inject;
-import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,34 +55,31 @@ import java.util.stream.Collectors;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.apache.shiro.SecurityUtils.getSubject;
-import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
 public class MergeService {
-
-  private static final String MERGE_COMMIT_MESSAGE_TEMPLATE = String.join("\n",
-    "Merge of branch {0} into {1}",
-    "",
-    "Automatic merge by SCM-Manager.");
-  private static final String SQUASH_COMMIT_MESSAGE_TEMPLATE = String.join("\n",
-    "{3}",
-    "",
-    "{2}");
 
   private final RepositoryServiceFactory serviceFactory;
   private final PullRequestService pullRequestService;
   private final Collection<MergeGuard> mergeGuards;
   private final InternalMergeSwitch internalMergeSwitch;
   private final UserDisplayManager userDisplayManager;
-  private final EMail email;
+  private final MergeCommitMessageService mergeCommitMessageService;
 
   @Inject
-  public MergeService(RepositoryServiceFactory serviceFactory, PullRequestService pullRequestService, Set<MergeGuard> mergeGuards, InternalMergeSwitch internalMergeSwitch, UserDisplayManager userDisplayManager, EMail email) {
+  public MergeService(
+    RepositoryServiceFactory serviceFactory,
+    PullRequestService pullRequestService,
+    Set<MergeGuard> mergeGuards,
+    InternalMergeSwitch internalMergeSwitch,
+    UserDisplayManager userDisplayManager,
+    MergeCommitMessageService mergeCommitMessageService
+  ) {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
     this.mergeGuards = mergeGuards;
     this.internalMergeSwitch = internalMergeSwitch;
     this.userDisplayManager = userDisplayManager;
-    this.email = email;
+    this.mergeCommitMessageService = mergeCommitMessageService;
   }
 
   public void merge(NamespaceAndName namespaceAndName, String pullRequestId, MergeCommitDto mergeCommitDto, MergeStrategy strategy, boolean emergency) {
@@ -200,23 +191,9 @@ public class MergeService {
 
   public CommitDefaults createCommitDefaults(NamespaceAndName namespaceAndName, String pullRequestId, MergeStrategy strategy) {
     PullRequest pullRequest = pullRequestService.get(namespaceAndName.getNamespace(), namespaceAndName.getName(), pullRequestId);
-    String message = determineDefaultMessage(namespaceAndName, pullRequest, strategy);
+    String message = mergeCommitMessageService.determineDefaultMessage(namespaceAndName, pullRequest, strategy);
     Optional<DisplayUser> author = determineDefaultAuthorIfNotCurrentUser(pullRequest, strategy);
     return new CommitDefaults(message, author.orElse(null));
-  }
-
-  public String determineDefaultMessage(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
-    if (strategy == null) {
-      return "";
-    }
-    switch (strategy) {
-      case SQUASH:
-        return createDefaultSquashCommitMessage(namespaceAndName, pullRequest);
-      case FAST_FORWARD_IF_POSSIBLE: // should be same as merge (fallback message only)
-      case MERGE_COMMIT: // should be default
-      default:
-        return createDefaultMergeCommitMessage(pullRequest);
-    }
   }
 
   public Optional<DisplayUser> determineDefaultAuthorIfNotCurrentUser(PullRequest pullRequest, MergeStrategy strategy) {
@@ -247,78 +224,6 @@ public class MergeService {
       return strategy.name();
     }
     return null;
-  }
-
-  private String createDefaultMergeCommitMessage(PullRequest pullRequest) {
-    return MessageFormat.format(MERGE_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget());
-  }
-
-  private String createDefaultSquashCommitMessage(NamespaceAndName namespaceAndName, PullRequest pullRequest) {
-    try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
-      if (RepositoryPermissions.read(repositoryService.getRepository()).isPermitted() && repositoryService.isSupported(Command.LOG)) {
-        try {
-          StringBuilder builder = new StringBuilder();
-          Set<Contributor> contributors = new HashSet<>();
-          List<Changeset> changesetsFromLogCommand = getChangesetsFromLogCommand(pullRequest, repositoryService);
-          builder.append("Squash commits of branch ").append(pullRequest.getSource()).append(":\n\n");
-          for (int i = changesetsFromLogCommand.size() - 1; i >= 0; --i) {
-            Changeset changeset = changesetsFromLogCommand.get(i);
-            contributors.add(new Contributor(Contributor.CO_AUTHORED_BY, changeset.getAuthor()));
-            builder.append("- ").append(changeset.getDescription()).append("\n\n");
-            Collection<Contributor> contributorsFromChangeset = changeset.getContributors();
-            if (contributorsFromChangeset != null) {
-              contributors.addAll(contributorsFromChangeset);
-            }
-          }
-
-          if (pullRequest.getDescription() != null && !pullRequest.getDescription().isEmpty()) {
-            builder = new StringBuilder(pullRequest.getDescription());
-          }
-
-          appendSquashContributors(builder, pullRequest, contributors);
-
-          return MessageFormat.format(SQUASH_COMMIT_MESSAGE_TEMPLATE, pullRequest.getSource(), pullRequest.getTarget(), builder.toString(), pullRequest.getTitle());
-        } catch (IOException e) {
-          throw new InternalRepositoryException(entity("Branch", pullRequest.getSource()).in(repositoryService.getRepository()),
-            "Could not read changesets from repository");
-        }
-      } else {
-        return createDefaultMergeCommitMessage(pullRequest);
-      }
-    }
-  }
-
-  private void appendSquashContributors(StringBuilder builder, PullRequest pullRequest, Set<Contributor> contributors) {
-    builder.append("\n");
-    userDisplayManager.get(pullRequest.getAuthor()).ifPresent(prAuthor -> {
-      User currentUser = currentUser();
-      String committerMail = email.getMailOrFallback(currentUser);
-      if (!prAuthor.getDisplayName().equals(currentUser.getDisplayName())) {
-        builder.append("\n").append(new Contributor(Contributor.COMMITTED_BY, new Person(currentUser.getDisplayName(), committerMail)).toCommitLine());
-      }
-      appendCoAuthors(builder, contributors, prAuthor);
-    });
-  }
-
-  private void appendCoAuthors(StringBuilder builder, Set<Contributor> contributors, DisplayUser prAuthor) {
-    for (Contributor contributor : contributors) {
-      Person contributorPerson = contributor.getPerson();
-      if (!prAuthor.getDisplayName().equals(contributorPerson.getName()) && Contributor.CO_AUTHORED_BY.equals(contributor.getType())) {
-        appendCoAuthor(builder, contributorPerson.getName(), contributorPerson.getMail());
-      }
-    }
-  }
-
-  private void appendCoAuthor(StringBuilder builder, String name, String mail) {
-    builder.append("\n" + Contributor.CO_AUTHORED_BY +": ").append(name).append(" <").append(mail).append(">");
-  }
-
-  private List<Changeset> getChangesetsFromLogCommand(PullRequest pullRequest, RepositoryService repositoryService) throws IOException {
-    return repositoryService.getLogCommand()
-      .setBranch(pullRequest.getSource())
-      .setAncestorChangeset(pullRequest.getTarget())
-      .getChangesets()
-      .getChangesets();
   }
 
   private void assertPullRequestIsOpen(Repository repository, PullRequest pullRequest) {
@@ -407,7 +312,6 @@ public class MergeService {
   private static User currentUser() {
     return getSubject().getPrincipals().oneByType(User.class);
   }
-
 
   public static class CommitDefaults {
     private final String commitMessage;

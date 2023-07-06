@@ -324,6 +324,15 @@
         "label": "Default merge strategy",
         "helpText": "The preselected merge strategy in the merge modal."
       },
+      "overwriteDefaultCommitMessage": {
+        "label": "Overwrite default commit message",
+        "helpText": "If selected, the default commit message will be replaced with the given custom template."
+      },
+      "commitMessageTemplate": {
+        "label": "Commit message template",
+        "hint": "This message can contain template expressions. Find out more about this and see a simple example on the <1>documentation page</1>.",
+        "helpText": "This template will be used instead of the default commit message when a pull request is merged."
+      },
       "disableRepositoryAndNamespaceConfiguration": {
         "label": "Disable repository and namespace configuration",
         "helpText": "Repository owners may not configure pull requests on namespace or repository level."

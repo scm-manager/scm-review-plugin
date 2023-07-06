@@ -326,6 +326,15 @@
         "label": "Standard-Merge-Strategie",
         "helpText": "Die vorausgewählte Merge-Strategie im Merge-Modal"
       },
+      "overwriteDefaultCommitMessage": {
+        "label": "Default Commit-Nachricht überschreiben",
+        "helpText": "Mit dieser Option kann die Default Commit-Nachricht mit einem eigenen Template überschrieben werden."
+      },
+      "commitMessageTemplate": {
+        "label": "Template für die Commit-Nachricht",
+        "hint": "Diese Nachricht kann Ausdrücke für Templating enthalten. Hierzu finden sich weitere Informationen und Beispiele auf der <1>Dokumentationsseite</1>.",
+        "helpText": "Dieses Template wird anstelle der Default Commit-Nachrichten beim Merge eines Pull Requests genutzt."
+      },
       "disableRepositoryAndNamespaceConfiguration": {
         "label": "Pull Request Konfiguration für einzelne Repositories und Namespaces deaktivieren",
         "helpText": "Repository Owner dürfen Pull Requests nicht auf der Namespace- oder Repository-Ebene konfigurieren."

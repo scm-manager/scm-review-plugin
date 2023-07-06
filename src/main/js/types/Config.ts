@@ -42,4 +42,6 @@ export type Config = {
   defaultReviewers: string[];
   labels: string[];
   defaultTasks: string[];
+  overwriteDefaultCommitMessage: boolean;
+  commitMessageTemplate: string;
 };

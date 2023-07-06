@@ -18,6 +18,86 @@ committed with the "Submit" button.
 
 ![Configuration for pull requests](assets/pull_request_configuration.png)
 
+## Merge Dialog
+
+Here you can set defaults for merges. These are:
+
+- The **Default merge strategy** configures the merge strategy, that will be selected by default in the merge dialog.
+- If the option **Delete source branch on merge** is selected, the option to delete the source branch will be activated.
+- To use custom text for the default commit messages in the merge dialog, enable the option **Overwrite default
+  commit message**. The message set here replaces the default messages created by SCM-Manager.
+
+  It is possible to use template mechanisms in this message. To do so, use double curly braces with variable names
+  like `{{variable}}`. Variables containing lists of data can be iterated with the patterns `{{#variable}}` and
+  `{{/variable}}`. If a variable is a boolean value, conditional parts can be specified the same way.
+
+  The following variables are available:
+  - `namespace` The namespace of the repository
+  - `repositoryName` The name of the repository
+  - `pullRequest.id` The id of the pull request
+  - `pullRequest.title` The title of the pull request
+  - `pullRequest.description` The description of the pull request
+  - `pullRequest.source` The source branch
+  - `pullRequest.target` The target branch
+  - `author.displayName` Name of the author
+  - `author.mail` Mail address of the Author
+  - `currentUser.displayName` The name of the current user
+  - `currentUser.mail` Mail of the current user
+  - `date` Current date and time (UTC)
+  - `localDate` Current date and time (server timezone)
+  - `changesets` Commits that will be merged with this pull request. These commits have the following sub attributes:
+    - `author.name` Author of the commit
+    - `author.mail` Mail address of the author
+    - `description` The commit message
+    - `id` The revision
+  - `contributors` Contributors for this pull request with the following attributes:
+    - `type` Type of the contribution
+    - `person.name` Contributor's name
+    - `person.mail` Contributor's mail address
+
+  Comprehensive documentation for the mustache syntax can be found at the [mustache help page](https://mustache.github.io/).
+
+  Here is an example, rendering some pull request metadata, the commit messages of the single commits and the contributors:
+
+```
+Pull Request #{{pullRequest.id}} by {{author.displayName}}
+
+Merged by {{currentUser.displayName}}
+
+Merges the following commits:
+{{#changesets}}
+  - {{description}}
+{{/changesets}}
+
+Contributors:
+{{#contributors}}
+  {{type}}: {{person.name}} ({{person.mail}})
+{{/contributors}}
+```
+
+## Creation
+
+For the creation of new pull requests, there are some settings documented here.
+
+### Available Labels
+
+Pull Requests can have labels. These can be used for further classification of pull requests,
+like `feature`, `bug`, or `library`.
+
+### Default Tasks
+
+Whenever there are tasks that have to be done for most pull requests, they can be configured
+as default tasks. On pull request creation, these tasks can be removed when not needed.
+Default tasks might be "Translations available" or "Changelog created".
+
+These tasks can be formatted with Markdown (just like the tasks that can be created by reviewers).
+
+### Default Reviewers
+
+If most pull requests have to be reviewed by a small set of people, they can be configured
+as default reviewers. On pull request creation, the user can tailor this list by removing
+or adding reviewers.
+
 ## Branch Protection
 
 You can specify branches that can only be modified by pull requests and not directly. To do so, check

@@ -23,9 +23,11 @@
  */
 package com.cloudogu.scm.review.config.service;
 
+import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.config.ConfigEvaluator;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.group.GroupCollector;
+import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
@@ -46,12 +48,18 @@ public class ConfigService {
   private final ConfigurationStoreFactory storeFactory;
   private final ConfigurationStore<GlobalPullRequestConfig> globalStore;
   private final GroupCollector groupCollector;
+  private final RepositoryResolver repositoryResolver;
 
   @Inject
-  public ConfigService(ConfigurationStoreFactory storeFactory, GroupCollector groupCollector) {
+  public ConfigService(ConfigurationStoreFactory storeFactory, GroupCollector groupCollector, RepositoryResolver repositoryResolver) {
     this.storeFactory = storeFactory;
     globalStore = storeFactory.withType(GlobalPullRequestConfig.class).withName(STORE_NAME).build();
     this.groupCollector = groupCollector;
+    this.repositoryResolver = repositoryResolver;
+  }
+
+  public BasePullRequestConfig evaluateConfig(NamespaceAndName namespaceAndName) {
+    return evaluateConfig(repositoryResolver.resolve(namespaceAndName));
   }
 
   public BasePullRequestConfig evaluateConfig(Repository repository) {
@@ -123,7 +131,7 @@ public class ConfigService {
       .anyMatch(bypass -> bypassMatchesUser(bypass, user, groups));
   }
 
-  private boolean bypassMatchesUser(RepositoryPullRequestConfig.ProtectionBypass bypass, String user, Set<String> groups) {
+  private boolean bypassMatchesUser(BasePullRequestConfig.ProtectionBypass bypass, String user, Set<String> groups) {
     if (bypass.isGroup()) {
       return groups.contains(bypass.getName());
     } else {

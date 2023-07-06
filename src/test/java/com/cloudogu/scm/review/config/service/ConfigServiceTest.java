@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.config.service;
 
+import com.cloudogu.scm.review.RepositoryResolver;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
@@ -66,6 +67,8 @@ class ConfigServiceTest {
   ConfigurationStore<GlobalPullRequestConfig> globalStore;
   @Mock
   GroupCollector groupCollector;
+  @Mock
+  RepositoryResolver repositoryResolver;
 
   @BeforeEach
   public void init() {
@@ -83,7 +86,7 @@ class ConfigServiceTest {
       .withType(GlobalPullRequestConfig.class)
       .withName("pullRequestConfig")
       .build()).thenReturn(globalStore);
-    service = new ConfigService(storeFactory, groupCollector);
+    service = new ConfigService(storeFactory, groupCollector, repositoryResolver);
   }
 
   @BeforeEach
@@ -342,6 +345,19 @@ class ConfigServiceTest {
     mockRepoConfig(false, true);
 
     BasePullRequestConfig config = service.evaluateConfig(REPOSITORY);
+
+    assertThat(config).isInstanceOf(RepositoryPullRequestConfig.class);
+  }
+
+  @Test
+  void shouldGetConfigForNamespace() {
+    mockGlobalConfig(true, false);
+    mockNamespaceConfig(true, false);
+    mockRepoConfig(true, true);
+
+    when(repositoryResolver.resolve(REPOSITORY.getNamespaceAndName())).thenReturn(REPOSITORY);
+
+    BasePullRequestConfig config = service.evaluateConfig(REPOSITORY.getNamespaceAndName());
 
     assertThat(config).isInstanceOf(RepositoryPullRequestConfig.class);
   }

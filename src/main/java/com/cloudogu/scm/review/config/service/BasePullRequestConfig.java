@@ -55,6 +55,8 @@ public class BasePullRequestConfig {
   private boolean preventMergeFromAuthor = false;
   private List<String> defaultReviewers = new ArrayList<>();
   private Set<String> labels = new HashSet<>();
+  private boolean overwriteDefaultCommitMessage;
+  private String commitMessageTemplate;
 
   @Getter
   @Setter

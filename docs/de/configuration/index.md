@@ -2,8 +2,6 @@
 title: Konfiguration
 ---
 
-## Konfiguration
-
 Für Pull Requests können ein paar Einstellungen vorgenommen werden.
 Diese Konfiguration kann entweder global oder Repository-spezifisch geschehen. Die globale Konfiguration
 findet sich unter "Administration" - "Einstellungen" - "Pull Requests". Ähnlicherweise findet sich die
@@ -17,6 +15,90 @@ Die anderen Einstellungen sind für die globale und Repository-spezifische Konfi
 Alle Änderungen müssen mit "Speichern" aktiviert werden.
 
 ![Konfiguration für Pull Requests](assets/pull_request_configuration.png)
+
+## Merge Dialog
+
+Hier können die Standardwerte für Merges eingestellt werden. Diese sind:
+
+  - Die **Standard-Merge-Strategie** stellt ein, welche Merge Strategie per Default im Merge Dialog ausgewählt ist.
+  - Wenn die Option **Source Branch beim Merge löschen** aktiviert ist, wird im Merge Dialog per Default die Option
+    zum Löschen des Source Branch aktiviert.
+  - Mit der Option **Default Commit-Nachricht überschreiben** kann eine eigene Commit-Nachricht definiert werden, die
+    als Vorschlag im Merge Dialog gesetzt wird. Diese ersetzt somit die Standardnachrichten des SCM-Managers.
+    
+    In dieser Nachricht können Template-Mechanismen genutzt werden, indem in doppelten geschweiften Klammern gesetzte
+    Variablen (`{{variable}}`) angesprochen werden. Variablen mit Listen an Daten können mit `{{#variable}}` und
+    `{{/variable}}` iteriert werden. Bei booleschen Werten können mit dieser Syntax Blócke markiert werden, die nur
+    dann dargestellt werden, wenn dieser Wert 'wahr' ist.
+    
+    Die folgenden Variablen stehen zur Verfügung:
+    - `namespace` Der Namespace des Repositories
+    - `repositoryName` Der Name des Repositories
+    - `pullRequest.id` Die ID des Pull Requests
+    - `pullRequest.title` Der Titel des Pull Requests
+    - `pullRequest.description` Die Beschreibung des Pull Requests
+    - `pullRequest.source` Der Quellbranch
+    - `pullRequest.target` Der Zielbranch
+    - `author.displayName` Der Name des Autoren
+    - `author.mail` Die E-Mail des Autoren
+    - `currentUser.displayName` Der Name des angemeldeten Users
+    - `currentUser.mail` Der E-Mail des angemeldeten Users
+    - `date` Das aktuelle Datum mit der aktuellen Uhrzeit (UTC)
+    - `localDate` Das aktuelle Datum mit der aktuellen Uhrzeit (Zeitzone des Servers)
+    - `changesets` Die Commits, die über diesen Pull Request gemerged werden. Die Attribute in den einzelnen Commits sind:
+      - `author.name` Autor des Commits
+      - `author.mail` E-Mail des Autoren
+      - `description` Die Nachricht
+      - `id` Die Revision
+    - `contributors` Mitwirkende an diesem Pull Request mit den folgenden Attributen:
+      - `type` Art der Mitwirkung
+      - `person.name` Name
+      - `person.mail` E-Mail-Adresse
+    
+    Die genaue Anleitung zu der Syntax von Mustache finden sich auf der [Mustache Hilfeseite](https://mustache.github.io/).
+    
+    In dem folgenden Beispiel werden neben einigen Metadaten des Pull Requests die einzelnen Nachrichten der Commits und
+    die Mitwirkenden aufgelistet:
+    
+```
+Pull Request #{{pullRequest.id}} by {{author.displayName}}
+
+Merged by {{currentUser.displayName}}
+
+Merges the following commits:
+{{#changesets}}
+  - {{description}}
+{{/changesets}}
+
+Contributors:
+{{#contributors}}
+  {{type}}: {{person.name}} ({{person.mail}})
+{{/contributors}}
+```
+
+## Erstellung
+
+Für die Erstellung von Pull Requests gibt es gibt es verschiedene Einstellungen, die im Folgenden beschrieben werden.
+
+### Verfügbare Labels
+
+Pull Requests können Labels haben. Diese können zur weiteren Klassifikation von Pull Requests genutzt werden,
+wie z. B. `feature`, `bug`  oder `library`.
+
+### Standard Aufgaben
+
+Wenn es Aufgaben gibt die für die Mehrzahl an Pull Requests zu beachten sind, können diese
+hier als Standard Aufgaben definiert werden. Während der Erstellung von Pull Requests können
+diese dann entfernt werden, wenn sie für den aktuellen Pull Request nicht passend sind.
+Standard Aufgaben können z. B. "Übersetzung gepflegt" oder "Eintrag für Changelog angelegt" sein.
+
+Diese Aufgaben können (wie bei der Erstellung als Reviewer im Pull Request) mit Markdown formatiert werden.
+
+### Standard-Reviewer
+
+Falls Reviews für Pull Requests immer von gleichen "Peers" durchgeführt werden soll, können diese
+als Standard-Reviewer angelegt werden. Während der Erstellung von Pull Requests kann diese Liste dann
+durch Hinzufügen oder Entfernen von Einträgen angepasst werden.
 
 ## Beschränkungen für Branches
 

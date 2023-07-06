@@ -49,6 +49,8 @@ public class BasePullRequestConfigDto extends HalRepresentation {
   private List<ProtectionBypassDto> branchProtectionBypasses;
   private List<String> defaultReviewers;
   private Set<String> labels;
+  private boolean overwriteDefaultCommitMessage;
+  private String commitMessageTemplate;
 
   @Getter @Setter
   public static class ProtectionBypassDto {
