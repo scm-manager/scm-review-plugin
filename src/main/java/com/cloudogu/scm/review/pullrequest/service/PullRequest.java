@@ -30,6 +30,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sonia.scm.search.Indexed;
 import sonia.scm.search.IndexedType;
 
@@ -60,6 +62,8 @@ import static java.util.Collections.unmodifiableSet;
 @IndexedType(repositoryScoped = true, namespaceScoped = true)
 @SuppressWarnings("UnstableApiUsage")
 public class PullRequest implements Serializable {
+
+  private static final Logger LOG = LoggerFactory.getLogger(PullRequest.class);
 
   static final int VERSION = 1;
 
@@ -104,6 +108,14 @@ public class PullRequest implements Serializable {
     this.id = id;
     this.source = source;
     this.target = target;
+  }
+
+  public void setStatus(PullRequestStatus status) {
+    if (this.status != null && status == null) {
+      LOG.warn("refusing to set pull request status to null in #{} (was: {})", id, this.status, new IllegalStateException());
+      return;
+    }
+    this.status = status;
   }
 
   public void addApprover(String recipient) {

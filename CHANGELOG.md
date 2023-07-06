@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Namespace configuration for pull requests
 - Default tasks for new pull requests
 
+## 2.26.3 - 2023-07-06
+- Prevent illegal status update
+
 ## 2.26.2 - 2023-06-08
 ### Fixed
 - Create pull request if global config disables repo config

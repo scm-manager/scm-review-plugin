@@ -62,7 +62,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER;
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.*;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.DRAFT;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -430,6 +433,47 @@ class DefaultPullRequestServiceTest {
       assertThat(event.getOldItem()).isEqualTo(oldPullRequest);
       assertThat(event.getEventType()).isEqualTo(HandlerEventType.MODIFY);
     }
+
+    @Test
+    void shouldNotDeleteStatus() {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setStatus(null);
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getStatus()).isEqualTo(OPEN);
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldNotResetClosedStatus() {
+      oldPullRequest.setStatus(MERGED);
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setStatus(OPEN);
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getStatus()).isEqualTo(MERGED);
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldNotChangeInProgressStatus() {
+      oldPullRequest.setStatus(OPEN);
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setStatus(DRAFT);
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getStatus()).isEqualTo(DRAFT);
+        return true;
+      }));
+    }
   }
 
   @Nested
@@ -628,7 +672,7 @@ class DefaultPullRequestServiceTest {
       assertThat(pullRequest.getStatus()).isEqualTo(MERGED);
       assertThat(pullRequest.isEmergencyMerged()).isTrue();
       assertThat(pullRequest.getOverrideMessage()).isEqualTo(overrideMessage);
-      assertThat(pullRequest.getIgnoredMergeObstacles().size()).isEqualTo(1);
+      assertThat(pullRequest.getIgnoredMergeObstacles()).hasSize(1);
       assertThat(pullRequest.getIgnoredMergeObstacles().get(0)).isEqualTo(ignoredRule);
 
       verify(eventBus).post(any(PullRequestEmergencyMergedEvent.class));

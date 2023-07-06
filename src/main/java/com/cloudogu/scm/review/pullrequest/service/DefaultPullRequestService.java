@@ -144,7 +144,7 @@ public class DefaultPullRequestService implements PullRequestService {
       .labels(pullRequest.getLabels())
       .build();
 
-    if (oldPullRequest.isInProgress()) {
+    if (oldPullRequest.isInProgress() && pullRequest.getStatus() != null && pullRequest.getStatus().isInProgress()) {
       newPullRequest.setStatus(pullRequest.getStatus());
     }
 
