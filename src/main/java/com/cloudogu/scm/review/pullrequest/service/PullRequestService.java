@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.PermissionCheck;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
@@ -98,9 +99,27 @@ public interface PullRequestService {
 
   void update(Repository repository, String pullRequestId, PullRequest pullRequest);
 
-  void reject(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause);
+  default void reject(Repository repository, String pullRequestId, String message) {
+    PermissionCheck.checkMerge(repository);
+    setRejected(repository, pullRequestId, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, message);
+  }
 
-  void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause);
+  /**
+   *
+   * @deprecated Pull requests should be rejected with a message by the user. Use
+   * {@link #reject(Repository, String, String)} instead.
+   */
+  @Deprecated(since = "2.28.0")
+  default void reject(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
+    PermissionCheck.checkMerge(repository);
+    setRejected(repository, pullRequestId, cause);
+  }
+
+  default void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
+    setRejected(repository, pullRequestId, cause, null);
+  }
+
+  void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause, String message);
 
   void setRevisions(Repository repository, String id, String targetRevision, String revisionToMerge);
 

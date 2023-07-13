@@ -219,9 +219,10 @@ export const useRejectPullRequest = (repository: Repository, pullRequest: PullRe
   }
 
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<unknown, Error, PullRequest>(
-    pr => {
-      return apiClient.post(requiredLink(pr, "reject"), {});
+  const { mutate, isLoading, error } = useMutation<unknown, Error, string>(
+    (message) => {
+      const rejectLink = requiredLink(pullRequest, "rejectWithMessage");
+      return apiClient.post(rejectLink, { message });
     },
     {
       onSuccess: () => {
@@ -230,7 +231,7 @@ export const useRejectPullRequest = (repository: Repository, pullRequest: PullRe
     }
   );
   return {
-    reject: (pr: PullRequest) => mutate(pr),
+    reject: (message: string) => mutate(message),
     isLoading,
     error
   };

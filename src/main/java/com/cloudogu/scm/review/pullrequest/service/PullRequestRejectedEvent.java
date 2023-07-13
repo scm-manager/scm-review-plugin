@@ -30,14 +30,24 @@ import sonia.scm.repository.Repository;
 public class PullRequestRejectedEvent extends BasicPullRequestEvent {
 
   private final RejectionCause cause;
+  private final String message;
 
   public PullRequestRejectedEvent(Repository repository, PullRequest pullRequest, RejectionCause cause) {
+    this(repository, pullRequest, cause, null);
+  }
+
+  public PullRequestRejectedEvent(Repository repository, PullRequest pullRequest, RejectionCause cause, String message) {
     super(repository, pullRequest);
     this.cause = cause;
+    this.message = message;
   }
 
   public RejectionCause getCause() {
     return cause;
+  }
+
+  public String getMessage() {
+    return message;
   }
 
   public enum RejectionCause {

@@ -153,6 +153,13 @@ public class PullRequestResourceLinks {
         .href();
     }
 
+    public String rejectWithMessage(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("rejectWithMessage").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
     public String subscription(String namespace, String name, String pullRequestId) {
       return pullRequestLinkBuilder
         .method("getPullRequestResource").parameters()

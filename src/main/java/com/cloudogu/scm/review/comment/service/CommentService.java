@@ -32,6 +32,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.github.legman.Subscribe;
+import com.google.common.base.Strings;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
@@ -43,6 +44,7 @@ import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 
 import javax.inject.Inject;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -365,6 +367,18 @@ public class CommentService {
 
   @Subscribe
   public void addCommentOnReject(PullRequestRejectedEvent rejectedEvent) {
+    if (!Strings.isNullOrEmpty(rejectedEvent.getMessage())) {
+      Comment comment = new Comment();
+      comment.setDate(Instant.now());
+      comment.setSystemComment(false);
+      comment.setComment(rejectedEvent.getMessage());
+
+      addWithoutPermissionCheck(
+        rejectedEvent.getRepository(),
+        rejectedEvent.getPullRequest().getId(),
+        comment
+      );
+    }
     addStatusChangedComment(rejectedEvent.getRepository(), rejectedEvent.getPullRequest().getId(), getCommentType(rejectedEvent.getCause()));
   }
 

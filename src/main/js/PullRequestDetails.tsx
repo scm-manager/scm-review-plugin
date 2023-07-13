@@ -222,8 +222,8 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   let deleteSourceButton = null;
   let readyForReviewButton = null;
 
-  if (pullRequest._links?.reject) {
-    rejectButton = <RejectButton reject={() => reject(pullRequest)} loading={rejectLoading} />;
+  if (pullRequest._links?.rejectWithMessage) {
+    rejectButton = <RejectButton reject={(message) => reject(message)} loading={rejectLoading} />;
     if (!!pullRequest._links.merge) {
       mergeButton = targetBranchDeleted ? null : (
         <MergeButton
@@ -236,7 +236,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       );
     }
   }
-  if (!pullRequest._links.reject && !pullRequest._links.merge) {
+  if (!pullRequest._links.rejectWithMessage && !pullRequest._links.merge) {
     deleteSourceButton = (
       <DeleteSourceBranchButton pullRequest={pullRequest} repository={repository} loading={mergeDryRunLoading} />
     );

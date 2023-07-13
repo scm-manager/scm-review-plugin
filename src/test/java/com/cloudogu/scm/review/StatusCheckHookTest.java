@@ -224,7 +224,7 @@ class StatusCheckHookTest {
       hook.checkStatus(event);
 
       verify(mergeDetectionProvider, never()).branchesMerged(any(), any());
-      verify(pullRequestService, never()).reject(eq(REPOSITORY), eq(pullRequest.getId()), any());
+      verify(pullRequestService, never()).reject(eq(REPOSITORY), eq(pullRequest.getId()), any(PullRequestRejectedEvent.RejectionCause.class));
     }
 
     @Test

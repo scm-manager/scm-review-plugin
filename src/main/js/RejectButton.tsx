@@ -21,39 +21,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useState } from "react";
+import React, { FC, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, ConfirmAlert } from "@scm-manager/ui-components";
+import { Button, Modal, SubmitButton, Textarea } from "@scm-manager/ui-components";
 
 type Props = {
-  reject: () => void;
+  reject: (message: string) => void;
   loading: boolean;
 };
 
 const RejectButton: FC<Props> = ({ reject, loading }) => {
   const [t] = useTranslation("plugins");
-
   const [showModal, setShowModal] = useState(false);
+  const initialFocusRef = useRef<HTMLTextAreaElement>(null);
+  const [message, setMessage] = useState("");
+
+  const body = (
+    <>
+      <p>{t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.hint")}</p>
+      <hr/>
+      <Textarea
+        label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.label")}
+        helpText={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.help")}
+        value={message}
+        placeholder={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.placeholder")}
+        onChange={event => setMessage(event.target.value)}
+        ref={initialFocusRef}
+      />
+    </>
+  );
+
+  const footer = (
+    <>
+      <SubmitButton
+        label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit")}
+        action={() => reject(message)}
+      />
+      <Button
+        label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel")}
+        action={() => setShowModal(false)}
+        color="grey"
+      />
+    </>
+  );
 
   return (
     <>
       {showModal ? (
-        <ConfirmAlert
+        <Modal
           title={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.title")}
-          message={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message")}
-          close={() => setShowModal(false)}
-          buttons={[
-            {
-              label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit"),
-              onClick: () => reject()
-            },
-            {
-              className: "is-info",
-              label: t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel"),
-              onClick: () => setShowModal(false),
-              autofocus: true
-            }
-          ]}
+          active={true}
+          body={body}
+          closeFunction={() => setShowModal(false)}
+          footer={footer}
+          initialFocusRef={initialFocusRef}
         />
       ) : null}
       <Button

@@ -145,9 +145,14 @@
         "buttonTitle": "Reject Pull Request",
         "confirmAlert": {
           "title": "Reject Pull Request",
-          "message": "Do you really want to reject this pull request?",
-          "submit": "Yes",
-          "cancel": "No"
+          "submit": "Reject",
+          "cancel": "Cancel",
+          "message": {
+            "hint": "Do you really want to reject this pull request? This cannot be undone!",
+            "label": "Optional Comment",
+            "help": "Explain why you reject this pull request. The message will be added as a normal comment to the pull request.",
+            "placeholder": "Add an optional comment, why you reject this pull request."
+          }
         }
       },
       "convertDraftButton": {
@@ -158,7 +163,7 @@
         "cancel": "Cancel",
         "continue": "Merge Pull Request",
         "introduction": "Some rules are broken:",
-        "addMessageText": "Additionally to the merge message in the next step you should add a comment, why you want to performe the emergency merge:"
+        "addMessageText": "Additionally to the merge message in the next step you should add a comment, why you want to perform the emergency merge:"
       },
       "deleteSourceBranchButton": {
         "buttonTitle": "Delete Source Branch",

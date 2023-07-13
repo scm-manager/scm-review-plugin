@@ -53,6 +53,7 @@ import sonia.scm.security.KeyGenerator;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
@@ -203,7 +204,7 @@ public class CommentServiceTest {
 
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
 
-    assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
+    assertThat(eventCaptor.getAllValues()).hasSize(2);
     assertMentionEventFiredAndMentionsParsedToDisplayNames(parsedCommentText);
   }
 
@@ -273,7 +274,7 @@ public class CommentServiceTest {
 
     commentService.reply(NAMESPACE, NAME, PULL_REQUEST_ID, "1", reply);
 
-    assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
+    assertThat(eventCaptor.getAllValues()).hasSize(2);
     assertMentionEventFiredAndMentionsParsedToDisplayNames(parsedCommentText);
   }
 
@@ -348,7 +349,7 @@ public class CommentServiceTest {
 
     commentService.modifyComment(NAMESPACE, NAME, PULL_REQUEST_ID, changedRootComment.getId(), changedRootComment);
 
-    assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
+    assertThat(eventCaptor.getAllValues()).hasSize(2);
     assertMentionEventFiredAndMentionsParsedToDisplayNames(parsedCommentText);
   }
 
@@ -527,7 +528,7 @@ public class CommentServiceTest {
 
     commentService.modifyReply(NAMESPACE, NAME, PULL_REQUEST_ID, EXISTING_REPLY.getId(), changedReply);
 
-    assertThat(eventCaptor.getAllValues().size()).isEqualTo(2);
+    assertThat(eventCaptor.getAllValues()).hasSize(2);
     assertMentionEventFiredAndMentionsParsedToDisplayNames(parsedCommentText);
   }
 
@@ -701,12 +702,13 @@ public class CommentServiceTest {
   public void shouldAddCommentOnRejectEventByUser() {
     when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER));
+    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, "boring"));
 
-    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
-    Comment storedComment = rootCommentCaptor.getValue();
-    assertThat(storedComment.getComment()).isEqualTo("rejected");
-  }
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(2);
+    List<Comment> storedComment = rootCommentCaptor.getAllValues();
+    assertThat(storedComment.get(0).getComment()).isEqualTo("boring");
+    assertThat(storedComment.get(1).getComment()).isEqualTo("rejected");
+}
 
   @Test
   @SubjectAware(username = "dent")

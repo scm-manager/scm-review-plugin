@@ -206,13 +206,7 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public void reject(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
-    PermissionCheck.checkMerge(repository);
-    setRejected(repository, pullRequestId, cause);
-  }
-
-  @Override
-  public void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
+  public void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause, String message) {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.isInProgress()) {
       pullRequest.setSourceRevision(getBranchRevision(repository, pullRequest.getSource()));
@@ -220,7 +214,7 @@ public class DefaultPullRequestService implements PullRequestService {
       setPullRequestClosed(pullRequest);
       pullRequest.setStatus(REJECTED);
       getStore(repository).update(pullRequest);
-      eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause));
+      eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause, message));
     } else if (pullRequest.isMerged()) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
     }

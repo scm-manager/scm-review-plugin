@@ -215,6 +215,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     if (PermissionCheck.mayMerge(repository) && pullRequest.isInProgress()) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest()
         .reject(namespace, name, pullRequestId)));
+      linksBuilder.single(link("rejectWithMessage", pullRequestResourceLinks.pullRequest()
+        .rejectWithMessage(namespace, name, pullRequestId)));
 
       if (RepositoryPermissions.push(repository).isPermitted()) {
         linksBuilder.single(link("mergeCheck", pullRequestResourceLinks.mergeLinks()

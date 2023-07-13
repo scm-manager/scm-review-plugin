@@ -21,22 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import sonia.scm.HandlerEventType;
-import sonia.scm.repository.Repository;
+package com.cloudogu.scm.review.pullrequest.dto;
 
-public class ReplyEvent extends BasicCommentEvent<Reply> {
+import lombok.Data;
 
-  private final Comment rootComment;
-
-  public ReplyEvent(Repository repository, PullRequest pullRequest, Reply comment, Reply oldComment, Comment rootComment, HandlerEventType type) {
-    super(repository, pullRequest, comment, oldComment, type);
-    this.rootComment = rootComment;
-  }
-
-  public Comment getRootComment() {
-    return rootComment;
-  }
+@Data
+public class RejectPullRequestDto {
+  private String message;
 }

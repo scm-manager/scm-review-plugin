@@ -145,9 +145,14 @@
         "buttonTitle": "Pull Request ablehnen",
         "confirmAlert": {
           "title": "Pull Request ablehnen",
-          "message": "Soll der Pull Request wirklich abgelehnt werden?",
-          "submit": "Ja",
-          "cancel": "Nein"
+          "submit": "Ablehnen",
+          "cancel": "Abbrechen",
+          "message": {
+            "hint": "Wollen Sie den Pull Request wirklich ablehnen? Diese Aktion kann nicht rückgängig gemacht werden.",
+            "label": "Optionaler Kommentar",
+            "help": "Mit dieser Nachricht können Sie erklären, warum Sie den Pull Request ablehnen. Er wird als normaler Kommentar zu dem Pull Request hizugefügt.",
+            "placeholder": "Optionaler Kommentar, warum Sie diesen PR ablehnen."
+          }
         }
       },
       "convertDraftButton": {

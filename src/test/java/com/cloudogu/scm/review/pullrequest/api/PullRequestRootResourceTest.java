@@ -36,6 +36,7 @@ import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
@@ -80,6 +81,7 @@ import sonia.scm.sse.ChannelRegistry;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
+import sonia.scm.web.JsonMockHttpRequest;
 import sonia.scm.web.RestDispatcher;
 
 import javax.servlet.http.HttpServletResponse;
@@ -844,6 +846,33 @@ public class PullRequestRootResourceTest {
     assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_NO_CONTENT);
     verify(store).update(argThat(pullRequest -> {
       assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
+      return true;
+    }));
+  }
+
+  @Test
+  public void shouldSetPullRequestToStatusRejectedWithMessage() throws URISyntaxException {
+    Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+    shiroRule.setSubject(subject);
+    User currentUser = new User("currentUser");
+    when(subject.getPrincipals().oneByType(User.class)).thenReturn(currentUser);
+
+    when(store.get("1")).thenReturn(createPullRequest("opened_1", PullRequestStatus.OPEN));
+    when(branchResolver.resolve(any(), any())).thenReturn(Branch.normalBranch("master", "123"));
+    JsonMockHttpRequest request = JsonMockHttpRequest
+      .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/1/rejectWithMessage")
+      .json("{'message':'boring'}");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_NO_CONTENT);
+    verify(store).update(argThat(pullRequest -> {
+      assertThat(pullRequest.getStatus()).isEqualTo(REJECTED);
+      return true;
+    }));
+    verify(eventBus).post(argThat(event -> {
+      assertThat(event)
+        .isInstanceOf(PullRequestRejectedEvent.class)
+        .extracting("message")
+        .isEqualTo("boring");
       return true;
     }));
   }
