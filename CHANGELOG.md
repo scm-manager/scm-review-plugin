@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.28.0 - 2023-07-18
+### Added
+- Optional message when a pull request is rejected
+- Commit message templates
+
 ## 2.27.2 - 2023-07-06
 ### Fixed
 - Prevent illegal status update (Fix from 2.26.3)
