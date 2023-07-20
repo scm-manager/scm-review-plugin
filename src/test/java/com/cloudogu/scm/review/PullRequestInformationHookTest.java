@@ -74,6 +74,7 @@ public class PullRequestInformationHookTest {
 
   private static final Repository REPOSITORY = new Repository("1", "git", "space", "X");
   private static final PullRequest OPEN_PULL_REQUEST = createPullRequest("branch_X", PullRequestStatus.OPEN);
+  private static final PullRequest DRAFT_PULL_REQUEST = createPullRequest("branch_Y", PullRequestStatus.DRAFT);
   private static final PullRequest MERGED_PULL_REQUEST = createPullRequest("branch_1", PullRequestStatus.MERGED);
 
   @Rule
@@ -118,7 +119,7 @@ public class PullRequestInformationHookTest {
     when(serviceFactory.create(REPOSITORY)).thenReturn(service);
     when(service.isSupported(Command.MERGE)).thenReturn(true);
     when(configuration.getBaseUrl()).thenReturn("http://example.com");
-    when(pullRequestService.getAll("space", "X")).thenReturn(asList(OPEN_PULL_REQUEST, MERGED_PULL_REQUEST));
+    when(pullRequestService.getAll("space", "X")).thenReturn(asList(OPEN_PULL_REQUEST, MERGED_PULL_REQUEST, DRAFT_PULL_REQUEST));
     doNothing().when(messageProvider).sendMessage(messageCaptor.capture());
     when(service.getBranchesCommand()).thenReturn(branchesCommand);
     Branches branches = new Branches(Branch.defaultBranch("main", "", 0L), Branch.normalBranch("x", "", 0L));
@@ -200,6 +201,21 @@ public class PullRequestInformationHookTest {
       .filteredOn(s -> s.length() > 0)
       .hasSize(2)
       .anyMatch(s -> s.matches(".*pull request.*branch_X.*target.*"))
+      .anyMatch(s -> s.matches("http://example.com/.*pr_id.*"));
+  }
+
+  @Test
+  @SubjectAware(username = "rr")
+  public void shouldSendMessageWithLinksForExistingPRWithStatusDraft() {
+    when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("branch_Y"));
+
+    hook.checkForInformation(event);
+
+    List<String> sentMessages = messageCaptor.getAllValues();
+    assertThat(sentMessages)
+      .filteredOn(s -> s.length() > 0)
+      .hasSize(2)
+      .anyMatch(s -> s.matches(".*pull request.*branch_Y.*target.*"))
       .anyMatch(s -> s.matches("http://example.com/.*pr_id.*"));
   }
 

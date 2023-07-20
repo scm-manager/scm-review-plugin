@@ -120,7 +120,7 @@ public class PullRequestInformationHook {
     private boolean process(List<PullRequest> pullRequests, String branch) {
       pullRequests
         .stream()
-        .filter(PullRequest::isOpen)
+        .filter(PullRequest::isInProgress)
         .filter(pr -> branch.equals(pr.getSource()))
         .forEach(this::messageForExistingPullRequest);
       return prFound;
