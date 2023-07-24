@@ -21,96 +21,186 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import styled from "styled-components";
-import { Repository } from "@scm-manager/ui-types";
-import { CreateButton, ErrorPage, LinkPaginator, Loading, Notification, urls } from "@scm-manager/ui-components";
-import PullRequestTable from "./table/PullRequestTable";
-import StatusSelector from "./table/StatusSelector";
-import { usePullRequests } from "./pullRequest";
-import { PullRequest } from "./types/PullRequest";
-import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 
-const ScrollingTable = styled.div`
-  overflow-x: auto;
+import { PullRequest, Reviewer } from "./types/PullRequest";
+import { CardList } from "@scm-manager/ui-layout";
+import { Link } from "react-router-dom";
+import { DateFromNow, Notification, useGeneratedId } from "@scm-manager/ui-components";
+import { PullRequestListDetail } from "./types/ExtensionPoints";
+import classNames from "classnames";
+import { evaluateTagColor } from "./pullRequest";
+import React, { FC, useMemo } from "react";
+import { Repository } from "@scm-manager/ui-types";
+import styled from "styled-components";
+import { useBinder } from "@scm-manager/ui-extensions";
+import { Trans, useTranslation } from "react-i18next";
+import PullRequestStatusColumn from "./workflow/PullRequestStatusColumn";
+import useEngineConfig from "./workflow/useEngineConfig";
+import { Tooltip } from "@scm-manager/ui-overlays";
+
+const PullRequestDetail: FC<{
+  pullRequest: PullRequest;
+  repository: Repository;
+  detail: PullRequestListDetail["type"];
+}> = ({ repository, detail, pullRequest }) => {
+  const labelId = useGeneratedId();
+  const renderedDetail = detail.render({ pullRequest, repository, labelId });
+  if (!renderedDetail) {
+    return null;
+  }
+  return (
+    <span key={detail.name}>
+      <span className="has-text-secondary mr-1" id={labelId}>
+        {detail.name}
+      </span>
+      {renderedDetail}
+    </span>
+  );
+};
+
+const DetailsContainer = styled.span`
+  gap: 0.5rem 1rem;
 `;
+
+const PullRequestCard = styled(CardList.Card)`
+  & > div {
+    gap: 0.5rem;
+  }
+`;
+
+const SubtitleContainer = styled(CardList.Card.Row)`
+  white-space: pre;
+`;
+
+const createTooltipMessage = (reviewers: Reviewer[]) => {
+  return reviewers
+    .map(r => r.displayName)
+    .map(n => `- ${n}`)
+    .join("\n");
+};
 
 type Props = {
   repository: Repository;
+  pullRequests?: PullRequest[];
 };
 
-const PullRequestList: FC<Props> = ({ repository }) => {
+const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
+  const binder = useBinder();
   const [t] = useTranslation("plugins");
-  const location = useLocation();
-  const search = urls.getQueryStringFromLocation(location);
-  const match: { params: { page: string } } = useRouteMatch();
-  const [statusFilter, setStatusFilter] = useState<string>(search || "IN_PROGRESS");
-  const history = useHistory();
-  const page = useMemo(() => urls.getPageFromMatch(match), [match]);
-  const { data, error, isLoading } = usePullRequests(repository, { page, status: statusFilter, pageSize: 10 });
+  const { data, error } = useEngineConfig(repository);
+  const defaultPullRequestListDetails = useMemo(() => {
+    const result: PullRequestListDetail["type"][] = [
+      {
+        name: t("scm-review-plugin.pullRequests.details.tasks"),
+        render: ({ pullRequest, labelId }) => (
+          <span className="tag is-rounded is-light" aria-labelledby={labelId}>
+            {pullRequest.tasks?.done}/{pullRequest.tasks ? pullRequest.tasks.todo + pullRequest.tasks.done : 0}
+          </span>
+        )
+      },
+      {
+        name: t("scm-review-plugin.pullRequests.details.reviewers"),
+        render: ({ pullRequest, labelId }) => {
+          const content = (
+            <span
+              className={classNames("tag is-rounded is-light", { "is-relative": pullRequest.reviewer?.length })}
+              aria-labelledby={labelId}
+            >
+              {pullRequest.reviewer?.length ?? 0}
+            </span>
+          );
+          if (pullRequest.reviewer?.length) {
+            return (
+              <Tooltip
+                message={
+                  t("scm-review-plugin.pullRequest.reviewer") + ":\n" + createTooltipMessage(pullRequest.reviewer)
+                }
+              >
+                {content}
+              </Tooltip>
+            );
+          }
+          return content;
+        }
+      }
+    ];
+    if (!error && data?.enabled && data?.rules.length) {
+      result.push({
+        name: t("scm-review-plugin.pullRequests.details.workflow"),
+        render: ({ pullRequest }) =>
+          pullRequest._links.workflowResult ? (
+            <PullRequestStatusColumn pullRequest={pullRequest} repository={repository} />
+          ) : null
+      });
+    }
+    return result;
+  }, [data, error, repository, t]);
 
-  if (isLoading || !data) {
-    return <Loading />;
+  if (!pullRequests?.length) {
+    return <Notification type="info">{t("scm-review-plugin.noRequests")}</Notification>;
   }
-
-  const handleStatusChange = (newStatus: string) => {
-    setStatusFilter(newStatus);
-    history.replace(`1?q=${newStatus}`);
-  };
-
-  const renderPullRequestTable = () => {
-    return (
-      <div className="panel">
-        <div className="panel-heading">
-          <StatusSelector handleTypeChange={handleStatusChange} status={statusFilter} />
-        </div>
-
-        {isLoading ? (
-          <Loading />
-        ) : (
-          <>
-            <ScrollingTable className="panel-block">
-              <PullRequestTable repository={repository} pullRequests={data._embedded?.pullRequests as PullRequest[]} />
-            </ScrollingTable>
-            <div className="panel-footer">
-              <LinkPaginator collection={data} page={page} filter={statusFilter} />
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
-  if (!repository._links.pullRequest) {
-    return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
-  }
-
-  if (error) {
-    return (
-      <ErrorPage
-        title={t("scm-review-plugin.pullRequests.errorTitle")}
-        subtitle={t("scm-review-plugin.pullRequests.errorSubtitle")}
-        error={error}
-      />
-    );
-  }
-
-  const url = `/repo/${repository.namespace}/${repository.name}/pull-requests`;
-
-  if (data && data.pageTotal < page && page > 1) {
-    return <Redirect to={`${url}/${data.pageTotal}`} />;
-  }
-
-  const createButton = data?._links?.create ? (
-    <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={`${url}/add/changesets/`} />
-  ) : null;
 
   return (
-    <>
-      {renderPullRequestTable()}
-      {createButton}
-    </>
+    <CardList>
+      {pullRequests.map(pullRequest => (
+        <PullRequestCard key={pullRequest.id}>
+          <CardList.Card.Row className="is-flex">
+            <CardList.Card.Title>
+              <Link to={`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`}>
+                {pullRequest.title}
+              </Link>
+            </CardList.Card.Title>
+            <span className="has-text-secondary ml-1" aria-label={t("scm-review-plugin.pullRequests.aria.id")}>
+              <span aria-hidden>#</span>
+              {pullRequest.id}
+            </span>
+          </CardList.Card.Row>
+          <SubtitleContainer className="is-flex is-flex-wrap-wrap is-size-7 has-text-secondary">
+            <Trans
+              t={t}
+              i18nKey="scm-review-plugin.pullRequests.subtitle"
+              values={{
+                author: pullRequest.author?.displayName,
+                source: pullRequest.source,
+                target: pullRequest.target
+              }}
+              components={{
+                highlight: <span className="has-text-default" />,
+                date: <DateFromNow className="is-relative" date={pullRequest.creationDate} />,
+                space: <span />
+              }}
+            />
+          </SubtitleContainer>
+          <CardList.Card.Row className="is-flex is-align-items-center is-justify-content-space-between is-size-7">
+            <DetailsContainer className="is-flex is-flex-wrap-wrap is-align-items-center">
+              {[
+                ...defaultPullRequestListDetails,
+                ...binder.getExtensions<PullRequestListDetail>("pull-requests.list.detail", {
+                  pullRequest,
+                  repository
+                })
+              ].map(detail => (
+                <PullRequestDetail
+                  key={detail.name}
+                  pullRequest={pullRequest}
+                  detail={detail}
+                  repository={repository}
+                />
+              ))}
+            </DetailsContainer>
+            <span
+              className={classNames(
+                "tag is-rounded is-align-self-flex-end",
+                `is-${evaluateTagColor(pullRequest.status)}`
+              )}
+              aria-label={t("scm-review-plugin.pullRequests.aria.status")}
+            >
+              {pullRequest.status}
+            </span>
+          </CardList.Card.Row>
+        </PullRequestCard>
+      ))}
+    </CardList>
   );
 };
 

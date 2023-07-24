@@ -24,21 +24,12 @@
 
 import React, { FC } from "react";
 import { useStatusbar } from "./useStatusbar";
-import { SmallLoadingSpinner, NoStyleButton } from "@scm-manager/ui-components";
+import { SmallLoadingSpinner } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import StatusIcon, { getColor, getIcon } from "./StatusIcon";
-import * as Tooltip from "@radix-ui/react-tooltip";
 import ModalRow from "./ModalRow";
-import styled from "styled-components";
-
-const StyledArrow = styled(Tooltip.Arrow)`
-  fill: var(--scm-popover-border-color);
-`;
-
-const StyledContent = styled(Tooltip.Content)`
-  z-index: 500;
-`;
+import { Tooltip } from "@scm-manager/ui-overlays";
 
 type Props = {
   repository: Repository;
@@ -49,7 +40,7 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
   const { data, error, isLoading } = useStatusbar(repository, pullRequest);
 
   if (isLoading) {
-    return <SmallLoadingSpinner />;
+    return <SmallLoadingSpinner className="is-inline-block" />;
   }
 
   if (error || !data) {
@@ -63,21 +54,17 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
   }
 
   return (
-    <Tooltip.Provider>
-      <Tooltip.Root>
-        <Tooltip.Trigger asChild={true}>
-          <NoStyleButton>{icon}</NoStyleButton>
-        </Tooltip.Trigger>
-        <Tooltip.Portal>
-          <StyledContent className="box m-0 popover">
-            {data.results.map(r => (
-              <ModalRow result={r} />
-            ))}
-            <StyledArrow />
-          </StyledContent>
-        </Tooltip.Portal>
-      </Tooltip.Root>
-    </Tooltip.Provider>
+    <Tooltip
+      message={
+        <>
+          {data.results.map(r => (
+            <ModalRow key={r.rule} result={r} />
+          ))}
+        </>
+      }
+    >
+      {icon}
+    </Tooltip>
   );
 };
 

@@ -51,3 +51,18 @@ export type PullRequestTableColumn = ExtensionPointDefinition<
   (props: FactoryProps) => ReactElement<PullRequestTableExtension>,
   FactoryProps
 >;
+
+type ListDetailProps = {
+  repository: Repository;
+  pullRequest: PullRequest;
+  labelId: string;
+};
+
+export type PullRequestListDetail = ExtensionPointDefinition<
+  "pull-requests.list.detail",
+  {
+    name: string;
+    render: (props: ListDetailProps) => ReactNode | null;
+  },
+  Omit<ListDetailProps, "labelId">
+>;

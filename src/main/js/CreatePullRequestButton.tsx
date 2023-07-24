@@ -24,11 +24,11 @@
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Branch, Repository } from "@scm-manager/ui-types";
-import { SubSubtitle, AddButton, ErrorNotification, Loading } from "@scm-manager/ui-components";
+import { AddButton, ErrorNotification, Loading, SubSubtitle } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
-import PullRequestTable from "./table/PullRequestTable";
 import styled from "styled-components";
 import { usePullRequests } from "./pullRequest";
+import PullRequestList from "./PullRequestList";
 
 type Props = {
   repository: Repository;
@@ -37,10 +37,6 @@ type Props = {
 
 const HR = styled.hr`
   height: 3px;
-`;
-
-const ScrollingTable = styled.div`
-  overflow-x: auto;
 `;
 
 const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
@@ -65,11 +61,7 @@ const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
 
   let existing = null;
   if (matchingPullRequests.length > 0) {
-    existing = (
-      <ScrollingTable className="mb-3">
-        <PullRequestTable repository={repository} pullRequests={matchingPullRequests} />
-      </ScrollingTable>
-    );
+    existing = <PullRequestList repository={repository} pullRequests={matchingPullRequests} />;
   }
 
   return (

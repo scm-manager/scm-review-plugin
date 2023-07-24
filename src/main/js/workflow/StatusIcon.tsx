@@ -21,23 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
+import React, { HTMLAttributes } from "react";
 import { Result } from "../types/EngineConfig";
 
-type BaseProps = {
-  titleType?: string;
-  title?: string;
-};
-type Props = BaseProps & {
+type Props = HTMLAttributes<HTMLElement> & {
   color?: string;
   icon?: string;
   size?: string;
+  titleType?: string;
+  title?: string;
 };
 
-const StatusIcon: FC<Props> = ({ color = "secondary", icon = "circle-notch", size = "1x", titleType, title }) => {
-  return (
+const StatusIcon = React.forwardRef<HTMLElement, Props>(
+  ({ color = "secondary", icon = "circle-notch", size = "lg", titleType, title, ...rest }, ref) => (
     <>
-      <i className={`fas fa-${size} has-text-${color} fa-${icon}`} />
+      <i {...rest} className={`fas fa-${size} has-text-${color} fa-${icon} is-relative`} ref={ref} />
       {(titleType || title) && (
         <span
           style={{
@@ -45,17 +43,17 @@ const StatusIcon: FC<Props> = ({ color = "secondary", icon = "circle-notch", siz
           }}
         >
           {titleType && <strong>{titleType}: </strong>}
-          {title && title}
+          {title ? title : null}
         </span>
       )}
     </>
-  );
-};
+  )
+);
 
 export const getColor = (results: Result[]) => {
   if (results && results.length) {
     if (results.some(it => it.failed)) {
-      return "warning";
+      return "danger";
     } else {
       return "success";
     }
@@ -67,7 +65,7 @@ export const getColor = (results: Result[]) => {
 export const getIcon = (results: Result[]) => {
   if (results && results.length) {
     if (results.some(it => it.failed)) {
-      return "exclamation-triangle";
+      return "exclamation-circle";
     } else {
       return "check-circle";
     }

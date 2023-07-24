@@ -185,7 +185,23 @@
       "errorTitle": "Fehler",
       "errorSubtitle": "Unbekannter Pull Request Fehler",
       "forbidden": "Es fehlen Berechtigungen zum Lesen der Pull Requests!",
-      "createButton": "Pull Request erstellen"
+      "createButton": "Pull Request erstellen",
+      "subtitle": "{{author}} forderte einen Merge von <highlight>{{source}}</highlight> nach <highlight>{{target}}</highlight><space> </space><date /> an",
+      "details": {
+        "tasks": "Aufgaben",
+        "reviewers": "Reviewer",
+        "workflow": "Workflow"
+      },
+      "aria": {
+        "id": "ID",
+        "status": "Status",
+        "workflow": {
+          "status": {
+            "fail": "Fehlgeschlagen",
+            "success": "Erfolgreich"
+          }
+        }
+      }
     },
     "comment": {
       "addComment": "Kommentar hinzufügen",

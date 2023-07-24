@@ -23,10 +23,10 @@
  */
 import React, { FC } from "react";
 import { CardColumnSmall, ConfigurationBinder as cfgBinder, Icon, useShortcut } from "@scm-manager/ui-components";
-import { binder, ExtensionPointDefinition, extensionPoints } from "@scm-manager/ui-extensions";
+import { binder, extensionPoints } from "@scm-manager/ui-extensions";
 import Create from "./Create";
 import SinglePullRequest from "./SinglePullRequest";
-import PullRequestList from "./PullRequestList";
+import PullRequestsOverview from "./PullRequestsOverview";
 import { Route, useHistory } from "react-router-dom";
 import PullRequestsNavLink from "./PullRequestsNavLink";
 import CreatePullRequestButton from "./CreatePullRequestButton";
@@ -40,7 +40,7 @@ import PullRequestReview from "./landingpage/MyPullRequestReview";
 import RepoEngineConfig from "./workflow/RepoEngineConfig";
 import GlobalEngineConfig from "./workflow/GlobalEngineConfig";
 import ApprovedByXReviewersRuleConfiguration from "./workflow/ApprovedByXReviewersRuleConfiguration";
-import { Branch, Repository } from "@scm-manager/ui-types";
+import { Repository } from "@scm-manager/ui-types";
 import PullRequestHitRenderer from "./search/PullRequestHitRenderer";
 import CommentHitRenderer from "./search/CommentHitRenderer";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
@@ -107,10 +107,10 @@ const ShowPullRequestsRoute = ({ url, repository }: RepoRouteProps) => {
   return (
     <>
       <Route path={`${url}/pull-requests/`} exact>
-        <PullRequestList repository={repository} />
+        <PullRequestsOverview repository={repository} />
       </Route>
       <Route path={`${url}/pull-requests/:page`} exact>
-        <PullRequestList repository={repository} />
+        <PullRequestsOverview repository={repository} />
       </Route>
     </>
   );
@@ -130,7 +130,7 @@ const AllPullRequestsLink: FC = () => {
 
 binder.bind("repository.route", ShowPullRequestsRoute);
 
-binder.bind<ExtensionPointDefinition<"repos.branch-details.information", { repository: Repository; branch: Branch }>>(
+binder.bind<extensionPoints.ReposBranchDetailsInformation>(
   "repos.branch-details.information",
   ({ repository, branch }) => <CreatePullRequestButton repository={repository} branch={branch} />
 );

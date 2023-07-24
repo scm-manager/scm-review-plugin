@@ -11,7 +11,6 @@
         "e2e": "integration-test-runner run -u scmadmin -p scmadmin -O ../../../build/target/ -d ./src/test/e2e"
     },
     "dependencies": {
-        "@radix-ui/react-tooltip": "^1.0.0",
         "@scm-manager/ui-components": "2.45.0",
         "@scm-manager/ui-forms": "2.45.0",
         "@scm-manager/ui-buttons": "2.45.0",

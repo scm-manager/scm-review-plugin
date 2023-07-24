@@ -23,13 +23,13 @@
  */
 
 import React, { FC } from "react";
-import { useTranslation, withTranslation, WithTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Result } from "../types/EngineConfig";
 import { Icon } from "@scm-manager/ui-components";
 import classNames from "classnames";
 
-type Props = WithTranslation & {
+type Props = {
   result: Result;
 };
 
@@ -73,12 +73,13 @@ const ModalRow: FC<Props> = ({ result }) => {
       className={classNames("is-flex", "is-flex-direction-row", "is-justify-content-space-between", "px-0", "py-4")}
     >
       <Left>
+        <span className="has-text-weight-bold">{t("workflow.rule." + result?.rule + ".name")}</span>
         <Icon
-          className="mr-2"
-          color={result?.failed ? "warning" : "success"}
-          name={result?.failed ? "exclamation-triangle" : "check-circle"}
+          className="ml-1"
+          color={result?.failed ? "danger" : "success"}
+          name={result?.failed ? "exclamation-circle" : "check-circle"}
+          aria-label={t(`scm-review-plugin.pullRequests.aria.workflow.status.${result.failed ? "fail" : "success"}`)}
         />
-        <strong>{t("workflow.rule." + result?.rule + ".name")}</strong>
       </Left>
       <Right>
         <p>{t(getTranslationKey(result), result?.context)}</p>
@@ -87,4 +88,4 @@ const ModalRow: FC<Props> = ({ result }) => {
   );
 };
 
-export default withTranslation("plugins")(ModalRow);
+export default ModalRow;

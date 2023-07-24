@@ -185,7 +185,23 @@
       "errorTitle": "Error",
       "errorSubtitle": "Unspecified pull request error",
       "forbidden": "You do not have the permission to read pull requests!",
-      "createButton": "Create Pull Request"
+      "createButton": "Create Pull Request",
+      "subtitle": "{{author}} requested to merge <highlight>{{source}}</highlight> into <highlight>{{target}}</highlight><space> </space><date />",
+      "details": {
+        "tasks": "Tasks",
+        "reviewers": "Reviewers",
+        "workflow": "Workflow"
+      },
+      "aria": {
+        "id": "ID",
+        "status": "Status",
+        "workflow": {
+          "status": {
+            "fail": "Failed",
+            "success": "Succeeded"
+          }
+        }
+      }
     },
     "comment": {
       "addComment": "Add comment",
