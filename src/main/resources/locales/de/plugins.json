@@ -746,5 +746,36 @@
         }
       }
     }
+  },
+  "mustacheDoc": {
+    "CommitMessageTemplate": {
+      "name": "Commit Nachrichten Vorlage",
+      "properties": {
+        "namespace": "Namespace des Repositories",
+        "repositoryName": "Name des Repositories",
+        "pullRequest.id": "Pull Request ID",
+        "pullRequest.title": "Pull Request Titel",
+        "pullRequest.description": "Pull Request Beschreibung",
+        "pullRequest.source": "Pull Request Source Branch",
+        "pullRequest.target": "Pull Request Ziel Branch",
+        "author.displayName": "Name des Autors",
+        "author.mail": "E-Mail des Autors",
+        "currentUser.displayName": "Name des aktuellen Benutzers",
+        "currentUser.mail": "E-Mail des aktuellen Benutzers",
+        "date": "Aktuelle Datum und die Zeit (UTC)",
+        "localDate": "Aktuelle Datum und die Zeit (Zeitzone des Servers)",
+        "changesets[]": "Liste von Changesets, welche mit diesem Pull Request gemerged werden. Ein Changeset verfügt auch über Unterattribute",
+        "changeset.author.name": "Autor des Changeset",
+        "changeset.author.mail": "E-Mail Adresse des Autoren",
+        "changeset.description": "Changeset Nachricht",
+        "changeset.id": "Changeset Revision",
+        "contributors[]": "Liste der Beteiligten an diesem Pull Request mit den folgenden Unterattributen",
+        "contributor.type": "Art der Beteiligung",
+        "contributor.person.name": "Name des Beteiligten",
+        "contributor.person.mail": "E-Mail des Beteiligten"
+      },
+      "exampleContent": "Pull Request ${{pullRequest.id}} von {{author.displayName}}\n\nMerged von {{currentUser.displayName}}\n\nMerged folgende Commits:\n{{#changesets}}\n  - {{description}}\n{{/changesets}}",
+      "exampleIntroduction": "Hier ist ein Bespiel wie man Pull Request Metadaten und Commit-Nachrichten rendern könnte"
+    }
   }
 }

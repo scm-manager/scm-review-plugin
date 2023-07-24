@@ -184,7 +184,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
                 <span>
                   <Icon name="info-circle" color="blue-light" />
                   <Trans t={t} i18nKey="scm-review-plugin.config.commitMessageTemplate.hint">
-                    See the <a href="https://scm-manager.org/plugins/scm-review-plugin/docs/latest/en/configuration">description</a>.
+                    See the <a target="_blank" href="/scm/mustacheDocs">description</a>.
                   </Trans>
                 </span>
               </>

@@ -22,30 +22,47 @@
  * SOFTWARE.
  */
 
-plugins {
-  id 'org.scm-manager.smp' version '0.15.0'
-}
+package com.cloudogu.scm.review.mustache;
 
-dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:1.0.0-SNAPSHOT"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.13.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-}
+import com.cloudogu.mustache.MustacheModelProvider;
+import sonia.scm.plugin.Extension;
 
-scmPlugin {
-  scmVersion = "2.45.1"
-  displayName = "Review"
-  description = "Depict a review process with pull requests"
-  author = "Cloudogu GmbH"
-  category = "Workflow"
+import java.util.List;
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.review.pullrequest.api",
-      "com.cloudogu.scm.review.config.api",
-      "com.cloudogu.scm.review.workflow",
-    ]
+@Extension
+public class CommitMessageTemplateModelProvider implements MustacheModelProvider {
+
+  @Override
+  public List<String> getModel() {
+    return List.of(
+      "namespace",
+      "repositoryName",
+      "pullRequest.id",
+      "pullRequest.title",
+      "pullRequest.description",
+      "pullRequest.source",
+      "pullRequest.target",
+      "author.displayName",
+      "author.mail",
+      "currentUser.displayName",
+      "currentUser.mail",
+      "date",
+      "localDate",
+      "changesets[]",
+      "changeset.author.name",
+      "changeset.author.mail",
+      "changeset.description",
+      "changeset.id",
+      "contributors[]",
+      "contributor.type",
+      "contributor.person.name",
+      "contributor.person.mail"
+    );
   }
+
+  @Override
+  public String getName() {
+    return "CommitMessageTemplate";
+  }
+
 }

@@ -745,5 +745,36 @@
         }
       }
     }
+  },
+  "mustacheDoc": {
+    "CommitMessageTemplate": {
+      "name": "Commit Message Template",
+      "properties": {
+        "namespace": "Namespace of the repository",
+        "repositoryName": "Name of the repository",
+        "pullRequest.id": "Pull request ID",
+        "pullRequest.title": "Pull request title",
+        "pullRequest.description": "Pull request description",
+        "pullRequest.source": "Pull request source branch",
+        "pullRequest.target": "Pull request target branch",
+        "author.displayName": "Name of the author",
+        "author.mail": "Mail address of the author",
+        "currentUser.displayName": "Name of the current user",
+        "currentUser.mail": "Mail address of the current user",
+        "date": "Current date and time (UTC)",
+        "localDate": "Current date and time (server timezone)",
+        "changesets[]": "List of changesets that will be merged with this pull request. Each changeset contains sub properties",
+        "changeset.author.name": "Author of the changeset",
+        "changeset.author.mail": "Mail address of the author",
+        "changeset.description": "Changeset message",
+        "changeset.id": "Changeset revision",
+        "contributors[]": "List of contributors for this pull request with the following properties",
+        "contributor.type": "Type of the contribution",
+        "contributor.person.name": "Contributors name",
+        "contributor.person.mail": "Contributors mail address"
+      },
+      "exampleContent": "Pull Request ${{pullRequest.id}} by {{author.displayName}}\n\nMerge by {{currentUser.displayName}}\n\nMerges the following commits:\n{{#changesets}}\n  - {{description}}\n{{/changesets}}",
+      "exampleIntroduction": "Here is an example, rendering some pull request metadata and the commit messages of each commit"
+    }
   }
 }
