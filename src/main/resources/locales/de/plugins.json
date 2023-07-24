@@ -266,7 +266,9 @@
         "rejected": "Der Pull Request wurde abgelehnt.",
         "sourceDeleted": "Der Quell-Branch des Pull Requests wurde gelöscht.",
         "targetDeleted": "Der Ziel-Branch des Pull Requests wurde gelöscht.",
-        "emergencyMerged": "Dieser Pull Request wurde mit einem Emergency-Merge gemerged. Dabei wurden die Regeln der Workflow Engine ignoriert."
+        "emergencyMerged": "Dieser Pull Request wurde mit einem Emergency-Merge gemerged. Dabei wurden die Regeln der Workflow Engine ignoriert.",
+        "statusToOpen": "Der Pull Request wurde zum Review freigegeben.",
+        "statusToDraft": "Der Pull Request wurde in einen Draft umgewandelt."
       },
       "type": {
         "comment": "Kommentar",

@@ -30,6 +30,8 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEve
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableSet;
@@ -734,6 +736,32 @@ public class CommentServiceTest {
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getComment()).isEqualTo("targetDeleted");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldAddCommentOnStatusToDraftEvent() {
+    PullRequest pullRequest = mockPullRequest();
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+
+    commentService.addCommentOnStatusChanged(new PullRequestStatusChangedEvent(REPOSITORY, pullRequest, PullRequestStatus.DRAFT));
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getComment()).isEqualTo("statusToDraft");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldAddCommentOnStatusToOpenEvent() {
+    PullRequest pullRequest = mockPullRequest();
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+
+    commentService.addCommentOnStatusChanged(new PullRequestStatusChangedEvent(REPOSITORY, pullRequest, PullRequestStatus.OPEN));
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getComment()).isEqualTo("statusToOpen");
   }
 
   private PullRequest mockPullRequest() {

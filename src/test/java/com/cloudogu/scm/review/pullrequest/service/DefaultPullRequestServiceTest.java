@@ -339,6 +339,34 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
+    void shouldSendEventWhenStatusConvertedToOpen() {
+      Subject subject = mock(Subject.class);
+      shiroRule.setSubject(subject);
+
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setStatus(DRAFT);
+      when(service.get(REPOSITORY, "changed")).thenReturn(pullRequest);
+
+      service.convertToPR(REPOSITORY, "changed");
+
+      PullRequestStatusChangedEvent event = (PullRequestStatusChangedEvent) eventCaptor.getAllValues().get(0);
+      assertThat(event.getRepository()).isSameAs(REPOSITORY);
+      assertThat(event.getPullRequest()).isSameAs(pullRequest);
+    }
+
+    @Test
+    void shouldSendEventWhenStatusConvertedToDraft() {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setStatus(DRAFT);
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      PullRequestStatusChangedEvent event = (PullRequestStatusChangedEvent) eventCaptor.getAllValues().get(0);
+      assertThat(event.getRepository()).isSameAs(REPOSITORY);
+      assertThat(event.getPullRequest()).isSameAs(pullRequest);
+    }
+
+    @Test
     void shouldResetApprovalsWhenConvertedToDraft() {
       PullRequest pullRequest = createPullRequest("changed", null, null);
       pullRequest.setReviewer(Map.of("reviewer", false, "otherReviewer", true));

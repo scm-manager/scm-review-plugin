@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent.ApprovalCause.APPROVAL_REMOVED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent.ApprovalCause.APPROVED;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.DRAFT;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
@@ -127,9 +128,12 @@ public class DefaultPullRequestService implements PullRequestService {
     Map<String, Boolean> newReviewers = new HashMap<>(oldPullRequest.getReviewer());
 
     if (oldPullRequest.isOpen() && pullRequest.isDraft()) {
+      eventBus.post(new PullRequestStatusChangedEvent(repository, pullRequest, DRAFT));
       newReviewers
         .keySet()
         .forEach(reviewer -> newReviewers.put(reviewer, false));
+    } else if (oldPullRequest.isDraft() && pullRequest.isOpen()) {
+      eventBus.post(new PullRequestStatusChangedEvent(repository, pullRequest, OPEN));
     }
 
     addedReviewers.forEach(reviewer -> newReviewers.putIfAbsent(reviewer, false));
@@ -385,6 +389,7 @@ public class DefaultPullRequestService implements PullRequestService {
       PullRequest oldPullRequest = pullRequest.toBuilder().build();
       pullRequest.setStatus(OPEN);
       getStore(repository).update(pullRequest);
+      eventBus.post(new PullRequestStatusChangedEvent(repository, pullRequest, OPEN));
       eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
     } else {
       throw new StatusChangeNotAllowedException(repository, pullRequest);

@@ -27,6 +27,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
@@ -380,6 +381,20 @@ public class CommentService {
       );
     }
     addStatusChangedComment(rejectedEvent.getRepository(), rejectedEvent.getPullRequest().getId(), getCommentType(rejectedEvent.getCause()));
+  }
+
+  @Subscribe
+  public void addCommentOnStatusChanged(PullRequestStatusChangedEvent mergedEvent) {
+    switch (mergedEvent.getStatus()) {
+      case DRAFT:
+        addStatusChangedComment(mergedEvent.getRepository(), mergedEvent.getPullRequest().getId(), SystemCommentType.STATUS_TO_DRAFT);
+        break;
+      case OPEN:
+        addStatusChangedComment(mergedEvent.getRepository(), mergedEvent.getPullRequest().getId(), SystemCommentType.STATUS_TO_OPEN);
+        break;
+      default:
+        throw new IllegalArgumentException("unknown status: " + mergedEvent.getStatus());
+    }
   }
 
   private SystemCommentType getCommentType(PullRequestRejectedEvent.RejectionCause cause) {

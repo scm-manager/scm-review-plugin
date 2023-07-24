@@ -264,7 +264,9 @@
         "rejected": "The pull request has been rejected.",
         "sourceDeleted": "The source branch of the pull request has been deleted.",
         "targetDeleted": "The target branch of the pull request has been deleted.",
-        "emergencyMerged": "The pull request has been merged with an emergency merge. The workflow engine rules has been ignored."
+        "emergencyMerged": "The pull request has been merged with an emergency merge. The workflow engine rules has been ignored.",
+        "statusToOpen": "The pull request has been opened for review.",
+        "statusToDraft": "The pull request has been converted to draft."
       },
       "type": {
         "comment": "Comment",

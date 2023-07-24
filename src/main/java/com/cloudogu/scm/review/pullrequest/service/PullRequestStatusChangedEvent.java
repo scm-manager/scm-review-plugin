@@ -21,24 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.comment.service;
+package com.cloudogu.scm.review.pullrequest.service;
 
-public enum SystemCommentType {
+import sonia.scm.event.Event;
+import sonia.scm.repository.Repository;
 
-  MERGED("merged"),
-  REJECTED("rejected"),
-  SOURCE_DELETED("sourceDeleted"),
-  TARGET_DELETED("targetDeleted"),
-  STATUS_TO_DRAFT("statusToDraft"),
-  STATUS_TO_OPEN("statusToOpen");
+@Event
+public class PullRequestStatusChangedEvent extends BasicPullRequestEvent {
 
-  private final String key;
+  private final PullRequestStatus status;
 
-  SystemCommentType(String key) {
-    this.key = key;
+  public PullRequestStatusChangedEvent(Repository repository, PullRequest pullRequest, PullRequestStatus status) {
+    super(repository, pullRequest);
+    this.status = status;
   }
 
-  public String getKey() {
-    return key;
-  }
+  public PullRequestStatus getStatus() { return status; }
 }
