@@ -73,10 +73,7 @@ const SubtitleContainer = styled(CardList.Card.Row)`
 `;
 
 const createTooltipMessage = (reviewers: Reviewer[]) => {
-  return reviewers
-    .map(r => r.displayName)
-    .map(n => `- ${n}`)
-    .join("\n");
+  return reviewers.map(({ displayName, approved }) => `- ${displayName}${approved ? " ✔" : ""}`).join("\n");
 };
 
 type Props = {
@@ -106,6 +103,7 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
               className={classNames("tag is-rounded is-light", { "is-relative": pullRequest.reviewer?.length })}
               aria-labelledby={labelId}
             >
+              {pullRequest.reviewer?.reduce((p, { approved }) => (approved ? p + 1 : p), 0)}/
               {pullRequest.reviewer?.length ?? 0}
             </span>
           );

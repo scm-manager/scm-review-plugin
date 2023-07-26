@@ -45,6 +45,7 @@ type FactoryProps = {
 
 /**
  * @since 2.19.0
+ * @deprecated Replaced by {@link PullRequestListDetail} since 2.29.0
  */
 export type PullRequestTableColumn = ExtensionPointDefinition<
   "pull-requests.table.column",
@@ -58,6 +59,9 @@ type ListDetailProps = {
   labelId: string;
 };
 
+/**
+ * @since 2.29.0
+ */
 export type PullRequestListDetail = ExtensionPointDefinition<
   "pull-requests.list.detail",
   {
