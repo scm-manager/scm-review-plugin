@@ -139,7 +139,7 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
   }
 
   return (
-    <CardList>
+    <CardList className="p-2">
       {pullRequests.map(pullRequest => (
         <PullRequestCard key={pullRequest.id}>
           <CardList.Card.Row className="is-flex">
