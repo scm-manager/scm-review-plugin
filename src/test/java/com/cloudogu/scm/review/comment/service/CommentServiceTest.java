@@ -62,6 +62,7 @@ import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.MAKE_TASK;
 import static com.cloudogu.scm.review.comment.service.CommentTransition.SET_DONE;
 import static com.cloudogu.scm.review.comment.service.CommentType.TASK_DONE;
+import static com.cloudogu.scm.review.comment.service.CommentType.TASK_TODO;
 import static com.cloudogu.scm.review.comment.service.Reply.createReply;
 import static java.time.Instant.now;
 import static java.time.Instant.ofEpochMilli;
@@ -655,6 +656,32 @@ public class CommentServiceTest {
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.isOutdated()).isTrue();
+  }
+
+  @Test
+  @SubjectAware(username = "trillian")
+  public void shouldNotMarkTaskTodoAsOutdated() {
+
+    Comment comment = EXISTING_COMMENT.clone();
+    comment.setType(TASK_TODO);
+
+    when(store.getAll(PULL_REQUEST_ID)).thenReturn(List.of(comment));
+    commentService.markAsOutdated(NAMESPACE, NAME, PULL_REQUEST_ID, comment.getId());
+
+    verify(store, never()).update(PULL_REQUEST_ID, comment);
+  }
+
+    @Test
+  @SubjectAware(username = "trillian")
+  public void shouldNotMarkTaskDoneAsOutdated() {
+
+    Comment comment = EXISTING_COMMENT.clone();
+    comment.setType(TASK_DONE);
+
+    when(store.getAll(PULL_REQUEST_ID)).thenReturn(List.of(comment));
+    commentService.markAsOutdated(NAMESPACE, NAME, PULL_REQUEST_ID, comment.getId());
+
+    verify(store, never()).update(PULL_REQUEST_ID, comment);
   }
 
   @Test

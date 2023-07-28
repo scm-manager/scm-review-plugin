@@ -143,8 +143,7 @@ public class CommentService {
             .in(repository.getNamespaceAndName()));
         }
       );
-
-    if (!rootComment.isOutdated()) {
+    if (rootComment.getType() == CommentType.COMMENT && !rootComment.isOutdated()) {
       rootComment.setOutdated(true);
       getCommentStore(repository).update(pullRequestId, rootComment);
     }
