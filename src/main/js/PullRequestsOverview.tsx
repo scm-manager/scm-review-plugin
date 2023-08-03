@@ -24,12 +24,13 @@
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
-import { CreateButton, ErrorPage, LinkPaginator, Loading, Notification, urls } from "@scm-manager/ui-components";
+import { ErrorPage, LinkPaginator, Loading, Notification, urls } from "@scm-manager/ui-components";
 import StatusSelector from "./table/StatusSelector";
 import { usePullRequests } from "./pullRequest";
 import { PullRequest } from "./types/PullRequest";
 import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import PullRequestList from "./PullRequestList";
+import { LinkButton } from "@scm-manager/ui-buttons";
 
 type Props = {
   repository: Repository;
@@ -79,8 +80,13 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
   return (
     <>
       <div className="panel">
-        <div className="panel-heading">
+        <div className="panel-heading is-flex is-justify-content-space-between">
           <StatusSelector handleTypeChange={handleStatusChange} status={statusFilter} />
+          {data?._links?.create ? (
+            <LinkButton variant="primary" to={`${url}/add/changesets/`}>
+              {t("scm-review-plugin.pullRequests.createButton")}
+            </LinkButton>
+          ) : null}
         </div>
 
         <PullRequestList pullRequests={data._embedded?.pullRequests as PullRequest[]} repository={repository} />
@@ -88,9 +94,6 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
           <LinkPaginator collection={data} page={page} filter={statusFilter} />
         </div>
       </div>
-      {data?._links?.create ? (
-        <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={`${url}/add/changesets/`} />
-      ) : null}
     </>
   );
 };
