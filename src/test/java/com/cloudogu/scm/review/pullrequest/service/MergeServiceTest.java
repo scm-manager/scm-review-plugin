@@ -87,6 +87,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -319,12 +320,13 @@ class MergeServiceTest {
 
   @Test
   void shouldDoDryRun() {
-    when(subject.isPermitted("repository:push:" + REPOSITORY.getId())).thenReturn(true);
+    when(subject.isPermitted("repository:readPullRequest:" + REPOSITORY.getId())).thenReturn(true);
     mockPullRequest("mergeable", "master", "1");
     when(mergeCommandBuilder.dryRun()).thenReturn(new MergeDryRunCommandResult(true));
 
     MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
+    verify(mergeCommandBuilder).dryRun();
     assertThat(mergeCheckResult.hasConflicts()).isFalse();
   }
 

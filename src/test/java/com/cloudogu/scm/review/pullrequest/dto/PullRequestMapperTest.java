@@ -171,6 +171,17 @@ class PullRequestMapperTest {
     }
 
     @Test
+    void shouldAppendConflictsLinks() {
+      PullRequest pullRequest = TestData.createPullRequest();
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().isEmpty()).isFalse();
+      Optional<Link> conflictsLink = dto.getLinks().getLinkBy("mergeConflicts");
+      assertThat(conflictsLink).isPresent();
+      assertThat(conflictsLink.get().getHref()).isEqualTo("/v2/merge/space/x/id/conflicts");
+    }
+
+    @Test
     void shouldAppendAvailableLabelsAsEmbedded() {
       BasePullRequestConfig config = new BasePullRequestConfig();
       config.setLabels(Set.of("1", "2"));

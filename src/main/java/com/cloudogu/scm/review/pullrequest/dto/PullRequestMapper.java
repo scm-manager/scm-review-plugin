@@ -218,17 +218,11 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       linksBuilder.single(link("rejectWithMessage", pullRequestResourceLinks.pullRequest()
         .rejectWithMessage(namespace, name, pullRequestId)));
 
-      if (RepositoryPermissions.push(repository).isPermitted()) {
-        linksBuilder.single(link("mergeCheck", pullRequestResourceLinks.mergeLinks()
-          .check(namespace, name, pullRequest.getId())));
-        linksBuilder.single(link("mergeConflicts", pullRequestResourceLinks.mergeLinks()
-          .conflicts(namespace, name, pullRequest.getId())));
-        if (pullRequest.isOpen()) {
+      if (RepositoryPermissions.push(repository).isPermitted() && (pullRequest.isOpen())) {
           linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
             .createDefaultCommitMessage(namespace, name, pullRequest.getId())));
           linksBuilder.single(link("mergeStrategyInfo", pullRequestResourceLinks.mergeLinks().getMergeStrategyInfo(namespace, name, pullRequestId)));
           appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
-        }
       }
     }
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
@@ -240,7 +234,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     if (pullRequest.isInProgress()) {
       linksBuilder.single(link("workflowResult", pullRequestResourceLinks.workflowEngineLinks().results(namespace, name, pullRequest.getId())));
     }
-
+    linksBuilder.single(link("mergeConflicts", pullRequestResourceLinks.mergeLinks().conflicts(namespace, name, pullRequest.getId())));
+    linksBuilder.single(link("mergeCheck", pullRequestResourceLinks.mergeLinks().check(namespace, name, pullRequest.getId())));
     Embedded.Builder embeddedBuilder = embeddedBuilder();
     embedDefaultConfig(repository, embeddedBuilder);
     embeddedBuilder.with("availableLabels", new LabelsDto(configService.evaluateConfig(repository).getLabels()));

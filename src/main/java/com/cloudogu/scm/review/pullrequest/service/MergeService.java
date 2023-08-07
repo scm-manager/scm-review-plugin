@@ -151,7 +151,8 @@ public class MergeService {
     }
     if (!emergency && !obstacles.isEmpty()) {
       throw new MergeNotAllowedException(repository, pullRequest, obstacles);
-    }  }
+    }
+  }
 
   public MergeCheckResult checkMerge(NamespaceAndName namespaceAndName, String pullRequestId) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
@@ -166,7 +167,7 @@ public class MergeService {
 
   private Optional<MergeDryRunCommandResult> dryRun(RepositoryService repositoryService, PullRequest pullRequest) {
     assertPullRequestNotClosed(repositoryService.getRepository(), pullRequest);
-    if (RepositoryPermissions.push(repositoryService.getRepository()).isPermitted()) {
+    if (PermissionCheck.mayRead(repositoryService.getRepository())) {
       MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, pullRequest.getSource(), pullRequest.getTarget());
       return of(mergeCommandBuilder.dryRun());
     }
@@ -176,7 +177,7 @@ public class MergeService {
   public MergeConflictResult conflicts(NamespaceAndName namespaceAndName, String pullRequestId) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
-      RepositoryPermissions.push(repositoryService.getRepository()).check();
+      PermissionCheck.checkRead(repositoryService.getRepository());
       MergeCommandBuilder mergeCommandBuilder = prepareDryRun(repositoryService, pullRequest.getSource(), pullRequest.getTarget());
       return mergeCommandBuilder.conflicts();
     }

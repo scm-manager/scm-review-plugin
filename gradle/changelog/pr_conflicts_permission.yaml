@@ -1,0 +1,2 @@
+- type: fixed
+  description: Merge conflicts in pull request are now available with pull request read permission
