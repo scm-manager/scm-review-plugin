@@ -279,6 +279,7 @@ public class PullRequestRootResource {
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
     @QueryParam("status") @DefaultValue("IN_PROGRESS") PullRequestSelector pullRequestSelector,
+    @QueryParam("sortBy") @DefaultValue("LAST_MOD_DESC") PullRequestSortSelector pullRequestSortSelector,
     @DefaultValue("0") @QueryParam("page") int page,
     @DefaultValue("10") @QueryParam("pageSize") int pageSize
   ) {
@@ -288,7 +289,7 @@ public class PullRequestRootResource {
       .stream()
       .filter(pullRequestSelector)
       .map(pr -> mapper.using(uriInfo).map(pr, repository))
-      .sorted(Comparator.comparing(this::getLastModification).reversed())
+      .sorted(pullRequestSortSelector.compare())
       .collect(Collectors.toList());
 
     PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
@@ -321,9 +322,10 @@ public class PullRequestRootResource {
     UriInfo uriInfo,
     String namespace,
     String name,
-    PullRequestSelector pullRequestSelector
+    PullRequestSelector pullRequestSelector,
+    PullRequestSortSelector pullRequestSortSelector
   ) {
-    return getAll(uriInfo, namespace, name, pullRequestSelector, 0, 9999);
+    return getAll(uriInfo, namespace, name, pullRequestSelector, pullRequestSortSelector, 0, 9999);
   }
 
   private HalRepresentation createHalRepresentation(Links.Builder linkBuilder, List<PullRequestDto> pullRequestDtos) {
@@ -404,10 +406,6 @@ public class PullRequestRootResource {
     );
 
     return Links.linkingTo().self(checkLink).build();
-  }
-
-  private Instant getLastModification(PullRequestDto pr) {
-    return ofNullable(pr.getLastModified()).orElse(pr.getCreationDate());
   }
 
   private void verifyBranchesDiffer(String source, String target) {

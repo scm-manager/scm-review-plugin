@@ -33,6 +33,7 @@ import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -82,6 +83,7 @@ import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.JsonMockHttpRequest;
+import sonia.scm.web.JsonMockHttpResponse;
 import sonia.scm.web.RestDispatcher;
 
 import javax.servlet.http.HttpServletResponse;
@@ -95,6 +97,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
@@ -461,6 +464,48 @@ public class PullRequestRootResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"id\":\"" + id_1 + "\"");
     assertThat(response.getContentAsString()).contains("\"id\":\"" + id_2 + "\"");
+  }
+
+  @Test
+  @SubjectAware(username = "rr")
+  public void shouldGetAllPullRequestsSortedByIdAscending() throws URISyntaxException, UnsupportedEncodingException {
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    List<String> expectedIds = new ArrayList<>(){{add("id_1"); add("id_2"); add("id_3");}};
+    List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(expectedIds.get(1)), createPullRequest(expectedIds.get(2)), createPullRequest(expectedIds.get(0)));
+    when(store.getAll()).thenReturn(pullRequests);
+
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "?status=ALL" + "&sortBy=ID_ASC");
+    JsonMockHttpResponse jsonResponse = new JsonMockHttpResponse();
+    dispatcher.invoke(request, jsonResponse);
+    JsonNode contentAsJson = jsonResponse.getContentAsJson();
+    JsonNode embedded = contentAsJson.get("_embedded").get("pullRequests");
+    List<String> sortedIds = new ArrayList<>();
+    for(JsonNode node : embedded) {
+      sortedIds.add(node.get("id").asText());
+    }
+    assertThat(jsonResponse.getStatus()).isEqualTo(200);
+    assertThat(sortedIds).isEqualTo(expectedIds);
+  }
+
+  @Test
+  @SubjectAware(username = "rr")
+  public void shouldGetAllPullRequestsSortedByIdDescending() throws URISyntaxException, UnsupportedEncodingException {
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    List<String> ids = new ArrayList<>(){{add("id_3"); add("id_2"); add("id_1");}};
+    List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(ids.get(1)), createPullRequest(ids.get(2)), createPullRequest(ids.get(0)));
+    when(store.getAll()).thenReturn(pullRequests);
+
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "?status=ALL" + "&sortBy=ID_DESC");
+    JsonMockHttpResponse jsonResponse = new JsonMockHttpResponse();
+    dispatcher.invoke(request, jsonResponse);
+    JsonNode contentAsJson = jsonResponse.getContentAsJson();
+    JsonNode embedded = contentAsJson.get("_embedded").get("pullRequests");
+    List<String> sortedIds = new ArrayList<>();
+    for(JsonNode node : embedded) {
+      sortedIds.add(node.get("id").asText());
+    }
+    assertThat(jsonResponse.getStatus()).isEqualTo(200);
+    assertThat(sortedIds).isEqualTo(ids);
   }
 
   @Test

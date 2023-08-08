@@ -98,6 +98,14 @@
         "REJECTED": "rejected",
         "MERGED": "merged"
       },
+      "sortSelector": {
+        "ID_ASC": "id (ascending)",
+        "ID_DESC": "id (descending)",
+        "STATUS_ASC": "status (ascending)",
+        "STATUS_DESC": "status (descending)",
+        "LAST_MOD_ASC": "newest first",
+        "LAST_MOD_DESC": "latest first"
+      },
       "guard": {
         "mergeFromAuthorNotAllowed": {
           "obstacle": "You should not merge your own pull request."

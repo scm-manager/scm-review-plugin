@@ -32,13 +32,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static java.util.Optional.ofNullable;
 
 @Getter
 @Setter
@@ -71,5 +72,9 @@ public class PullRequestDto extends HalRepresentation {
 
   public PullRequestDto(Links links, Embedded embedded) {
     super(links, embedded);
+  }
+
+  public Instant getLastModifiedDateForSort() {
+    return ofNullable(this.lastModified).orElse(this.creationDate);
   }
 }

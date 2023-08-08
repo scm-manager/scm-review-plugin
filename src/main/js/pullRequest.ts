@@ -297,18 +297,20 @@ export const useReadyForReviewPullRequest = (repository: Repository, pullRequest
 
 type UsePullRequestsRequest = {
   status?: string;
+  sortBy?: string
   page?: number;
   pageSize?: number;
 };
 
 export const usePullRequests = (repository: Repository, request?: UsePullRequestsRequest) => {
   const status = request?.status || "IN_PROGRESS";
+  const sortBy = request?.sortBy || "LAST_MOD_DESC";
   const page = request?.page ? request.page - 1 : 0;
   const pageSize = request?.pageSize || 10;
   const { error, isLoading, data } = useQuery<PagedPullRequestCollection, Error>(
-    ["repository", repository.namespace, repository.name, "pull-requests", status, page],
+    ["repository", repository.namespace, repository.name, "pull-requests", status, sortBy, page],
     () => {
-      const link = requiredLink(repository, "pullRequest") + `?status=${status}&page=${page}&pageSize=${pageSize}`;
+      const link = requiredLink(repository, "pullRequest") + `?status=${status}&sortBy=${sortBy}&page=${page}&pageSize=${pageSize}`;
       return apiClient.get(link).then(response => response.json());
     }
   );

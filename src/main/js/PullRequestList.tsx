@@ -138,6 +138,7 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
     return <Notification type="info">{t("scm-review-plugin.noRequests")}</Notification>;
   }
 
+
   return (
     <CardList className="p-2">
       {pullRequests.map(pullRequest => (

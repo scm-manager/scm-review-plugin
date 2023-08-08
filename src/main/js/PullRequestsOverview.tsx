@@ -31,6 +31,8 @@ import { PullRequest } from "./types/PullRequest";
 import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import PullRequestList from "./PullRequestList";
 import { LinkButton } from "@scm-manager/ui-buttons";
+import SortSelector from "./table/SortSelector";
+import queryString from "query-string";
 
 type Props = {
   repository: Repository;
@@ -40,15 +42,23 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
   const location = useLocation();
   const search = urls.getQueryStringFromLocation(location);
+  const sortByQuery = urls.getValueStringFromLocationByKey(location, "sortBy") || "";
   const match: { params: { page: string } } = useRouteMatch();
   const [statusFilter, setStatusFilter] = useState<string>(search || "IN_PROGRESS");
+  const [sortFilter, setSortFilter] = useState<string>(sortByQuery != ""? sortByQuery : "LAST_MOD_DESC" );2
   const history = useHistory();
   const page = useMemo(() => urls.getPageFromMatch(match), [match]);
-  const { data, error, isLoading } = usePullRequests(repository, { page, status: statusFilter, pageSize: 10 });
-  const handleStatusChange = useCallback(
-    (newStatus: string) => {
+  const { data, error, isLoading } = usePullRequests(repository, {
+    page,
+    status: statusFilter,
+    sortBy: sortFilter,
+    pageSize: 10
+  });
+  const handleQueryChange = useCallback(
+    (newStatus: string, newSort: string) => {
       setStatusFilter(newStatus);
-      history.replace(`1?q=${newStatus}`);
+      setSortFilter(newSort);
+      history.push(`1?q=${newStatus}&sortBy=${newSort}`);
     },
     [history]
   );
@@ -81,7 +91,11 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
     <>
       <div className="panel">
         <div className="panel-heading is-flex is-justify-content-space-between">
-          <StatusSelector handleTypeChange={handleStatusChange} status={statusFilter} />
+          <StatusSelector
+            handleTypeChange={newStatus => handleQueryChange(newStatus, sortFilter)}
+            status={statusFilter}
+          />
+          <SortSelector handleTypeChange={newSort => handleQueryChange(statusFilter, newSort)} sortBy={sortFilter} />
           {data?._links?.create ? (
             <LinkButton variant="primary" to={`${url}/add/changesets/`}>
               {t("scm-review-plugin.pullRequests.createButton")}
