@@ -98,6 +98,7 @@
         "REJECTED": "rejected",
         "MERGED": "merged"
       },
+      "selectorLabel": "Filter by",
       "sortSelector": {
         "ID_ASC": "id (ascending)",
         "ID_DESC": "id (descending)",
@@ -106,6 +107,7 @@
         "LAST_MOD_ASC": "newest first",
         "LAST_MOD_DESC": "latest first"
       },
+      "sortSelectorLabel": "Sort by",
       "guard": {
         "mergeFromAuthorNotAllowed": {
           "obstacle": "You should not merge your own pull request."

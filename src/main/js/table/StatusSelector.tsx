@@ -23,7 +23,7 @@
  */
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Select } from "@scm-manager/ui-components";
+import { Select } from "@scm-manager/ui-forms";
 
 type Props = {
   handleTypeChange: (p: string) => void;
@@ -31,9 +31,12 @@ type Props = {
   label?: string;
   helpText?: string;
   loading?: boolean;
+  className?: string;
 };
 
-const StatusSelector: FC<Props> = ({ handleTypeChange, status, label, helpText, loading }) => {
+
+
+const StatusSelector: FC<Props> = ({ handleTypeChange, status, label, helpText, loading, className }) => {
   const [t] = useTranslation("plugins");
   const types = ["IN_PROGRESS", "MINE", "REVIEWER", "ALL", "REJECTED", "MERGED"];
 
@@ -47,14 +50,18 @@ const StatusSelector: FC<Props> = ({ handleTypeChange, status, label, helpText, 
   };
 
   return (
-    <Select
-      onChange={handleTypeChange}
-      value={status ? status : "IN_PROGRESS"}
-      options={createSelectOptions()}
-      loading={loading}
-      label={label}
-      helpText={helpText}
-    />
+    <>
+      <label className="is-flex is-align-items-center">{t("scm-review-plugin.pullRequest.selectorLabel")}</label>
+      <Select
+        onChange={handleTypeChange}
+        value={status ? status : "IN_PROGRESS"}
+        options={createSelectOptions()}
+        loading={loading}
+        label={label}
+        helpText={helpText}
+        className={className}
+      />
+    </>
   );
 };
 

@@ -24,7 +24,7 @@
 
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Select } from "@scm-manager/ui-components";
+import { Select } from "@scm-manager/ui-forms";
 
 type Props = {
   handleTypeChange: (p: string) => void;
@@ -48,15 +48,18 @@ const SortSelector: FC<Props> = ({ handleTypeChange, sortBy, label, helpText, lo
   };
 
   return (
-    <Select
-      onChange={handleTypeChange}
-      value={sortBy ? sortBy : "LAST_MOD_ASC"}
-      options={createSelectOptions()}
-      loading={loading}
-      label={label}
-      helpText={helpText}
-    />
+    <>
+      <label className="is-flex is-align-items-center">{t("scm-review-plugin.pullRequest.sortSelectorLabel")}</label>
+      <Select
+        onChange={handleTypeChange}
+        value={sortBy ? sortBy : "LAST_MOD_ASC"}
+        options={createSelectOptions()}
+        loading={loading}
+        label={label}
+        helpText={helpText}
+      />
+    </>
   );
 };
 
-export default SortSelector
+export default SortSelector;

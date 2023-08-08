@@ -98,6 +98,7 @@
         "REJECTED": "abgelehnt",
         "MERGED": "gemerged"
       },
+      "selectorLabel": "Filtern nach",
       "sortSelector": {
         "ID_ASC": "id (aufsteigend)",
         "ID_DESC": "id (absteigend)",
@@ -106,6 +107,7 @@
         "LAST_MOD_ASC": "letzte änderung (neueste zuerst)",
         "LAST_MOD_DESC": "letzte änderung (älteste zuerst)"
       },
+      "sortSelectorLabel": "Sortieren nach",
       "guard": {
         "mergeFromAuthorNotAllowed": {
           "obstacle": "Sie sollten nicht Ihren eigenen Pull Request mergen."

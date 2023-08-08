@@ -32,11 +32,14 @@ import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-d
 import PullRequestList from "./PullRequestList";
 import { LinkButton } from "@scm-manager/ui-buttons";
 import SortSelector from "./table/SortSelector";
-import queryString from "query-string";
+import styled from "styled-components";
 
 type Props = {
   repository: Repository;
 };
+
+const PageHeaderWrapper = styled.div`
+gap: 0.5rem`
 
 const PullRequestsOverview: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
@@ -45,7 +48,7 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
   const sortByQuery = urls.getValueStringFromLocationByKey(location, "sortBy") || "";
   const match: { params: { page: string } } = useRouteMatch();
   const [statusFilter, setStatusFilter] = useState<string>(search || "IN_PROGRESS");
-  const [sortFilter, setSortFilter] = useState<string>(sortByQuery != ""? sortByQuery : "LAST_MOD_DESC" );2
+  const [sortFilter, setSortFilter] = useState<string>(sortByQuery != ""? sortByQuery : "LAST_MOD_DESC" );
   const history = useHistory();
   const page = useMemo(() => urls.getPageFromMatch(match), [match]);
   const { data, error, isLoading } = usePullRequests(repository, {
@@ -90,19 +93,20 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
   return (
     <>
       <div className="panel">
-        <div className="panel-heading is-flex is-justify-content-space-between">
-          <StatusSelector
-            handleTypeChange={newStatus => handleQueryChange(newStatus, sortFilter)}
-            status={statusFilter}
-          />
-          <SortSelector handleTypeChange={newSort => handleQueryChange(statusFilter, newSort)} sortBy={sortFilter} />
+        <PageHeaderWrapper className="panel-heading is-flex is-flex-wrap-wrap is-justify-content-space-between">
+          <PageHeaderWrapper className="is-flex is-flex-wrap-wrap">
+            <StatusSelector
+                handleTypeChange={newStatus => handleQueryChange(newStatus, sortFilter)}
+                status={statusFilter} className="mr-2"
+            />
+            <SortSelector handleTypeChange={newSort => handleQueryChange(statusFilter, newSort)} sortBy={sortFilter}/>
+          </PageHeaderWrapper>
           {data?._links?.create ? (
             <LinkButton variant="primary" to={`${url}/add/changesets/`}>
               {t("scm-review-plugin.pullRequests.createButton")}
             </LinkButton>
           ) : null}
-        </div>
-
+        </PageHeaderWrapper>
         <PullRequestList pullRequests={data._embedded?.pullRequests as PullRequest[]} repository={repository} />
         <div className="panel-footer">
           <LinkPaginator collection={data} page={page} filter={statusFilter} />
