@@ -194,8 +194,13 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
           <fieldset>
             <legend className="is-size-5 mb-2">{t("scm-review-plugin.config.legends.creation")}</legend>
             <ChipInputField
-              value={labels}
-              onChange={newValue => onChange("labels", newValue)}
+              value={labels.map(label => ({ value: label, label }))}
+              onChange={newValue =>
+                onChange(
+                  "labels",
+                  newValue.map(({ value }) => value)
+                )
+              }
               label={t("scm-review-plugin.config.availableLabels.label")}
               placeholder={t("scm-review-plugin.config.labels.placeholder")}
               aria-label={t("scm-review-plugin.config.labels.ariaLabel")}
