@@ -23,57 +23,49 @@
  */
 
 import { PullRequest, Reviewer } from "./types/PullRequest";
-import { CardList } from "@scm-manager/ui-layout";
+import { Card, CardListBox } from "@scm-manager/ui-layout";
 import { Link } from "react-router-dom";
-import { DateFromNow, Notification, useGeneratedId } from "@scm-manager/ui-components";
-import { PullRequestListDetail } from "./types/ExtensionPoints";
+import { DateFromNow, Notification } from "@scm-manager/ui-components";
+import { PullRequestListDetailExtension } from "./types/ExtensionPoints";
 import classNames from "classnames";
 import { evaluateTagColor } from "./pullRequest";
-import React, { FC, useMemo } from "react";
+import React, { FC } from "react";
 import { Repository } from "@scm-manager/ui-types";
 import styled from "styled-components";
-import { useBinder } from "@scm-manager/ui-extensions";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import { Trans, useTranslation } from "react-i18next";
 import PullRequestStatusColumn from "./workflow/PullRequestStatusColumn";
 import useEngineConfig from "./workflow/useEngineConfig";
 import { Tooltip } from "@scm-manager/ui-overlays";
 
-const PullRequestDetail: FC<{
-  pullRequest: PullRequest;
-  repository: Repository;
-  detail: PullRequestListDetail["type"];
-}> = ({ repository, detail, pullRequest }) => {
-  const labelId = useGeneratedId();
-  const renderedDetail = detail.render({ pullRequest, repository, labelId });
-  if (!renderedDetail) {
-    return null;
-  }
-  return (
-    <span key={detail.name}>
-      <span className="has-text-secondary mr-1" id={labelId}>
-        {detail.name}
-      </span>
-      {renderedDetail}
-    </span>
-  );
-};
-
-const DetailsContainer = styled.span`
-  gap: 0.5rem 1rem;
-`;
-
-const PullRequestCard = styled(CardList.Card)`
-  & > div {
-    gap: 0.5rem;
-  }
-`;
-
-const SubtitleContainer = styled(CardList.Card.Row)`
+const SubtitleRow = styled(CardListBox.Card.Row)`
   white-space: pre;
 `;
 
 const createTooltipMessage = (reviewers: Reviewer[]) => {
   return reviewers.map(({ displayName, approved }) => `- ${displayName}${approved ? " ✔" : ""}`).join("\n");
+};
+
+const ReviewersDetail: FC<{ pullRequest: PullRequest; labelId: string }> = ({ pullRequest, labelId }) => {
+  const [t] = useTranslation("plugins");
+  const content = (
+    <Card.Details.Detail.Tag
+      className={classNames({ "is-relative": pullRequest.reviewer?.length })}
+      aria-labelledby={labelId}
+    >
+      {pullRequest.reviewer?.reduce((p, { approved }) => (approved ? p + 1 : p), 0)}/{pullRequest.reviewer?.length ?? 0}
+    </Card.Details.Detail.Tag>
+  );
+  if (pullRequest.reviewer?.length) {
+    return (
+      <Tooltip
+        message={t("scm-review-plugin.pullRequest.reviewer") + ":\n" + createTooltipMessage(pullRequest.reviewer)}
+      >
+        {content}
+      </Tooltip>
+    );
+  }
+  return content;
 };
 
 type Props = {
@@ -82,79 +74,29 @@ type Props = {
 };
 
 const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
-  const binder = useBinder();
   const [t] = useTranslation("plugins");
   const { data, error } = useEngineConfig(repository);
-  const defaultPullRequestListDetails = useMemo(() => {
-    const result: PullRequestListDetail["type"][] = [
-      {
-        name: t("scm-review-plugin.pullRequests.details.tasks"),
-        render: ({ pullRequest, labelId }) => (
-          <span className="tag is-rounded is-light" aria-labelledby={labelId}>
-            {pullRequest.tasks?.done}/{pullRequest.tasks ? pullRequest.tasks.todo + pullRequest.tasks.done : 0}
-          </span>
-        )
-      },
-      {
-        name: t("scm-review-plugin.pullRequests.details.reviewers"),
-        render: ({ pullRequest, labelId }) => {
-          const content = (
-            <span
-              className={classNames("tag is-rounded is-light", { "is-relative": pullRequest.reviewer?.length })}
-              aria-labelledby={labelId}
-            >
-              {pullRequest.reviewer?.reduce((p, { approved }) => (approved ? p + 1 : p), 0)}/
-              {pullRequest.reviewer?.length ?? 0}
-            </span>
-          );
-          if (pullRequest.reviewer?.length) {
-            return (
-              <Tooltip
-                message={
-                  t("scm-review-plugin.pullRequest.reviewer") + ":\n" + createTooltipMessage(pullRequest.reviewer)
-                }
-              >
-                {content}
-              </Tooltip>
-            );
-          }
-          return content;
-        }
-      }
-    ];
-    if (!error && data?.enabled && data?.rules.length) {
-      result.push({
-        name: t("scm-review-plugin.pullRequests.details.workflow"),
-        render: ({ pullRequest }) =>
-          pullRequest._links.workflowResult ? (
-            <PullRequestStatusColumn pullRequest={pullRequest} repository={repository} />
-          ) : null
-      });
-    }
-    return result;
-  }, [data, error, repository, t]);
 
   if (!pullRequests?.length) {
     return <Notification type="info">{t("scm-review-plugin.noRequests")}</Notification>;
   }
 
-
   return (
-    <CardList className="p-2">
+    <CardListBox className="p-2">
       {pullRequests.map(pullRequest => (
-        <PullRequestCard key={pullRequest.id}>
-          <CardList.Card.Row className="is-flex">
-            <CardList.Card.Title>
+        <CardListBox.Card key={pullRequest.id}>
+          <Card.Row className="is-flex">
+            <Card.Title>
               <Link to={`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`}>
                 {pullRequest.title}
               </Link>
-            </CardList.Card.Title>
+            </Card.Title>
             <span className="has-text-secondary ml-1" aria-label={t("scm-review-plugin.pullRequests.aria.id")}>
               <span aria-hidden>#</span>
               {pullRequest.id}
             </span>
-          </CardList.Card.Row>
-          <SubtitleContainer className="is-flex is-flex-wrap-wrap is-size-7 has-text-secondary">
+          </Card.Row>
+          <SubtitleRow className="is-flex is-flex-wrap-wrap is-size-7 has-text-secondary">
             <Trans
               t={t}
               i18nKey="scm-review-plugin.pullRequests.subtitle"
@@ -169,24 +111,53 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
                 space: <span />
               }}
             />
-          </SubtitleContainer>
-          <CardList.Card.Row className="is-flex is-align-items-center is-justify-content-space-between is-size-7">
-            <DetailsContainer className="is-flex is-flex-wrap-wrap is-align-items-center">
-              {[
-                ...defaultPullRequestListDetails,
-                ...binder.getExtensions<PullRequestListDetail>("pull-requests.list.detail", {
+          </SubtitleRow>
+          <Card.Row className="is-flex is-align-items-center is-justify-content-space-between is-size-7">
+            <Card.Details>
+              <Card.Details.Detail>
+                {({ labelId }) => (
+                  <>
+                    <Card.Details.Detail.Label id={labelId}>
+                      {t("scm-review-plugin.pullRequests.details.tasks")}
+                    </Card.Details.Detail.Label>
+                    <Card.Details.Detail.Tag aria-labelledby={labelId}>
+                      {pullRequest.tasks?.done}/
+                      {pullRequest.tasks ? pullRequest.tasks.todo + pullRequest.tasks.done : 0}
+                    </Card.Details.Detail.Tag>
+                  </>
+                )}
+              </Card.Details.Detail>
+              <Card.Details.Detail>
+                {({ labelId }) => (
+                  <>
+                    <Card.Details.Detail.Label id={labelId}>
+                      {t("scm-review-plugin.pullRequests.details.reviewers")}
+                    </Card.Details.Detail.Label>
+                    <ReviewersDetail pullRequest={pullRequest} labelId={labelId} />
+                  </>
+                )}
+              </Card.Details.Detail>
+              {!error && data?.enabled && data?.rules.length && pullRequest._links.workflowResult ? (
+                <Card.Details.Detail>
+                  {({ labelId }) => (
+                    <>
+                      <Card.Details.Detail.Label id={labelId}>
+                        {t("scm-review-plugin.pullRequests.details.workflow")}
+                      </Card.Details.Detail.Label>
+                      <PullRequestStatusColumn pullRequest={pullRequest} repository={repository} />
+                    </>
+                  )}
+                </Card.Details.Detail>
+              ) : null}
+              <ExtensionPoint<PullRequestListDetailExtension>
+                name="pull-requests.list.detail"
+                props={{
                   pullRequest,
                   repository
-                })
-              ].map(detail => (
-                <PullRequestDetail
-                  key={detail.name}
-                  pullRequest={pullRequest}
-                  detail={detail}
-                  repository={repository}
-                />
-              ))}
-            </DetailsContainer>
+                }}
+                renderAll
+              />
+            </Card.Details>
             <span
               className={classNames(
                 "tag is-rounded is-align-self-flex-end",
@@ -196,10 +167,10 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
             >
               {pullRequest.status}
             </span>
-          </CardList.Card.Row>
-        </PullRequestCard>
+          </Card.Row>
+        </CardListBox.Card>
       ))}
-    </CardList>
+    </CardListBox>
   );
 };
 

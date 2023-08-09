@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-import { ExtensionPointDefinition } from "@scm-manager/ui-extensions";
+import { ExtensionPointDefinition, RenderableExtensionPointDefinition } from "@scm-manager/ui-extensions";
 import { ReactElement, ReactNode } from "react";
 import { PullRequest } from "./PullRequest";
 import { Repository } from "@scm-manager/ui-types";
@@ -45,7 +45,7 @@ type FactoryProps = {
 
 /**
  * @since 2.19.0
- * @deprecated Replaced by {@link PullRequestListDetail} since 2.29.0
+ * @deprecated Replaced by {@link PullRequestListDetailExtension} since 2.29.0
  */
 export type PullRequestTableColumn = ExtensionPointDefinition<
   "pull-requests.table.column",
@@ -53,20 +53,13 @@ export type PullRequestTableColumn = ExtensionPointDefinition<
   FactoryProps
 >;
 
-type ListDetailProps = {
-  repository: Repository;
-  pullRequest: PullRequest;
-  labelId: string;
-};
-
 /**
  * @since 2.29.0
  */
-export type PullRequestListDetail = ExtensionPointDefinition<
+export type PullRequestListDetailExtension = RenderableExtensionPointDefinition<
   "pull-requests.list.detail",
   {
-    name: string;
-    render: (props: ListDetailProps) => ReactNode | null;
-  },
-  Omit<ListDetailProps, "labelId">
+    repository: Repository;
+    pullRequest: PullRequest;
+  }
 >;

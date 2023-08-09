@@ -21,47 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
+import React, { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Select } from "@scm-manager/ui-forms";
+import { useGeneratedId } from "@scm-manager/ui-components";
 
 type Props = {
   handleTypeChange: (p: string) => void;
   status: string;
-  label?: string;
-  helpText?: string;
-  loading?: boolean;
   className?: string;
 };
 
-
-
-const StatusSelector: FC<Props> = ({ handleTypeChange, status, label, helpText, loading, className }) => {
+const StatusSelector: FC<Props> = ({ handleTypeChange, status, className }) => {
   const [t] = useTranslation("plugins");
   const types = ["IN_PROGRESS", "MINE", "REVIEWER", "ALL", "REJECTED", "MERGED"];
-
-  const createSelectOptions = () => {
-    return types.map(singleStatus => {
-      return {
+  const selectOptions = useMemo(
+    () =>
+      types.map(singleStatus => ({
         label: t(`scm-review-plugin.pullRequest.selector.${singleStatus}`),
         value: singleStatus
-      };
-    });
-  };
+      })),
+    [t, types]
+  );
+  const selectId = useGeneratedId();
 
   return (
-    <>
-      <label className="is-flex is-align-items-center">{t("scm-review-plugin.pullRequest.selectorLabel")}</label>
+    <span className="is-flex">
+      <label className="is-flex is-align-items-center mr-2" htmlFor={selectId}>
+        {t("scm-review-plugin.pullRequest.selectorLabel")}
+      </label>
       <Select
-        onChange={handleTypeChange}
+        id={selectId}
+        onChange={e => handleTypeChange(e.target.value)}
         value={status ? status : "IN_PROGRESS"}
-        options={createSelectOptions()}
-        loading={loading}
-        label={label}
-        helpText={helpText}
+        options={selectOptions}
         className={className}
       />
-    </>
+    </span>
   );
 };
 

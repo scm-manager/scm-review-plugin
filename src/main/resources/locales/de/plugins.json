@@ -192,6 +192,7 @@
       }
     },
     "pullRequests": {
+      "pageSubtitle": "Pull Requests",
       "errorTitle": "Fehler",
       "errorSubtitle": "Unbekannter Pull Request Fehler",
       "forbidden": "Es fehlen Berechtigungen zum Lesen der Pull Requests!",

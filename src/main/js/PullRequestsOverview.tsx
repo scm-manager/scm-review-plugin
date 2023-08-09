@@ -24,7 +24,7 @@
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
-import { ErrorPage, LinkPaginator, Loading, Notification, urls } from "@scm-manager/ui-components";
+import { ErrorPage, LinkPaginator, Loading, Notification, Subtitle, urls } from "@scm-manager/ui-components";
 import StatusSelector from "./table/StatusSelector";
 import { usePullRequests } from "./pullRequest";
 import { PullRequest } from "./types/PullRequest";
@@ -38,8 +38,18 @@ type Props = {
   repository: Repository;
 };
 
-const PageHeaderWrapper = styled.div`
-gap: 0.5rem`
+const HeaderContainer = styled.div`
+  gap: 0.5rem 1rem;
+`;
+
+const SortFilterContainer = styled.div`
+  flex: 1 1 0;
+  gap: 0.5rem 1rem;
+`;
+
+const NoGrowLinkButton = styled(LinkButton)`
+  flex: 0 0 auto;
+`;
 
 const PullRequestsOverview: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
@@ -48,7 +58,7 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
   const sortByQuery = urls.getValueStringFromLocationByKey(location, "sortBy") || "";
   const match: { params: { page: string } } = useRouteMatch();
   const [statusFilter, setStatusFilter] = useState<string>(search || "IN_PROGRESS");
-  const [sortFilter, setSortFilter] = useState<string>(sortByQuery != ""? sortByQuery : "LAST_MOD_DESC" );
+  const [sortFilter, setSortFilter] = useState<string>(sortByQuery != "" ? sortByQuery : "LAST_MOD_DESC");
   const history = useHistory();
   const page = useMemo(() => urls.getPageFromMatch(match), [match]);
   const { data, error, isLoading } = usePullRequests(repository, {
@@ -92,26 +102,23 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
 
   return (
     <>
-      <div className="panel">
-        <PageHeaderWrapper className="panel-heading is-flex is-flex-wrap-wrap is-justify-content-space-between">
-          <PageHeaderWrapper className="is-flex is-flex-wrap-wrap">
-            <StatusSelector
-                handleTypeChange={newStatus => handleQueryChange(newStatus, sortFilter)}
-                status={statusFilter} className="mr-2"
-            />
-            <SortSelector handleTypeChange={newSort => handleQueryChange(statusFilter, newSort)} sortBy={sortFilter}/>
-          </PageHeaderWrapper>
-          {data?._links?.create ? (
-            <LinkButton variant="primary" to={`${url}/add/changesets/`}>
-              {t("scm-review-plugin.pullRequests.createButton")}
-            </LinkButton>
-          ) : null}
-        </PageHeaderWrapper>
-        <PullRequestList pullRequests={data._embedded?.pullRequests as PullRequest[]} repository={repository} />
-        <div className="panel-footer">
-          <LinkPaginator collection={data} page={page} filter={statusFilter} />
-        </div>
-      </div>
+      <Subtitle subtitle={t("scm-review-plugin.pullRequests.pageSubtitle")} />
+      <HeaderContainer className="is-flex is-flex-wrap-wrap is-justify-content-space-between mb-3">
+        <SortFilterContainer className="is-flex is-flex-wrap-wrap">
+          <StatusSelector
+            handleTypeChange={newStatus => handleQueryChange(newStatus, sortFilter)}
+            status={statusFilter}
+          />
+          <SortSelector handleTypeChange={newSort => handleQueryChange(statusFilter, newSort)} sortBy={sortFilter} />
+        </SortFilterContainer>
+        {data?._links?.create ? (
+          <NoGrowLinkButton variant="primary" to={`${url}/add/changesets/`}>
+            {t("scm-review-plugin.pullRequests.createButton")}
+          </NoGrowLinkButton>
+        ) : null}
+      </HeaderContainer>
+      <PullRequestList pullRequests={data._embedded?.pullRequests as PullRequest[]} repository={repository} />
+      <LinkPaginator collection={data} page={page} filter={statusFilter} />
     </>
   );
 };

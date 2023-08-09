@@ -169,3 +169,5 @@ binder.bind("reviewPlugin.workflow.config.ApprovedByXReviewersRule", ApprovedByX
 binder.bind("search.hit.pullRequest.renderer", PullRequestHitRenderer);
 binder.bind("search.hit.indexedComment.renderer", CommentHitRenderer);
 binder.bind("repos.branches.row.details", BranchDetailsPullRequests);
+
+export { PullRequestListDetailExtension } from "./types/ExtensionPoints";

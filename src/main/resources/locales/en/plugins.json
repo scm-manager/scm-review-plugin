@@ -192,6 +192,7 @@
       }
     },
     "pullRequests": {
+      "pageSubtitle": "Pull Requests",
       "errorTitle": "Error",
       "errorSubtitle": "Unspecified pull request error",
       "forbidden": "You do not have the permission to read pull requests!",
