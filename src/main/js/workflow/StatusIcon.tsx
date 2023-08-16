@@ -65,7 +65,7 @@ export const getColor = (results: Result[]) => {
 export const getIcon = (results: Result[]) => {
   if (results && results.length) {
     if (results.some(it => it.failed)) {
-      return "exclamation-circle";
+      return "times-circle";
     } else {
       return "check-circle";
     }

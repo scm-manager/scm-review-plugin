@@ -77,7 +77,7 @@ const ModalRow: FC<Props> = ({ result }) => {
         <Icon
           className="ml-1"
           color={result?.failed ? "danger" : "success"}
-          name={result?.failed ? "exclamation-circle" : "check-circle"}
+          name={result?.failed ? "times-circle" : "check-circle"}
           aria-label={t(`scm-review-plugin.pullRequests.aria.workflow.status.${result.failed ? "fail" : "success"}`)}
         />
       </Left>

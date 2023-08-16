@@ -43,6 +43,7 @@ import ApprovedByXReviewersRuleConfiguration from "./workflow/ApprovedByXReviewe
 import { Repository } from "@scm-manager/ui-types";
 import PullRequestHitRenderer from "./search/PullRequestHitRenderer";
 import CommentHitRenderer from "./search/CommentHitRenderer";
+import BranchDetailsMenu from "./BranchDetailsMenu";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 import { useTranslation } from "react-i18next";
 import NamespaceConfig from "./config/NamespaceConfig";
@@ -182,6 +183,7 @@ binder.bind<MyTaskExtension<DataType>>("landingpage.mytask", PullRequestReview);
 binder.bind("reviewPlugin.workflow.config.ApprovedByXReviewersRule", ApprovedByXReviewersRuleConfiguration);
 binder.bind("search.hit.pullRequest.renderer", PullRequestHitRenderer);
 binder.bind("search.hit.indexedComment.renderer", CommentHitRenderer);
-binder.bind("repos.branches.row.details", BranchDetailsPullRequests);
+binder.bind<extensionPoints.BranchListMenu>("branches.list.menu", BranchDetailsMenu);
+binder.bind<extensionPoints.BranchListDetail>("branches.list.detail", BranchDetailsPullRequests);
 
 export { PullRequestListDetailExtension } from "./types/ExtensionPoints";

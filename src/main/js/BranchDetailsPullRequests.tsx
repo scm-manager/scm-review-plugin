@@ -130,11 +130,17 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, branchDetail
       >
         <PullRequestList repository={repository} pullRequests={prs} />
       </Popover>
-      <Card.Details.Detail {...triggerProps} className="is-relative">
-        <Card.Details.Detail.Label>
-          {t("scm-review-plugin.pullRequests.details.pullRequests")}
-        </Card.Details.Detail.Label>
-        <Card.Details.Detail.Tag>{prs.length}</Card.Details.Detail.Tag>
+      <Card.Details.Detail>
+        {({ labelId }) => (
+          <>
+            <Card.Details.Detail.Label id={labelId}>
+              {t("scm-review-plugin.pullRequests.details.pullRequests")}
+            </Card.Details.Detail.Label>
+            <Card.Details.Detail.Tag className="is-relative" aria-labelledby={labelId} {...triggerProps}>
+              {prs.length}
+            </Card.Details.Detail.Tag>
+          </>
+        )}
       </Card.Details.Detail>
     </>
   );
