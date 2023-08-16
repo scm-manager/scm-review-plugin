@@ -6,7 +6,6 @@
     },
     "branchDetails": {
       "pullRequest": {
-        "label": "Pull Request",
         "pending": "{{count}} pending",
         "create": "Create PR",
         "popover": "Pull Requests",

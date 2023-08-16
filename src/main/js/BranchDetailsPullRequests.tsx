@@ -23,13 +23,15 @@
  */
 
 import React, { FC } from "react";
-import { Branch, BranchDetails, Repository } from "@scm-manager/ui-types";
-import { Card } from "@scm-manager/ui-layout";
+import { Repository } from "@scm-manager/ui-types";
 import { AvatarImage, DateFromNow, Popover, SmallLoadingSpinner, usePopover } from "@scm-manager/ui-components";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { PullRequest } from "./types/PullRequest";
+import { extensionPoints } from "@scm-manager/ui-extensions";
+import { Card } from "@scm-manager/ui-layout";
+import classNames from "classnames";
 
 const PullRequestEntry = styled.div`
   border-radius: 5px;
@@ -38,12 +40,6 @@ const PullRequestEntry = styled.div`
 const UnbreakableText = styled.span`
   word-break: keep-all;
 `;
-
-type Props = {
-  repository: Repository;
-  branch: Branch;
-  branchDetails?: BranchDetails;
-};
 
 type PRListProps = {
   repository: Repository;
@@ -63,7 +59,7 @@ const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
         return (
           <>
             <PullRequestEntry
-              key={key}
+              key={pr.id}
               onClick={() => history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pr.id}`)}
               className="is-clickable p-1 has-hover-background-blue"
             >
@@ -97,53 +93,55 @@ const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
   );
 };
 
-const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, branchDetails }) => {
+const BranchDetailsPullRequests: extensionPoints.BranchListDetail["type"] = ({ repository, branchDetails }) => {
   const { popoverProps, triggerProps } = usePopover();
   const [t] = useTranslation("plugins");
-
-  if (branch.defaultBranch) {
-    return null;
-  }
 
   if (!branchDetails) {
     return <SmallLoadingSpinner />;
   }
 
-  if (!branchDetails._embedded?.pullRequests) {
-    return null;
-  }
+  const prs: PullRequest[] = (branchDetails._embedded?.pullRequests ?? []) as PullRequest[];
 
-  const prs: PullRequest[] = branchDetails._embedded.pullRequests as PullRequest[];
-
-  if (prs.length === 0) {
-    return null;
-  }
-
-  return (
-    <>
-      <Popover
-        title={
-          <h1 className="has-text-weight-bold is-size-5">{t("scm-review-plugin.branchDetails.pullRequest.popover")}</h1>
-        }
-        width={400}
-        {...popoverProps}
-      >
-        <PullRequestList repository={repository} pullRequests={prs} />
-      </Popover>
-      <Card.Details.Detail>
-        {({ labelId }) => (
-          <>
-            <Card.Details.Detail.Label id={labelId}>
-              {t("scm-review-plugin.pullRequests.details.pullRequests")}
-            </Card.Details.Detail.Label>
-            <Card.Details.Detail.Tag className="is-relative" aria-labelledby={labelId} {...triggerProps}>
-              {prs.length}
-            </Card.Details.Detail.Tag>
-          </>
-        )}
-      </Card.Details.Detail>
-    </>
+  const content = (
+    <Card.Details.Detail>
+      {({ labelId }) => (
+        <>
+          <Card.Details.Detail.Label id={labelId}>
+            {t("scm-review-plugin.pullRequests.details.pullRequests")}
+          </Card.Details.Detail.Label>
+          <Card.Details.Detail.Tag
+            className={classNames({ "is-relative": prs.length > 0 })}
+            aria-labelledby={labelId}
+            {...triggerProps}
+          >
+            {prs.length}
+          </Card.Details.Detail.Tag>
+        </>
+      )}
+    </Card.Details.Detail>
   );
+
+  if (prs.length) {
+    return (
+      <>
+        <Popover
+          title={
+            <h1 className="has-text-weight-bold is-size-5">
+              {t("scm-review-plugin.branchDetails.pullRequest.popover")}
+            </h1>
+          }
+          width={400}
+          {...popoverProps}
+        >
+          <PullRequestList repository={repository} pullRequests={prs} />
+        </Popover>
+        {content}
+      </>
+    );
+  }
+
+  return content;
 };
 
 export default BranchDetailsPullRequests;

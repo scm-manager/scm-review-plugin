@@ -44,15 +44,11 @@ import { Repository } from "@scm-manager/ui-types";
 import PullRequestHitRenderer from "./search/PullRequestHitRenderer";
 import CommentHitRenderer from "./search/CommentHitRenderer";
 import BranchDetailsMenu from "./BranchDetailsMenu";
-import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 import { useTranslation } from "react-i18next";
 import NamespaceConfig from "./config/NamespaceConfig";
 import { DataType } from "./landingpage/DataType";
 import { MyDataExtension, MyEventExtension, MyTaskExtension } from "@scm-manager/scm-landingpage-plugin";
-import PullRequestStatusTag from "./PullRequestStatusTag";
-import PullRequestTag from "./PullRequestTag";
-import { Card, CardList } from "@scm-manager/ui-layout";
-import BranchDetailsMenu from "./BranchDetailsMenu";
+import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 
 type PredicateProps = {
   repository: Repository;
@@ -86,7 +82,7 @@ const ShowPullRequestRoute = ({ url, repository }: RepoRouteProps) => {
 
 binder.bind("repository.route", ShowPullRequestRoute);
 
-const routeRegex = new RegExp(".*/repo/.+/.+/pull-requests?(/.*)?");
+const routeRegex = /.*\/repo\/.+\/.+\/pull-requests?(\/.*)?/;
 
 export function matches(route: any) {
   return route.location.pathname.match(routeRegex);
@@ -135,13 +131,15 @@ const AllPullRequestsLink: FC = () => {
 
 binder.bind<extensionPoints.BranchListDetail>(
   "branches.list.detail",
-  PullRequestTag,
+  BranchDetailsPullRequests,
   ({ branchDetails, branch }) => branchDetails && !branch.defaultBranch
 );
 
-binder.bind<extensionPoints.BranchListMenu>("branches.list.menu", props => (
-  <BranchDetailsMenu repository={props.repository} branch={props.branch} />
-));
+binder.bind<extensionPoints.BranchListMenu>(
+  "branches.list.menu",
+  BranchDetailsMenu,
+  ({ branch }) => !branch.defaultBranch
+);
 
 binder.bind("repository.route", ShowPullRequestsRoute);
 
@@ -183,7 +181,5 @@ binder.bind<MyTaskExtension<DataType>>("landingpage.mytask", PullRequestReview);
 binder.bind("reviewPlugin.workflow.config.ApprovedByXReviewersRule", ApprovedByXReviewersRuleConfiguration);
 binder.bind("search.hit.pullRequest.renderer", PullRequestHitRenderer);
 binder.bind("search.hit.indexedComment.renderer", CommentHitRenderer);
-binder.bind<extensionPoints.BranchListMenu>("branches.list.menu", BranchDetailsMenu);
-binder.bind<extensionPoints.BranchListDetail>("branches.list.detail", BranchDetailsPullRequests);
 
 export { PullRequestListDetailExtension } from "./types/ExtensionPoints";
