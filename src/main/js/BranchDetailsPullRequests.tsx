@@ -24,7 +24,8 @@
 
 import React, { FC } from "react";
 import { Branch, BranchDetails, Repository } from "@scm-manager/ui-types";
-import { AvatarImage, DateFromNow, Icon, Popover, SmallLoadingSpinner, usePopover } from "@scm-manager/ui-components";
+import { Card } from "@scm-manager/ui-layout";
+import { AvatarImage, DateFromNow, Popover, SmallLoadingSpinner, usePopover } from "@scm-manager/ui-components";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
@@ -41,7 +42,7 @@ const UnbreakableText = styled.span`
 type Props = {
   repository: Repository;
   branch: Branch;
-  details?: BranchDetails;
+  branchDetails?: BranchDetails;
 };
 
 type PRListProps = {
@@ -96,8 +97,7 @@ const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
   );
 };
 
-const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) => {
-  const history = useHistory();
+const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, branchDetails }) => {
   const { popoverProps, triggerProps } = usePopover();
   const [t] = useTranslation("plugins");
 
@@ -105,56 +105,38 @@ const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) =
     return null;
   }
 
-  if (!details) {
+  if (!branchDetails) {
     return <SmallLoadingSpinner />;
   }
 
-  if (!details._embedded?.pullRequests) {
+  if (!branchDetails._embedded?.pullRequests) {
     return null;
   }
 
-  const prs: PullRequest[] = details._embedded.pullRequests as PullRequest[];
+  const prs: PullRequest[] = branchDetails._embedded.pullRequests as PullRequest[];
 
-  if (prs.length > 0) {
-    return (
-      <div className="is-relative">
-        <Popover
-          title={
-            <h1 className="has-text-weight-bold is-size-5">
-              {t("scm-review-plugin.branchDetails.pullRequest.popover")}
-            </h1>
-          }
-          width={400}
-          {...popoverProps}
-        >
-          <PullRequestList repository={repository} pullRequests={prs} />
-        </Popover>
-        <div {...triggerProps} className="is-size-7">
-          <Icon name="code-branch" className="fa-rotate-180" />
-          <span>
-            {t("scm-review-plugin.branchDetails.pullRequest.pending", {
-              count: prs.length
-            })}
-          </span>
-        </div>
-      </div>
-    );
+  if (prs.length === 0) {
+    return null;
   }
 
   return (
-    <div
-      className="is-clickable is-size-7"
-      onClick={() =>
-        history.push(
-          `/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets/?source=${encodeURIComponent(
-            branch.name
-          )}`
-        )
-      }
-    >
-      <Icon name="code-branch" className="fa-rotate-180" />
-      <span>{t("scm-review-plugin.branchDetails.pullRequest.create")}</span>
-    </div>
+    <>
+      <Popover
+        title={
+          <h1 className="has-text-weight-bold is-size-5">{t("scm-review-plugin.branchDetails.pullRequest.popover")}</h1>
+        }
+        width={400}
+        {...popoverProps}
+      >
+        <PullRequestList repository={repository} pullRequests={prs} />
+      </Popover>
+      <Card.Details.Detail {...triggerProps} className="is-relative">
+        <Card.Details.Detail.Label>
+          {t("scm-review-plugin.pullRequests.details.pullRequests")}
+        </Card.Details.Detail.Label>
+        <Card.Details.Detail.Tag>{prs.length}</Card.Details.Detail.Tag>
+      </Card.Details.Detail>
+    </>
   );
 };
 

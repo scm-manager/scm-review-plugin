@@ -6,6 +6,7 @@
     },
     "branchDetails": {
       "pullRequest": {
+        "label": "Pull Request",
         "pending": "{{count}} ausstehend",
         "create": "PR erstellen",
         "popover": "Pull Requests",
@@ -201,7 +202,8 @@
       "details": {
         "tasks": "Aufgaben",
         "reviewers": "Reviewer",
-        "workflow": "Workflow"
+        "workflow": "Workflow",
+        "pullRequests": "Pull Requests"
       },
       "aria": {
         "id": "ID",

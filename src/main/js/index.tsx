@@ -48,6 +48,10 @@ import { useTranslation } from "react-i18next";
 import NamespaceConfig from "./config/NamespaceConfig";
 import { DataType } from "./landingpage/DataType";
 import { MyDataExtension, MyEventExtension, MyTaskExtension } from "@scm-manager/scm-landingpage-plugin";
+import PullRequestStatusTag from "./PullRequestStatusTag";
+import PullRequestTag from "./PullRequestTag";
+import { Card, CardList } from "@scm-manager/ui-layout";
+import BranchDetailsMenu from "./BranchDetailsMenu";
 
 type PredicateProps = {
   repository: Repository;
@@ -127,6 +131,16 @@ const AllPullRequestsLink: FC = () => {
     />
   );
 };
+
+binder.bind<extensionPoints.BranchListDetail>(
+  "branches.list.detail",
+  PullRequestTag,
+  ({ branchDetails, branch }) => branchDetails && !branch.defaultBranch
+);
+
+binder.bind<extensionPoints.BranchListMenu>("branches.list.menu", props => (
+  <BranchDetailsMenu repository={props.repository} branch={props.branch} />
+));
 
 binder.bind("repository.route", ShowPullRequestsRoute);
 

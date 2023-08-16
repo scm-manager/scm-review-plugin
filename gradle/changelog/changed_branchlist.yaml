@@ -1,0 +1,4 @@
+type changed:
+  - moved create PR button to threepoint menu in branchlist
+type added:
+  - added pr count to each branchlistitem
