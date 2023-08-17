@@ -29,14 +29,18 @@ import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import StatusIcon, { getColor, getIcon } from "./StatusIcon";
 import ModalRow from "./ModalRow";
-import { Tooltip } from "@scm-manager/ui-overlays";
+import { Popover } from "@scm-manager/ui-overlays";
+import { useTranslation } from "react-i18next";
+import { NoStyleButton } from "@scm-manager/ui-components";
 
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
+  labelId: string;
 };
 
-const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
+const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository, labelId }) => {
+  const [t] = useTranslation("plugins");
   const { data, error, isLoading } = useStatusbar(repository, pullRequest);
 
   if (isLoading) {
@@ -47,24 +51,27 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
     return null;
   }
 
-  const icon = <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} />;
+  const icon = (
+    <NoStyleButton aria-labelledby={labelId} className="is-relative is-size-6">
+      <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} />
+    </NoStyleButton>
+  );
+  const title = (
+    <h1 className="has-text-weight-bold is-size-5">{t("scm-review-plugin.pullRequests.details.workflow")}</h1>
+  );
 
   if (!data.results.length) {
     return icon;
   }
 
   return (
-    <Tooltip
-      message={
-        <>
-          {data.results.map(r => (
-            <ModalRow key={r.rule} result={r} />
-          ))}
-        </>
-      }
-    >
-      {icon}
-    </Tooltip>
+    <Popover trigger={icon} title={title}>
+      <>
+        {data.results.map(r => (
+          <ModalRow key={r.rule} result={r} />
+        ))}
+      </>
+    </Popover>
   );
 };
 

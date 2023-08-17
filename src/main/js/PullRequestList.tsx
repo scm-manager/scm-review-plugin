@@ -144,7 +144,7 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
                       <Card.Details.Detail.Label id={labelId}>
                         {t("scm-review-plugin.pullRequests.details.workflow")}
                       </Card.Details.Detail.Label>
-                      <PullRequestStatusColumn pullRequest={pullRequest} repository={repository} />
+                      <PullRequestStatusColumn pullRequest={pullRequest} repository={repository} labelId={labelId} />
                     </>
                   )}
                 </Card.Details.Detail>

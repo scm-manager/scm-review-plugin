@@ -201,7 +201,7 @@
       "details": {
         "tasks": "Tasks",
         "reviewers": "Reviewers",
-        "workflow": "Workflow",
+        "workflow": "Workflows",
         "pullRequests": "Pull Requests"
       },
       "aria": {
