@@ -53,7 +53,7 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository, labelId }
 
   const icon = (
     <NoStyleButton aria-labelledby={labelId} className="is-relative is-size-6">
-      <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} />
+      <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} size="lg" />
     </NoStyleButton>
   );
   const title = (

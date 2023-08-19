@@ -23,6 +23,7 @@
  */
 import React, { HTMLAttributes } from "react";
 import { Result } from "../types/EngineConfig";
+import { Icon } from "@scm-manager/ui-buttons";
 
 type Props = HTMLAttributes<HTMLElement> & {
   color?: string;
@@ -35,7 +36,7 @@ type Props = HTMLAttributes<HTMLElement> & {
 const StatusIcon = React.forwardRef<HTMLElement, Props>(
   ({ color = "secondary", icon = "circle-notch", size = "lg", titleType, title, ...rest }, ref) => (
     <>
-      <i {...rest} className={`fas fa-${size} has-text-${color} fa-${icon} is-relative`} ref={ref} />
+      <Icon ref={ref} {...rest}>{`${icon} has-text-${color} fa-${size}`}</Icon>
       {(titleType || title) && (
         <span
           style={{
