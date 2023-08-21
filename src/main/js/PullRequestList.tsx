@@ -89,12 +89,11 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
             <Card.Title>
               <Link to={`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`}>
                 {pullRequest.title}
-              </Link>
-            </Card.Title>
-            <span className="has-text-secondary ml-1" aria-label={t("scm-review-plugin.pullRequests.aria.id")}>
+              </Link> <span className="has-text-secondary ml-1" aria-label={t("scm-review-plugin.pullRequests.aria.id")}>
               <span aria-hidden>#</span>
               {pullRequest.id}
             </span>
+            </Card.Title>
           </Card.Row>
           <SubtitleRow className="is-flex is-flex-wrap-wrap is-size-7 has-text-secondary">
             <Trans
