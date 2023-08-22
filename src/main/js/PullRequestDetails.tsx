@@ -26,6 +26,7 @@ import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { binder, ExtensionPoint } from "@scm-manager/ui-extensions";
+import { useBranch } from "@scm-manager/ui-api";
 import {
   AstPlugin,
   BackendError,
@@ -156,6 +157,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     pullRequest,
     (targetDeleted: boolean) => setTargetBranchDeleted(targetDeleted)
   );
+  const { isLoading: branchLoading, error: branchError, data: branch } = useBranch(repository, pullRequest.source);
   const astPlugins = useMemo(() => {
     if (!!pullRequest._links) {
       return binder
@@ -183,13 +185,14 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     rejectError ||
     mergeError ||
     readyForReviewError ||
+    branchError ||
     // Prevent dry-run error for closed pull request with stale cache data
     (mergeDryRunError instanceof BackendError && mergeDryRunError.errorCode === "FTRhcI0To1" ? null : mergeDryRunError);
   if (error) {
     return <ErrorNotification error={error} />;
   }
 
-  if (!pullRequest._links || mergeDryRunLoading) {
+  if (!pullRequest._links || mergeDryRunLoading || branchLoading) {
     return <Loading />;
   }
 
@@ -236,7 +239,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       );
     }
   }
-  if (!pullRequest._links.rejectWithMessage && !pullRequest._links.merge) {
+  if (!pullRequest._links.rejectWithMessage && !pullRequest._links.merge && branch?._links?.delete) {
     deleteSourceButton = (
       <DeleteSourceBranchButton pullRequest={pullRequest} repository={repository} loading={mergeDryRunLoading} />
     );

@@ -1,0 +1,2 @@
+- type: bugfix
+  description: Delete source branch without permission
