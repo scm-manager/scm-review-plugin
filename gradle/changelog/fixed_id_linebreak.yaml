@@ -1,2 +1,2 @@
-- type: bugfix
-  description: the id of a pullrequest is now part of the header and will always be placed at the end of the header
+- type: fixed
+  description: The id of a pull request is now part of the header and will always be placed at the end of the header
