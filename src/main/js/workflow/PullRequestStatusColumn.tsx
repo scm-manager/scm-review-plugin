@@ -27,7 +27,7 @@ import { useStatusbar } from "./useStatusbar";
 import { SmallLoadingSpinner } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
-import StatusIcon, { getColor, getIcon } from "./StatusIcon";
+import StatusIcon, { getColor, getIcon, getTitle } from "./StatusIcon";
 import ModalRow from "./ModalRow";
 import { Popover } from "@scm-manager/ui-overlays";
 import { useTranslation } from "react-i18next";
@@ -52,7 +52,12 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository, labelId }
   }
 
   const icon = (
-    <NoStyleButton aria-labelledby={labelId} className="is-relative is-size-6">
+    <NoStyleButton
+      className="is-relative is-size-6"
+      aria-label={t("scm-review-plugin.pullRequests.aria.workflow.label", {
+        status: t(`scm-review-plugin.pullRequests.aria.workflow.status.${getTitle(data.results)}`)
+      })}
+    >
       <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} size="lg" />
     </NoStyleButton>
   );

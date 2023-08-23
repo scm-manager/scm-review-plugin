@@ -75,4 +75,16 @@ export const getIcon = (results: Result[]) => {
   }
 };
 
+export const getTitle = (results: Result[]) => {
+  if (results && results.length) {
+    if (results.some(it => it.failed)) {
+      return "fail";
+    } else {
+      return "success";
+    }
+  } else {
+    return "pending";
+  }
+};
+
 export default StatusIcon;

@@ -208,9 +208,11 @@
         "id": "ID",
         "status": "Status",
         "workflow": {
+          "label": "Workflows: {{status}}",
           "status": {
             "fail": "Fehlgeschlagen",
-            "success": "Erfolgreich"
+            "success": "Erfolgreich",
+            "pending": "Ausstehend"
           }
         }
       }
