@@ -30,6 +30,7 @@ import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.google.inject.Inject;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.UnauthorizedException;
 import sonia.scm.HandlerEventType;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
@@ -383,8 +384,13 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public void convertToPR(Repository repository, String pullRequestId) {
-    PermissionCheck.checkMerge(repository);
     PullRequest pullRequest = get(repository, pullRequestId);
+
+    if(!PermissionCheck.mayMerge(repository) &&
+       !pullRequest.getAuthor().equals(SecurityUtils.getSubject().getPrincipal().toString())) {
+      throw new UnauthorizedException();
+    }
+
     if (pullRequest.isDraft()) {
       PullRequest oldPullRequest = pullRequest.toBuilder().build();
       pullRequest.setStatus(OPEN);

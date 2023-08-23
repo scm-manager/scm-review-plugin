@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.cloudogu.scm.review.workflow.AllReviewerApprovedRule;
 import com.github.sdorra.shiro.ShiroRule;
 import com.google.common.collect.ImmutableList;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -74,6 +75,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -339,12 +341,48 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
-    void shouldSendEventWhenStatusConvertedToOpen() {
+    void shouldThrowUnauthorizedForConvertingPr() {
       Subject subject = mock(Subject.class);
+      when(subject.isPermitted("repository:mergePullRequest:1")).thenReturn(false);
+      when(subject.getPrincipal()).thenReturn("Author");
       shiroRule.setSubject(subject);
 
       PullRequest pullRequest = createPullRequest("changed", null, null);
       pullRequest.setStatus(DRAFT);
+      pullRequest.setAuthor("someone else");
+      when(service.get(REPOSITORY, "changed")).thenReturn(pullRequest);
+
+      assertThatThrownBy(() -> service.convertToPR(REPOSITORY, "changed"))
+        .isInstanceOf(UnauthorizedException.class);
+    }
+
+    @Test
+    void shouldSendEventWhenStatusConvertedToOpen() {
+      Subject subject = mock(Subject.class);
+      when(subject.isPermitted("repository:mergePullRequest:1")).thenReturn(true);
+      shiroRule.setSubject(subject);
+
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setStatus(DRAFT);
+      when(service.get(REPOSITORY, "changed")).thenReturn(pullRequest);
+
+      service.convertToPR(REPOSITORY, "changed");
+
+      PullRequestStatusChangedEvent event = (PullRequestStatusChangedEvent) eventCaptor.getAllValues().get(0);
+      assertThat(event.getRepository()).isSameAs(REPOSITORY);
+      assertThat(event.getPullRequest()).isSameAs(pullRequest);
+    }
+
+    @Test
+    void shouldSendEventWhenStatusConvertedToOpenByAuthor() {
+      Subject subject = mock(Subject.class);
+      when(subject.isPermitted(any(String.class))).thenReturn(false);
+      when(subject.getPrincipal()).thenReturn("Author");
+      shiroRule.setSubject(subject);
+
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setStatus(DRAFT);
+      pullRequest.setAuthor("Author");
       when(service.get(REPOSITORY, "changed")).thenReturn(pullRequest);
 
       service.convertToPR(REPOSITORY, "changed");

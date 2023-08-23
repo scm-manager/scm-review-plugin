@@ -112,6 +112,43 @@ class PullRequestMapperTest {
     }
 
     @Test
+    void shouldMapConvertToPrLinkForCreator() {
+      when(subject.isPermitted(any(String.class))).thenReturn(false);
+
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.DRAFT);
+      pullRequest.setAuthor("dent");
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("convertToPR")).isPresent();
+    }
+
+    @Test
+    void shouldNotMapConvertToPrLink() {
+      when(subject.isPermitted(any(String.class))).thenReturn(false);
+
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.DRAFT);
+      pullRequest.setAuthor("someone else");
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("convertToPR")).isEmpty();
+    }
+
+    @Test
+    void shouldMapConvertToPrLinkForMerger() {
+      when(subject.isPermitted("repository:commentPullRequest:id-1")).thenReturn(true);
+      when(subject.isPermitted("repository:push:id-1")).thenReturn(true);
+      when(subject.isPermitted("repository:mergePullRequest:id-1")).thenReturn(true);
+
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.DRAFT);
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("convertToPR")).isPresent();
+    }
+
+    @Test
     void shouldMapPullRequestWithMergeLink() {
       when(serviceFactory.create(REPOSITORY)).thenReturn(service);
       when(service.isSupported(Command.MERGE)).thenReturn(true);
@@ -122,7 +159,7 @@ class PullRequestMapperTest {
 
       PullRequest pullRequest = TestData.createPullRequest();
       pullRequest.addLabel("preview");
-    PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
 
       assertThat(dto.getLinks().isEmpty()).isFalse();
       assertThat(dto.getLinks().getLinkBy("merge")).isPresent();

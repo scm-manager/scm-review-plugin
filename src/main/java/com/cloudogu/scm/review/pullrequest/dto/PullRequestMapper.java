@@ -42,6 +42,7 @@ import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.shiro.SecurityUtils;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -225,8 +226,10 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
           appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
     }
+
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
-    if (PermissionCheck.mayMerge(repository) && pullRequest.getStatus() == PullRequestStatus.DRAFT) {
+
+    if ((PermissionCheck.mayMerge(repository) || pullRequest.getAuthor().equals(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString())) && pullRequest.getStatus() == PullRequestStatus.DRAFT) {
       linksBuilder.single(link("convertToPR", pullRequestResourceLinks.pullRequest().convertToPR(namespace, name, pullRequestId)));
     }
     linksBuilder.single(link("sourceBranch", branchLinkProvider.get(repository.getNamespaceAndName(), pullRequest.getSource())));
