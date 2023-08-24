@@ -239,7 +239,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       );
     }
   }
-  if (!pullRequest._links.rejectWithMessage && !pullRequest._links.merge && branch?._links?.delete) {
+  if ((pullRequest.status === "MERGED" || pullRequest.status === "REJECTED") && branch?._links?.delete) {
     deleteSourceButton = (
       <DeleteSourceBranchButton pullRequest={pullRequest} repository={repository} loading={mergeDryRunLoading} />
     );
