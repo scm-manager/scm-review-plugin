@@ -28,7 +28,7 @@ plugins {
 
 dependencies {
   plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:1.0.0-SNAPSHOT"
+  plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:1.0.0"
   optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
   optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.13.0"
   testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"

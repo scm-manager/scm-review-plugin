@@ -1,4 +1,0 @@
-- type: changed
-  description: Moved create PR button to extension menu in branch list
-- type: added
-  description: Pull request count to each branch list item

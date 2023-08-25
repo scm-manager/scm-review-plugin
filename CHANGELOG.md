@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.29.0 - 2023-08-25
+### Added
+- Sort pull request overview by fields
+- Pull request count to each branch list item
+- Documentation for the mustache model commit message template via mustache model plugin
+- Event and system comment on switch pull request status
+
+### Fixed
+- Input for available PR labels not working with core version 2.45.0
+- Delete source branch without permission
+- Merge conflicts in pull request are now available with pull request read permission
+- User can now set his own pull request as ready to review without merge permission
+- The id of a pull request is now part of the header and will always be placed at the end of the header
+- Workflow icon accessible in pull request overview
+
+### Changed
+- The new popover for the pull requests has been implemented inside the branch details
+- Icons of workflow engine
+- Using a popover instead of a tooltip for the workflow engine results
+- Tasks cannot be outdated anymore
+- The location of the create pr button has been moved from the bottom to the table top row
+- Display reviewer approval status in pr overview
+- Moved create PR button to extension menu in branch list
+- Refactor pull request overview to use card layout
+
 ## 2.28.2 - 2023-08-09
 ### Fixed
 - Input for available PR labels not working with core version 2.45.0
