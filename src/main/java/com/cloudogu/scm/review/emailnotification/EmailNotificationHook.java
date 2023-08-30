@@ -35,6 +35,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -131,7 +132,7 @@ public class EmailNotificationHook {
   }
 
   @Subscribe
-  public void handleUpdatedPullRequest(PullRequestUpdatedEvent event) {
+  public void handleUpdatedPullRequest(PullRequestUpdatedMailEvent event) {
     PullRequest pullRequest = event.getPullRequest();
     handleEvent(event, new PullRequestUpdatedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }

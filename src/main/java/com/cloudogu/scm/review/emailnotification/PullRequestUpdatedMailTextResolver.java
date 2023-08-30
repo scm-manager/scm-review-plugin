@@ -24,25 +24,25 @@
 
 package com.cloudogu.scm.review.emailnotification;
 
-import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import sonia.scm.mail.api.Topic;
 
 import java.util.Locale;
 import java.util.Map;
 
-public class PullRequestUpdatedMailTextResolver extends BasicPRMailTextResolver<PullRequestUpdatedEvent> implements MailTextResolver {
+public class PullRequestUpdatedMailTextResolver extends BasicPRMailTextResolver<PullRequestUpdatedMailEvent> implements MailTextResolver {
 
   public static final String EVENT_DISPLAY_NAME = "prUpdated";
-  private final PullRequestUpdatedEvent pullRequestUpdatedEvent;
+  private final PullRequestUpdatedMailEvent pullRequestUpdatedMailEvent;
   protected static final String TEMPLATE_PATH = "com/cloudogu/scm/email/template/updated_pull_request.mustache";
 
-  public PullRequestUpdatedMailTextResolver(PullRequestUpdatedEvent pullRequestUpdatedEvent) {
-    this.pullRequestUpdatedEvent = pullRequestUpdatedEvent;
+  public PullRequestUpdatedMailTextResolver(PullRequestUpdatedMailEvent pullRequestUpdatedMailEvent) {
+    this.pullRequestUpdatedMailEvent = pullRequestUpdatedMailEvent;
   }
 
   @Override
   public String getMailSubject(Locale locale) {
-    return getMailSubject(pullRequestUpdatedEvent, EVENT_DISPLAY_NAME, locale);
+    return getMailSubject(pullRequestUpdatedMailEvent, EVENT_DISPLAY_NAME, locale);
   }
 
   @Override
@@ -52,7 +52,7 @@ public class PullRequestUpdatedMailTextResolver extends BasicPRMailTextResolver<
 
   @Override
   public Map<String, Object> getContentTemplateModel(String basePath) {
-    return getTemplateModel(basePath, pullRequestUpdatedEvent);
+    return getTemplateModel(basePath, pullRequestUpdatedMailEvent);
   }
 
   @Override

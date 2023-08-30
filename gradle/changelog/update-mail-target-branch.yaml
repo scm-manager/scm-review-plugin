@@ -1,0 +1,2 @@
+- type: changed
+  description: Changes on the target branch will not trigger a pr updated mail notification anymore

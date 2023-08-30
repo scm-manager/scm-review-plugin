@@ -28,11 +28,13 @@ import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.github.legman.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
 import sonia.scm.NotFoundException;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
@@ -188,6 +190,10 @@ public class StatusCheckHook {
     private void updated(PullRequest pullRequest) {
       LOG.info("pull request {} was updated", pullRequest.getId());
       pullRequestService.updated(repository, pullRequest.getId());
+
+      if(branchProvider.getCreatedOrModified().contains(pullRequest.getSource()) && pullRequest.isInProgress()) {
+        ScmEventBus.getInstance().post(new PullRequestUpdatedMailEvent(repository, pullRequest));
+      }
     }
   }
 }

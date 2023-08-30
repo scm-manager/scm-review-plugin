@@ -36,6 +36,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.shiro.subject.Subject;
@@ -187,7 +188,7 @@ class EmailNotificationHookTest {
 
   @Test
   void shouldSendEmailsAfterUpdatingPullRequest() throws Exception {
-    PullRequestUpdatedEvent event = new PullRequestUpdatedEvent(repository, pullRequest);
+    PullRequestUpdatedMailEvent event = new PullRequestUpdatedMailEvent(repository, pullRequest);
     emailNotificationHook.handleUpdatedPullRequest(event);
 
     ArgumentCaptor<PullRequestUpdatedMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestUpdatedMailTextResolver.class);

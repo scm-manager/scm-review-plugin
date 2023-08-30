@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
@@ -38,10 +39,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.config.ScmConfiguration;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.HookBranchProvider;
@@ -53,11 +56,17 @@ import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.api.HookFeature.BRANCH_PROVIDER;
 import static sonia.scm.repository.api.HookFeature.MERGE_DETECTION_PROVIDER;
@@ -208,13 +217,44 @@ class StatusCheckHookTest {
     }
 
     @Test
-    void shouldNotifyServiceThatPrWasUpdated() {
+    void shouldTriggerPrUpdatedButNotSendEmail() {
       PullRequest pullRequest = mockOpenPullRequest();
+      when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("target"));
       when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(false);
+      ScmEventBus eventBus = mock(ScmEventBus.class);
 
-      hook.checkStatus(event);
+      try (MockedStatic<ScmEventBus> eventBusClass = mockStatic(ScmEventBus.class)) {
+        eventBusClass.when(ScmEventBus::getInstance).thenReturn(eventBus);
+        hook.checkStatus(event);
+      }
 
       verify(pullRequestService).updated(REPOSITORY, pullRequest.getId());
+      verify(eventBus, never()).post(any(Object.class));
+    }
+
+    @Test
+    void shouldTriggerPrUpdatedAndSendEmail() {
+      PullRequest pullRequest = mockOpenPullRequest();
+      pullRequest.setStatus(PullRequestStatus.DRAFT);
+
+      when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("source"));
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(false);
+      ScmEventBus eventBus = mock(ScmEventBus.class);
+
+      try (MockedStatic<ScmEventBus> eventBusClass = mockStatic(ScmEventBus.class)) {
+        eventBusClass.when(ScmEventBus::getInstance).thenReturn(eventBus);
+        hook.checkStatus(event);
+      }
+
+      verify(pullRequestService).updated(REPOSITORY, pullRequest.getId());
+      verify(eventBus).post(argThat(event -> {
+        assertThat(event).isInstanceOf(PullRequestUpdatedMailEvent.class);
+        PullRequestUpdatedMailEvent mailEvent = (PullRequestUpdatedMailEvent) event;
+        assertThat(mailEvent.getPullRequest()).isEqualTo(pullRequest);
+        assertThat(mailEvent.getRepository()).isEqualTo(REPOSITORY);
+
+        return true;
+      }));
     }
 
     @Test
