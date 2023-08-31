@@ -44,6 +44,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.shiro.SecurityUtils;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.Builder;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -81,7 +82,9 @@ import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.stream.Collectors.toList;
 
-@Mapper
+@Mapper(
+  builder = @Builder(disableBuilder = true)
+)
 public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequestDto> {
 
   @Inject

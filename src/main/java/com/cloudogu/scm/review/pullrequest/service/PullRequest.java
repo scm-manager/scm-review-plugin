@@ -149,8 +149,16 @@ public class PullRequest implements Serializable {
     this.subscriber.remove(recipient);
   }
 
+  public Set<ReviewMark> getReviewMarks() {
+    return reviewMarks == null ? emptySet() : reviewMarks;
+  }
+
+  public void setLabels(Set<String> labels) {
+    this.labels = labels == null ? new HashSet<>() : labels;
+  }
+
   public Set<String> getLabels() {
-    return labels;
+    return labels == null ? emptySet() : labels;
   }
 
   public void addLabel(String label) {
