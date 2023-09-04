@@ -33,7 +33,6 @@ import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
-import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -97,7 +96,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
@@ -1082,6 +1080,32 @@ public class PullRequestRootResourceTest {
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"status\":\"PR_ALREADY_EXISTS\"");
     assertThat(response.getContentAsString()).contains("\"_links\":{\"self\":{\"href\":\"/v2/pull-requests/ns/repo/check?source=develop&target=master\"}}");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldReturnIllegalRequestIfSourceBranchIsEmpty() throws URISyntaxException {
+    PullRequest pullRequest = createPullRequest();
+    pullRequest.setSource("");
+
+    MockHttpRequest request = MockHttpRequest
+            .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/check?source=&target=master");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(400);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldReturnIllegalRequestIfTargetBranchIsEmpty() throws URISyntaxException {
+    PullRequest pullRequest = createPullRequest();
+    pullRequest.setSource("");
+
+    MockHttpRequest request = MockHttpRequest
+            .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/check?source=feature&target=");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(400);
   }
 
   @Test

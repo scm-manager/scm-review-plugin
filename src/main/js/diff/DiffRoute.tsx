@@ -23,7 +23,7 @@
  */
 import React, { FC } from "react";
 import { PullRequest } from "../types/PullRequest";
-import { Link, Repository } from "@scm-manager/ui-types";
+import { Branch, Link, Repository } from "@scm-manager/ui-types";
 import {
   ErrorNotification,
   File,
@@ -41,9 +41,10 @@ type Props = {
   pullRequest: PullRequest;
   source: string;
   target: string;
+  sourceBranch?: Branch;
 };
 
-const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
+const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target, sourceBranch }) => {
   const { t } = useTranslation("plugins");
   const { data: comments, isLoading, error } = useComments(repository, pullRequest);
 
@@ -98,6 +99,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target }) => {
         createLink={createLink}
         reviewedFiles={pullRequest?.markedAsReviewed || []}
         fileContentFactory={fileContentFactory}
+        sourceBranch={sourceBranch}
       />
     );
   }

@@ -1,0 +1,4 @@
+- type: fixed
+  description: View of closed pull request with deleted source branch
+- type: fixed
+  description: Unnecessary request for merge defaults

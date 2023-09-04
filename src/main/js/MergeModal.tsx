@@ -66,10 +66,6 @@ const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, merg
   const initialFocusRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    updateMergeStrategyInfo();
-  }, []);
-
-  useEffect(() => {
     if (!messageChanged) {
       updateMergeStrategyInfo();
     }

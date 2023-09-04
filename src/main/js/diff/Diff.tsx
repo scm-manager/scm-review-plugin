@@ -25,7 +25,7 @@
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useBranch } from "@scm-manager/ui-api";
-import { Hunk, Repository } from "@scm-manager/ui-types";
+import { Branch, Hunk, Repository } from "@scm-manager/ui-types";
 import {
   AnnotationFactoryContext,
   DiffEventContext,
@@ -70,6 +70,7 @@ type Props = {
   createLink?: string;
   fileContentFactory: FileContentFactory;
   reviewedFiles: string[];
+  sourceBranch?: Branch;
 };
 
 type Revisions = {
@@ -78,11 +79,10 @@ type Revisions = {
   changed: boolean;
 };
 
-const useHasChanged = (repository: Repository, pullRequest: PullRequest) => {
+const useHasChanged = (repository: Repository, pullRequest: PullRequest, source: Branch | undefined) => {
   const [revisions, setRevisions] = useState<Revisions>();
   const invalidate = useInvalidateDiff(repository, pullRequest);
 
-  const { data: source } = useBranch(repository, pullRequest.source);
   const { data: target } = useBranch(repository, pullRequest.target);
 
   const ctx = useChangeNotificationContext();
@@ -129,11 +129,12 @@ const Diff: FC<Props> = ({
   diffUrl,
   createLink,
   fileContentFactory,
-  reviewedFiles
+  reviewedFiles,
+  sourceBranch
 }) => {
   const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
-  const { changed, ignore, reload } = useHasChanged(repository, pullRequest);
+  const { changed, ignore, reload } = useHasChanged(repository, pullRequest, sourceBranch);
 
   const openInlineEditor = (location: Location) => {
     if (isInlineLocation(location)) {

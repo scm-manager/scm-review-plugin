@@ -111,6 +111,7 @@ const MergeForm: FC<InnerProps> = ({
         checked={shouldDeleteSourceBranch}
         helpText={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
         onChange={onChangeDeleteSourceBranch}
+        disabled={loading}
       />
     </>
   );

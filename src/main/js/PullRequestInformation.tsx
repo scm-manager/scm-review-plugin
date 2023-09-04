@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { Repository } from "@scm-manager/ui-types";
+import { Branch, Repository } from "@scm-manager/ui-types";
 import { Icon, urls } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import Changesets from "./Changesets";
@@ -41,6 +41,7 @@ type Props = {
   mergeHasNoConflict: boolean;
   targetBranchDeleted: boolean;
   shouldFetchChangesets?: boolean;
+  sourceBranch?: Branch;
 };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
@@ -139,6 +140,7 @@ type RouteProps = {
   source: string;
   target: string;
   shouldFetchChangesets?: boolean;
+  sourceBranch?: Branch;
 };
 
 const Routes: FC<RouteProps> = ({
@@ -149,7 +151,8 @@ const Routes: FC<RouteProps> = ({
   pullRequest,
   baseURL,
   mergeHasNoConflict,
-  shouldFetchChangesets
+  shouldFetchChangesets,
+  sourceBranch
 }) => {
   let routeComments = null;
   let routeChangeset = null;
@@ -188,6 +191,7 @@ const Routes: FC<RouteProps> = ({
             pullRequest={pullRequest}
             source={sourceRevision}
             target={targetRevision}
+            sourceBranch={sourceBranch}
           />
         </div>
       </Route>
@@ -218,6 +222,7 @@ const PullRequestInformation: FC<Props> = ({
   mergeHasNoConflict,
   status,
   targetBranchDeleted,
+  sourceBranch,
   ...restProps
 }) => {
   const location = useLocation();
@@ -245,6 +250,7 @@ const PullRequestInformation: FC<Props> = ({
         isClosed={isClosedPullRequest}
         mergeHasNoConflict={mergeHasNoConflict}
         baseURL={baseURL}
+        sourceBranch={sourceBranch}
       />
     </>
   );

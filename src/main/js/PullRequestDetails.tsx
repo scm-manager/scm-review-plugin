@@ -150,14 +150,17 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [targetBranchDeleted, setTargetBranchDeleted] = useState(false);
 
   const { reject, isLoading: rejectLoading, error: rejectError } = useRejectPullRequest(repository, pullRequest);
-  const { readyForReview, isLoading: readyForReviewLoading, error: readyForReviewError } = useReadyForReviewPullRequest(repository, pullRequest);
+  const { readyForReview, isLoading: readyForReviewLoading, error: readyForReviewError } = useReadyForReviewPullRequest(
+    repository,
+    pullRequest
+  );
   const { merge, isLoading: mergeLoading, error: mergeError } = useMergePullRequest(repository, pullRequest);
   const { data: mergeCheck, isLoading: mergeDryRunLoading, error: mergeDryRunError } = useMergeDryRun(
     repository,
     pullRequest,
     (targetDeleted: boolean) => setTargetBranchDeleted(targetDeleted)
   );
-  const { isLoading: branchLoading, error: branchError, data: branch } = useBranch(repository, pullRequest.source);
+  const { isLoading: branchLoading, data: branch } = useBranch(repository, pullRequest.source);
   const astPlugins = useMemo(() => {
     if (!!pullRequest._links) {
       return binder
@@ -185,7 +188,6 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     rejectError ||
     mergeError ||
     readyForReviewError ||
-    branchError ||
     // Prevent dry-run error for closed pull request with stale cache data
     (mergeDryRunError instanceof BackendError && mergeDryRunError.errorCode === "FTRhcI0To1" ? null : mergeDryRunError);
   if (error) {
@@ -226,7 +228,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   let readyForReviewButton = null;
 
   if (pullRequest._links?.rejectWithMessage) {
-    rejectButton = <RejectButton reject={(message) => reject(message)} loading={rejectLoading} />;
+    rejectButton = <RejectButton reject={message => reject(message)} loading={rejectLoading} />;
     if (!!pullRequest._links.merge) {
       mergeButton = targetBranchDeleted ? null : (
         <MergeButton
@@ -400,6 +402,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         status={pullRequest.status}
         mergeHasNoConflict={!mergeCheck?.hasConflicts}
         targetBranchDeleted={targetBranchDeleted}
+        sourceBranch={branch}
       />
     </ChangeNotificationContext>
   );

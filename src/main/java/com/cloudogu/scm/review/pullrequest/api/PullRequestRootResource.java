@@ -28,7 +28,6 @@ import com.cloudogu.scm.review.PagedCollections;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
-import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
@@ -69,6 +68,7 @@ import sonia.scm.web.VndMediaType;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -84,9 +84,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.net.URI;
-import java.time.Instant;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -99,7 +97,6 @@ import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
 import static de.otto.edison.hal.paging.NumberedPaging.zeroBasedNumberedPaging;
-import static java.util.Optional.ofNullable;
 import static sonia.scm.AlreadyExistsException.alreadyExists;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
@@ -357,8 +354,8 @@ public class PullRequestRootResource {
     @Context UriInfo uriInfo,
     @PathParam("namespace") String namespace,
     @PathParam("name") String name,
-    @QueryParam("source") String source,
-    @QueryParam("target") String target
+    @NotEmpty @QueryParam("source") String source,
+    @NotEmpty @QueryParam("target") String target
   ) throws IOException {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
