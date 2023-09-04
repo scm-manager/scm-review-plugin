@@ -510,7 +510,8 @@
     "search": {
       "invalidResult": "Found invalid pull request search result",
       "source": "Source Branch",
-      "target": "Target Branch"
+      "target": "Target Branch",
+      "subtitle": "<highlight>{{source}}</highlight> into <highlight>{{target}}</highlight><space> </space><date />"
     },
     "shortcuts": {
       "pullRequests": "Switch to pull requests"

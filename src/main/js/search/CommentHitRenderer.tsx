@@ -23,7 +23,7 @@
  */
 
 import React, { FC } from "react";
-import { DateFromNow, Hit, Notification, RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
+import { DateFromNow, Notification, RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
 import {
   DisplayedUser,
   HalRepresentationWithEmbedded,
@@ -35,6 +35,8 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { EmergencyMergeTag, SystemTag } from "../comment/tags";
 import styled from "styled-components";
+import { CardList } from "@scm-manager/ui-layout";
+import classNames from "classnames";
 
 type Embedded = EmbeddedRepository & {
   user: DisplayedUser;
@@ -49,56 +51,54 @@ type HitProps = {
   hit: HitType;
 };
 
-const CommentWrapper = styled.p`
-  white-space: pre-wrap;
+const StyledLink = styled(Link)`
+  gap: 0.5rem;
 `;
 
 const CommentHitRenderer: FC<HitProps> = ({ hit }) => {
   const [t] = useTranslation("plugins");
   const repository = hit._embedded?.repository;
+  const hasTag =
+    (hit.fields.systemComment as ValueHitField).value || (hit.fields.emergencyMerged as ValueHitField).value;
 
   if (!repository) {
     return <Notification type="danger">{t("scm-review-plugin.search.invalidResult")}</Notification>;
   }
 
   return (
-    <Hit>
-      <Hit.Left>
-        <RepositoryAvatar repository={repository} size={48} />
-      </Hit.Left>
-      <Hit.Content>
-        <div className="is-flex is-clipped">
-          <div className="ml-2">
-            <Link
-              className="is-ellipsis-overflow"
-              to={`/repo/${repository.namespace}/${repository.name}/pull-request/${
-                (hit.fields.pullRequestId as ValueHitField).value
-              }/comments#comment-${(hit.fields.id as ValueHitField).value}`}
-            >
-              <CommentWrapper>
-                <TextHitField field="comment" hit={hit} truncateValueAt={1024} />
-              </CommentWrapper>
-            </Link>
-            <div className="mt-2">
-              {(hit.fields.systemComment as ValueHitField)?.value && (
-                <p>
-                  <SystemTag />
-                </p>
-              )}
-              {(hit.fields.emergencyMerged as ValueHitField)?.value && (
-                <p>
-                  <EmergencyMergeTag />
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </Hit.Content>
-      <Hit.Right>
-        {hit?._embedded?.user ? <p>{hit._embedded.user.displayName}</p> : null}
-        <DateFromNow date={(hit.fields.date as ValueHitField)?.value as Date} />
-      </Hit.Right>
-    </Hit>
+    <CardList.Card key={(hit.fields.id as ValueHitField).value as string}>
+      <CardList.Card.Row>
+        <CardList.Card.Title>
+          <StyledLink
+            to={`/repo/${repository.namespace}/${repository.name}/pull-request/${
+              (hit.fields.pullRequestId as ValueHitField).value
+            }/comments#comment-${(hit.fields.id as ValueHitField).value}`}
+            className={classNames("is-flex", "is-justify-content-flex-start", "is-align-items-center")}
+          >
+            <RepositoryAvatar repository={repository} size={16} />
+            <TextHitField field="comment" hit={hit} truncateValueAt={1024} />
+          </StyledLink>
+        </CardList.Card.Title>
+      </CardList.Card.Row>
+      {hasTag && (
+        <CardList.Card.Row className="mt-2">
+          {(hit.fields.systemComment as ValueHitField)?.value && (
+            <p>
+              <SystemTag />
+            </p>
+          )}
+          {(hit.fields.emergencyMerged as ValueHitField)?.value && (
+            <p>
+              <EmergencyMergeTag />
+            </p>
+          )}
+        </CardList.Card.Row>
+      )}
+      <CardList.Card.Row className="is-flex is-flex-wrap-wrap is-size-7 has-text-secondary">
+        {hit?._embedded?.user ? <p>{hit._embedded.user.displayName}&nbsp; </p> : null}
+        <DateFromNow className="is-relative" date={(hit.fields.date as ValueHitField)?.value as Date} />
+      </CardList.Card.Row>
+    </CardList.Card>
   );
 };
 

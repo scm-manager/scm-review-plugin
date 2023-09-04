@@ -511,7 +511,8 @@
     "search": {
       "invalidResult": "Ungültige Suchergebnisse gefunden",
       "source": "Source Branch",
-      "target": "Target Branch"
+      "target": "Target Branch",
+      "subtitle": "<highlight>{{source}}</highlight> nach <highlight>{{target}}</highlight><space> </space><date />"
     },
     "shortcuts": {
       "pullRequests": "Wechsel zu den Pull-Requests"
