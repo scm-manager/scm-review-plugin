@@ -196,21 +196,44 @@ class MergeCommitMessageService {
   private void appendSquashContributors(StringBuilder builder, PullRequest pullRequest, Set<Contributor> contributors) {
     builder.append("\n");
     userDisplayManager.get(pullRequest.getAuthor()).ifPresent(prAuthor -> {
-      User currentUser = currentUser();
-      String committerMail = email.getMailOrFallback(currentUser);
-      if (!prAuthor.getDisplayName().equals(currentUser.getDisplayName())) {
-        builder.append("\n").append(new Contributor(Contributor.COMMITTED_BY, new Person(currentUser.getDisplayName(), committerMail)).toCommitLine());
-      }
       appendCoAuthors(builder, contributors, prAuthor);
+      appendReviewers(builder, pullRequest, prAuthor, currentUser());
     });
+  }
+
+  private void appendReviewers(StringBuilder builder, PullRequest pullRequest, DisplayUser prAuthor, User commiter) {
+    for (Map.Entry<String, Boolean> reviews : pullRequest.getReviewer().entrySet()) {
+      userDisplayManager.get(reviews.getKey()).ifPresent(reviewer -> {
+        if (!reviews.getValue()) {
+          return;
+        }
+
+        if (prAuthor.getDisplayName().equals(reviewer.getDisplayName())) {
+          return;
+        }
+
+        if (commiter.getDisplayName().equals(reviewer.getDisplayName())) {
+          return;
+        }
+
+        builder.append("\nReviewed-by: ").append(reviewer.getDisplayName()).append(" <").append(reviewer.getMail()).append(">");
+      });
+    }
   }
 
   private void appendCoAuthors(StringBuilder builder, Set<Contributor> contributors, DisplayUser prAuthor) {
     for (Contributor contributor : contributors) {
-      Person contributorPerson = contributor.getPerson();
-      if (!prAuthor.getDisplayName().equals(contributorPerson.getName()) && Contributor.CO_AUTHORED_BY.equals(contributor.getType())) {
-        appendCoAuthor(builder, contributorPerson.getName(), contributorPerson.getMail());
-      }
+      userDisplayManager.get(contributor.getPerson().getName()).ifPresent(contributorUser -> {
+        if (prAuthor.getDisplayName().equals(contributorUser.getDisplayName())) {
+          return;
+        }
+
+        if (!contributor.getType().equals(Contributor.CO_AUTHORED_BY)) {
+          return;
+        }
+
+        appendCoAuthor(builder, contributorUser.getDisplayName(), contributorUser.getMail());
+      });
     }
   }
 

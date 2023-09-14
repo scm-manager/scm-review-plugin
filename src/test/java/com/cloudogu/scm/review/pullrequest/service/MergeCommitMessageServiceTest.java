@@ -64,6 +64,7 @@ import sonia.scm.user.UserDisplayManager;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -73,6 +74,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -110,8 +112,21 @@ class MergeCommitMessageServiceTest {
   private Subject subject;
 
   private final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
+
   private final String pullRequestTitle = "Replace variable X with Y";
-  private final DisplayUser pullRequestAuthor = DisplayUser.from(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
+
+  private final User pullRequestAuthorUser = new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com");
+  private final DisplayUser pullRequestAuthor = DisplayUser.from(pullRequestAuthorUser);
+
+  private final User arthurCoAuthorUser = new User("arthur", "Arthur", "dent@hitchhiker.com");
+  private final DisplayUser arthurCoAuthor = DisplayUser.from(arthurCoAuthorUser);
+
+  private final User marvinCoAuthorUser = new User("marvin", "Marvin", "marvin@example.org");
+  private final DisplayUser marvinCoAuthor = DisplayUser.from(marvinCoAuthorUser);
+
+  private final User fordCoAuthorUser = new User("ford", "Ford", "prefect@hitchhiker.org");
+  private final DisplayUser fordCoAuthor = DisplayUser.from(fordCoAuthorUser);
+
   private final PullRequest pullRequest = new PullRequest("42", "feature", "main");
 
   @BeforeEach
@@ -148,13 +163,17 @@ class MergeCommitMessageServiceTest {
       pullRequest.setAuthor("zaphod");
       pullRequest.setTitle(pullRequestTitle);
 
-      Person pullRequestAuthor = new Person("Zaphod Beeblebrox", "zaphod@hitchhiker.com");
+      Person pullRequestAuthor = new Person(pullRequestAuthorUser.getName(), pullRequestAuthorUser.getMail());
 
       Changeset changesetWithContributor = new Changeset("2", 2L, pullRequestAuthor, "second commit\nwith multiple lines");
-      changesetWithContributor.addContributor(new Contributor(Contributor.CO_AUTHORED_BY, new Person("Ford", "prefect@hitchhiker.org")));
-      changesetWithContributor.addContributor(new Contributor(Contributor.COMMITTED_BY, new Person("Marvin", "marvin@example.org")));
+      changesetWithContributor.addContributor(
+        new Contributor(Contributor.CO_AUTHORED_BY, new Person(fordCoAuthorUser.getName(), fordCoAuthorUser.getMail()))
+      );
+      changesetWithContributor.addContributor(
+        new Contributor(Contributor.COMMITTED_BY, new Person(marvinCoAuthorUser.getName(), marvinCoAuthorUser.getMail()))
+      );
       ChangesetPagingResult changesets = new ChangesetPagingResult(3, asList(
-        new Changeset("3", 3L, new Person("Arthur", "dent@hitchhiker.com"), "third commit"),
+        new Changeset("3", 3L, new Person(arthurCoAuthorUser.getName(), arthurCoAuthorUser.getMail()), "third commit"),
         changesetWithContributor,
         new Changeset("1", 1L, pullRequestAuthor, "first commit")
       ));
@@ -168,7 +187,27 @@ class MergeCommitMessageServiceTest {
       @BeforeEach
       void setCurrentUser() {
         mockUser("Phil", "Phil Groundhog", "phil@groundhog.com");
-        when(userDisplayManager.get("zaphod")).thenReturn(Optional.of(pullRequestAuthor));
+        when(userDisplayManager.get(pullRequestAuthorUser.getName())).thenReturn(Optional.of(pullRequestAuthor));
+        when(userDisplayManager.get(arthurCoAuthorUser.getName())).thenReturn(Optional.of(arthurCoAuthor));
+        when(userDisplayManager.get(marvinCoAuthorUser.getName())).thenReturn(Optional.of(marvinCoAuthor));
+        when(userDisplayManager.get(fordCoAuthorUser.getName())).thenReturn(Optional.of(fordCoAuthor));
+      }
+
+      @Test
+      void shouldOnlyContainReviewersWithApprovalThatAreNotAuthorOrCommitter() {
+        Map<String, Boolean> reviewers = new HashMap<>();
+        reviewers.put("Phil", true);
+        reviewers.put(pullRequestAuthorUser.getName(), true);
+        reviewers.put(arthurCoAuthorUser.getName(), false);
+        reviewers.put(marvinCoAuthorUser.getName(), true);
+        pullRequest.setReviewer(reviewers);
+
+        String defaultMessage = service.determineDefaultMessage(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH);
+
+        assertThat(defaultMessage).doesNotContain("Reviewed-by: Phil Groundhog <phil@groundhog.com>");
+        assertThat(defaultMessage).doesNotContain("Reviewed-by: Zaphod Beeblebrox <zaphod@hitchhiker.com>");
+        assertThat(defaultMessage).doesNotContain("Reviewed-by: Arthur <dent@hitchhiker.com>");
+        assertThat(defaultMessage).contains("Reviewed-by: Marvin <marvin@example.org>");
       }
 
       @Test
@@ -205,7 +244,7 @@ class MergeCommitMessageServiceTest {
       void shouldHaveCommitterFromCurrentUserIsDifferentThanPullRequestAuthor() {
         String defaultMessage = service.determineDefaultMessage(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH);
 
-        assertThat(defaultMessage).contains("Committed-by: Phil Groundhog <phil@groundhog.com>");
+        assertThat(defaultMessage).doesNotContain("Committed-by: Phil Groundhog <phil@groundhog.com>");
       }
 
       @Test
@@ -233,6 +272,13 @@ class MergeCommitMessageServiceTest {
       void shouldNotHaveCommitterWhenCurrentUserIsPullRequestAuthor() {
         mockUser(pullRequestAuthor.getId(), pullRequestAuthor.getDisplayName(), pullRequestAuthor.getMail());
 
+        String defaultMessage = service.determineDefaultMessage(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH);
+
+        assertThat(defaultMessage).doesNotContain("Committed-by");
+      }
+
+      @Test
+      void shouldNotHaveCommitter() {
         String defaultMessage = service.determineDefaultMessage(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH);
 
         assertThat(defaultMessage).doesNotContain("Committed-by");
@@ -271,6 +317,7 @@ class MergeCommitMessageServiceTest {
 
         @Test
         void shouldUseMessageTemplateIfEnabled() throws IOException {
+          reset(userDisplayManager);
           String defaultMessage = service.determineDefaultMessage(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH);
 
           assertThat(defaultMessage)
