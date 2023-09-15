@@ -1,0 +1,2 @@
+- type: fixed
+  description: Send specific email when status changed from draft to open and vica versa

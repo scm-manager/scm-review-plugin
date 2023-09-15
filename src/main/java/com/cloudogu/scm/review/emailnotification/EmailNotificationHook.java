@@ -27,6 +27,7 @@ import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.MentionEvent;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.comment.service.ReplyEvent;
+import com.cloudogu.scm.review.emailnotification.PullRequestStatusChangedMailTextResolver.PullRequestStatusType;
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
@@ -34,7 +35,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
@@ -71,24 +71,28 @@ public class EmailNotificationHook {
     Set<String> subscriberWithoutReviewers = eMailRecipientHelper.getSubscriberWithoutReviewers();
     Set<String> reviewers = eMailRecipientHelper.getSubscribingReviewers();
 
-    PullRequestEvent eventForNotification;
     if (event.getEventType().equals(HandlerEventType.MODIFY) &&
       event.getPullRequest().isOpen() &&
       event.getOldItem().isDraft()) {
-      eventForNotification = new PullRequestEvent(event.getRepository(), event.getPullRequest(), null, HandlerEventType.CREATE);
+      handleEvent(event, new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_OPEN, false), pullRequest, subscriberWithoutReviewers);
+      handleEvent(event, new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_OPEN, true), pullRequest, reviewers);
+    } else if (event.getEventType().equals(HandlerEventType.MODIFY) &&
+      event.getPullRequest().isDraft() &&
+      event.getOldItem().isOpen()) {
+      handleEvent(event, new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_DRAFT, false), pullRequest, subscriberWithoutReviewers);
+      handleEvent(event, new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_DRAFT, true), pullRequest, reviewers);
     } else {
-      eventForNotification = event;
+      handleEventIfNotDraft(event, new PullRequestEventMailTextResolver(event, false), pullRequest, subscriberWithoutReviewers);
+      handleEventIfNotDraft(event, new PullRequestEventMailTextResolver(event, true), pullRequest, reviewers);
     }
 
-    handleEvent(eventForNotification, new PullRequestEventMailTextResolver(eventForNotification, false), pullRequest, subscriberWithoutReviewers);
-    handleEvent(eventForNotification, new PullRequestEventMailTextResolver(eventForNotification, true), pullRequest, reviewers);
   }
 
   @Subscribe
   public void handleCommentEvents(CommentEvent event) {
     if (!isSystemComment(event)) {
       PullRequest pullRequest = event.getPullRequest();
-      handleEvent(event, new CommentEventMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
+      handleEventIfNotDraft(event, new CommentEventMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
     }
   }
 
@@ -98,8 +102,8 @@ public class EmailNotificationHook {
     Set<String> authorsInThread = getAuthorsInThread(event);
     Set<String> subscribers = getSubscribersWithoutCurrentUser(pullRequest);
     subscribers.removeAll(authorsInThread);
-    handleEvent(event, new CommentEventMailTextResolver(event), pullRequest, subscribers);
-    handleEvent(event, new ReplyEventMailTextResolver(event), pullRequest, authorsInThread);
+    handleEventIfNotDraft(event, new CommentEventMailTextResolver(event), pullRequest, subscribers);
+    handleEventIfNotDraft(event, new ReplyEventMailTextResolver(event), pullRequest, authorsInThread);
   }
 
   private Set<String> getAuthorsInThread(ReplyEvent replyEvent) {
@@ -134,33 +138,37 @@ public class EmailNotificationHook {
   @Subscribe
   public void handleUpdatedPullRequest(PullRequestUpdatedMailEvent event) {
     PullRequest pullRequest = event.getPullRequest();
-    handleEvent(event, new PullRequestUpdatedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
+    handleEventIfNotDraft(event, new PullRequestUpdatedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
   @Subscribe
   public void handleMergedPullRequest(PullRequestMergedEvent event) {
     PullRequest pullRequest = event.getPullRequest();
-    handleEvent(event, new PullRequestMergedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
+    handleEventIfNotDraft(event, new PullRequestMergedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
   @Subscribe
   public void handleRejectedPullRequest(PullRequestRejectedEvent event) {
     PullRequest pullRequest = event.getPullRequest();
-    handleEvent(event, new PullRequestRejectedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
+    handleEventIfNotDraft(event, new PullRequestRejectedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
   @Subscribe
   public void handlePullRequestApproval(PullRequestApprovalEvent event) {
     PullRequest pullRequest = event.getPullRequest();
-    handleEvent(event, new PullRequestApprovalMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
+    handleEventIfNotDraft(event, new PullRequestApprovalMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
-  private void handleEvent(BasicPullRequestEvent event, MailTextResolver mailTextResolver, PullRequest pullRequest, Set<String> recipients) {
+  private void handleEventIfNotDraft(BasicPullRequestEvent event, MailTextResolver mailTextResolver, PullRequest pullRequest, Set<String> recipients) {
     if (event.getPullRequest() != null && event.getPullRequest().getStatus() == PullRequestStatus.DRAFT) {
       // Do not send updates for draft pull requests
       return;
     }
 
+    handleEvent(event, mailTextResolver, pullRequest, recipients);
+  }
+
+  private void handleEvent(BasicPullRequestEvent event, MailTextResolver mailTextResolver, PullRequest pullRequest, Set<String> recipients) {
     Repository repository = event.getRepository();
     if (pullRequest == null || repository == null) {
       log.warn("Repository or Pull Request not found in the event {}", event);

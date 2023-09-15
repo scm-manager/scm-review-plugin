@@ -35,7 +35,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -206,10 +205,24 @@ class EmailNotificationHookTest {
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
     emailNotificationHook.handlePullRequestEvents(event);
 
-    ArgumentCaptor<PullRequestEventMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestEventMailTextResolver.class);
+    ArgumentCaptor<PullRequestStatusChangedMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestStatusChangedMailTextResolver.class);
     verify(service).sendEmail(eq(of(subscribedAndReviewer)), captor.capture());
-    PullRequestEventMailTextResolver resolver = captor.getValue();
-    assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR created");
+    PullRequestStatusChangedMailTextResolver resolver = captor.getValue();
+    assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR opened for review");
+    assertThat(resolver.getTopic()).isEqualTo(TOPIC_PR_CHANGED);
+  }
+
+  @Test
+  void shouldSendEmailsAfterChangingPullRequestToDraft() throws Exception {
+    PullRequest oldPullRequest = pullRequest.toBuilder().build();
+    PullRequest draftPullRequest = pullRequest.toBuilder().status(PullRequestStatus.DRAFT).build();
+    PullRequestEvent event = new PullRequestEvent(repository, draftPullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+
+    ArgumentCaptor<PullRequestStatusChangedMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestStatusChangedMailTextResolver.class);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), captor.capture());
+    PullRequestStatusChangedMailTextResolver resolver = captor.getValue();
+    assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR converted to draft");
     assertThat(resolver.getTopic()).isEqualTo(TOPIC_PR_CHANGED);
   }
 

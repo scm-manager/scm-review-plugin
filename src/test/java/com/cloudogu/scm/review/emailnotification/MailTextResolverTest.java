@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
 import com.cloudogu.scm.review.comment.service.ExecutedTransition;
+import com.cloudogu.scm.review.emailnotification.PullRequestStatusChangedMailTextResolver.PullRequestStatusType;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
@@ -203,6 +204,24 @@ class MailTextResolverTest {
     PullRequestRejectedMailTextResolver renderer = new PullRequestRejectedMailTextResolver(event);
 
     assertEmail(renderer, "rejected");
+  }
+
+  @Test
+  void shouldRenderEmailOnPullRequestChangedToDraft() {
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+
+    PullRequestStatusChangedMailTextResolver renderer = new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_DRAFT, true);
+
+    assertEmail(renderer, "converted to draft");
+  }
+
+  @Test
+  void shouldRenderEmailOnPullRequestChangedToOpen() {
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.CREATE);
+
+    PullRequestStatusChangedMailTextResolver renderer = new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_OPEN, true);
+
+    assertEmail(renderer, "opened for review");
   }
 
   private AbstractCharSequenceAssert<?, String> assertEmail(MailTextResolver renderer, String event) {
