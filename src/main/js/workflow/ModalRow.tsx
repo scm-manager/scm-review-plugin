@@ -33,7 +33,7 @@ type Props = {
   result: Result;
 };
 
-const Entry = styled.div`
+const Entry = styled.li`
   // css adjacent with same component
   & + & {
     border-top: 1px solid rgba(219, 219, 219, 0.5);
@@ -78,7 +78,7 @@ const ModalRow: FC<Props> = ({ result }) => {
           className="ml-1"
           color={result?.failed ? "danger" : "success"}
           name={result?.failed ? "times-circle" : "check-circle"}
-          aria-label={t(`scm-review-plugin.pullRequests.aria.workflow.status.${result.failed ? "fail" : "success"}`)}
+          alt={t(`scm-review-plugin.pullRequests.aria.workflow.status.${result.failed ? "fail" : "success"}`)}
         />
       </Left>
       <Right>

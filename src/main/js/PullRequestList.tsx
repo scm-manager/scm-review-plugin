@@ -46,15 +46,16 @@ const createTooltipMessage = (reviewers: Reviewer[]) => {
   return reviewers.map(({ displayName, approved }) => `- ${displayName}${approved ? " ✔" : ""}`).join("\n");
 };
 
-const ReviewersDetail: FC<{ pullRequest: PullRequest; labelId: string }> = ({ pullRequest, labelId }) => {
+const ReviewersDetail: FC<{ pullRequest: PullRequest }> = ({ pullRequest }) => {
   const [t] = useTranslation("plugins");
   const content = (
-    <Card.Details.Detail.Tag
-      className={classNames({ "is-relative": pullRequest.reviewer?.length })}
-      aria-labelledby={labelId}
-    >
-      {pullRequest.reviewer?.reduce((p, { approved }) => (approved ? p + 1 : p), 0)}/{pullRequest.reviewer?.length ?? 0}
-    </Card.Details.Detail.Tag>
+    <Card.Details.Detail className={classNames({ "is-relative": pullRequest.reviewer?.length })}>
+      <Card.Details.Detail.Label>{t("scm-review-plugin.pullRequests.details.reviewers")}</Card.Details.Detail.Label>
+      <Card.Details.Detail.Tag>
+        {pullRequest.reviewer?.reduce((p, { approved }) => (approved ? p + 1 : p), 0)}/
+        {pullRequest.reviewer?.length ?? 0}
+      </Card.Details.Detail.Tag>
+    </Card.Details.Detail>
   );
   if (pullRequest.reviewer?.length) {
     return (
@@ -114,39 +115,16 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
           <Card.Row className="is-flex is-align-items-center is-justify-content-space-between is-size-7">
             <Card.Details>
               <Card.Details.Detail>
-                {({ labelId }) => (
-                  <>
-                    <Card.Details.Detail.Label id={labelId}>
-                      {t("scm-review-plugin.pullRequests.details.tasks")}
-                    </Card.Details.Detail.Label>
-                    <Card.Details.Detail.Tag aria-labelledby={labelId}>
-                      {pullRequest.tasks?.done}/
-                      {pullRequest.tasks ? pullRequest.tasks.todo + pullRequest.tasks.done : 0}
-                    </Card.Details.Detail.Tag>
-                  </>
-                )}
+                <Card.Details.Detail.Label>
+                  {t("scm-review-plugin.pullRequests.details.tasks")}
+                </Card.Details.Detail.Label>
+                <Card.Details.Detail.Tag>
+                  {pullRequest.tasks?.done}/{pullRequest.tasks ? pullRequest.tasks.todo + pullRequest.tasks.done : 0}
+                </Card.Details.Detail.Tag>
               </Card.Details.Detail>
-              <Card.Details.Detail>
-                {({ labelId }) => (
-                  <>
-                    <Card.Details.Detail.Label id={labelId}>
-                      {t("scm-review-plugin.pullRequests.details.reviewers")}
-                    </Card.Details.Detail.Label>
-                    <ReviewersDetail pullRequest={pullRequest} labelId={labelId} />
-                  </>
-                )}
-              </Card.Details.Detail>
+              <ReviewersDetail pullRequest={pullRequest} />
               {!error && data?.enabled && data?.rules.length && pullRequest._links.workflowResult ? (
-                <Card.Details.Detail>
-                  {({ labelId }) => (
-                    <>
-                      <Card.Details.Detail.Label id={labelId}>
-                        {t("scm-review-plugin.pullRequests.details.workflow")}
-                      </Card.Details.Detail.Label>
-                      <PullRequestStatusColumn pullRequest={pullRequest} repository={repository} labelId={labelId} />
-                    </>
-                  )}
-                </Card.Details.Detail>
+                <PullRequestStatusColumn pullRequest={pullRequest} repository={repository} />
               ) : null}
               <ExtensionPoint<PullRequestListDetailExtension>
                 name="pull-requests.list.detail"

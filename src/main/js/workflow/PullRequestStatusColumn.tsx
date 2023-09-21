@@ -31,15 +31,14 @@ import StatusIcon, { getColor, getIcon, getTitle } from "./StatusIcon";
 import ModalRow from "./ModalRow";
 import { Popover } from "@scm-manager/ui-overlays";
 import { useTranslation } from "react-i18next";
-import { NoStyleButton } from "@scm-manager/ui-components";
+import { Card } from "@scm-manager/ui-layout";
 
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
-  labelId: string;
 };
 
-const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository, labelId }) => {
+const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
   const [t] = useTranslation("plugins");
   const { data, error, isLoading } = useStatusbar(repository, pullRequest);
 
@@ -51,31 +50,31 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository, labelId }
     return null;
   }
 
-  const icon = (
-    <NoStyleButton
-      className="is-relative is-size-6"
-      aria-label={t("scm-review-plugin.pullRequests.aria.workflow.label", {
-        status: t(`scm-review-plugin.pullRequests.aria.workflow.status.${getTitle(data.results)}`)
-      })}
-    >
-      <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} size="lg" />
-    </NoStyleButton>
-  );
   const title = (
     <h1 className="has-text-weight-bold is-size-5">{t("scm-review-plugin.pullRequests.details.workflow")}</h1>
   );
 
-  if (!data.results.length) {
-    return icon;
-  }
-
   return (
-    <Popover trigger={icon} title={title}>
-      <>
+    <Popover
+      trigger={
+        <Card.Details.ButtonDetail
+          aria-label={t("scm-review-plugin.pullRequests.aria.workflow.label", {
+            status: t(`scm-review-plugin.pullRequests.aria.workflow.status.${getTitle(data.results)}`)
+          })}
+        >
+          <Card.Details.Detail.Label aria-hidden>
+            {t("scm-review-plugin.pullRequests.details.workflow")}
+          </Card.Details.Detail.Label>
+          <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} size="lg" />
+        </Card.Details.ButtonDetail>
+      }
+      title={title}
+    >
+      <ul>
         {data.results.map(r => (
           <ModalRow key={r.rule} result={r} />
         ))}
-      </>
+      </ul>
     </Popover>
   );
 };

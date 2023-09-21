@@ -24,7 +24,7 @@
 
 import React, { FC } from "react";
 import { Repository } from "@scm-manager/ui-types";
-import { AvatarImage, DateFromNow, NoStyleButton, SmallLoadingSpinner } from "@scm-manager/ui-components";
+import { AvatarImage, DateFromNow, SmallLoadingSpinner } from "@scm-manager/ui-components";
 import { Popover } from "@scm-manager/ui-overlays";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -32,7 +32,6 @@ import styled from "styled-components";
 import { PullRequest } from "./types/PullRequest";
 import { extensionPoints } from "@scm-manager/ui-extensions";
 import { Card } from "@scm-manager/ui-layout";
-import classNames from "classnames";
 
 const PullRequestEntry = styled.div`
   border-radius: 5px;
@@ -104,33 +103,21 @@ const BranchDetailsPullRequests: extensionPoints.BranchListDetail["type"] = ({ r
   const prs: PullRequest[] = (branchDetails._embedded?.pullRequests ?? []) as PullRequest[];
 
   return (
-    <Card.Details.Detail>
-      {({ labelId }) => (
-        <>
-          <Card.Details.Detail.Label id={labelId}>
+    <Popover
+      trigger={
+        <Card.Details.ButtonDetail>
+          <Card.Details.Detail.Label>
             {t("scm-review-plugin.pullRequests.details.pullRequests")}
           </Card.Details.Detail.Label>
-          <Popover
-            trigger={
-              <NoStyleButton disabled={prs.length === 0}>
-                <Card.Details.Detail.Tag
-                  className={classNames({ "is-relative": prs.length > 0 })}
-                  aria-labelledby={labelId}
-                >
-                  {prs.length}
-                </Card.Details.Detail.Tag>
-              </NoStyleButton>
-            }
-            title={
-              <h1 className="has-text-weight-bold is-size-5">
-                {t("scm-review-plugin.branchDetails.pullRequest.popover")}
-              </h1>
-            }
-            children={<PullRequestList repository={repository} pullRequests={prs} />}
-          ></Popover>
-        </>
-      )}
-    </Card.Details.Detail>
+          <Card.Details.Detail.Tag>{prs.length}</Card.Details.Detail.Tag>
+        </Card.Details.ButtonDetail>
+      }
+      title={
+        <h1 className="has-text-weight-bold is-size-5">{t("scm-review-plugin.branchDetails.pullRequest.popover")}</h1>
+      }
+    >
+      <PullRequestList repository={repository} pullRequests={prs} />
+    </Popover>
   );
 };
 
