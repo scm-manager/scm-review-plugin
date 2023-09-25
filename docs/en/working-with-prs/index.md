@@ -67,6 +67,10 @@ So you will be informed on each change of the pull request by a toast message ap
 
 ![Pull Request - Toastmessage](assets/toastmessage.png)
 
+### Convert a pull request
+A pull request created as a draft pull request can be converted into an open pull request open for review.
+An open pull request can be converted to a draft pull request using the edit function. When converting to a draft, the approvals by users are deleted.
+
 ### Reject a pull request
 If a reviewer thinks that a pull request should not be merged, he can reject it. That should happen in coordination with the author. It is not possible to reopen a rejected pull request. Instead a new pull request has to be opened.
 

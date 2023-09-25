@@ -5,7 +5,7 @@ Most of the extensions that come with the Review plugin can be found inside each
 
 The list offers these options:
 
-* open (standard): All pull requests that are open.
+* open/draft (standard): All pull requests that are open.
 * mine: All pull requests that are assigned to the current user.
 * to be reviewed: All pull requests that the current user is supposed to review.
 * all: All pull requests.
@@ -20,7 +20,7 @@ The list has these columns, which can be sorted ascending or descending by click
 * Target Branch: Name of the branch that is supposed to get the changes (target).
 * Author: Name of the creator of the pull request.
 * Date: Age of the pull request.
-* Reviewer:  Icon which shows the requested reviewers for the pull request.
-* Status: Status of the pull request (Open/Merged/Rejected)
+* Reviewer: Icon which shows the requested reviewers for the pull request.
+* Status: Status of the pull request (Open/Draft/Merged/Rejected)
 
 ![Pull Request overview](assets/overview.png)

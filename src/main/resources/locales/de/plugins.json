@@ -47,14 +47,14 @@
       },
       "description": "Beschreibung",
       "status": "Status",
-      "createAsDraft": "Als Entwurf erstellen",
-      "changeToDraft": "Zu Entwurf ändern",
-      "changeToDraftHelpText": "Beim Umwandeln in einen Entwurf werden die Freigaben durch Nutzer gelöscht.",
+      "createAsDraft": "Als Draft erstellen",
+      "changeToDraft": "Zu Draft ändern",
+      "changeToDraftHelpText": "Beim Umwandeln in einen Draft werden die Freigaben durch Nutzer gelöscht.",
       "statusLabel": {
         "OPEN": "OFFEN",
         "MERGED": "GEMERGED",
         "REJECTED": "ABGELEHNT",
-        "DRAFT": "ENTWURF"
+        "DRAFT": "DRAFT"
       },
       "id": "ID",
       "author": "Autor",
@@ -91,7 +91,7 @@
         }
       },
       "selector": {
-        "IN_PROGRESS": "offen/Entwurf",
+        "IN_PROGRESS": "offen/Draft",
         "MINE": "meine",
         "REVIEWER": "zu reviewen",
         "ALL": "alle",
@@ -446,7 +446,7 @@
       },
       "created": {
         "header": "Neuer Pull Request: #{{id}} {{title}}",
-        "draftHeader": "Neuer Pull Request Entwurf: #{{id}} {{title}}",
+        "draftHeader": "Neuer Draft Pull Request: #{{id}} {{title}}",
         "footerStart": "Erstellt von",
         "footerMiddle": "im Repository",
         "footerEnd": ""

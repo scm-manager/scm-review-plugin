@@ -5,7 +5,7 @@ Der Großteil aller vom Review-Plugin mitgelieferten Erweiterungen sind innerhal
 
 Diese Übersicht lässt sich nach den folgenden Kategorien filtern:
 
-- offen (Standard): Alle offenen Pull Requests
+- offen/Draft (Standard): Alle offenen Pull Requests
 - meine: Pull Requests des eingeloggten Nutzers
 - zu reviewen: Pull Requests, die der eingeloggte Nutzer kontrollieren soll
 - alle: Alle Pull Requests
@@ -21,6 +21,5 @@ Die Übersichts-Tabelle besteht aus den folgenden Spalten, die sich durch einen 
 - Autor: Ersteller des Pull Requests
 - Datum: Alter des Pull Requests
 - Reviewer: Icon, welches die zugehörigen Reviewer zum Pull Request anzeigt
-- Status: Status des Pull Requests (Open/Merged/Rejected)
-
+- Status: Status des Pull Requests (Offen/Draft/Gemerged/Abgelehnt)
 ![Pull Request Übersicht](assets/overview.png)
