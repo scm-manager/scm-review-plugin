@@ -728,16 +728,51 @@ public class CommentServiceTest {
 
   @Test
   @SubjectAware(username = "dent")
-  public void shouldAddCommentOnRejectEventByUser() {
+  public void shouldAddCommentOnRejectEventByUserWithComment() {
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenAnswer(invocation -> {
+      Comment comment = invocation.getArgument(1);
+      comment.setId("newId");
+
+      return comment.getId();
+    });
+
+    when(storeFactory.create(any())).thenReturn(store);
+    when(store.getAll(eq(PULL_REQUEST_ID))).thenAnswer(invocation -> rootCommentCaptor.getAllValues());
+
+    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, "comment"));
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    List<Comment> storedComment = rootCommentCaptor.getAllValues();
+    assertThat(storedComment.get(0).getComment()).isEqualTo("rejected");
+    assertThat(storedComment.get(0).getReplies()).hasSize(1);
+    assertThat(storedComment.get(0).getReplies().get(0).getComment()).isEqualTo("comment");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldAddCommentOnRejectEventByUserWithoutComment() {
     when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, "boring"));
+    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, null));
 
-    assertThat(rootCommentCaptor.getAllValues()).hasSize(2);
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     List<Comment> storedComment = rootCommentCaptor.getAllValues();
-    assertThat(storedComment.get(0).getComment()).isEqualTo("boring");
-    assertThat(storedComment.get(1).getComment()).isEqualTo("rejected");
-}
+    assertThat(storedComment.get(0).getComment()).isEqualTo("rejected");
+    assertThat(storedComment.get(0).getReplies()).hasSize(0);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldAddCommentOnRejectEventByUserWithEmptyComment() {
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+
+    commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, ""));
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    List<Comment> storedComment = rootCommentCaptor.getAllValues();
+    assertThat(storedComment.get(0).getComment()).isEqualTo("rejected");
+    assertThat(storedComment.get(0).getReplies()).hasSize(0);
+  }
 
   @Test
   @SubjectAware(username = "dent")

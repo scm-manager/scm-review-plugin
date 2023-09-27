@@ -367,19 +367,23 @@ public class CommentService {
 
   @Subscribe
   public void addCommentOnReject(PullRequestRejectedEvent rejectedEvent) {
-    if (!Strings.isNullOrEmpty(rejectedEvent.getMessage())) {
-      Comment comment = new Comment();
-      comment.setDate(Instant.now());
-      comment.setSystemComment(false);
-      comment.setComment(rejectedEvent.getMessage());
+    Comment comment = Comment.createSystemComment(getCommentType(rejectedEvent.getCause()).getKey());
 
-      addWithoutPermissionCheck(
-        rejectedEvent.getRepository(),
+    String commentId = addWithoutPermissionCheck(
+      rejectedEvent.getRepository(),
+      rejectedEvent.getPullRequest().getId(),
+      comment
+    );
+
+    if(!Strings.isNullOrEmpty(rejectedEvent.getMessage())) {
+      reply(
+        rejectedEvent.getRepository().getNamespace(),
+        rejectedEvent.getRepository().getName(),
         rejectedEvent.getPullRequest().getId(),
-        comment
+        commentId,
+        Reply.createNewReply(rejectedEvent.getMessage())
       );
     }
-    addStatusChangedComment(rejectedEvent.getRepository(), rejectedEvent.getPullRequest().getId(), getCommentType(rejectedEvent.getCause()));
   }
 
   @Subscribe

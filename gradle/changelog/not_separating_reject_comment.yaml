@@ -1,0 +1,2 @@
+- type: changed
+  description: PR rejection reasons created by a user, are now created as an reply to the system comment instead of being a standalone comment

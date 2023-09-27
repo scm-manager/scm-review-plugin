@@ -46,6 +46,13 @@ public class Reply extends BasicComment {
     return comment;
   }
 
+  public static Reply createNewReply(String text) {
+    Reply comment = new Reply();
+    comment.setComment(text);
+    comment.setDate(Instant.now());
+    return comment;
+  }
+
   @Override
   public Reply clone() {
     return (Reply) super.clone();
