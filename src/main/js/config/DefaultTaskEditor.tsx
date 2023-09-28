@@ -23,8 +23,8 @@
  */
 
 import React, { FC, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { AddButton, ButtonGroup, MarkdownView, Modal, Notification, Textarea } from "@scm-manager/ui-components";
+import { Trans, useTranslation } from "react-i18next";
+import { ButtonGroup, Level, MarkdownView, Modal, Notification, Textarea } from "@scm-manager/ui-components";
 import { CardList } from "@scm-manager/ui-layout";
 import { Menu } from "@scm-manager/ui-overlays";
 import { Button, Icon } from "@scm-manager/ui-buttons";
@@ -64,23 +64,15 @@ const DefaultTaskEditor: FC<DefaultTaskEditorProps> = ({ defaultTasks, addTask, 
   return (
     <>
       <div className="field">
-        <div className="is-flex is-justify-content-space-between label">
-          <label className="" htmlFor="default-tasks-cardlist">
-            {t("scm-review-plugin.config.defaultTasks.label")}
-          </label>
-          <AddButton
-            label={t("scm-review-plugin.config.defaultTasks.addTask")}
-            icon=""
-            action={() => {
-              setTask("");
-              setShowCreateModal(true);
-            }}
-          />
-        </div>
+        <label className="label" id="default-tasks-label">
+          {t("scm-review-plugin.config.defaultTasks.label")}
+        </label>
+        <p className="mb-2">{t("scm-review-plugin.config.defaultTasks.information")}</p>
         <CardWrapper className="control">
-          <StyledCardList id="default-tasks-cardlist" className="input p-2">
+          <StyledCardList aria-labelledby="default-tasks-label" className="input p-2">
             {defaultTasks.map(task => (
               <DefaultTaskEntry
+                key={task}
                 task={task}
                 removeTask={removeTask}
                 editTask={(task: string) => {
@@ -94,6 +86,19 @@ const DefaultTaskEditor: FC<DefaultTaskEditorProps> = ({ defaultTasks, addTask, 
             {t("scm-review-plugin.config.defaultTasks.noTasks")}
           </Notification>
         </CardWrapper>
+        <Level
+          right={
+            <Button
+              className="mt-2"
+              onClick={() => {
+                setTask("");
+                setShowCreateModal(true);
+              }}
+            >
+              {t("scm-review-plugin.config.defaultTasks.addTask")}
+            </Button>
+          }
+        />
       </div>
 
       {showCreateModal ? (
@@ -145,7 +150,22 @@ const DefaultTaskModal: FC<{
       active={true}
       body={
         <>
-          <label className="label">{t("scm-review-plugin.config.defaultTasks.modal.input")}</label>
+          <label className="label">
+            {mode === "CREATE"
+              ? t("scm-review-plugin.config.defaultTasks.modal.createInput")
+              : t("scm-review-plugin.config.defaultTasks.modal.editInput")}
+          </label>
+          <p className="mb-2">
+            <Trans
+              t={t}
+              i18nKey="scm-review-plugin.config.defaultTasks.modal.markdownInformation"
+              components={[
+                <a href="https://daringfireball.net/projects/markdown/syntax.text" target="_blank" rel="noreferrer">
+                  MarkDown Syntax
+                </a>
+              ]}
+            />
+          </p>
           <Textarea value={defaultTask} onChange={setDefaultTask} />
           <label className="label">{t("scm-review-plugin.config.defaultTasks.modal.preview")}</label>
           <MarkDownWrapper>

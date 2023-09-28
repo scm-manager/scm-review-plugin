@@ -419,15 +419,18 @@
       },
       "defaultTasks": {
         "label": "Default tasks",
+        "information": "Add tasks that are automatically added when a pull request is created.",
         "addTask": "Add task",
         "deleteTask": "Delete task",
         "editTask": "Edit task",
         "noTasks": "No default tasks configured.",
         "modal": {
           "createTitle": "Create new default task",
-          "editTitle": "Edit default task",
-          "input": "Input",
-          "preview": "MarkDown Preview",
+          "createInput": "Add default task",
+          "editTitle": "Edit existing default task",
+          "editInput": "Edit default task",
+          "markdownInformation": "This input field supports the <0>MarkDown Syntax</0>.",
+          "preview": "Preview",
           "addTask": "Create task",
           "editTask": "Edit task",
           "cancel": "Cancel"

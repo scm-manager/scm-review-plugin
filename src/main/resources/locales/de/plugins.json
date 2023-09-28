@@ -421,15 +421,18 @@
       },
       "defaultTasks": {
         "label": "Standard Aufgaben",
-        "addTask": "Aufgabe hinzufügen",
+        "information": "Fügt Aufgaben hinzu, welche automatisch beim Erstellen eines Pull Requests angelegt werden.",
+        "addTask": "Aufgabe anlegen",
         "deleteTask": "Aufgabe löschen",
         "editTask": "Aufgabe ändern",
         "noTasks": "Keine Standard Aufgaben definiert.",
         "modal": {
           "createTitle": "Neue Standard Aufgabe erstellen",
-          "editTitle": "Standard Aufgabe ändern",
-          "input": "Eingabe",
-          "preview": "MarkDown Vorschau",
+          "createInput": "Standard Aufgabe anlegen",
+          "editTitle": "Bestehende Standard Aufgabe ändern",
+          "editInput": "Standard Aufgabe ändern",
+          "markdownInformation": "Dieses Eingabefeld unterstützt die <0>MarkDown Syntax</0>.",
+          "preview": "Vorschau",
           "addTask": "Aufgabe erstellen",
           "editTask": "Aufgabe ändern",
           "cancel": "Abbrechen"
