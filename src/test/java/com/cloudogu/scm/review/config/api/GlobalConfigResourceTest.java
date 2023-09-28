@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.config.api;
 
+import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
 import org.apache.shiro.authz.AuthorizationException;
@@ -151,7 +152,7 @@ class GlobalConfigResourceTest {
         verify(configService)
           .setGlobalPullRequestConfig(argThat(argument -> {
             assertThat(argument.isRestrictBranchWriteAccess()).isTrue();
-            assertThat(argument.getProtectedBranchPatterns()).contains("feature/*");
+            assertThat(argument.getProtectedBranchPatterns()).contains(new BasePullRequestConfig.BranchProtection("feature/*", "*"));
             return true;
           }));
       }

@@ -30,13 +30,18 @@ export type ProtectionBypass = {
 export const MERGE_STRATEGIES = ["MERGE_COMMIT", "FAST_FORWARD_IF_POSSIBLE", "SQUASH", "REBASE"] as const;
 export type MergeStrategy = typeof MERGE_STRATEGIES[number];
 
+export type BranchProtection = {
+  branch: string;
+  path: string;
+};
+
 export type Config = {
   defaultMergeStrategy: MergeStrategy;
   deleteBranchOnMerge: boolean;
   disableRepositoryConfiguration?: boolean;
   overwriteParentConfig?: boolean;
   restrictBranchWriteAccess: boolean;
-  protectedBranchPatterns: string[];
+  protectedBranchPatterns: BranchProtection[];
   branchProtectionBypasses: ProtectionBypass[];
   preventMergeFromAuthor: boolean;
   defaultReviewers: string[];

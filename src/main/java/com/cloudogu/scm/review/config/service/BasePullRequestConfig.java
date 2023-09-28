@@ -48,7 +48,7 @@ public class BasePullRequestConfig {
   private boolean deleteBranchOnMerge = false;
   private boolean restrictBranchWriteAccess = false;
   @XmlElement(name = "protected-branch-patterns")
-  private List<String> protectedBranchPatterns = new ArrayList<>();
+  private List<BranchProtection> protectedBranchPatterns = new ArrayList<>();
   private List<String> defaultTasks = new ArrayList<>();
   @XmlElement(name = "protection-bypasses")
   private List<BasePullRequestConfig.ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
@@ -57,6 +57,17 @@ public class BasePullRequestConfig {
   private Set<String> labels = new HashSet<>();
   private boolean overwriteDefaultCommitMessage;
   private String commitMessageTemplate;
+
+  @Getter
+  @Setter
+  @XmlRootElement(name = "branchProtection")
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class BranchProtection {
+    private String branch;
+    private String path;
+  }
 
   @Getter
   @Setter

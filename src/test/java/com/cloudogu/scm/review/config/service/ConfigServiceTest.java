@@ -169,7 +169,7 @@ class ConfigServiceTest {
 
   @Test
   void shouldProtectBranchFromGlobalConfig() {
-    mockGlobalConfig(true, false, "master");
+    mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("master", "*"));
     mockRepoConfig(false, false);
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isTrue();
@@ -177,8 +177,8 @@ class ConfigServiceTest {
 
   @Test
   void shouldProtectBranchFromRepoConfig() {
-    mockGlobalConfig(true, false, "master");
-    mockRepoConfig(true, true, "develop");
+    mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("master", "*"));
+    mockRepoConfig(true, true, new BasePullRequestConfig.BranchProtection("develop", "*"));
 
     assertThat(service.isBranchProtected(REPOSITORY, "develop")).isTrue();
   }
@@ -187,37 +187,37 @@ class ConfigServiceTest {
   void shouldProtectBranchFromNamespaceConfig() {
     NamespacePullRequestConfig namespacePullRequestConfig = mockNamespaceConfig(true, false);
     namespacePullRequestConfig.setRestrictBranchWriteAccess(true);
-    namespacePullRequestConfig.setProtectedBranchPatterns(singletonList("develop"));
+    namespacePullRequestConfig.setProtectedBranchPatterns(singletonList(new BasePullRequestConfig.BranchProtection("develop", "*")));
 
     assertThat(service.isBranchProtected(REPOSITORY, "develop")).isTrue();
   }
 
   @Test
   void shouldOverwriteProtectedBranchWithRepoConfig() {
-    mockGlobalConfig(true, false, "master");
-    mockRepoConfig(true, true, "develop");
+    mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("master", "*"));
+    mockRepoConfig(true, true, new BasePullRequestConfig.BranchProtection("develop", "*"));
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
   }
 
   @Test
   void shouldNotOverwriteProtectedBranchWithDisabledRepoConfig() {
-    mockGlobalConfig(true, true, "master");
-    mockRepoConfig(true, true, "develop");
+    mockGlobalConfig(true, true, new BasePullRequestConfig.BranchProtection("master", "*"));
+    mockRepoConfig(true, true, new BasePullRequestConfig.BranchProtection("develop", "*"));
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isTrue();
   }
 
   @Test
   void shouldProtectBranchFromGlobalConfigWithPattern() {
-    mockGlobalConfig(true, false, "feature/*");
+    mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("feature/*", "*"));
 
     assertThat(service.isBranchProtected(REPOSITORY, "feature/something")).isTrue();
   }
 
   @Test
   void shouldNotProtectBranchForBypassedUserInGlobalConfig() {
-    GlobalPullRequestConfig globalConfig = mockGlobalConfig(true, false, "master");
+    GlobalPullRequestConfig globalConfig = mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("master", "*"));
     globalConfig.setBranchProtectionBypasses(singletonList(new RepositoryPullRequestConfig.ProtectionBypass("trillian", false)));
     mockRepoConfig(false, true);
 
@@ -226,8 +226,8 @@ class ConfigServiceTest {
 
   @Test
   void shouldNotProtectBranchForBypassedUserInRepositoryConfig() {
-    mockGlobalConfig(true, false, "master");
-    RepositoryPullRequestConfig config = mockRepoConfig(true, true, "master");
+    mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("master", "*"));
+    RepositoryPullRequestConfig config = mockRepoConfig(true, true, new BasePullRequestConfig.BranchProtection("master", "*"));
     config.setBranchProtectionBypasses(singletonList(new RepositoryPullRequestConfig.ProtectionBypass("trillian", false)));
 
     assertThat(service.isBranchProtected(REPOSITORY, "master")).isFalse();
@@ -242,8 +242,8 @@ class ConfigServiceTest {
 
   @Test
   void shouldNotProtectBranchForBypassedGroupInRepositoryConfig() {
-    mockGlobalConfig(true, false, "master");
-    RepositoryPullRequestConfig config = mockRepoConfig(true, true, "master");
+    mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("master", "*"));
+    RepositoryPullRequestConfig config = mockRepoConfig(true, true, new BasePullRequestConfig.BranchProtection("master", "*"));
     config.setBranchProtectionBypasses(singletonList(new RepositoryPullRequestConfig.ProtectionBypass("hitchhikers", true)));
     when(groupCollector.collect("trillian")).thenReturn(singleton("hitchhikers"));
 
@@ -362,7 +362,7 @@ class ConfigServiceTest {
     assertThat(config).isInstanceOf(RepositoryPullRequestConfig.class);
   }
 
-  private GlobalPullRequestConfig mockGlobalConfig(boolean enabled, boolean disableRepositoryConfig, String... protectedBranches) {
+  private GlobalPullRequestConfig mockGlobalConfig(boolean enabled, boolean disableRepositoryConfig, BasePullRequestConfig.BranchProtection... protectedBranches) {
     GlobalPullRequestConfig globalConfig = new GlobalPullRequestConfig();
     globalConfig.setRestrictBranchWriteAccess(enabled);
     globalConfig.setDisableRepositoryConfiguration(disableRepositoryConfig);
@@ -379,7 +379,7 @@ class ConfigServiceTest {
     return config;
   }
 
-  private RepositoryPullRequestConfig mockRepoConfig(boolean enabled, boolean overwrite, String... protectedBranches) {
+  private RepositoryPullRequestConfig mockRepoConfig(boolean enabled, boolean overwrite, BasePullRequestConfig.BranchProtection... protectedBranches) {
     RepositoryPullRequestConfig config = new RepositoryPullRequestConfig();
     config.setRestrictBranchWriteAccess(enabled);
     config.setProtectedBranchPatterns(asList(protectedBranches));

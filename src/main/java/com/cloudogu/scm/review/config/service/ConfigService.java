@@ -100,14 +100,23 @@ public class ConfigService {
   }
 
   public boolean isBranchProtected(Repository repository, String branch) {
-    return getProtectedBranches(repository).stream().anyMatch(branchPattern -> branchMatches(branch, branchPattern));
+    return getProtectedBranches(repository).stream()
+      .map(BasePullRequestConfig.BranchProtection::getBranch)
+      .anyMatch(branchPattern -> patternMatches(branch, branchPattern));
+  }
+
+  public boolean isBranchPathProtected(Repository repository, String branch, String path) {
+    return getProtectedBranches(repository)
+      .stream()
+      .filter(branchProtection -> patternMatches(branch, branchProtection.getBranch()))
+      .anyMatch(branchProtection -> patternMatches(path, branchProtection.getPath())) ;
   }
 
   public boolean isPreventMergeFromAuthor(Repository repository) {
     return evaluateConfig(repository).isPreventMergeFromAuthor();
   }
 
-  private Collection<String> getProtectedBranches(Repository repository) {
+  private Collection<BasePullRequestConfig.BranchProtection> getProtectedBranches(Repository repository) {
     BasePullRequestConfig config = evaluateConfig(repository);
     if (config.isRestrictBranchWriteAccess()) {
       return getProtectedBranches(config);
@@ -116,7 +125,7 @@ public class ConfigService {
     }
   }
 
-  private Collection<String> getProtectedBranches(BasePullRequestConfig config) {
+  private Collection<BasePullRequestConfig.BranchProtection> getProtectedBranches(BasePullRequestConfig config) {
     String user = SecurityUtils.getSubject().getPrincipal().toString();
     Set<String> groups = groupCollector.collect(user);
     if (userCanBypassProtection(config, user, groups)) {
@@ -139,8 +148,8 @@ public class ConfigService {
     }
   }
 
-  private boolean branchMatches(String branch, String branchPattern) {
-    return GlobUtil.matches(branchPattern, branch);
+  private boolean patternMatches(String value, String pattern) {
+    return GlobUtil.matches(pattern, value);
   }
 
   private ConfigurationStore<RepositoryPullRequestConfig> getStore(Repository repository) {
