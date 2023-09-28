@@ -102,14 +102,14 @@ public class ConfigService {
   public boolean isBranchProtected(Repository repository, String branch) {
     return getProtectedBranches(repository).stream()
       .map(BasePullRequestConfig.BranchProtection::getBranch)
-      .anyMatch(branchPattern -> patternMatches(branch, branchPattern));
+      .anyMatch(branchPattern -> patternMatches(branchPattern, branch));
   }
 
   public boolean isBranchPathProtected(Repository repository, String branch, String path) {
     return getProtectedBranches(repository)
       .stream()
-      .filter(branchProtection -> patternMatches(branch, branchProtection.getBranch()))
-      .anyMatch(branchProtection -> patternMatches(path, branchProtection.getPath())) ;
+      .filter(branchProtection -> patternMatches(branchProtection.getBranch(), branch))
+      .anyMatch(branchProtection -> patternMatches(branchProtection.getPath(), path.endsWith("/") ? path : path + "/")) ;
   }
 
   public boolean isPreventMergeFromAuthor(Repository repository) {
@@ -148,7 +148,7 @@ public class ConfigService {
     }
   }
 
-  private boolean patternMatches(String value, String pattern) {
+  private boolean patternMatches(String pattern, String value) {
     return GlobUtil.matches(pattern, value);
   }
 

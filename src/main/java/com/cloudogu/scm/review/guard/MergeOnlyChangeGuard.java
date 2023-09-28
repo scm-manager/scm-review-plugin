@@ -35,6 +35,7 @@ import sonia.scm.repository.RepositoryManager;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Stream;
 
 @Extension
 @Requires("scm-editor-plugin")
@@ -52,7 +53,7 @@ public class MergeOnlyChangeGuard implements ChangeGuard {
   @Override
   public Collection<ChangeObstacle> getObstacles(NamespaceAndName namespaceAndName, String branch, Changes changes) {
     Repository repository = repositoryManager.get(namespaceAndName);
-    if (configService.isBranchProtected(repository, branch)) {
+    if (preventModification(repository, branch, changes)) {
       return Collections.singleton(new ChangeObstacle() {
         @Override
         public String getMessage() {
@@ -67,5 +68,12 @@ public class MergeOnlyChangeGuard implements ChangeGuard {
     } else {
       return Collections.emptyList();
     }
+  }
+
+  private boolean preventModification(Repository repository, String branch, Changes changes) {
+    return Stream.of(changes.getFilesToCreate(), changes.getFilesToModify(), changes.getFilesToDelete())
+      .flatMap(Collection::stream)
+      .anyMatch(path -> configService.isBranchPathProtected(repository, branch, path))
+      || (changes.getPathForCreate().isPresent() && configService.isBranchPathProtected(repository, branch, changes.getPathForCreate().get()));
   }
 }

@@ -72,7 +72,7 @@ const BranchList: FC<Props> = ({ protections, onChange }) => {
                   color="text"
                   icon="trash"
                   action={() =>
-                    onChange([...protections.filter(p => p.branch !== protection.branch && p.path !== protection.path)])
+                    onChange([...protections.filter(p => p.branch !== protection.branch || p.path !== protection.path)])
                   }
                   title={t("scm-review-plugin.config.branchProtection.branches.deleteBranch")}
                   className="px-2"

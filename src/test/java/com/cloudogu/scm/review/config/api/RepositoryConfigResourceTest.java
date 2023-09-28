@@ -141,9 +141,9 @@ class RepositoryConfigResourceTest {
       }
 
       @Test
-      void shouldSetConfig() throws URISyntaxException, UnsupportedEncodingException {
+      void shouldSetConfig() throws URISyntaxException {
         MockHttpRequest request = MockHttpRequest.put("/v2/pull-requests/space/X/config")
-          .content("{\"restrictBranchWriteAccess\": true, \"protectedBranchPatterns\": [\"feature/*\"]}".getBytes())
+          .content("{\"restrictBranchWriteAccess\": true, \"protectedBranchPatterns\": [{\"branch\":\"feature/*\", \"path\":\"*\"}]}".getBytes())
           .contentType(MediaType.APPLICATION_JSON);
 
         dispatcher.invoke(request, response);
@@ -152,7 +152,8 @@ class RepositoryConfigResourceTest {
         verify(configService)
           .setRepositoryPullRequestConfig(eq(REPOSITORY), argThat(argument -> {
             assertThat(argument.isRestrictBranchWriteAccess()).isTrue();
-            assertThat(argument.getProtectedBranchPatterns()).contains(new BasePullRequestConfig.BranchProtection("feature/*", "*"));
+            assertThat(argument.getProtectedBranchPatterns().get(0).getBranch()).contains("feature/*");
+            assertThat(argument.getProtectedBranchPatterns().get(0).getPath()).contains("*");
             return true;
           }));
       }

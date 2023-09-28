@@ -216,6 +216,16 @@ class ConfigServiceTest {
   }
 
   @Test
+  void shouldProtectBranchWithWildcardPath() {
+    mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("feature/*", "*/java/*"));
+
+    assertThat(service.isBranchPathProtected(REPOSITORY, "feature/something", "src")).isFalse();
+    assertThat(service.isBranchPathProtected(REPOSITORY, "feature/something", "src/main/java/")).isTrue();
+    assertThat(service.isBranchPathProtected(REPOSITORY, "feature/something", "src/main/java/blubb")).isTrue();
+    assertThat(service.isBranchPathProtected(REPOSITORY, "feature/something", "src/main/java/blubb/blobb")).isTrue();
+  }
+
+  @Test
   void shouldNotProtectBranchForBypassedUserInGlobalConfig() {
     GlobalPullRequestConfig globalConfig = mockGlobalConfig(true, false, new BasePullRequestConfig.BranchProtection("master", "*"));
     globalConfig.setBranchProtectionBypasses(singletonList(new RepositoryPullRequestConfig.ProtectionBypass("trillian", false)));
