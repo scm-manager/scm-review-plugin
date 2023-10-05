@@ -106,12 +106,16 @@ Es können Branches spezifiziert werden, die nicht direkt, sondern nur durch Pul
 Hierfür muss "Branch-Schutz aktiviert" gewählt werden. Wenn dieses der Fall ist, werden zwei weitere Tabellen
 angezeigt, in denen geschützte Branches und Ausnahmen für bestimmte Benutzer und Gruppen spezifiziert werden.
 
-Die erste Tabelle enthält Muster für Branchnamen, die geschützt werden. Hier können Branches entweder fest
-angegeben werden (wie `main`), oder als Muster (wie `releases/*`).
+Die erste Tabelle enthält Muster für Branchnamen und Pfade, die geschützt werden. Hier können Branches entweder fest
+angegeben werden wie `main` oder als Muster wie `releases/*`. 
+Für Pfade können Sie auch einfache Pfade wie `src/main/java` (ohne führenden Slash) oder Muster mit Wildcards `*/java/*` verwenden.
+Beide Werte werden durch `UND` kombiniert, um also einen ganzen Branch zu schützen, sollte der Pfad `*` sein.
+
+![Branch Beschränkungen](assets/branch_restrictions.png)
 
 Wenn es spezielle Benutzer gibt, die trotz dieser Beschränkungen weiterhin Branches direkt verändern können sollen
 (wie z. B. für Build Automatisierung), können diese Benutzer oder Gruppen in der zweiten Tabelle angegeben werden.
-Um Benutzer oder Gurppen hinzuzufügen, muss zunächst gewählt werden, ob es sich um einen Benutzer oder eine Gruppe
+Um Benutzer oder Gruppen hinzuzufügen, muss zunächst gewählt werden, ob es sich um einen Benutzer oder eine Gruppe
 handelt. Danach kann der konkrete Name eingegeben oder gesucht werden. Anschließend kann der Eintrag zu der Tabelle
 hinzugefügt werden.
 

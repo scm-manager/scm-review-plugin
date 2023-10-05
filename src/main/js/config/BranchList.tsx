@@ -21,18 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
+import React, { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AddButton, Button, InputField, Level, Notification } from "@scm-manager/ui-components";
 import styled from "styled-components";
+import { BranchProtection } from "../types/Config";
 
-type Props = WithTranslation & {
-  branches: string[];
-  onChange: (branches: string[]) => void;
-};
-
-type State = {
-  newBranch: string;
+type Props = {
+  protections: BranchProtection[];
+  onChange: (protections: BranchProtection[]) => void;
 };
 
 const VCenteredTd = styled.td`
@@ -48,85 +45,82 @@ const FullWidthInputField = styled(InputField)`
   margin-right: 1.5rem;
 `;
 
-class BranchList extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { newBranch: "" };
-  }
+const BranchList: FC<Props> = ({ protections, onChange }) => {
+  const [newProtection, setNewProtection] = useState<BranchProtection>({ branch: "", path: "" });
+  const [t] = useTranslation("plugins");
 
-  handleNewBranchChange = (newBranch: string) => {
-    this.setState({ newBranch });
-  };
-
-  addBranch = () => {
-    this.props.onChange([...this.props.branches, this.state.newBranch]);
-    this.setState({ newBranch: "" });
-  };
-
-  deleteBranch = (branchToDelete: string) => {
-    this.props.onChange([...this.props.branches.filter(branch => branch !== branchToDelete)]);
-  };
-
-  render() {
-    const { branches, t } = this.props;
-    const { newBranch } = this.state;
-    const table =
-      branches.length === 0 ? (
-        <Notification type={"info"}>{t("scm-review-plugin.config.branchProtection.branches.noBranches")}</Notification>
-      ) : (
-        <table className="card-table table is-hoverable is-fullwidth">
-          <thead>
-            <tr>
-              <th>{t("scm-review-plugin.config.branchProtection.branches.newBranch.pattern")}</th>
-              <td className="has-no-style" />
+  const table =
+    protections.length === 0 ? (
+      <Notification type={"info"}>{t("scm-review-plugin.config.branchProtection.branches.noBranches")}</Notification>
+    ) : (
+      <table className="card-table table is-hoverable is-fullwidth">
+        <thead>
+          <tr>
+            <th>{t("scm-review-plugin.config.branchProtection.branches.newBranch.pattern")}</th>
+            <th>{t("scm-review-plugin.config.branchProtection.branches.newPath.pattern")}</th>
+            <th />
+            <td className="has-no-style" />
+          </tr>
+        </thead>
+        <tbody>
+          {protections.map(protection => (
+            <tr key={protection.branch + protection.path}>
+              <VCenteredTd>{protection.branch}</VCenteredTd>
+              <VCenteredTd>{protection.path}</VCenteredTd>
+              <WidthVCenteredTd className="has-text-centered">
+                <Button
+                  color="text"
+                  icon="trash"
+                  action={() =>
+                    onChange([...protections.filter(p => p.branch !== protection.branch || p.path !== protection.path)])
+                  }
+                  title={t("scm-review-plugin.config.branchProtection.branches.deleteBranch")}
+                  className="px-2"
+                />
+              </WidthVCenteredTd>
             </tr>
-          </thead>
-          <tbody>
-            {branches.map(branch => (
-              <tr>
-                <VCenteredTd>{branch}</VCenteredTd>
-                <WidthVCenteredTd className="has-text-centered">
-                  <Button
-                    color="text"
-                    icon="trash"
-                    action={() => this.deleteBranch(branch)}
-                    title={t("scm-review-plugin.config.branchProtection.branches.deleteBranch")}
-                    className="px-2"
-                  />
-                </WidthVCenteredTd>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      );
+          ))}
+        </tbody>
+      </table>
+    );
 
-    return (
-      <>
-        {table}
-        <Level
-          className="is-align-items-stretch mb-4"
-          children={
+  return (
+    <>
+      {table}
+      <Level
+        className="is-align-items-stretch mb-4"
+        children={
+          <>
             <FullWidthInputField
               label={t("scm-review-plugin.config.branchProtection.branches.newBranch.label")}
-              onChange={this.handleNewBranchChange}
-              value={newBranch}
+              onChange={branch => setNewProtection(prevState => ({ ...prevState, branch }))}
+              value={newProtection.branch}
               helpText={t("scm-review-plugin.config.branchProtection.branches.newBranch.helpText")}
             />
-          }
-          right={
-            <div className="field is-align-self-flex-end">
-              <AddButton
-                title={t("scm-review-plugin.config.branchProtection.branches.newBranch.add.helpText")}
-                label={t("scm-review-plugin.config.branchProtection.branches.newBranch.add.label")}
-                action={this.addBranch}
-                disabled={newBranch.trim().length === 0}
-              />
-            </div>
-          }
-        />
-      </>
-    );
-  }
-}
+            <FullWidthInputField
+              label={t("scm-review-plugin.config.branchProtection.branches.newPath.label")}
+              onChange={path => setNewProtection(prevState => ({ ...prevState, path }))}
+              value={newProtection.path}
+              helpText={t("scm-review-plugin.config.branchProtection.branches.newPath.helpText")}
+            />
+          </>
+        }
+        right={
+          <div className="field is-align-self-flex-end">
+            <AddButton
+              title={t("scm-review-plugin.config.branchProtection.branches.add.helpText")}
+              label={t("scm-review-plugin.config.branchProtection.branches.add.label")}
+              action={() => {
+                onChange([...protections, newProtection]);
+                setNewProtection({ branch: "", path: "" });
+              }}
+              disabled={newProtection.branch.trim().length === 0 || newProtection.path.trim().length === 0}
+            />
+          </div>
+        }
+      />
+    </>
+  );
+};
 
-export default withTranslation("plugins")(BranchList);
+export default BranchList;

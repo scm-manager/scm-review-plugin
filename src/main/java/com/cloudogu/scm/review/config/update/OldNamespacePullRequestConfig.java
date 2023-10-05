@@ -21,32 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.review.config.update;
 
-export type ProtectionBypass = {
-  name: string;
-  group: boolean;
-};
+import com.cloudogu.scm.review.config.OverwritableConfig;
+import com.cloudogu.scm.review.config.WithDisableConfig;
+import lombok.Getter;
+import lombok.Setter;
 
-export const MERGE_STRATEGIES = ["MERGE_COMMIT", "FAST_FORWARD_IF_POSSIBLE", "SQUASH", "REBASE"] as const;
-export type MergeStrategy = typeof MERGE_STRATEGIES[number];
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
-export type BranchProtection = {
-  branch: string;
-  path: string;
-};
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "namespace-config")
+@Getter
+@Setter
+class OldNamespacePullRequestConfig extends OldBasePullRequestConfig implements WithDisableConfig, OverwritableConfig {
 
-export type Config = {
-  defaultMergeStrategy: MergeStrategy;
-  deleteBranchOnMerge: boolean;
-  disableRepositoryConfiguration?: boolean;
-  overwriteParentConfig?: boolean;
-  restrictBranchWriteAccess: boolean;
-  protectedBranchPatterns: BranchProtection[];
-  branchProtectionBypasses: ProtectionBypass[];
-  preventMergeFromAuthor: boolean;
-  defaultReviewers: string[];
-  labels: string[];
-  defaultTasks: string[];
-  overwriteDefaultCommitMessage: boolean;
-  commitMessageTemplate: string;
-};
+  @XmlElement(name = "disable-repository-configuration")
+  private boolean disableRepositoryConfiguration = false;
+
+  @XmlElement(name = "overwrite-parent-configuration")
+  private boolean overwriteParentConfig = false;
+}

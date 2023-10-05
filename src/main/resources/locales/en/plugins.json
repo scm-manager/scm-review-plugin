@@ -384,18 +384,23 @@
       },
       "branchProtection": {
         "branches": {
-          "subtitle": "Restrictions on Branches",
-          "note": "Branches matching the following patterns will only be writable by pull requests:",
-          "noBranches": "No branch patterns defined.",
-          "deleteBranch": "Delete this branch pattern",
+          "subtitle": "Restrictions on Branches / Paths",
+          "note": "Branches AND Paths matching the following patterns will only be writable by pull requests:",
+          "noBranches": "No branch protection patterns defined.",
+          "deleteBranch": "Delete this branch protection pattern",
           "newBranch": {
             "label": "Add branch pattern",
-            "helpText": "Add a new branch pattern to the list of protected branches.",
-            "pattern": "Pattern",
-            "add": {
-              "label": "Add",
-              "helpText": "Add the given branch to the list of protected branches."
-            }
+            "helpText": "Add a new branch pattern to be protected.",
+            "pattern": "Branch Pattern"
+          },
+          "newPath": {
+            "label": "Add path pattern",
+            "helpText": "Add a new path pattern to be protected.",
+            "pattern": "Path Pattern"
+          },
+          "add": {
+            "label": "Add",
+            "helpText": "Add the given protection to the list of protections."
           }
         },
         "bypasses": {

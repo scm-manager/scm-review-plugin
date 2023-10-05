@@ -28,12 +28,16 @@ import com.github.legman.Subscribe;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.EagerSingleton;
 import sonia.scm.plugin.Extension;
+import sonia.scm.repository.Changeset;
 import sonia.scm.repository.PreReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.HookFeature;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import javax.inject.Inject;
+import java.io.IOException;
 
 @Slf4j
 @Extension
@@ -42,11 +46,13 @@ public class BranchProtectionHook {
 
   private final ConfigService service;
   private final InternalMergeSwitch internalMergeSwitch;
+  private final RepositoryServiceFactory serviceFactory;
 
   @Inject
-  public BranchProtectionHook(ConfigService service, InternalMergeSwitch internalMergeSwitch) {
+  public BranchProtectionHook(ConfigService service, InternalMergeSwitch internalMergeSwitch, RepositoryServiceFactory serviceFactory) {
     this.service = service;
     this.internalMergeSwitch = internalMergeSwitch;
+    this.serviceFactory = serviceFactory;
   }
 
   @Subscribe(async = false)
@@ -68,7 +74,7 @@ public class BranchProtectionHook {
       if (service.isBranchProtected(repository, branch)) {
         context.getChangesetProvider().getChangesets().forEach(
           changeset -> {
-            if (changeset.getBranches().contains(branch) && !changeset.getParents().isEmpty()) {
+            if (mayNotWriteBranchWithoutPr(repository, branch, changeset)) {
               throw new BranchOnlyWritableByMergeException(repository, branch);
             }
           }
@@ -79,6 +85,26 @@ public class BranchProtectionHook {
       if (service.isBranchProtected(repository, branch)) {
         throw new BranchOnlyWritableByMergeException(repository, branch);
       }
+    }
+  }
+
+  private boolean mayNotWriteBranchWithoutPr(Repository repository, String branch, Changeset changeset) {
+    return changeset.getBranches().contains(branch)
+      && !changeset.getParents().isEmpty()
+      && pathIsProtected(repository, branch, changeset);
+  }
+
+  private boolean pathIsProtected(Repository repository, String branch, Changeset changeset) {
+    try (RepositoryService repositoryService = serviceFactory.create(repository)) {
+      return repositoryService.getModificationsCommand()
+        .revision(changeset.getId())
+        .getModifications()
+        .getEffectedPaths()
+        .stream()
+        .anyMatch(path -> service.isBranchPathProtected(repository, branch, path));
+    } catch (IOException e) {
+      log.error("Could not detect whether the branch protection is ");
+      return true;
     }
   }
 

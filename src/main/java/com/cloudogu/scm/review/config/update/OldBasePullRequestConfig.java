@@ -22,8 +22,9 @@
  * SOFTWARE.
  */
 
-package com.cloudogu.scm.review.config.service;
+package com.cloudogu.scm.review.config.update;
 
+import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,17 +39,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
-public class BasePullRequestConfig {
+class OldBasePullRequestConfig {
   private MergeStrategy defaultMergeStrategy = MergeStrategy.MERGE_COMMIT;
   private boolean deleteBranchOnMerge = false;
   private boolean restrictBranchWriteAccess = false;
   @XmlElement(name = "protected-branch-patterns")
-  private List<BranchProtection> protectedBranchPatterns = new ArrayList<>();
+  private List<String> protectedBranchPatterns = new ArrayList<>();
   private List<String> defaultTasks = new ArrayList<>();
   @XmlElement(name = "protection-bypasses")
   private List<BasePullRequestConfig.ProtectionBypass> branchProtectionBypasses = new ArrayList<>();
@@ -69,14 +71,17 @@ public class BasePullRequestConfig {
     private String path;
   }
 
-  @Getter
-  @Setter
-  @XmlRootElement(name = "bypass")
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class ProtectionBypass {
-    private String name;
-    private boolean group;
+  void fill(BasePullRequestConfig config) {
+    config.setDefaultMergeStrategy(defaultMergeStrategy);
+    config.setDeleteBranchOnMerge(deleteBranchOnMerge);
+    config.setProtectedBranchPatterns(protectedBranchPatterns.stream().map(branch -> new BasePullRequestConfig.BranchProtection(branch, "*")).collect(Collectors.toList()));
+    config.setRestrictBranchWriteAccess(restrictBranchWriteAccess);
+    config.setDefaultTasks(defaultTasks);
+    config.setBranchProtectionBypasses(branchProtectionBypasses);
+    config.setPreventMergeFromAuthor(preventMergeFromAuthor);
+    config.setDefaultReviewers(defaultReviewers);
+    config.setLabels(labels);
+    config.setOverwriteDefaultCommitMessage(overwriteDefaultCommitMessage);
+    config.setCommitMessageTemplate(commitMessageTemplate);
   }
 }

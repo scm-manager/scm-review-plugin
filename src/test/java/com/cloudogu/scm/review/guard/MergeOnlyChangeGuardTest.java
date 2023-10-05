@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.guard;
 
+import com.cloudogu.scm.editor.ChangeGuard.Changes;
 import com.cloudogu.scm.editor.ChangeObstacle;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import org.junit.jupiter.api.Test;
@@ -34,8 +35,10 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 
 import java.util.Collection;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,21 +54,23 @@ class MergeOnlyChangeGuardTest {
   MergeOnlyChangeGuard changeGuard;
 
   @Test
-  void shouldProtectProtectedBranches() {
+  void shouldProtectProtectedBranchesAndPath() {
     when(repositoryManager.get(REPOSITORY.getNamespaceAndName())).thenReturn(REPOSITORY);
-    when(configService.isBranchProtected(REPOSITORY, "master")).thenReturn(true);
-
-    Collection<ChangeObstacle> obstacles = changeGuard.getObstacles(REPOSITORY.getNamespaceAndName(), "master", null);
+    when(configService.isBranchPathProtected(REPOSITORY, "master", "src/main")).thenReturn(true);
+    Changes changes = mock(Changes.class);
+    when(changes.getFilesToCreate()).thenReturn(List.of("src/main"));
+    Collection<ChangeObstacle> obstacles = changeGuard.getObstacles(REPOSITORY.getNamespaceAndName(), "master", changes);
 
     assertThat(obstacles).hasSize(1);
   }
 
   @Test
-  void shouldNotCareForUnprotectedBranches() {
+  void shouldNotCareForUnprotectedBranchesAndPath() {
     when(repositoryManager.get(REPOSITORY.getNamespaceAndName())).thenReturn(REPOSITORY);
-    when(configService.isBranchProtected(REPOSITORY, "develop")).thenReturn(false);
-
-    Collection<ChangeObstacle> obstacles = changeGuard.getObstacles(REPOSITORY.getNamespaceAndName(), "develop", null);
+    when(configService.isBranchPathProtected(REPOSITORY, "develop", "src/main")).thenReturn(false);
+    Changes changes = mock(Changes.class);
+    when(changes.getFilesToCreate()).thenReturn(List.of("src/main"));
+    Collection<ChangeObstacle> obstacles = changeGuard.getObstacles(REPOSITORY.getNamespaceAndName(), "develop", changes);
 
     assertThat(obstacles).isEmpty();
   }

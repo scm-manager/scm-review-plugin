@@ -104,8 +104,12 @@ You can specify branches that can only be modified by pull requests and not dire
 "Branch protection enabled". If this is checked, there are two tables where protected branches and excepted
 users and groups can be specified.
 
-The first table contains patterns for branch names, that will be protected. Here, either fix branch names
-(like `main`), or patterns (like `release/*`) can be specified.
+The first table contains patterns for branch names and paths, that will be protected. Here, either fix branch names
+like `main`, or patterns (like `release/*`) can be specified. 
+For paths, you can also use simple paths like `src/main/java` or patterns with wildcards `*/java/*`.
+Both values are being combined by `AND`, so to protect a whole branch your path should be `*`.
+
+![Branch Restriction](assets/branch_restrictions.png)
 
 If there are special users, that despite these protections should still be able to change the branches (for
 example for build automation), these users or groups of users can be specified in the second table. To add

@@ -100,14 +100,20 @@ public class ConfigService {
   }
 
   public boolean isBranchProtected(Repository repository, String branch) {
-    return getProtectedBranches(repository).stream().anyMatch(branchPattern -> branchMatches(branch, branchPattern));
+    return getProtectedBranches(repository).stream()
+      .map(BasePullRequestConfig.BranchProtection::getBranch)
+      .anyMatch(branchPattern -> patternMatches(branchPattern, branch));
+  }
+
+  public boolean isBranchPathProtected(Repository repository, String branch, String path) {
+    return new BranchProtectionMatcher(getProtectedBranches(repository)).matches(branch, path);
   }
 
   public boolean isPreventMergeFromAuthor(Repository repository) {
     return evaluateConfig(repository).isPreventMergeFromAuthor();
   }
 
-  private Collection<String> getProtectedBranches(Repository repository) {
+  private Collection<BasePullRequestConfig.BranchProtection> getProtectedBranches(Repository repository) {
     BasePullRequestConfig config = evaluateConfig(repository);
     if (config.isRestrictBranchWriteAccess()) {
       return getProtectedBranches(config);
@@ -116,7 +122,7 @@ public class ConfigService {
     }
   }
 
-  private Collection<String> getProtectedBranches(BasePullRequestConfig config) {
+  private Collection<BasePullRequestConfig.BranchProtection> getProtectedBranches(BasePullRequestConfig config) {
     String user = SecurityUtils.getSubject().getPrincipal().toString();
     Set<String> groups = groupCollector.collect(user);
     if (userCanBypassProtection(config, user, groups)) {
@@ -139,8 +145,8 @@ public class ConfigService {
     }
   }
 
-  private boolean branchMatches(String branch, String branchPattern) {
-    return GlobUtil.matches(branchPattern, branch);
+  private static boolean patternMatches(String pattern, String value) {
+    return GlobUtil.matches(pattern, value);
   }
 
   private ConfigurationStore<RepositoryPullRequestConfig> getStore(Repository repository) {
@@ -149,5 +155,20 @@ public class ConfigService {
 
   private ConfigurationStore<NamespacePullRequestConfig> getStore(String namespace) {
     return storeFactory.withType(NamespacePullRequestConfig.class).withName(STORE_NAME).forNamespace(namespace).build();
+  }
+
+  static class BranchProtectionMatcher {
+
+    private final Collection<BasePullRequestConfig.BranchProtection> branchProtections;
+
+    BranchProtectionMatcher(Collection<BasePullRequestConfig.BranchProtection> branchProtections) {
+      this.branchProtections = branchProtections;
+    }
+
+    boolean matches(String branch, String path) {
+      return branchProtections.stream()
+        .filter(branchProtection -> patternMatches(branchProtection.getBranch(), branch))
+        .anyMatch(branchProtection -> patternMatches(branchProtection.getPath(), path));
+    }
   }
 }

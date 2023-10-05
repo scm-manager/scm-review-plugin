@@ -242,7 +242,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
                 <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
                 <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
                 <BranchList
-                  branches={protectedBranchPatterns}
+                  protections={protectedBranchPatterns}
                   onChange={val => onChange("protectedBranchPatterns", val)}
                 />
                 <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />

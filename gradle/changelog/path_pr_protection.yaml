@@ -1,0 +1,2 @@
+- type: changed
+  description: Enhance pull request branch restrictions to also apply for paths

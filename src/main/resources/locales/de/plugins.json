@@ -386,18 +386,23 @@
       },
       "branchProtection": {
         "branches": {
-          "subtitle": "Beschränkungen für Branches",
-          "note": "Branches, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
-          "noBranches": "Keine Muster für Branches definiert.",
-          "deleteBranch": "Dieses Muster löschen",
+          "subtitle": "Beschränkungen für Branches / Pfade",
+          "note": "Branches UND Pfade, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
+          "noBranches": "Keine Muster für Branches / Pfade definiert.",
+          "deleteBranch": "Diese Beschränkung löschen",
           "newBranch": {
             "label": "Muster für Branches hinzufügen",
-            "helpText": "Fügt ein Muster zu der Liste der geschützten Branches hinzu.",
-            "pattern": "Muster",
-            "add": {
-              "label": "Hinzufügen",
-              "helpText": "Fügt das gegebene Muster zu der Liste der geschützten Branches hinzu."
-            }
+            "helpText": "Fügt ein zu schützendes Branch Muster hinzu.",
+            "pattern": "Branch Muster"
+          },
+          "newPath": {
+            "label": "Muster für Pfade hinzufügen",
+            "helpText": "Fügt ein zu schützendes Pfad Muster hinzu.",
+            "pattern": "Pfad Muster"
+          },
+          "add": {
+            "label": "Hinzufügen",
+            "helpText": "Fügt die gegebene Beschränkung zu der Liste der Beschränkungen hinzu."
           }
         },
         "bypasses": {

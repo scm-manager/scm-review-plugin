@@ -44,13 +44,19 @@ public class BasePullRequestConfigDto extends HalRepresentation {
   private boolean deleteBranchOnMerge;
   private boolean preventMergeFromAuthor;
   private boolean restrictBranchWriteAccess;
-  private List<String> protectedBranchPatterns;
+  private List<BranchProtectionDto> protectedBranchPatterns;
   private List<String> defaultTasks;
   private List<ProtectionBypassDto> branchProtectionBypasses;
   private List<String> defaultReviewers;
   private Set<String> labels;
   private boolean overwriteDefaultCommitMessage;
   private String commitMessageTemplate;
+
+  @Getter @Setter
+  public static class BranchProtectionDto {
+    private String branch;
+    private String path;
+  }
 
   @Getter @Setter
   public static class ProtectionBypassDto {
