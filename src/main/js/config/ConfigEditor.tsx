@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Trans, useTranslation, WithTranslation } from "react-i18next";
 import {
   AutocompleteAddEntryToTableField,
@@ -40,10 +40,15 @@ import BypassList from "./BypassList";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { DisplayedUser } from "@scm-manager/ui-types";
 import DefaultTaskEditor from "./DefaultTaskEditor";
+import { isEqual } from "lodash-es";
+import { Prompt } from "react-router-dom";
 
 type OnChangeFunction = <K extends keyof Config>(prop: K, val: Config[K]) => void;
 
-const UserList: FC<{ values: string[]; onChange: OnChangeFunction }> = ({ values, onChange }) => {
+const UserList: FC<{
+  values: string[];
+  onChange: OnChangeFunction;
+}> = ({ values, onChange }) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
   const userValues = useMemo(() => values.map(id => ({ id, displayName: id, mail: "" } as DisplayedUser)), [values]);
@@ -89,8 +94,24 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
       [prop]: val
     }));
   }, []);
+  const chipInputRef = useRef<HTMLInputElement>(null);
+  const hasChanges = useMemo(() => !isEqual(initialConfiguration, state), [initialConfiguration, state]);
+  const onBeforeUnload = useCallback(
+    (e: BeforeUnloadEvent) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    },
+    [hasChanges]
+  );
 
   useEffect(() => onConfigurationChange(state, true), [onConfigurationChange, state]);
+  useEffect(() => {
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [onBeforeUnload]);
 
   const {
     restrictBranchWriteAccess,
@@ -109,6 +130,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
 
   return (
     <>
+      <Prompt message={t("scm-review-plugin.config.navigationPrompt")} when={hasChanges} />
       {configType === "global" ? (
         <Title title={t("scm-review-plugin.config.title")} />
       ) : (
@@ -191,7 +213,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
             )}
           </fieldset>
           <hr className="my-4" />
-          <fieldset>
+          <fieldset className="is-flex is-flex-direction-column">
             <legend className="is-size-5 mb-2">{t("scm-review-plugin.config.legends.creation")}</legend>
             <ChipInputField
               value={labels.map(label => ({ value: label, label }))}
@@ -202,9 +224,13 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
                 )
               }
               label={t("scm-review-plugin.config.availableLabels.label")}
-              placeholder={t("scm-review-plugin.config.labels.placeholder")}
-              aria-label={t("scm-review-plugin.config.labels.ariaLabel")}
+              placeholder={t("scm-review-plugin.config.availableLabels.placeholder")}
+              aria-label={t("scm-review-plugin.config.availableLabels.ariaLabel")}
+              ref={chipInputRef}
             />
+            <ChipInputField.AddButton inputRef={chipInputRef} className="is-align-self-flex-end">
+              {t("scm-review-plugin.config.availableLabels.addButton.label")}
+            </ChipInputField.AddButton>
             <DefaultTaskEditor
               defaultTasks={state.defaultTasks}
               addTask={newDefaultTask => setState({ ...state, defaultTasks: [...state.defaultTasks, newDefaultTask] })}

@@ -21,9 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
+import React, { ChangeEvent, FC, useCallback } from "react";
 import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
-import { SelectField } from "@scm-manager/ui-forms";
+import { Checkbox } from "@scm-manager/ui-forms";
 import { useTranslation } from "react-i18next";
 import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
 import { useUserSuggestions } from "@scm-manager/ui-api";
@@ -39,6 +39,17 @@ type Props = {
 const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled, availableLabels }) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
+
+  const handleLabelSelectChange = useCallback(
+    (label: string, checked: boolean) => {
+      if (checked) {
+        handleFormChange({ labels: [...pullRequest.labels, label] });
+      } else {
+        handleFormChange({ labels: pullRequest.labels.filter(prLabel => prLabel !== label) });
+      }
+    },
+    [handleFormChange, pullRequest]
+  );
 
   const removeReviewer = (users: DisplayedUser[]) => {
     if (pullRequest.reviewer) {
@@ -88,16 +99,18 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled, availabl
         </div>
       </div>
       {availableLabels.length > 0 ? (
-        <SelectField
-          label={t("scm-review-plugin.pullRequest.labels")}
-          options={availableLabels.map(label => ({ value: label, label }))}
-          onChange={event =>
-            handleFormChange({ labels: Array.from(event.target.selectedOptions).map(option => option.value) })
-          }
-          value={pullRequest?.labels}
-          disabled={disabled}
-          multiple
-        />
+        <fieldset className="is-flex is-flex-direction-column mb-4">
+          <legend className="label">{t("scm-review-plugin.pullRequest.labels")}</legend>
+          {availableLabels.map(label => (
+            <Checkbox
+              key={label}
+              checked={pullRequest?.labels.includes(label)}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => handleLabelSelectChange(label, event.target.checked)}
+              label={label}
+              labelClassName="is-align-self-flex-start"
+            />
+          ))}
+        </fieldset>
       ) : null}
     </>
   );

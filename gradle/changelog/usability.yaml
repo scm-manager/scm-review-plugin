@@ -1,0 +1,6 @@
+- type: changed
+  description: A warning appears, when the pull request configuration page is closed with pending changes
+- type: changed
+  description: The available labels input now has an additional add button for improved clarity
+- type: changed
+  description: Pull Request labels are now configured as a group of checkboxes for improved clarity

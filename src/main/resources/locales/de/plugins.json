@@ -327,18 +327,19 @@
     },
     "config": {
       "title": "Pull Requests Konfiguration",
-      "labels": {
-        "label": "Labels",
-        "ariaLabel": "Neues Label eingeben",
-        "placeholder": "Neues Label eingeben"
-      },
+      "navigationPrompt": "Es gibt ungespeicherte Änderungen. Seite wirklich verlassen ?",
       "legends": {
         "mergeDialog": "Merge Dialog",
         "creation": "Erstellung",
         "restrictions": "Einschränkungen"
       },
       "availableLabels": {
-        "label": "Verfügbare Labels"
+        "label": "Verfügbare Labels",
+        "ariaLabel": "Neues Label eingeben",
+        "placeholder": "Neues Label eingeben",
+        "addButton": {
+          "label": "Label hinzufügen"
+        }
       },
       "defaultReviewers": {
         "label": "Standard-Reviewer",

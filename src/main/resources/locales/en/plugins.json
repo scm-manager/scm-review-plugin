@@ -325,18 +325,19 @@
     },
     "config": {
       "title": "Pull Requests Configuration",
+      "navigationPrompt": "You have unsaved changes. Do you really want to leave this page ?",
       "legends": {
         "mergeDialog": "Merge Dialog",
         "creation": "Creation",
         "restrictions": "Restrictions"
       },
-      "labels": {
-        "label": "Labels",
-        "ariaLabel": "Enter a new label",
-        "placeholder": "Enter a new label"
-      },
       "availableLabels": {
-        "label": "Available Labels"
+        "label": "Available Labels",
+        "ariaLabel": "Enter a new label",
+        "placeholder": "Enter a new label",
+        "addButton": {
+          "label": "Add Label"
+        }
       },
       "defaultReviewers": {
         "label": "Default Reviewers",
