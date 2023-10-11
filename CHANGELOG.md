@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.31.0 - 2023-10-11
+### Fixed
+- Send specific email when status changed from draft to open and vica versa
+- Link between label and textarea in default task modal
+
+### Changed
+- Enhance pull request branch restrictions to also apply for paths
+- A warning appears, when the pull request configuration page is closed with pending changes
+- The available labels input now has an additional add button for improved clarity
+- Pull Request labels are now configured as a group of checkboxes for improved clarity
+- The default squash commit message does not contain the author and the committer anymore
+- The default squash commit message now contains the reviewers but not the author or committer
+- The default squash commit message now contains the co authors without the author
+- The click target for workflow engine and reviews card details now includes the label
+- Default task descriptions added and translations improved
+- PR rejection reasons created by a user, are now created as an reply to the system comment instead of being a standalone comment
+
 ## 2.30.1 - 2023-09-04
 ### Fixed
 - View of closed pull request with deleted source branch

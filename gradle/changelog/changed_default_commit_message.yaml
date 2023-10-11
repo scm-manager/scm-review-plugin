@@ -1,6 +1,0 @@
-- type: changed
-  description: The default squash commit message does not contain the author and the committer anymore
-- type: changed
-  description: The default squash commit message now contains the reviewers but not the author or committer
-- type: changed
-  description: The default squash commit message now contains the co authors without the author
