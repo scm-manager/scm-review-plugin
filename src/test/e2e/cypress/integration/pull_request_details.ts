@@ -59,7 +59,7 @@ describe("Pull Request Details", () => {
     cy.wrap(namespace).as("namespace");
     cy.wrap(repoName).as("repoName");
     cy.restCreateRepo("git", namespace, repoName);
-    cy.login("scmadmin", "scmadmin");
+    cy.restLogin("scmadmin", "scmadmin");
   });
 
   describe("Branch deletion", () => {
