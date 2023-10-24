@@ -109,6 +109,10 @@ const MobileFlexButtonGroup = styled(ButtonGroup)`
   }
 `;
 
+const StyledHeader = styled.h2`
+  word-break: break-all;
+`;
+
 const LevelWrapper = styled.div`
   flex-flow: row wrap;
 
@@ -301,9 +305,9 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       <Container>
         <div className="media">
           <div className="media-content">
-            <h2 className="is-inline has-text-weight-medium is-size-3 mr-2">
+            <StyledHeader className="is-inline has-text-weight-medium is-size-3 mr-2">
               #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />
-            </h2>
+            </StyledHeader>
             {totalTasks > 0 && (
               <Tag
                 className="is-medium mt-1"

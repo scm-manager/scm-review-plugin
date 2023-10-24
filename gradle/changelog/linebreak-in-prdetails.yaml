@@ -1,0 +1,2 @@
+- type: fixed
+  description: the title of a pr will now break properly when its length exceeds the container
