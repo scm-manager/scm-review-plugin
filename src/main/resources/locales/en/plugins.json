@@ -235,7 +235,8 @@
       "markedDoneBy": "finished by",
       "contextModal": {
         "title": "Original Context",
-        "message": "This is the original diff context at the time of comment creation"
+        "message": "This is the original diff context at the time of comment creation",
+        "jumpToDiff": "Jump to file diff"
       },
       "confirmDeleteAlert": {
         "title": "Delete Comment",

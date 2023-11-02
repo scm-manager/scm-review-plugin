@@ -237,7 +237,8 @@
       "markedDoneBy": "Abgeschlossen von",
       "contextModal": {
         "title": "Ursprünglicher Kontext",
-        "message": "Dieses ist der ursprüngliche Kontext zum Zeitpunkt der Erstellung des Kommentars"
+        "message": "Dieses ist der ursprüngliche Kontext zum Zeitpunkt der Erstellung des Kommentars",
+        "jumpToDiff": "Zum Diff der Datei springen"
       },
       "confirmDeleteAlert": {
         "title": "Kommentar löschen",

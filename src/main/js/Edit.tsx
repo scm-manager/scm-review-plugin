@@ -43,7 +43,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
 
   const pullRequestUpdated = useCallback(() => {
     history.push({
-      pathname: `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments`,
+      pathname: `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`,
       state: {
         from: match.url + "/updated"
       }

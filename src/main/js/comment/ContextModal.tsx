@@ -22,14 +22,34 @@
  * SOFTWARE.
  */
 import React, { FC } from "react";
-import { Modal, DiffFile, AnnotationFactory } from "@scm-manager/ui-components";
+import { AnnotationFactory, DiffFile, FileControlFactory, Modal } from "@scm-manager/ui-components";
 import { mapCommentToFile } from "./commentToFileMapper";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { Comment } from "../types/PullRequest";
-import { createChangeIdFromLocation } from "../diff/locations";
+import { createChangeIdFromLocation, escapeWhitespace } from "../diff/locations";
 
 import ContextInlineComment from "./ContextInlineComment";
+import { Icon, LinkButton } from "@scm-manager/ui-buttons";
+import { useHistory } from "react-router-dom";
+
+const ContextFileControl: FileControlFactory = file => {
+  const history = useHistory();
+  const { t } = useTranslation("plugins");
+
+  if (history.location.pathname.includes("comments")) {
+    const path = file.newPath ?? file.oldPath;
+    const escapedPath = escapeWhitespace(path);
+    return (
+      <LinkButton
+        to={history.location.pathname.replace("comments/", `diff/#diff-${encodeURIComponent(escapedPath)}`)}
+        title={t("scm-review-plugin.diff.jumpToSource")}
+      >
+        <Icon>file-code</Icon>
+      </LinkButton>
+    );
+  }
+};
 
 const StyledModal = styled(Modal)`
   & table.diff .diff-gutter:empty:hover::after {
@@ -75,6 +95,7 @@ const ContextModal: FC<Props> = ({ comment, onClose }) => {
             file={mapCommentToFile(comment)}
             defaultCollapse={false}
             annotationFactory={createInlineCommentAnnotationFactory(comment)}
+            fileControlFactory={ContextFileControl}
             sideBySide={false}
           />
         </>

@@ -55,7 +55,7 @@ const Create: FC<Props> = ({ repository }) => {
   const location = useLocation();
 
   const pullRequestCreated = (pullRequestId: string) => {
-    history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequestId}/comments`);
+    history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequestId}/comments/`);
   };
 
   const { data: branchesData, error: branchesError, isLoading: branchesLoading } = useBranches(repository);

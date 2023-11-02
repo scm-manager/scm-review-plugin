@@ -100,3 +100,7 @@ export const evaluateLineNumbersForChangeId = (changeId: string): LineNumbers =>
   }
   return {};
 };
+
+export function escapeWhitespace(path: string) {
+  return path?.toLowerCase().replace(/\W/g, "-");
+}
