@@ -41,6 +41,11 @@ scmPlugin {
   author = "Cloudogu GmbH"
   category = "Workflow"
 
+// Overwrite the stage for e2e testing
+//  run  {
+//    stage = "TESTING"
+//  }
+
   openapi {
     packages = [
       "com.cloudogu.scm.review.pullrequest.api",
