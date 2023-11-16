@@ -260,7 +260,6 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
               checked={restrictBranchWriteAccess}
               onChange={val => onChange("restrictBranchWriteAccess", val)}
               label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
-              helpText={t("scm-review-plugin.config.restrictBranchWriteAccess.helpText")}
             />
             {restrictBranchWriteAccess && (
               <>

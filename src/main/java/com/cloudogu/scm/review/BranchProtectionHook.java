@@ -64,7 +64,7 @@ public class BranchProtectionHook {
       return;
     }
 
-    if (!service.isEnabled(repository)){
+    if (!service.isEnabled(repository)) {
       log.trace("branch protection is disabled.");
       return;
     }
@@ -72,20 +72,38 @@ public class BranchProtectionHook {
     log.trace("received hook for repository {}", repository.getName());
     for (String branch : context.getBranchProvider().getCreatedOrModified()) {
       if (service.isBranchProtected(repository, branch)) {
-        context.getChangesetProvider().getChangesets().forEach(
-          changeset -> {
-            if (mayNotWriteBranchWithoutPr(repository, branch, changeset)) {
-              throw new BranchOnlyWritableByMergeException(repository, branch);
-            }
-          }
-        );
+        if (context.isFeatureSupported(HookFeature.MODIFICATIONS_PROVIDER)) {
+          checkChangesUsingModifications(branch, context, repository);
+        } else {
+          log.warn("falling back to check changesets for branch {} in repository {}", branch, repository);
+          checkChangesUsingChangesets(branch, context, repository);
+        }
       }
     }
-    for (String branch : context.getBranchProvider().getDeletedOrClosed()) {
+    for (
+      String branch : context.getBranchProvider().getDeletedOrClosed()) {
       if (service.isBranchProtected(repository, branch)) {
         throw new BranchOnlyWritableByMergeException(repository, branch);
       }
     }
+  }
+
+  private void checkChangesUsingModifications(String branch, HookContext context, Repository repository) {
+    context.getModificationsProvider().getModifications(branch).effectedPathsStream().forEach(modifiedPath -> {
+      if (service.isBranchPathProtected(repository, branch, modifiedPath)) {
+        throw new PathOnlyWritableByMergeException(repository, branch, modifiedPath);
+      }
+    });
+  }
+
+  private void checkChangesUsingChangesets(String branch, HookContext context, Repository repository) {
+    context.getChangesetProvider().getChangesets().forEach(
+      changeset -> {
+        if (mayNotWriteBranchWithoutPr(repository, branch, changeset)) {
+          throw new BranchOnlyWritableByMergeException(repository, branch);
+        }
+      }
+    );
   }
 
   private boolean mayNotWriteBranchWithoutPr(Repository repository, String branch, Changeset changeset) {

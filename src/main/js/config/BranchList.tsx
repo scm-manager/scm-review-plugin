@@ -89,22 +89,6 @@ const BranchList: FC<Props> = ({ protections, onChange }) => {
       {table}
       <Level
         className="is-align-items-stretch mb-4"
-        children={
-          <>
-            <FullWidthInputField
-              label={t("scm-review-plugin.config.branchProtection.branches.newBranch.label")}
-              onChange={branch => setNewProtection(prevState => ({ ...prevState, branch }))}
-              value={newProtection.branch}
-              helpText={t("scm-review-plugin.config.branchProtection.branches.newBranch.helpText")}
-            />
-            <FullWidthInputField
-              label={t("scm-review-plugin.config.branchProtection.branches.newPath.label")}
-              onChange={path => setNewProtection(prevState => ({ ...prevState, path }))}
-              value={newProtection.path}
-              helpText={t("scm-review-plugin.config.branchProtection.branches.newPath.helpText")}
-            />
-          </>
-        }
         right={
           <div className="field is-align-self-flex-end">
             <AddButton
@@ -118,7 +102,18 @@ const BranchList: FC<Props> = ({ protections, onChange }) => {
             />
           </div>
         }
-      />
+      >
+        <FullWidthInputField
+          label={t("scm-review-plugin.config.branchProtection.branches.newBranch.label")}
+          onChange={branch => setNewProtection(prevState => ({ ...prevState, branch }))}
+          value={newProtection.branch}
+        />
+        <FullWidthInputField
+          label={t("scm-review-plugin.config.branchProtection.branches.newPath.label")}
+          onChange={path => setNewProtection(prevState => ({ ...prevState, path }))}
+          value={newProtection.path}
+        />
+      </Level>
     </>
   );
 };

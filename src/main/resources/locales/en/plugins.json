@@ -348,8 +348,7 @@
         "noOptions": "No suggestion available"
       },
       "restrictBranchWriteAccess": {
-        "label": "Branch protection enabled",
-        "helpText": "Enables branch protection, so that branches are only modifiable with pull requests."
+        "label": "Branch protection enabled"
       },
       "disableRepositoryConfiguration": {
         "label": "Disable repository configuration",
@@ -387,17 +386,15 @@
       "branchProtection": {
         "branches": {
           "subtitle": "Restrictions on Branches / Paths",
-          "note": "Branches AND Paths matching the following patterns will only be writable by pull requests:",
+          "note": "Branches AND paths matching the following patterns will only be writable by pull requests. Additionally, it will not be possible to create or delete branches with paths matching the patterns.",
           "noBranches": "No branch protection patterns defined.",
           "deleteBranch": "Delete this branch protection pattern",
           "newBranch": {
             "label": "Add branch pattern",
-            "helpText": "Add a new branch pattern to be protected.",
             "pattern": "Branch Pattern"
           },
           "newPath": {
             "label": "Add path pattern",
-            "helpText": "Add a new path pattern to be protected.",
             "pattern": "Path Pattern"
           },
           "add": {
@@ -652,6 +649,10 @@
     "FuRoChFWt1": {
       "displayName": "Branch only writable with pull requests",
       "description": "The branch can only be changed by merging pull requests."
+    },
+    "3qTv86jGL1": {
+      "displayName": "Path only writable with pull requests",
+      "description": "In the branch the path can only be changed by merging pull requests."
     },
     "6nRxQptwH1": {
       "displayName": "Invalid formatting",

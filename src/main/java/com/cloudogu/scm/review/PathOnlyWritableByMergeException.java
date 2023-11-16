@@ -21,36 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package com.cloudogu.scm.review;
 
-plugins {
-  id 'org.scm-manager.smp' version '0.15.0'
-}
+import sonia.scm.ExceptionWithContext;
+import sonia.scm.repository.Repository;
 
-dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:1.0.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.13.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-}
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
-scmPlugin {
-  scmVersion = "2.47.1-SNAPSHOT"
-  displayName = "Review"
-  description = "Depict a review process with pull requests"
-  author = "Cloudogu GmbH"
-  category = "Workflow"
+public class PathOnlyWritableByMergeException extends ExceptionWithContext {
 
-// Overwrite the stage for e2e testing
-//  run  {
-//    stage = "TESTING"
-//  }
+  public static final String CODE = "3qTv86jGL1";
 
-  openapi {
-    packages = [
-      "com.cloudogu.scm.review.pullrequest.api",
-      "com.cloudogu.scm.review.config.api",
-      "com.cloudogu.scm.review.workflow",
-    ]
+  public PathOnlyWritableByMergeException(Repository repository, String branch, String path) {
+    super(entity("Path", path).in("Branch", branch).in(repository).build(), "The path " + path + " in branch " + branch + " is only writable using pull requests");
+  }
+
+  @Override
+  public String getCode() {
+    return CODE;
   }
 }

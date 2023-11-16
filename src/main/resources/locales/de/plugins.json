@@ -350,8 +350,7 @@
         "noOptions": "Kein Vorschlag für Benutzername verfügbar"
       },
       "restrictBranchWriteAccess": {
-        "label": "Branch-Schutz aktiviert",
-        "helpText": "Aktiviert den Branch-Schutz, so dass Branches nur durch Pull Requests geändert werden können."
+        "label": "Branch-Schutz aktiviert"
       },
       "disableRepositoryConfiguration": {
         "label": "Pull Request Konfiguration für einzelne Repositories deaktivieren",
@@ -389,17 +388,15 @@
       "branchProtection": {
         "branches": {
           "subtitle": "Beschränkungen für Branches / Pfade",
-          "note": "Branches UND Pfade, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
+          "note": "Branches UND Pfade, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden. Darüber hinaus ist es auch nicht möglich, Branches mit entsprechenden Pfaden zu erstellen oder zu löschen.",
           "noBranches": "Keine Muster für Branches / Pfade definiert.",
           "deleteBranch": "Diese Beschränkung löschen",
           "newBranch": {
             "label": "Muster für Branches hinzufügen",
-            "helpText": "Fügt ein zu schützendes Branch Muster hinzu.",
             "pattern": "Branch Muster"
           },
           "newPath": {
             "label": "Muster für Pfade hinzufügen",
-            "helpText": "Fügt ein zu schützendes Pfad Muster hinzu.",
             "pattern": "Pfad Muster"
           },
           "add": {
@@ -507,7 +504,8 @@
         "noFailedRules": "Alle Regeln sind erfüllt"
       },
       "modal": {
-        "failedTitle": "{{count}} Regeln sind nicht erfüllt",
+        "failedTitle": "{{count}} Regel ist nicht erfüllt",
+        "failedTitle_plural": "{{count}} Regeln sind nicht erfüllt",
         "successTitle": "Alle Regeln sind erfüllt"
       },
       "disableRepositoryConfiguration": {
@@ -653,6 +651,10 @@
     "FuRoChFWt1": {
       "displayName": "Nur durch PR änderbar",
       "description": "Der Branch kann nur durch Pull Requests geschrieben werden."
+    },
+    "3qTv86jGL1": {
+      "displayName": "Nur durch PR änderbar",
+      "description": "Der Pfad kann in dem Branch nur durch Pull Requests geschrieben werden."
     },
     "6nRxQptwH1": {
       "displayName": "Ungültiges Format",
