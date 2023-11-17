@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.32.0 - 2023-11-17
+### Added
+- Button in Comment Context Modal to jump to diff
+
+### Fixed
+- Missing changes for protected branches on special occasions
+- the title of a pr will now break properly when its length exceeds the container
+
 ## 2.31.0 - 2023-10-11
 ### Fixed
 - Send specific email when status changed from draft to open and vica versa
