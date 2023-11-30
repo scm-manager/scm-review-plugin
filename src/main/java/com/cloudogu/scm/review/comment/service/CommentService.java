@@ -27,6 +27,7 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
@@ -384,6 +385,11 @@ public class CommentService {
         Reply.createNewReply(rejectedEvent.getMessage())
       );
     }
+  }
+
+  @Subscribe
+  public void addCommentOnReopen(PullRequestReopenedEvent reopenedEvent) {
+    addStatusChangedComment(reopenedEvent.getRepository(), reopenedEvent.getPullRequest().getId(), SystemCommentType.REOPENED);
   }
 
   @Subscribe

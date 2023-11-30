@@ -24,10 +24,12 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -118,6 +120,18 @@ public interface PullRequestService {
   default void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
     setRejected(repository, pullRequestId, cause, null);
   }
+
+  /**
+   * Reopen a previously rejected pull request.
+   *
+   * @since 2.33.0
+   */
+  void reopen(Repository repository, String pullRequestId) throws IOException;
+
+  /**
+   * @since 2.33.0
+   */
+  PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target) throws IOException;
 
   void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause, String message);
 

@@ -49,6 +49,7 @@ import NamespaceConfig from "./config/NamespaceConfig";
 import { DataType } from "./landingpage/DataType";
 import { MyDataExtension, MyEventExtension, MyTaskExtension } from "@scm-manager/scm-landingpage-plugin";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
+import PullRequestReopenedEvent from "./landingpage/PullRequestReopenedEvent";
 
 type PredicateProps = {
   repository: Repository;
@@ -175,6 +176,7 @@ binder.bind<MyDataExtension<DataType>>("landingpage.mydata", {
 });
 binder.bind<MyEventExtension>("landingpage.myevents", PullRequestCreatedEvent);
 binder.bind<MyEventExtension>("landingpage.myevents", PullRequestDraftToOpenEvent);
+binder.bind<MyEventExtension>("landingpage.myevents", PullRequestReopenedEvent);
 binder.bind<MyTaskExtension<DataType>>("landingpage.mytask", PullRequestTodos);
 binder.bind<MyTaskExtension<DataType>>("landingpage.mytask", PullRequestReview);
 

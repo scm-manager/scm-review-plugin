@@ -30,7 +30,9 @@ public enum SystemCommentType {
   SOURCE_DELETED("sourceDeleted"),
   TARGET_DELETED("targetDeleted"),
   STATUS_TO_DRAFT("statusToDraft"),
-  STATUS_TO_OPEN("statusToOpen");
+  STATUS_TO_OPEN("statusToOpen"),
+  REOPENED("reopened");
+
 
   private final String key;
 

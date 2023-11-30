@@ -72,7 +72,7 @@ A pull request created as a draft pull request can be converted into an open pul
 An open pull request can be converted to a draft pull request using the edit function. When converting to a draft, the approvals by users are deleted.
 
 ### Reject a pull request
-If a reviewer thinks that a pull request should not be merged, he can reject it. That should happen in coordination with the author. It is not possible to reopen a rejected pull request. Instead a new pull request has to be opened.
+If a reviewer thinks that a pull request should not be merged, they can reject it. That should happen in coordination with the author. You can reopen a rejected pull request at any time.
 
 ### Merge a pull request 
 If a pull request can be merged, the changes can be applied in different ways after clicking the button "Merge Pull Request":

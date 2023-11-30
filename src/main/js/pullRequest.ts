@@ -83,7 +83,7 @@ export const prQueryKey = (repository: Repository, pullRequestId: string) => {
   return ["repository", repository.namespace, repository.name, "pull-request", pullRequestId];
 };
 
-const prsQueryKey = (repository: Repository, status?: string) => {
+export const prsQueryKey = (repository: Repository, status?: string) => {
   return ["repository", repository.namespace, repository.name, "pull-requests", status || ""];
 };
 
@@ -95,7 +95,7 @@ const prMergeCheckQueryKey = (repository: Repository, pullRequestId: string) => 
   return ["merge-check", ...prQueryKey(repository, pullRequestId)];
 };
 
-const invalidateQueries = (queryClient: QueryClient, ...keys: string[][]): Promise<void> => {
+export const invalidateQueries = (queryClient: QueryClient, ...keys: string[][]): Promise<void> => {
   return Promise.all(keys.map(key => queryClient.invalidateQueries(key))).then(() => undefined);
 };
 
@@ -232,6 +232,27 @@ export const useRejectPullRequest = (repository: Repository, pullRequest: PullRe
   );
   return {
     reject: (message: string) => mutate(message),
+    isLoading,
+    error
+  };
+};
+
+export const useReopenPullRequest = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+
+  if (!id) {
+    throw new Error("Could not reopen pull request without id");
+  }
+
+  const queryClient = useQueryClient();
+  const { mutateAsync, isLoading, error } = useMutation<unknown, Error>(
+    () => apiClient.post(requiredLink(pullRequest, "reopen")),
+    {
+      onSuccess: () => invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id))
+    }
+  );
+  return {
+    reopen: () => mutateAsync(),
     isLoading,
     error
   };

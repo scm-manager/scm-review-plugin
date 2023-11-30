@@ -53,10 +53,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import sonia.scm.ScmConstraintViolationException;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.Changeset;
-import sonia.scm.repository.ChangesetPagingResult;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryService;
@@ -91,9 +89,6 @@ import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.pullrequest.PullRequestUtil.PullRequestTitleAndDescription;
 import static com.cloudogu.scm.review.pullrequest.PullRequestUtil.determineTitleAndDescription;
-import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.BRANCHES_NOT_DIFFER;
-import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_ALREADY_EXISTS;
-import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
 import static de.otto.edison.hal.paging.NumberedPaging.zeroBasedNumberedPaging;
@@ -363,36 +358,8 @@ public class PullRequestRootResource {
     service.checkBranch(repository, source);
     service.checkBranch(repository, target);
 
-    return checkIfPullRequestIsValid(uriInfo, repository, source, target);
-  }
-
-  private PullRequestCheckResultDto checkIfPullRequestIsValid(UriInfo uriInfo, Repository repository, String source, String target) throws IOException {
-    Links links = createCheckResultLinks(uriInfo, repository, source, target);
-
-    try {
-      verifyBranchesDiffer(source, target);
-    } catch (ScmConstraintViolationException e) {
-      return BRANCHES_NOT_DIFFER.create(links);
-    }
-
-    if (service.getInProgress(repository, source, target).isPresent()) {
-      return PR_ALREADY_EXISTS.create(links);
-    }
-
-    try (RepositoryService repositoryService = serviceFactory.create(repository)) {
-      ChangesetPagingResult changesets = repositoryService
-        .getLogCommand()
-        .setStartChangeset(source)
-        .setAncestorChangeset(target)
-        .setPagingLimit(1)
-        .getChangesets();
-
-      if (changesets == null || changesets.getChangesets() == null || changesets.getChangesets().isEmpty()) {
-        return BRANCHES_NOT_DIFFER.create(links);
-      }
-    }
-
-    return PR_VALID.create(links);
+    return service.checkIfPullRequestIsValid(repository, source, target)
+      .create(createCheckResultLinks(uriInfo, repository, source, target));
   }
 
   private Links createCheckResultLinks(UriInfo uriInfo, Repository repository, String source, String target) {

@@ -26,15 +26,15 @@ import { useTranslation } from "react-i18next";
 import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
 import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 
-const PullRequestDraftToOpenEvent = ({ event }) => {
+const PullRequestReopenedEvent = ({ event }) => {
   const [t] = useTranslation("plugins");
   const link = `/repo/${event.namespace}/${event.name}/pull-request/${event.id}`;
   const footer = (
     <>
-      {t("scm-review-plugin.landingpage.draftToOpen.footer", {
+      {t("scm-review-plugin.landingpage.reopened.footer", {
         author: event.author,
-        namespace: event.namespace,
-        name: event.name
+        name: event.name,
+        namespace: event.namespace
       })}
     </>
   );
@@ -43,7 +43,7 @@ const PullRequestDraftToOpenEvent = ({ event }) => {
     <CardColumnSmall
       link={link}
       avatar={<SmallPullRequestIcon />}
-      contentLeft={<strong>{t("scm-review-plugin.landingpage.draftToOpen.header", event)}</strong>}
+      contentLeft={<strong>{t("scm-review-plugin.landingpage.reopened.header", event)}</strong>}
       footer={footer}
       contentRight={
         <small>
@@ -54,6 +54,6 @@ const PullRequestDraftToOpenEvent = ({ event }) => {
   );
 };
 
-PullRequestDraftToOpenEvent.type = "PullRequestDraftToOpenEvent";
+PullRequestReopenedEvent.type = "PullRequestReopenedEvent";
 
-export default PullRequestDraftToOpenEvent;
+export default PullRequestReopenedEvent;

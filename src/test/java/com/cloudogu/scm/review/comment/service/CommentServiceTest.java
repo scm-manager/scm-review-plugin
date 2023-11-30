@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
@@ -707,6 +708,18 @@ public class CommentServiceTest {
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getComment()).isEqualTo("merged");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldAddCommentOnReopenEvent() {
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+
+    commentService.addCommentOnReopen(new PullRequestReopenedEvent(REPOSITORY, mockPullRequest()));
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getComment()).isEqualTo("reopened");
   }
 
 

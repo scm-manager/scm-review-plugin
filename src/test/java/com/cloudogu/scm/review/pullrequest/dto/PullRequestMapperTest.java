@@ -24,6 +24,7 @@
 
 package com.cloudogu.scm.review.pullrequest.dto;
 
+import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
@@ -45,6 +46,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.BranchLinkProvider;
+import sonia.scm.repository.Branch;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
@@ -53,12 +55,15 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.UserDisplayManager;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -81,6 +86,8 @@ class PullRequestMapperTest {
   private CommentService commentService;
   @Mock
   private RepositoryServiceFactory serviceFactory;
+  @Mock
+  private BranchResolver branchResolver;
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private RepositoryService service;
 
@@ -290,6 +297,95 @@ class PullRequestMapperTest {
       PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
 
       assertThat(dto.getLinks().getLinkBy("workflowResult"))
+        .isEmpty();
+    }
+
+    @Test
+    void shouldAddReopenLink() throws IOException {
+      lenient().when(subject.isPermitted("repository:createPullRequest:id-1")).thenReturn(true);
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.REJECTED);
+
+      when(pullRequestService.checkIfPullRequestIsValid(REPOSITORY, pullRequest.getSource(), pullRequest.getTarget()))
+        .thenReturn(PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID);
+      when(branchResolver.find(REPOSITORY, pullRequest.getSource())).thenReturn(Optional.of(mock(Branch.class)));
+      when(branchResolver.find(REPOSITORY, pullRequest.getTarget())).thenReturn(Optional.of(mock(Branch.class)));
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reopen"))
+              .get()
+              .extracting("href")
+              .isEqualTo("/v2/pull-requests/space/x/id/reopen");
+    }
+
+    @Test
+    void shouldNotAddReopenLinkWithoutPermission() {
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.REJECTED);
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reopen"))
+              .isEmpty();
+    }
+
+    @Test
+    void shouldNotAddReopenLinkIfNotRejected() {
+      lenient().when(subject.isPermitted("repository:createPullRequest:*")).thenReturn(true);
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.MERGED);
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reopen"))
+              .isEmpty();
+    }
+
+    @Test
+    void shouldNotAddReopenLinkIfSourceBranchIsAbsent() {
+      lenient().when(subject.isPermitted("repository:createPullRequest:*")).thenReturn(true);
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.REJECTED);
+
+      when(branchResolver.find(REPOSITORY, pullRequest.getSource())).thenReturn(Optional.empty());
+      when(branchResolver.find(REPOSITORY, pullRequest.getTarget())).thenReturn(Optional.of(mock(Branch.class)));
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reopen"))
+        .isEmpty();
+    }
+
+    @Test
+    void shouldNotAddReopenLinkIfTargetBranchIsAbsent() {
+      lenient().when(subject.isPermitted("repository:createPullRequest:*")).thenReturn(true);
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.REJECTED);
+
+      when(branchResolver.find(REPOSITORY, pullRequest.getSource())).thenReturn(Optional.of(mock(Branch.class)));
+      when(branchResolver.find(REPOSITORY, pullRequest.getTarget())).thenReturn(Optional.empty());
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reopen"))
+        .isEmpty();
+    }
+
+    @Test
+    void shouldNotAddReopenLinkIfThereAreNoChangesInPr() {
+      lenient().when(subject.isPermitted("repository:createPullRequest:*")).thenReturn(true);
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setStatus(PullRequestStatus.REJECTED);
+      pullRequest.setTarget("develop");
+      pullRequest.setSource("develop");
+
+      when(branchResolver.find(REPOSITORY, pullRequest.getSource())).thenReturn(Optional.of(mock(Branch.class)));
+      when(branchResolver.find(REPOSITORY, pullRequest.getTarget())).thenReturn(Optional.of(mock(Branch.class)));
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reopen"))
         .isEmpty();
     }
 

@@ -47,6 +47,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import sonia.scm.HandlerEventType;
+import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.Changeset;
@@ -63,30 +64,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER;
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.DRAFT;
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.*;
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonMap;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.entry;
+import static java.util.Collections.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultPullRequestServiceTest {
@@ -599,6 +585,93 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
+    void shouldReopenPullRequest() throws IOException {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+
+      pullRequest.setStatus(REJECTED);
+      mockChangesets(new Changeset());
+
+      service.reopen(REPOSITORY, pullRequest.getId());
+
+      assertThat(pullRequest.getStatus()).isEqualTo(OPEN);
+      assertThat(pullRequest.getReviser()).isNull();
+      assertThat(pullRequest.getCloseDate()).isNull();
+      assertThat(pullRequest.getSourceRevision()).isNull();
+      assertThat(pullRequest.getTargetRevision()).isNull();
+
+      PullRequestReopenedEvent pullRequestStatusChangedEvent = (PullRequestReopenedEvent) eventCaptor.getAllValues().get(0);
+      assertThat(pullRequestStatusChangedEvent).isInstanceOf(PullRequestReopenedEvent.class);
+      assertThat(pullRequestStatusChangedEvent.getRepository()).isSameAs(REPOSITORY);
+      assertThat(pullRequestStatusChangedEvent.getPullRequest()).isSameAs(pullRequest);
+    }
+
+    @Test
+    void shouldNotReopenMergedPullRequest() throws IOException {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+
+      pullRequest.setStatus(MERGED);
+      mockChangesets(new Changeset());
+
+      String pullRequestId = pullRequest.getId();
+      assertThrows(StatusChangeNotAllowedException.class, () -> service.reopen(REPOSITORY, pullRequestId));
+    }
+
+    @Test
+    void shouldNotReopenPullRequestWithoutCreatePermission() {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+      doThrow(UnauthorizedException.class).when(subject).checkPermission("repository:createPullRequest:1");
+      pullRequest.setStatus(REJECTED);
+
+      String pullRequestId = pullRequest.getId();
+      assertThrows(UnauthorizedException.class, () -> service.reopen(REPOSITORY, pullRequestId));
+    }
+
+    @Test
+    void shouldNotReopenPullRequestWithDeletedSourceBranch() {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+
+      doThrow(NotFoundException.class)
+        .when(branchResolver)
+        .resolve(REPOSITORY, pullRequest.getSource());
+
+      pullRequest.setStatus(REJECTED);
+      String pullRequestId = pullRequest.getId();
+      assertThrows(NotFoundException.class, () -> service.reopen(REPOSITORY, pullRequestId));
+    }
+
+    @Test
+    void shouldNotReopenPullRequestWithDeletedTargetBranch() throws IOException {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+      mockChangesets(new Changeset());
+
+      lenient().doThrow(NotFoundException.class)
+        .when(branchResolver)
+        .resolve(REPOSITORY, pullRequest.getTarget());
+
+      pullRequest.setStatus(REJECTED);
+      String pullRequestId = pullRequest.getId();
+      assertThrows(NotFoundException.class, () -> service.reopen(REPOSITORY, pullRequestId));
+    }
+
+    @Test
+    void shouldNotReopenPullRequestWithoutChanges() {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+
+      pullRequest.setStatus(REJECTED);
+      pullRequest.setSource("develop");
+      pullRequest.setTarget("develop");
+
+      String pullRequestId = pullRequest.getId();
+      assertThrows(StatusChangeNotAllowedException.class, () -> service.reopen(REPOSITORY, pullRequestId));
+    }
+
+    @Test
     void shouldSetPullRequestMergedAndSendEvent() {
       Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
       shiroRule.setSubject(subject);
@@ -727,6 +800,11 @@ class DefaultPullRequestServiceTest {
 
     @Test
     void shouldSetPullRequestEmergencyMerged() {
+      Subject subject = mock(Subject.class, RETURNS_DEEP_STUBS);
+      shiroRule.setSubject(subject);
+      User currentUser = new User("currentUser");
+      when(subject.getPrincipals().oneByType(User.class)).thenReturn(currentUser);
+
       PullRequest pullRequest = createPullRequest("emergency", null, null);
       pullRequest.setStatus(OPEN);
       String overrideMessage = "really urgent";

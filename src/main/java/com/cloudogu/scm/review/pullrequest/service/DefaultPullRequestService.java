@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import com.google.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
@@ -54,6 +55,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.BRANCHES_NOT_DIFFER;
+import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_ALREADY_EXISTS;
+import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent.ApprovalCause.APPROVAL_REMOVED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent.ApprovalCause.APPROVED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.DRAFT;
@@ -225,6 +229,54 @@ public class DefaultPullRequestService implements PullRequestService {
     }
   }
 
+  @Override
+  public void reopen(Repository repository, String pullRequestId) throws IOException {
+    PullRequestStore store = getStore(repository);
+    PullRequest pullRequest = store.get(pullRequestId);
+    PermissionCheck.checkCreate(repository);
+    checkBranch(repository, pullRequest.getSource());
+    checkBranch(repository, pullRequest.getTarget());
+
+    boolean isPrCreationValid = PR_VALID.equals(checkIfPullRequestIsValid(repository, pullRequest.getSource(), pullRequest.getTarget()));
+    if (pullRequest.isRejected() && isPrCreationValid) {
+      pullRequest.setStatus(OPEN);
+      pullRequest.setSourceRevision(null);
+      pullRequest.setTargetRevision(null);
+      pullRequest.setReviser(null);
+      pullRequest.setCloseDate(null);
+      store.update(pullRequest);
+      eventBus.post(new PullRequestReopenedEvent(repository, pullRequest));
+    } else {
+      throw new StatusChangeNotAllowedException(repository, pullRequest);
+    }
+  }
+
+  @Override
+  public PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target) throws IOException {
+    if (source.equals(target)) {
+      return BRANCHES_NOT_DIFFER;
+    }
+
+    if (getInProgress(repository, source, target).isPresent()) {
+      return PR_ALREADY_EXISTS;
+    }
+
+    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      ChangesetPagingResult changesets = repositoryService
+        .getLogCommand()
+        .setStartChangeset(source)
+        .setAncestorChangeset(target)
+        .setPagingLimit(1)
+        .getChangesets();
+
+      if (changesets == null || changesets.getChangesets() == null || changesets.getChangesets().isEmpty()) {
+        return BRANCHES_NOT_DIFFER;
+      }
+    }
+
+    return PR_VALID;
+  }
+
   private String getBranchRevision(Repository repository, String branch) {
     try {
       return branchResolver.resolve(repository, branch).getRevision();
@@ -386,8 +438,8 @@ public class DefaultPullRequestService implements PullRequestService {
   public void convertToPR(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
 
-    if(!PermissionCheck.mayMerge(repository) &&
-       !pullRequest.getAuthor().equals(SecurityUtils.getSubject().getPrincipal().toString())) {
+    if (!PermissionCheck.mayMerge(repository) &&
+      !pullRequest.getAuthor().equals(SecurityUtils.getSubject().getPrincipal().toString())) {
       throw new UnauthorizedException();
     }
 

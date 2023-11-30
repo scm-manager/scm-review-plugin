@@ -33,6 +33,7 @@ import sonia.scm.repository.api.RepositoryServiceFactory;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
@@ -54,6 +55,19 @@ public class BranchResolver {
         .filter(b -> b.getName().equals(branchName))
         .findFirst()
         .orElseThrow(() -> notFound(entity("branch", branchName).in(repository)));
+    } catch (IOException e) {
+      throw new InternalRepositoryException(repository, "could not read branches", e);
+    }
+  }
+
+  public Optional<Branch> find(Repository repository, String branchName) {
+    try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
+      BranchesCommandBuilder branchesCommand = repositoryService.getBranchesCommand();
+      List<Branch> allBranches = branchesCommand.getBranches().getBranches();
+      return allBranches
+        .stream()
+        .filter(b -> b.getName().equals(branchName))
+        .findFirst();
     } catch (IOException e) {
       throw new InternalRepositoryException(repository, "could not read branches", e);
     }

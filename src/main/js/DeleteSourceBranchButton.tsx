@@ -44,14 +44,10 @@ type ModalProps = {
 };
 
 const DeleteModal: FC<ModalProps> = ({ repository, branch, sameRevision, close }) => {
-  const { remove, isLoading, isDeleted, error } = useDeleteBranch(repository);
+  const { remove, isLoading, error } = useDeleteBranch(repository);
   const [t] = useTranslation("plugins");
   const formatter = useDateFormatter({ date: branch.lastCommitDate });
   const initialFocusButton = useRef<HTMLButtonElement>(null);
-
-  if (isDeleted) {
-    close();
-  }
 
   const message = t("scm-review-plugin.showPullRequest.deleteSourceBranchButton.deleteModal.message", {
     branch: branch.name

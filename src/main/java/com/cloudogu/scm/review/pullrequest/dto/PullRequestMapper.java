@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.pullrequest.dto;
 
+import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
@@ -52,6 +53,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.BaseMapper;
 import sonia.scm.api.v2.resources.BranchLinkProvider;
+import sonia.scm.repository.Branch;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
@@ -67,6 +69,7 @@ import sonia.scm.web.EdisonHalAppender;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -77,6 +80,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
+import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
 import static de.otto.edison.hal.Embedded.embeddedBuilder;
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
@@ -86,7 +90,6 @@ import static java.util.stream.Collectors.toList;
   builder = @Builder(disableBuilder = true)
 )
 public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequestDto> {
-
   @Inject
   private UserDisplayManager userDisplayManager;
   @Inject
@@ -99,6 +102,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private RepositoryServiceFactory serviceFactory;
   @Inject
   private BranchLinkProvider branchLinkProvider;
+  @Inject
+  private BranchResolver branchResolver;
 
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
 
@@ -223,11 +228,24 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
         .rejectWithMessage(namespace, name, pullRequestId)));
 
       if (RepositoryPermissions.push(repository).isPermitted() && (pullRequest.isOpen())) {
-          linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
-            .createDefaultCommitMessage(namespace, name, pullRequest.getId())));
-          linksBuilder.single(link("mergeStrategyInfo", pullRequestResourceLinks.mergeLinks().getMergeStrategyInfo(namespace, name, pullRequestId)));
-          appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
+        linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
+          .createDefaultCommitMessage(namespace, name, pullRequest.getId())));
+        linksBuilder.single(link("mergeStrategyInfo", pullRequestResourceLinks.mergeLinks().getMergeStrategyInfo(namespace, name, pullRequestId)));
+        appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
       }
+    }
+    Optional<Branch> sourceBranch = branchResolver.find(repository, pullRequest.getSource());
+    Optional<Branch> targetBranch = branchResolver.find(repository, pullRequest.getTarget());
+    boolean isPrCreationValid = false;
+    try {
+      isPrCreationValid = PR_VALID.equals(pullRequestService.checkIfPullRequestIsValid(repository, pullRequest.getSource(), pullRequest.getTarget()));
+    } catch (IOException e) {
+      // Do nothing
+    }
+
+    if (PermissionCheck.mayCreate(repository) && pullRequest.isRejected() && sourceBranch.isPresent() && targetBranch.isPresent() && isPrCreationValid) {
+      linksBuilder.single(link("reopen", pullRequestResourceLinks.pullRequest()
+        .reopen(namespace, name, pullRequestId)));
     }
 
     linksBuilder.single(link("reviewMark", pullRequestResourceLinks.pullRequest().reviewMark(namespace, name, pullRequestId)));
@@ -283,20 +301,20 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   private Link createMergeStrategyLink(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
     return Link.linkBuilder("merge", pullRequestResourceLinks.mergeLinks().merge(
-      namespaceAndName.getNamespace(),
-      namespaceAndName.getName(),
-      pullRequest.getId(),
-      strategy
+        namespaceAndName.getNamespace(),
+        namespaceAndName.getName(),
+        pullRequest.getId(),
+        strategy
       )
     ).withName(strategy.name()).build();
   }
 
   private Link createEmergencyMergeStrategyLink(NamespaceAndName namespaceAndName, PullRequest pullRequest, MergeStrategy strategy) {
     return Link.linkBuilder("emergencyMerge", pullRequestResourceLinks.mergeLinks().emergencyMerge(
-      namespaceAndName.getNamespace(),
-      namespaceAndName.getName(),
-      pullRequest.getId(),
-      strategy
+        namespaceAndName.getNamespace(),
+        namespaceAndName.getName(),
+        pullRequest.getId(),
+        strategy
       )
     ).withName(strategy.name()).build();
   }

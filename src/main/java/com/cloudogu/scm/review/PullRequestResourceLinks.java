@@ -160,6 +160,13 @@ public class PullRequestResourceLinks {
         .href();
     }
 
+    public String reopen(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("reopen").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
     public String subscription(String namespace, String name, String pullRequestId) {
       return pullRequestLinkBuilder
         .method("getPullRequestResource").parameters()

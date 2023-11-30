@@ -73,7 +73,7 @@ Ein als Draft Pull Request erstellter Pull Request kann in einen offenen, zum Re
 Ein offener Pull Request kann über die Bearbeiten-Funktion in einen Draft Pull Request umgewandelt werden. Beim Umwandeln in einen Draft werden die Freigaben durch Nutzer gelöscht.
 
 ### Pull Request ablehnen
-Sollte ein Pull Request aus Sicht der Reviewer nicht gemerged werden dürfen, kann dieser Pull Request abgelehnt werden. Dies sollte in Abstimmung mit dem Pull Request Autor passieren. Ein abgelehnter Pull Request kann nicht erneut geöffnet werden. Es muss stattdessen ein neuer Pull Request erstellt werden.
+Sollte ein Pull Request aus Sicht der Reviewer nicht gemerged werden dürfen, kann dieser Pull Request abgelehnt werden. Dies sollte in Abstimmung mit dem Pull Request Autor passieren. Ein abgelehnter Pull Request kann später wieder geöffnet werden.
 
 ### Pull Request mergen
 

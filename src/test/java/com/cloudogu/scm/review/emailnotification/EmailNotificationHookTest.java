@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.google.common.collect.ImmutableSet;
@@ -240,6 +241,14 @@ class EmailNotificationHookTest {
     emailNotificationHook.handleRejectedPullRequest(event);
 
     verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestRejectedMailTextResolver.class));
+  }
+
+  @Test
+  void shouldSendEmailsAfterReopeningPullRequest() throws Exception {
+    PullRequestReopenedEvent event = new PullRequestReopenedEvent(repository, pullRequest);
+    emailNotificationHook.handleReopenedPullRequest(event);
+
+    verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestReopenedMailTextResolver.class));
   }
 
   @Test

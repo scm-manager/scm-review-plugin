@@ -21,39 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
+import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
-import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
+import { Dialog } from "@scm-manager/ui-overlays";
+import { Button } from "@scm-manager/ui-buttons";
 
-const PullRequestDraftToOpenEvent = ({ event }) => {
+type Props = {
+  reopen: () => Promise<unknown>;
+  loading: boolean;
+};
+
+const ReopenButton: FC<Props> = ({ reopen, loading }) => {
   const [t] = useTranslation("plugins");
-  const link = `/repo/${event.namespace}/${event.name}/pull-request/${event.id}`;
-  const footer = (
-    <>
-      {t("scm-review-plugin.landingpage.draftToOpen.footer", {
-        author: event.author,
-        namespace: event.namespace,
-        name: event.name
-      })}
-    </>
-  );
+  const [open, setOpen] = useState<boolean>();
 
   return (
-    <CardColumnSmall
-      link={link}
-      avatar={<SmallPullRequestIcon />}
-      contentLeft={<strong>{t("scm-review-plugin.landingpage.draftToOpen.header", event)}</strong>}
-      footer={footer}
-      contentRight={
-        <small>
-          <DateFromNow date={event.date} />
-        </small>
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+      title={t("scm-review-plugin.showPullRequest.reopenButton.confirmAlert.title")}
+      description={t("scm-review-plugin.showPullRequest.reopenButton.confirmAlert.message.hint")}
+      footer={[
+        <Button key="submit" variant="primary" onClick={() => reopen().finally(() => setOpen(false))}>
+          {t("scm-review-plugin.showPullRequest.reopenButton.confirmAlert.submit")}
+        </Button>,
+        <Dialog.CloseButton key="cancel" autoFocus>
+          {t("scm-review-plugin.showPullRequest.reopenButton.confirmAlert.cancel")}
+        </Dialog.CloseButton>
+      ]}
+      trigger={
+        <Button isLoading={loading} color="warning">
+          {t("scm-review-plugin.showPullRequest.reopenButton.buttonTitle")}
+        </Button>
       }
     />
   );
 };
 
-PullRequestDraftToOpenEvent.type = "PullRequestDraftToOpenEvent";
-
-export default PullRequestDraftToOpenEvent;
+export default ReopenButton;

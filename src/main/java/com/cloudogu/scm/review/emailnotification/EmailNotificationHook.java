@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.github.legman.Subscribe;
@@ -151,6 +152,12 @@ public class EmailNotificationHook {
   public void handleRejectedPullRequest(PullRequestRejectedEvent event) {
     PullRequest pullRequest = event.getPullRequest();
     handleEventIfNotDraft(event, new PullRequestRejectedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
+  }
+
+  @Subscribe
+  public void handleReopenedPullRequest(PullRequestReopenedEvent event) {
+    PullRequest pullRequest = event.getPullRequest();
+    handleEvent(event, new PullRequestReopenedMailTextResolver(event), pullRequest, getSubscribersWithoutCurrentUser(pullRequest));
   }
 
   @Subscribe

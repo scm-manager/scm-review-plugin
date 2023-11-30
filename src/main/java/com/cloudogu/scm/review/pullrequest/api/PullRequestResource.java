@@ -71,6 +71,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 
+import java.io.IOException;
+
 import static de.otto.edison.hal.Links.linkingTo;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
@@ -413,6 +415,26 @@ public class PullRequestResource {
   public void convertToPR(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     service.convertToPR(repository, pullRequestId);
+  }
+
+  @POST
+  @Path("reopen")
+  @Operation(summary = "Reopen pull request", description = "Reopens a rejected pull request.", tags = "Pull Request")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"modifyPullRequest\" or the \"createPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no pull request with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public void reopen(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) throws IOException {
+    Repository repository = service.getRepository(namespace, name);
+    service.reopen(repository, pullRequestId);
   }
 
   @GET

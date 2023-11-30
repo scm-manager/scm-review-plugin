@@ -21,39 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
-import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
+package com.cloudogu.scm.review.pullrequest.service;
 
-const PullRequestDraftToOpenEvent = ({ event }) => {
-  const [t] = useTranslation("plugins");
-  const link = `/repo/${event.namespace}/${event.name}/pull-request/${event.id}`;
-  const footer = (
-    <>
-      {t("scm-review-plugin.landingpage.draftToOpen.footer", {
-        author: event.author,
-        namespace: event.namespace,
-        name: event.name
-      })}
-    </>
-  );
+import sonia.scm.event.Event;
+import sonia.scm.repository.Repository;
 
-  return (
-    <CardColumnSmall
-      link={link}
-      avatar={<SmallPullRequestIcon />}
-      contentLeft={<strong>{t("scm-review-plugin.landingpage.draftToOpen.header", event)}</strong>}
-      footer={footer}
-      contentRight={
-        <small>
-          <DateFromNow date={event.date} />
-        </small>
-      }
-    />
-  );
-};
-
-PullRequestDraftToOpenEvent.type = "PullRequestDraftToOpenEvent";
-
-export default PullRequestDraftToOpenEvent;
+@Event
+public class PullRequestReopenedEvent extends BasicPullRequestEvent {
+  public PullRequestReopenedEvent(Repository repository, PullRequest pullRequest) {
+    super(repository, pullRequest);
+  }
+}

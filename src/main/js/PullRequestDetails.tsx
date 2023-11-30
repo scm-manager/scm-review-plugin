@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { Link, Repository } from "@scm-manager/ui-types";
@@ -40,7 +40,16 @@ import {
   Tooltip
 } from "@scm-manager/ui-components";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
-import { useMergeDryRun, useMergePullRequest, useReadyForReviewPullRequest, useRejectPullRequest } from "./pullRequest";
+import {
+  invalidateQueries,
+  prQueryKey,
+  prsQueryKey,
+  useMergeDryRun,
+  useMergePullRequest,
+  useReadyForReviewPullRequest,
+  useRejectPullRequest,
+  useReopenPullRequest
+} from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
 import RejectButton from "./RejectButton";
@@ -57,6 +66,8 @@ import ChangeNotificationContext from "./ChangeNotificationContext";
 import SourceTargetBranchDisplay from "./SourceTargetBranchDisplay";
 import DeleteSourceBranchButton from "./DeleteSourceBranchButton";
 import LabelsList from "./LabelsList";
+import ReopenButton from "./ReopenButton";
+import { useQueryClient } from "react-query";
 
 type Props = {
   repository: Repository;
@@ -154,6 +165,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [targetBranchDeleted, setTargetBranchDeleted] = useState(false);
 
   const { reject, isLoading: rejectLoading, error: rejectError } = useRejectPullRequest(repository, pullRequest);
+  const { reopen, isLoading: reopenLoading, error: reopenError } = useReopenPullRequest(repository, pullRequest);
   const { readyForReview, isLoading: readyForReviewLoading, error: readyForReviewError } = useReadyForReviewPullRequest(
     repository,
     pullRequest
@@ -175,6 +187,10 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     }
     return [];
   }, [pullRequest]);
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, pullRequest.id!));
+  }, [queryClient, pullRequest.id, repository, branch]);
 
   const findStrategyLink = (links: Link[], strategy: string) => {
     return links?.filter(link => link.name === strategy)[0].href;
@@ -189,9 +205,10 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   };
 
   const error =
-    rejectError ||
-    mergeError ||
-    readyForReviewError ||
+    rejectError ??
+    reopenError ??
+    mergeError ??
+    readyForReviewError ??
     // Prevent dry-run error for closed pull request with stale cache data
     (mergeDryRunError instanceof BackendError && mergeDryRunError.errorCode === "FTRhcI0To1" ? null : mergeDryRunError);
   if (error) {
@@ -228,8 +245,13 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   let mergeButton = null;
   let rejectButton = null;
+  let reopenButton = null;
   let deleteSourceButton = null;
   let readyForReviewButton = null;
+
+  if (pullRequest.status === "REJECTED" && pullRequest._links?.reopen && !targetBranchDeleted) {
+    reopenButton = <ReopenButton reopen={reopen} loading={reopenLoading} />;
+  }
 
   if (pullRequest._links?.rejectWithMessage) {
     rejectButton = <RejectButton reject={message => reject(message)} loading={rejectLoading} />;
@@ -381,6 +403,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
           <div className="level-right">
             <div className="buttons">
               {rejectButton}
+              {reopenButton}
               {mergeButton}
               {deleteSourceButton}
               {readyForReviewButton}

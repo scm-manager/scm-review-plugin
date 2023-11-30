@@ -158,10 +158,21 @@
           "submit": "Reject",
           "cancel": "Cancel",
           "message": {
-            "hint": "Do you really want to reject this pull request? This cannot be undone!",
+            "hint": "Do you really want to reject this pull request? You can always reopen it later.",
             "label": "Optional Comment",
             "help": "Explain why you reject this pull request. The message will be added as a normal comment to the pull request.",
             "placeholder": "Add an optional comment, why you reject this pull request."
+          }
+        }
+      },
+      "reopenButton": {
+        "buttonTitle": "Reopen Pull Request",
+        "confirmAlert": {
+          "title": "Reopen Pull Request",
+          "submit": "Reopen",
+          "cancel": "Cancel",
+          "message": {
+            "hint": "Do you really want to reopen this pull request?"
           }
         }
       },
@@ -277,6 +288,7 @@
       "systemMessage": {
         "merged": "The pull request has been merged.",
         "rejected": "The pull request has been rejected.",
+        "reopened": "The pull request has been reopened.",
         "sourceDeleted": "The source branch of the pull request has been deleted.",
         "targetDeleted": "The target branch of the pull request has been deleted.",
         "emergencyMerged": "The pull request has been merged with an emergency merge. The workflow engine rules has been ignored.",
@@ -452,15 +464,15 @@
       "created": {
         "header": "New pull request: #{{id}} {{title}}",
         "draftHeader": "New draft pull request: #{{id}} {{title}}",
-        "footerStart": "Created by",
-        "footerMiddle": "in repository",
-        "footerEnd": ""
+        "footer": "Created by {{author}} in repository {{namespace}}/{{name}}"
+      },
+      "reopened": {
+        "header": "Pull request reopened: #{{id}} {{title}}",
+        "footer": "Reopened by {{author}} in repository {{namespace}}/{{name}}"
       },
       "draftToOpen": {
         "header": "Open for review: #{{id}} {{title}}",
-        "footerStart": "Created by",
-        "footerMiddle": "in repository",
-        "footerEnd": ""
+        "footer": "Opened for review by {{author}} in repository {{namespace}}/{{name}}"
       },
       "todo": {
         "todo": "{{open}}/{{count}} tasks",

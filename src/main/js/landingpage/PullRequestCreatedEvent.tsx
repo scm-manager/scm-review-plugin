@@ -31,9 +31,11 @@ const PullRequestCreatedEvent = ({ event }) => {
   const link = `/repo/${event.namespace}/${event.name}/pull-request/${event.id}`;
   const footer = (
     <>
-      {t("scm-review-plugin.landingpage.created.footerStart")} {event.author}{" "}
-      {t("scm-review-plugin.landingpage.created.footerMiddle")} {event.namespace + "/" + event.name}{" "}
-      {t("scm-review-plugin.landingpage.created.footerEnd")}
+      {t("scm-review-plugin.landingpage.created.footer", {
+        author: event.author,
+        namespace: event.namespace,
+        name: event.name
+      })}
     </>
   );
 

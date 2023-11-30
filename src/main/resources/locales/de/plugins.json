@@ -158,10 +158,21 @@
           "submit": "Ablehnen",
           "cancel": "Abbrechen",
           "message": {
-            "hint": "Wollen Sie den Pull Request wirklich ablehnen? Diese Aktion kann nicht rückgängig gemacht werden.",
+            "hint": "Wollen Sie den Pull Request wirklich ablehnen? Er kann zu jeder Zeit wieder geöffnet werden.",
             "label": "Optionaler Kommentar",
             "help": "Mit dieser Nachricht können Sie erklären, warum Sie den Pull Request ablehnen. Er wird als normaler Kommentar zu dem Pull Request hizugefügt.",
             "placeholder": "Optionaler Kommentar, warum Sie diesen PR ablehnen."
+          }
+        }
+      },
+      "reopenButton": {
+        "buttonTitle": "Pull Request wiedereröffnen",
+        "confirmAlert": {
+          "title": "Pull Request wieder öffnen",
+          "submit": "Wiedereröffnen",
+          "cancel": "Abbrechen",
+          "message": {
+            "hint": "Wollen Sie den Pull Request wirklich wieder öffnen?"
           }
         }
       },
@@ -279,6 +290,7 @@
       "systemMessage": {
         "merged": "Der Pull Request wurde gemerged.",
         "rejected": "Der Pull Request wurde abgelehnt.",
+        "reopened": "Der Pull Request wurde wiedereröffnet.",
         "sourceDeleted": "Der Quell-Branch des Pull Requests wurde gelöscht.",
         "targetDeleted": "Der Ziel-Branch des Pull Requests wurde gelöscht.",
         "emergencyMerged": "Dieser Pull Request wurde mit einem Emergency-Merge gemerged. Dabei wurden die Regeln der Workflow Engine ignoriert.",
@@ -454,15 +466,15 @@
       "created": {
         "header": "Neuer Pull Request: #{{id}} {{title}}",
         "draftHeader": "Neuer Draft Pull Request: #{{id}} {{title}}",
-        "footerStart": "Erstellt von",
-        "footerMiddle": "im Repository",
-        "footerEnd": ""
+        "footer": "Erstellt von {{author}} im Repository {{namespace}}/{{name}}"
+      },
+      "reopened": {
+        "header": "Pull Request wiedereröffnet: #{{id}} {{title}}",
+        "footer": "Wiedereröffnet von {{author}} im Repository {{namespace}}/{{name}}"
       },
       "draftToOpen": {
         "header": "Zum Review freigegeben: #{{id}} {{title}}",
-        "footerStart": "Erstellt von",
-        "footerMiddle": "im Repository",
-        "footerEnd": ""
+        "footer": "Freigegeben von {{author}} im Repository {{namespace}}/{{name}}"
       },
       "todo": {
         "todo": "{{open}}/{{count}} Aufgaben",
