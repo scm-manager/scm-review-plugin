@@ -83,10 +83,9 @@ const ShowPullRequestRoute = ({ url, repository }: RepoRouteProps) => {
 
 binder.bind("repository.route", ShowPullRequestRoute);
 
-const routeRegex = /.*\/repo\/.+\/.+\/pull-requests?(\/.*)?/;
-
 export function matches(route: any) {
-  return route.location.pathname.match(routeRegex);
+  const regex = /.*\/repo\/.+\/.+\/pull-requests?(\/.*)?/;
+  return !!route.location.pathname.match(regex);
 }
 
 const PullRequestNavLink: extensionPoints.RepositoryNavigation["type"] = ({ url, repository }) => {
