@@ -351,7 +351,7 @@ public class PullRequestRootResource {
     @PathParam("name") String name,
     @NotEmpty @QueryParam("source") String source,
     @NotEmpty @QueryParam("target") String target
-  ) throws IOException {
+  ) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkCreate(repository);
 

@@ -30,6 +30,7 @@ import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import com.google.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import sonia.scm.HandlerEventType;
@@ -67,6 +68,7 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJE
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 public class DefaultPullRequestService implements PullRequestService {
 
   private final BranchResolver branchResolver;
@@ -230,7 +232,7 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public void reopen(Repository repository, String pullRequestId) throws IOException {
+  public void reopen(Repository repository, String pullRequestId) {
     PullRequestStore store = getStore(repository);
     PullRequest pullRequest = store.get(pullRequestId);
     PermissionCheck.checkCreate(repository);
@@ -252,7 +254,7 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target) throws IOException {
+  public PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target) {
     if (source.equals(target)) {
       return BRANCHES_NOT_DIFFER;
     }
@@ -272,6 +274,8 @@ public class DefaultPullRequestService implements PullRequestService {
       if (changesets == null || changesets.getChangesets() == null || changesets.getChangesets().isEmpty()) {
         return BRANCHES_NOT_DIFFER;
       }
+    } catch (IOException e) {
+      log.warn("could not check if pull request is valid in repository {} for source branch {} and target branch {}", repository, source, target, e);
     }
 
     return PR_VALID;

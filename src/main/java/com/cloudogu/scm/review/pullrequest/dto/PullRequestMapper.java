@@ -69,7 +69,6 @@ import sonia.scm.web.EdisonHalAppender;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -237,10 +236,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     Optional<Branch> sourceBranch = branchResolver.find(repository, pullRequest.getSource());
     Optional<Branch> targetBranch = branchResolver.find(repository, pullRequest.getTarget());
     boolean isPrCreationValid = false;
-    try {
+    if (sourceBranch.isPresent() && targetBranch.isPresent()) {
       isPrCreationValid = PR_VALID.equals(pullRequestService.checkIfPullRequestIsValid(repository, pullRequest.getSource(), pullRequest.getTarget()));
-    } catch (IOException e) {
-      // Do nothing
     }
 
     if (PermissionCheck.mayCreate(repository) && pullRequest.isRejected() && sourceBranch.isPresent() && targetBranch.isPresent() && isPrCreationValid) {

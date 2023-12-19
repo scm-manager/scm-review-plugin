@@ -29,7 +29,6 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -126,12 +125,12 @@ public interface PullRequestService {
    *
    * @since 2.33.0
    */
-  void reopen(Repository repository, String pullRequestId) throws IOException;
+  void reopen(Repository repository, String pullRequestId);
 
   /**
    * @since 2.33.0
    */
-  PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target) throws IOException;
+  PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target);
 
   void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause, String message);
 

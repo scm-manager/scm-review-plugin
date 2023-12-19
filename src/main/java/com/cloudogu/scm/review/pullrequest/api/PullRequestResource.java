@@ -71,8 +71,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 
-import java.io.IOException;
-
 import static de.otto.edison.hal.Links.linkingTo;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
@@ -432,7 +430,7 @@ public class PullRequestResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public void reopen(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) throws IOException {
+  public void reopen(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
     Repository repository = service.getRepository(namespace, name);
     service.reopen(repository, pullRequestId);
   }

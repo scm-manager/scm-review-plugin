@@ -55,7 +55,6 @@ import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.user.UserDisplayManager;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -301,7 +300,7 @@ class PullRequestMapperTest {
     }
 
     @Test
-    void shouldAddReopenLink() throws IOException {
+    void shouldAddReopenLink() {
       lenient().when(subject.isPermitted("repository:createPullRequest:id-1")).thenReturn(true);
       PullRequest pullRequest = TestData.createPullRequest();
       pullRequest.setStatus(PullRequestStatus.REJECTED);
