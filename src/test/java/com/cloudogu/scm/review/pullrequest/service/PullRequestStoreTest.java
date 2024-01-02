@@ -76,16 +76,28 @@ class PullRequestStoreTest {
   }
 
   @Test
-  public void testAdd() {
+  void testAdd() {
     setUpStore();
     assertThat(store.add(createPullRequest())).isEqualTo("1");
     assertThat(store.add(createPullRequest())).isEqualTo("2");
     assertThat(store.add(createPullRequest())).isEqualTo("3");
   }
 
+  @Test
+  void testAddWithMissingPullRequest() {
+    setUpStore();
+    store.add(createPullRequest());
+    store.add(createPullRequest());
+    store.add(createPullRequest());
+
+    backingMap.remove("2");
+
+    assertThat(store.add(createPullRequest())).isEqualTo("4");
+  }
+
   @SuppressWarnings("squid:S2925") // suppress warnings regarding Thread.sleep. Found no other way to test this.
   @Test
-  public void shouldCreateUniqueIdsWhenAccessedInParallel() throws InterruptedException {
+  void shouldCreateUniqueIdsWhenAccessedInParallel() throws InterruptedException {
     setUpStore();
     Semaphore semaphore = new Semaphore(2);
     semaphore.acquire(2);
@@ -122,7 +134,7 @@ class PullRequestStoreTest {
     first.start();
     second.start();
     semaphore.acquire(2);
-    assertThat(backingMap.size()).isEqualTo(2);
+    assertThat(backingMap).hasSize(2);
   }
 
 

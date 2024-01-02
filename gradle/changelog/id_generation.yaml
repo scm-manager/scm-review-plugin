@@ -1,0 +1,2 @@
+- type: fixed
+  description: Generate the ID for new pull requests correctly, when pull requests have been deleted from the file system.
