@@ -96,6 +96,15 @@ public class PullRequestStore {
 
   @VisibleForTesting
   String createId() {
-    return String.valueOf(store.getAll().size() + 1);
+    return String.valueOf(
+      store
+        .getAll()
+        .values()
+        .stream()
+        .map(PullRequest::getId)
+        .mapToInt(Integer::parseInt)
+        .max()
+        .orElse(0) + 1
+    );
   }
 }
