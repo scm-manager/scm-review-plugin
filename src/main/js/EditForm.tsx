@@ -22,12 +22,11 @@
  * SOFTWARE.
  */
 import React, { ChangeEvent, FC, useCallback } from "react";
-import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
-import { Checkbox } from "@scm-manager/ui-forms";
+import { InputField, Textarea } from "@scm-manager/ui-components";
+import { Checkbox, ChipInputField, Combobox } from "@scm-manager/ui-forms";
 import { useTranslation } from "react-i18next";
-import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
 import { useUserSuggestions } from "@scm-manager/ui-api";
-import { PullRequest } from "./types/PullRequest";
+import { PullRequest, Reviewer } from "./types/PullRequest";
 
 type Props = {
   handleFormChange: (pr: Partial<PullRequest>) => void;
@@ -51,19 +50,6 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled, availabl
     [handleFormChange, pullRequest]
   );
 
-  const removeReviewer = (users: DisplayedUser[]) => {
-    if (pullRequest.reviewer) {
-      const newList = pullRequest.reviewer.filter(item => users.includes(item));
-      handleFormChange({ reviewer: newList });
-    }
-  };
-
-  const selectName = (selection: SelectValue) => {
-    const newList = pullRequest.reviewer || [];
-    newList.push({ id: selection.value.id, displayName: selection.value.displayName || "", mail: "", approved: false });
-    handleFormChange({ reviewer: newList });
-  };
-
   return (
     <>
       <InputField
@@ -82,22 +68,17 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled, availabl
         onChange={value => handleFormChange({ description: value })}
         disabled={disabled}
       />
-      <TagGroup
-        items={pullRequest?.reviewer || []}
+      <ChipInputField<Reviewer>
+        value={pullRequest?.reviewer?.map(reviewer => ({ label: reviewer.displayName, value: reviewer })) ?? []}
+        onChange={newValue => handleFormChange({ reviewer: newValue.map(({ value }) => value) })}
         label={t("scm-review-plugin.pullRequest.reviewer")}
-        onRemove={removeReviewer}
-      />
-      <div className="field">
-        <div className="control">
-          <Autocomplete
-            creatable={false}
-            loadSuggestions={userSuggestions}
-            valueSelected={selectName}
-            placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
-            disabled={disabled}
-          />
-        </div>
-      </div>
+        placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
+        aria-label={t("scm-review-plugin.pullRequest.addReviewer")}
+        isNewItemDuplicate={(a, b) => a.value.id === b.value.id}
+        disabled={disabled}
+      >
+        <Combobox options={userSuggestions} />
+      </ChipInputField>
       {availableLabels.length > 0 ? (
         <fieldset className="is-flex is-flex-direction-column mb-4">
           <legend className="label">{t("scm-review-plugin.pullRequest.labels")}</legend>

@@ -23,25 +23,16 @@
  */
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Trans, useTranslation, WithTranslation } from "react-i18next";
-import {
-  AutocompleteAddEntryToTableField,
-  Checkbox,
-  Icon,
-  Select,
-  Subtitle,
-  TagGroup,
-  Textarea,
-  Title
-} from "@scm-manager/ui-components";
-import { ChipInputField } from "@scm-manager/ui-forms";
+import { Checkbox, Icon, Select, Subtitle, Textarea, Title } from "@scm-manager/ui-components";
+import { ChipInputField, Combobox } from "@scm-manager/ui-forms";
 import BranchList from "./BranchList";
 import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
 import { useUserSuggestions } from "@scm-manager/ui-api";
-import { DisplayedUser } from "@scm-manager/ui-types";
 import DefaultTaskEditor from "./DefaultTaskEditor";
 import { isEqual } from "lodash-es";
 import { Prompt } from "react-router-dom";
+import { DisplayedUser } from "@scm-manager/ui-types";
 
 type OnChangeFunction = <K extends keyof Config>(prop: K, val: Config[K]) => void;
 
@@ -51,29 +42,23 @@ const UserList: FC<{
 }> = ({ values, onChange }) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
-  const userValues = useMemo(() => values.map(id => ({ id, displayName: id, mail: "" } as DisplayedUser)), [values]);
 
   return (
-    <>
-      <TagGroup
-        items={userValues}
-        onRemove={(newUsers: DisplayedUser[]) =>
-          onChange(
-            "defaultReviewers",
-            newUsers.map(user => user.id)
-          )
-        }
-        label={t("scm-review-plugin.config.defaultReviewers.label")}
-      />
-      <AutocompleteAddEntryToTableField
-        addEntry={val => onChange("defaultReviewers", [...values, val.value.id])}
-        buttonLabel={t("scm-review-plugin.config.defaultReviewers.addButton")}
-        loadSuggestions={userSuggestions}
-        placeholder={t("scm-review-plugin.config.defaultReviewers.placeholder")}
-        loadingMessage={t("scm-review-plugin.config.defaultReviewers.loading")}
-        noOptionsMessage={t("scm-review-plugin.config.defaultReviewers.noOptions")}
-      />
-    </>
+    <ChipInputField<DisplayedUser>
+      value={values.map(id => ({ value: { id, displayName: id, mail: "" }, label: id }))}
+      onChange={newValue =>
+        onChange(
+          "defaultReviewers",
+          newValue.map(({ value }) => value.id)
+        )
+      }
+      label={t("scm-review-plugin.config.defaultReviewers.label")}
+      placeholder={t("scm-review-plugin.config.defaultReviewers.placeholder")}
+      aria-label={t("scm-review-plugin.config.defaultReviewers.placeholder")}
+      isNewItemDuplicate={(a, b) => a.value.id === b.value.id}
+    >
+      <Combobox options={userSuggestions} />
+    </ChipInputField>
   );
 };
 
@@ -206,7 +191,11 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
                 <span>
                   <Icon name="info-circle" color="blue-light" />
                   <Trans t={t} i18nKey="scm-review-plugin.config.commitMessageTemplate.hint">
-                    See the <a target="_blank" href="/scm/mustacheDocs">description</a>.
+                    See the{" "}
+                    <a target="_blank" href="/scm/mustacheDocs">
+                      description
+                    </a>
+                    .
                   </Trans>
                 </span>
               </>
