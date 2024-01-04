@@ -189,8 +189,13 @@ public class StatusCheckHook {
 
     private void updated(PullRequest pullRequest) {
       LOG.info("pull request {} was updated", pullRequest.getId());
-      pullRequestService.updated(repository, pullRequest.getId());
-
+      if (branchProvider.getCreatedOrModified().contains(pullRequest.getSource())) {
+        LOG.info("source branch of pull request {} was updated", pullRequest.getId());
+        pullRequestService.sourceRevisionChanged(repository, pullRequest.getId());
+      } else {
+        LOG.info("target branch of pull request {} was updated", pullRequest.getId());
+        pullRequestService.targetRevisionChanged(repository, pullRequest.getId());
+      }
       if(branchProvider.getCreatedOrModified().contains(pullRequest.getSource()) && pullRequest.isInProgress()) {
         ScmEventBus.getInstance().post(new PullRequestUpdatedMailEvent(repository, pullRequest));
       }

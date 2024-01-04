@@ -273,12 +273,18 @@ public class DefaultPullRequestService implements PullRequestService {
   }
 
   @Override
-  public void updated(Repository repository, String pullRequestId) {
+  public void sourceRevisionChanged(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
-
     if (pullRequest.isInProgress()) {
       removeAllApprover(repository, pullRequest);
+      eventBus.post(new PullRequestUpdatedEvent(repository, pullRequest));
+    }
+  }
 
+  @Override
+  public void targetRevisionChanged(Repository repository, String pullRequestId) {
+    PullRequest pullRequest = get(repository, pullRequestId);
+    if (pullRequest.isInProgress()) {
       eventBus.post(new PullRequestUpdatedEvent(repository, pullRequest));
     }
   }

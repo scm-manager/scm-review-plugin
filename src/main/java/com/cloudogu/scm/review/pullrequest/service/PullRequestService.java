@@ -127,7 +127,9 @@ public interface PullRequestService {
 
   void setEmergencyMerged(Repository repository, String pullRequestId, String overrideMessage, List<String> ignoredMergeObstacles);
 
-  void updated(Repository repository, String pullRequestId);
+  void sourceRevisionChanged(Repository repository, String pullRequestId);
+
+  void targetRevisionChanged(Repository repository, String pullRequestId);
 
   boolean hasUserApproved(Repository repository, String pullRequestId, User user);
 
