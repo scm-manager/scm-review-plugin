@@ -214,7 +214,28 @@ class StatusCheckHookTest {
 
       hook.checkStatus(event);
 
-      verify(pullRequestService).updated(REPOSITORY, pullRequest.getId());
+      verify(pullRequestService).targetRevisionChanged(REPOSITORY, pullRequest.getId());
+    }
+
+    @Test
+    void shouldNotifyServiceWhenPrSourceRevisionHasChanged() {
+      PullRequest pullRequest = mockOpenPullRequest();
+      when(branchProvider.getCreatedOrModified()).thenReturn(singletonList("source"));
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(false);
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService).sourceRevisionChanged(REPOSITORY, pullRequest.getId());
+    }
+
+    @Test
+    void shouldNotNotifyServiceWhenPrTargetRevisionHasChangedWhen() {
+      PullRequest pullRequest = mockOpenPullRequest();
+      when(mergeDetectionProvider.branchesMerged("target", "source")).thenReturn(false);
+
+      hook.checkStatus(event);
+
+      verify(pullRequestService, never()).sourceRevisionChanged(any(), any());
     }
 
     @Test

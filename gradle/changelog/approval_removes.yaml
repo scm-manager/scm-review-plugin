@@ -1,0 +1,2 @@
+- type: fixed
+  description: Approvals are no longer removed from pull requests, when the target branch has been modified
