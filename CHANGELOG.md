@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Missing changes for protected branches on special occasions
 - the title of a pr will now break properly when its length exceeds the container
 
+## 2.31.2 - 2014-01-04
+### Fixed
+- Applied fixes from 2.27.3
+
 ## 2.31.0 - 2023-10-11
 ### Fixed
 - Send specific email when status changed from draft to open and vica versa
@@ -82,6 +86,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Optional message when a pull request is rejected
 - Commit message templates
+
+## 2.27.3 - 2024-01-04
+### Fixed
+- Generate the ID for new pull requests correctly, when pull requests have been deleted from the file system.
+- Approvals are no longer removed from pull requests, when the target branch has been modified
 
 ## 2.27.2 - 2023-07-06
 ### Fixed

@@ -714,7 +714,7 @@ class DefaultPullRequestServiceTest {
     void shouldSendPullRequestUpdatedEvent() {
       pullRequest.setStatus(OPEN);
 
-      service.updated(REPOSITORY, pullRequest.getId());
+      service.targetRevisionChanged(REPOSITORY, pullRequest.getId());
 
       assertThat(eventCaptor.getValue()).isInstanceOfSatisfying(PullRequestUpdatedEvent.class, (event) -> {
         assertThat(event.getRepository()).isSameAs(REPOSITORY);
@@ -726,7 +726,7 @@ class DefaultPullRequestServiceTest {
     void shouldNotSendPullRequestUpdatedEventForNonOpenPRs() {
       pullRequest.setStatus(MERGED);
 
-      service.updated(REPOSITORY, pullRequest.getId());
+      service.targetRevisionChanged(REPOSITORY, pullRequest.getId());
 
       assertThat(eventCaptor.getAllValues()).isEmpty();
     }
@@ -741,7 +741,7 @@ class DefaultPullRequestServiceTest {
       pullRequest.setReviewer(reviewers);
       when(store.get("pr1")).thenReturn(pullRequest);
 
-      service.updated(REPOSITORY, pullRequest.getId());
+      service.sourceRevisionChanged(REPOSITORY, pullRequest.getId());
 
       PullRequest storedPullRequest = service.get(REPOSITORY, "pr1");
       assertThat(storedPullRequest.getReviewer()).containsOnly(entry("reviewer1", false), entry("reviewer2", false));
