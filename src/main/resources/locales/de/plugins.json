@@ -100,12 +100,12 @@
       },
       "selectorLabel": "Filtern nach",
       "sortSelector": {
-        "ID_ASC": "id (aufsteigend)",
-        "ID_DESC": "id (absteigend)",
-        "STATUS_ASC": "status (aufsteigend)",
-        "STATUS_DESC": "status (absteigend)",
-        "LAST_MOD_ASC": "letzte änderung (neueste zuerst)",
-        "LAST_MOD_DESC": "letzte änderung (älteste zuerst)"
+        "ID_ASC": "Id (aufsteigend)",
+        "ID_DESC": "Id (absteigend)",
+        "STATUS_ASC": "Status (aufsteigend)",
+        "STATUS_DESC": "Status (absteigend)",
+        "LAST_MOD_ASC": "letzte Änderung (neueste zuerst)",
+        "LAST_MOD_DESC": "letzte Änderung (älteste zuerst)"
       },
       "sortSelectorLabel": "Sortieren nach",
       "guard": {
