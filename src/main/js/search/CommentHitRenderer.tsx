@@ -38,6 +38,10 @@ import styled from "styled-components";
 import { CardList } from "@scm-manager/ui-layout";
 import classNames from "classnames";
 
+const HitTitleWrapper = styled.div`
+    text-wrap: wrap;
+`;
+
 type Embedded = EmbeddedRepository & {
   user: DisplayedUser;
 };
@@ -76,7 +80,9 @@ const CommentHitRenderer: FC<HitProps> = ({ hit }) => {
             className={classNames("is-flex", "is-justify-content-flex-start", "is-align-items-center")}
           >
             <RepositoryAvatar repository={repository} size={16} />
-            <TextHitField field="comment" hit={hit} truncateValueAt={1024} />
+            <HitTitleWrapper className="is-white-space-pre is-flex-basis-0 is-flex-grow-1 is-flex-shrink-1">
+              <TextHitField field="comment" hit={hit} truncateValueAt={1024} />
+            </HitTitleWrapper>
           </StyledLink>
         </CardList.Card.Title>
       </CardList.Card.Row>
