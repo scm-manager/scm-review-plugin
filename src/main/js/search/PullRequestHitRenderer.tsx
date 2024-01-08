@@ -50,20 +50,20 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
   }
 
   return (
-    <CardList.Card key={(hit.fields.id as ValueHitField).value as string}>
+    <CardList.Card key={(hit.fields.id as ValueHitField)?.value as string}>
       <CardList.Card.Row>
         <CardList.Card.Title>
           <StyledLink
             to={`/repo/${repository.namespace}/${repository.name}/pull-request/${
-              (hit.fields.id as ValueHitField).value
+              (hit.fields.id as ValueHitField)?.value
             }`}
             className={classNames("is-flex", "is-justify-content-flex-start", "is-align-items-center")}
           >
             <RepositoryAvatar repository={repository} size={16} />
-            <span>{(hit.fields.title as ValueHitField).value as string}</span>
+            <span>{(hit.fields.title as ValueHitField)?.value as string}</span>
             <span className="has-text-secondary" aria-label={t("scm-review-plugin.pullRequests.aria.id")}>
               <span aria-hidden>#</span>
-              {(hit.fields.id as ValueHitField).value as string}
+              {(hit.fields.id as ValueHitField)?.value as string}
             </span>
           </StyledLink>
         </CardList.Card.Title>
@@ -79,8 +79,8 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
             t={t}
             i18nKey="scm-review-plugin.search.subtitle"
             values={{
-              source: (hit.fields.source as ValueHitField).value as string,
-              target: (hit.fields.target as ValueHitField).value as string
+              source: (hit.fields.source as ValueHitField)?.value as string,
+              target: (hit.fields.target as ValueHitField)?.value as string
             }}
             components={{
               highlight: <span className="has-text-default" />,
@@ -101,11 +101,11 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
         <span
           className={classNames(
             "tag is-rounded ml-auto",
-            `is-${evaluateTagColor((hit.fields.status as ValueHitField).value as string)}`
+            `is-${evaluateTagColor((hit.fields.status as ValueHitField)?.value as string)}`
           )}
           aria-label={t("scm-review-plugin.pullRequests.aria.status")}
         >
-          {(hit.fields.status as ValueHitField).value as string}
+          {(hit.fields.status as ValueHitField)?.value as string}
         </span>
       </SubtitleRow>
     </CardList.Card>
