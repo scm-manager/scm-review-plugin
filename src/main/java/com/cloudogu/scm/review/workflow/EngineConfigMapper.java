@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import sonia.scm.api.v2.resources.BaseMapper;
 
 import javax.inject.Inject;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 public abstract class EngineConfigMapper<A extends EngineConfiguration, B extends RepositoryEngineConfigDto> extends BaseMapper<A, B> {
@@ -39,12 +40,16 @@ public abstract class EngineConfigMapper<A extends EngineConfiguration, B extend
   @Inject
   ConfigurationValidator configurationValidator;
 
-  AppliedRuleDto map(AppliedRule appliedRule) {
+  AppliedRuleDto map(AppliedRule appliedRule) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
     AppliedRuleDto dto = new AppliedRuleDto();
     dto.setRule(appliedRule.getRule());
     Optional<Rule> rule = availableRules.ruleOf(appliedRule.getRule());
     if (rule.isPresent() && rule.get().getConfigurationType().isPresent()) {
-      dto.setConfiguration(new ObjectMapper().valueToTree(appliedRule.getConfiguration()));
+      Object configuration = appliedRule.getConfiguration();
+      if (configuration == null) {
+        configuration = rule.get().getConfigurationType().get().getConstructor().newInstance();
+      }
+      dto.setConfiguration(new ObjectMapper().valueToTree(configuration));
     }
     return dto;
   }
@@ -64,9 +69,13 @@ public abstract class EngineConfigMapper<A extends EngineConfiguration, B extend
     Object configuration;
     try {
       configuration = new ObjectMapper().treeToValue(dto.getConfiguration(), configurationType);
+      if (configuration == null) {
+        configuration = rule.getConfigurationType().get().getConstructor().newInstance();
+      }
       configurationValidator.validate(configuration);
       return configuration;
-    } catch (JsonProcessingException e) {
+    } catch (JsonProcessingException | InvocationTargetException | InstantiationException | IllegalAccessException |
+             NoSuchMethodException e) {
       throw new InvalidConfigurationException(rule, e);
     }
   }
