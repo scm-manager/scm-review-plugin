@@ -31,7 +31,7 @@
       "jumpToTarget": "Zur Zieldatei springen",
       "moreDiffsAvailable": "Es sind weitere Diffs verfügbar.",
       "partialMoreDiffsAvailable": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentar.",
-      "partialMoreDiffsAvailable_plural": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentare.",
+      "partialMoreDiffsAvailable_other": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentare.",
       "loadMore": "Weitere laden",
       "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein."
     },
@@ -72,7 +72,7 @@
       },
       "tasks": {
         "todo": "{{count}} Aufgabe offen",
-        "todo_plural": "{{count}} Aufgaben offen",
+        "todo_other": "{{count}} Aufgaben offen",
         "done": "{{done}} / {{total}} Aufgaben erledigt",
         "allDone": "Alle Aufgaben erledigt"
       },
@@ -510,14 +510,14 @@
       "noRulesConfigured": "Es wurden noch keine Regeln definiert.",
       "statusbar": {
         "rules": "{{count}} Regel definiert",
-        "rules_plural": "{{count}} Regeln definiert",
+        "rules_other": "{{count}} Regeln definiert",
         "failedRules": "{{count}} Regel ist nicht erfüllt",
-        "failedRules_plural": "{{count}} Regeln sind nicht erfüllt",
+        "failedRules_other": "{{count}} Regeln sind nicht erfüllt",
         "noFailedRules": "Alle Regeln sind erfüllt"
       },
       "modal": {
         "failedTitle": "{{count}} Regel ist nicht erfüllt",
-        "failedTitle_plural": "{{count}} Regeln sind nicht erfüllt",
+        "failedTitle_other": "{{count}} Regeln sind nicht erfüllt",
         "successTitle": "Alle Regeln sind erfüllt"
       },
       "disableRepositoryConfiguration": {

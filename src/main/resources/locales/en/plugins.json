@@ -31,7 +31,7 @@
       "jumpToTarget": "Jump to target",
       "moreDiffsAvailable": "There are more diffs available.",
       "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} comment.",
-      "partialMoreDiffsAvailable_plural": "There are more diffs available and among them {{count}} comments.",
+      "partialMoreDiffsAvailable_other": "There are more diffs available and among them {{count}} comments.",
       "loadMore": "Load more",
       "noChangesets": "No changesets found. The commits could have been removed."
     },
@@ -72,7 +72,7 @@
       },
       "tasks": {
         "todo": "{{count}} task open",
-        "todo_plural": "{{count}} tasks open",
+        "todo_other": "{{count}} tasks open",
         "done": "{{done}} / {{total}} tasks done",
         "allDone": "All tasks done"
       },
@@ -508,14 +508,14 @@
       "noRulesConfigured": "No rules configured yet.",
       "statusbar": {
         "rules": "{{count}} rule",
-        "rules_plural": "{{count}} rules",
+        "rules_other": "{{count}} rules",
         "failedRules": "{{count}} rule is not fulfilled",
-        "failedRules_plural": "{{count}} rules are not fulfilled",
+        "failedRules_other": "{{count}} rules are not fulfilled",
         "noFailedRules": "All rules fulfilled"
       },
       "modal": {
         "failedTitle": "{{count}} rule is not fulfilled",
-        "failedTitle_plural": "{{count}} rules are not fulfilled",
+        "failedTitle_other": "{{count}} rules are not fulfilled",
         "successTitle": "All rules fulfilled"
       },
       "disableRepositoryConfiguration": {
