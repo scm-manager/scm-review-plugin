@@ -40,13 +40,15 @@ public class PullRequestTemplateDto extends HalRepresentation {
   private final Set<DisplayedUserDto> defaultReviewers;
   private final Set<String> availableLabels;
   private final List<String> defaultTasks;
+  private final boolean shouldDeleteSourceBranch;
 
-  public PullRequestTemplateDto(Links links, Embedded embedded, String title, String description, Set<DisplayedUserDto> defaultReviewers, Set<String> availableLabels, List<String> defaultTasks) {
+  public PullRequestTemplateDto(Links links, Embedded embedded, String title, String description, Set<DisplayedUserDto> defaultReviewers, Set<String> availableLabels, List<String> defaultTasks, boolean shouldDeleteSourceBranch) {
     super(links, embedded);
     this.title = title;
     this.description = description;
     this.defaultReviewers = defaultReviewers;
     this.availableLabels = availableLabels;
     this.defaultTasks = defaultTasks;
+    this.shouldDeleteSourceBranch = shouldDeleteSourceBranch;
   }
 }

@@ -153,6 +153,7 @@ public class DefaultPullRequestService implements PullRequestService {
       .lastModified(Instant.now())
       .reviewer(newReviewers)
       .labels(pullRequest.getLabels())
+      .shouldDeleteSourceBranch(pullRequest.isShouldDeleteSourceBranch())
       .build();
 
     if (oldPullRequest.isInProgress() && pullRequest.getStatus() != null && pullRequest.getStatus().isInProgress()) {

@@ -149,8 +149,13 @@ public class PullRequestRootResource {
     BasePullRequestConfig config = configService.evaluateConfig(repository);
     return new PullRequestTemplateDto(
       linkingTo().self(pullRequestResourceLinks.pullRequestCollection().template(namespace, name)).build(),
-      null, title, description, getDefaultReviewers(repository),
-      config.getLabels(), config.getDefaultTasks());
+      null,
+      title,
+      description,
+      getDefaultReviewers(repository),
+      config.getLabels(),
+      config.getDefaultTasks(),
+      config.isDeleteBranchOnMerge());
   }
 
   private Set<DisplayedUserDto> getDefaultReviewers(Repository repository) {

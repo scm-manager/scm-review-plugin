@@ -22,7 +22,8 @@
  * SOFTWARE.
  */
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { Checkbox, ErrorNotification, Level, Notification, SubmitButton, Subtitle } from "@scm-manager/ui-components";
+import { ErrorNotification, Level, Notification, SubmitButton, Subtitle } from "@scm-manager/ui-components";
+import { Checkbox } from "@scm-manager/ui-forms";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
@@ -49,6 +50,7 @@ const Create: FC<Props> = ({ repository }) => {
     status: "OPEN",
     labels: [],
     initialTasks: [],
+    shouldDeleteSourceBranch: false,
     _links: {}
   });
   const [disabled, setDisabled] = useState(true);
@@ -101,11 +103,11 @@ const Create: FC<Props> = ({ repository }) => {
       const initialSource = params.source || (branchNames && branchNames[0]);
       const initialTarget = params.target || defaultBranch?.name;
       const initialStatus = "OPEN";
-      
+
       handleFormChange({
         source: initialSource,
         target: initialTarget,
-        status: initialStatus,
+        status: initialStatus
       });
     }
   }, [branchesData]);
@@ -116,7 +118,8 @@ const Create: FC<Props> = ({ repository }) => {
         title: pullRequestTemplate.title ?? "",
         description: pullRequestTemplate.description,
         reviewer: pullRequestTemplate?.defaultReviewers.map(it => ({ ...it, approved: false })),
-        initialTasks: pullRequestTemplate.defaultTasks
+        initialTasks: pullRequestTemplate.defaultTasks,
+        shouldDeleteSourceBranch: pullRequestTemplate.shouldDeleteSourceBranch
       });
     }
   }, [pullRequestTemplate]);
@@ -162,7 +165,7 @@ const Create: FC<Props> = ({ repository }) => {
             branchesError={branchesError}
             disabled={isLoadingPullRequestTemplate}
             availableLabels={pullRequestTemplate?.availableLabels ?? []}
-            pullRequestTemplate={pullRequestTemplate}
+            shouldDeleteSourceBranch={pullRequestTemplate?.shouldDeleteSourceBranch ?? false}
           />
         )}
         {information}

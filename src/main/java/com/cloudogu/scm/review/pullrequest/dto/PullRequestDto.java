@@ -69,6 +69,7 @@ public class PullRequestDto extends HalRepresentation {
   private boolean emergencyMerged;
   private List<String> ignoredMergeObstacles;
   private List<String> initialTasks = new ArrayList<>();
+  private boolean shouldDeleteSourceBranch;
 
   public PullRequestDto(Links links, Embedded embedded) {
     super(links, embedded);

@@ -32,6 +32,7 @@ export type PullRequestTemplate = HalRepresentation & {
   title?: string;
   description?: string;
   defaultTasks: string[];
+  shouldDeleteSourceBranch: boolean;
 };
 
 export default function usePullRequestTemplate(

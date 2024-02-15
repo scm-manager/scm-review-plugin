@@ -129,7 +129,8 @@
         "cancel": "Abbrechen",
         "deleteSourceBranch": {
           "flag": "Source Branch löschen",
-          "help": "Nach einem erfolgreichen Merge wird der Source-Branch entfernt"
+          "help": "Nach einem erfolgreichen Merge wird der Source-Branch gelöscht",
+          "explanation": "Standardwert für das Löschen einer Branch nach dem Merge"
         },
         "commitMessage": "Bitte Commit Nachricht eingeben",
         "commitAuthor": "Autor",
@@ -370,7 +371,7 @@
       },
       "deleteBranchOnMerge": {
         "label": "Source Branch beim Merge löschen",
-        "helpText": "Im Merge-Modal wird die Option zum Löschen des Source Branches standardmäßig aktiviert."
+        "helpText": "Setzt den Standardwert zur Erstellung eines Pullrequests. Der Wert kann nachträglich beim Erstellen oder Editieren eines Pullrequests geändert werden"
       },
       "defaultMergeStrategy": {
         "label": "Standard-Merge-Strategie",

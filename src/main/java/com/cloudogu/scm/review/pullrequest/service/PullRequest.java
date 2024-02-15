@@ -103,6 +103,7 @@ public class PullRequest implements Serializable {
   @Indexed
   private boolean emergencyMerged;
   private List<String> ignoredMergeObstacles;
+  private boolean shouldDeleteSourceBranch;
 
   public PullRequest(String id, String source, String target) {
     this.id = id;

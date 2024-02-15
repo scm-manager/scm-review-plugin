@@ -129,7 +129,8 @@
         "cancel": "Cancel",
         "deleteSourceBranch": {
           "flag": "Delete source branch",
-          "help": "Source branch will be deleted after successful merge"
+          "help": "Source branch will be deleted after successful merge",
+          "explanation": "Preset for deleting the source branch after a successful merge"
         },
         "commitMessage": "Please insert your commit message",
         "commitAuthor": "Author",
@@ -368,7 +369,7 @@
       },
       "deleteBranchOnMerge": {
         "label": "Delete source branch on merge",
-        "helpText": "The source branch delete option is activated by default."
+        "helpText": "Presets the source branch deletion option on pull request creation. The value can still be changed when creating or editing a pull request."
       },
       "defaultMergeStrategy": {
         "label": "Default merge strategy",

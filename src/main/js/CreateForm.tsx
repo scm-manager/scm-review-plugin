@@ -31,10 +31,12 @@ import styled from "styled-components";
 import InitialTasks from "./InitialTasks";
 import { PullRequestTemplate } from "./config/usePullRequestTemplate";
 
-const ValidationError = styled.p`
+const ValidationError = styled.fieldset`
   font-size: 0.75rem;
-  margin-top: -3em;
-  margin-bottom: 3em;
+`;
+
+const MergeContainer = styled.fieldset`
+  margin-top: -2em;
 `;
 
 type Props = {
@@ -47,6 +49,7 @@ type Props = {
   branchesLoading: boolean;
   disabled?: boolean;
   availableLabels: string[];
+  shouldDeleteSourceBranch: boolean;
 };
 
 const CreateForm: FC<Props> = ({
@@ -58,10 +61,10 @@ const CreateForm: FC<Props> = ({
   branchesLoading,
   disabled,
   pullRequestTemplate,
-  availableLabels
+  availableLabels,
+  shouldDeleteSourceBranch
 }) => {
   const [t] = useTranslation("plugins");
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   };
@@ -86,11 +89,10 @@ const CreateForm: FC<Props> = ({
   if (branchesError) {
     return <ErrorNotification error={branchesError} />;
   }
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="columns">
-        <div className="column is-clipped">
+        <div className="column">
           <Select
             className="is-fullwidth"
             name="source"
@@ -113,13 +115,17 @@ const CreateForm: FC<Props> = ({
           />
         </div>
       </div>
-      {renderValidationError()}
-      <EditForm
-        handleFormChange={handleFormChange}
-        pullRequest={pullRequest}
-        disabled={disabled}
-        availableLabels={availableLabels}
-      />
+      <MergeContainer>
+        {renderValidationError()}
+        <EditForm
+          handleFormChange={handleFormChange}
+          pullRequest={pullRequest}
+          disabled={disabled}
+          availableLabels={availableLabels}
+          shouldDeleteSourceBranch={shouldDeleteSourceBranch}
+          entrypoint={"create"}
+        />
+      </MergeContainer>
       {pullRequestTemplate ? (
         <InitialTasks value={pullRequest.initialTasks} onChange={value => handleFormChange({ initialTasks: value })} />
       ) : null}

@@ -171,7 +171,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
             <Checkbox
               checked={deleteBranchOnMerge}
               onChange={val => onChange("deleteBranchOnMerge", val)}
-              label={t("scm-review-plugin.config.deleteBranchOnMerge.label")}
+              label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.explanation")}
               helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
             />
             <Checkbox

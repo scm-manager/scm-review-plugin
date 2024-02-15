@@ -21,23 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { ChangeEvent, FC, useCallback } from "react";
+import React, { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 import { InputField, Textarea } from "@scm-manager/ui-components";
 import { Checkbox, ChipInputField, Combobox } from "@scm-manager/ui-forms";
 import { useTranslation } from "react-i18next";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { PullRequest, Reviewer } from "./types/PullRequest";
 
+type Entrypoint = "create" | "edit";
+
 type Props = {
   handleFormChange: (pr: Partial<PullRequest>) => void;
   pullRequest: PullRequest;
   disabled?: boolean;
   availableLabels: string[];
+  shouldDeleteSourceBranch: boolean;
+  entrypoint: Entrypoint;
 };
 
-const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled, availableLabels }) => {
+const EditForm: FC<Props> = ({
+  handleFormChange,
+  pullRequest,
+  disabled,
+  availableLabels,
+  shouldDeleteSourceBranch,
+  entrypoint
+}) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
+  const [deleteSourceBranch, setDeleteSourceBranch] = useState<boolean>(
+    entrypoint === "create" ? shouldDeleteSourceBranch : pullRequest.shouldDeleteSourceBranch
+  );
+  const handleDeleteSourceBranch = useCallback(
+    (pr: Partial<PullRequest>) => {
+      setDeleteSourceBranch(pr.shouldDeleteSourceBranch);
+      handleFormChange(pr);
+    },
+    [handleFormChange, deleteSourceBranch]
+  );
+
+  useEffect(() => {
+    setDeleteSourceBranch(shouldDeleteSourceBranch);
+  }, [shouldDeleteSourceBranch]);
 
   const handleLabelSelectChange = useCallback(
     (label: string, checked: boolean) => {
@@ -49,9 +74,17 @@ const EditForm: FC<Props> = ({ handleFormChange, pullRequest, disabled, availabl
     },
     [handleFormChange, pullRequest]
   );
-
   return (
     <>
+      <Checkbox
+        key={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
+        checked={deleteSourceBranch}
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+          handleDeleteSourceBranch({ shouldDeleteSourceBranch: event.target.checked })
+        }
+        label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
+        labelClassName="is-align-self-flex-start mb-4"
+      />
       <InputField
         name="title"
         value={pullRequest?.title}

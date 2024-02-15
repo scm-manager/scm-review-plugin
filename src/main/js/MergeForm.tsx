@@ -21,10 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC } from "react";
+import React, { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "@scm-manager/ui-types";
-import { Button, Checkbox, CommitAuthor, Textarea } from "@scm-manager/ui-components";
+import { Button, CommitAuthor, Textarea } from "@scm-manager/ui-components";
+import { Checkbox } from "@scm-manager/ui-forms";
 import MergeStrategies from "./MergeStrategies";
 
 type Props = {
@@ -110,7 +111,7 @@ const MergeForm: FC<InnerProps> = ({
         label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.flag")}
         checked={shouldDeleteSourceBranch}
         helpText={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
-        onChange={onChangeDeleteSourceBranch}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => onChangeDeleteSourceBranch(event.target.checked)}
         disabled={loading}
       />
     </>
