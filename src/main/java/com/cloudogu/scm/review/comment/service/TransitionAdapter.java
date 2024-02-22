@@ -23,7 +23,7 @@
  */
 package com.cloudogu.scm.review.comment.service;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 public class TransitionAdapter extends XmlAdapter<String, Transition> {
   @Override

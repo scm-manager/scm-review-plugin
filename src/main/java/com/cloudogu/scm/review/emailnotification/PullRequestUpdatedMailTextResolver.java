@@ -59,4 +59,9 @@ public class PullRequestUpdatedMailTextResolver extends BasicPRMailTextResolver<
   public Topic getTopic() {
     return TOPIC_PR_UPDATED;
   }
+
+  @Override
+  public String getPullRequestId() {
+    return this.pullRequestUpdatedMailEvent.getPullRequest().getId();
+  }
 }

@@ -43,8 +43,8 @@ import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.EdisonHalAppender;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import java.util.Collection;
 import java.util.OptionalInt;
 import java.util.Set;

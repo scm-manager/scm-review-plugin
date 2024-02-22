@@ -120,6 +120,11 @@ public class CommentEventMailTextResolver extends BasicPRMailTextResolver<BasicC
     return TOPIC_COMMENTS;
   }
 
+  @Override
+  public String getPullRequestId() {
+    return this.commentEvent.getPullRequest().getId();
+  }
+
   private enum CommentEventType {
     COMMENT_CREATED("created_comment.mustache", "commentAdded"),
     COMMENT_DELETED("deleted_comment.mustache", "commentDeleted"),

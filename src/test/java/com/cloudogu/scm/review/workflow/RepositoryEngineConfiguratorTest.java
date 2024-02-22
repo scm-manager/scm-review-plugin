@@ -41,8 +41,8 @@ import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
-import javax.inject.Inject;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.inject.Inject;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;

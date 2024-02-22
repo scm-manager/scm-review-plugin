@@ -28,7 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import sonia.scm.api.v2.resources.BaseMapper;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 

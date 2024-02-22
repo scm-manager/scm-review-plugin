@@ -31,7 +31,7 @@ import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.version.Version;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 @Extension
 public class BranchRestrictionsUpdateStep implements UpdateStep {

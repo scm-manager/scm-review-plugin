@@ -46,7 +46,7 @@ import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;

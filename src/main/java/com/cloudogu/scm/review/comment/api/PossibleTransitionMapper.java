@@ -27,7 +27,7 @@ import com.cloudogu.scm.review.comment.service.CommentTransition;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;

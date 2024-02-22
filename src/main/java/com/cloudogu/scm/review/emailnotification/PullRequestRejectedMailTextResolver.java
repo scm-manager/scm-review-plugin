@@ -60,4 +60,9 @@ public class PullRequestRejectedMailTextResolver extends BasicPRMailTextResolver
   public Topic getTopic() {
     return TOPIC_CLOSED;
   }
+
+  @Override
+  public String getPullRequestId() {
+    return this.pullRequestRejectedEvent.getPullRequest().getId();
+  }
 }

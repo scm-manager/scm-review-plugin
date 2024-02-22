@@ -25,7 +25,7 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 

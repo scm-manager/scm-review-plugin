@@ -33,8 +33,8 @@ import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
-import javax.ws.rs.core.UriInfo;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.UriInfo;
 
 import static de.otto.edison.hal.Link.link;
 

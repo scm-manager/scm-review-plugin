@@ -60,4 +60,9 @@ public class PullRequestMergedMailTextResolver extends BasicPRMailTextResolver<P
   public Topic getTopic() {
     return TOPIC_CLOSED;
   }
+
+  @Override
+  public String getPullRequestId() {
+    return this.pullRequestMergedEvent.getPullRequest().getId();
+  }
 }

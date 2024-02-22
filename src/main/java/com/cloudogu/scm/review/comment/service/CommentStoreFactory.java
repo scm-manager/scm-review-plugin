@@ -28,7 +28,7 @@ import sonia.scm.security.KeyGenerator;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class CommentStoreFactory {
 

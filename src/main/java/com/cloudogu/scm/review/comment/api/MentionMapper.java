@@ -27,7 +27,7 @@ import com.cloudogu.scm.review.comment.service.BasicComment;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;

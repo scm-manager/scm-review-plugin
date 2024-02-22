@@ -47,4 +47,6 @@ public interface MailTextResolver {
   Map<String, Object> getContentTemplateModel(String basePath);
 
   Topic getTopic();
+
+  String getPullRequestId();
 }

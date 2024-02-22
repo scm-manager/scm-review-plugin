@@ -45,7 +45,7 @@ public interface Rule {
 
   /**
    * If a {@link Rule} is configurable, {@link #getConfigurationType()} describes the type of configuration.
-   * The returned class has to be a serializable {@link javax.xml.bind.annotation.XmlRootElement}.
+   * The returned class has to be a serializable {@link jakarta.xml.bind.annotation.XmlRootElement}.
    */
   default Optional<Class<?>> getConfigurationType() {
     return Optional.empty();

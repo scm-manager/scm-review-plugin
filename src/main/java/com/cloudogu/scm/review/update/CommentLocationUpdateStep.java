@@ -34,7 +34,7 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.RepositoryLocationResolver;
 import sonia.scm.version.Version;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

@@ -26,7 +26,7 @@ package com.cloudogu.scm.review.comment.service;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.stream.Stream;
 
 public class CommentCollector {

@@ -540,34 +540,27 @@
   },
   "mailTopics": {
     "review-plugin": {
-      "label": "Pull Requests",
+      "label": "Events at Pull Requests",
       "prChanged": {
-        "label": "New/changed pull requests",
-        "helpText": "Mails on new or changed of pull requests."
+        "label": "New / changed pull requests"
       },
       "closed": {
-        "label": "Closing pull requests",
-        "helpText": "Mails when pull requests have been merged or finally rejected."
+        "label": "Closing pull requests"
       },
       "comments": {
-        "label": "New/changed comments",
-        "helpText": "Mails on new or changed comments in pull requests you have subscribed."
+        "label": "new / changed comments"
       },
       "replies": {
-        "label": "Replies to comments",
-        "helpText": "Mails on replies to commments in pull requests you have subscribed."
+        "label": "Replies to comments"
       },
       "approvals": {
-        "label": "Approvals",
-        "helpText": "Mails when subscribed pull requests have been approved or approvals have been revoked."
+        "label": "Approvals of Pull Requests"
       },
       "mentions": {
-        "label": "Mentions",
-        "helpText": "Mails when you have been mentioned in a comment."
+        "label": "Mentions"
       },
       "prUpdated": {
-        "label": "Updated",
-        "helpText": "Mails when pull requests have been updated."
+        "label": "Updates of Pull Requests"
       }
     }
   },

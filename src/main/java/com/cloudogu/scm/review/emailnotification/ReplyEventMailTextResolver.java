@@ -92,6 +92,11 @@ public class ReplyEventMailTextResolver extends BasicPRMailTextResolver<BasicCom
     return TOPIC_REPLIES;
   }
 
+  @Override
+  public String getPullRequestId() {
+    return this.replyEvent.getPullRequest().getId();
+  }
+
   private enum ReplyEventType {
     REPLY_CREATED("created_reply.mustache", "replyAdded"),
     REPLY_DELETED("deleted_reply.mustache", "replyDeleted"),

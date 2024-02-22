@@ -23,7 +23,7 @@
  */
 package com.cloudogu.scm.review.comment.service;
 
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 
 @XmlJavaTypeAdapter(TransitionAdapter.class)

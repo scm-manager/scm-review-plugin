@@ -30,7 +30,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.stream.Collectors;
 

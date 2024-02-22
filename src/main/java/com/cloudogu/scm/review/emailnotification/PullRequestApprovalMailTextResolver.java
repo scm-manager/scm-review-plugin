@@ -80,4 +80,10 @@ public class PullRequestApprovalMailTextResolver extends BasicPRMailTextResolver
   public Topic getTopic() {
     return TOPIC_APPROVALS;
   }
+
+  @Override
+  public String getPullRequestId() {
+    return this.pullRequestApprovalEvent.getPullRequest().getId();
+  }
+
 }

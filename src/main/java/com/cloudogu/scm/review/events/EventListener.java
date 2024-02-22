@@ -37,8 +37,8 @@ import sonia.scm.sse.Channel;
 import sonia.scm.sse.ChannelRegistry;
 import sonia.scm.sse.Message;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 @Extension

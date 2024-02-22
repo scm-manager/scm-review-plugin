@@ -32,7 +32,7 @@ import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.repository.Repository;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 @Mapper
 public abstract class RepositoryConfigMapper {

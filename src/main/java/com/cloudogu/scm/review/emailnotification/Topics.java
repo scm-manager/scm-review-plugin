@@ -35,6 +35,7 @@ import static java.util.Arrays.asList;
 
 @Extension
 public class Topics implements TopicProvider {
+
   @Override
   public Collection<Topic> topics() {
     return asList(

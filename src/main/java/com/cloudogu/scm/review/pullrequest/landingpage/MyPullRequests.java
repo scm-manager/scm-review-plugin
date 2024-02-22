@@ -30,7 +30,7 @@ import org.apache.shiro.SecurityUtils;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;

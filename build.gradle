@@ -23,19 +23,19 @@
  */
 
 plugins {
-  id 'org.scm-manager.smp' version '0.15.0'
+  id 'org.scm-manager.smp' version '0.16.3'
 }
 
 dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:2.1.0"
-  plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:1.0.0"
-  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.2.1"
-  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.13.0"
+  plugin "sonia.scm.plugins:scm-mail-plugin:2.10.2-SNAPSHOT"
+  plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:1.0.1-SNAPSHOT"
+  optionalPlugin "sonia.scm.plugins:scm-editor-plugin:2.13.1-SNAPSHOT"
+  optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:1.17.1-SNAPSHOT"
   testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
 }
 
 scmPlugin {
-  scmVersion = "2.48.0"
+  scmVersion = "3.0.0"
   displayName = "Review"
   description = "Depict a review process with pull requests"
   author = "Cloudogu GmbH"

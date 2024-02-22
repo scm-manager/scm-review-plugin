@@ -29,7 +29,7 @@ import sonia.scm.search.Indexed;
 import sonia.scm.search.IndexedType;
 import java.io.Serializable;
 
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 
 @IndexedType(repositoryScoped = true, namespaceScoped = true)

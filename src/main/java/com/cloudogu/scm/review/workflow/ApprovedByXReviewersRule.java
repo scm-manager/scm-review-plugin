@@ -31,8 +31,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sonia.scm.plugin.Extension;
 
-import javax.validation.constraints.Min;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.validation.constraints.Min;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.Optional;
 
 @Extension

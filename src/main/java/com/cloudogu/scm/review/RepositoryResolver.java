@@ -31,7 +31,7 @@ import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static sonia.scm.NotFoundException.notFound;
 

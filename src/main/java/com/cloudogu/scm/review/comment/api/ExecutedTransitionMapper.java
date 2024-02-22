@@ -36,8 +36,8 @@ import sonia.scm.api.v2.resources.InstantAttributeMapper;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.user.UserDisplayManager;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.stream.Collectors.toList;

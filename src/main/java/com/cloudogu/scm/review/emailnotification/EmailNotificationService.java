@@ -23,6 +23,7 @@
  */
 package com.cloudogu.scm.review.emailnotification;
 
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.config.ScmConfiguration;
@@ -30,7 +31,6 @@ import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.mail.api.MailService;
 import sonia.scm.mail.api.MailTemplateType;
 
-import javax.inject.Inject;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,12 +63,26 @@ public class EmailNotificationService {
 
     MailService.EnvelopeBuilder envelopeBuilder = mailService.emailTemplateBuilder().fromCurrentUser();
     recipients.forEach(envelopeBuilder::toUser);
-    envelopeBuilder
+    MailService.MailBuilder mailBuilder = envelopeBuilder
+      .onEntity(mailTextResolver.getPullRequestId())
       .onTopic(mailTextResolver.getTopic())
       .withSubject(mailTextResolver.getMailSubject(ENGLISH))
       .withSubject(GERMAN, mailTextResolver.getMailSubject(GERMAN))
       .withTemplate(mailTextResolver.getContentTemplatePath(), MailTemplateType.MARKDOWN_HTML)
-      .andModel(contentTemplateModel)
-      .send();
+      .andModel(contentTemplateModel);
+
+    if (isPriority(mailTextResolver)) {
+      mailBuilder.send();
+    } else {
+      mailBuilder.queueMails();
+    }
+  }
+
+  private boolean isPriority(MailTextResolver resolver) {
+    if (resolver.getTopic() == MailTextResolver.TOPIC_MENTIONS || resolver.getTopic() == MailTextResolver.TOPIC_CLOSED) {
+      return true;
+    }
+
+    return resolver instanceof PullRequestEventMailTextResolver && ((PullRequestEventMailTextResolver) resolver).isCreated();
   }
 }

@@ -31,8 +31,8 @@ import lombok.NonNull;
 import lombok.Setter;
 import sonia.scm.user.DisplayUser;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;

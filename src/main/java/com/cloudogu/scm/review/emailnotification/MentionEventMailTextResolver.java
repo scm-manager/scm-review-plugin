@@ -64,4 +64,9 @@ public class MentionEventMailTextResolver extends BasicPRMailTextResolver<Mentio
   public Topic getTopic() {
     return TOPIC_MENTIONS;
   }
+
+  @Override
+  public String getPullRequestId() {
+    return mentionEvent.getPullRequest().getId();
+  }
 }

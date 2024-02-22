@@ -27,7 +27,7 @@ package com.cloudogu.scm.review.workflow;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.Optional;
 import java.util.Set;
 

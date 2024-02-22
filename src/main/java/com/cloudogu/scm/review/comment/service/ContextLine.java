@@ -25,8 +25,8 @@ package com.cloudogu.scm.review.comment.service;
 
 import sonia.scm.repository.api.DiffLine;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
 import java.util.OptionalInt;
 
 @XmlAccessorType(XmlAccessType.FIELD)

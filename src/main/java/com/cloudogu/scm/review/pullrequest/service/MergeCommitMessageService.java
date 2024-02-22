@@ -43,7 +43,7 @@ import sonia.scm.user.EMail;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;

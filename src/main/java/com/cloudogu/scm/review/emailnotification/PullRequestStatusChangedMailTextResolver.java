@@ -68,6 +68,11 @@ public class PullRequestStatusChangedMailTextResolver extends BasicPRMailTextRes
     return TOPIC_PR_CHANGED;
   }
 
+  @Override
+  public String getPullRequestId() {
+    return this.pullRequestEvent.getPullRequest().getId();
+  }
+
   public enum PullRequestStatusType {
     TO_OPEN("status_to_open_pull_request.mustache", "prStatusToOpen", HandlerEventType.CREATE),
     TO_DRAFT("status_to_draft_pull_request.mustache", "prStatusToDraft", HandlerEventType.MODIFY);

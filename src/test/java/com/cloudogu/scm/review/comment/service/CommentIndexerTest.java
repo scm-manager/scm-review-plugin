@@ -47,7 +47,7 @@ import sonia.scm.search.IndexLogStore;
 import sonia.scm.search.SearchEngine;
 import sonia.scm.search.SerializableIndexTask;
 
-import javax.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextEvent;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;

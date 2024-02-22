@@ -27,7 +27,7 @@ package com.cloudogu.scm.review.workflow;
 import com.cloudogu.scm.review.PermissionCheck;
 import sonia.scm.repository.Repository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 public class EngineConfigService {
 
