@@ -168,12 +168,15 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
               helpText={t("scm-review-plugin.config.defaultMergeStrategy.helpText")}
               value={defaultMergeStrategy}
             />
-            <Checkbox
-              checked={deleteBranchOnMerge}
-              onChange={val => onChange("deleteBranchOnMerge", val)}
-              label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.explanation")}
-              helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
-            />
+            <fieldset>
+              <legend className="is-size-6 mb-1 has-text-weight-bold">{t("scm-review-plugin.config.legends.branchOptions")}</legend>
+              <Checkbox
+                checked={deleteBranchOnMerge}
+                onChange={val => onChange("deleteBranchOnMerge", val)}
+                label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.explanation")}
+                helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
+              />
+            </fieldset>
             <Checkbox
               checked={overwriteDefaultCommitMessage}
               onChange={val => onChange("overwriteDefaultCommitMessage", val)}

@@ -343,7 +343,8 @@
       "legends": {
         "mergeDialog": "Merge Dialog",
         "creation": "Creation",
-        "restrictions": "Restrictions"
+        "restrictions": "Restrictions",
+        "branchOptions": "Preset for deleting the source branch after a successful merge"
       },
       "availableLabels": {
         "label": "Available Labels",
@@ -369,7 +370,7 @@
       },
       "deleteBranchOnMerge": {
         "label": "Delete source branch on merge",
-        "helpText": "Presets the source branch deletion option on pull request creation. The value can still be changed when creating or editing a pull request."
+        "helpText": "The value can still be changed when creating or editing a pull request."
       },
       "defaultMergeStrategy": {
         "label": "Default merge strategy",

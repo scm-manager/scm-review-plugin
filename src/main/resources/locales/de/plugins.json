@@ -130,7 +130,7 @@
         "deleteSourceBranch": {
           "flag": "Source Branch löschen",
           "help": "Nach einem erfolgreichen Merge wird der Source-Branch gelöscht",
-          "explanation": "Standardwert für das Löschen einer Branch nach dem Merge"
+          "explanation": "Branch nach erfolgreichen Merge löschen"
         },
         "commitMessage": "Bitte Commit Nachricht eingeben",
         "commitAuthor": "Autor",
@@ -345,7 +345,8 @@
       "legends": {
         "mergeDialog": "Merge Dialog",
         "creation": "Erstellung",
-        "restrictions": "Einschränkungen"
+        "restrictions": "Einschränkungen",
+        "branchOptions": "Standardwert für das Löschen eines Branchs nach einem erfolgreichen Merge"
       },
       "availableLabels": {
         "label": "Verfügbare Labels",
@@ -371,7 +372,7 @@
       },
       "deleteBranchOnMerge": {
         "label": "Source Branch beim Merge löschen",
-        "helpText": "Setzt den Standardwert zur Erstellung eines Pullrequests. Der Wert kann nachträglich beim Erstellen oder Editieren eines Pullrequests geändert werden"
+        "helpText": "Der Standardwert kann bei der Merge-Erstellung oder bei dem Merge-Vorgang geändert werden"
       },
       "defaultMergeStrategy": {
         "label": "Standard-Merge-Strategie",
