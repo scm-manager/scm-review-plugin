@@ -1,2 +1,2 @@
 - type: added
-  description: checkbox on pull request creation to delete source branch on merge
+  description: Checkbox on pull request creation to delete source branch on merge
