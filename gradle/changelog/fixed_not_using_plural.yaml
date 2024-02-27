@@ -1,2 +1,0 @@
-- type: fixed
-  description: Fixed the workflow engine not using plural, if multiple rules are not fulfilled

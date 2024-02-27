@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.0 - 2024-02-27
+### Added
+- Checkbox on pull request creation to delete source branch on merge
+
+### Fixed
+- Fixed the workflow engine not using plural, if multiple rules are not fulfilled
+
+### Changed
+- User can now summarize their emails regarding pull requests into one single email
+
 ## 2.33.0 - 2024-01-17
 ### Added
 - Functionality to reopen rejected pull requests
