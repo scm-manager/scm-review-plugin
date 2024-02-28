@@ -79,7 +79,7 @@
       "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein.",
       "details": {
         "notification": "Pull Request erfolgreich gemerged!",
-        "targetDeleted": "Der Target Branch wurde gelöscht!",
+        "branchDeleted": "Der Source oder Target Branch wurde gelöscht!",
         "approved": "Freigegeben durch {{name}}",
         "ignoredMergeObstacles": "Folgende Regeln wurden beim Mergen des Pull Requests ignoriert:",
         "buttons": {

@@ -162,7 +162,7 @@ const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
 
 const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
-  const [targetBranchDeleted, setTargetBranchDeleted] = useState(false);
+  const [targetOrSourceBranchDeleted, setTargetOrSourceBranchDeleted] = useState(false);
 
   const { reject, isLoading: rejectLoading, error: rejectError } = useRejectPullRequest(repository, pullRequest);
   const { reopen, isLoading: reopenLoading, error: reopenError } = useReopenPullRequest(repository, pullRequest);
@@ -174,7 +174,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const { data: mergeCheck, isLoading: mergeDryRunLoading, error: mergeDryRunError } = useMergeDryRun(
     repository,
     pullRequest,
-    (targetDeleted: boolean) => setTargetBranchDeleted(targetDeleted)
+    (targetOrSourceDeleted: boolean) => setTargetOrSourceBranchDeleted(targetOrSourceDeleted)
   );
   const { isLoading: branchLoading, data: branch } = useBranch(repository, pullRequest.source);
   const astPlugins = useMemo(() => {
@@ -210,7 +210,10 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     mergeError ??
     readyForReviewError ??
     // Prevent dry-run error for closed pull request with stale cache data
-    (mergeDryRunError instanceof BackendError && mergeDryRunError.errorCode === "FTRhcI0To1" ? null : mergeDryRunError);
+    ((mergeDryRunError instanceof BackendError && mergeDryRunError.errorCode === "FTRhcI0To1") ||
+    targetOrSourceBranchDeleted
+      ? null
+      : mergeDryRunError);
   if (error) {
     return <ErrorNotification error={error} />;
   }
@@ -249,14 +252,14 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   let deleteSourceButton = null;
   let readyForReviewButton = null;
 
-  if (pullRequest.status === "REJECTED" && pullRequest._links?.reopen && !targetBranchDeleted) {
+  if (pullRequest.status === "REJECTED" && pullRequest._links?.reopen && !targetOrSourceBranchDeleted) {
     reopenButton = <ReopenButton reopen={reopen} loading={reopenLoading} />;
   }
 
   if (pullRequest._links?.rejectWithMessage) {
     rejectButton = <RejectButton reject={message => reject(message)} loading={rejectLoading} />;
     if (!!pullRequest._links.merge) {
-      mergeButton = targetBranchDeleted ? null : (
+      mergeButton = targetOrSourceBranchDeleted ? null : (
         <MergeButton
           merge={(strategy: string, commit: MergeCommit, emergency) => performMerge(strategy, commit, emergency)}
           mergeCheck={mergeCheck}
@@ -298,9 +301,9 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     subscriptionButton = <SubscriptionContainer repository={repository} pullRequest={pullRequest} />;
   }
 
-  const targetBranchDeletedWarning = targetBranchDeleted ? (
+  const targetBranchDeletedWarning = targetOrSourceBranchDeleted ? (
     <span className="ml-2">
-      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.targetDeleted")}>
+      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.branchDeleted")}>
         <i className="fas fa-exclamation-triangle" />
       </Tooltip>
     </span>
@@ -428,7 +431,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         target={pullRequest.target}
         status={pullRequest.status}
         mergeHasNoConflict={!mergeCheck?.hasConflicts}
-        targetBranchDeleted={targetBranchDeleted}
+        targetBranchDeleted={targetOrSourceBranchDeleted}
         sourceBranch={branch}
       />
     </ChangeNotificationContext>

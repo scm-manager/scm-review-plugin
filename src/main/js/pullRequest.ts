@@ -657,7 +657,7 @@ export const useCheckPullRequest = (
 export const useMergeDryRun = (
   repository: Repository,
   pullRequest: PullRequest,
-  callback?: (targetBranchDeleted: boolean) => void
+  callback?: (targetOrSourceBranchDeleted: boolean) => void
 ) => {
   const id = pullRequest.id || pullRequest.source + pullRequest.target;
 
