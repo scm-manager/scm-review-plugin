@@ -1,7 +1,7 @@
 {
     "name": "@scm-manager/scm-review-plugin",
     "private": false,
-    "version": "3.0.1-SNAPSHOT",
+    "version": "3.1.0",
     "license": "MIT",
     "main": "./src/main/js/index.tsx",
     "scripts": {
