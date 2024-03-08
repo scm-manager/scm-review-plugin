@@ -22,13 +22,15 @@
  * SOFTWARE.
  */
 import React, { FC, useCallback, useState } from "react";
-import { Checkbox, ErrorNotification, Level, Loading, SubmitButton, Subtitle } from "@scm-manager/ui-components";
+import { SubmitButton } from "@scm-manager/ui-components";
+import { Checkbox, ErrorNotification, Label, Level, Loading, Subtitle } from "@scm-manager/ui-core";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "./types/PullRequest";
 import EditForm from "./EditForm";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import { useUpdatePullRequest } from "./pullRequest";
+import { useBranches } from "@scm-manager/ui-api";
 
 type Props = {
   repository: Repository;
@@ -40,6 +42,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
   const match = useRouteMatch();
   const history = useHistory();
   const [modifiedPullRequest, setModifiedPullRequest] = useState<PullRequest>(pullRequest);
+  const { data: branchesData, error: branchesError, isLoading: branchesLoading } = useBranches(repository);
 
   const pullRequestUpdated = useCallback(() => {
     history.push({
@@ -75,16 +78,21 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
           availableLabels={pullRequest?._embedded?.availableLabels.availableLabels ?? []}
           entrypoint="edit"
           shouldDeleteSourceBranch={pullRequest.shouldDeleteSourceBranch}
+          branches={branchesData?._embedded?.branches}
+          branchesLoading={branchesLoading}
+          branchesError={branchesError}
         />
         {pullRequest.status === "OPEN" ? (
-          <Checkbox
-            checked={modifiedPullRequest?.status === "DRAFT"}
-            onChange={value => handleFormChange({ status: value ? "DRAFT" : "OPEN" })}
-            label={t("scm-review-plugin.pullRequest.changeToDraft")}
-            title={t("scm-review-plugin.pullRequest.status")}
-            helpText={t("scm-review-plugin.pullRequest.changeToDraftHelpText")}
-            disabled={modifiedPullRequest.status === "MERGED" || modifiedPullRequest.status === "REJECTED"}
-          />
+          <div>
+            <Label>{t("scm-review-plugin.pullRequest.status")}</Label>
+            <Checkbox
+              checked={modifiedPullRequest?.status === "DRAFT"}
+              onChange={value => handleFormChange({ status: value ? "DRAFT" : "OPEN" })}
+              label={t("scm-review-plugin.pullRequest.changeToDraft")}
+              helpText={t("scm-review-plugin.pullRequest.changeToDraftHelpText")}
+              disabled={modifiedPullRequest.status === "MERGED" || modifiedPullRequest.status === "REJECTED"}
+            />
+          </div>
         ) : null}
         <Level
           right={

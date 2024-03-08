@@ -78,6 +78,7 @@ public abstract class BasicPRMailTextResolver<E extends BasicPullRequestEvent> i
     result.put("link", getPullRequestLink(basePath, event));
     result.put("repository", event.getRepository());
     result.put("pullRequest", event.getPullRequest());
+    result.put("target", event.getPullRequest().getTarget());
     return result;
   }
 

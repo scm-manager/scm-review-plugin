@@ -23,10 +23,12 @@
  */
 import React, { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 import { InputField, Textarea } from "@scm-manager/ui-components";
+import { ErrorNotification, Label, Select } from "@scm-manager/ui-core";
 import { Checkbox, ChipInputField, Combobox } from "@scm-manager/ui-forms";
 import { useTranslation } from "react-i18next";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { PullRequest, Reviewer } from "./types/PullRequest";
+import { Branch } from "@scm-manager/ui-types";
 
 type Entrypoint = "create" | "edit";
 
@@ -37,6 +39,10 @@ type Props = {
   availableLabels: string[];
   shouldDeleteSourceBranch: boolean;
   entrypoint: Entrypoint;
+  branches?: Branch[];
+  branchesError?: Error;
+  branchesLoading?: boolean;
+  extension?: string;
 };
 
 const EditForm: FC<Props> = ({
@@ -45,7 +51,10 @@ const EditForm: FC<Props> = ({
   disabled,
   availableLabels,
   shouldDeleteSourceBranch,
-  entrypoint
+  entrypoint,
+  branches,
+  branchesLoading,
+  branchesError
 }) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
@@ -54,7 +63,7 @@ const EditForm: FC<Props> = ({
   );
   const handleDeleteSourceBranch = useCallback(
     (pr: Partial<PullRequest>) => {
-      setDeleteSourceBranch(pr.shouldDeleteSourceBranch);
+      setDeleteSourceBranch(pr.shouldDeleteSourceBranch || false);
       handleFormChange(pr);
     },
     [handleFormChange, deleteSourceBranch]
@@ -63,6 +72,13 @@ const EditForm: FC<Props> = ({
   useEffect(() => {
     setDeleteSourceBranch(shouldDeleteSourceBranch);
   }, [shouldDeleteSourceBranch]);
+
+  const createOptions = () => {
+    return branches?.map(branch => ({
+      label: branch.name,
+      value: branch.name
+    })).filter(branch => branch.label !== pullRequest.source);
+  };
 
   const handleLabelSelectChange = useCallback(
     (label: string, checked: boolean) => {
@@ -74,8 +90,26 @@ const EditForm: FC<Props> = ({
     },
     [handleFormChange, pullRequest]
   );
+
+  if (branchesError) {
+    return <ErrorNotification error={branchesError} />;
+  }
+
   return (
     <>
+      {entrypoint === "edit" ? (
+        <div className="is-clipped">
+          <Label>{t("scm-review-plugin.pullRequest.targetBranch")}</Label>
+          <Select
+            className=""
+            name="target"
+            options={createOptions() || []}
+            onChange={event => handleFormChange({ target: event.target.value })}
+            value={pullRequest?.target}
+          />
+        </div>
+      ) : null}
+
       <Checkbox
         key={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
         checked={deleteSourceBranch}

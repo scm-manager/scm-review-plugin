@@ -289,6 +289,7 @@ class DefaultPullRequestServiceTest {
       pullRequest.setDescription("new description");
       pullRequest.setTitle("new title");
       pullRequest.setShouldDeleteSourceBranch(true);
+      pullRequest.setTarget("new-target");
 
       service.update(REPOSITORY, "changed", pullRequest);
 
@@ -298,6 +299,7 @@ class DefaultPullRequestServiceTest {
         assertThat(pr.getCreationDate()).isEqualTo(oldPullRequest.getCreationDate());
         assertThat(pr.getLastModified()).isNotNull();
         assertThat(pr.isShouldDeleteSourceBranch()).isTrue();
+        assertThat(pr.getTarget()).isEqualTo("new-target");
         return true;
       }));
     }

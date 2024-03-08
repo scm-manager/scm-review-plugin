@@ -31,6 +31,7 @@ import com.cloudogu.scm.review.StatusChangeNotAllowedException;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import sonia.scm.HandlerEventType;
@@ -153,6 +154,7 @@ public class DefaultPullRequestService implements PullRequestService {
       .lastModified(Instant.now())
       .reviewer(newReviewers)
       .labels(pullRequest.getLabels())
+      .target(pullRequest.getTarget())
       .shouldDeleteSourceBranch(pullRequest.isShouldDeleteSourceBranch())
       .build();
 
@@ -163,6 +165,9 @@ public class DefaultPullRequestService implements PullRequestService {
     newPullRequest.setSubscriber(newSubscriber);
     store.update(newPullRequest);
     eventBus.post(new PullRequestEvent(repository, newPullRequest, oldPullRequest, HandlerEventType.MODIFY));
+    if (!StringUtils.equals(newPullRequest.getTarget(), oldPullRequest.getTarget())) {
+      eventBus.post(new PullRequestUpdatedEvent(repository, newPullRequest));
+    }
   }
 
   private Set<String> computeAddedReviewersForChangedPullRequest(PullRequest oldPullRequest, PullRequest changedPullRequest) {
