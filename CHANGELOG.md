@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.1.0 - 2024-03-08
+### Added
+- It is now possible to change the target branch when editing pull requests
+
+### Fixed
+- Display of default tasks in pull request creation form
+- Error when the source branch is deleted
+
 ## 3.0.0 - 2024-02-27
 ### Added
 - Checkbox on pull request creation to delete source branch on merge
