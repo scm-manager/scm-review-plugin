@@ -29,6 +29,7 @@ import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
 import com.cloudogu.scm.review.events.ChannelId;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.RejectPullRequestDto;
@@ -44,6 +45,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.ws.rs.QueryParam;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -453,4 +456,52 @@ public class PullRequestResource {
     ));
   }
 
+  @GET
+  @Path("check")
+  @Produces(PullRequestMediaType.PULL_REQUEST_CHECK_RESULT)
+  @Operation(
+    summary = "Checks new target for existing pull request",
+    description = "Checks if the target branch of a pull request can be changed to the given new branch.",
+    tags = "Pull Request",
+    operationId = "review_check_new_target_branch"
+  )
+  @ApiResponse(responseCode = "200", description = "Returns pull request check result")
+  @ApiResponse(responseCode = "400", description = "Invalid request / the provided source branch or target branch may not exist")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"createPullRequest\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public PullRequestCheckResultDto check(
+    @Context UriInfo uriInfo,
+    @PathParam("namespace") String namespace,
+    @PathParam("name") String name,
+    @PathParam("pullRequestId") String pullRequestId,
+    @NotEmpty @QueryParam("target") String target
+  ) {
+    Repository repository = service.getRepository(namespace, name);
+    PermissionCheck.checkCreate(repository);
+
+    service.checkBranch(repository, target);
+
+    PullRequest pullRequest = service.get(repository, pullRequestId);
+
+    return service.checkIfPullRequestIsValid(repository, pullRequest, target)
+      .create(createCheckResultLinks(uriInfo, repository, pullRequest, target));
+  }
+
+  private Links createCheckResultLinks(UriInfo uriInfo, Repository repository, PullRequest pullRequest, String target) {
+    PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
+    String checkLink = String.format(
+      "%s?target=%s",
+      pullRequestResourceLinks.pullRequest().check(repository.getNamespace(), repository.getName(), pullRequest.getId()), target
+    );
+
+    return Links.linkingTo().self(checkLink).build();
+  }
 }

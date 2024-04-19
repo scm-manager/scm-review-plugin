@@ -89,3 +89,16 @@ In case of a merge conflict, the pull request cannot be merged automatically. Th
 Approvers of this pull request will be set as "Reviewed-by" in the merge commit.
 
 ![Pull Request - Merge-Modal](assets/mergeModal.png)
+
+### Edit a pull request
+
+A pull request can be edited after creation. The author can
+
+- change the target branch,
+- change the default setting to delete the source branch,
+- change the title,
+- change the description,
+- change the reviewer and
+- change the labels.
+
+If the target branch is changed, all approvals by reviewers are reset.

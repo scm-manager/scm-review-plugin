@@ -79,6 +79,7 @@ export type BasicComment = {
   type: CommentType;
   mentions: Mention[];
   location?: Location;
+  systemCommentParameters?: { [key: string]: string };
 };
 
 export type Comment = BasicComment & {

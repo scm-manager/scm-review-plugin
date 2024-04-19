@@ -91,3 +91,16 @@ Im Falle eines Merge-Konflikts kann der Pull Request nicht automatisch gemerged 
 In dem Merge-Commit werden die zustimmenden Reviewer als "Reviewed-by" gesetzt.
 
 ![Pull Request - Merge-Modal](assets/mergeModal.png)
+
+### Pull Request bearbeiten
+
+Ein Pull Request kann nach dem Erstellen bearbeitet werden. Der Autor kann 
+
+- den Target-Branch,
+- die Voreinstellung zum Löschen des Source-Branch,
+- den Titel,
+- die Beschreibung,
+- die Reviewer und
+- die Labels ändern.
+
+Wird der Target-Branch geändert, werden alle Freigaben durch Reviewer zurückgesetzt.

@@ -34,11 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
+import sonia.scm.ContextEntry;
 import sonia.scm.HandlerEventType;
 import sonia.scm.NotFoundException;
 import sonia.scm.event.ScmEventBus;
 import sonia.scm.repository.ChangesetPagingResult;
-import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.BRANCHES_NOT_DIFFER;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_ALREADY_EXISTS;
 import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.PR_VALID;
+import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus.SAME_BRANCHES;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent.ApprovalCause.APPROVAL_REMOVED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent.ApprovalCause.APPROVED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.DRAFT;
@@ -67,7 +68,7 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERG
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
 import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
+import static sonia.scm.AlreadyExistsException.alreadyExists;
 
 @Slf4j
 public class DefaultPullRequestService implements PullRequestService {
@@ -89,30 +90,13 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public String add(Repository repository, PullRequest pullRequest) {
-    verifyNewChangesetsOnSource(repository, pullRequest.getSource(), pullRequest.getTarget());
+    verifyBranchCheck(checkIfPullRequestIsValid(repository, pullRequest, pullRequest.getSource(), pullRequest.getTarget()), repository, pullRequest);
     pullRequest.setCreationDate(Instant.now());
     pullRequest.setLastModified(null);
     computeSubscriberForNewPullRequest(pullRequest);
     String id = getStore(repository).add(pullRequest);
     eventBus.post(new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE));
     return id;
-  }
-
-  private void verifyNewChangesetsOnSource(Repository repository, String source, String target) {
-    try (RepositoryService repositoryService = this.repositoryServiceFactory.create(repository)) {
-      ChangesetPagingResult changesets = repositoryService.getLogCommand()
-        .setStartChangeset(source)
-        .setAncestorChangeset(target)
-        .setPagingStart(0)
-        .setPagingLimit(1)
-        .getChangesets();
-
-      if (changesets.getChangesets().isEmpty()) {
-        throw new NoDifferenceException(repository);
-      }
-    } catch (IOException e) {
-      throw new InternalRepositoryException(repository, "error checking for diffs between branches", e);
-    }
   }
 
   private void computeSubscriberForNewPullRequest(PullRequest pullRequest) {
@@ -163,10 +147,24 @@ public class DefaultPullRequestService implements PullRequestService {
     }
 
     newPullRequest.setSubscriber(newSubscriber);
+    boolean targetBranchHasChanged = !StringUtils.equals(newPullRequest.getTarget(), oldPullRequest.getTarget());
+    if (targetBranchHasChanged) {
+      verifyBranchCheck(checkIfPullRequestIsValid(repository, pullRequest, newPullRequest.getTarget()), repository, pullRequest);
+      removeAllApprover(newPullRequest);
+    }
     store.update(newPullRequest);
     eventBus.post(new PullRequestEvent(repository, newPullRequest, oldPullRequest, HandlerEventType.MODIFY));
-    if (!StringUtils.equals(newPullRequest.getTarget(), oldPullRequest.getTarget())) {
+    if (targetBranchHasChanged) {
       eventBus.post(new PullRequestUpdatedEvent(repository, newPullRequest));
+    }
+  }
+
+  private void verifyBranchCheck(PullRequestCheckResultDto.PullRequestCheckStatus checkStatus, Repository repository, PullRequest pullRequest) {
+    switch (checkStatus) {
+      case BRANCHES_NOT_DIFFER -> throw new NoDifferenceException(repository);
+      case PR_ALREADY_EXISTS -> throw alreadyExists(ContextEntry.ContextBuilder.entity(PullRequest.class, pullRequest.getId()).in(repository));
+      case SAME_BRANCHES -> throw new SameBranchesNotAllowedException(repository, pullRequest);
+      default -> {}
     }
   }
 
@@ -202,7 +200,7 @@ public class DefaultPullRequestService implements PullRequestService {
   public Optional<PullRequest> getInProgress(Repository repository, String source, String target) {
     List<PullRequestStatus> inProgressStatus = stream(PullRequestStatus.values())
       .filter(PullRequestStatus::isInProgress)
-      .collect(toList());
+      .toList();
     return getStore(repository).getAll()
       .stream()
       .filter(pullRequest ->
@@ -261,11 +259,20 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target) {
+    return checkIfPullRequestIsValid(repository, null, source, target);
+  }
+
+  @Override
+  public PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, PullRequest pullRequest, String target) {
+    return checkIfPullRequestIsValid(repository, pullRequest, pullRequest.getSource(), target);
+  }
+
+  private PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, PullRequest pullRequest, String source, String target) {
     if (source.equals(target)) {
-      return BRANCHES_NOT_DIFFER;
+      return SAME_BRANCHES;
     }
 
-    if (getInProgress(repository, source, target).isPresent()) {
+    if (getInProgress(repository, source, target).filter(pr -> pullRequest == null || !pr.getId().equals(pullRequest.getId())).isPresent()) {
       return PR_ALREADY_EXISTS;
     }
 
@@ -338,7 +345,8 @@ public class DefaultPullRequestService implements PullRequestService {
   public void sourceRevisionChanged(Repository repository, String pullRequestId) {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.isInProgress()) {
-      removeAllApprover(repository, pullRequest);
+      removeAllApprover(pullRequest);
+      getStore(repository).update(pullRequest);
       eventBus.post(new PullRequestUpdatedEvent(repository, pullRequest));
     }
   }
@@ -470,11 +478,10 @@ public class DefaultPullRequestService implements PullRequestService {
     }
   }
 
-  private void removeAllApprover(Repository repository, PullRequest pullRequest) {
+  private void removeAllApprover(PullRequest pullRequest) {
     pullRequest.getReviewer()
       .keySet()
       .forEach(pullRequest::removeApprover);
-    getStore(repository).update(pullRequest);
   }
 
   private User getCurrentUser() {

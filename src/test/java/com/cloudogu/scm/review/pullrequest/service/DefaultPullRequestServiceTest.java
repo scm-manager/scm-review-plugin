@@ -26,6 +26,7 @@ package com.cloudogu.scm.review.pullrequest.service;
 import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.PullRequestCheckStatus;
 import com.cloudogu.scm.review.workflow.AllReviewerApprovedRule;
 import com.github.sdorra.shiro.ShiroRule;
 import com.google.common.collect.ImmutableList;
@@ -284,12 +285,13 @@ class DefaultPullRequestServiceTest {
     }
 
     @Test
-    void shouldStoreChangedPullRequest() {
+    void shouldStoreChangedPullRequest() throws IOException {
       PullRequest pullRequest = createPullRequest("changed", null, null);
       pullRequest.setDescription("new description");
       pullRequest.setTitle("new title");
       pullRequest.setShouldDeleteSourceBranch(true);
       pullRequest.setTarget("new-target");
+      mockChangesets(new Changeset());
 
       service.update(REPOSITORY, "changed", pullRequest);
 
@@ -302,6 +304,32 @@ class DefaultPullRequestServiceTest {
         assertThat(pr.getTarget()).isEqualTo("new-target");
         return true;
       }));
+    }
+
+    @Test
+    void shouldResetApprovalsWhenTargetBranchHasChanged() throws IOException {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setTarget("new-target");
+      pullRequest.setReviewer(new HashMap<>(oldPullRequest.getReviewer()));
+      mockChangesets(new Changeset());
+
+      service.update(REPOSITORY, "changed", pullRequest);
+
+      verify(store).update(argThat(pr -> {
+        assertThat(pr.getReviewer()).containsValues(false, false);
+        return true;
+      }));
+    }
+
+    @Test
+    void shouldRejectChangedPullRequestWithInvalidBranches() throws IOException {
+      PullRequest pullRequest = createPullRequest("changed", null, null);
+      pullRequest.setTarget("source");
+
+      assertThrows(
+        SameBranchesNotAllowedException.class,
+        () -> service.update(REPOSITORY, "changed", pullRequest)
+      );
     }
 
     @Test
@@ -539,6 +567,7 @@ class DefaultPullRequestServiceTest {
 
     @BeforeEach
     void addExistingPullRequest() {
+      lenient().when(store.getAll()).thenReturn(asList(pullRequest));
       lenient().when(store.get("id")).thenReturn(pullRequest);
     }
 
@@ -825,6 +854,33 @@ class DefaultPullRequestServiceTest {
 
       verify(eventBus).post(any(PullRequestEmergencyMergedEvent.class));
     }
+
+    @Test
+    void shouldReturnInvalidPullRequestCheckResultForEqualBranches() {
+      pullRequest.setSource("feature/1");
+      pullRequest.setTarget("develop");
+
+      PullRequestCheckStatus pullRequestCheckStatus = service.checkIfPullRequestIsValid(REPOSITORY, "feature/1", "develop");
+
+      assertThat(pullRequestCheckStatus).isEqualTo(PullRequestCheckStatus.PR_ALREADY_EXISTS);
+    }
+
+    @Test
+    void shouldIgnoreSameRepositoryInvalidPullRequestCheckResultForEqualBranches() {
+      pullRequest.setSource("feature/1");
+      pullRequest.setTarget("develop");
+
+      PullRequestCheckStatus pullRequestCheckStatus = service.checkIfPullRequestIsValid(REPOSITORY, "feature/1", "develop");
+
+      assertThat(pullRequestCheckStatus).isEqualTo(PullRequestCheckStatus.PR_ALREADY_EXISTS);
+    }
+  }
+
+  @Test
+  void shouldReturnInvalidPullRequestCheckResultForEqualBranches() {
+    PullRequestCheckStatus pullRequestCheckStatus = service.checkIfPullRequestIsValid(REPOSITORY, "develop", "develop");
+
+    assertThat(pullRequestCheckStatus).isEqualTo(PullRequestCheckStatus.SAME_BRANCHES);
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {

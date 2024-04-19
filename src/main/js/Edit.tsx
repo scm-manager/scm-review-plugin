@@ -25,12 +25,14 @@ import React, { FC, useCallback, useState } from "react";
 import { SubmitButton } from "@scm-manager/ui-components";
 import { Checkbox, ErrorNotification, Label, Level, Loading, Subtitle } from "@scm-manager/ui-core";
 import { Repository } from "@scm-manager/ui-types";
-import { PullRequest } from "./types/PullRequest";
+import { CheckResult, PullRequest } from "./types/PullRequest";
 import EditForm from "./EditForm";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
-import { useUpdatePullRequest } from "./pullRequest";
+import { useCheckPullRequest, useUpdatePullRequest } from "./pullRequest";
 import { useBranches } from "@scm-manager/ui-api";
+import { CheckResultDisplay } from "./CheckResultDisplay";
+import { BranchEditForm } from "./BranchEditForm";
 
 type Props = {
   repository: Repository;
@@ -42,7 +44,11 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
   const match = useRouteMatch();
   const history = useHistory();
   const [modifiedPullRequest, setModifiedPullRequest] = useState<PullRequest>(pullRequest);
+  const [targetBranchValid, setTargetBranchValid] = useState(true);
   const { data: branchesData, error: branchesError, isLoading: branchesLoading } = useBranches(repository);
+  const { data: checkResult } = useCheckPullRequest(repository, modifiedPullRequest, (result: CheckResult) => {
+    setTargetBranchValid(result?.status === "PR_VALID");
+  });
 
   const pullRequestUpdated = useCallback(() => {
     history.push({
@@ -67,20 +73,26 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
     return <Loading />;
   }
 
+  const changesValid = () => targetBranchValid && modifiedPullRequest.title
+
   return (
     <div className="columns">
       <div className="column">
         <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
         <ErrorNotification error={error} />
+        <BranchEditForm
+          pullRequest={modifiedPullRequest}
+          branches={branchesData?._embedded?.branches}
+          branchesLoading={branchesLoading}
+          branchesError={branchesError}
+          handleFormChange={target => handleFormChange({target})}
+        />
+        <CheckResultDisplay checkResult={checkResult} />
         <EditForm
           pullRequest={modifiedPullRequest}
           handleFormChange={handleFormChange}
           availableLabels={pullRequest?._embedded?.availableLabels.availableLabels ?? []}
-          entrypoint="edit"
           shouldDeleteSourceBranch={pullRequest.shouldDeleteSourceBranch}
-          branches={branchesData?._embedded?.branches}
-          branchesLoading={branchesLoading}
-          branchesError={branchesError}
         />
         {pullRequest.status === "OPEN" ? (
           <div>
@@ -100,7 +112,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
               label={t("scm-review-plugin.edit.submitButton")}
               action={submit}
               loading={isLoading}
-              disabled={!modifiedPullRequest.title}
+              disabled={!changesValid()}
             />
           }
         />

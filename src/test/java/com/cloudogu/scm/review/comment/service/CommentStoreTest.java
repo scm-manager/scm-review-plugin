@@ -26,38 +26,37 @@ package com.cloudogu.scm.review.comment.service;
 import com.cloudogu.scm.review.TestData;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 import sonia.scm.security.UUIDKeyGenerator;
 import sonia.scm.store.DataStore;
+import sonia.scm.store.DataStoreFactory;
+import sonia.scm.store.InMemoryByteDataStoreFactory;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 
-import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.ContextLine.copy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CommentStoreTest {
 
-  private final Map<String, PullRequestComments> backingMap = Maps.newHashMap();
-  @Mock
-  private DataStore<PullRequestComments> dataStore;
-
   private CommentStore store;
+  private DataStoreFactory dataStoreFactory = new InMemoryByteDataStoreFactory();
+  private DataStore<PullRequestComments> dataStore = dataStoreFactory.withType(PullRequestComments.class).withName("comments").build();
   private KeyGenerator keyGenerator = new UUIDKeyGenerator();
 
   @BeforeEach
@@ -65,25 +64,16 @@ class CommentStoreTest {
     PullRequestStore prStore = mock(PullRequestStore.class);
     when(prStore.get(any())).thenReturn(TestData.createPullRequest());
     store = new CommentStore(dataStore, keyGenerator);
-    // delegate store methods to backing map
-    when(dataStore.getAll()).thenReturn(backingMap);
-
-    doAnswer(invocationOnMock -> {
-      String id = invocationOnMock.getArgument(0);
-      PullRequestComments pullRequestComments = invocationOnMock.getArgument(1);
-      backingMap.put(id, pullRequestComments);
-      return null;
-    }).when(dataStore).put(anyString(), any(PullRequestComments.class));
   }
 
   @Test
   void shouldAddTheFirstComment() {
     String pullRequestId = "1";
-    when(dataStore.get(pullRequestId)).thenReturn(null);
     Comment pullRequestComment = createComment("1", "my Comment", "author", new Location());
+
     store.add(pullRequestId, pullRequestComment);
-    assertThat(backingMap)
-      .isNotEmpty()
+
+    assertThat(dataStore.getAll())
       .hasSize(1)
       .containsKeys(pullRequestId);
   }
@@ -93,18 +83,19 @@ class CommentStoreTest {
     String pullRequestId = "1";
     Comment oldPRComment = createComment("1", "my comment", "author", new Location());
     PullRequestComments pullRequestComments = new PullRequestComments();
-    Comment newPullRequestComment = createComment("2", "my new comment", "author", new Location());
     pullRequestComments.setComments(Lists.newArrayList(oldPRComment));
+    dataStore.put(pullRequestId, pullRequestComments);
 
-    when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
+    Comment newPullRequestComment = createComment("2", "my new comment", "author", new Location());
     store.add(pullRequestId, newPullRequestComment);
-    assertThat(backingMap)
-      .isNotEmpty()
-      .hasSize(1)
-      .containsKeys(pullRequestId);
-    assertThat(pullRequestComments.getComments())
-      .isNotEmpty()
-      .containsExactly(oldPRComment, newPullRequestComment);
+
+    List<Comment> comments = dataStore.get(pullRequestId).getComments();
+    assertThat(comments.get(0))
+      .usingRecursiveComparison()
+      .isEqualTo(oldPRComment);
+    assertThat(comments.get(1))
+      .usingRecursiveComparison()
+      .isEqualTo(newPullRequestComment);
   }
 
   @Test
@@ -114,7 +105,7 @@ class CommentStoreTest {
     pullRequestComments.getComments().add(createComment("2", "2. comment", "author", new Location()));
     pullRequestComments.getComments().add(createComment("3", "3. comment", "author", new Location()));
     String pullRequestId = "id";
-    when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
+    dataStore.put(pullRequestId, pullRequestComments);
 
     store.delete(pullRequestId, "2");
 
@@ -141,7 +132,7 @@ class CommentStoreTest {
     pullRequestComments.getComments().add(commentToChange);
     pullRequestComments.getComments().add(createComment("3", "3. comment", "author", new Location()));
     String pullRequestId = "id";
-    when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
+    dataStore.put(pullRequestId, pullRequestComments);
 
     Comment copy = commentToChange.clone();
     copy.setComment("new text");
@@ -169,7 +160,7 @@ class CommentStoreTest {
     pullRequestComments.getComments().add(createComment("2", "2. comment", "author", new Location()));
     pullRequestComments.getComments().add(createComment("3", "3. comment", "author", new Location()));
     String pullRequestId = "id";
-    when(dataStore.get(pullRequestId)).thenReturn(pullRequestComments);
+    dataStore.put(pullRequestId, pullRequestComments);
 
     PullRequestComments comments = store.get(pullRequestId);
     assertThat(comments.getComments())
@@ -197,8 +188,26 @@ class CommentStoreTest {
 
     store.add(pullRequestId, comment);
 
-    Comment storedComment = backingMap.get(pullRequestId).getComments().iterator().next();
-    assertThat(storedComment).isEqualTo(comment);
+    Comment storedComment = dataStore.get(pullRequestId).getComments().get(0);
+    assertThat(storedComment).usingRecursiveComparison().isEqualTo(comment);
     assertThat(storedComment.getContext().getLines()).hasSize(3);
+  }
+
+  @Test
+  void shouldStoreSystemCommentsWithParameters() {
+    String pullRequestId = "1";
+    Comment comment = Comment.createSystemComment("system", Map.of("ship", "Heart of Gold", "captain", "Zaphod Beeblebrox"));
+    comment.setDate(Instant.now().truncatedTo(ChronoUnit.SECONDS)); // we have to truncate this because the date is serialized to xml and the xml adapter does not support nanoseconds
+
+    store.add(pullRequestId, comment);
+
+    Comment storedComment = dataStore.get(pullRequestId).getComments().get(0);
+    assertThat(storedComment).usingRecursiveComparison().isEqualTo(comment);
+  }
+
+  Comment createComment(String id, String text, String author, Location location) {
+    Comment comment = Comment.createComment(id, text, author, location);
+    comment.setDate(Instant.now().truncatedTo(ChronoUnit.SECONDS)); // we have to truncate this because the date is serialized to xml and the xml adapter does not support nanoseconds
+    return comment;
   }
 }

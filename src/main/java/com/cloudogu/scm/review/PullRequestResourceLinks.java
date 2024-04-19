@@ -195,6 +195,13 @@ public class PullRequestResourceLinks {
         .method("convertToPR").parameters(namespace, name, pullRequestId)
         .href();
     }
+
+    public String check(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("check").parameters(namespace, name, pullRequestId)
+        .href();
+    }
   }
 
   public PullRequestCommentsLinks pullRequestComments() {

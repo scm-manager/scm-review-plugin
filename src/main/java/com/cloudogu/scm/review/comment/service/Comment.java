@@ -26,9 +26,14 @@ package com.cloudogu.scm.review.comment.service;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import sonia.scm.xml.XmlMapStringAdapter;
+
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static com.cloudogu.scm.review.comment.service.CommentType.COMMENT;
 import static java.util.Collections.unmodifiableList;
@@ -36,6 +41,12 @@ import static java.util.Collections.unmodifiableList;
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Comment extends BasicComment {
+
+  public static Comment createSystemComment(String key, Map<String, String> systemCommentParameters) {
+    Comment systemComment = createSystemComment(key);
+    systemComment.setSystemCommentParameters(systemCommentParameters);
+    return systemComment;
+  }
 
   public static Comment createSystemComment(String key) {
     Comment comment = new Comment();
@@ -62,6 +73,8 @@ public class Comment extends BasicComment {
   private boolean outdated;
   private InlineContext context;
   private boolean emergencyMerged;
+  @XmlJavaTypeAdapter(XmlMapStringAdapter.class)
+  private Map<String, String> systemCommentParameters = Collections.emptyMap();
 
   private List<Reply> replies = new ArrayList<>();
 
@@ -90,6 +103,10 @@ public class Comment extends BasicComment {
     return unmodifiableList(replies);
   }
 
+  public Map<String, String> getSystemCommentParameters() {
+    return Collections.unmodifiableMap(systemCommentParameters);
+  }
+
   public void setType(CommentType type) {
     this.type = type;
   }
@@ -100,6 +117,10 @@ public class Comment extends BasicComment {
 
   public void setOutdated(boolean outdated) {
     this.outdated = outdated;
+  }
+
+  public void setSystemCommentParameters(Map<String, String> systemCommentParameters) {
+    this.systemCommentParameters = systemCommentParameters;
   }
 
   void setSystemComment(boolean systemComment) {

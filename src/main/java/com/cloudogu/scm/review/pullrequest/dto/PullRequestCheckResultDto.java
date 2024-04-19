@@ -43,7 +43,7 @@ public class PullRequestCheckResultDto extends HalRepresentation {
   }
 
   public enum PullRequestCheckStatus implements Creator {
-    PR_VALID, PR_ALREADY_EXISTS, BRANCHES_NOT_DIFFER;
+    PR_VALID, PR_ALREADY_EXISTS, BRANCHES_NOT_DIFFER, SAME_BRANCHES;
 
     @Override
     public PullRequestCheckResultDto create(Links links) {

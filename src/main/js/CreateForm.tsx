@@ -29,10 +29,7 @@ import { useTranslation } from "react-i18next";
 import EditForm from "./EditForm";
 import styled from "styled-components";
 import InitialTasks from "./InitialTasks";
-
-const ValidationError = styled.fieldset`
-  font-size: 0.75rem;
-`;
+import { CheckResultDisplay } from "./CheckResultDisplay";
 
 const MergeContainer = styled.fieldset`
   margin-top: -2em;
@@ -64,16 +61,6 @@ const CreateForm: FC<Props> = ({
   const [t] = useTranslation("plugins");
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-  };
-
-  const renderValidationError = () => {
-    if (checkResult && checkResult.status !== "PR_VALID") {
-      return (
-        <ValidationError className="has-text-danger">
-          {t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}
-        </ValidationError>
-      );
-    }
   };
 
   const createOptions = () => {
@@ -113,14 +100,13 @@ const CreateForm: FC<Props> = ({
         </div>
       </div>
       <MergeContainer>
-        {renderValidationError()}
+        <CheckResultDisplay checkResult={checkResult} />
         <EditForm
           handleFormChange={handleFormChange}
           pullRequest={pullRequest}
           disabled={disabled}
           availableLabels={availableLabels}
           shouldDeleteSourceBranch={shouldDeleteSourceBranch}
-          entrypoint={"create"}
         />
       </MergeContainer>
       <InitialTasks value={pullRequest.initialTasks} onChange={value => handleFormChange({ initialTasks: value })} />

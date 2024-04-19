@@ -43,7 +43,8 @@
       "validation": {
         "title": "Title is required",
         "BRANCHES_NOT_DIFFER": "No differences between source branch and target branch",
-        "PR_ALREADY_EXISTS": "The pull request with your selected source branch and target branch already exists"
+        "PR_ALREADY_EXISTS": "The pull request with your selected source and target branch already exists",
+        "SAME_BRANCHES": "A pull request must not have identical source and target branches"
       },
       "description": "Description",
       "status": "Status",
@@ -292,6 +293,7 @@
         "reopened": "The pull request has been reopened.",
         "sourceDeleted": "The source branch of the pull request has been deleted.",
         "targetDeleted": "The target branch of the pull request has been deleted.",
+        "targetChanged": "The target branch of the pull request has been changed from `{{oldTarget}}` to `{{newTarget}}`.",
         "emergencyMerged": "The pull request has been merged with an emergency merge. The workflow engine rules has been ignored.",
         "statusToOpen": "The pull request has been opened for review.",
         "statusToDraft": "The pull request has been converted to draft."
@@ -664,6 +666,10 @@
     "6nRxQptwH1": {
       "displayName": "Invalid formatting",
       "description": "The format of the rule configuration is invalid."
+    },
+    "RhFWK2Nf31": {
+      "displayName": "Invalid branches",
+      "description": "Source and target branch must not be the same."
     }
   },
   "workflow": {

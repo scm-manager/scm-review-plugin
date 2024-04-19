@@ -37,13 +37,14 @@
     },
     "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
     "pullRequest": {
-      "sourceBranch": "Source Branch",
-      "targetBranch": "Target Branch",
+      "sourceBranch": "Source-Branch",
+      "targetBranch": "Target-Branch",
       "title": "Titel",
       "validation": {
         "title": "Titel erforderlich",
         "BRANCHES_NOT_DIFFER": "Kein Unterschied zwischen Source-Branch und Target-Branch.",
-        "PR_ALREADY_EXISTS": "Der Pull-Request zwischen dem gewählten Source-Branch und Target-Branch existiert bereits."
+        "PR_ALREADY_EXISTS": "Der Pull-Request mit dem gewählten Source-Branch und Target-Branch existiert bereits.",
+        "SAME_BRANCHES": "Bei Pull Requests darf der Target-Branch nicht dem Source-Branch entsprechen."
       },
       "description": "Beschreibung",
       "status": "Status",
@@ -79,7 +80,7 @@
       "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein.",
       "details": {
         "notification": "Pull Request erfolgreich gemerged!",
-        "branchDeleted": "Der Source oder Target Branch wurde gelöscht!",
+        "branchDeleted": "Der Source- oder Target-Branch wurde gelöscht!",
         "approved": "Freigegeben durch {{name}}",
         "ignoredMergeObstacles": "Folgende Regeln wurden beim Mergen des Pull Requests ignoriert:",
         "buttons": {
@@ -294,6 +295,7 @@
         "reopened": "Der Pull Request wurde wiedereröffnet.",
         "sourceDeleted": "Der Quell-Branch des Pull Requests wurde gelöscht.",
         "targetDeleted": "Der Ziel-Branch des Pull Requests wurde gelöscht.",
+        "targetChanged": "Der Ziel-Branch des Pull Requests wurde von `{{oldTarget}}` in `{{newTarget}}` geändert.",
         "emergencyMerged": "Dieser Pull Request wurde mit einem Emergency-Merge gemerged. Dabei wurden die Regeln der Workflow Engine ignoriert.",
         "statusToOpen": "Der Pull Request wurde zum Review freigegeben.",
         "statusToDraft": "Der Pull Request wurde in einen Draft umgewandelt."
@@ -371,7 +373,7 @@
         "helpText": "Repository Owner dürfen Pull Requests nicht auf der Repository-Ebene konfigurieren."
       },
       "deleteBranchOnMerge": {
-        "label": "Source Branch beim Merge löschen",
+        "label": "Source-Branch beim Merge löschen",
         "helpText": "Der Standardwert kann bei der Merge-Erstellung oder bei dem Merge-Vorgang geändert werden"
       },
       "defaultMergeStrategy": {
@@ -532,8 +534,8 @@
     },
     "search": {
       "invalidResult": "Ungültige Suchergebnisse gefunden",
-      "source": "Source Branch",
-      "target": "Target Branch",
+      "source": "Source-Branch",
+      "target": "Target-Branch",
       "subtitle": "<highlight>{{source}}</highlight> nach <highlight>{{target}}</highlight><space> </space><date />"
     },
     "shortcuts": {
@@ -666,6 +668,10 @@
     "6nRxQptwH1": {
       "displayName": "Ungültiges Format",
       "description": "Die Konfiguration für die Regel hat ein ungültiges Format."
+    },
+    "RhFWK2Nf31": {
+      "displayName": "Ungültige Branches",
+      "description": "Quell- und Zielbranch dürfen nicht übereinstimmen."
     }
   },
   "workflow": {
@@ -718,11 +724,11 @@
           },
           "source": {
             "exampleValue": "feature/new_link",
-            "hints": "Source Branch"
+            "hints": "Source-Branch"
           },
           "target": {
             "exampleValue": "main",
-            "hints": "Target Branch"
+            "hints": "Target-Branch"
           },
           "status": {
             "exampleValue": "OPEN",
@@ -792,8 +798,8 @@
         "pullRequest.id": "Pull Request ID",
         "pullRequest.title": "Pull Request Titel",
         "pullRequest.description": "Pull Request Beschreibung",
-        "pullRequest.source": "Pull Request Source Branch",
-        "pullRequest.target": "Pull Request Ziel Branch",
+        "pullRequest.source": "Pull Request Source-Branch",
+        "pullRequest.target": "Pull Request Target-Branch",
         "author.displayName": "Name des Autors",
         "author.mail": "E-Mail des Autors",
         "currentUser.displayName": "Name des aktuellen Benutzers",

@@ -38,11 +38,6 @@ type Props = {
   disabled?: boolean;
   availableLabels: string[];
   shouldDeleteSourceBranch: boolean;
-  entrypoint: Entrypoint;
-  branches?: Branch[];
-  branchesError?: Error;
-  branchesLoading?: boolean;
-  extension?: string;
 };
 
 const EditForm: FC<Props> = ({
@@ -50,17 +45,11 @@ const EditForm: FC<Props> = ({
   pullRequest,
   disabled,
   availableLabels,
-  shouldDeleteSourceBranch,
-  entrypoint,
-  branches,
-  branchesLoading,
-  branchesError
+  shouldDeleteSourceBranch
 }) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
-  const [deleteSourceBranch, setDeleteSourceBranch] = useState<boolean>(
-    entrypoint === "create" ? shouldDeleteSourceBranch : pullRequest.shouldDeleteSourceBranch
-  );
+  const [deleteSourceBranch, setDeleteSourceBranch] = useState<boolean>(shouldDeleteSourceBranch);
   const handleDeleteSourceBranch = useCallback(
     (pr: Partial<PullRequest>) => {
       setDeleteSourceBranch(pr.shouldDeleteSourceBranch || false);
@@ -73,13 +62,6 @@ const EditForm: FC<Props> = ({
     setDeleteSourceBranch(shouldDeleteSourceBranch);
   }, [shouldDeleteSourceBranch]);
 
-  const createOptions = () => {
-    return branches?.map(branch => ({
-      label: branch.name,
-      value: branch.name
-    })).filter(branch => branch.label !== pullRequest.source);
-  };
-
   const handleLabelSelectChange = useCallback(
     (label: string, checked: boolean) => {
       if (checked) {
@@ -91,25 +73,8 @@ const EditForm: FC<Props> = ({
     [handleFormChange, pullRequest]
   );
 
-  if (branchesError) {
-    return <ErrorNotification error={branchesError} />;
-  }
-
   return (
     <>
-      {entrypoint === "edit" ? (
-        <div className="is-clipped">
-          <Label>{t("scm-review-plugin.pullRequest.targetBranch")}</Label>
-          <Select
-            className=""
-            name="target"
-            options={createOptions() || []}
-            onChange={event => handleFormChange({ target: event.target.value })}
-            value={pullRequest?.target}
-          />
-        </div>
-      ) : null}
-
       <Checkbox
         key={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
         checked={deleteSourceBranch}

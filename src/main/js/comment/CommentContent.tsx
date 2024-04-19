@@ -37,7 +37,7 @@ const CommentContent: FC<Props> = ({ comment }) => {
   const message = useMemo<string>(() => {
     let content = comment.comment!;
     if (comment.systemComment) {
-      content = t(`scm-review-plugin.comment.systemMessage.${comment.comment}`);
+      content = t(`scm-review-plugin.comment.systemMessage.${comment.comment}`, comment.systemCommentParameters);
     }
     comment.mentions.forEach(m => {
       const matcher = new RegExp("@\\[" + m.id + "\\]", "g");

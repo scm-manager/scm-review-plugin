@@ -27,6 +27,7 @@ import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
@@ -57,6 +58,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
@@ -615,13 +617,13 @@ public class CommentServiceTest {
   public void shouldAddChangedStatusComment() {
     when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
 
-    commentService.addStatusChangedComment(REPOSITORY, PULL_REQUEST_ID, SystemCommentType.MERGED);
+    commentService.addCommentOnMerge(new PullRequestMergedEvent(REPOSITORY, mockPullRequest()));
+
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     Comment storedComment = rootCommentCaptor.getValue();
     assertThat(storedComment.getComment()).isEqualTo("merged");
     assertThat(storedComment.isSystemComment()).isTrue();
   }
-
   @Test
   @SubjectAware(username = "rr")
   public void shouldGetAllComments() {
@@ -750,7 +752,7 @@ public class CommentServiceTest {
     });
 
     when(storeFactory.create(any())).thenReturn(store);
-    when(store.getAll(eq(PULL_REQUEST_ID))).thenAnswer(invocation -> rootCommentCaptor.getAllValues());
+    when(store.getAll(PULL_REQUEST_ID)).thenAnswer(invocation -> rootCommentCaptor.getAllValues());
 
     commentService.addCommentOnReject(new PullRequestRejectedEvent(REPOSITORY, mockPullRequest(), PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, "comment"));
 
@@ -771,7 +773,7 @@ public class CommentServiceTest {
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     List<Comment> storedComment = rootCommentCaptor.getAllValues();
     assertThat(storedComment.get(0).getComment()).isEqualTo("rejected");
-    assertThat(storedComment.get(0).getReplies()).hasSize(0);
+    assertThat(storedComment.get(0).getReplies()).isEmpty();
   }
 
   @Test
@@ -784,7 +786,7 @@ public class CommentServiceTest {
     assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
     List<Comment> storedComment = rootCommentCaptor.getAllValues();
     assertThat(storedComment.get(0).getComment()).isEqualTo("rejected");
-    assertThat(storedComment.get(0).getReplies()).hasSize(0);
+    assertThat(storedComment.get(0).getReplies()).isEmpty();
   }
 
   @Test
@@ -839,6 +841,25 @@ public class CommentServiceTest {
     assertThat(storedComment.getComment()).isEqualTo("statusToOpen");
   }
 
+  @Test
+  @SubjectAware(username = "trillian")
+  public void shouldAddSystemCommentForTargetBranchChange() {
+    when(store.add(eq(PULL_REQUEST_ID), rootCommentCaptor.capture())).thenReturn("newId");
+
+    commentService.addCommentOnTargetBranchChange(
+      new PullRequestEvent(
+        REPOSITORY,
+        new PullRequest(PULL_REQUEST_ID, "feature", "develop"),
+        new PullRequest(PULL_REQUEST_ID, "feature", "master"),
+        HandlerEventType.MODIFY));
+
+    assertThat(rootCommentCaptor.getAllValues()).hasSize(1);
+    Comment storedComment = rootCommentCaptor.getValue();
+    assertThat(storedComment.getComment()).isEqualTo("targetChanged");
+    assertThat(storedComment.isSystemComment()).isTrue();
+    assertThat(storedComment.getSystemCommentParameters()).containsAllEntriesOf(Map.of("oldTarget", "master", "newTarget", "develop"));
+  }
+
   private PullRequest mockPullRequest() {
     PullRequest mock = mock(PullRequest.class);
     when(mock.getId()).thenReturn(PULL_REQUEST_ID);
@@ -847,7 +868,7 @@ public class CommentServiceTest {
 
   private void assertMentionEventFiredAndMentionsParsedToDisplayNames(String expected) {
     Optional<BasicCommentEvent> mentionEvent = eventCaptor.getAllValues().stream().filter(event -> event instanceof MentionEvent).findFirst();
-    assertThat(mentionEvent.isPresent()).isTrue();
+    assertThat(mentionEvent).isPresent();
     assertThat(mentionEvent.get().getItem().getComment()).isEqualTo(expected);
   }
 }

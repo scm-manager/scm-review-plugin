@@ -287,7 +287,7 @@ public class PullRequestRootResource {
       .filter(pullRequestSelector)
       .map(pr -> mapper.using(uriInfo).map(pr, repository))
       .sorted(pullRequestSortSelector.compare())
-      .collect(Collectors.toList());
+      .toList();
 
     PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
     NumberedPaging paging = zeroBasedNumberedPaging(page, pageSize, pullRequestDtos.size());
@@ -331,7 +331,7 @@ public class PullRequestRootResource {
 
   @GET
   @Path("{namespace}/{name}/check")
-  @Produces(PullRequestMediaType.PULL_REQUEST)
+  @Produces(PullRequestMediaType.PULL_REQUEST_CHECK_RESULT)
   @Operation(
     summary = "Checks pull request",
     description = "Checks if new pull request can be created.",

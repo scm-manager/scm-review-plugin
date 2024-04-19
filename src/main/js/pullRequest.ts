@@ -220,7 +220,7 @@ export const useRejectPullRequest = (repository: Repository, pullRequest: PullRe
 
   const queryClient = useQueryClient();
   const { mutate, isLoading, error } = useMutation<unknown, Error, string>(
-    (message) => {
+    message => {
       const rejectLink = requiredLink(pullRequest, "rejectWithMessage");
       return apiClient.post(rejectLink, { message });
     },
@@ -318,7 +318,7 @@ export const useReadyForReviewPullRequest = (repository: Repository, pullRequest
 
 type UsePullRequestsRequest = {
   status?: string;
-  sortBy?: string
+  sortBy?: string;
   page?: number;
   pageSize?: number;
 };
@@ -331,7 +331,9 @@ export const usePullRequests = (repository: Repository, request?: UsePullRequest
   const { error, isLoading, data } = useQuery<PagedPullRequestCollection, Error>(
     ["repository", repository.namespace, repository.name, "pull-requests", status, sortBy, page],
     () => {
-      const link = requiredLink(repository, "pullRequest") + `?status=${status}&sortBy=${sortBy}&page=${page}&pageSize=${pageSize}`;
+      const link =
+        requiredLink(repository, "pullRequest") +
+        `?status=${status}&sortBy=${sortBy}&page=${page}&pageSize=${pageSize}`;
       return apiClient.get(link).then(response => response.json());
     }
   );
@@ -627,14 +629,15 @@ export const useCheckPullRequest = (
   pullRequest: PullRequest,
   callback?: (checkResult: CheckResult) => void
 ) => {
-  const id = pullRequest.id || pullRequest.source + pullRequest.target;
+  const id = pullRequest.id ? `${pullRequest.id}:${pullRequest.target}` : `${pullRequest.source}:${pullRequest.target}`;
 
   const { error, data } = useQuery<CheckResult, Error>(
     [...prQueryKey(repository, id), "check"],
     () => {
+      const link = (pullRequest?._links?.check as Link)?.href ?? requiredLink(repository, "pullRequestCheck");
       return apiClient
         .get(
-          requiredLink(repository, "pullRequestCheck") +
+          link +
             `?source=${encodeURIComponent(pullRequest.source)}&target=${encodeURIComponent(pullRequest.target)}`
         )
         .then(r => r.json());

@@ -402,6 +402,18 @@ class PullRequestMapperTest {
       assertThat(defaultConfig.getMergeStrategy()).isEqualTo("REBASE");
       assertThat(defaultConfig.isDeleteBranchOnMerge()).isTrue();
     }
+
+    @Test
+    void shouldAddCheckLink() {
+      PullRequest pullRequest = TestData.createPullRequest();
+
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("check"))
+        .get()
+        .extracting("href")
+        .isEqualTo("/v2/pull-requests/space/x/id/check");
+    }
   }
 
   @Test

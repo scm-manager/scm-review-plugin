@@ -21,50 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.comment.api;
+package com.cloudogu.scm.review.pullrequest.service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import sonia.scm.BadRequestException;
+import sonia.scm.repository.Repository;
 
-import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Map;
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
-
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode
-public class CommentDto extends BasicCommentDto {
-
-  @Valid
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private LocationDto location;
-
-  private boolean systemComment;
-  private boolean outdated;
-  private boolean emergencyMerged;
-
-  private String type;
-
-  private Map<String, String> systemCommentParameters;
-
-  private InlineContextDto context;
-
-  @Getter
-  @Setter
-  static class InlineContextDto {
-    private List<ContextLineDto> lines;
+@SuppressWarnings("squid:MaximumInheritanceDepth") // exceptions have a deep inheritance depth themselves; therefore we accept this here
+class SameBranchesNotAllowedException extends BadRequestException {
+  SameBranchesNotAllowedException(Repository repository, PullRequest pullRequest) {
+    super(entity(PullRequest.class, pullRequest.getId()).in(repository).build(), "source and target branch must not be the same");
   }
 
-  @Getter
-  @Setter
-  static class ContextLineDto {
-    private Integer oldLineNumber;
-    private Integer newLineNumber;
-    private String content;
+  @Override
+  public String getCode() {
+    return "RhFWK2Nf31";
   }
 }

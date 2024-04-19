@@ -21,50 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.comment.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import React, { FC } from "react";
+import { CheckResult } from "./types/PullRequest";
+import styled from "styled-components";
+import { useTranslation } from "react-i18next";
 
-import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Map;
+type Props = {
+  checkResult?: CheckResult;
+};
 
+const ValidationError = styled.fieldset`
+  font-size: 0.75rem;
+`;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode
-public class CommentDto extends BasicCommentDto {
+const CheckResultDisplay: FC<Props> = ({ checkResult }) => {
+  const [t] = useTranslation("plugins");
 
-  @Valid
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  private LocationDto location;
-
-  private boolean systemComment;
-  private boolean outdated;
-  private boolean emergencyMerged;
-
-  private String type;
-
-  private Map<String, String> systemCommentParameters;
-
-  private InlineContextDto context;
-
-  @Getter
-  @Setter
-  static class InlineContextDto {
-    private List<ContextLineDto> lines;
+  if (checkResult && checkResult.status !== "PR_VALID") {
+    return (
+      <ValidationError className="has-text-danger">
+        {t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}
+      </ValidationError>
+    );
+  } else {
+    return null;
   }
+};
 
-  @Getter
-  @Setter
-  static class ContextLineDto {
-    private Integer oldLineNumber;
-    private Integer newLineNumber;
-    private String content;
-  }
-}
+export { CheckResultDisplay };

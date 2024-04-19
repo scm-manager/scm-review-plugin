@@ -88,6 +88,7 @@ import static java.util.stream.Collectors.toList;
 @Mapper(
   builder = @Builder(disableBuilder = true)
 )
+@SuppressWarnings("java:S6813") // we cannot use constructor injection here
 public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequestDto> {
   @Inject
   private UserDisplayManager userDisplayManager;
@@ -183,7 +184,7 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .stream()
       .filter(mark -> mark.getUser().equals(getCurrentUser().getId()))
       .map(ReviewMark::getFile)
-      .collect(toList());
+      .toList();
     target.setMarkedAsReviewed(filesMarkedAsReviewed);
   }
 
@@ -219,6 +220,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     if (PermissionCheck.mayModifyPullRequest(repository, pullRequest) && pullRequest.isInProgress()) {
       linksBuilder.single(link("update", pullRequestResourceLinks.pullRequest()
         .update(namespace, name, pullRequestId)));
+      linksBuilder.single(link("check", pullRequestResourceLinks.pullRequest()
+        .check(namespace, name, pullRequestId)));
     }
     if (PermissionCheck.mayMerge(repository) && pullRequest.isInProgress()) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest()
@@ -275,13 +278,13 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
         List<Link> mergeStrategyLinks = service.getMergeCommand().getSupportedMergeStrategies()
           .stream()
           .map(strategy -> createMergeStrategyLink(repository.getNamespaceAndName(), pullRequest, strategy))
-          .collect(toList());
+          .toList();
         linksBuilder.array(mergeStrategyLinks);
         if (PermissionCheck.mayPerformEmergencyMerge(repository)) {
           List<Link> emergencyMergeStrategyLinks = service.getMergeCommand().getSupportedMergeStrategies()
             .stream()
             .map(strategy -> createEmergencyMergeStrategyLink(repository.getNamespaceAndName(), pullRequest, strategy))
-            .collect(toList());
+            .toList();
           linksBuilder.array(emergencyMergeStrategyLinks);
         }
       }

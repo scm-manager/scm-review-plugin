@@ -132,6 +132,11 @@ public interface PullRequestService {
    */
   PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target);
 
+  /**
+   * @since 3.2.0
+   */
+  PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, PullRequest pullRequest, String target);
+
   void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause, String message);
 
   void setRevisions(Repository repository, String id, String targetRevision, String revisionToMerge);

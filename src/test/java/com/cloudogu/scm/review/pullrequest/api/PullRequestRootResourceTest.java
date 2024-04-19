@@ -137,7 +137,7 @@ public class PullRequestRootResourceTest {
 
   private RestDispatcher dispatcher;
 
-  private final MockHttpResponse response = new MockHttpResponse();
+  private final JsonMockHttpResponse response = new JsonMockHttpResponse();
   private final Subject subject = mock(Subject.class);
 
   private static final String REPOSITORY_NAME = "repo";
@@ -1019,7 +1019,7 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "dent")
-  public void shouldReturnPullRequestIsValidResult() throws URISyntaxException, IOException {
+  public void shouldReturnPullRequestIsValidResultForNewPullRequest() throws URISyntaxException, IOException {
     mockLoggedInUser(new User("dent"));
     mockLogCommandForPullRequestCheck(ImmutableList.of(new Changeset()));
 
@@ -1037,6 +1037,24 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "dent")
+  public void shouldReturnPullRequestIsValidResultForExistingPullRequest() throws URISyntaxException, IOException {
+    mockLoggedInUser(new User("dent"));
+    mockLogCommandForPullRequestCheck(ImmutableList.of(new Changeset()));
+
+    PullRequest pullRequest = createPullRequest();
+    when(store.get(pullRequest.getId())).thenReturn(pullRequest);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/id/check?target=master");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsJson().get("status").asText()).isEqualTo("PR_VALID");
+    assertThat(response.getContentAsJson().get("_links").get("self").get("href").asText()).isEqualTo("/v2/pull-requests/ns/repo/id/check?target=master");
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
   public void shouldReturnBranchesNotDifferResultIfSameBranches() throws URISyntaxException, IOException {
     mockLoggedInUser(new User("dent"));
     mockLogCommandForPullRequestCheck(ImmutableList.of(new Changeset()));
@@ -1046,7 +1064,7 @@ public class PullRequestRootResourceTest {
 
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(200);
-    assertThat(response.getContentAsString()).contains("\"status\":\"BRANCHES_NOT_DIFFER\"");
+    assertThat(response.getContentAsString()).contains("\"status\":\"SAME_BRANCHES\"");
     assertThat(response.getContentAsString()).contains("\"_links\":{\"self\":{\"href\":\"/v2/pull-requests/ns/repo/check?source=master&target=master\"}}");
   }
 
@@ -1211,7 +1229,6 @@ public class PullRequestRootResourceTest {
     LogCommandBuilder subLogCommandBuilder = mock(LogCommandBuilder.class);
     when(logCommandBuilder.setStartChangeset(sourceBranch)).thenReturn(subLogCommandBuilder);
     when(subLogCommandBuilder.setAncestorChangeset(targetBranch)).thenReturn(subLogCommandBuilder);
-    when(subLogCommandBuilder.setPagingStart(0)).thenReturn(subLogCommandBuilder);
     when(subLogCommandBuilder.setPagingLimit(1)).thenReturn(subLogCommandBuilder);
     when(subLogCommandBuilder.getChangesets()).thenReturn(new ChangesetPagingResult(changesets.length, asList(changesets)));
   }

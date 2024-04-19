@@ -27,14 +27,16 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
 import com.github.legman.Subscribe;
 import com.google.common.base.Strings;
+import jakarta.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
@@ -45,10 +47,9 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
 
-import jakarta.inject.Inject;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -308,7 +309,7 @@ public class CommentService {
     return storeFactory.create(repository);
   }
 
-  public void addStatusChangedComment(Repository repository, String pullRequestId, SystemCommentType commentType) {
+  void addStatusChangedComment(Repository repository, String pullRequestId, SystemCommentType commentType) {
     Comment comment = Comment.createSystemComment(commentType.getKey());
     addWithoutPermissionCheck(repository, pullRequestId, comment);
   }
@@ -323,7 +324,7 @@ public class CommentService {
 
   private Optional<ReplyWithParent> findReplyWithParent(Repository repository, String pullRequestId, String commentId) {
     return streamAllRepliesWithParents(repository, pullRequestId)
-      .filter(ReplyWithParent -> ReplyWithParent.reply.getId().equals(commentId))
+      .filter(replyWithParent -> replyWithParent.reply.getId().equals(commentId))
       .findFirst();
   }
 
@@ -404,6 +405,19 @@ public class CommentService {
       default:
         throw new IllegalArgumentException("unknown status: " + mergedEvent.getStatus());
     }
+  }
+
+  @Subscribe
+  public void addCommentOnTargetBranchChange(PullRequestEvent updatedEvent) {
+    if (updatedEvent.getItem().getTarget().equals(updatedEvent.getOldItem().getTarget())) {
+      return;
+    }
+    Comment comment = Comment.createSystemComment(
+      SystemCommentType.TARGET_CHANGED.getKey(),
+      Map.of(
+        "oldTarget", updatedEvent.getOldItem().getTarget(),
+        "newTarget", updatedEvent.getItem().getTarget()));
+    addWithoutPermissionCheck(updatedEvent.getRepository(), updatedEvent.getItem().getId(), comment);
   }
 
   private SystemCommentType getCommentType(PullRequestRejectedEvent.RejectionCause cause) {
