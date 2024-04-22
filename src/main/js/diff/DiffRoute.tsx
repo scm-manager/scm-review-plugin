@@ -42,9 +42,10 @@ type Props = {
   source: string;
   target: string;
   sourceBranch?: Branch;
+  stickyHeaderHeight: number;
 };
 
-const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target, sourceBranch }) => {
+const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target, sourceBranch, stickyHeaderHeight }) => {
   const { t } = useTranslation("plugins");
   const { data: comments, isLoading, error } = useComments(repository, pullRequest);
 
@@ -102,6 +103,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target, sourceB
         reviewedFiles={pullRequest?.markedAsReviewed || []}
         fileContentFactory={fileContentFactory}
         sourceBranch={sourceBranch}
+        stickyHeaderHeight={stickyHeaderHeight}
       />
     );
   }

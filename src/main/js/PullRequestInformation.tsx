@@ -42,6 +42,7 @@ type Props = {
   targetBranchDeleted: boolean;
   shouldFetchChangesets?: boolean;
   sourceBranch?: Branch;
+  stickyHeaderHeight: number;
 };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
@@ -141,6 +142,7 @@ type RouteProps = {
   target: string;
   shouldFetchChangesets?: boolean;
   sourceBranch?: Branch;
+  stickyHeaderHeight: number;
 };
 
 const Routes: FC<RouteProps> = ({
@@ -152,7 +154,8 @@ const Routes: FC<RouteProps> = ({
   baseURL,
   mergeHasNoConflict,
   shouldFetchChangesets,
-  sourceBranch
+  sourceBranch,
+  stickyHeaderHeight
 }) => {
   let routeComments = null;
   let routeChangeset = null;
@@ -192,6 +195,7 @@ const Routes: FC<RouteProps> = ({
             source={sourceRevision}
             target={targetRevision}
             sourceBranch={sourceBranch}
+            stickyHeaderHeight={stickyHeaderHeight}
           />
         </div>
       </Route>

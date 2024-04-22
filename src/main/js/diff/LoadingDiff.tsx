@@ -26,26 +26,37 @@ import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDiff } from "@scm-manager/ui-api";
 import {
-  Button,
   Diff as CoreDiff,
   DiffObjectProps,
   ErrorNotification,
-  Level,
   Loading,
   NotFoundError,
   Notification
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
+import { Button, Icon } from "@scm-manager/ui-core";
+import styled from "styled-components";
 
 type LoadingDiffProps = DiffObjectProps & {
   diffUrl: string;
   actions: any;
   pullRequestComments: Comment[];
   refetchOnWindowFocus?: boolean;
+  stickyHeader?: boolean | number;
 };
 
-const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, ...props }) => {
+const StickyButton = styled(Button)<{ top: number }>`
+  position: sticky;
+  display: flex;
+  margin-right: 1.25rem;
+  margin-left: auto;
+  top: calc(${props => props.top}px + var(--scm-navbar-main-height));
+  z-index: 11;
+  transition: top 200ms ease 0s;
+`;
+
+const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, stickyHeader, ...props }) => {
   const [t] = useTranslation("plugins");
   const { error, isLoading, data, fetchNextPage, isFetchingNextPage } = useDiff(diffUrl, {
     limit: 25,
@@ -74,19 +85,18 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
   }
   return (
     <>
-      <Level
-        className="mb-4"
-        right={
-          <Button
-            action={collapseDiffs}
-            color="default"
-            icon={collapsed ? "eye" : "eye-slash"}
-            label={t("scm-review-plugin.diff.collapseDiffs")}
-            reducedMobile={true}
-          />
-        }
+      <StickyButton
+        onClick={collapseDiffs}
+        className="mb-4 is-hidden-mobile"
+        top={typeof stickyHeader === "number" && stickyHeader > 40 ? (stickyHeader - 40) / 2 : 0}
+      >
+        <Icon className="mr-1">{collapsed ? "eye" : "eye-slash"}</Icon> {t("scm-review-plugin.diff.collapseDiffs")}
+      </StickyButton>
+      <CoreDiff
+        diff={data.files}
+        {...props}
+        stickyHeader={typeof stickyHeader === "number" && stickyHeader > 40 ? stickyHeader - 5 : true}
       />
-      <CoreDiff diff={data.files} {...props} stickyHeader={true} />
       {data.partial ? (
         <PartialNotification
           pullRequestComments={pullRequestComments}

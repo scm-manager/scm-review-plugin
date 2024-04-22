@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, useEffect, useMemo, useState } from "react";
+import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { Link, Repository } from "@scm-manager/ui-types";
@@ -33,6 +33,7 @@ import {
   Button,
   ButtonGroup,
   DateFromNow,
+  devices,
   ErrorNotification,
   Icon,
   Loading,
@@ -146,6 +147,45 @@ type UserEntryProps = {
   date?: string;
 };
 
+const StickyHeader = styled.div`
+  position: sticky;
+  display: flex;
+  top: var(--scm-navbar-main-height);
+  justify-content: space-between;
+  min-height: 50px;
+  padding: 0.5em 0.75em;
+  color: var(--scm-panel-heading-color);
+  background: var(--scm-panel-heading-background-color);
+  border: var(--scm-border);
+  border-top: 0;
+  border-radius: 0 0 0.25rem 0.25rem;
+  z-index: 10;
+  animation: fadeIn 200ms alternate;
+  transform-origin: center top;
+
+  @keyframes fadeIn {
+    0% {
+      top: 0;
+    }
+    100% {
+      top: var(--scm-navbar-main-height);
+    }
+  }
+`;
+
+const LeftSide = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.25rem;
+  margin-left: 0.75rem;
+  width: calc(100% - 220px);
+
+  @media screen and (max-width: ${devices.mobile.width}px) {
+    width: 100%;
+  }
+`;
+
 const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
   const [t] = useTranslation("plugins");
   return (
@@ -163,6 +203,7 @@ const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
 const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
   const [targetOrSourceBranchDeleted, setTargetOrSourceBranchDeleted] = useState(false);
+  const [isVisible, setVisible] = useState(false);
 
   const { reject, isLoading: rejectLoading, error: rejectError } = useRejectPullRequest(repository, pullRequest);
   const { reopen, isLoading: reopenLoading, error: reopenError } = useReopenPullRequest(repository, pullRequest);
@@ -191,6 +232,38 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   useEffect(() => {
     invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, pullRequest.id!));
   }, [queryClient, pullRequest.id, repository, branch]);
+
+  const getHeaderHeight = () => {
+    const headerElement = document.getElementById("pr-details-header");
+    return headerElement ? headerElement.getBoundingClientRect().height : 0;
+  };
+
+  const [stickyHeaderHeight, setStickyHeaderHeight] = useState(getHeaderHeight);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (isVisible) {
+        setStickyHeaderHeight(getHeaderHeight);
+      }
+    };
+
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, [isVisible]);
+
+  const enableHeaderRef = useCallback(node => {
+    if (node !== null) {
+      const observer = new IntersectionObserver(entries => {
+        const entry = entries[0];
+        setVisible(!entry?.isIntersecting && entry?.boundingClientRect.top < 0);
+        setStickyHeaderHeight(getHeaderHeight);
+      });
+      observer.observe(node);
+    }
+  }, []);
 
   const findStrategyLink = (links: Link[], strategy: string) => {
     return links?.filter(link => link.name === strategy)[0].href;
@@ -327,6 +400,22 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   return (
     <ChangeNotificationContext>
       <ChangeNotification repository={repository} pullRequest={pullRequest} />
+      {isVisible && (
+        <StickyHeader id="pr-details-header">
+          <LeftSide>
+            <strong>
+              #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />
+            </strong>
+            <div>
+              {pullRequest.source}
+              <i className="fas fa-long-arrow-alt-right m-1" />
+              {pullRequest.target}
+              {targetBranchDeletedWarning}
+            </div>
+          </LeftSide>
+        </StickyHeader>
+      )}
+
       <Container>
         <div className="media">
           <div className="media-content">
@@ -368,7 +457,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         <Statusbar repository={repository} pullRequest={pullRequest} />
         {description}
         {ignoredMergeObstacles}
-        <div className="media mb-4">
+        <div className="media mb-4" ref={enableHeaderRef}>
           <div className="media-content">
             <ExtensionPoint
               name="reviewPlugin.pullrequest.userList"
@@ -433,6 +522,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         mergeHasNoConflict={!mergeCheck?.hasConflicts}
         targetBranchDeleted={targetOrSourceBranchDeleted}
         sourceBranch={branch}
+        stickyHeaderHeight={stickyHeaderHeight}
       />
     </ChangeNotificationContext>
   );

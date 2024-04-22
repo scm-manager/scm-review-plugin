@@ -72,6 +72,7 @@ type Props = {
   fileContentFactory: FileContentFactory;
   reviewedFiles: string[];
   sourceBranch?: Branch;
+  stickyHeaderHeight: number;
 };
 
 type Revisions = {
@@ -132,7 +133,8 @@ const Diff: FC<Props> = ({
   createLinkWithImages,
   fileContentFactory,
   reviewedFiles,
-  sourceBranch
+  sourceBranch,
+  stickyHeaderHeight
 }) => {
   const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
@@ -356,7 +358,7 @@ const Diff: FC<Props> = ({
         diffUrl={diffUrl}
         actions={actions}
         pullRequestComments={comments?._embedded.pullRequestComments || []}
-        stickyHeader={true}
+        stickyHeader={stickyHeaderHeight}
       />
     </StyledDiffWrapper>
   );
