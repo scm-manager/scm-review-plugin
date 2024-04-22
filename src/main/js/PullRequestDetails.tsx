@@ -141,12 +141,6 @@ const IgnoredMergeObstacles = styled.div`
   border-bottom: 1px solid hsla(0, 0%, 85.9%, 0.5);
 `;
 
-type UserEntryProps = {
-  labelKey: string;
-  displayName: string;
-  date?: string;
-};
-
 const StickyHeader = styled.div`
   position: sticky;
   display: flex;
@@ -185,6 +179,12 @@ const LeftSide = styled.div`
     width: 100%;
   }
 `;
+
+type UserEntryProps = {
+  labelKey: string;
+  displayName: string;
+  date?: string;
+};
 
 const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
   const [t] = useTranslation("plugins");
@@ -256,12 +256,17 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   const enableHeaderRef = useCallback(node => {
     if (node !== null) {
-      const observer = new IntersectionObserver(entries => {
+      const intersectionObserver = new IntersectionObserver(entries => {
         const entry = entries[0];
-        setVisible(!entry?.isIntersecting && entry?.boundingClientRect.top < 0);
+
+        const isTargetNoLongerInViewport = () => {
+          return !entry?.isIntersecting && entry?.boundingClientRect.top < 0;
+        };
+
+        setVisible(isTargetNoLongerInViewport());
         setStickyHeaderHeight(getHeaderHeight);
       });
-      observer.observe(node);
+      intersectionObserver.observe(node);
     }
   }, []);
 
@@ -382,6 +387,22 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     </span>
   ) : null;
 
+  const detailStickyHeader = isVisible ? (
+    <StickyHeader id="pr-details-header">
+      <LeftSide>
+        <strong>
+          #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />
+        </strong>
+        <div>
+          {pullRequest.source}
+          <i className="fas fa-long-arrow-alt-right m-1" />
+          {pullRequest.target}
+          {targetBranchDeletedWarning}
+        </div>
+      </LeftSide>
+    </StickyHeader>
+  ) : null;
+
   const tasksDone = pullRequest.tasks ? pullRequest.tasks.done : 0;
   const totalTasks = pullRequest.tasks ? pullRequest.tasks.done + pullRequest.tasks.todo : 0;
 
@@ -400,21 +421,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   return (
     <ChangeNotificationContext>
       <ChangeNotification repository={repository} pullRequest={pullRequest} />
-      {isVisible && (
-        <StickyHeader id="pr-details-header">
-          <LeftSide>
-            <strong>
-              #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />
-            </strong>
-            <div>
-              {pullRequest.source}
-              <i className="fas fa-long-arrow-alt-right m-1" />
-              {pullRequest.target}
-              {targetBranchDeletedWarning}
-            </div>
-          </LeftSide>
-        </StickyHeader>
-      )}
+      {detailStickyHeader}
 
       <Container>
         <div className="media">

@@ -83,19 +83,25 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
   } else if (!data?.files) {
     return null;
   }
+  const buttonHeight = 40;
+  const overlapBetweenPanelHeader = 5;
   return (
     <>
       <StickyButton
         onClick={collapseDiffs}
         className="mb-4 is-hidden-mobile"
-        top={typeof stickyHeader === "number" && stickyHeader > 40 ? (stickyHeader - 40) / 2 : 0}
+        top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
       >
         <Icon className="mr-1">{collapsed ? "eye" : "eye-slash"}</Icon> {t("scm-review-plugin.diff.collapseDiffs")}
       </StickyButton>
       <CoreDiff
         diff={data.files}
         {...props}
-        stickyHeader={typeof stickyHeader === "number" && stickyHeader > 40 ? stickyHeader - 5 : true}
+        stickyHeader={
+          typeof stickyHeader === "number" && stickyHeader > buttonHeight
+            ? stickyHeader - overlapBetweenPanelHeader
+            : true
+        }
       />
       {data.partial ? (
         <PartialNotification
