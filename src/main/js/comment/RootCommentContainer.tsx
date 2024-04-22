@@ -79,6 +79,7 @@ const RootCommentContainer: FC<Props> = ({ repository, pullRequest }) => {
   }
 
   const createLink = (comments?._links?.create as Link)?.href || undefined;
+  const createWithImagesLink = (comments?._links?.createWithImages as Link)?.href || undefined;
   return (
     <div ref={contentRef}>
       {comments._embedded.pullRequestComments?.map((rootComment: Comment) => (
@@ -88,10 +89,18 @@ const RootCommentContainer: FC<Props> = ({ repository, pullRequest }) => {
             pullRequest={pullRequest}
             comment={rootComment}
             createLink={createLink}
+            createWithImageLink={createWithImagesLink}
           />
         </CommentWrapper>
       ))}
-      {createLink && <CreateComment repository={repository} pullRequest={pullRequest} url={createLink} />}
+      {createLink && createWithImagesLink && (
+        <CreateComment
+          repository={repository}
+          pullRequest={pullRequest}
+          url={createLink}
+          commentWithImageUrl={createWithImagesLink}
+        />
+      )}
     </div>
   );
 };

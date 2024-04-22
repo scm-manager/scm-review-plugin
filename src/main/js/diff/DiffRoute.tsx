@@ -90,6 +90,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target, sourceB
     return <ErrorNotification error={error} />;
   } else {
     const createLink = (comments?._links?.create as Link)?.href || undefined;
+    const createWithImagesLink = (comments?._links?.createWithImages as Link)?.href || undefined;
     return (
       <Diff
         repository={repository}
@@ -97,6 +98,7 @@ const DiffRoute: FC<Props> = ({ repository, pullRequest, source, target, sourceB
         comments={comments}
         diffUrl={diffUrl}
         createLink={createLink}
+        createLinkWithImages={createWithImagesLink}
         reviewedFiles={pullRequest?.markedAsReviewed || []}
         fileContentFactory={fileContentFactory}
         sourceBranch={sourceBranch}

@@ -46,14 +46,23 @@ public class CommentPathBuilderMock {
     when(commentPathBuilder.createUpdateCommentUri(any(), any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3)
     );
+    when(commentPathBuilder.createUpdateCommentWithImageUri(any(), any(), any(), any(), any())).thenAnswer(
+      invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/images"
+    );
     when(commentPathBuilder.createReplyCommentUri(any(), any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/reply"
+    );
+    when(commentPathBuilder.createReplyCommentWithImageUri(any(), any(), any(), any(), any())).thenAnswer(
+      invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/reply/images"
     );
     when(commentPathBuilder.createDeleteReplyUri(any(), any(), any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/replies/" + invocation.getArgument(4)
     );
     when(commentPathBuilder.createUpdateReplyUri(any(), any(), any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/replies/" + invocation.getArgument(4)
+    );
+    when(commentPathBuilder.createUpdateReplyWithImageUri(any(), any(), any(), any(), any(), any())).thenAnswer(
+      invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/replies/" + invocation.getArgument(4) + "/images"
     );
     when(commentPathBuilder.createPossibleTransitionUri(any(), any(), any(), any())).thenAnswer(
       invocation -> prefix + "/pull-requests/" + invocation.getArgument(0) + "/" + invocation.getArgument(1) + "/" + invocation.getArgument(2) + "/comments/" + invocation.getArgument(3) + "/transitions"

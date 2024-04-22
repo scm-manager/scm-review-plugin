@@ -32,6 +32,7 @@ import com.cloudogu.scm.review.comment.service.ExecutedTransition;
 import com.cloudogu.scm.review.comment.service.InlineContext;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.MockedDiffLine;
+import com.cloudogu.scm.review.comment.service.PullRequestImageService;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
@@ -40,6 +41,7 @@ import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
@@ -59,6 +61,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.sse.ChannelRegistry;
+import sonia.scm.store.Blob;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.RestDispatcher;
 
@@ -67,10 +70,20 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.ContextLine.copy;
@@ -131,6 +144,9 @@ public class CommentRootResourceTest {
   @Mock
   private ConfigService configService;
 
+  @Mock
+  private PullRequestImageService pullRequestImageService;
+
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock();
 
   @InjectMocks
@@ -149,7 +165,7 @@ public class CommentRootResourceTest {
     commentMapper.setExecutedTransitionMapper(executedTransitionMapper);
     commentMapper.setPossibleTransitionMapper(possibleTransitionMapper);
     replyMapper.setExecutedTransitionMapper(executedTransitionMapper);
-    CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder, pullRequestService, branchRevisionResolver);
+    CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder, pullRequestService, branchRevisionResolver, pullRequestImageService);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
@@ -175,6 +191,39 @@ public class CommentRootResourceTest {
 
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
     assertThat(response.getOutputHeaders().getFirst("Location")).hasToString("/v2/pull-requests/space/name/1/comments/1");
+  }
+
+  @Test
+  public void shouldCreateCommentWithImage() throws URISyntaxException, IOException {
+    when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
+    when(service.add(eq(REPOSITORY_NAMESPACE), eq(REPOSITORY_NAME), eq("1"), argThat(t -> t.getComment().equals("this is my comment")))).thenReturn("1");
+    String commentJson = "{\"comment\" : \"this is my comment\", \"filetypes\": {\"file0\": \"image/png\"}}";
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/images?sourceRevision=source&targetRevision=target");
+
+    MultipartUploadHelper.multipartRequest(request, Collections.singletonMap("file0", new ByteArrayInputStream("content".getBytes())), commentJson);
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+    assertThat(response.getOutputHeaders().getFirst("Location")).hasToString("/v2/pull-requests/space/name/1/comments/1");
+  }
+
+  @Test
+  public void shouldGetCommentImage() throws URISyntaxException, IOException {
+    Blob blob = mock(Blob.class);
+    when(blob.getInputStream()).thenReturn(new ByteArrayInputStream("image/png\0content".getBytes()));
+    PullRequestImageService.ImageStream imageStream = new PullRequestImageService.ImageStream(blob);
+    when(pullRequestImageService.getPullRequestImage(any(), any(), any())).thenReturn(imageStream);
+
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/images/dummyHash");
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    assertThat(response.getOutput()).isEqualTo("content".getBytes());
   }
 
   @Test

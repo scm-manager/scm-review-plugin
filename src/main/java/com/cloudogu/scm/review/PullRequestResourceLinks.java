@@ -232,6 +232,16 @@ public class PullRequestResourceLinks {
       return
         LinkRevisionAppender.append(link, revisionResult);
     }
+
+    public String createWithImages(String namespace, String name, String pullRequestId, BranchRevisionResolver.RevisionResult revisionResult) {
+      String link = linkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("comments").parameters()
+        .method("createWithImage").parameters(namespace, name, pullRequestId)
+        .href();
+      return
+        LinkRevisionAppender.append(link, revisionResult);
+    }
   }
 
   public MergeLinks mergeLinks() {

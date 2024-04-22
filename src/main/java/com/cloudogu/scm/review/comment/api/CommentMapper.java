@@ -101,6 +101,7 @@ public abstract class CommentMapper extends HalAppenderMapper {
     linksBuilder.self(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, target.getId()));
     if (!target.isSystemComment() && PermissionCheck.mayModifyComment(repository, source)) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId(), revisions)));
+      linksBuilder.single(link("updateWithImages", commentPathBuilder.createUpdateCommentWithImageUri(namespace, name, pullRequestId, target.getId(), revisions)));
       linksBuilder.single(link("possibleTransitions", commentPathBuilder.createPossibleTransitionUri(namespace, name, pullRequestId, target.getId())));
       if (source.getReplies().isEmpty()) {
         linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId(), revisions)));
@@ -151,6 +152,7 @@ public abstract class CommentMapper extends HalAppenderMapper {
     final Links.Builder linksBuilder = new Links.Builder();
     if (PermissionCheck.mayComment(repository)) {
       linksBuilder.single(link("reply", commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, commentId, revisions)));
+      linksBuilder.single(link("replyWithImages", commentPathBuilder.createReplyCommentWithImageUri(namespace, name, pullRequestId, commentId, revisions)));
     }
     target.add(linksBuilder.build());
   }

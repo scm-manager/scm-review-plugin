@@ -643,6 +643,18 @@
     }
   },
   "errors": {
+    "xfbjOHZ73A": {
+      "displayName": "Upload failed",
+      "description": "Something went wrong, when uploading an image"
+    },
+    "CRDEiBAulq": {
+      "displayName": "Image size too big",
+      "description": "The uploaded image exceeds the allowed maximum size (default 8MB)"
+    },
+    "HPsg0smonb": {
+      "displayName": "Hash value of the an uploaded image could not be verified",
+      "description": "The calculated hash value of an uploaded image does not match the hash value provided by the client. Probably something went wrong, when uploading the image."
+    },
     "FTRhcI0To1": {
       "displayName": "Pull request not open",
       "description": "Merges can only be performed for open pull requests."

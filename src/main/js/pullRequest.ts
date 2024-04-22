@@ -27,6 +27,7 @@ import {
   BasicPullRequest,
   CheckResult,
   Comment,
+  CommentImage,
   Comments,
   Conflicts,
   MergeCheck,
@@ -393,6 +394,45 @@ export const useUpdateComment = (repository: Repository, pullRequest: PullReques
   };
 };
 
+const extractCommentWithFileTypes = (request: CreateCommentWithImagesRequest | UpdateCommentWithImagesRequest) => {
+  const filetypes: { [key: string]: string } = {};
+  request.images.forEach(image => (filetypes[image.fileHash] = image.filetype));
+  return { ...request.comment, filetypes };
+};
+
+export const useUpdateCommentWithImages = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+  if (!id) {
+    throw new Error("Could not update comment fpr pull request without id");
+  }
+
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, UpdateCommentWithImagesRequest>(
+    updateRequest => {
+      const formData = new FormData();
+      updateRequest.images.forEach(image => formData.append(image.fileHash, image.file, image.fileHash));
+      formData.append("comment", JSON.stringify(extractCommentWithFileTypes(updateRequest)));
+
+      const options: RequestInit = {
+        method: "PUT",
+        body: formData
+      };
+
+      return apiClient.httpRequestWithBinaryBody(options, requiredLink(updateRequest.comment, "updateWithImages"));
+    },
+    {
+      onSuccess: () => {
+        return invalidateQueries(queryClient, prQueryKey(repository, id), prCommentsQueryKey(repository, id));
+      }
+    }
+  );
+  return {
+    update: (comment: Comment, images: CommentImage[]) => mutate({ comment, images }),
+    isLoading,
+    error
+  };
+};
+
 export const useTransformComment = (repository: Repository, pullRequest: PullRequest) => {
   const id = pullRequest.id;
   if (!id) {
@@ -425,6 +465,15 @@ type CreateCommentRequest = {
   comment: BasicComment;
 };
 
+type CreateCommentWithImagesRequest = CreateCommentRequest & {
+  images: CommentImage[];
+};
+
+type UpdateCommentWithImagesRequest = {
+  comment: Comment;
+  images: CommentImage[];
+};
+
 export const useCreateComment = (repository: Repository, pullRequest: PullRequest) => {
   const id = pullRequest.id;
   if (!id) {
@@ -451,6 +500,41 @@ export const useCreateComment = (repository: Repository, pullRequest: PullReques
   );
   return {
     create: (url: string, comment: BasicComment) => mutate({ url, comment }),
+    isLoading,
+    error
+  };
+};
+
+export const useCreateCommentWithImage = (repository: Repository, pullRequest: PullRequest) => {
+  const id = pullRequest.id;
+  if (!id) {
+    throw new Error("Could not create comment for pull request without id");
+  }
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error } = useMutation<{}, Error, CreateCommentWithImagesRequest>(
+    request => {
+      if (!request.url) {
+        throw new Error("Could not create comment because create url is not defined");
+      }
+
+      return apiClient.postBinary(request.url, formdata => {
+        request.images.forEach(image => formdata.append(image.fileHash, image.file, image.fileHash));
+        formdata.append("comment", JSON.stringify(extractCommentWithFileTypes(request)));
+      });
+    },
+    {
+      onSuccess: () => {
+        return invalidateQueries(
+          queryClient,
+          prQueryKey(repository, id),
+          prCommentsQueryKey(repository, id),
+          prMergeCheckQueryKey(repository, id)
+        );
+      }
+    }
+  );
+  return {
+    create: (url: string, comment: BasicComment, images: CommentImage[]) => mutate({ url, comment, images }),
     isLoading,
     error
   };

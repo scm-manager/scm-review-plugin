@@ -74,6 +74,17 @@ class CommentPathBuilder {
     return append(link, revisions);
   }
 
+  String createUpdateCommentWithImageUri(String namespace, String name, String pullRequestId, String commentId, BranchRevisionResolver.RevisionResult revisions) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    String link = linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("updateCommentWithImage").parameters()
+      .href();
+    return append(link, revisions);
+  }
+
   String createDeleteCommentUri(String namespace, String name, String pullRequestId, String commentId, BranchRevisionResolver.RevisionResult revisions) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     String link = linkBuilder
@@ -96,6 +107,17 @@ class CommentPathBuilder {
     return append(link, revisions);
   }
 
+  String createReplyCommentWithImageUri(String namespace, String name, String pullRequestId, String commentId, BranchRevisionResolver.RevisionResult revisions) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    String link = linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("replyWithImage").parameters()
+      .href();
+    return append(link, revisions);
+  }
+
   String createUpdateReplyUri(String namespace, String name, String pullRequestId, String commentId, String replyId, BranchRevisionResolver.RevisionResult revisions) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     String link = linkBuilder
@@ -103,6 +125,18 @@ class CommentPathBuilder {
       .method("comments").parameters()
       .method("getCommentResource").parameters(commentId)
       .method("updateReply").parameters(replyId)
+      .href();
+
+    return append(link, revisions);
+  }
+
+  String createUpdateReplyWithImageUri(String namespace, String name, String pullRequestId, String commentId, String replyId, BranchRevisionResolver.RevisionResult revisions) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    String link = linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("updateReplyWithImage").parameters(replyId)
       .href();
 
     return append(link, revisions);

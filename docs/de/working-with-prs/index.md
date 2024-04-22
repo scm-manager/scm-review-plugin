@@ -30,7 +30,12 @@ Für einen Pull Request können drei Arten von Kommentaren erstellt werden.
 
 Alle Kommentare findet man in dem Kommentar-Tab. Die Datei- und Zeilen-Kommentare findet man auch direkt an der Datei in dem Diff-Tab. 
 Es ist möglich innerhalb von Kommentaren andere Benutzer des SCM-Managers zu erwähnen. Dafür beginnt man mit einem "@"-Zeichen und tippt danach den Namen, Benutzername oder die E-Mail-Adresse des Benutzers. 
-Ab dem dritten Zeichen werden über eine Autovervollständigung passende Benutzer vorgeschlagen. Erwähnte Benutzer werden per E-Mail benachrichtigt, dass sie in dem Kommentar erwähnt wurden. 
+Ab dem dritten Zeichen werden über eine Autovervollständigung passende Benutzer vorgeschlagen. Erwähnte Benutzer werden per E-Mail benachrichtigt, dass sie in dem Kommentar erwähnt wurden.
+
+Zudem ist es möglich, Bilder in Kommentaren zu nutzen. Dafür kann ein Bild per Copy & Paste in den Kommentar-Editor eingefügt werden.
+Dieses Bild wird dann als Markdown-Bild in den Kommentar eingefügt und beim Speichern des Kommentars separat im
+SCM-Manager gespeichert. Bilder können entweder direkt über die Zwischenablage (z. B. bei Nutzung eines Screenshot-Tools)
+oder durch Kopieren einer Bilddatei in den Editor eingefügt werden. Erlaubt sind dabei die Bildformate PNG, JPEG und GIF.
 
 ![Pull Request - Create comment](assets/createComment.png)
 

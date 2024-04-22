@@ -30,6 +30,7 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
 import com.cloudogu.scm.review.comment.service.ExecutedTransition;
+import com.cloudogu.scm.review.comment.service.PullRequestImageService;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
@@ -39,6 +40,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import sonia.scm.NotFoundException;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.repository.NamespaceAndName;
@@ -60,6 +63,9 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import sonia.scm.web.api.DtoValidator;
+
+import java.io.IOException;
 import java.util.Collection;
 
 import static com.cloudogu.scm.review.comment.api.RevisionChecker.checkRevision;
@@ -78,6 +84,7 @@ public class CommentResource {
   private final ReplyMapper replyMapper;
   private final CommentPathBuilder commentPathBuilder;
   private final ExecutedTransitionMapper executedTransitionMapper;
+  private final PullRequestImageService pullRequestImageService;
   private BranchRevisionResolver branchRevisionResolver;
 
   @Inject
@@ -87,6 +94,7 @@ public class CommentResource {
                          ReplyMapper replyMapper,
                          CommentPathBuilder commentPathBuilder,
                          ExecutedTransitionMapper executedTransitionMapper,
+                         PullRequestImageService pullRequestImageService,
                          BranchRevisionResolver branchRevisionResolver) {
     this.repositoryResolver = repositoryResolver;
     this.service = service;
@@ -94,6 +102,7 @@ public class CommentResource {
     this.replyMapper = replyMapper;
     this.commentPathBuilder = commentPathBuilder;
     this.executedTransitionMapper = executedTransitionMapper;
+    this.pullRequestImageService = pullRequestImageService;
     this.branchRevisionResolver = branchRevisionResolver;
   }
 
@@ -262,6 +271,41 @@ public class CommentResource {
   }
 
   @PUT
+  @Path("/images")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(summary = "Update pull request comment and upload an images with it", description = "Modifies a pull request comment and upload images with it.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "400", description = "Invalid body, e.g. illegal change of namespace or name")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no comment with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public void updateCommentWithImage(@PathParam("namespace") String namespace,
+                                   @PathParam("name") String name,
+                                   @PathParam("pullRequestId") String pullRequestId,
+                                   @PathParam("commentId") String commentId,
+                                   @QueryParam("sourceRevision") String expectedSourceRevision,
+                                   @QueryParam("targetRevision") String expectedTargetRevision,
+                                   @NotNull MultipartFormDataInput formInput) throws IOException {
+    MultipartFormDataInputHelper<CommentWithImageDto> formDataHelper = new MultipartFormDataInputHelper<>(formInput);
+    CommentWithImageDto commentDto = formDataHelper.extractJsonObject(CommentWithImageDto.class, "comment");
+    DtoValidator.validate(commentDto);
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
+    service.modifyComment(namespace, name, pullRequestId, commentId, commentMapper.map(commentDto));
+
+    formDataHelper.processFiles((fileHash, fileBody) ->
+      pullRequestImageService.createCommentImage(new NamespaceAndName(namespace, name), pullRequestId, commentId, fileHash, commentDto.getFiletypes().get(fileHash), fileBody)
+    );
+  }
+
+  @PUT
   @Path("replies/{replyId}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Operation(summary = "Update pull request comment reply", description = "Modifies a pull request comment reply.", tags = "Pull Request Comment")
@@ -291,6 +335,42 @@ public class CommentResource {
     service.modifyReply(namespace, name, pullRequestId, replyId, replyMapper.map(replyDto));
   }
 
+  @PUT
+  @Path("replies/{replyId}/images")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(summary = "Update pull request comment reply and upload an image with it", description = "Modifies a pull request comment reply and upload an image with it.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "update success")
+  @ApiResponse(responseCode = "400", description = "Invalid body, e.g. illegal change of namespace or name")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no comment with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public void updateReplyWithImage(@PathParam("namespace") String namespace,
+                                 @PathParam("name") String name,
+                                 @PathParam("pullRequestId") String pullRequestId,
+                                 @PathParam("commentId") String commentId,
+                                 @PathParam("replyId") String replyId,
+                                 @QueryParam("sourceRevision") String expectedSourceRevision,
+                                 @QueryParam("targetRevision") String expectedTargetRevision,
+                                 @NotNull MultipartFormDataInput formInput) throws IOException {
+    MultipartFormDataInputHelper<ReplyWithImageDto> formDataHelper = new MultipartFormDataInputHelper<>(formInput);
+    ReplyWithImageDto replyDto = formDataHelper.extractJsonObject(ReplyWithImageDto.class, "comment");
+    DtoValidator.validate(replyDto);
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
+    service.modifyReply(namespace, name, pullRequestId, replyId, replyMapper.map(replyDto));
+
+    formDataHelper.processFiles((fileHash, fileBody) -> pullRequestImageService.createReplyImage(
+      new NamespaceAndName(namespace, name), pullRequestId, commentId, replyId, fileHash, replyDto.getFiletypes().get(fileHash), fileBody
+    ));
+  }
+
   @POST
   @Path("replies")
   @Consumes(MediaType.APPLICATION_JSON)
@@ -316,10 +396,74 @@ public class CommentResource {
                         @QueryParam("sourceRevision") String expectedSourceRevision,
                         @QueryParam("targetRevision") String expectedTargetRevision,
                         @Valid ReplyDto replyDto) {
-    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
-    String newId = service.reply(namespace, name, pullRequestId, commentId, replyMapper.map(replyDto));
+    String newId = createReply(namespace, name, pullRequestId, commentId, expectedSourceRevision, expectedTargetRevision, replyDto);
     String newLocation = commentPathBuilder.createReplySelfUri(namespace, name, pullRequestId, commentId, newId);
     return Response.created(create(newLocation)).build();
+  }
+
+  private String createReply(String namespace, String name, String pullRequestId, String commentId, String expectedSourceRevision, String expectedTargetRevision, @Valid ReplyDto replyDto) {
+    checkRevision(branchRevisionResolver, namespace, name, pullRequestId, expectedSourceRevision, expectedTargetRevision);
+    return service.reply(namespace, name, pullRequestId, commentId, replyMapper.map(replyDto));
+  }
+
+  @POST
+  @Path("replies/images")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Operation(summary = "Reply to pull request comment and upload images with it.", description = "Creates a new pull request comment reply and upload images with it.", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "204", description = "success")
+  @ApiResponse(responseCode = "400", description = "Invalid body, e.g. illegal change of namespace or name")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"commentPullRequest\" privilege")
+  @ApiResponse(responseCode = "404", description = "not found, no comment with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public Response replyWithImage(@PathParam("namespace") String namespace,
+                                 @PathParam("name") String name,
+                                 @PathParam("pullRequestId") String pullRequestId,
+                                 @PathParam("commentId") String commentId,
+                                 @QueryParam("sourceRevision") String expectedSourceRevision,
+                                 @QueryParam("targetRevision") String expectedTargetRevision,
+                                 @NotNull MultipartFormDataInput formInput) throws IOException {
+    MultipartFormDataInputHelper<ReplyWithImageDto> formDataHelper = new MultipartFormDataInputHelper<>(formInput);
+    ReplyWithImageDto replyDto = formDataHelper.extractJsonObject(ReplyWithImageDto.class, "comment");
+    DtoValidator.validate(replyDto);
+    String replyId = createReply(namespace, name, pullRequestId, commentId, expectedSourceRevision, expectedTargetRevision, replyDto);
+
+    formDataHelper.processFiles((fileHash, fileBody) -> pullRequestImageService.createReplyImage(
+      new NamespaceAndName(namespace, name), pullRequestId, commentId, replyId, fileHash, replyDto.getFiletypes().get(fileHash), fileBody
+    ));
+
+    String newLocation = commentPathBuilder.createReplySelfUri(namespace, name, pullRequestId, commentId, replyId);
+    return Response.created(create(newLocation)).build();
+  }
+
+  @GET
+  @Path("replies/images/{fileHash}")
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  @Operation(summary = "Fetch an image related to the reply", description = "Fetch an image related to the reply", tags = "Pull Request Comment")
+  @ApiResponse(responseCode = "200", description = "success")
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "404", description = "not found, no comment, reply or image with the specified id is available")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public Response getReplyImage(@PathParam("namespace") String namespace,
+                                @PathParam("name") String name,
+                                @PathParam("pullRequestId") String pullRequestId,
+                                @PathParam("fileHash") String fileHash) throws IOException {
+    PullRequestImageService.ImageStream image = pullRequestImageService.getPullRequestImage(new NamespaceAndName(namespace, name), pullRequestId, fileHash);
+    return Response.ok(image.getImageStream().readAllBytes(), MediaType.valueOf(image.getFiletype())).build();
   }
 
   @GET

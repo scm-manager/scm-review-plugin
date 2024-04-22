@@ -35,17 +35,19 @@ type Props = {
 };
 
 const ReplyEditor: FC<Props> = ({ repository, pullRequest, comment, onCancel }) => {
-  if (!comment._links.reply) {
+  if (!comment._links.reply || !comment._links.replyWithImages) {
     throw new Error("reply links is missing");
   }
 
   const replyLink = comment._links.reply as Link;
+  const replyWithImageLink = comment._links.replyWithImages as Link;
   return (
     <CommentSpacingWrapper>
       <CreateComment
         repository={repository}
         pullRequest={pullRequest}
         url={replyLink.href}
+        commentWithImageUrl={replyWithImageLink.href}
         onCancel={onCancel}
         autofocus={true}
         reply={true}

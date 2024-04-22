@@ -31,6 +31,11 @@ All comments are shown in the "Comments" tab. The file and line comments are als
 It is possible to mention SCM-Manager user in comments. Simply type "@" and right afterwards the name, username or the e-mail-address. 
 After the third character an autocomplete form will appear suggesting the best matches.
 
+Additionally, it is possible to use images in comments. To do so, copy and paste an image into the comment editor.
+This image will be inserted as a markdown image in the comment and saved separately in the SCM-Manager when saving the comment.
+Images can be inserted directly via the clipboard (e.g. when using a screenshot tool) or by copying an image file into
+the editor. Allowed image formats are PNG, JPEG and GIF.
+
 ![Pull Request - Create comment](assets/createComment.png)
 
 There are these options to interact with a comment:

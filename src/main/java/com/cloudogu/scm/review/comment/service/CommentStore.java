@@ -29,6 +29,7 @@ import sonia.scm.store.DataStore;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
@@ -84,6 +85,10 @@ public class CommentStore {
       }
       return result;
     });
+  }
+
+  Optional<Comment> getPullRequestCommentById(String pullRequestId, String commentId) {
+    return getAll(pullRequestId).stream().filter(comment -> comment.getId().equals(commentId)).findFirst();
   }
 
   public void delete(String pullRequestId, String commentId) {

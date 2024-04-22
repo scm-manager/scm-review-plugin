@@ -29,9 +29,13 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -51,6 +55,10 @@ public abstract class BasicComment implements Cloneable, Serializable {
   private Set<String> mentionUserIds;
 
   private List<ExecutedTransition> executedTransitions = new ArrayList<>();
+
+  @Getter
+  @Setter
+  private Set<String> assignedImages = new HashSet<>();
 
   public String getId() {
     return id;

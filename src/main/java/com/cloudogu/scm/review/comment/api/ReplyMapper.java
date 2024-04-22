@@ -86,6 +86,7 @@ public abstract class ReplyMapper extends HalAppenderMapper {
     linksBuilder.self(commentPathBuilder.createReplySelfUri(namespace, name, pullRequestId, comment.getId(), target.getId()));
     if (PermissionCheck.mayModifyComment(repository, source) && !source.isSystemReply()) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId(), revisions)));
+      linksBuilder.single(link("updateWithImages", commentPathBuilder.createUpdateReplyWithImageUri(namespace, name, pullRequestId, comment.getId(), target.getId(), revisions)));
       linksBuilder.single(link("delete", commentPathBuilder.createDeleteReplyUri(namespace, name, pullRequestId, comment.getId(), target.getId(), revisions)));
     }
     applyEnrichers(new EdisonHalAppender(linksBuilder, new Embedded.Builder()), source, repository);

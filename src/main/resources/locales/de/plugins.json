@@ -645,6 +645,18 @@
     }
   },
   "errors": {
+    "xfbjOHZ73A": {
+      "displayName": "Upload fehlgeschlagen",
+      "description": "Beim Upload eines Bildes ist etwas fehlgeschlagen"
+    },
+    "CRDEiBAulq": {
+      "displayName": "Bild überschreitet die maximale Größe",
+      "description": "Das hochgeladene Bild überschreitet die maximale Größe (Default 8MB)"
+    },
+    "HPsg0smonb": {
+      "displayName": "Hash-Wert eines hochgeladenen Bildes konnte nicht verifiziert werden",
+      "description": "Der berechnete Hash-Wert eines hochgeladenen Bildes stimmt nicht mit dem vom Client angegebenen Hash-Wert überein. Vermutlich ist beim Hochladen etwas schief gegangen."
+    },
     "FTRhcI0To1": {
       "displayName": "Pull Request nicht offen",
       "description": "Merges können nur auf offenen Pull Requests ausgeführt werden."

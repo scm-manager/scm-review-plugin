@@ -68,6 +68,7 @@ type Props = {
   comments?: Comments;
   diffUrl: string;
   createLink?: string;
+  createLinkWithImages?: string;
   fileContentFactory: FileContentFactory;
   reviewedFiles: string[];
   sourceBranch?: Branch;
@@ -128,6 +129,7 @@ const Diff: FC<Props> = ({
   comments,
   diffUrl,
   createLink,
+  createLinkWithImages,
   fileContentFactory,
   reviewedFiles,
   sourceBranch
@@ -312,6 +314,7 @@ const Diff: FC<Props> = ({
               pullRequest={pullRequest}
               comment={comment}
               createLink={createLink}
+              createWithImageLink={createLinkWithImages}
             />
           </CommentWrapper>
         ))}
@@ -327,6 +330,7 @@ const Diff: FC<Props> = ({
             repository={repository}
             pullRequest={pullRequest}
             url={createLink}
+            commentWithImageUrl={createLinkWithImages}
             location={location}
             onCancel={() => closeEditor(location)}
             autofocus={true}

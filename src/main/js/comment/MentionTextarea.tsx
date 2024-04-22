@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, ReactText } from "react";
+import React, { FC, ReactText, ClipboardEvent } from "react";
 import styled from "styled-components";
 import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
 import { BasicComment } from "../types/PullRequest";
@@ -87,9 +87,19 @@ type Props = {
   onChange: (event: any) => void;
   onSubmit: () => void;
   onCancel?: () => void;
+  onPaste?: (pasteEvent: ClipboardEvent<HTMLTextAreaElement>) => void;
 };
 
-const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention, onChange, onSubmit, onCancel }) => {
+const MentionTextarea: FC<Props> = ({
+  value,
+  placeholder,
+  comment,
+  onAddMention,
+  onChange,
+  onSubmit,
+  onCancel,
+  onPaste
+}) => {
   const userSuggestions = useUserSuggestions();
 
   const onKeyDown = (event: any) => {
@@ -116,6 +126,7 @@ const MentionTextarea: FC<Props> = ({ value, placeholder, comment, onAddMention,
           placeholder={placeholder}
           allowSpaceInQuery={true}
           allowSuggestionsAboveCursor={true}
+          onPaste={onPaste}
         >
           <Mention
             markup="@[__id__]"

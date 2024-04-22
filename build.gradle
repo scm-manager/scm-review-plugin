@@ -27,11 +27,19 @@ plugins {
 }
 
 dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:3.0.0"
+  plugin "sonia.scm.plugins:scm-mail-plugin:3.2.1-SNAPSHOT"
   plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:2.0.0"
   optionalPlugin "sonia.scm.plugins:scm-editor-plugin:3.0.0"
   optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:2.0.0"
   testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
+  implementation 'commons-io:commons-io:2.16.1'
+
+  // we don't want the transitive dependencies in the resulting smp ...
+  implementation("org.jboss.resteasy:resteasy-multipart-provider:6.2.5.Final") {
+    transitive = false
+  }
+  // ... but we want them on the classpath for testing
+  testImplementation "org.jboss.resteasy:resteasy-multipart-provider:6.2.5.Final"
 }
 
 scmPlugin {

@@ -31,9 +31,10 @@ type Props = {
   pullRequest: PullRequest;
   comment: Comment;
   createLink?: string;
+  createWithImagesLink?: string;
 };
 
-const Replies: FC<Props> = ({ repository, pullRequest, comment, createLink }) => {
+const Replies: FC<Props> = ({ repository, pullRequest, comment, createLink, createWithImagesLink }) => {
   if (!comment._embedded || !comment._embedded.replies) {
     return null;
   }
@@ -48,6 +49,7 @@ const Replies: FC<Props> = ({ repository, pullRequest, comment, createLink }) =>
           key={reply.id}
           parent={comment}
           createLink={createLink}
+          createWithImageLink={createWithImagesLink}
           comment={reply}
         />
       ))}

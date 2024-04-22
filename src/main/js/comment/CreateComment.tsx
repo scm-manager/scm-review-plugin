@@ -21,44 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import React, { FC, ReactText, useState } from "react";
+import React, { ClipboardEvent, FC, ReactText, useState } from "react";
 import { Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
-import { CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
+import { BasicComment, CommentImage, CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
-import { useCreateComment } from "../pullRequest";
+import { useCreateComment, useCreateCommentWithImage } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
 import MentionTextarea from "./MentionTextarea";
 import { Repository } from "@scm-manager/ui-types";
+import handleImagePaste from "./handleImagePaste";
 
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
   url: string;
+  commentWithImageUrl: string;
   location?: Location;
   onCancel?: () => void;
   autofocus?: boolean;
   reply?: boolean;
 };
 
-const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCancel, reply }) => {
+const CreateComment: FC<Props> = ({ repository, pullRequest, url, commentWithImageUrl, location, onCancel, reply }) => {
   const [t] = useTranslation("plugins");
 
   const { create, isLoading, error } = useCreateComment(repository, pullRequest);
+  const createCommentWithImage = useCreateCommentWithImage(repository, pullRequest);
 
   const [commentType, setCommentType] = useState<CommentType>("COMMENT");
   const [commentText, setCommentText] = useState("");
   const [mentions, setMentions] = useState<Mention[]>([]);
+  const [images, setImages] = useState<CommentImage[]>([]);
 
   const submit = () => {
-    create(url, {
+    const comment: BasicComment = {
       type: commentType,
       comment: commentText,
       mentions: mentions,
       location
-    });
+    };
+
+    if (images.length !== 0 && commentWithImageUrl) {
+      createCommentWithImage.create(commentWithImageUrl, comment, images);
+    } else {
+      create(url, comment);
+    }
+
     setCommentText("");
     setCommentType("COMMENT");
     setMentions([]);
+    setImages([]);
     if (onCancel) {
       onCancel();
     }
@@ -79,7 +91,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
     return commentText && commentText.trim() !== "";
   };
 
-  if (isLoading) {
+  if (isLoading || createCommentWithImage.isLoading) {
     return <Loading />;
   }
 
@@ -136,10 +148,12 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
                   onChange={event => setCommentText(event.target.value)}
                   onCancel={onCancel}
                   onSubmit={submit}
+                  onPaste={handleImagePaste(commentWithImageUrl, setImages, setCommentText)}
                 />
               </div>
             </div>
             <ErrorNotification error={error} />
+            <ErrorNotification error={createCommentWithImage.error} />
             {toggleType}
             <div className="field">
               <Level

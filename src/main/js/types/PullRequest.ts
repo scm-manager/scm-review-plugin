@@ -96,6 +96,12 @@ export type Comment = BasicComment & {
   _embedded?: { [key: string]: any };
 };
 
+export type CommentImage = {
+  fileHash: string;
+  file: File;
+  filetype: string;
+};
+
 export type Mention = {
   id: ReactText;
   displayName: string;
