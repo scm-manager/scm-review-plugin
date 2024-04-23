@@ -69,6 +69,7 @@ import DeleteSourceBranchButton from "./DeleteSourceBranchButton";
 import LabelsList from "./LabelsList";
 import ReopenButton from "./ReopenButton";
 import { useQueryClient } from "react-query";
+import ResizeObserver from "resize-observer-polyfill";
 
 type Props = {
   repository: Repository;
@@ -147,7 +148,6 @@ const StickyHeader = styled.div`
   top: var(--scm-navbar-main-height);
   justify-content: space-between;
   min-height: 50px;
-  padding: 0.5em 0.75em;
   color: var(--scm-panel-heading-color);
   background: var(--scm-panel-heading-background-color);
   border: var(--scm-border);
@@ -172,7 +172,8 @@ const LeftSide = styled.div`
   flex-wrap: wrap;
   align-items: center;
   gap: 0.25rem 1.25rem;
-  margin-left: 0.75rem;
+  margin: 0.5em 0.75em;
+  padding: 0 0.75rem;
   width: calc(100% - 220px);
 
   @media screen and (max-width: ${devices.mobile.width}px) {
@@ -233,26 +234,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, pullRequest.id!));
   }, [queryClient, pullRequest.id, repository, branch]);
 
-  const getHeaderHeight = () => {
-    const headerElement = document.getElementById("pr-details-header");
-    return headerElement ? headerElement.getBoundingClientRect().height : 0;
-  };
-
-  const [stickyHeaderHeight, setStickyHeaderHeight] = useState(getHeaderHeight);
-
-  useEffect(() => {
-    const onResize = () => {
-      if (isVisible) {
-        setStickyHeaderHeight(getHeaderHeight);
-      }
-    };
-
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      window.removeEventListener("resize", onResize);
-    };
-  }, [isVisible]);
+  const [stickyHeaderHeight, setStickyHeaderHeight] = useState(0);
 
   const enableHeaderRef = useCallback(node => {
     if (node !== null) {
@@ -264,9 +246,19 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         };
 
         setVisible(isTargetNoLongerInViewport());
-        setStickyHeaderHeight(getHeaderHeight);
       });
       intersectionObserver.observe(node);
+    }
+  }, []);
+
+  const contentHeightRef = useCallback(node => {
+    if (node !== null) {
+      const resizeObserver = new ResizeObserver(entries => {
+        const entry = entries[0];
+
+        setStickyHeaderHeight(entry.contentRect.height);
+      });
+      resizeObserver.observe(node);
     }
   }, []);
 
@@ -388,7 +380,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   ) : null;
 
   const detailStickyHeader = isVisible ? (
-    <StickyHeader id="pr-details-header">
+    <StickyHeader ref={contentHeightRef}>
       <LeftSide>
         <strong>
           #{pullRequest.id} <PullRequestTitle pullRequest={pullRequest} />

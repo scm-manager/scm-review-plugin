@@ -53,7 +53,6 @@ const StickyButton = styled(Button)<{ top: number }>`
   margin-left: auto;
   top: calc(${props => props.top}px + var(--scm-navbar-main-height));
   z-index: 11;
-  transition: top 200ms ease 0s;
 `;
 
 const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, stickyHeader, ...props }) => {
