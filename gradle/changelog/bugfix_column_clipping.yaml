@@ -1,0 +1,2 @@
+- type: fixed
+  description: When changing the target branch, the select will not clip the container its in anymore

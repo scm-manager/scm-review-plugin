@@ -44,22 +44,26 @@ const BranchEditForm: FC<Props> = ({ branches, pullRequest, branchesError, handl
   }
 
   const createOptions = () => {
-    return branches?.map(branch => ({
-      label: branch.name,
-      value: branch.name
-    })).filter(branch => branch.label !== pullRequest.source);
+    return branches
+      ?.map(branch => ({
+        label: branch.name,
+        value: branch.name
+      }))
+      .filter(branch => branch.label !== pullRequest.source);
   };
 
-  return <div className="is-clipped">
-    <Label>{t("scm-review-plugin.pullRequest.targetBranch")}</Label>
-    <Select
-      className=""
-      name="target"
-      options={createOptions() || []}
-      onChange={event => handleFormChange(event.target.value)}
-      value={pullRequest?.target}
-    />
-  </div>
+  return (
+    <div className="is-clipped">
+      <Label>{t("scm-review-plugin.pullRequest.targetBranch")}</Label>
+      <Select
+        className=""
+        name="target"
+        options={createOptions() || []}
+        onChange={event => handleFormChange(event.target.value)}
+        value={pullRequest?.target}
+      />
+    </div>
+  );
 };
 
 export { BranchEditForm };

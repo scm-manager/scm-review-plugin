@@ -73,11 +73,11 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
     return <Loading />;
   }
 
-  const changesValid = () => targetBranchValid && modifiedPullRequest.title
+  const changesValid = () => targetBranchValid && modifiedPullRequest.title;
 
   return (
     <div className="columns">
-      <div className="column">
+      <div className="column is-clipped">
         <Subtitle subtitle={t("scm-review-plugin.edit.subtitle", { repositoryName: repository.name })} />
         <ErrorNotification error={error} />
         <BranchEditForm
@@ -85,7 +85,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
           branches={branchesData?._embedded?.branches}
           branchesLoading={branchesLoading}
           branchesError={branchesError}
-          handleFormChange={target => handleFormChange({target})}
+          handleFormChange={target => handleFormChange({ target })}
         />
         <CheckResultDisplay checkResult={checkResult} />
         <EditForm
