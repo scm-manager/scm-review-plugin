@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.inject.util.Providers;
 import org.assertj.core.api.Assertions;
@@ -108,6 +109,8 @@ public class CommentResourceTest {
   @Mock
   private PullRequestImageService pullRequestImageService;
 
+  private PullRequestChangeService pullRequestChangeService;
+
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock("https://scm-manager.org/scm/api/v2");
 
   @Before
@@ -137,7 +140,8 @@ public class CommentResourceTest {
             )
           ),
           null,
-          channelRegistry
+          channelRegistry,
+          pullRequestChangeService
         )
       ),
             configService, userDisplayManager);

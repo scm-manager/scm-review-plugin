@@ -40,8 +40,8 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.sdorra.shiro.ShiroRule;
@@ -72,18 +72,11 @@ import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.ContextLine.copy;
@@ -145,6 +138,9 @@ public class CommentRootResourceTest {
   private ConfigService configService;
 
   @Mock
+  private PullRequestChangeService pullRequestChangeService;
+
+  @Mock
   private PullRequestImageService pullRequestImageService;
 
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock();
@@ -169,7 +165,7 @@ public class CommentRootResourceTest {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-            commentService, serviceFactory, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), null, channelRegistry)), configService, userDisplayManager);
+            commentService, serviceFactory, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), null, channelRegistry, pullRequestChangeService)), configService, userDisplayManager);
     dispatcher.addSingletonResource(pullRequestRootResource);
     when(branchRevisionResolver.getRevisions(any(), any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
@@ -396,7 +392,7 @@ public class CommentRootResourceTest {
 
   @Test
   @SubjectAware(username = "createCommentUser", password = "secret")
-  public void shouldGetOnlyTheSelfLinkÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
+  public void shouldGetOnlyTheSelfLinkIfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
     mockExistingComments();
 
     MockHttpRequest request =

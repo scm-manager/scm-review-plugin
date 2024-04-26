@@ -21,34 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.pullrequest.service;
 
-import lombok.Getter;
-import sonia.scm.event.Event;
-import sonia.scm.repository.Repository;
-import sonia.scm.user.User;
+import { PullRequestChange } from "./ChangesTypes";
 
-@Event
-@Getter
-public class PullRequestApprovalEvent extends BasicPullRequestEvent {
+export type ChangeType = "edit" | "removed" | "created";
 
-  private User approver;
-  private boolean isNewApprover;
-  private final ApprovalCause cause;
-
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, ApprovalCause cause) {
-    super(repository, pullRequest);
-    this.cause = cause;
+export function evalChangeType(change: PullRequestChange): ChangeType {
+  if (change.previousValue && change.currentValue) {
+    return "edit";
   }
 
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, User approver, boolean isNewApprover, ApprovalCause cause) {
-    this(repository, pullRequest, cause);
-    this.approver = approver;
-    this.isNewApprover = isNewApprover;
+  if (change.previousValue && !change.currentValue) {
+    return "removed";
   }
 
-  public enum ApprovalCause {
-    APPROVED,
-    APPROVAL_REMOVED
+  if (!change.previousValue && change.currentValue) {
+    return "created";
   }
+
+  throw new Error("Invalid Change values. Current and previous value is undefined");
 }

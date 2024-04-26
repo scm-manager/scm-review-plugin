@@ -203,7 +203,7 @@ public class CommentService {
     ExecutedTransition<CommentTransition> executedTransition = new ExecutedTransition<>(keyGenerator.createKey(), transition, System.currentTimeMillis(), getCurrentUserId());
     clone.addCommentTransition(executedTransition);
     getCommentStore(repository).update(pullRequestId, clone);
-    eventBus.post(new CommentEvent(repository, pullRequest, comment, clone, HandlerEventType.MODIFY));
+    eventBus.post(new CommentEvent(repository, pullRequest, clone, comment, HandlerEventType.MODIFY));
     return executedTransition;
   }
 

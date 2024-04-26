@@ -25,11 +25,14 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import lombok.ToString;
+
 import java.io.Serializable;
 
 @AllArgsConstructor
@@ -37,6 +40,8 @@ import java.io.Serializable;
 @Data
 @XmlRootElement(name = "mark")
 @XmlAccessorType(XmlAccessType.FIELD)
+@EqualsAndHashCode
+@ToString
 public class ReviewMark implements Serializable {
 
   private String file;

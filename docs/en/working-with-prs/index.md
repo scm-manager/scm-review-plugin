@@ -107,3 +107,20 @@ A pull request can be edited after creation. The author can
 - change the labels.
 
 If the target branch is changed, all approvals by reviewers are reset.
+
+
+### Pull Request History
+
+All changes to a pull request are collected and can be viewed as a history of changes.
+Here are some of the tracked properties:
+
+- Source branch revision
+- Target branch
+- Title
+- Description
+- Reviewer
+- Comments 
+- Tasks
+- Pull request status
+
+![Pull Request Änderungshistorie](assets/pr-change-history.png)

@@ -58,4 +58,8 @@ public class TestData {
   public static Comment createComment() {
     return Comment.createComment("1", "this is my comment", "author", new Location());
   }
+
+  public static Comment createSystemComment() {
+    return Comment.createSystemComment("statusToOpen");
+  }
 }

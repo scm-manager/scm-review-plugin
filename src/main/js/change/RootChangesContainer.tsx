@@ -21,34 +21,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.pullrequest.service;
 
-import lombok.Getter;
-import sonia.scm.event.Event;
-import sonia.scm.repository.Repository;
-import sonia.scm.user.User;
+import React, { FC } from "react";
+import { PullRequest } from "../types/PullRequest";
+import { Repository } from "@scm-manager/ui-types";
+import { usePullRequestChanges } from "../pullRequest";
+import { ErrorNotification, Loading } from "@scm-manager/ui-core";
+import { useTranslation } from "react-i18next";
+import ChangeContainer from "./ChangeContainer";
 
-@Event
-@Getter
-public class PullRequestApprovalEvent extends BasicPullRequestEvent {
+type Props = {
+  pullRequest: PullRequest;
+  repository: Repository;
+};
 
-  private User approver;
-  private boolean isNewApprover;
-  private final ApprovalCause cause;
+const RootChangesContainer: FC<Props> = ({ pullRequest, repository }) => {
+  const { t } = useTranslation("plugins");
+  const { error, isLoading, data } = usePullRequestChanges(repository, pullRequest);
 
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, ApprovalCause cause) {
-    super(repository, pullRequest);
-    this.cause = cause;
+  if (isLoading) {
+    return <Loading />;
   }
 
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, User approver, boolean isNewApprover, ApprovalCause cause) {
-    this(repository, pullRequest, cause);
-    this.approver = approver;
-    this.isNewApprover = isNewApprover;
+  if (error) {
+    return <ErrorNotification error={error} />;
   }
 
-  public enum ApprovalCause {
-    APPROVED,
-    APPROVAL_REMOVED
+  if (data?.length === 0) {
+    return <p>{t("scm-review-plugin.pullRequest.changes.noChanges")}</p>;
   }
-}
+
+  return (
+    <div>
+      <ul>
+        {data
+          ? data.map(change => (
+              <li>
+                <ChangeContainer change={change} repository={repository} />
+              </li>
+            ))
+          : null}
+      </ul>
+    </div>
+  );
+};
+
+export default RootChangesContainer;

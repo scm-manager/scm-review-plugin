@@ -40,6 +40,7 @@ import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-compone
 import { Changeset, HalRepresentation, Link, PagedCollection, Repository } from "@scm-manager/ui-types";
 import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
 import { useBranches } from "@scm-manager/ui-api";
+import { PullRequestChange } from "./change/ChangesTypes";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
@@ -647,6 +648,22 @@ export const useUpdateReviewMark = (repository: Repository, pullRequest: PullReq
     unmark: () => unmark(),
     isLoading: markLoading || unmarkLoading,
     error: markError || unmarkError
+  };
+};
+
+export const usePullRequestChanges = (repository: Repository, pullRequest: PullRequest) => {
+  const { error, isLoading, data } = useQuery<PullRequestChange[], Error>(
+    [...prQueryKey(repository, pullRequest?.id || pullRequest.source + pullRequest.target), "changes"],
+    async () => {
+      const url = requiredLink(pullRequest, "changes");
+      return (await apiClient.get(url)).json();
+    }
+  );
+
+  return {
+    error,
+    isLoading,
+    data
   };
 };
 

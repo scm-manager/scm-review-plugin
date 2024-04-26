@@ -69,7 +69,69 @@
         "commits": "Commits",
         "diff": "Diff",
         "conflicts": "Conflicts",
-        "comments": "Comments"
+        "comments": "Comments",
+        "changes": "Change history"
+      },
+      "changes": {
+        "rejectionCause": {
+          "SOURCE_BRANCH_DELETED":  ", because the source branch was deleted",
+          "TARGET_BRANCH_DELETED":  ", because the target branch was deleted",
+          "REJECTED_BY_USER": ", because a user rejected the pull request"
+        },
+        "noChanges": "No changes available",
+        "titles": {
+          "edit": "Edited {{propertyName}}",
+          "created": "Added {{propertyName}}",
+          "removed": "Removed {{propertyName}}"
+        },
+        "properties": {
+          "TARGET_BRANCH": "Target Branch",
+          "LABELS": "Label",
+          "TITLE": "Title",
+          "DESCRIPTION": "Description",
+          "DELETE_SOURCE_BRANCH_AFTER_MERGE": "Source branch will be deleted after successful merge",
+          "REVIEWER": "Reviewer",
+          "PR_STATUS": "Pull Request Status",
+          "COMMENT": "Comment",
+          "REPLY": "Reply",
+          "TASK": "Task",
+          "SUBSCRIBER": "Subscriber",
+          "FINISHED_TASK": "Task marked as finished",
+          "UNFINISHED_TASK": "Task marked as unfinished",
+          "COMMENT_TO_TASK": "Edited comment to be a task",
+          "TASK_TO_COMMENT": "Edited task to be a comment",
+          "REVIEW_MARKS": "File mark as reviewed",
+          "SOURCE_BRANCH_REVISION": "Source Branch Revision"
+        },
+        "changedBy": "Changed by",
+        "changedByUnknown": "Changed by unknown user",
+        "changedAt": "Changed",
+        "previousValue": "Previously:",
+        "currentValue": "Currently:",
+        "reviewer": {
+          "removed": "Removed '{{username}}' as a reviewer",
+          "added": "Added '{{username}}' as a reviewer",
+          "addedWithApproval": "with an approval",
+          "addedWithoutApproval": "without an approval",
+          "approved": "'{{username}}' has approved",
+          "disapproved": "'{{username}}' has disapproved"
+        },
+        "changedTargetBranch": "Changed target branch from `{{previous}}` to `{{current}}`",
+        "changedPrStatus": "Changed pull request status from `{{previous}}` to `{{current}}`",
+        "subscriber": {
+          "removed": "'{{username}}' is no longer subscribed to the pull request",
+          "added": "'{{username}}' has subscribed to the pull request"
+        },
+        "reviewMark": {
+          "added": "'{{username}}' has marked the file '{{file}}' as reviewed",
+          "removed": "'{{username}}' has removed the reviewed mark for the file '{{file}}'"
+        },
+        "added": "Added: ",
+        "removed": "Removed: ",
+        "revision": {
+          "previous": "Previous revision: ",
+          "current": "Current revision: "
+        }
       },
       "tasks": {
         "todo": "{{count}} task open",

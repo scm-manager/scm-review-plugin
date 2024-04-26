@@ -204,6 +204,25 @@ public class PullRequestResourceLinks {
     }
   }
 
+  public PullRequestChangesLinks pullRequestChanges() {
+    return new PullRequestChangesLinks(scmPathInfo);
+  }
+
+  public static class PullRequestChangesLinks {
+    private final LinkBuilder linkBuilder;
+
+    public PullRequestChangesLinks(ScmPathInfo pathInfo) {
+      linkBuilder = new LinkBuilder(pathInfo, PullRequestRootResource.class, PullRequestResource.class);
+    }
+
+    public String readAll(String namespace, String name, String pullRequestId) {
+      return linkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("getChanges").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+  }
+
   public PullRequestCommentsLinks pullRequestComments() {
     return new PullRequestCommentsLinks(scmPathInfo);
   }

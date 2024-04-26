@@ -21,34 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.cloudogu.scm.review.pullrequest.service;
 
-import lombok.Getter;
-import sonia.scm.event.Event;
-import sonia.scm.repository.Repository;
-import sonia.scm.user.User;
+import React, { FC } from "react";
+import { ChangeType } from "./util";
+import { PullRequestChange } from "./ChangesTypes";
+import CreatedRenderer from "./CreatedRenderer";
+import RemovedRenderer from "./RemovedRenderer";
+import EditRenderer from "./EditRenderer";
+import { Repository } from "@scm-manager/ui-types";
 
-@Event
-@Getter
-public class PullRequestApprovalEvent extends BasicPullRequestEvent {
+type Props = {
+  changeType: ChangeType;
+  change: PullRequestChange;
+  repository: Repository;
+};
 
-  private User approver;
-  private boolean isNewApprover;
-  private final ApprovalCause cause;
-
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, ApprovalCause cause) {
-    super(repository, pullRequest);
-    this.cause = cause;
+const ChangeRenderer: FC<Props> = ({ changeType, change, repository }) => {
+  if (changeType === "edit") {
+    return <EditRenderer change={change} repository={repository} />;
   }
 
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, User approver, boolean isNewApprover, ApprovalCause cause) {
-    this(repository, pullRequest, cause);
-    this.approver = approver;
-    this.isNewApprover = isNewApprover;
+  if (changeType === "removed") {
+    return <RemovedRenderer change={change} />;
   }
 
-  public enum ApprovalCause {
-    APPROVED,
-    APPROVAL_REMOVED
-  }
-}
+  return <CreatedRenderer change={change} />;
+};
+
+export default ChangeRenderer;

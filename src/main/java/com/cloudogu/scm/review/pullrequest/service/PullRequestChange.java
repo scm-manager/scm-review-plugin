@@ -21,34 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.pullrequest.service;
 
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import sonia.scm.event.Event;
-import sonia.scm.repository.Repository;
-import sonia.scm.user.User;
+import lombok.NoArgsConstructor;
+import sonia.scm.xml.XmlInstantAdapter;
 
-@Event
+import java.time.Instant;
+import java.util.Map;
+
 @Getter
-public class PullRequestApprovalEvent extends BasicPullRequestEvent {
+@XmlRootElement(name = "pull-request-change")
+@XmlAccessorType(XmlAccessType.FIELD)
+@NoArgsConstructor
+@AllArgsConstructor
+public class PullRequestChange {
+  private String prId;
 
-  private User approver;
-  private boolean isNewApprover;
-  private final ApprovalCause cause;
+  private String username;
 
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, ApprovalCause cause) {
-    super(repository, pullRequest);
-    this.cause = cause;
-  }
+  private String displayName;
 
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, User approver, boolean isNewApprover, ApprovalCause cause) {
-    this(repository, pullRequest, cause);
-    this.approver = approver;
-    this.isNewApprover = isNewApprover;
-  }
+  private String mail;
 
-  public enum ApprovalCause {
-    APPROVED,
-    APPROVAL_REMOVED
-  }
+  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
+  private Instant changedAt;
+
+  private String previousValue;
+
+  private String currentValue;
+
+  private String property;
+
+  private Map<String, String> additionalInfo;
 }

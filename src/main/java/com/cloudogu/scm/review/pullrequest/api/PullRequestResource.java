@@ -30,10 +30,12 @@ import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
 import com.cloudogu.scm.review.events.ChannelId;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestChangeDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.RejectPullRequestDto;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.workflow.EngineResultResource;
@@ -74,6 +76,9 @@ import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.sse.Sse;
 import jakarta.ws.rs.sse.SseEventSink;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static de.otto.edison.hal.Links.linkingTo;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
@@ -84,14 +89,16 @@ public class PullRequestResource {
   private final Provider<CommentRootResource> commentResourceProvider;
   private final Provider<EngineResultResource> engineResultResourceProvider;
   private final ChannelRegistry channelRegistry;
+  private final PullRequestChangeService pullRequestChangeService;
 
   @Inject
-  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, Provider<EngineResultResource> engineResultResourceProvider, ChannelRegistry channelRegistry) {
+  public PullRequestResource(PullRequestMapper mapper, PullRequestService service, Provider<CommentRootResource> commentResourceProvider, Provider<EngineResultResource> engineResultResourceProvider, ChannelRegistry channelRegistry, PullRequestChangeService pullRequestChangeService) {
     this.mapper = mapper;
     this.service = service;
     this.commentResourceProvider = commentResourceProvider;
     this.engineResultResourceProvider = engineResultResourceProvider;
     this.channelRegistry = channelRegistry;
+    this.pullRequestChangeService = pullRequestChangeService;
   }
 
   @Path("comments/")
@@ -135,6 +142,41 @@ public class PullRequestResource {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
     return mapper.using(uriInfo).map(service.get(namespace, name, pullRequestId), repository);
+  }
+
+  @GET
+  @Path("changes/")
+  @Produces(PullRequestMediaType.PULL_REQUEST)
+  @Operation(
+    summary = "Get history of changes of the pull requests",
+    description = "Returns the list of changes of the pull request",
+    tags = "Pull Request",
+    operationId = "review_get_pull_request_history"
+  )
+  @ApiResponse(
+    responseCode = "200",
+    description = "success",
+    content = @Content(
+      mediaType = MediaType.APPLICATION_JSON,
+      schema = @Schema(implementation = HalRepresentation.class)
+    )
+  )
+  @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"readPullRequest\" privilege")
+  @ApiResponse(
+    responseCode = "500",
+    description = "internal server error",
+    content = @Content(
+      mediaType = VndMediaType.ERROR_TYPE,
+      schema = @Schema(implementation = ErrorDto.class)
+    )
+  )
+  public Response getChanges(@PathParam("namespace") String namespace, @PathParam("name") String name, @PathParam("pullRequestId") String pullRequestId) {
+    PermissionCheck.checkRead(service.getRepository(namespace, name));
+    List<PullRequestChangeDto> changes = pullRequestChangeService.getAllChangesOfPullRequest(
+      new NamespaceAndName(namespace, name), pullRequestId
+    ).stream().map(PullRequestChangeDto::mapToDto).toList();
+    return Response.ok(changes).build();
   }
 
   @POST

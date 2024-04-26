@@ -109,3 +109,19 @@ Ein Pull Request kann nach dem Erstellen bearbeitet werden. Der Autor kann
 - die Labels ändern.
 
 Wird der Target-Branch geändert, werden alle Freigaben durch Reviewer zurückgesetzt.
+
+### Pull Request Historie
+
+Alle Änderungen an einem Pull Request werden gesammelt und können als eine Historie angezeigt werden.
+Folgendes ist eine Dabei werden folgende Eigenschaften erfasst:
+
+- Source Branch Revision
+- Target Branch
+- Titel
+- Beschreibung
+- Reviewer
+- Kommentare
+- Tasks
+- Pull Request Status
+
+![Pull Request Änderungshistorie](assets/pr-change-history.png)

@@ -23,31 +23,31 @@
  */
 package com.cloudogu.scm.review.pullrequest.service;
 
+import lombok.Getter;
 import sonia.scm.event.Event;
 import sonia.scm.repository.Repository;
 
 @Event
+@Getter
 public class PullRequestRejectedEvent extends BasicPullRequestEvent {
 
   private final RejectionCause cause;
   private final String message;
+  private final PullRequestStatus previousStatus;
 
   public PullRequestRejectedEvent(Repository repository, PullRequest pullRequest, RejectionCause cause) {
-    this(repository, pullRequest, cause, null);
+    this(repository, pullRequest, cause, null, null);
   }
 
   public PullRequestRejectedEvent(Repository repository, PullRequest pullRequest, RejectionCause cause, String message) {
+    this(repository, pullRequest, cause, message, null);
+  }
+
+  public PullRequestRejectedEvent(Repository repository, PullRequest pullRequest, RejectionCause cause, String message, PullRequestStatus previousStatus) {
     super(repository, pullRequest);
     this.cause = cause;
     this.message = message;
-  }
-
-  public RejectionCause getCause() {
-    return cause;
-  }
-
-  public String getMessage() {
-    return message;
+    this.previousStatus = previousStatus;
   }
 
   public enum RejectionCause {

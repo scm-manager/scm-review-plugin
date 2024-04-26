@@ -36,6 +36,8 @@ import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestChange;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStore;
@@ -49,12 +51,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.google.inject.util.Providers;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.assertj.core.util.Lists;
 import org.jboss.resteasy.mock.MockHttpRequest;
-import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -95,6 +97,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.cloudogu.scm.review.TestData.createPullRequest;
@@ -110,6 +113,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -146,7 +150,6 @@ public class PullRequestRootResourceTest {
 
   @Mock
   private UserDisplayManager userDisplayManager;
-
   @Mock
   private DefaultPullRequestService pullRequestService;
   @Mock
@@ -161,7 +164,8 @@ public class PullRequestRootResourceTest {
   private ChannelRegistry channelRegistry;
   @Mock
   private ConfigService configService;
-
+  @Mock
+  private PullRequestChangeService pullRequestChangeService;
   @InjectMocks
   private PullRequestMapperImpl mapper;
 
@@ -176,7 +180,22 @@ public class PullRequestRootResourceTest {
     when(repositoryResolver.resolve(any())).thenReturn(repository);
     when(pullRequestService.getRepository(repository.getNamespace(), repository.getName())).thenReturn(repository);
     DefaultPullRequestService service = new DefaultPullRequestService(repositoryResolver, branchResolver, storeFactory, eventBus, repositoryServiceFactory);
-    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(mapper, service, commentService, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, service, null, null, channelRegistry)), configService, userDisplayManager);
+    PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(
+      mapper,
+      service,
+      commentService,
+      repositoryServiceFactory,
+      Providers.of(new PullRequestResource(
+        mapper,
+        service,
+        null,
+        null,
+        channelRegistry,
+        pullRequestChangeService
+      )),
+      configService,
+      userDisplayManager
+    );
     when(storeFactory.create(null)).thenReturn(store);
     when(storeFactory.create(any())).thenReturn(store);
     when(store.add(pullRequestStoreCaptor.capture())).thenReturn("1");
@@ -645,6 +664,22 @@ public class PullRequestRootResourceTest {
 
   @Test
   @SubjectAware(username = "slarti")
+  public void shouldGetChangesLink() throws URISyntaxException, IOException {
+    initRepoWithPRs("ns", "repo");
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readValue(response.getContentAsString(), JsonNode.class);
+    JsonNode prNode = jsonNode.get("_embedded").get("pullRequests");
+    prNode.elements().forEachRemaining(node -> {
+      String actualCollectionLink = node.path("_links").path("changes").path("href").asText();
+      assertThat(actualCollectionLink).isEqualTo("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/" + node.get("id").asText() + "/changes/");
+    });
+  }
+
+  @Test
+  @SubjectAware(username = "slarti")
   public void shouldGetUpdateLink() throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo");
@@ -809,6 +844,7 @@ public class PullRequestRootResourceTest {
   private void verifyFilteredPullRequests(String status) throws URISyntaxException, IOException {
     verifyFilteredPullRequests(status, status);
   }
+
   private void verifyFilteredPullRequests(String filter, String expectedStatus) throws URISyntaxException, IOException {
     initRepoWithPRs("ns", "repo");
     MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo?status=" + filter);
@@ -1107,7 +1143,7 @@ public class PullRequestRootResourceTest {
     pullRequest.setSource("");
 
     MockHttpRequest request = MockHttpRequest
-            .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/check?source=&target=master");
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/check?source=&target=master");
 
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(400);
@@ -1120,7 +1156,7 @@ public class PullRequestRootResourceTest {
     pullRequest.setSource("");
 
     MockHttpRequest request = MockHttpRequest
-            .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/check?source=feature&target=");
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/ns/repo/check?source=feature&target=");
 
     dispatcher.invoke(request, response);
     assertThat(response.getStatus()).isEqualTo(400);
@@ -1189,6 +1225,77 @@ public class PullRequestRootResourceTest {
     assertThat(response.getContentAsString()).contains("\"description\":\"\"");
   }
 
+  @Test
+  @SubjectAware(username = "trillian")
+  public void shouldGetUnauthorizedBecauseOfMissingReadPullRequestPermission() throws URISyntaxException {
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/namespace/name/1/changes");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(403);
+  }
+
+  @Test
+  @SubjectAware(username = "dent")
+  public void shouldGetHistoryOfPullRequest() throws URISyntaxException, IOException {
+    List<PullRequestChange> changes = List.of(
+      new PullRequestChange(
+        "1",
+        "dent",
+        "Dent",
+        "dent@mail.com",
+        Instant.now(),
+        "previous",
+        "current",
+        "Property",
+        Map.of("key", "value")
+      ),
+      new PullRequestChange(
+        "1",
+        "dent",
+        "Dent",
+        "dent@mail.com",
+        Instant.now(),
+        "other previous value",
+        "other current value",
+        "Other Property",
+        Map.of("Other key", "Other value")
+      )
+    );
+
+    when(pullRequestChangeService.getAllChangesOfPullRequest(any(NamespaceAndName.class), eq("1"))).thenReturn(changes);
+
+    MockHttpRequest request = MockHttpRequest
+      .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/namespace/name/1/changes");
+
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+
+    JsonNode node = response.getContentAsJson();
+    assertThat(node.isArray()).isTrue();
+    assertThat(node.size()).isEqualTo(2);
+
+    assertThat(node.get(0).get("prId").asText()).isEqualTo(changes.get(0).getPrId());
+    assertThat(node.get(0).get("username").asText()).isEqualTo(changes.get(0).getUsername());
+    assertThat(node.get(0).get("displayName").asText()).isEqualTo(changes.get(0).getDisplayName());
+    assertThat(node.get(0).get("mail").asText()).isEqualTo(changes.get(0).getMail());
+    assertThat(node.get(0).get("changedAt").asText()).isEqualTo(changes.get(0).getChangedAt().toString());
+    assertThat(node.get(0).get("previousValue").asText()).isEqualTo(changes.get(0).getPreviousValue());
+    assertThat(node.get(0).get("currentValue").asText()).isEqualTo(changes.get(0).getCurrentValue());
+    assertThat(node.get(0).get("property").asText()).isEqualTo(changes.get(0).getProperty());
+    assertThat(node.get(0).get("additionalInfo").get("key").asText()).isEqualTo(changes.get(0).getAdditionalInfo().get("key"));
+
+    assertThat(node.get(1).get("prId").asText()).isEqualTo(changes.get(1).getPrId());
+    assertThat(node.get(1).get("username").asText()).isEqualTo(changes.get(1).getUsername());
+    assertThat(node.get(1).get("displayName").asText()).isEqualTo(changes.get(1).getDisplayName());
+    assertThat(node.get(1).get("mail").asText()).isEqualTo(changes.get(1).getMail());
+    assertThat(node.get(1).get("changedAt").asText()).isEqualTo(changes.get(1).getChangedAt().toString());
+    assertThat(node.get(1).get("previousValue").asText()).isEqualTo(changes.get(1).getPreviousValue());
+    assertThat(node.get(1).get("currentValue").asText()).isEqualTo(changes.get(1).getCurrentValue());
+    assertThat(node.get(1).get("property").asText()).isEqualTo(changes.get(1).getProperty());
+    assertThat(node.get(1).get("additionalInfo").get("Other key").asText()).isEqualTo(changes.get(1).getAdditionalInfo().get("Other key"));
+  }
+
   private void mockLogCommandForPullRequestCheck(List<Changeset> changesets) throws IOException {
     when(repositoryServiceFactory.create(repository)).thenReturn(repositoryService);
     when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
@@ -1208,7 +1315,7 @@ public class PullRequestRootResourceTest {
 
   private void initPullRequestRootResource() {
     PullRequestRootResource rootResource =
-      new PullRequestRootResource(mapper, pullRequestService, commentService, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, pullRequestService, null, null, channelRegistry)), configService, userDisplayManager);
+      new PullRequestRootResource(mapper, pullRequestService, commentService, repositoryServiceFactory, Providers.of(new PullRequestResource(mapper, pullRequestService, null, null, channelRegistry, pullRequestChangeService)), configService, userDisplayManager);
 
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(rootResource);

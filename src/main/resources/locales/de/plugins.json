@@ -69,7 +69,69 @@
         "commits": "Commits",
         "diff": "Diff",
         "conflicts": "Konflikte",
-        "comments": "Kommentare"
+        "comments": "Kommentare",
+        "changes": "Änderungshistorie"
+      },
+      "changes": {
+        "rejectionCause": {
+          "SOURCE_BRANCH_DELETED":  ", weil der Source-Branch gelöscht wurde",
+          "TARGET_BRANCH_DELETED":  ", weil der Target-Branch gelöscht wurde",
+          "REJECTED_BY_USER": ", weil der Pull Request von einem Benutzer abgelehnt wurde"
+        },
+        "noChanges": "Keine Änderungen vorhanden",
+        "titles": {
+          "edit": "{{propertyName}} bearbeitet",
+          "created": "{{propertyName}} hinzugefügt",
+          "removed": "{{propertyName}} entfernt"
+        },
+        "properties": {
+          "TARGET_BRANCH": "Target-Branch",
+          "LABELS": "Label",
+          "TITLE": "Titel",
+          "DESCRIPTION": "Beschreibung",
+          "DELETE_SOURCE_BRANCH_AFTER_MERGE": "Source-Branch nach erfolgreichem Merge löschen",
+          "REVIEWER": "Reviewer",
+          "PR_STATUS": "Pull Request Status",
+          "COMMENT": "Comment",
+          "REPLY": "Antwort",
+          "TASK": "Aufgabe",
+          "SUBSCRIBER": "Abonnent",
+          "FINISHED_TASK": "Aufgabe erledigt",
+          "UNFINISHED_TASK": "Aufgabe als nicht erledigt markiert",
+          "COMMENT_TO_TASK": "Kommentar zu einer Aufgabe gemacht",
+          "TASK_TO_COMMENT": "Aufgabe zu einem Kommentar gemacht",
+          "REVIEW_MARKS": "Datei Markierung als gereviewed",
+          "SOURCE_BRANCH_REVISION": "Source-Branch-Revision"
+        },
+        "changedTargetBranch": "Target-Branch geändert von `{{previous}}` zu `{{current}}`",
+        "changedPrStatus": "Pull Request Status geändert von `{{previous}}` zu `{{current}}`",
+        "changedBy": "Geändert von",
+        "changedByUnknown": "Geändert von unbekanntem Benutzer",
+        "changedAt": "Geändert",
+        "previousValue": "Vorher:",
+        "currentValue": "Nachher:",
+        "reviewer": {
+          "removed": "'{{username}}' als Reviewer entfernt",
+          "added": "'{{username}}' als Reviewer hinzugefügt",
+          "addedWithApproval": "mit Freigabe",
+          "addedWithoutApproval": "ohne Freigabe",
+          "approved": "'{{username}}' hat seine Freigabe erteilt",
+          "disapproved": "'{{username}}' hat Freigabe zurückgezogen"
+        },
+        "subscriber": {
+          "removed": "'{{username}}' hat den Pull Request nicht mehr abonniert",
+          "added": "'{{username}}' hat den Pull Request abonniert"
+        },
+        "reviewMark": {
+          "added": "'{{username}}' hat die Datei '{{file}}' als reviewed markiert",
+          "removed": "'{{username}}' hat die Datei '{{file}}' nicht mehr als reviewed markiert"
+        },
+        "added": "Hinzugefügt: ",
+        "removed": "Entfernt: ",
+        "revision": {
+          "previous": "Vorherige Revision: ",
+          "current": "Aktuelle Revision: "
+        }
       },
       "tasks": {
         "todo": "{{count}} Aufgabe offen",

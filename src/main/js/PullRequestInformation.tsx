@@ -31,6 +31,7 @@ import RootComments from "./comment/RootCommentContainer";
 import { PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
 import MergeConflicts from "./MergeConflicts";
+import RootChangesContainer from "./change/RootChangesContainer";
 
 type Props = {
   repository: Repository;
@@ -120,11 +121,18 @@ const Tabs: FC<TabProps> = ({ isClosed, pullRequest, activeTab, baseURL, targetB
     </SingleTab>
   ) : null;
 
+  const prChangesTab = pullRequest._links?.changes ? (
+    <SingleTab name="changes" activeTab={activeTab}>
+      <Link to={`${baseURL}/changes/`}>{t("scm-review-plugin.pullRequest.tabs.changes")}</Link>
+    </SingleTab>
+  ) : null;
+
   return (
     <div className="tabs">
       <ul role="tablist">
         {commentTab}
         {changesetTab}
+        {prChangesTab}
         {!targetBranchDeleted && diffTab}
         {conflictsTab}
       </ul>
@@ -162,6 +170,7 @@ const Routes: FC<RouteProps> = ({
   let routeChangesetPagination = null;
   let routeDiff = null;
   let routeConflicts = null;
+  let routePrChanges = null;
   if (!isClosed || (pullRequest.sourceRevision && pullRequest.targetRevision)) {
     const sourceRevision = isClosed && pullRequest.sourceRevision ? pullRequest.sourceRevision : source;
     const targetRevision = isClosed && pullRequest.targetRevision ? pullRequest.targetRevision : target;
@@ -207,6 +216,14 @@ const Routes: FC<RouteProps> = ({
         </div>
       </Route>
     );
+
+    routePrChanges = (
+      <Route path={`${baseURL}/changes`} exact>
+        <div id="tabpanel-conflicts" role="tabpanel" aria-labelledby="tab-conflicts">
+          <RootChangesContainer pullRequest={pullRequest} repository={repository} />
+        </div>
+      </Route>
+    );
   }
 
   return (
@@ -217,6 +234,7 @@ const Routes: FC<RouteProps> = ({
       {routeChangesetPagination}
       {routeDiff}
       {routeConflicts}
+      {routePrChanges}
     </Switch>
   );
 };

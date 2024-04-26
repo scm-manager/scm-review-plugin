@@ -201,6 +201,8 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .self(namespace, name, pullRequestId));
     linksBuilder.single(link("comments", pullRequestResourceLinks.pullRequestComments()
       .all(namespace, name, pullRequestId)));
+    linksBuilder.single(link("changes", pullRequestResourceLinks.pullRequestChanges()
+      .readAll(namespace, name, pullRequestId)));
     linksBuilder.single(link("events", pullRequestResourceLinks.pullRequest()
       .events(namespace, name, pullRequestId)));
     if (PermissionCheck.mayComment(repository) && CurrentUserResolver.getCurrentUser() != null) {

@@ -21,34 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package com.cloudogu.scm.review.pullrequest.service;
 
 import lombok.Getter;
-import sonia.scm.event.Event;
 import sonia.scm.repository.Repository;
-import sonia.scm.user.User;
 
-@Event
 @Getter
-public class PullRequestApprovalEvent extends BasicPullRequestEvent {
+public class PullRequestReviewMarkEvent extends BasicPullRequestEvent {
+  private final ReviewMark reviewMark;
+  private final EventType type;
 
-  private User approver;
-  private boolean isNewApprover;
-  private final ApprovalCause cause;
-
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, ApprovalCause cause) {
+  public PullRequestReviewMarkEvent(Repository repository, PullRequest pullRequest, ReviewMark reviewMark, EventType type) {
     super(repository, pullRequest);
-    this.cause = cause;
+    this.reviewMark = reviewMark;
+    this.type = type;
   }
 
-  public PullRequestApprovalEvent(Repository repository, PullRequest pullRequest, User approver, boolean isNewApprover, ApprovalCause cause) {
-    this(repository, pullRequest, cause);
-    this.approver = approver;
-    this.isNewApprover = isNewApprover;
-  }
-
-  public enum ApprovalCause {
-    APPROVED,
-    APPROVAL_REMOVED
+  public enum EventType {
+    ADDED,
+    REMOVED
   }
 }

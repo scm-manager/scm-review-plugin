@@ -45,8 +45,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
-
 @Extension
 @EagerSingleton
 public class ProcessChangedFilesHook {
@@ -58,9 +56,8 @@ public class ProcessChangedFilesHook {
   private final PullRequestService pullRequestService;
 
 
-
   @Inject
-  public ProcessChangedFilesHook(PullRequestCollector pullRequestCollector, CommentCollector commentCollector, ModificationCollector modificationCollector, CommentService commentService, PullRequestService pullRequestService) {
+  ProcessChangedFilesHook(PullRequestCollector pullRequestCollector, CommentCollector commentCollector, ModificationCollector modificationCollector, CommentService commentService, PullRequestService pullRequestService) {
     this.pullRequestCollector = pullRequestCollector;
     this.commentCollector = commentCollector;
     this.modificationCollector = modificationCollector;
@@ -134,7 +131,7 @@ public class ProcessChangedFilesHook {
         pullRequest.getReviewMarks()
           .stream()
           .filter(reviewMark -> collector.collect().contains(reviewMark.getFile()))
-          .collect(toList());
+          .toList();
       if (!marksToBeRemoved.isEmpty()) {
         pullRequestService.removeReviewMarks(repository, pullRequest.getId(), marksToBeRemoved);
       }
