@@ -27,7 +27,7 @@ plugins {
 }
 
 dependencies {
-  plugin "sonia.scm.plugins:scm-mail-plugin:3.2.1-SNAPSHOT"
+  plugin "sonia.scm.plugins:scm-mail-plugin:3.3.0"
   plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:2.0.0"
   optionalPlugin "sonia.scm.plugins:scm-editor-plugin:3.0.0"
   optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:2.0.0"
