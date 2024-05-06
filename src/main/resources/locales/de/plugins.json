@@ -30,8 +30,7 @@
       "jumpToSource": "Zur Quelldatei springen",
       "jumpToTarget": "Zur Zieldatei springen",
       "moreDiffsAvailable": "Es sind weitere Diffs verfügbar.",
-      "partialMoreDiffsAvailable": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentar.",
-      "partialMoreDiffsAvailable_other": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentare.",
+      "partialMoreDiffsAvailable": "Es sind weitere Diffs mit insgesamt {{count}} Kommentar(en) verfügbar.",
       "loadMore": "Weitere laden",
       "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein."
     },
