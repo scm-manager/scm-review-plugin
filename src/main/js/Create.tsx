@@ -174,7 +174,7 @@ const Create: FC<Props> = ({ repository }) => {
             <div className="is-flex is-flex-direction-column is-align-items-end">
               <Checkbox
                 checked={pullRequest?.status === "DRAFT"}
-                onChange={value => handleFormChange({ status: value ? "DRAFT" : "OPEN" })}
+                onChange={event => handleFormChange({ status: event.target.checked ? "DRAFT" : "OPEN" })}
                 label={t("scm-review-plugin.pullRequest.createAsDraft")}
               />
               <SubmitButton

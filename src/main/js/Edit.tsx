@@ -99,7 +99,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
             <Label>{t("scm-review-plugin.pullRequest.status")}</Label>
             <Checkbox
               checked={modifiedPullRequest?.status === "DRAFT"}
-              onChange={value => handleFormChange({ status: value ? "DRAFT" : "OPEN" })}
+              onChange={event => handleFormChange({ status: event.target.checked ? "DRAFT" : "OPEN" })}
               label={t("scm-review-plugin.pullRequest.changeToDraft")}
               helpText={t("scm-review-plugin.pullRequest.changeToDraftHelpText")}
               disabled={modifiedPullRequest.status === "MERGED" || modifiedPullRequest.status === "REJECTED"}
