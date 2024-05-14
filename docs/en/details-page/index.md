@@ -16,6 +16,10 @@ The "Commits" tab shows all commits from the source branch starting from where b
 ### Diff
 The "Diff" tab shows the changes between the target and source branch on a file level.
 
+There are two buttons at the top of the area to provide a better overview of the changes:
+- The first button show and hide the whitespace changes.
+- The second button can collapse all changesets.
+
 The changes are indicated based on the established format:
 
 * **White:** no changes

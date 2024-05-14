@@ -27,6 +27,7 @@ import { useTranslation } from "react-i18next";
 import { useDiff } from "@scm-manager/ui-api";
 import {
   Diff as CoreDiff,
+  DiffButton,
   DiffObjectProps,
   ErrorNotification,
   Loading,
@@ -35,7 +36,6 @@ import {
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
-import { Button, Icon } from "@scm-manager/ui-core";
 import styled from "styled-components";
 
 type LoadingDiffProps = DiffObjectProps & {
@@ -46,20 +46,23 @@ type LoadingDiffProps = DiffObjectProps & {
   stickyHeader?: boolean | number;
 };
 
-const StickyButton = styled(Button)<{ top: number }>`
+const StickyContainer = styled.div<{ top: number }>`
   position: sticky;
   display: flex;
-  margin-right: 1.25rem;
-  margin-left: auto;
+  justify-content: end;
+  margin: 0 1.25rem 1rem 0;
+  gap: 0.5rem;
   top: calc(${props => props.top}px + var(--scm-navbar-main-height));
   z-index: 11;
 `;
 
 const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, stickyHeader, ...props }) => {
   const [t] = useTranslation("plugins");
+  const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
   const { error, isLoading, data, fetchNextPage, isFetchingNextPage } = useDiff(diffUrl, {
     limit: 25,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    ignoreWhitespace: ignoreWhitespace ? "ALL" : "NONE"
   });
   const [collapsed, setCollapsed] = useState(false);
 
@@ -70,6 +73,10 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
       actions.collapseAll();
     }
     setCollapsed(current => !current);
+  };
+
+  const ignoreWhitespaces = () => {
+    setIgnoreWhitespace(!ignoreWhitespace);
   };
 
   if (error) {
@@ -86,15 +93,24 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
   const overlapBetweenPanelHeader = 5;
   return (
     <>
-      <StickyButton
-        onClick={collapseDiffs}
-        className="mb-4 is-hidden-mobile"
+      <StickyContainer
+        className="is-hidden-mobile"
         top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
       >
-        <Icon className="mr-1">{collapsed ? "eye" : "eye-slash"}</Icon> {t("scm-review-plugin.diff.collapseDiffs")}
-      </StickyButton>
+        <DiffButton
+          onClick={ignoreWhitespaces}
+          tooltip={t(`scm-review-plugin.diff.${ignoreWhitespace ? "activateWhitespace" : "ignoreWhitespace"}`)}
+          icon={ignoreWhitespace ? "laptop" : "laptop-code"}
+        />
+        <DiffButton
+          onClick={collapseDiffs}
+          tooltip={t("scm-review-plugin.diff.collapseDiffs")}
+          icon={collapsed ? "eye" : "eye-slash"}
+        />
+      </StickyContainer>
       <CoreDiff
         diff={data.files}
+        ignoreWhitespace={ignoreWhitespace ? "ALL" : "NONE"}
         {...props}
         stickyHeader={
           typeof stickyHeader === "number" && stickyHeader > buttonHeight

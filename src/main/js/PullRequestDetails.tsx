@@ -174,7 +174,7 @@ const LeftSide = styled.div`
   gap: 0.25rem 1.25rem;
   margin: 0.5em 0.75em;
   padding: 0 0.75rem;
-  width: calc(100% - 220px);
+  width: calc(100% - 140px);
 
   @media screen and (max-width: ${devices.mobile.width}px) {
     width: 100%;

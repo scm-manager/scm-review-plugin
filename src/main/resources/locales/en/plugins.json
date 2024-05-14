@@ -24,6 +24,8 @@
     "diff": {
       "notSupported": "Diffs for pull request are not supported by the type of repository",
       "collapseDiffs": "Collapse",
+      "ignoreWhitespace": "Ignore whitespaces changes",
+      "activateWhitespace": "Show whitespaces changes",
       "markReviewed": "Mark file as reviewed. This is for convenience only. Marked files are collapsed by default.",
       "markNotReviewed": "Remove review mark from file.",
       "addComment": "Add comment for file",
