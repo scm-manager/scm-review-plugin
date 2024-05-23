@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.2.0 - 2024-05-23
+### Added
+- System comments are now added when target branches are changed in pull requests
+- The changes within a pull request are now getting tracked
+- Images can now be added to comments and replies by copy and pasting them into the textarea
+- Global button to ignore whitespaces and tabs inside of diffs
+- Sticky header in pull requests
+
+### Fixed
+- Checkboxes for draft state can be disabled again
+- When changing the target branch, the select will not clip the container its in anymore
+- Grammar mistakes inside the partial diff notification
+
+### Changed
+- Target branches can only be changed when no other pull requests with the same branches exist and the new pull requests still has differences
+- Approvals for pull requests are now removed when the target branch is changed
+
 ## 3.1.0 - 2024-03-08
 ### Added
 - It is now possible to change the target branch when editing pull requests

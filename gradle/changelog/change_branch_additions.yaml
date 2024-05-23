@@ -1,6 +1,0 @@
-- type: changed
-  description: Target branches can only be changed when no other pull requests with the same branches exist and the new pull requests still has differences
-- type: added
-  description: System comments are now added when target branches are changed in pull requests
-- type: changed
-  description: Approvals for pull requests are now removed when the target branch is changed
