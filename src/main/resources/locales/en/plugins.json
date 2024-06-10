@@ -447,7 +447,7 @@
       },
       "commitMessageTemplate": {
         "label": "Commit message template",
-        "hint": "This message can contain template expressions. Find out more about this and see a simple example on the <1>documentation page</1>.",
+        "hint": "This message can contain template expressions. Find out more about this and see a simple example on the <0>documentation page</0>.",
         "helpText": "This template will be used instead of the default commit message when a pull request is merged."
       },
       "disableRepositoryAndNamespaceConfiguration": {

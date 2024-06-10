@@ -449,7 +449,7 @@
       },
       "commitMessageTemplate": {
         "label": "Template für die Commit-Nachricht",
-        "hint": "Diese Nachricht kann Ausdrücke für Templating enthalten. Hierzu finden sich weitere Informationen und Beispiele auf der <1>Dokumentationsseite</1>.",
+        "hint": "Diese Nachricht kann Ausdrücke für Templating enthalten. Hierzu finden sich weitere Informationen und Beispiele auf der <0>Dokumentationsseite</0>.",
         "helpText": "Dieses Template wird anstelle der Default Commit-Nachrichten beim Merge eines Pull Requests genutzt."
       },
       "disableRepositoryAndNamespaceConfiguration": {

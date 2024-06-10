@@ -169,7 +169,9 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
               value={defaultMergeStrategy}
             />
             <fieldset>
-              <legend className="is-size-6 mb-1 has-text-weight-bold">{t("scm-review-plugin.config.legends.branchOptions")}</legend>
+              <legend className="is-size-6 mb-1 has-text-weight-bold">
+                {t("scm-review-plugin.config.legends.branchOptions")}
+              </legend>
               <Checkbox
                 checked={deleteBranchOnMerge}
                 onChange={val => onChange("deleteBranchOnMerge", val)}
@@ -194,11 +196,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
                 <span>
                   <Icon name="info-circle" color="blue-light" />
                   <Trans t={t} i18nKey="scm-review-plugin.config.commitMessageTemplate.hint">
-                    See the{" "}
-                    <a target="_blank" href="/scm/mustacheDocs">
-                      description
-                    </a>
-                    .
+                    <a target="_blank" href="/scm/mustacheDocs" />
                   </Trans>
                 </span>
               </>
