@@ -38,6 +38,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.github.legman.Subscribe;
+import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.EagerSingleton;
@@ -46,7 +47,6 @@ import sonia.scm.mail.api.MailSendBatchException;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
-import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -72,21 +72,33 @@ public class EmailNotificationHook {
     Set<String> subscriberWithoutReviewers = eMailRecipientHelper.getSubscriberWithoutReviewers();
     Set<String> reviewers = eMailRecipientHelper.getSubscribingReviewers();
 
-    if (event.getEventType().equals(HandlerEventType.MODIFY) &&
-      event.getPullRequest().isOpen() &&
-      event.getOldItem().isDraft()) {
+    if (event.getEventType().equals(HandlerEventType.CREATE)) {
+      handleEventIfNotDraft(event, new PullRequestEventMailTextResolver(event, false), pullRequest, subscriberWithoutReviewers);
+      handleEventIfNotDraft(event, new PullRequestEventMailTextResolver(event, true), pullRequest, reviewers);
+    } else if (isDraftToOpen(event)) {
       handleEvent(event, new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_OPEN, false), pullRequest, subscriberWithoutReviewers);
       handleEvent(event, new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_OPEN, true), pullRequest, reviewers);
-    } else if (event.getEventType().equals(HandlerEventType.MODIFY) &&
-      event.getPullRequest().isDraft() &&
-      event.getOldItem().isOpen()) {
+    } else if (isOpenToDraft(event)) {
       handleEvent(event, new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_DRAFT, false), pullRequest, subscriberWithoutReviewers);
       handleEvent(event, new PullRequestStatusChangedMailTextResolver(event, PullRequestStatusType.TO_DRAFT, true), pullRequest, reviewers);
-    } else {
+    } else if (isRelevantChangeForMail(event)) {
       handleEventIfNotDraft(event, new PullRequestEventMailTextResolver(event, false), pullRequest, subscriberWithoutReviewers);
       handleEventIfNotDraft(event, new PullRequestEventMailTextResolver(event, true), pullRequest, reviewers);
     }
+  }
 
+  private boolean isDraftToOpen(PullRequestEvent event) {
+    return event.getPullRequest().isOpen() && event.getOldItem().isDraft();
+  }
+
+  private boolean isOpenToDraft(PullRequestEvent event) {
+    return event.getPullRequest().isDraft() && event.getOldItem().isOpen();
+  }
+
+  private boolean isRelevantChangeForMail(PullRequestEvent event) {
+    return !event.getPullRequest().getTitle().equals(event.getOldItem().getTitle()) ||
+      !event.getPullRequest().getDescription().equals(event.getOldItem().getDescription()) ||
+      !event.getPullRequest().getTarget().equals(event.getOldItem().getTarget());
   }
 
   @Subscribe

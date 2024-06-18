@@ -108,11 +108,13 @@ class EmailNotificationHookTest {
     reviewers.put(subscribedAndReviewer, Boolean.FALSE);
     reviewers.put(reviewerButNotSubscribed, Boolean.TRUE);
     pullRequest.setReviewer(reviewers);
+    pullRequest.setTarget("develop");
 
     repository = createHeartOfGold();
     oldPullRequest = TestData.createPullRequest();
     oldPullRequest.setTitle("old Title");
     oldPullRequest.setDescription("old Description");
+    oldPullRequest.setTarget("main");
     comment = TestData.createComment();
     oldComment = TestData.createComment();
     oldComment.setComment("this is my old comment");
@@ -198,6 +200,94 @@ class EmailNotificationHookTest {
     assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR updated");
     assertThat(resolver.getTopic()).isEqualTo(TOPIC_PR_UPDATED);
     assertThat(resolver.getContentTemplatePath()).contains("updated_pull_request");
+  }
+
+  @Test
+  void shouldSendEmailAfterPullRequestCreation() throws Exception {
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldNotSendEmailAfterPullRequestDraftCreation() throws Exception {
+    pullRequest.setStatus(PullRequestStatus.DRAFT);
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service, never()).sendEmail(any(), any());
+  }
+
+  @Test
+  void shouldSendEmailBecauseTitleWasChanged() throws Exception {
+    oldPullRequest.setTitle("changed Title");
+    oldPullRequest.setDescription(pullRequest.getDescription());
+    oldPullRequest.setTarget(pullRequest.getTarget());
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldSendEmailBecauseDescriptionWasChanged() throws Exception {
+    oldPullRequest.setTitle(pullRequest.getTitle());
+    oldPullRequest.setDescription("different description");
+    oldPullRequest.setTarget(pullRequest.getTarget());
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldSendEmailBecauseTargetWasChanged() throws Exception {
+    oldPullRequest.setTitle(pullRequest.getTitle());
+    oldPullRequest.setDescription(pullRequest.getDescription());
+    oldPullRequest.setTarget("Different target");
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldNotSendEmailBecauseTitleDescriptionAndTargetWereUnchanged() throws Exception {
+    oldPullRequest.setTitle(pullRequest.getTitle());
+    oldPullRequest.setDescription(pullRequest.getDescription());
+    oldPullRequest.setTarget(pullRequest.getTarget());
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service, never()).sendEmail(any(), any());
+  }
+
+  @Test
+  void shouldNotSendEmailBecauseTitleDescriptionAndTargetWereChangedOfDraftPullRequest() throws Exception {
+    oldPullRequest.setStatus(PullRequestStatus.DRAFT);
+    oldPullRequest.setTitle("Different Title");
+    oldPullRequest.setDescription("Different description");
+    oldPullRequest.setTarget("Different target");
+
+    pullRequest.setStatus(PullRequestStatus.DRAFT);
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service, never()).sendEmail(any(), any());
+  }
+
+  @Test
+  void shouldNotSendEmailsAfterUpdatingReviewersInPullRequest() throws Exception {
+    Map<String, Boolean> reviewers = new HashMap<>();
+    reviewers.put(subscribedAndReviewer, Boolean.FALSE);
+
+    oldPullRequest.setReviewer(reviewers);
+    oldPullRequest.setTitle("PR");
+    oldPullRequest.setDescription("Hitchhiker's guide to the galaxy");
+    Set<String> subscriber = of(currentUser, subscribedButNotReviewer, subscribedAndReviewer);
+    oldPullRequest.setSubscriber(subscriber);
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service, never()).sendEmail(eq(Collections.emptySet()), isA(PullRequestUpdatedMailTextResolver.class));
   }
 
   @Test

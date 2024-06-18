@@ -1,0 +1,2 @@
+- type: fixed
+  description: If only reviewers are changed, no change notifications will be sent via email
