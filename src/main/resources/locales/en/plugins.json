@@ -75,8 +75,8 @@
       },
       "changes": {
         "rejectionCause": {
-          "SOURCE_BRANCH_DELETED":  ", because the source branch was deleted",
-          "TARGET_BRANCH_DELETED":  ", because the target branch was deleted",
+          "SOURCE_BRANCH_DELETED": ", because the source branch was deleted",
+          "TARGET_BRANCH_DELETED": ", because the target branch was deleted",
           "REJECTED_BY_USER": ", because a user rejected the pull request"
         },
         "noChanges": "No changes available",
@@ -394,8 +394,14 @@
         "DELETED_BY_THEM": "deleted by them"
       },
       "hint": {
-        "header": "Found conflicting changes",
-        "text": "Learn how to resolve the conflicts to merge this branch."
+        "EXTERNAL_MERGE_TOOL": {
+          "header": "Found conflict because changed files must be merged by external merge tool",
+          "text": "An external merge tool was configured for this repository. Learn how to resolve the conflicts to merge this branch."
+        },
+        "FILE_CONFLICTS": {
+          "header": "Found conflicting changes in changed files",
+          "text": "Learn how to resolve the conflicts to merge this branch."
+        }
       }
     },
     "branch": {

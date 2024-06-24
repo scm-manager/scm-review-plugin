@@ -23,8 +23,9 @@
  */
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Conflict, PullRequest } from "./types/PullRequest";
-import { DiffFile, ErrorNotification, File, Loading, Notification } from "@scm-manager/ui-components";
+import { Conflict, MergePreventReason, PullRequest } from "./types/PullRequest";
+import { DiffFile, File, Loading } from "@scm-manager/ui-components";
+import { Notification, ErrorNotification } from "@scm-manager/ui-core";
 import { FileChangeType, Repository } from "@scm-manager/ui-types";
 import { usePullRequestConflicts } from "./pullRequest";
 // @ts-ignore
@@ -34,9 +35,10 @@ import ManualMergeInformation from "./ManualMergeInformation";
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
+  mergePreventReasons: MergePreventReason[];
 };
 
-const MergeConflicts: FC<Props> = ({ repository, pullRequest }) => {
+const MergeConflicts: FC<Props> = ({ repository, pullRequest, mergePreventReasons }) => {
   const [t] = useTranslation("plugins");
   const [mergeInformation, setMergeInformation] = useState(false);
 
@@ -73,14 +75,21 @@ const MergeConflicts: FC<Props> = ({ repository, pullRequest }) => {
 
   return (
     <>
-      <Notification type={"warning"}>
-        <div className="content">
-          <b>{t("scm-review-plugin.conflicts.hint.header")}</b>
-          <p>
-            <a onClick={() => setMergeInformation(true)}>{t("scm-review-plugin.conflicts.hint.text")}</a>
-          </p>
-        </div>
-      </Notification>
+      {mergePreventReasons &&
+        mergePreventReasons.map(reason => {
+          return (
+            <Notification type="warning">
+              <div className="content">
+                <b>{t(`scm-review-plugin.conflicts.hint.${reason.type}.header`)}</b>
+                <p>
+                  <a onClick={() => setMergeInformation(true)}>
+                    {t(`scm-review-plugin.conflicts.hint.${reason.type}.text`)}
+                  </a>
+                </p>
+              </div>
+            </Notification>
+          );
+        })}
       {data!.conflicts.map((conflict: Conflict, index) => createDiffComponent(conflict, index))}
       <ManualMergeInformation
         showMergeInformation={mergeInformation}

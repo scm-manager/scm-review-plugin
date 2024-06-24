@@ -156,9 +156,14 @@ export type MergeCommit = {
   overrideMessage?: string;
 };
 
+export type MergePreventReason = {
+  type: "FILE_CONFLICTS" | "EXTERNAL_MERGE_TOOL";
+};
+
 export type MergeCheck = {
   hasConflicts: boolean;
   mergeObstacles: MergeObstacle[];
+  mergePreventReasons?: MergePreventReason[];
 };
 
 export type MergeObstacle = {

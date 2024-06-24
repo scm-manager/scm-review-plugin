@@ -519,6 +519,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         target={pullRequest.target}
         status={pullRequest.status}
         mergeHasNoConflict={!mergeCheck?.hasConflicts}
+        mergePreventReasons={mergeCheck?.mergePreventReasons ?? []}
         targetBranchDeleted={targetOrSourceBranchDeleted}
         sourceBranch={branch}
         stickyHeaderHeight={stickyHeaderHeight}

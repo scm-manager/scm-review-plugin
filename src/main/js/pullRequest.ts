@@ -738,8 +738,7 @@ export const useCheckPullRequest = (
       const link = (pullRequest?._links?.check as Link)?.href ?? requiredLink(repository, "pullRequestCheck");
       return apiClient
         .get(
-          link +
-            `?source=${encodeURIComponent(pullRequest.source)}&target=${encodeURIComponent(pullRequest.target)}`
+          link + `?source=${encodeURIComponent(pullRequest.source)}&target=${encodeURIComponent(pullRequest.target)}`
         )
         .then(r => r.json());
     },
@@ -783,7 +782,8 @@ export const useMergeDryRun = (
         if (err instanceof ConflictError) {
           return {
             mergeObstacles: data ? data.mergeObstacles : [],
-            hasConflicts: true
+            hasConflicts: true,
+            mergePreventReason: data?.mergePreventReasons
           };
         }
       },

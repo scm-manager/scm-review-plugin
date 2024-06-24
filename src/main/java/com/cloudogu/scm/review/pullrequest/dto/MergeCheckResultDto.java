@@ -27,18 +27,21 @@ import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
 import lombok.Getter;
+import sonia.scm.repository.api.MergePreventReason;
 
 import java.util.Collection;
 
 @Getter
 public class MergeCheckResultDto extends HalRepresentation {
 
-  public MergeCheckResultDto(Links links, boolean hasConflicts, Collection<MergeObstacle> mergeObstacles) {
+  public MergeCheckResultDto(Links links, boolean hasConflicts, Collection<MergeObstacle> mergeObstacles, Collection<MergePreventReason> reasons) {
     super(links);
     this.hasConflicts = hasConflicts;
     this.mergeObstacles = mergeObstacles;
+    this.mergePreventReasons = reasons;
   }
 
   private final boolean hasConflicts;
   private final Collection<MergeObstacle> mergeObstacles;
+  private final Collection<MergePreventReason> mergePreventReasons;
 }

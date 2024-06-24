@@ -1,0 +1,2 @@
+- type: added
+  description: Show conflicts for external merge tools in pull requests

@@ -30,11 +30,12 @@ import sonia.scm.repository.Contributor;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.MergeCommandBuilder;
 import sonia.scm.repository.api.MergeCommandResult;
 import sonia.scm.repository.api.MergeDryRunCommandResult;
+import sonia.scm.repository.api.MergePreventReason;
+import sonia.scm.repository.api.MergePreventReasonType;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.api.MergeStrategyNotSupportedException;
 import sonia.scm.repository.api.RepositoryService;
@@ -157,11 +158,10 @@ public class MergeService {
   public MergeCheckResult checkMerge(NamespaceAndName namespaceAndName, String pullRequestId) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
-      boolean isMergeable = dryRun(repositoryService, pullRequest)
-        .map(MergeDryRunCommandResult::isMergeable)
-        .orElse(false);
+      MergeDryRunCommandResult mergeDryRunCommandResult = dryRun(repositoryService, pullRequest)
+        .orElse(new MergeDryRunCommandResult(false, null));
       Collection<MergeObstacle> obstacles = getObstacles(repositoryService.getRepository(), pullRequest);
-      return new MergeCheckResult(!isMergeable, obstacles);
+      return new MergeCheckResult(!mergeDryRunCommandResult.isMergeable(), obstacles, mergeDryRunCommandResult.getReasons());
     }
   }
 

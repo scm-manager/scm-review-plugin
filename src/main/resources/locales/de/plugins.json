@@ -396,8 +396,14 @@
         "DELETED_BY_THEM": "im Target gelöscht"
       },
       "hint": {
-        "header": "Änderungen mit Konflikten gefunden",
-        "text": "Finden Sie heraus, wie Sie die Konflikte auflösen und den Branch mergen können."
+        "EXTERNAL_MERGE_TOOL": {
+          "header": "Geänderte Dateien müssen mit einem externen Merge Tool verarbeitet werden",
+          "text": "Für dieses Repository wurde eine externes Merge Tool konfiguriert. Finden Sie heraus, wie die Konflikte aufgelöst werden können."
+        },
+        "FILE_CONFLICTS": {
+          "header": "Änderungen mit Konflikten gefunden",
+          "text": "Finden Sie heraus, wie Sie die Konflikte auflösen und den Branch mergen können."
+        }
       }
     },
     "branch": {

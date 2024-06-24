@@ -160,7 +160,8 @@ public class MergeResource {
     return new MergeCheckResultDto(
       Links.linkingTo().self(checkLink).build(),
       mergeCheckResult.hasConflicts(),
-      mergeCheckResult.getMergeObstacles()
+      mergeCheckResult.getMergeObstacles(),
+      mergeCheckResult.getReasons()
     );
   }
 

@@ -28,7 +28,7 @@ import { useTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, useLocation, useRouteMatch } from "react-router-dom";
 import RootComments from "./comment/RootCommentContainer";
-import { PullRequest } from "./types/PullRequest";
+import { MergePreventReason, PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
 import MergeConflicts from "./MergeConflicts";
 import RootChangesContainer from "./change/RootChangesContainer";
@@ -40,6 +40,7 @@ type Props = {
   target: string;
   status?: string;
   mergeHasNoConflict: boolean;
+  mergePreventReasons: MergePreventReason[];
   targetBranchDeleted: boolean;
   shouldFetchChangesets?: boolean;
   sourceBranch?: Branch;
@@ -146,6 +147,7 @@ type RouteProps = {
   isClosed: boolean;
   baseURL: string;
   mergeHasNoConflict: boolean;
+  mergePreventReasons: MergePreventReason[];
   source: string;
   target: string;
   shouldFetchChangesets?: boolean;
@@ -161,6 +163,7 @@ const Routes: FC<RouteProps> = ({
   pullRequest,
   baseURL,
   mergeHasNoConflict,
+  mergePreventReasons,
   shouldFetchChangesets,
   sourceBranch,
   stickyHeaderHeight
@@ -212,7 +215,7 @@ const Routes: FC<RouteProps> = ({
     routeConflicts = !mergeHasNoConflict && (
       <Route path={`${baseURL}/conflicts`} exact>
         <div id="tabpanel-conflicts" role="tabpanel" aria-labelledby="tab-conflicts">
-          <MergeConflicts repository={repository} pullRequest={pullRequest} />
+          <MergeConflicts repository={repository} pullRequest={pullRequest} mergePreventReasons={mergePreventReasons} />
         </div>
       </Route>
     );
@@ -242,6 +245,7 @@ const Routes: FC<RouteProps> = ({
 const PullRequestInformation: FC<Props> = ({
   pullRequest,
   mergeHasNoConflict,
+  mergePreventReasons,
   status,
   targetBranchDeleted,
   sourceBranch,
@@ -271,6 +275,7 @@ const PullRequestInformation: FC<Props> = ({
         pullRequest={pullRequest}
         isClosed={isClosedPullRequest}
         mergeHasNoConflict={mergeHasNoConflict}
+        mergePreventReasons={mergePreventReasons}
         baseURL={baseURL}
         sourceBranch={sourceBranch}
       />

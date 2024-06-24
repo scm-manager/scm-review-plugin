@@ -37,6 +37,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.api.MergePreventReason;
+import sonia.scm.repository.api.MergePreventReasonType;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.web.JsonMockHttpResponse;
@@ -46,6 +48,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import static com.google.common.io.Resources.getResource;
 import static com.google.common.io.Resources.toByteArray;
@@ -109,7 +112,7 @@ class MergeResourceTest {
 
   @Test
   void shouldHandleSuccessfulDryRun() throws IOException, URISyntaxException {
-    when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(false, emptyList()));
+    when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(false, emptyList(), null));
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
 
@@ -123,8 +126,14 @@ class MergeResourceTest {
   }
 
   @Test
-  void shouldHandleFailedDryRun() throws IOException, URISyntaxException {
-    when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(true, emptyList()));
+  void shouldHandleFailedDryRun_FileConflicts() throws IOException, URISyntaxException {
+    when(mergeService.checkMerge(any(), any())).thenReturn(
+      new MergeCheckResult(
+        true,
+        emptyList(),
+        List.of(new MergePreventReason(MergePreventReasonType.FILE_CONFLICTS))
+      )
+    );
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
     MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/merge-check", mergeCommandJson);
@@ -133,6 +142,27 @@ class MergeResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"hasConflicts\":true");
+    assertThat(response.getContentAsString()).contains("\"mergePreventReasons\":[{\"type\":\"FILE_CONFLICTS\"}]");
+  }
+
+  @Test
+  void shouldHandleFailedDryRun_ExternalMergeTool() throws IOException, URISyntaxException {
+    when(mergeService.checkMerge(any(), any())).thenReturn(
+      new MergeCheckResult(
+        true,
+        emptyList(),
+        List.of(new MergePreventReason(MergePreventReasonType.EXTERNAL_MERGE_TOOL))
+      )
+    );
+
+    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/merge-check", mergeCommandJson);
+    MockHttpResponse response = new MockHttpResponse();
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"hasConflicts\":true");
+    assertThat(response.getContentAsString()).contains("\"mergePreventReasons\":[{\"type\":\"EXTERNAL_MERGE_TOOL\"}]");
   }
 
   @Test

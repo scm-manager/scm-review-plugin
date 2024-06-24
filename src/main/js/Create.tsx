@@ -143,6 +143,7 @@ const Create: FC<Props> = ({ repository }) => {
         pullRequest={pullRequest}
         status="OPEN"
         mergeHasNoConflict={true}
+        mergePreventReasons={[]}
         shouldFetchChangesets={isValid()}
         source={pullRequest.source}
         target={pullRequest.target}
