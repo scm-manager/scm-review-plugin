@@ -77,7 +77,6 @@ import jakarta.ws.rs.sse.Sse;
 import jakarta.ws.rs.sse.SseEventSink;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static de.otto.edison.hal.Links.linkingTo;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;

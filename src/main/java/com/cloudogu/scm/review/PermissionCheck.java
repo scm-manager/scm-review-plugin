@@ -32,6 +32,8 @@ import sonia.scm.repository.NamespacePermissions;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
 
+import java.util.Objects;
+
 public final class PermissionCheck {
 
   public static final String CREATE_PULL_REQUEST = "createPullRequest";
@@ -121,6 +123,9 @@ public final class PermissionCheck {
   }
 
   private static boolean currentUserIsAuthor(String author) {
+    if (Objects.isNull(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal())) {
+      return false;
+    }
     return author.equals(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
   }
 
@@ -134,6 +139,19 @@ public final class PermissionCheck {
 
   public static boolean mayConfigure(Repository repository) {
     return RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).isPermitted();
+  }
+
+  /**
+   * A User can reject a pull request if he is the author or he has a reject permission
+   */
+  public static boolean mayRejectPullRequest(PullRequest request) {
+    return currentUserIsAuthor(request.getAuthor());
+  }
+
+  public static void checkReject(Repository repository, PullRequest request) {
+    if (!mayRejectPullRequest(request)) {
+      checkMerge(repository);
+    }
   }
 
   public static boolean mayConfigure(String namespace) {

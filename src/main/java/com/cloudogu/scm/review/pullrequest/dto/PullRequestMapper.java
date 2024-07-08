@@ -69,6 +69,7 @@ import sonia.scm.web.EdisonHalAppender;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -83,7 +84,6 @@ import static com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto.
 import static de.otto.edison.hal.Embedded.embeddedBuilder;
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
-import static java.util.stream.Collectors.toList;
 
 @Mapper(
   builder = @Builder(disableBuilder = true)
@@ -225,19 +225,19 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       linksBuilder.single(link("check", pullRequestResourceLinks.pullRequest()
         .check(namespace, name, pullRequestId)));
     }
-    if (PermissionCheck.mayMerge(repository) && pullRequest.isInProgress()) {
+    if (PermissionCheck.mayMerge(repository) && pullRequest.isInProgress() && RepositoryPermissions.push(repository).isPermitted() && (pullRequest.isOpen())) {
+      linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
+        .createDefaultCommitMessage(namespace, name, pullRequest.getId())));
+      linksBuilder.single(link("mergeStrategyInfo", pullRequestResourceLinks.mergeLinks().getMergeStrategyInfo(namespace, name, pullRequestId)));
+      appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
+    }
+    if ((PermissionCheck.mayRejectPullRequest(pullRequest) || PermissionCheck.mayMerge(repository)) && pullRequest.isInProgress()) {
       linksBuilder.single(link("reject", pullRequestResourceLinks.pullRequest()
         .reject(namespace, name, pullRequestId)));
       linksBuilder.single(link("rejectWithMessage", pullRequestResourceLinks.pullRequest()
         .rejectWithMessage(namespace, name, pullRequestId)));
-
-      if (RepositoryPermissions.push(repository).isPermitted() && (pullRequest.isOpen())) {
-        linksBuilder.single(link("defaultCommitMessage", pullRequestResourceLinks.mergeLinks()
-          .createDefaultCommitMessage(namespace, name, pullRequest.getId())));
-        linksBuilder.single(link("mergeStrategyInfo", pullRequestResourceLinks.mergeLinks().getMergeStrategyInfo(namespace, name, pullRequestId)));
-        appendMergeStrategyLinks(linksBuilder, repository, pullRequest);
-      }
     }
+
     Optional<Branch> sourceBranch = branchResolver.find(repository, pullRequest.getSource());
     Optional<Branch> targetBranch = branchResolver.find(repository, pullRequest.getTarget());
     boolean isPrCreationValid = false;

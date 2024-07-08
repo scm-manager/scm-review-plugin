@@ -26,13 +26,16 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.comment.service.BasicComment;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Location;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.github.sdorra.shiro.ShiroRule;
 import com.github.sdorra.shiro.SubjectAware;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.junit.Rule;
 import org.junit.Test;
 import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryPermission;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -102,5 +105,36 @@ public class PermissionCheckTest {
 
   private Repository createRepository() {
     return new Repository("repo_ID", "git", "space", "X");
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldAllowRejectForAuthor() {
+    PullRequest pullRequest = TestData.createPullRequest();
+    pullRequest.setAuthor("trillian");
+
+    boolean modificationsAllowed = PermissionCheck.mayRejectPullRequest(pullRequest);
+
+    assertTrue(modificationsAllowed);
+  }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldNotAllowRejectUserWithoutPermission() {
+    PullRequest pullRequest = TestData.createPullRequest();
+
+    boolean modificationsAllowed = PermissionCheck.mayRejectPullRequest(pullRequest);
+
+    assertFalse(modificationsAllowed);
+  }
+
+  @Test
+  @SubjectAware(username = "dent", password = "secret")
+  public void shouldAllowRejectForUserWithAdminPermission() {
+    PullRequest pullRequest = TestData.createPullRequest();
+
+    boolean modificationsAllowed = PermissionCheck.mayRejectPullRequest(pullRequest);
+
+    assertTrue(modificationsAllowed);
   }
 }

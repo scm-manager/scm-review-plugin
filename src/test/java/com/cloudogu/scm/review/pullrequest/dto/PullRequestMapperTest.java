@@ -138,6 +138,35 @@ class PullRequestMapperTest {
     }
 
     @Test
+    void shouldMapRejectForAdmin() {
+      PullRequest pullRequest = TestData.createPullRequest();
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reject")).isPresent();
+    }
+
+    @Test
+    void shouldMapRejectForAuthor() {
+      when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("trillian");
+
+      PullRequest pullRequest = TestData.createPullRequest();
+      pullRequest.setAuthor("trillian");
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reject")).isPresent();
+    }
+
+    @Test
+    void shouldMapNotReject() {
+      when(subject.getPrincipals().getPrimaryPrincipal()).thenReturn("trillian");
+
+      PullRequest pullRequest = TestData.createPullRequest();
+      PullRequestDto dto = mapper.map(pullRequest, REPOSITORY);
+
+      assertThat(dto.getLinks().getLinkBy("reject")).isEmpty();
+    }
+
+    @Test
     void shouldMapConvertToPrLinkForMerger() {
       when(subject.isPermitted("repository:commentPullRequest:id-1")).thenReturn(true);
       when(subject.isPermitted("repository:push:id-1")).thenReturn(true);

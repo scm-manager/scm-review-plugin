@@ -101,7 +101,7 @@ public interface PullRequestService {
   void update(Repository repository, String pullRequestId, PullRequest pullRequest);
 
   default void reject(Repository repository, String pullRequestId, String message) {
-    PermissionCheck.checkMerge(repository);
+    PermissionCheck.checkReject(repository, get(repository, pullRequestId));
     setRejected(repository, pullRequestId, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, message);
   }
 
