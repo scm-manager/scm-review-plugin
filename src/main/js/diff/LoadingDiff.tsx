@@ -27,12 +27,12 @@ import { useTranslation } from "react-i18next";
 import { useDiff } from "@scm-manager/ui-api";
 import {
   Diff as CoreDiff,
-  DiffButton,
   DiffObjectProps,
   ErrorNotification,
   Loading,
   NotFoundError,
-  Notification
+  Notification,
+  DiffDropDown
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
@@ -91,22 +91,14 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
   }
   const buttonHeight = 40;
   const overlapBetweenPanelHeader = 5;
+
   return (
     <>
       <StickyContainer
         className="is-hidden-mobile"
         top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
       >
-        <DiffButton
-          onClick={ignoreWhitespaces}
-          tooltip={t(`scm-review-plugin.diff.${ignoreWhitespace ? "activateWhitespace" : "ignoreWhitespace"}`)}
-          icon={ignoreWhitespace ? "laptop" : "laptop-code"}
-        />
-        <DiffButton
-          onClick={collapseDiffs}
-          tooltip={t("scm-review-plugin.diff.collapseDiffs")}
-          icon={collapsed ? "eye" : "eye-slash"}
-        />
+        <DiffDropDown collapseDiffs={collapseDiffs} ignoreWhitespaces={ignoreWhitespaces} renderOnMount={true}/>
       </StickyContainer>
       <CoreDiff
         diff={data.files}
