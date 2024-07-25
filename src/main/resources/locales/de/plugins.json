@@ -420,9 +420,10 @@
         "branchOptions": "Standardwert für das Löschen eines Branchs nach einem erfolgreichen Merge"
       },
       "availableLabels": {
-        "label": "Verfügbare Labels",
+        "label": "Labels verwalten",
         "ariaLabel": "Neues Label eingeben",
         "placeholder": "Neues Label eingeben",
+        "information": "Erstellen Sie neue Tags, indem sie den Inhalt eingeben und mit der Enter-Taste oder dem Button „Label hinzufügen“ hinzufügen.",
         "addButton": {
           "label": "Label hinzufügen"
         }
@@ -431,6 +432,7 @@
         "label": "Standard-Reviewer",
         "addButton": "Hinzufügen",
         "placeholder": "Standard-Reviewer hinzufügen",
+        "information": "Fügen Sie neue Standard-Reviewer hinzu, indem Sie den Benutzernamen eingeben und wählen Sie diesen aus den Vorschlägen aus.",
         "loading": "Suche ...",
         "noOptions": "Kein Vorschlag für Benutzername verfügbar"
       },

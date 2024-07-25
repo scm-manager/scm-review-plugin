@@ -55,6 +55,7 @@ const UserList: FC<{
       label={t("scm-review-plugin.config.defaultReviewers.label")}
       placeholder={t("scm-review-plugin.config.defaultReviewers.placeholder")}
       aria-label={t("scm-review-plugin.config.defaultReviewers.placeholder")}
+      information={t("scm-review-plugin.config.defaultReviewers.information")}
       isNewItemDuplicate={(a, b) => a.value.id === b.value.id}
     >
       <Combobox options={userSuggestions} />
@@ -217,6 +218,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
               placeholder={t("scm-review-plugin.config.availableLabels.placeholder")}
               aria-label={t("scm-review-plugin.config.availableLabels.ariaLabel")}
               ref={chipInputRef}
+              information={t("scm-review-plugin.config.availableLabels.information")}
             />
             <ChipInputField.AddButton inputRef={chipInputRef} className="is-align-self-flex-end">
               {t("scm-review-plugin.config.availableLabels.addButton.label")}

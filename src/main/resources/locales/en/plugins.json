@@ -418,9 +418,10 @@
         "branchOptions": "Preset for deleting the source branch after a successful merge"
       },
       "availableLabels": {
-        "label": "Available Labels",
+        "label": "Manage Labels",
         "ariaLabel": "Enter a new label",
         "placeholder": "Enter a new label",
+        "information": "Create new tags by entering the content and adding it with the Enter key or the “Add Label” button.",
         "addButton": {
           "label": "Add Label"
         }
@@ -429,6 +430,7 @@
         "label": "Default Reviewers",
         "addButton": "Add",
         "placeholder": "Add default reviewer",
+        "information": "Add new default reviewers by entering the user name and selecting it from the suggestions.",
         "loading": "Loading ...",
         "noOptions": "No suggestion available"
       },
@@ -507,11 +509,11 @@
         "helpText": "Check this to prevent authors to merge pull requests created by them. This can be overridden with the emergency merge permission."
       },
       "defaultTasks": {
-        "label": "Default tasks",
+        "label": "Default Tasks",
         "information": "Add tasks that are automatically added when a pull request is created.",
-        "addTask": "Add task",
-        "deleteTask": "Delete task",
-        "editTask": "Edit task",
+        "addTask": "Add Task",
+        "deleteTask": "Delete Task",
+        "editTask": "Edit Task",
         "noTasks": "No default tasks configured.",
         "modal": {
           "createTitle": "Create new default task",
@@ -520,8 +522,8 @@
           "editInput": "Edit default task",
           "markdownInformation": "This input field supports the <0>MarkDown Syntax</0>.",
           "preview": "Preview",
-          "addTask": "Create task",
-          "editTask": "Edit task",
+          "addTask": "Create Task",
+          "editTask": "Edit Task",
           "cancel": "Cancel"
         }
       }
