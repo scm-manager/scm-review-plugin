@@ -16,9 +16,11 @@ Der "Commits"-Tab zeigt alle Commits des Source Branches an, ab dem Commit wo di
 ### Diff
 Unter "Diff" findet man die Änderungen der Dateien zwischen dem Target Branch und dem Source Branch. 
 
-Um die Änderungen besser überblicken zu können, gibt es im oberen Teil des Bereichs zwei Buttons:
-- Mit dem ersten Button können die Whitespaces-Änderungen ein- und ausgeblendet werden.
-- Der zweite ermöglicht das Ein- und Ausblenden aller Changesets.
+Auf der linken Seite, direkt über der Diff-Ansicht, kann man eine Zusammenfassung der neuen, geänderten und gelöschten Dateien sehen.
+
+Auf der rechten Seite, direkt gegenüber der Zusammenfassung der Dateien, befindet sich ein Zahnrad-Menü mit den folgenden Optionen:
+- Mit der ersten Checkbox können die Whitespaces-Änderungen ein- und ausgeblendet werden.
+- Die zweite ermöglicht das Ein- und Ausblenden aller Changesets.
 
 Die Änderungen sind nach dem bekannten Format für Diffs farblich gekennzeichnet:
 

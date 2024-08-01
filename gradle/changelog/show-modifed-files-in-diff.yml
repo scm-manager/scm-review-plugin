@@ -1,0 +1,2 @@
+- type: added
+  description: The pull request diff view shows the amount of modified, newly added and deleted files contained in that pull request

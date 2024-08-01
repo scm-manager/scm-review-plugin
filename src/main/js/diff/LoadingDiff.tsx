@@ -32,7 +32,8 @@ import {
   Loading,
   NotFoundError,
   Notification,
-  DiffDropDown
+  DiffDropDown,
+  DiffStatistics
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
@@ -94,6 +95,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
 
   return (
     <>
+      <DiffStatistics data={data.statistics}/>
       <StickyContainer
         className="is-hidden-mobile"
         top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
