@@ -101,7 +101,7 @@
           "UNFINISHED_TASK": "Task marked as unfinished",
           "COMMENT_TO_TASK": "Edited comment to be a task",
           "TASK_TO_COMMENT": "Edited task to be a comment",
-          "REVIEW_MARKS": "File mark as reviewed",
+          "REVIEW_MARKS": "File marked as reviewed",
           "SOURCE_BRANCH_REVISION": "Source Branch Revision"
         },
         "changedBy": "Changed by",
@@ -115,7 +115,7 @@
           "addedWithApproval": "with an approval",
           "addedWithoutApproval": "without an approval",
           "approved": "'{{username}}' has approved",
-          "disapproved": "'{{username}}' has disapproved"
+          "disapproved": "'{{username}}' withdrew the approval"
         },
         "changedTargetBranch": "Changed target branch from `{{previous}}` to `{{current}}`",
         "changedPrStatus": "Changed pull request status from `{{previous}}` to `{{current}}`",
@@ -211,8 +211,8 @@
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward if possible",
         "help": {
           "REBASE": "Executes a rebase before the merge. Commits on the source branch are directly applied to the target branch.",
-          "SQUASH": "Squash all commits of source branch into one new commit --and merge into-- on top of the target branch",
-          "MERGE_COMMIT": "Merge branches with new commit and custom commit message",
+          "SQUASH": "Squash all commits of source branch into one new commit and merge on top of the target branch.",
+          "MERGE_COMMIT": "Merge branches with new commit and custom commit message.",
           "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit. If a fast forward is not possible, a normal merge commit will be created."
         }
       },
@@ -339,7 +339,7 @@
         "cancel": "No"
       },
       "makeCommentAlert": {
-        "title": "Make this a Normal Comment",
+        "title": "Change to a normal Comment",
         "message": "Do you really want to transform this task to a normal comment?",
         "submit": "Yes",
         "cancel": "No"
@@ -357,7 +357,7 @@
         "sourceDeleted": "The source branch of the pull request has been deleted.",
         "targetDeleted": "The target branch of the pull request has been deleted.",
         "targetChanged": "The target branch of the pull request has been changed from `{{oldTarget}}` to `{{newTarget}}`.",
-        "emergencyMerged": "The pull request has been merged with an emergency merge. The workflow engine rules has been ignored.",
+        "emergencyMerged": "The pull request has been merged with an emergency merge. The Workflow Engine rules have been ignored.",
         "statusToOpen": "The pull request has been opened for review.",
         "statusToDraft": "The pull request has been converted to draft."
       },
@@ -410,7 +410,7 @@
     },
     "config": {
       "title": "Pull Requests Configuration",
-      "navigationPrompt": "You have unsaved changes. Do you really want to leave this page ?",
+      "navigationPrompt": "You have unsaved changes. Do you really want to leave this page?",
       "legends": {
         "mergeDialog": "Merge Dialog",
         "creation": "Creation",
@@ -431,7 +431,7 @@
         "addButton": "Add",
         "placeholder": "Add default reviewer",
         "information": "Add new default reviewers by entering the user name and selecting it from the suggestions.",
-        "loading": "Loading ...",
+        "loading": "Loading …",
         "noOptions": "No suggestion available"
       },
       "restrictBranchWriteAccess": {
@@ -562,8 +562,8 @@
     },
     "workflow": {
       "enableEngine": {
-        "label": "Activate workflow engine",
-        "helpText": "Activate the workflow engine and validate all pull requests by the defined rules."
+        "label": "Activate Workflow Engine",
+        "helpText": "Activate the Workflow Engine and validate all pull requests by the defined rules."
       },
       "rule": {
         "column": {
@@ -595,7 +595,7 @@
       },
       "disableRepositoryConfiguration": {
         "label": "Do not allow repository configuration",
-        "helpText": "Do not allow repository owners to configure the workflow engine."
+        "helpText": "Do not allow repository owners to configure the Workflow Engine."
       },
       "globalConfig": {
         "title": "Workflow Engine"
@@ -667,8 +667,8 @@
     "configuration": {
       "read,write": {
         "workflowConfig": {
-          "displayName": "Configure workflow engine configuration",
-          "description": "May configure workflow engine configuration for all repositories"
+          "displayName": "Configure Workflow Engine configuration",
+          "description": "May configure Workflow Engine configuration for all repositories"
         }
       }
     }
@@ -700,12 +700,12 @@
         "description": "May configure pull requests for this repository"
       },
       "readWorkflowConfig": {
-        "displayName": "read workflow engine configuration",
-        "description": "May read the workflow engine configuration for this repository"
+        "displayName": "read Workflow Engine configuration",
+        "description": "May read the Workflow Engine configuration for this repository"
       },
       "writeWorkflowConfig": {
-        "displayName": "write workflow engine configuration",
-        "description": "May configure the workflow engine configuration for this repository"
+        "displayName": "write Workflow Engine configuration",
+        "description": "May configure the Workflow Engine configuration for this repository"
       },
       "performEmergencyMerge": {
         "displayName": "performe emergency merge",
@@ -828,7 +828,7 @@
             "hints": "Timestamp of last modification in ms since 01-01-1970. Range search possible."
           },
           "overrideMessage": {
-            "hints": "Message why the pull request was emergency merged and ignored the workflow engine rules.",
+            "hints": "Message why the pull request was emergency merged and ignored the Workflow Engine rules.",
             "exampleValue": "The PROD system was on fire so we had to emergency merge our fix."
           },
           "emergencyMerged": {

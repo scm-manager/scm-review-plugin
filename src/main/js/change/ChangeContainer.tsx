@@ -27,8 +27,9 @@ import { DEFAULT_PROPERTIES, PullRequestChange } from "./ChangesTypes";
 import { useTranslation } from "react-i18next";
 import { evalChangeType } from "./util";
 import ChangeRenderer from "./ChangeRenderer";
-import { DateFromNow, SingleContributor } from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
+import ChangeAuthor from "./ChangeAuthor";
 
 type Props = {
   change: PullRequestChange;
@@ -89,7 +90,7 @@ const ChangeContainer: FC<Props> = ({ change, repository }) => {
         {change.username ? (
           <>
             {t("scm-review-plugin.pullRequest.changes.changedBy")}{" "}
-            <SingleContributor person={{ name: change.displayName || change.username, mail: change.mail }} />
+            <ChangeAuthor person={{ name: change.displayName ?? change.username, mail: change.mail }} />
           </>
         ) : (
           t("scm-review-plugin.pullRequest.changes.changedByUnknown")
