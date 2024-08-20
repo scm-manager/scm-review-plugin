@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.3.0 - 2024-08-20
+### Added
+- Improved label and explanatory line for labels and default reviewers in PR configuration
+- Show conflicts for external merge tools in pull requests
+- The pull request diff view shows the amount of modified, newly added and deleted files contained in that pull request
+- A cogwheel menu to the sticky header and removed old icon buttons
+
+### Fixed
+- Authors can reject their pull request
+- Use consistent wording to describe similar facts. Fix spelling.
+- Missing link for mustache templating docs on commit messages
+- If only reviewers are changed, no change notifications will be sent via email
+
 ## 3.2.0 - 2024-05-23
 ### Added
 - System comments are now added when target branches are changed in pull requests
