@@ -85,7 +85,7 @@ A quick look at the files and directories you'll see in an SCM-Manager project.
 
 8.  **`gradlew`**: Bundled gradle wrapper if you don't have gradle installed.
 
-9.  **`LICENSE.txt`**: This project is licensed under the MIT license.
+9.  **`LICENSE.txt`**: This project is licensed under AGPLv3.
 
 10.  **`package.json`**: Here you can find the dependency/build configuration and dependencies for the frontend.
 
