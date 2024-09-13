@@ -14,7 +14,17 @@ Der "Commits"-Tab zeigt alle Commits des Source Branches an, ab dem Commit wo di
 ![Pull Request - Commits](assets/commits.png)
 
 ### Diff
-Unter "Diff" findet man die Änderungen der Dateien zwischen dem Target Branch und dem Source Branch. 
+Unter "Diff" findet man die Änderungen der Dateien zwischen dem Source Branch und dem Ursprung von Target und Source Branch.
+
+Für jede Datei gibt es mehrere Schaltflächen für verschiedene Optionen, wie
+
+- den Diff vergrößern
+- Leerzeichen-Zeichen anzeigen oder ausblenden
+- die Datei als "gerevied" markieren (dies ist nur für Ihren persönlichen Workflow und hat keine weiteren Auswirkungen;
+  wenn eine entsprechend markierte Datei geändert wird, wird die Markierung entfernt)
+- einen Kommentar auf Dateiebene erstellen
+- zur Source- oder Target-Datei springen
+- eine Schaltfläche, die einen Merge-Konflikt für diese Datei anzeigt, falls vorhanden
 
 Auf der linken Seite, direkt über der Diff-Ansicht, kann man eine Zusammenfassung der neuen, geänderten und gelöschten Dateien sehen.
 

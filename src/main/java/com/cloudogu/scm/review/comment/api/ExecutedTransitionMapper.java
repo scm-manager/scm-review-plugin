@@ -21,6 +21,7 @@ import com.cloudogu.scm.review.comment.service.ExecutedTransition;
 import com.cloudogu.scm.review.comment.service.Transition;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.Links;
+import jakarta.inject.Inject;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -28,9 +29,6 @@ import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.InstantAttributeMapper;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.user.UserDisplayManager;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
 
 import static de.otto.edison.hal.Links.linkingTo;
 import static java.util.stream.Collectors.toList;
@@ -44,10 +42,9 @@ public abstract class ExecutedTransitionMapper implements InstantAttributeMapper
   private CommentPathBuilder commentPathBuilder;
 
   @Mapping(target = "attributes", ignore = true)
-  @Mapping(target = "user", source = "user", qualifiedByName = "mapUser")
+  @Mapping(target = "user", source = "user")
   abstract ExecutedTransitionDto map(ExecutedTransition transition, @Context NamespaceAndName namespaceAndName, @Context String pullRequestId, @Context BasicComment comment);
 
-  @Named("mapUser")
   DisplayedUserDto mapUser(String userId) {
     return new DisplayUserMapper(userDisplayManager).map(userId);
   }

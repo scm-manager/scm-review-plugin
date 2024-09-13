@@ -123,4 +123,4 @@ Here are some of the tracked properties:
 - Tasks
 - Pull request status
 
-![Pull Request Änderungshistorie](assets/pr-change-history.png)
+![Pull Request - Change history](assets/pr-change-history.png)

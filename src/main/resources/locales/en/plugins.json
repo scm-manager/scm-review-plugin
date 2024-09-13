@@ -31,6 +31,7 @@
       "addComment": "Add comment for file",
       "jumpToSource": "Jump to source",
       "jumpToTarget": "Jump to target",
+      "jumpToConflict": "Jump to conflict",
       "moreDiffsAvailable": "There are more diffs available.",
       "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} comment(s).",
       "loadMore": "Load more",

@@ -201,6 +201,7 @@ const Routes: FC<RouteProps> = ({
             target={targetRevision}
             sourceBranch={sourceBranch}
             stickyHeaderHeight={stickyHeaderHeight}
+            mergePreventReasons={mergePreventReasons}
           />
         </div>
       </Route>

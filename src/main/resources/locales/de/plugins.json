@@ -31,6 +31,7 @@
       "addComment": "Kommentar für Datei hinzufügen",
       "jumpToSource": "Zur Quelldatei springen",
       "jumpToTarget": "Zur Zieldatei springen",
+      "jumpToConflict": "Zum Konflikt springen",
       "moreDiffsAvailable": "Es sind weitere Diffs verfügbar.",
       "partialMoreDiffsAvailable": "Es sind weitere Diffs mit insgesamt {{count}} Kommentar(en) verfügbar.",
       "loadMore": "Weitere laden",

@@ -1,7 +1,8 @@
 ---
 title: Übersicht
 ---
-Der Großteil aller vom Review-Plugin mitgelieferten Erweiterungen sind innerhalb eines Git Repositories unter dem Tab "Pull Requests" zu finden. Beim Aufruf des Bereichs erscheint eine Übersicht aller derzeit offenen Pull Requests. 
+Der Großteil aller vom Review-Plugin mitgelieferten Funktionalität sind innerhalb eines Git Repositories unter dem Tab 
+"Pull Requests" zu finden. Beim Aufruf des Bereichs erscheint eine Übersicht aller derzeit offenen Pull Requests. 
 
 Diese Übersicht lässt sich nach den folgenden Kategorien filtern:
 
@@ -12,14 +13,19 @@ Diese Übersicht lässt sich nach den folgenden Kategorien filtern:
 - abgelehnt: Abgelehnte Pull Requests
 - gemerged: Akzeptierte Pull Requests
 
-Die Übersichts-Tabelle besteht aus den folgenden Spalten, die sich durch einen Klick auf den Spaltenkopf anhand der Werte auf- bzw. absteigend sortieren lassen:
+Die Sortierung lässt sich durch ein weiteres Auswahlelement einstellen.
+Die Übersichts-Liste zeigt pro Repository die folgenden Informationen an:
 
-- Titel: Vom Autor festgelegter Name des Pull Requests
-- Offene Aufgaben: Anzahl offener Aufgaben zum Pull Request
-- Source Branch: Branch, der die Änderungen enthält (Quelle)
-- Target Branch: Branch, auf welchen die Änderungen angewendet werden sollen (Ziel)
-- Autor: Ersteller des Pull Requests
-- Datum: Alter des Pull Requests
-- Reviewer: Icon, welches die zugehörigen Reviewer zum Pull Request anzeigt
-- Status: Status des Pull Requests (Offen/Draft/Gemerged/Abgelehnt)
+- Titel (vom Autor festgelegter Name des Pull Requests)
+- Autor bzw. Ersteller des Pull Requests
+- Source Branch (Branch, der die Änderungen enthält / Quelle)
+- Target Branch (Branch, auf welchen die Änderungen angewendet werden sollen / Ziel)
+- Erstellungsdatum bzw. Alter des Pull Requests
+- Anzahl der offenen und insgesamt vorhandenen Aufgaben zum Pull Request
+- Anzahl der Reviewer und Zahl der Freigaben
+- Status des Pull Requests (Offen, Draft, Gemerged oder Abgelehnt)
+- Status der Workflows, die für das Repository festgelegt wurden
+
+Zudem können durch andere Plugins weitere Daten hinzugefügt werden, wie z. B. CI-Analysen.
+
 ![Pull Request Übersicht](assets/overview.png)

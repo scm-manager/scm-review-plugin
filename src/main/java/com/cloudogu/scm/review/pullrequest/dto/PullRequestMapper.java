@@ -34,6 +34,8 @@ import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.UriInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.shiro.SecurityUtils;
@@ -58,10 +60,6 @@ import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.EdisonHalAppender;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-import jakarta.ws.rs.core.UriInfo;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -101,18 +99,17 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
   private PullRequestResourceLinks pullRequestResourceLinks = new PullRequestResourceLinks(() -> URI.create("/"));
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewer")
-  @Mapping(target = "author", source = "author", qualifiedByName = "mapUser")
-  @Mapping(target = "reviser", source = "reviser", qualifiedByName = "mapUser")
+  @Mapping(target = "reviewer", source = "reviewer")
+  @Mapping(target = "author", source = "author")
+  @Mapping(target = "reviser", source = "reviser")
   @Mapping(target = "markedAsReviewed", ignore = true)
   public abstract PullRequestDto map(PullRequest pullRequest, @Context Repository repository);
 
   @Mapping(target = "subscriber", ignore = true)
-  @Mapping(target = "reviewer", source = "reviewer", qualifiedByName = "mapReviewerFromDto")
+  @Mapping(target = "reviewer", source = "reviewer")
   @Mapping(target = "reviewMarks", ignore = true)
   public abstract PullRequest map(PullRequestDto dto);
 
-  @Named("mapReviewerFromDto")
   Map<String, Boolean> mapReviewerFromDto(Set<ReviewerDto> reviewer) {
     Map<String, Boolean> reviewerMap = new HashMap<>();
 
@@ -127,7 +124,6 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
     return reviewerMap;
   }
 
-  @Named("mapReviewer")
   Set<ReviewerDto> mapReviewer(Map<String, Boolean> reviewer) {
     return reviewer
       .entrySet()
@@ -142,7 +138,6 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .orElse(DisplayUser.from(new User(entry.getKey(), entry.getKey(), null)));
   }
 
-  @Named("mapUser")
   DisplayedUserDto mapUser(String authorId) {
     return userDisplayManager.get(authorId).map(this::createDisplayedUserDto).orElse(new DisplayedUserDto(authorId, authorId, null));
   }

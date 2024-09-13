@@ -150,6 +150,7 @@ export type MergeCommit = {
 
 export type MergePreventReason = {
   type: "FILE_CONFLICTS" | "EXTERNAL_MERGE_TOOL";
+  affectedPaths?: string[];
 };
 
 export type MergeCheck = {

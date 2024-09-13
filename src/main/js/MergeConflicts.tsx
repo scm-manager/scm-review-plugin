@@ -17,13 +17,14 @@
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Conflict, MergePreventReason, PullRequest } from "./types/PullRequest";
-import { DiffFile, File, Loading } from "@scm-manager/ui-components";
-import { Notification, ErrorNotification } from "@scm-manager/ui-core";
+import { DiffFile, File, useScrollToElement } from "@scm-manager/ui-components";
+import { Notification, ErrorNotification, Loading } from "@scm-manager/ui-core";
 import { FileChangeType, Repository } from "@scm-manager/ui-types";
 import { usePullRequestConflicts } from "./pullRequest";
 // @ts-ignore
 import parser from "gitdiff-parser";
 import ManualMergeInformation from "./ManualMergeInformation";
+import { useLocation } from "react-router-dom";
 
 type Props = {
   repository: Repository;
@@ -36,6 +37,11 @@ const MergeConflicts: FC<Props> = ({ repository, pullRequest, mergePreventReason
   const [mergeInformation, setMergeInformation] = useState(false);
 
   const { data, error, isLoading } = usePullRequestConflicts(repository, pullRequest);
+
+  const location = useLocation();
+  const [anchorContentRef, setAnchorContentRef] = useState<HTMLElement | null>();
+
+  useScrollToElement(anchorContentRef, () => location.hash, location.hash);
 
   const getTypeLabel = (type: string) => {
     return t("scm-review-plugin.conflicts.types." + type);
@@ -83,7 +89,9 @@ const MergeConflicts: FC<Props> = ({ repository, pullRequest, mergePreventReason
             </Notification>
           );
         })}
-      {data!.conflicts.map((conflict: Conflict, index) => createDiffComponent(conflict, index))}
+      <div ref={setAnchorContentRef}>
+        {data!.conflicts.map((conflict: Conflict, index) => createDiffComponent(conflict, index))}
+      </div>
       <ManualMergeInformation
         showMergeInformation={mergeInformation}
         repository={repository}

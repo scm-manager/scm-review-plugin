@@ -135,7 +135,7 @@ class MergeResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"hasConflicts\":true");
-    assertThat(response.getContentAsString()).contains("\"mergePreventReasons\":[{\"type\":\"FILE_CONFLICTS\"}]");
+    assertThat(response.getContentAsString()).contains("\"mergePreventReasons\":[{\"type\":\"FILE_CONFLICTS\",\"affectedPaths\":[]}]");
   }
 
   @Test
@@ -155,7 +155,7 @@ class MergeResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"hasConflicts\":true");
-    assertThat(response.getContentAsString()).contains("\"mergePreventReasons\":[{\"type\":\"EXTERNAL_MERGE_TOOL\"}]");
+    assertThat(response.getContentAsString()).contains("\"mergePreventReasons\":[{\"type\":\"EXTERNAL_MERGE_TOOL\",\"affectedPaths\":[]}]");
   }
 
   @Test

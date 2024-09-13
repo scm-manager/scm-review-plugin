@@ -14,7 +14,17 @@ The "Commits" tab shows all commits from the source branch starting from where b
 ![Pull Request - Commits](assets/commits.png)
 
 ### Diff
-The "Diff" tab shows the changes between the target and source branch on a file level.
+The "Diff" tab shows the changes between the source branch and the root of source and target branches on a file level.
+
+For each file, you will find multiple buttons for various options, like
+
+- zoom the diff
+- show or hide whitespace characters
+- mark the file as reviewed (this is for your personal workflow only and has no further effect; if a file marked as
+  reviewed is changed, the mark will be removed)
+- create a comment on file level
+- jump to the source or the target file
+- a button indicating a merge conflict for this file, if there is one
 
 On the left side just above the diff view you are able to see new, modified and deleted files summarized
 

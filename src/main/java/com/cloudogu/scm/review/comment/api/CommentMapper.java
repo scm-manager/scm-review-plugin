@@ -30,6 +30,7 @@ import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import sonia.scm.api.v2.resources.HalAppenderMapper;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.DisplayUser;
@@ -37,7 +38,7 @@ import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.EdisonHalAppender;
 
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
+
 import java.util.Collection;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -62,8 +63,8 @@ public abstract class CommentMapper extends HalAppenderMapper {
   private MentionMapper mentionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
-  @Mapping(target = "mentions", source = "mentionUserIds", qualifiedByName = "mapMentions")
+  @Mapping(target = "author", source = "author")
+  @Mapping(target = "mentions", source = "mentionUserIds")
   abstract CommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions, @Context BranchRevisionResolver.RevisionResult revisions);
 
   @Mapping(target = "mentionUserIds", ignore = true)
@@ -73,7 +74,6 @@ public abstract class CommentMapper extends HalAppenderMapper {
 
   abstract ContextLine map(CommentDto.ContextLineDto line);
 
-  @Named("mapAuthor")
   DisplayedUserDto mapAuthor(String authorId) {
     return new DisplayUserMapper(userDisplayManager).map(authorId);
   }

@@ -23,6 +23,7 @@ import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.Links;
+import jakarta.inject.Inject;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -34,8 +35,6 @@ import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.EdisonHalAppender;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import java.util.Set;
 
 import static de.otto.edison.hal.Link.link;
@@ -53,7 +52,7 @@ public abstract class ReplyMapper extends HalAppenderMapper {
   private MentionMapper mentionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  @Mapping(target = "mentions", source = "mentionUserIds", qualifiedByName = "mapMentions")
+  @Mapping(target = "mentions", source = "mentionUserIds")
   abstract ReplyDto map(Reply reply, @Context Repository repository, @Context String pullRequestId, @Context Comment comment, @Context BranchRevisionResolver.RevisionResult revisions);
 
   @Mapping(target = "mentionUserIds", ignore = true)
@@ -86,7 +85,6 @@ public abstract class ReplyMapper extends HalAppenderMapper {
     target.add(linksBuilder.build());
   }
 
-  @Named("mapMentions")
   Set<DisplayUser> appendMentions(Set<String> userIds) {
     return mentionMapper.mapMentions(userIds);
   }
