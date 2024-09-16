@@ -14,7 +14,7 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC, useState } from "react";
+import React, { FC, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDiff } from "@scm-manager/ui-api";
 import {
@@ -25,11 +25,16 @@ import {
   NotFoundError,
   Notification,
   DiffDropDown,
-  DiffStatistics
+  DiffStatistics,
+  DiffFileTree,
+  FileTreeContent,
+  getFileNameFromHash
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
+import { FileTree } from "@scm-manager/ui-types";
 import PartialNotification from "./PartialNotification";
 import styled from "styled-components";
+import { useHistory, useLocation } from "react-router-dom";
 
 type LoadingDiffProps = DiffObjectProps & {
   diffUrl: string;
@@ -49,6 +54,10 @@ const StickyContainer = styled.div<{ top: number }>`
   z-index: 11;
 `;
 
+export const CoreDiffContent = styled.div`
+  width: 100%;
+`;
+
 const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, stickyHeader, ...props }) => {
   const [t] = useTranslation("plugins");
   const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
@@ -58,6 +67,37 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
     ignoreWhitespace: ignoreWhitespace ? "ALL" : "NONE"
   });
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+  const history = useHistory();
+
+  const fetchNextPageAndResetAnchor = () => {
+    history.push("#");
+    fetchNextPage();
+  };
+
+  const getFirstFile = useCallback((tree: FileTree): string => {
+    if (Object.keys(tree.children).length === 0) {
+      return tree.nodeName;
+    }
+
+    for (const key in tree.children) {
+      let path;
+      if (tree.nodeName !== "") {
+        path = tree.nodeName + "/";
+      } else {
+        path = tree.nodeName;
+      }
+      const result = path + getFirstFile(tree.children[key]);
+      if (result) {
+        return result;
+      }
+    }
+    return "";
+  }, []);
+
+  const setFilePath = (path: string) => {
+    history.push(`#diff-${encodeURIComponent(path)}`);
+  };
 
   const collapseDiffs = () => {
     if (collapsed) {
@@ -86,33 +126,47 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
   const overlapBetweenPanelHeader = 5;
 
   return (
-    <>
-      <DiffStatistics data={data.statistics}/>
-      <StickyContainer
-        className="is-hidden-mobile"
-        top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
-      >
-        <DiffDropDown collapseDiffs={collapseDiffs} ignoreWhitespaces={ignoreWhitespaces} renderOnMount={true}/>
-      </StickyContainer>
-      <CoreDiff
-        diff={data.files}
-        ignoreWhitespace={ignoreWhitespace ? "ALL" : "NONE"}
-        {...props}
-        stickyHeader={
-          typeof stickyHeader === "number" && stickyHeader > buttonHeight
-            ? stickyHeader - overlapBetweenPanelHeader
-            : true
-        }
-      />
-      {data.partial ? (
-        <PartialNotification
-          pullRequestComments={pullRequestComments}
-          pullRequestFiles={data?.files}
+    <div className="is-flex has-gap-4 mb-4 mt-4 is-justify-content-space-between">
+      <FileTreeContent className={"is-three-quarters"}>
+        {data?.tree && (
+          <DiffFileTree
+            tree={data.tree}
+            currentFile={decodeURIComponent(getFileNameFromHash(location.hash) ?? "")}
+            setCurrentFile={setFilePath}
+          />
+        )}
+      </FileTreeContent>
+      <CoreDiffContent>
+        <DiffStatistics data={data.statistics} />
+        <StickyContainer
+          className="is-hidden-mobile"
+          top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
+        >
+          <DiffDropDown collapseDiffs={collapseDiffs} ignoreWhitespaces={ignoreWhitespaces} renderOnMount={true} />
+        </StickyContainer>
+        <CoreDiff
+          diff={data.files}
+          ignoreWhitespace={ignoreWhitespace ? "ALL" : "NONE"}
           fetchNextPage={fetchNextPage}
           isFetchingNextPage={isFetchingNextPage}
+          isDataPartial={data.partial}
+          {...props}
+          stickyHeader={
+            typeof stickyHeader === "number" && stickyHeader > buttonHeight
+              ? stickyHeader - overlapBetweenPanelHeader
+              : true
+          }
         />
-      ) : null}
-    </>
+        {data.partial ? (
+          <PartialNotification
+            pullRequestComments={pullRequestComments}
+            pullRequestFiles={data?.files}
+            fetchNextPage={fetchNextPageAndResetAnchor}
+            isFetchingNextPage={isFetchingNextPage}
+          />
+        ) : null}
+      </CoreDiffContent>
+    </div>
   );
 };
 
