@@ -15,6 +15,8 @@ The "Commits" tab shows all commits from the source branch starting from where b
 
 ### Diff
 The "Diff" tab shows the changes between the source branch and the root of source and target branches on a file level.
+On the left there is a files tree that shows every file that has been changed.
+To jump to a specific file it is possible to select this file in the tree.
 
 For each file, you will find multiple buttons for various options, like
 

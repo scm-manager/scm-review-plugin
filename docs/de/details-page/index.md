@@ -15,6 +15,8 @@ Der "Commits"-Tab zeigt alle Commits des Source Branches an, ab dem Commit wo di
 
 ### Diff
 Unter "Diff" findet man die Änderungen der Dateien zwischen dem Source Branch und dem Ursprung von Target und Source Branch.
+Auf der linken Seite gibt es einen Dateien-Baum der jede Datei anzeigt die geändert wurde.
+Um zu einer bestimmten Datei zu springen ist ist es möglich im Baum diese Datei auszuwählen.
 
 Für jede Datei gibt es mehrere Schaltflächen für verschiedene Optionen, wie
 
