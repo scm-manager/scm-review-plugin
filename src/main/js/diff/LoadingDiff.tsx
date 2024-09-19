@@ -14,7 +14,7 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC, useCallback, useState } from "react";
+import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDiff } from "@scm-manager/ui-api";
 import {
@@ -31,7 +31,6 @@ import {
   getFileNameFromHash
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
-import { FileTree } from "@scm-manager/ui-types";
 import PartialNotification from "./PartialNotification";
 import styled from "styled-components";
 import { useHistory, useLocation } from "react-router-dom";
@@ -69,33 +68,10 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const history = useHistory();
-
-  const fetchNextPageAndResetAnchor = () => {
-    history.push("#");
-    fetchNextPage();
-  };
-
-  const getFirstFile = useCallback((tree: FileTree): string => {
-    if (Object.keys(tree.children).length === 0) {
-      return tree.nodeName;
-    }
-
-    for (const key in tree.children) {
-      let path;
-      if (tree.nodeName !== "") {
-        path = tree.nodeName + "/";
-      } else {
-        path = tree.nodeName;
-      }
-      const result = path + getFirstFile(tree.children[key]);
-      if (result) {
-        return result;
-      }
-    }
-    return "";
-  }, []);
+  const [prevHash, setPrevHash] = useState("");
 
   const setFilePath = (path: string) => {
+    setPrevHash("");
     history.push(`#diff-${encodeURIComponent(path)}`);
   };
 
@@ -150,6 +126,8 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
           fetchNextPage={fetchNextPage}
           isFetchingNextPage={isFetchingNextPage}
           isDataPartial={data.partial}
+          prevHash={prevHash}
+          setPrevHash={setPrevHash}
           {...props}
           stickyHeader={
             typeof stickyHeader === "number" && stickyHeader > buttonHeight
@@ -161,7 +139,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
           <PartialNotification
             pullRequestComments={pullRequestComments}
             pullRequestFiles={data?.files}
-            fetchNextPage={fetchNextPageAndResetAnchor}
+            fetchNextPage={fetchNextPage}
             isFetchingNextPage={isFetchingNextPage}
           />
         ) : null}
