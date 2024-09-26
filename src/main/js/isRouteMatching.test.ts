@@ -14,21 +14,23 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { matches } from "./index";
+import { isRouteMatching } from "./isRouteMatching";
 
 describe("route match", () => {
   it("should match for single pull request", () => {
-    expect(matches({ location: { pathname: "/scm/repo/hitchhiker/hog/pull-request/1" } })).toBeTruthy();
-    expect(matches({ location: { pathname: "/scm/repo/hitchhiker/hog/pull-request/1/comments" } })).toBeTruthy();
+    expect(isRouteMatching({ location: { pathname: "/scm/repo/hitchhiker/hog/pull-request/1" } })).toBeTruthy();
+    expect(
+      isRouteMatching({ location: { pathname: "/scm/repo/hitchhiker/hog/pull-request/1/comments" } })
+    ).toBeTruthy();
   });
   it("should match for collection", () => {
-    expect(matches({ location: { pathname: "/scm/repo/hitchhiker/hog/pull-requests/" } })).toBeTruthy();
-    expect(matches({ location: { pathname: "/scm/repo/hitchhiker/hog/pull-requests" } })).toBeTruthy();
+    expect(isRouteMatching({ location: { pathname: "/scm/repo/hitchhiker/hog/pull-requests/" } })).toBeTruthy();
+    expect(isRouteMatching({ location: { pathname: "/scm/repo/hitchhiker/hog/pull-requests" } })).toBeTruthy();
   });
   it("should not match for repository named pull-request", () => {
-    expect(matches({ location: { pathname: "/scm/repo/hitchhiker/pull-request/code/1" } })).toBeFalsy();
+    expect(isRouteMatching({ location: { pathname: "/scm/repo/hitchhiker/pull-request/code/1" } })).toBeFalsy();
   });
   it("should not match for repository with namespace pull-request", () => {
-    expect(matches({ location: { pathname: "/scm/repo/pull-request/hog/code/1" } })).toBeFalsy();
+    expect(isRouteMatching({ location: { pathname: "/scm/repo/pull-request/hog/code/1" } })).toBeFalsy();
   });
 });

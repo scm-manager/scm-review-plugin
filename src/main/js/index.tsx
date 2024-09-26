@@ -43,6 +43,7 @@ import { DataType } from "./landingpage/DataType";
 import { MyDataExtension, MyEventExtension, MyTaskExtension } from "@scm-manager/scm-landingpage-plugin";
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 import PullRequestReopenedEvent from "./landingpage/PullRequestReopenedEvent";
+import { isRouteMatching } from "./isRouteMatching";
 
 type PredicateProps = {
   repository: Repository;
@@ -76,10 +77,6 @@ const ShowPullRequestRoute = ({ url, repository }: RepoRouteProps) => {
 
 binder.bind("repository.route", ShowPullRequestRoute);
 
-export function matches(route: any) {
-  const regex = /.*\/repo\/.+\/.+\/pull-requests?(\/.*)?/;
-  return !!route.location.pathname.match(regex);
-}
 
 const PullRequestNavLink: extensionPoints.RepositoryNavigation["type"] = ({ url, repository }) => {
   const [t] = useTranslation("plugins");
@@ -88,7 +85,7 @@ const PullRequestNavLink: extensionPoints.RepositoryNavigation["type"] = ({ url,
     active: !!repository?._links["pullRequest"],
     description: t("scm-review-plugin.shortcuts.pullRequests")
   });
-  return <PullRequestsNavLink url={url} activeWhenMatch={matches} />;
+  return <PullRequestsNavLink url={url} activeWhenMatch={isRouteMatching} />;
 };
 
 binder.bind<extensionPoints.RepositoryNavigation>(
