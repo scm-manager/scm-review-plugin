@@ -16,27 +16,36 @@
 
 package com.cloudogu.scm.review.pullrequest.api;
 
-import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 
+import java.time.Instant;
 import java.util.Comparator;
 
 import static java.util.Comparator.comparing;
 
 public enum PullRequestSortSelector {
-  ID_ASC(comparing(PullRequestDto::getId)),
-  ID_DESC(comparing(PullRequestDto::getId).reversed()),
-  STATUS_ASC(comparing(PullRequestDto::getStatus)),
-  STATUS_DESC(comparing(PullRequestDto::getStatus).reversed()),
-  LAST_MOD_ASC(comparing(PullRequestDto::getLastModifiedDateForSort)),
-  LAST_MOD_DESC(comparing(PullRequestDto::getLastModifiedDateForSort).reversed());
+  ID_ASC(comparing(PullRequest::getId)),
+  ID_DESC(comparing(PullRequest::getId).reversed()),
+  STATUS_ASC(comparing(PullRequest::getStatus)),
+  STATUS_DESC(comparing(PullRequest::getStatus).reversed()),
+  LAST_MOD_ASC(comparing(PullRequestSortSelector::computeLastModifiedForSort)),
+  LAST_MOD_DESC(comparing(PullRequestSortSelector::computeLastModifiedForSort).reversed());
 
-  private final Comparator<PullRequestDto> comparator;
+  private final Comparator<PullRequest> comparator;
 
-  PullRequestSortSelector(Comparator<PullRequestDto> comparator) {
+  PullRequestSortSelector(Comparator<PullRequest> comparator) {
     this.comparator = comparator;
   }
 
-  public Comparator<PullRequestDto> compare() {
+  public Comparator<PullRequest> compare() {
     return this.comparator;
+  }
+
+  private static Instant computeLastModifiedForSort(PullRequest pullRequest) {
+    if (pullRequest.getLastModified() == null) {
+      return pullRequest.getCreationDate();
+    } else {
+      return pullRequest.getLastModified();
+    }
   }
 }

@@ -275,23 +275,19 @@ public class PullRequestRootResource {
   ) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
-    List<PullRequestDto> pullRequestDtos = service.getAll(namespace, name)
-      .stream()
-      .filter(pullRequestSelector)
-      .map(pr -> mapper.using(uriInfo).map(pr, repository))
-      .sorted(pullRequestSortSelector.compare())
-      .toList();
+    List<PullRequest> pullRequests =
+      service.getAll(namespace, name)
+        .stream()
+        .filter(pullRequestSelector)
+        .sorted(pullRequestSortSelector.compare())
+        .toList();
+    List<List<PullRequest>> pagedPullRequests = Lists.partition(pullRequests, pageSize);
 
     PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
-    NumberedPaging paging = zeroBasedNumberedPaging(page, pageSize, pullRequestDtos.size());
+    NumberedPaging paging = zeroBasedNumberedPaging(page, pageSize, pullRequests.size());
     Links.Builder linkBuilder = PagedCollections.createPagedSelfLinks(paging, resourceLinks.pullRequestCollection()
       .all(namespace, name));
-
-    if (PermissionCheck.mayCreate(repository)) {
-      linkBuilder.single(link("create", resourceLinks.pullRequestCollection().create(namespace, name)));
-    }
-    List<List<PullRequestDto>> pagedPullRequestDtos = Lists.partition(pullRequestDtos, pageSize);
-    if (pullRequestDtos.isEmpty() || page >= pagedPullRequestDtos.size()) {
+    if (pullRequests.isEmpty() || page >= pagedPullRequests.size()) {
       return Response.ok(
         PagedCollections.createPagedCollection(
           createHalRepresentation(linkBuilder, Collections.emptyList()),
@@ -300,11 +296,21 @@ public class PullRequestRootResource {
         )).build();
     }
 
+    List<PullRequestDto> pullRequestDtos = pagedPullRequests.get(page)
+      .stream()
+      .map(pr -> mapper.using(uriInfo).map(pr, repository))
+      .toList();
+
+
+    if (PermissionCheck.mayCreate(repository)) {
+      linkBuilder.single(link("create", resourceLinks.pullRequestCollection().create(namespace, name)));
+    }
+
     return Response.ok(
       PagedCollections.createPagedCollection(
-        createHalRepresentation(linkBuilder, pagedPullRequestDtos.get(page)),
+        createHalRepresentation(linkBuilder, pullRequestDtos),
         page,
-        pagedPullRequestDtos.size()
+        pagedPullRequests.size()
       )).build();
   }
 
