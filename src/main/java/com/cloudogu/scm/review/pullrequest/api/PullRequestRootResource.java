@@ -287,6 +287,10 @@ public class PullRequestRootResource {
     NumberedPaging paging = zeroBasedNumberedPaging(page, pageSize, pullRequests.size());
     Links.Builder linkBuilder = PagedCollections.createPagedSelfLinks(paging, resourceLinks.pullRequestCollection()
       .all(namespace, name));
+    if (PermissionCheck.mayCreate(repository)) {
+      linkBuilder.single(link("create", resourceLinks.pullRequestCollection().create(namespace, name)));
+    }
+
     if (pullRequests.isEmpty() || page >= pagedPullRequests.size()) {
       return Response.ok(
         PagedCollections.createPagedCollection(
@@ -300,11 +304,6 @@ public class PullRequestRootResource {
       .stream()
       .map(pr -> mapper.using(uriInfo).map(pr, repository))
       .toList();
-
-
-    if (PermissionCheck.mayCreate(repository)) {
-      linkBuilder.single(link("create", resourceLinks.pullRequestCollection().create(namespace, name)));
-    }
 
     return Response.ok(
       PagedCollections.createPagedCollection(

@@ -477,6 +477,19 @@ public class PullRequestRootResourceTest {
   }
 
   @Test
+  @SubjectAware(username = "dent")
+  public void shouldGetCreateLinkOnEmptyPullRequests() throws URISyntaxException {
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    when(store.getAll()).thenReturn(emptyList());
+
+    // request all PRs without filter
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME);
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getContentAsJson().get("_links").get("create").get("href").asText()).isEqualTo("/v2/pull-requests/ns/repo");
+  }
+
+  @Test
   @SubjectAware(username = "rr")
   public void shouldGetAllPullRequestsSortedByIdAscending() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
