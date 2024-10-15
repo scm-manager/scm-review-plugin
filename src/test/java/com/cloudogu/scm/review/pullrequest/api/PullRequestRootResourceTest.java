@@ -493,7 +493,7 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "rr")
   public void shouldGetAllPullRequestsSortedByIdAscending() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
-    List<String> expectedIds = new ArrayList<>(){{add("id_1"); add("id_2"); add("id_3");}};
+    List<String> expectedIds = new ArrayList<>(){{add("1"); add("2"); add("3");}};
     List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(expectedIds.get(1)), createPullRequest(expectedIds.get(2)), createPullRequest(expectedIds.get(0)));
     when(store.getAll()).thenReturn(pullRequests);
 
@@ -514,7 +514,7 @@ public class PullRequestRootResourceTest {
   @SubjectAware(username = "rr")
   public void shouldGetAllPullRequestsSortedByIdDescending() throws URISyntaxException, UnsupportedEncodingException {
     when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
-    List<String> ids = new ArrayList<>(){{add("id_3"); add("id_2"); add("id_1");}};
+    List<String> ids = new ArrayList<>(){{add("3"); add("2"); add("1");}};
     List<PullRequest> pullRequests = Lists.newArrayList(createPullRequest(ids.get(1)), createPullRequest(ids.get(2)), createPullRequest(ids.get(0)));
     when(store.getAll()).thenReturn(pullRequests);
 

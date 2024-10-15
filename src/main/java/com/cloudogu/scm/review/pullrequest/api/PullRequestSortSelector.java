@@ -24,8 +24,8 @@ import java.util.Comparator;
 import static java.util.Comparator.comparing;
 
 public enum PullRequestSortSelector {
-  ID_ASC(comparing(PullRequest::getId)),
-  ID_DESC(comparing(PullRequest::getId).reversed()),
+  ID_ASC(comparing(PullRequestSortSelector::computeIdAsNumber)),
+  ID_DESC(comparing(PullRequestSortSelector::computeIdAsNumber).reversed()),
   STATUS_ASC(comparing(PullRequest::getStatus)),
   STATUS_DESC(comparing(PullRequest::getStatus).reversed()),
   LAST_MOD_ASC(comparing(PullRequestSortSelector::computeLastModifiedForSort)),
@@ -46,6 +46,14 @@ public enum PullRequestSortSelector {
       return pullRequest.getCreationDate();
     } else {
       return pullRequest.getLastModified();
+    }
+  }
+
+  public static int computeIdAsNumber(PullRequest pullRequest) {
+    try {
+      return Integer.parseInt(pullRequest.getId());
+    } catch (NumberFormatException e) {
+      return Integer.MAX_VALUE;
     }
   }
 }
