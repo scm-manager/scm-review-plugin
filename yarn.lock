@@ -35,7 +35,7 @@
   resolved "https://registry.yarnpkg.com/@babel/compat-data/-/compat-data-7.23.5.tgz#ffb878728bb6bdcb6f4510aa51b1be9afb8cfd98"
   integrity sha512-uU27kfDRlhfKl+w1U6vp16IuvSLtjAxdArVXPa9BvLkrr7CYIsxH5adpHObeAGY/41+syctUWOZ140a2Rvkgjw==
 
-"@babel/core@^7.0.0", "@babel/core@^7.1.0", "@babel/core@^7.12.3", "@babel/core@^7.17.9", "@babel/core@^7.7.5":
+"@babel/core@^7.1.0", "@babel/core@^7.12.3", "@babel/core@^7.17.9", "@babel/core@^7.7.5":
   version "7.24.0"
   resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.24.0.tgz#56cbda6b185ae9d9bed369816a8f4423c5f2ff1b"
   integrity sha512-fQfkg0Gjkza3nf0c7/w6Xf34BW4YvzNfACRLmmb7XRLa6XHdR+K9AlJlxneFfWYf6uhOzuzZVTjF/8KfndZANw==
@@ -1043,7 +1043,7 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.12.13", "@babel/runtime@^7.13.10", "@babel/runtime@^7.14.5", "@babel/runtime@^7.21.0", "@babel/runtime@^7.23.2", "@babel/runtime@^7.23.8", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.2", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.1.2", "@babel/runtime@^7.12.13", "@babel/runtime@^7.13.10", "@babel/runtime@^7.14.5", "@babel/runtime@^7.23.2", "@babel/runtime@^7.23.8", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.2", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.9.2":
   version "7.24.0"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.24.0.tgz#584c450063ffda59697021430cb47101b085951e"
   integrity sha512-Chk32uHMg6TnQdvw2e9IlqPpFX/6NLuK0Ys2PqLb7/gL5uFn9mXvK715FGLlOLQrcO4qIkNHkvPGktzzXexsFw==
@@ -1340,14 +1340,6 @@
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@hapi/bourne/-/bourne-2.1.0.tgz#66aff77094dc3080bd5df44ec63881f2676eb020"
   integrity sha512-i1BpaNDVLJdRBEKeJWkVO6tYX6DMFBuwMhSuWqLsY4ufeTKGVuV5rBsUhxPayXqnnWHgXUAmWK16H/ykO5Wj4Q==
-
-"@headlessui/react@^1.4.3", "@headlessui/react@^1.7.15":
-  version "1.7.18"
-  resolved "https://registry.yarnpkg.com/@headlessui/react/-/react-1.7.18.tgz#30af4634d2215b2ca1aa29d07f33d02bea82d9d7"
-  integrity sha512-4i5DOrzwN4qSgNsL4Si61VMkUcWbcSKueUV7sFhpHzQcSShdlHENE5+QBntMSRvHt8NyoFO2AGG8si9lq+w4zQ==
-  dependencies:
-    "@tanstack/react-virtual" "^3.0.0-beta.60"
-    client-only "^0.0.1"
 
 "@humanwhocodes/config-array@^0.5.0":
   version "0.5.0"
@@ -2349,12 +2341,12 @@
     webpack "^5.94.0"
     webpack-plugin-serve "^1.4.1"
 
-"@scm-manager/prettier-config@^2.10.1":
-  version "2.11.1"
-  resolved "https://registry.yarnpkg.com/@scm-manager/prettier-config/-/prettier-config-2.11.1.tgz#951f50bf05ee9d870b0041acf2b01ed48b3610a6"
-  integrity sha512-tVhhUc76WhQgcMiG5mPA97Z7/PZwUpKibr6iEamoJ3ooo0WNlfBMCD/HHgvIG4UwjtqkNOqzT++uHei6tQsvLA==
+"@scm-manager/prettier-config@^2.12.0":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/prettier-config/-/prettier-config-2.12.0.tgz#862f74240e9a3f77c014b6ccb5fd0178dca8f769"
+  integrity sha512-iEP8Ya0PzY01yxryU5Gp7i1NRWxGn12iUYOqI0CK0OahP9+q9LGZjtXEtMiPJC6MFz4LNRAnkaX/lSyz3k1yvA==
   dependencies:
-    prettier "^1.19.1"
+    prettier "^3.3.3"
 
 "@scm-manager/tsconfig@^2.13.0":
   version "2.13.0"
@@ -2363,46 +2355,35 @@
   dependencies:
     typescript "^4.6.0"
 
-"@scm-manager/ui-api@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-api/-/ui-api-3.5.0.tgz#95e2bc8d6bc4a7b0c4910e233f80f723b5aa4a22"
-  integrity sha512-gkDCo2rUshMbDKEFbvX6bvQ+TjqL4YwP+RM3p4DeOrpberAQx4kmJve4TQKX84m5KWMsgFDOYGnKJvUF6OcSgw==
+"@scm-manager/ui-api@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-api/-/ui-api-3.5.1-20240925-124656.tgz#2c9493e60951b80546da0179eae1c4af635270bd"
+  integrity sha512-dPZqTQPfJ8PkoT56QHbx62oDmqWVIvVNH9g7Isrk/8ImQYgDBdAu2J0MLvjwGaHxJ3uKaJU3ewTIo4i0nEPRrA==
   dependencies:
-    "@scm-manager/ui-types" "3.5.0"
-    fetch-mock-jest "^1.5.1"
     gitdiff-parser "^0.2.2"
-    query-string "6.14.1"
-    react "^17.0.1"
-    react-i18next "11"
-    react-query "^3.25.1"
-    react-router-dom "^5.3.1"
 
-"@scm-manager/ui-buttons@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-buttons/-/ui-buttons-3.5.0.tgz#a5014ae252854fba2cdbfbb7290bb1ac2ecdfca7"
-  integrity sha512-p7JlvHh79g/zLr2+YIMhajlujgC9A/ZGdWXxdrYy6PQt61T6i5PnXTW/4ANyikoVyYu/EuB8l9mQaoVE2wtOCw==
-
-"@scm-manager/ui-components@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-3.5.0.tgz#045dd8b66449bdd6bdc2040c08582e401f9d445e"
-  integrity sha512-Fm3nBuN+zUBZn2wtmkjM/5qko3rjOdw151JnqGlSgzHgQytbyflpzOqt0VM+RYrM9h+7BZK04S4jQzy1l1VsRw==
+"@scm-manager/ui-buttons@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-buttons/-/ui-buttons-3.5.1-20240925-124656.tgz#b2a5d627ee9d4d05d982855ea7be5b5632563396"
+  integrity sha512-pzy5x19JbNegRotbfhmybZMfj7+Y1JmreoQlq4te+NdpuHvNbCGGkPZ4qSTdRug/wTkLG+hZqHNUJ3qEnSiq/Q==
   dependencies:
-    "@headlessui/react" "^1.4.3"
-    "@scm-manager/ui-api" "3.5.0"
-    "@scm-manager/ui-extensions" "3.5.0"
-    "@scm-manager/ui-types" "3.5.0"
-    classnames "^2.2.6"
-    date-fns "^2.4.1"
+    "@scm-manager/ui-core" "3.5.1-20240925-124656"
+
+"@scm-manager/ui-components@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-3.5.1-20240925-124656.tgz#dc3174cc9d40f52f0f2cd98d911335b152343009"
+  integrity sha512-Wbh4uhwXhqSUgZ9NC5yJFl4D9NI6vgTkTS2y9YbSOXy8koaJt0SZnBohYZ59x+irP/T7PXChSW2d/XvR3+iUaA==
+  dependencies:
+    "@scm-manager/ui-api" "3.5.1-20240925-124656"
+    "@scm-manager/ui-buttons" "3.5.1-20240925-124656"
+    "@scm-manager/ui-core" "3.5.1-20240925-124656"
+    "@scm-manager/ui-extensions" "3.5.1-20240925-124656"
+    "@scm-manager/ui-layout" "3.5.1-20240925-124656"
+    "@scm-manager/ui-overlays" "3.5.1-20240925-124656"
     deepmerge "^4.2.2"
     hast-util-sanitize "^3.0.2"
-    query-string "6.14.1"
-    react "^17.0.1"
     react-diff-view "^2.4.10"
-    react-dom "^17.0.1"
-    react-hook-form "^7.5.1"
-    react-i18next "11"
-    react-router "^5.3.1"
-    react-router-dom "^5.3.1"
+    react-hook-form "^7.33.1"
     react-select "^2.1.2"
     rehype-raw "^5.1.0"
     rehype-react "^6.2.0"
@@ -2411,15 +2392,14 @@
     remark-gfm "^1.0.0"
     remark-parse "^9.0.0"
     remark-rehype "^8.0.0"
-    tabbable "^5.2.1"
     unified "^9.2.1"
+    unist-util-visit "^2.0.3"
 
-"@scm-manager/ui-core@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-core/-/ui-core-3.5.0.tgz#761a7fe70cfc4af492ea2c7c2366ba5d33a079df"
-  integrity sha512-lZQ7vHzSJd8zmzU629OBHY5iiZjK+rse+oBH9vMZPsjocn/aukAJ7kkJDsArl69qkiAm5WLGIUCYWPpUn2KZ/g==
+"@scm-manager/ui-core@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-core/-/ui-core-3.5.1-20240925-124656.tgz#c17a7a989330d5080daea4d94fc010dae93d429d"
+  integrity sha512-76u3YPGhHkSsoFQhuA4iOxFAVK9cqvB1BXpa5nf6lkp5Z7QqsRa/dJ6ewabSnXWuKWGFbv6/kgWV+GwY1x2AOA==
   dependencies:
-    "@headlessui/react" "^1.7.15"
     "@radix-ui/react-collapsible" "^1.0.3"
     "@radix-ui/react-dialog" "1.0.4"
     "@radix-ui/react-dropdown-menu" "2.0.5"
@@ -2429,51 +2409,55 @@
     "@radix-ui/react-tabs" "^1.0.4"
     "@radix-ui/react-tooltip" "1.0.2"
     "@radix-ui/react-visually-hidden" "^1.0.3"
+    "@scm-manager/ui-api" "3.5.1-20240925-124656"
     mousetrap "1.6.5"
 
-"@scm-manager/ui-extensions@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-3.5.0.tgz#a9e1d00bb3d33faf5f28456039d54ed71695d438"
-  integrity sha512-aCi18/YRS+n33QMi4otf9mdnkKKCVsF4VVNgG3TocXHpIcZC93WSEGM+vY/4WyQHUQaWOdfvqEOaceD+qY9NaQ==
+"@scm-manager/ui-extensions@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-3.5.1-20240925-124656.tgz#3d6acab21c93e73c7bf53a9ca0a5be836a543e2d"
+  integrity sha512-cWFFMsYNIw+kH7ZgNyJOBpph2QP06lRo1bsygs6fDJDfaMz9sn0FIyynlphEHXmloajJGAAgxL5Ie87cuZ4ORA==
+
+"@scm-manager/ui-forms@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-forms/-/ui-forms-3.5.1-20240925-124656.tgz#29ae5e52a1bec2232381d24a156d6965e5598504"
+  integrity sha512-L498TBGF/4UaLp58cOhRCJxCKUPK75lyggQ8fjrDjocB+mMsbSUZYGCL5ikFwpuine61qJd2YzjdwDBJ3+IgBA==
   dependencies:
-    "@scm-manager/ui-types" "3.5.0"
-    react "^17.0.1"
+    "@scm-manager/ui-core" "3.5.1-20240925-124656"
 
-"@scm-manager/ui-forms@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-forms/-/ui-forms-3.5.0.tgz#47c16edbf0b91fecd1b1c264f14f15035c328255"
-  integrity sha512-P7B2ouUh70V4GZAefYZC9A0SHwV9i7rRrkXFtjl4XmUbt5e7g7lVTbW7c6Bf2mKWkI5EG7SMauLJA41iapIfcA==
-
-"@scm-manager/ui-layout@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-layout/-/ui-layout-3.5.0.tgz#0a2553b3480739912a5ba27935226643710a50fe"
-  integrity sha512-3OLBFviErSfDmCNsPiW6Bo4u3VbpACwYa01dMtmzK38js9SGzPPRQElhK9VU1RbfsvhVUKqKwCrU4Tu4DhwS6A==
-
-"@scm-manager/ui-overlays@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-overlays/-/ui-overlays-3.5.0.tgz#93a7bf08a1df509bf1a7a9d96331d9b9d8162f03"
-  integrity sha512-hNSrtfBipr0v38yy4F1RvmLTop2ybkIh+wY1uSXchuaUcfE0V85FOHljYepyzJvdfGLIL+gI7PbbwhPR4JWXvg==
-
-"@scm-manager/ui-plugins@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-3.5.0.tgz#4f19a7f8f85b1078aa022f8610af44befc67e6dc"
-  integrity sha512-n6Z/XDWy56EwIKqpbz747t/RKJv/WcKf3ERnqvvrOVG9LVfoZ4MRBDZd4sdWqqRD6bn1uKNt6xLakywKmvSsXA==
+"@scm-manager/ui-layout@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-layout/-/ui-layout-3.5.1-20240925-124656.tgz#8b8f09bac17df9f4dc7849f5c88dacaf4d0b1c2b"
+  integrity sha512-t4Pqk0fBbLvgenBUcAMRgakbZANtge2F+rOPTVkR/B9NclHFNwgjBSFs3VjJOUtpyyGEOhBJT0HAbLvzShDi/w==
   dependencies:
-    "@scm-manager/ui-api" "3.5.0"
-    "@scm-manager/ui-buttons" "3.5.0"
-    "@scm-manager/ui-components" "3.5.0"
-    "@scm-manager/ui-core" "3.5.0"
-    "@scm-manager/ui-extensions" "3.5.0"
-    "@scm-manager/ui-forms" "3.5.0"
-    "@scm-manager/ui-layout" "3.5.0"
-    "@scm-manager/ui-overlays" "3.5.0"
-    classnames "^2.2.6"
+    "@scm-manager/ui-core" "3.5.1-20240925-124656"
+
+"@scm-manager/ui-overlays@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-overlays/-/ui-overlays-3.5.1-20240925-124656.tgz#65a64e040611489d2d3634cd3e435ffb2fb65886"
+  integrity sha512-eeD9oV3BN0VxtNFV4I4KtUepQfSnmeNRg69YUkIKa7/qLYJwMpKUYxpfIz+MQG7sD0SI0gAEQ/a4tdODBAMIHw==
+  dependencies:
+    "@scm-manager/ui-core" "3.5.1-20240925-124656"
+
+"@scm-manager/ui-plugins@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-3.5.1-20240925-124656.tgz#3f05d6c96488187e192c886a7b5d7fc8a8ae9931"
+  integrity sha512-xv6By5N7lfaQbwIhgThFXLBlWACBcvrattRpUgZo7zOUGziUwy4qcKAxaofFbB5UT3dyoetSLroo4iGWkge6iA==
+  dependencies:
+    "@scm-manager/ui-api" "3.5.1-20240925-124656"
+    "@scm-manager/ui-buttons" "3.5.1-20240925-124656"
+    "@scm-manager/ui-components" "3.5.1-20240925-124656"
+    "@scm-manager/ui-core" "3.5.1-20240925-124656"
+    "@scm-manager/ui-extensions" "3.5.1-20240925-124656"
+    "@scm-manager/ui-forms" "3.5.1-20240925-124656"
+    "@scm-manager/ui-layout" "3.5.1-20240925-124656"
+    "@scm-manager/ui-overlays" "3.5.1-20240925-124656"
+    classnames "^2.3.1"
     query-string "6.14.1"
-    react "17"
-    react-dom "17"
-    react-hook-form "^7.5.1"
+    react "^17.0.1"
+    react-dom "^17.0.1"
+    react-hook-form "^7.33.1"
     react-i18next "11"
-    react-query "^3.25.1"
+    react-query "^3.39.2"
     react-redux "^5.0.7"
     react-router "^5.3.1"
     react-router-dom "^5.3.1"
@@ -2504,24 +2488,21 @@
     webpack-cli "^4.9.1"
     webpack-dev-server "^4.4.0"
 
-"@scm-manager/ui-tests@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-tests/-/ui-tests-3.5.0.tgz#ee6781b821042732e6a14ef541e5e2745cc1b87b"
-  integrity sha512-LnyirC4xpTNVjHgyoRRbvWcauFVUriQj+iB4K4fckWOLtRM13fBoskTtqT7J3AkV0d7UfpSq4HDaaQ6BneGv6g==
+"@scm-manager/ui-tests@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-tests/-/ui-tests-3.5.1-20240925-124656.tgz#e8bf859c15ca793929272aa7ab05020eda0725f0"
+  integrity sha512-HAZPrPPnR/1NKl/5IH/6v2Q7NBNWx/CFsszh9RExoVXleBzPGcDfjrF4TbTzc8yONTehjFeh/0XYA0iQnc+zog==
   dependencies:
     "@wojtekmaj/enzyme-adapter-react-17" "^0.7.0"
-    babel-plugin-istanbul "^6.0.0"
-    enzyme "^3.10.0"
+    enzyme "^3.11.0"
     enzyme-context "^1.1.2"
     enzyme-context-react-router-4 "^2.0.0"
-    jest "^26.6.3"
     raf "^3.4.1"
-    react-test-renderer "^17.0.1"
 
-"@scm-manager/ui-types@3.5.0":
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-3.5.0.tgz#aa814dffc49dfe8a2b584cbcd27c613ea93f3475"
-  integrity sha512-2rmJkL882hRvFMrUHsBnWQqsjcRWqP5WeF0yOfYYtULHnvsZvD66aLgBfn1F9JJz46cRg3SLI2yS52lr/P18Rg==
+"@scm-manager/ui-types@3.5.1-20240925-124656":
+  version "3.5.1-20240925-124656"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-3.5.1-20240925-124656.tgz#e35deee0569849a7438675e0f4f2104b941e2518"
+  integrity sha512-O9M4ovqHWbbJ9XpWv1qBZXE9KiCR2snotUGYL3XsfUy2KLAtnwtkYjp6GUNvn5AdCauc204RgiFKbD69B5cMwA==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.6"
@@ -2536,18 +2517,6 @@
   integrity sha512-MZPUxrmFubI36XS1DI3qmI0YdN1gks62JtFZvxR67ljjSNCeK6U08Zx4msEWOXuofgqUt6zPHSi1H9fbjR/NRA==
   dependencies:
     "@sinonjs/commons" "^1.7.0"
-
-"@tanstack/react-virtual@^3.0.0-beta.60":
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-virtual/-/react-virtual-3.1.3.tgz#4ef2a7dd819a7dd2b634d50cbd6ba498f06529ec"
-  integrity sha512-YCzcbF/Ws/uZ0q3Z6fagH+JVhx4JLvbSflgldMgLsuvB8aXjZLLb3HvrEVxY480F9wFlBiXlvQxOyXb5ENPrNA==
-  dependencies:
-    "@tanstack/virtual-core" "3.1.3"
-
-"@tanstack/virtual-core@3.1.3":
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.1.3.tgz#77ced625f19ec9350f6e460f142b3be9bff03866"
-  integrity sha512-Y5B4EYyv1j9V8LzeAoOVeTg0LI7Fo5InYKgAjkY1Pu9GjtUwX/EKxNcU7ng3sKr99WEf+bPTcktAeybyMOYo+g==
 
 "@tootallnate/once@1":
   version "1.1.2"
@@ -2614,10 +2583,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/classnames@^2.2.9":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.3.1.tgz#3c2467aa0f1a93f1f021e3b9bcf938bd5dfdc0dd"
-  integrity sha512-zeOWb0JGBoVmlQoznvqXbE0tEC/HONsnoUNH19Hc96NFsTAwTXbTqb8FMYkru1F/iqp7a18Ws3nWJvtA1sHD1A==
+"@types/classnames@^2.3.1":
+  version "2.3.4"
+  resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.3.4.tgz#1a1fdf5023ef216219f13e702543f9ce9b394560"
+  integrity sha512-dwmfrMMQb9ujX1uYGvB5ERDlOzBNywnZAZBtOe107/hORWP05ESgU4QyaanZMWYYfd2BzrG78y13/Bju8IQcMQ==
   dependencies:
     classnames "*"
 
@@ -2636,7 +2605,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/enzyme@^3.10.3":
+"@types/enzyme@^3.10.18":
   version "3.10.18"
   resolved "https://registry.yarnpkg.com/@types/enzyme/-/enzyme-3.10.18.tgz#86010e7cb56cf1450dd391b8cc3a788f6a6fadef"
   integrity sha512-RaO/TyyHZvXkpzinbMTZmd/S5biU4zxkvDsn22ujC29t9FMSzq8tnn8f2MxQ2P8GVhFRG5jTAL05DXKyTtpEQQ==
@@ -4392,7 +4361,7 @@ class-utils@^0.3.5:
     isobject "^3.0.0"
     static-extend "^0.1.1"
 
-classnames@*, classnames@^2.2.5, classnames@^2.2.6, classnames@^2.3.2:
+classnames@*, classnames@^2.2.5, classnames@^2.3.1, classnames@^2.3.2:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.5.1.tgz#ba774c614be0f016da105c858e7159eae8e7687b"
   integrity sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==
@@ -4425,11 +4394,6 @@ cli-truncate@^2.1.0:
   dependencies:
     slice-ansi "^3.0.0"
     string-width "^4.2.0"
-
-client-only@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/client-only/-/client-only-0.0.1.tgz#38bba5d403c41ab150bff64a95c85013cf73bca1"
-  integrity sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==
 
 cliui@^6.0.0:
   version "6.0.0"
@@ -4959,13 +4923,6 @@ data-urls@^2.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
 
-date-fns@^2.4.1:
-  version "2.30.0"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.30.0.tgz#f367e644839ff57894ec6ac480de40cae4b0f4d0"
-  integrity sha512-fnULvOpxnC5/Vg3NCiWelDsLiUc9bRwAPs/+LfTLNvetFCtCTN+yQz15C/fs4AwX1R9K5GLtLfn8QW+dWisaAw==
-  dependencies:
-    "@babel/runtime" "^7.21.0"
-
 dateformat@^4.5.1:
   version "4.6.3"
   resolved "https://registry.yarnpkg.com/dateformat/-/dateformat-4.6.3.tgz#556fa6497e5217fedb78821424f8a1c22fa3f4b5"
@@ -5370,7 +5327,7 @@ enzyme-shallow-equal@^1.0.0, enzyme-shallow-equal@^1.0.1:
     hasown "^2.0.0"
     object-is "^1.1.5"
 
-enzyme@^3.10.0:
+enzyme@^3.11.0:
   version "3.11.0"
   resolved "https://registry.yarnpkg.com/enzyme/-/enzyme-3.11.0.tgz#71d680c580fe9349f6f5ac6c775bc3e6b7a79c28"
   integrity sha512-Dw8/Gs4vRjxY6/6i9wU0V+utmQO9kvh9XLnz3LIudviOnVYDEe2ec+0k+NQoMamn1VrjKgCUOWj5jG/5M5M0Qw==
@@ -6080,13 +6037,6 @@ fd-slicer@~1.1.0:
   dependencies:
     pend "~1.2.0"
 
-fetch-mock-jest@^1.5.1:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/fetch-mock-jest/-/fetch-mock-jest-1.5.1.tgz#0e13df990d286d9239e284f12b279ed509bf53cd"
-  integrity sha512-+utwzP8C+Pax1GSka3nFXILWMY3Er2L+s090FOgqVNrNCPp0fDqgXnAHAJf12PLHi0z4PhcTaZNTz8e7K3fjqQ==
-  dependencies:
-    fetch-mock "^9.11.0"
-
 fetch-mock@^8.0.0:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/fetch-mock/-/fetch-mock-8.3.2.tgz#ca07cd0bbf8e9dd299733af364713766b43ab2a0"
@@ -6095,22 +6045,6 @@ fetch-mock@^8.0.0:
     babel-runtime "^6.26.0"
     core-js "^3.0.0"
     glob-to-regexp "^0.4.0"
-    lodash.isequal "^4.5.0"
-    path-to-regexp "^2.2.1"
-    querystring "^0.2.0"
-    whatwg-url "^6.5.0"
-
-fetch-mock@^9.11.0:
-  version "9.11.0"
-  resolved "https://registry.yarnpkg.com/fetch-mock/-/fetch-mock-9.11.0.tgz#371c6fb7d45584d2ae4a18ee6824e7ad4b637a3f"
-  integrity sha512-PG1XUv+x7iag5p/iNHD4/jdpxL9FtVSqRMUQhPab4hVDt80T1MH5ehzVrL2IdXO9Q2iBggArFvPqjUbHFuI58Q==
-  dependencies:
-    "@babel/core" "^7.0.0"
-    "@babel/runtime" "^7.0.0"
-    core-js "^3.0.0"
-    debug "^4.1.1"
-    glob-to-regexp "^0.4.0"
-    is-subset "^0.1.1"
     lodash.isequal "^4.5.0"
     path-to-regexp "^2.2.1"
     querystring "^0.2.0"
@@ -9662,10 +9596,10 @@ prettier-linter-helpers@^1.0.0:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@^1.19.1:
-  version "1.19.1"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.19.1.tgz#f7d7f5ff8a9cd872a7be4ca142095956a60797cb"
-  integrity sha512-s7PoyDv/II1ObgQunCbB9PdLmUcBZcnWOcxDh7O0N/UwDEsHyqkW+Qh28jW+mVuCdx7gLB0BotYI1Y6uI9iyew==
+prettier@^3.3.3:
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.3.3.tgz#30c54fe0be0d8d12e6ae61dbb10109ea00d53105"
+  integrity sha512-i2tDNA0O5IrMO757lfrdQZCc2jPNDVntV0m/+4whiDfWaTKfMNgR7Qz0NAeGz/nRqF4m5/6CLzbP4/liHt12Ew==
 
 pretty-bytes@^5.6.0:
   version "5.6.0"
@@ -9853,7 +9787,7 @@ react-diff-view@^2.4.10:
     shallow-equal "^3.1.0"
     warning "^4.0.3"
 
-react-dom@17, react-dom@^17.0.1:
+react-dom@^17.0.1:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-17.0.2.tgz#ecffb6845e3ad8dbfcdc498f0d0a939736502c23"
   integrity sha512-s4h96KtLDUQlsENhMn1ar8t2bEa+q/YAtj8pPPdIjPDGBDIVNsrD9aXNWqspUe6AzKCIG0C1HZZLqLV7qpOBGA==
@@ -9862,10 +9796,10 @@ react-dom@17, react-dom@^17.0.1:
     object-assign "^4.1.1"
     scheduler "^0.20.2"
 
-react-hook-form@^7.5.1:
-  version "7.51.0"
-  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.51.0.tgz#757ae71b37c26e00590bd3788508287dcc5ecdaf"
-  integrity sha512-BggOy5j58RdhdMzzRUHGOYhSz1oeylFAv6jUSG86OvCIvlAvS7KvnRY7yoAf2pfEiPN7BesnR0xx73nEk3qIiw==
+react-hook-form@^7.33.1:
+  version "7.53.1"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.53.1.tgz#3f2cd1ed2b3af99416a4ac674da2d526625add67"
+  integrity sha512-6aiQeBda4zjcuaugWvim9WsGqisoUk+etmFEsSUMm451/Ic8L/UAb7sRtMj3V+Hdzm6mMjU1VhiSzYUZeBm0Vg==
 
 react-i18next@11:
   version "11.18.6"
@@ -9912,7 +9846,7 @@ react-mentions@^3.3.1:
     prop-types "^15.5.8"
     substyle "^6.3.1"
 
-react-query@^3.25.1:
+react-query@^3.39.2:
   version "3.39.3"
   resolved "https://registry.yarnpkg.com/react-query/-/react-query-3.39.3.tgz#4cea7127c6c26bdea2de5fb63e51044330b03f35"
   integrity sha512-nLfLz7GiohKTJDuT4us4X3h/8unOh+00MLb2yJoGTPjxKs2bc1iDhkNx2bd5MKklXnOD3NrVZ+J2UXujA5In4g==
@@ -10016,7 +9950,7 @@ react-style-singleton@^2.2.1:
     invariant "^2.2.4"
     tslib "^2.0.0"
 
-react-test-renderer@^17.0.0, react-test-renderer@^17.0.1:
+react-test-renderer@^17.0.0:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-test-renderer/-/react-test-renderer-17.0.2.tgz#4cd4ae5ef1ad5670fc0ef776e8cc7e1231d9866c"
   integrity sha512-yaQ9cB89c17PUb0x6UfWRs7kQCorVdHlutU1boVPEsB8IDZH6n9tHxMacc3y0JoXOJUsZb/t/Mb8FUWMKaM7iQ==
@@ -10036,7 +9970,7 @@ react-transition-group@^2.2.1:
     prop-types "^15.6.2"
     react-lifecycles-compat "^3.0.4"
 
-react@17, react@^17.0.1:
+react@^17.0.1:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react/-/react-17.0.2.tgz#d0b5cc516d29eb3eee383f75b62864cfb6800037"
   integrity sha512-gnhPt75i/dq/z3/6q/0asP78D0u592D5L1pd7M8P+dck6Fu/jJeL6iVVK23fptSUZj8Vjf++7wXA8UNclGQcbA==
@@ -11680,7 +11614,7 @@ unist-util-visit@^1.4.1:
   dependencies:
     unist-util-visit-parents "^2.0.0"
 
-unist-util-visit@^2.0.0:
+unist-util-visit@^2.0.0, unist-util-visit@^2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/unist-util-visit/-/unist-util-visit-2.0.3.tgz#c3703893146df47203bb8a9795af47d7b971208c"
   integrity sha512-iJ4/RczbJMkD0712mGktuGpm/U4By4FfDonL7N/9tATGIF4imikjOuagyMY53tnZq3NP6BcmlrHhEKAfGWjh7Q==

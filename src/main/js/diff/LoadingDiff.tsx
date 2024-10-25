@@ -28,7 +28,8 @@ import {
   DiffStatistics,
   DiffFileTree,
   FileTreeContent,
-  getFileNameFromHash
+  getFileNameFromHash,
+  WhitespaceMode,
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
@@ -49,7 +50,7 @@ const StickyContainer = styled.div<{ top: number }>`
   justify-content: end;
   margin: 0 1.25rem 1rem 0;
   gap: 0.5rem;
-  top: calc(${props => props.top}px + var(--scm-navbar-main-height));
+  top: calc(${(props) => props.top}px + var(--scm-navbar-main-height));
   z-index: 11;
 `;
 
@@ -59,11 +60,11 @@ export const CoreDiffContent = styled.div`
 
 const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, stickyHeader, ...props }) => {
   const [t] = useTranslation("plugins");
-  const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
+  const [ignoreWhitespace, setIgnoreWhitespace] = useState<WhitespaceMode>("NONE");
   const { error, isLoading, data, fetchNextPage, isFetchingNextPage } = useDiff(diffUrl, {
     limit: 25,
     refetchOnWindowFocus: false,
-    ignoreWhitespace: ignoreWhitespace ? "ALL" : "NONE"
+    ignoreWhitespace: ignoreWhitespace,
   });
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
@@ -81,11 +82,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
     } else {
       actions.collapseAll();
     }
-    setCollapsed(current => !current);
-  };
-
-  const ignoreWhitespaces = () => {
-    setIgnoreWhitespace(!ignoreWhitespace);
+    setCollapsed((current) => !current);
   };
 
   if (error) {
@@ -118,11 +115,18 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
           className="is-hidden-mobile"
           top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
         >
-          <DiffDropDown collapseDiffs={collapseDiffs} ignoreWhitespaces={ignoreWhitespaces} renderOnMount={true} />
+          <DiffDropDown
+            collapseDiffs={collapseDiffs}
+            renderOnMount={true}
+            ignoreWhitespacesMode={ignoreWhitespace}
+            setIgnoreWhitespacesMode={(whiteSpaceMode: WhitespaceMode) => {
+              setIgnoreWhitespace(whiteSpaceMode);
+            }}
+          />
         </StickyContainer>
         <CoreDiff
           diff={data.files}
-          ignoreWhitespace={ignoreWhitespace ? "ALL" : "NONE"}
+          ignoreWhitespace={ignoreWhitespace}
           fetchNextPage={fetchNextPage}
           isFetchingNextPage={isFetchingNextPage}
           isDataPartial={data.partial}
@@ -149,7 +153,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
 };
 
 LoadingDiff.defaultProps = {
-  sideBySide: false
+  sideBySide: false,
 };
 
 export default LoadingDiff;
