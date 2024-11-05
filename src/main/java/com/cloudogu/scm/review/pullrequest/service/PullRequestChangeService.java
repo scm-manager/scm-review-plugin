@@ -41,7 +41,6 @@ import sonia.scm.repository.Repository;
 import sonia.scm.store.DataStore;
 import sonia.scm.store.DataStoreFactory;
 import sonia.scm.user.User;
-import sonia.scm.user.UserManager;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -89,23 +88,20 @@ public class PullRequestChangeService {
 
   private final RepositoryResolver repositoryResolver;
   private final DataStoreFactory dataStoreFactory;
-  private final UserManager userManager;
   private final Clock clock;
   private final PullRequestService pullRequestService;
 
   @Inject
-  public PullRequestChangeService(RepositoryResolver repositoryResolver, DataStoreFactory dataStoreFactory, UserManager userManager, PullRequestService pullRequestService) {
-    this(repositoryResolver, dataStoreFactory, userManager, Clock.systemDefaultZone(), pullRequestService);
+  public PullRequestChangeService(RepositoryResolver repositoryResolver, DataStoreFactory dataStoreFactory, PullRequestService pullRequestService) {
+    this(repositoryResolver, dataStoreFactory, Clock.systemDefaultZone(), pullRequestService);
   }
 
-  public PullRequestChangeService(RepositoryResolver repositoryResolver, DataStoreFactory dataStoreFactory, UserManager userManager, Clock clock, PullRequestService pullRequestService) {
+  public PullRequestChangeService(RepositoryResolver repositoryResolver, DataStoreFactory dataStoreFactory, Clock clock, PullRequestService pullRequestService) {
     this.repositoryResolver = repositoryResolver;
     this.dataStoreFactory = dataStoreFactory;
-    this.userManager = userManager;
     this.clock = clock;
     this.pullRequestService = pullRequestService;
   }
-
 
   public List<PullRequestChange> getAllChangesOfPullRequest(NamespaceAndName namespaceAndName, String pullRequestId) {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
@@ -188,14 +184,7 @@ public class PullRequestChangeService {
   }
 
   private User getUser() {
-    Object principal = SecurityUtils.getSubject().getPrincipal();
-
-    if (principal == null) {
-      return new User();
-    }
-
-    User user = userManager.get(principal.toString());
-    return user == null ? new User() : user;
+    return SecurityUtils.getSubject().getPrincipals().oneByType(User.class);
   }
 
   private void computeValueEdit(String property, Object oldValue, Object newValue, User user, String pullRequestId, List<PullRequestChange> changes, BuildAdditionalInfo builder) {

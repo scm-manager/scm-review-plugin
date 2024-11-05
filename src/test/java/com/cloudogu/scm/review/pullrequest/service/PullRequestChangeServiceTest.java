@@ -23,8 +23,11 @@ import com.cloudogu.scm.review.comment.service.CommentEvent;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.comment.service.ReplyEvent;
+import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.github.sdorra.jse.ShiroExtension;
-import org.github.sdorra.jse.SubjectAware;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,7 +46,6 @@ import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.HookContext;
 import sonia.scm.store.InMemoryByteDataStoreFactory;
 import sonia.scm.user.User;
-import sonia.scm.user.UserManager;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -54,6 +56,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, ShiroExtension.class})
@@ -66,10 +69,10 @@ class PullRequestChangeServiceTest {
   private RepositoryResolver repositoryResolver;
 
   @Mock
-  private UserManager userManager;
+  private PullRequestService pullRequestService;
 
   @Mock
-  private PullRequestService pullRequestService;
+  private Subject subject;
 
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private HookContext hookContext;
@@ -82,11 +85,20 @@ class PullRequestChangeServiceTest {
 
   @BeforeEach
   void setUp() {
+    ThreadContext.bind(subject);
     InMemoryByteDataStoreFactory dataStoreFactory = new InMemoryByteDataStoreFactory();
-    changeService = new PullRequestChangeService(repositoryResolver, dataStoreFactory, userManager, clock, pullRequestService);
+    changeService = new PullRequestChangeService(repositoryResolver, dataStoreFactory, clock, pullRequestService);
 
     lenient().when(repositoryResolver.resolve(namespaceAndName)).thenReturn(repository);
-    lenient().when(userManager.get("Trainer Red")).thenReturn(trainerRed);
+
+    PrincipalCollection collection = mock(PrincipalCollection.class);
+    lenient().when(subject.getPrincipals()).thenReturn(collection);
+    lenient().when(collection.oneByType(User.class)).thenReturn(trainerRed);
+  }
+
+  @AfterEach
+  void unbindSubject() {
+    ThreadContext.unbindSubject();
   }
 
   @Test
@@ -204,34 +216,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    void shouldHandleUnauthenticatedUser() {
-      PullRequest oldPr = TestData.createPullRequest();
-      PullRequest changedPr = TestData.createPullRequest();
-      changedPr.setSource("feature/test");
-
-      PullRequestEvent event = new PullRequestEvent(repository, changedPr, oldPr, HandlerEventType.MODIFY);
-      changeService.onPullRequestModified(event);
-
-      assertThat(changeService.getAllChangesOfPullRequest(namespaceAndName, changedPr.getId())).usingRecursiveComparison()
-        .isEqualTo(
-          List.of(
-            new PullRequestChange(
-              changedPr.getId(),
-              null,
-              null,
-              null,
-              Instant.now(clock),
-              oldPr.getSource(),
-              changedPr.getSource(),
-              "SOURCE_BRANCH",
-              null
-            )
-          )
-        );
-    }
-
-    @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackSourceBranchChange() {
       PullRequest oldPr = TestData.createPullRequest();
       PullRequest changedPr = TestData.createPullRequest();
@@ -259,7 +243,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackTargetBranchChange() {
       PullRequest oldPr = TestData.createPullRequest();
       PullRequest changedPr = TestData.createPullRequest();
@@ -287,7 +270,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackTitleChange() {
       PullRequest oldPr = TestData.createPullRequest();
       PullRequest changedPr = TestData.createPullRequest();
@@ -315,7 +297,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackDescriptionChange() {
       PullRequest oldPr = TestData.createPullRequest();
       PullRequest changedPr = TestData.createPullRequest();
@@ -343,7 +324,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackDeleteSourceBranchAfterMergeChange() {
       PullRequest oldPr = TestData.createPullRequest();
       oldPr.setShouldDeleteSourceBranch(true);
@@ -372,7 +352,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackPrStatusChange() {
       PullRequest oldPr = TestData.createPullRequest();
       PullRequest changedPr = TestData.createPullRequest();
@@ -400,7 +379,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedLabelChange() {
       PullRequest oldPr = TestData.createPullRequest();
       oldPr.setLabels(Set.of("feature"));
@@ -429,7 +407,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackRemovedLabelChange() {
       PullRequest oldPr = TestData.createPullRequest();
       oldPr.setLabels(Set.of("feature", "documentation"));
@@ -458,7 +435,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedReviewerChange() {
       PullRequest oldPr = TestData.createPullRequest();
       oldPr.setReviewer(Map.of("Trainer Blue", true));
@@ -487,7 +463,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackRemovedReviewerChange() {
       PullRequest oldPr = TestData.createPullRequest();
       oldPr.setReviewer(Map.of("Trainer Blue", true, "Trainer Red", true));
@@ -516,7 +491,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackReviewerApprovalChange() {
       PullRequest oldPr = TestData.createPullRequest();
       oldPr.setReviewer(Map.of("Trainer Red", true));
@@ -552,7 +526,6 @@ class PullRequestChangeServiceTest {
   class OnReplyEventTests {
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedReplyChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment rootComment = TestData.createComment();
@@ -580,7 +553,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackDeletedReplyChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment rootComment = TestData.createComment();
@@ -608,7 +580,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackEditReplyChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment rootComment = TestData.createComment();
@@ -641,7 +612,6 @@ class PullRequestChangeServiceTest {
   class OnCommentEventTests {
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedTaskChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment newComment = TestData.createComment();
@@ -669,7 +639,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackDeletedTaskChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment deletedComment = TestData.createComment();
@@ -697,7 +666,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackEditTaskChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment oldComment = TestData.createComment();
@@ -728,7 +696,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackTaskToCommentChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment oldComment = TestData.createComment();
@@ -760,7 +727,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedCommentChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment newComment = TestData.createComment();
@@ -787,7 +753,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldIgnoreAddedSystemCommentChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment newComment = TestData.createSystemComment();
@@ -799,7 +764,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackDeletedCommentChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment deletedComment = TestData.createComment();
@@ -826,7 +790,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackEditCommentChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment oldComment = TestData.createComment();
@@ -855,7 +818,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackCommentToTaskChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment oldComment = TestData.createComment();
@@ -886,7 +848,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldIgnoreSystemCommentToTaskChange() {
       PullRequest pr = TestData.createPullRequest();
       Comment oldComment = TestData.createSystemComment();
@@ -899,39 +860,12 @@ class PullRequestChangeServiceTest {
 
       assertThat(changeService.getAllChangesOfPullRequest(namespaceAndName, pr.getId())).hasSize(0);
     }
-
-    @Test
-    void shouldHandleUnauthenticatedUser() {
-      PullRequest pr = TestData.createPullRequest();
-      Comment newComment = TestData.createComment();
-
-      CommentEvent event = new CommentEvent(repository, pr, newComment, null, HandlerEventType.CREATE);
-      changeService.onCommentEvent(event);
-
-      assertThat(changeService.getAllChangesOfPullRequest(namespaceAndName, pr.getId())).usingRecursiveComparison()
-        .isEqualTo(
-          List.of(
-            new PullRequestChange(
-              pr.getId(),
-              null,
-              null,
-              null,
-              Instant.now(clock),
-              null,
-              newComment.getComment(),
-              "COMMENT",
-              null
-            )
-          )
-        );
-    }
   }
 
   @Nested
   class OnSubscribedEventTests {
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedSubscriberChange() {
       PullRequest pr = TestData.createPullRequest();
 
@@ -959,7 +893,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackRemovedSubscriberChange() {
       PullRequest pr = TestData.createPullRequest();
 
@@ -991,7 +924,6 @@ class PullRequestChangeServiceTest {
   class OnReviewMarkEventTests {
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedReviewMarksChange() {
       ReviewMark newMark = new ReviewMark("fileA", "Trainer Red");
       PullRequest pr = TestData.createPullRequest();
@@ -1020,7 +952,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackRemovedReviewMarksChange() {
       ReviewMark newMark = new ReviewMark("fileA", "Trainer Red");
       PullRequest pr = TestData.createPullRequest();
@@ -1053,7 +984,6 @@ class PullRequestChangeServiceTest {
   class OnPullRequestReopened {
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackReopenedPullRequest() {
       PullRequest pr = TestData.createPullRequest();
 
@@ -1083,7 +1013,6 @@ class PullRequestChangeServiceTest {
   class OnPullRequestRejected {
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackPullRequestRejectionWithMessage() {
       PullRequest pr = TestData.createPullRequest();
 
@@ -1114,7 +1043,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackPullRequestRejectionWithoutMessage() {
       PullRequest pr = TestData.createPullRequest();
 
@@ -1148,7 +1076,6 @@ class PullRequestChangeServiceTest {
   class OnPostPushTests {
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackChangedRevisionOfSourceBranchForEachPr() {
       String featurePrevRevision = "1234567890";
       String featureCurrentRevision = "0987654321";
@@ -1256,7 +1183,6 @@ class PullRequestChangeServiceTest {
   class OnApprovalEventTests {
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedApprovalChange() {
       PullRequest pr = TestData.createPullRequest();
 
@@ -1287,7 +1213,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackRemovedApprovalChange() {
       PullRequest pr = TestData.createPullRequest();
 
@@ -1318,7 +1243,6 @@ class PullRequestChangeServiceTest {
     }
 
     @Test
-    @SubjectAware("Trainer Red")
     void shouldTrackAddedReviewerByApprovalChange() {
       PullRequest pr = TestData.createPullRequest();
 
