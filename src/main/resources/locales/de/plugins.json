@@ -816,7 +816,7 @@
           },
           "status": {
             "exampleValue": "OPEN",
-            "hints": "Pull-Request Status wie z. B. OPEN, MERGED, REJECTED."
+            "hints": "Verfügbare Pull-Request Status: OPEN, MERGED, REJECTED oder DRAFT."
           },
           "creationDate": {
             "exampleValue": "1623057235",

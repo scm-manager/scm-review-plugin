@@ -77,13 +77,12 @@ const ShowPullRequestRoute = ({ url, repository }: RepoRouteProps) => {
 
 binder.bind("repository.route", ShowPullRequestRoute);
 
-
 const PullRequestNavLink: extensionPoints.RepositoryNavigation["type"] = ({ url, repository }) => {
   const [t] = useTranslation("plugins");
   const history = useHistory();
   useShortcut("g p", () => history.push(`${url}/pull-requests/`), {
     active: !!repository?._links["pullRequest"],
-    description: t("scm-review-plugin.shortcuts.pullRequests")
+    description: t("scm-review-plugin.shortcuts.pullRequests"),
   });
   return <PullRequestsNavLink url={url} activeWhenMatch={isRouteMatching} />;
 };
@@ -91,7 +90,7 @@ const PullRequestNavLink: extensionPoints.RepositoryNavigation["type"] = ({ url,
 binder.bind<extensionPoints.RepositoryNavigation>(
   "repository.navigation",
   PullRequestNavLink,
-  reviewSupportedPredicate
+  reviewSupportedPredicate,
 );
 
 const ShowPullRequestsRoute = ({ url, repository }: RepoRouteProps) => {
@@ -111,7 +110,7 @@ const AllPullRequestsLink: FC = () => {
   const [t] = useTranslation("plugins");
   return (
     <CardColumnSmall
-      link="/search/pullRequest/?q=status:IN_PROGRESS"
+      link="/search/pullRequest/?q=status:OPEN OR status:DRAFT"
       contentLeft={t("scm-review-plugin.landingpage.myPullRequests.allPullRequestsLinkTitle")}
       contentRight=""
       avatar={<Icon name="noop" className="fa-fw fa-lg" />}
@@ -122,33 +121,33 @@ const AllPullRequestsLink: FC = () => {
 binder.bind<extensionPoints.BranchListDetail>(
   "branches.list.detail",
   BranchDetailsPullRequests,
-  ({ branchDetails, branch }) => branchDetails && !branch.defaultBranch
+  ({ branchDetails, branch }) => branchDetails && !branch.defaultBranch,
 );
 
 binder.bind<extensionPoints.BranchListMenu>(
   "branches.list.menu",
   BranchDetailsMenu,
-  ({ branch }) => !branch.defaultBranch
+  ({ branch }) => !branch.defaultBranch,
 );
 
 binder.bind("repository.route", ShowPullRequestsRoute);
 
 binder.bind<extensionPoints.ReposBranchDetailsInformation>(
   "repos.branch-details.information",
-  ({ repository, branch }) => <CreatePullRequestButton repository={repository} branch={branch} />
+  ({ repository, branch }) => <CreatePullRequestButton repository={repository} branch={branch} />,
 );
 
 cfgBinder.bindRepositorySetting(
   "/review",
   "scm-review-plugin.navLink.pullRequest",
   "pullRequestConfig",
-  RepositoryConfig
+  RepositoryConfig,
 );
 cfgBinder.bindNamespaceSetting(
   "/review",
   "scm-review-plugin.navLink.pullRequest",
   "pullRequestConfig",
-  NamespaceConfig
+  NamespaceConfig,
 );
 cfgBinder.bindGlobal("/review", "scm-review-plugin.navLink.pullRequest", "pullRequestConfig", GlobalConfig);
 
@@ -156,12 +155,12 @@ cfgBinder.bindRepositorySetting("/workflow", "scm-review-plugin.navLink.workflow
 cfgBinder.bindGlobal("/workflow", "scm-review-plugin.navLink.workflow", "workflowConfig", GlobalEngineConfig);
 
 binder.bind<MyDataExtension<DataType>>("landingpage.mydata", {
-  render: data => <MyPullRequest key={data.pullRequest.id} data={data} />,
+  render: (data) => <MyPullRequest key={data.pullRequest.id} data={data} />,
   beforeData: <AllPullRequestsLink />,
   title: "scm-review-plugin.landingpage.myPullRequests.title",
   separatedEntries: false,
   type: "MyPullRequestData",
-  emptyMessage: "scm-review-plugin.landingpage.myPullRequests.emptyMessage"
+  emptyMessage: "scm-review-plugin.landingpage.myPullRequests.emptyMessage",
 });
 binder.bind<MyEventExtension>("landingpage.myevents", PullRequestCreatedEvent);
 binder.bind<MyEventExtension>("landingpage.myevents", PullRequestDraftToOpenEvent);

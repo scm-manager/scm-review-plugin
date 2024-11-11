@@ -60,7 +60,7 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
           </StyledLink>
         </CardList.Card.Title>
       </CardList.Card.Row>
-      {((description as ValueHitField).value || (description as HighlightedHitField).fragments) && (
+      {description && ((description as ValueHitField).value || (description as HighlightedHitField).fragments) && (
         <CardList.Card.Row className="">
           <TextHitField field="description" hit={hit} truncateValueAt={1024} />
         </CardList.Card.Row>
