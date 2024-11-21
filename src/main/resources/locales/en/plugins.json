@@ -422,10 +422,11 @@
         "label": "Manage Labels",
         "ariaLabel": "Enter a new label",
         "placeholder": "Enter a new label",
-        "information": "Create new tags by entering the content and adding it with the Enter key or the “Add Label” button.",
+        "information": "Create new labels by entering the content and adding it with the Enter key or the “Add Label” button.",
         "addButton": {
           "label": "Add Label"
-        }
+        },
+        "duplicateWarning": "Label has already been added"
       },
       "defaultReviewers": {
         "label": "Default Reviewers",
@@ -433,7 +434,9 @@
         "placeholder": "Add default reviewer",
         "information": "Add new default reviewers by entering the user name and selecting it from the suggestions.",
         "loading": "Loading …",
-        "noOptions": "No suggestion available"
+        "noOptions": "No suggestion available",
+        "duplicateWarning": "Reviewer has already been added",
+        "nonExistingUser": "Reviewer does not exist in user database"
       },
       "restrictBranchWriteAccess": {
         "label": "Branch protection enabled"

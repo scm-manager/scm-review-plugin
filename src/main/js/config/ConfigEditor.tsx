@@ -17,44 +17,14 @@
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Trans, useTranslation, WithTranslation } from "react-i18next";
 import { Checkbox, Icon, Select, Subtitle, Textarea, Title } from "@scm-manager/ui-components";
-import { ChipInputField, Combobox } from "@scm-manager/ui-forms";
 import BranchList from "./BranchList";
 import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
-import { useUserSuggestions } from "@scm-manager/ui-api";
 import DefaultTaskEditor from "./DefaultTaskEditor";
 import { isEqual } from "lodash-es";
 import { Prompt } from "react-router-dom";
-import { DisplayedUser } from "@scm-manager/ui-types";
-
-type OnChangeFunction = <K extends keyof Config>(prop: K, val: Config[K]) => void;
-
-const UserList: FC<{
-  values: string[];
-  onChange: OnChangeFunction;
-}> = ({ values, onChange }) => {
-  const [t] = useTranslation("plugins");
-  const userSuggestions = useUserSuggestions();
-
-  return (
-    <ChipInputField<DisplayedUser>
-      value={values.map(id => ({ value: { id, displayName: id, mail: "" }, label: id }))}
-      onChange={newValue =>
-        onChange(
-          "defaultReviewers",
-          newValue.map(({ value }) => value.id)
-        )
-      }
-      label={t("scm-review-plugin.config.defaultReviewers.label")}
-      placeholder={t("scm-review-plugin.config.defaultReviewers.placeholder")}
-      aria-label={t("scm-review-plugin.config.defaultReviewers.placeholder")}
-      information={t("scm-review-plugin.config.defaultReviewers.information")}
-      isNewItemDuplicate={(a, b) => a.value.id === b.value.id}
-    >
-      <Combobox options={userSuggestions} />
-    </ChipInputField>
-  );
-};
+import LabelInput from "../LabelInput";
+import ReviewerInput from "../ReviewerInput";
 
 type Props = WithTranslation & {
   onConfigurationChange: (config: State, valid: boolean) => void;
@@ -68,12 +38,11 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
   const [t] = useTranslation("plugins");
   const [state, setState] = useState(initialConfiguration);
   const onChange = useCallback(<K extends keyof Config>(prop: K, val: Config[K]) => {
-    setState(prevState => ({
+    setState((prevState) => ({
       ...prevState,
-      [prop]: val
+      [prop]: val,
     }));
   }, []);
-  const chipInputRef = useRef<HTMLInputElement>(null);
   const hasChanges = useMemo(() => !isEqual(initialConfiguration, state), [initialConfiguration, state]);
   const onBeforeUnload = useCallback(
     (e: BeforeUnloadEvent) => {
@@ -83,7 +52,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
         return "";
       }
     },
-    [hasChanges]
+    [hasChanges],
   );
 
   useEffect(() => onConfigurationChange(state, true), [onConfigurationChange, state]);
@@ -104,9 +73,12 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
     defaultMergeStrategy,
     labels,
     overwriteDefaultCommitMessage,
-    commitMessageTemplate
+    commitMessageTemplate,
   } = state;
 
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
   return (
     <>
       <Prompt message={t("scm-review-plugin.config.navigationPrompt")} when={hasChanges} />
@@ -118,7 +90,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
       {configType !== "repository" ? (
         <Checkbox
           checked={!!disableRepositoryConfiguration}
-          onChange={val => onChange("disableRepositoryConfiguration", val)}
+          onChange={(val) => onChange("disableRepositoryConfiguration", val)}
           label={
             configType === "global"
               ? t("scm-review-plugin.config.disableRepositoryAndNamespaceConfiguration.label")
@@ -134,7 +106,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
       {configType !== "global" ? (
         <Checkbox
           checked={!!overwriteParentConfig}
-          onChange={val => onChange("overwriteParentConfig", val)}
+          onChange={(val) => onChange("overwriteParentConfig", val)}
           label={
             configType === "namespace"
               ? t("scm-review-plugin.config.overwriteGlobal.label")
@@ -153,11 +125,11 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
           <fieldset>
             <legend className="is-size-5 mb-4">{t("scm-review-plugin.config.legends.mergeDialog")}</legend>
             <Select
-              options={MERGE_STRATEGIES.map(strategy => ({
+              options={MERGE_STRATEGIES.map((strategy) => ({
                 label: t("scm-review-plugin.showPullRequest.mergeStrategies." + strategy),
-                value: strategy
+                value: strategy,
               }))}
-              onChange={val => onChange("defaultMergeStrategy", val as MergeStrategy)}
+              onChange={(val) => onChange("defaultMergeStrategy", val as MergeStrategy)}
               label={t("scm-review-plugin.config.defaultMergeStrategy.label")}
               helpText={t("scm-review-plugin.config.defaultMergeStrategy.helpText")}
               value={defaultMergeStrategy}
@@ -168,14 +140,14 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
               </legend>
               <Checkbox
                 checked={deleteBranchOnMerge}
-                onChange={val => onChange("deleteBranchOnMerge", val)}
+                onChange={(val) => onChange("deleteBranchOnMerge", val)}
                 label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.explanation")}
                 helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
               />
             </fieldset>
             <Checkbox
               checked={overwriteDefaultCommitMessage}
-              onChange={val => onChange("overwriteDefaultCommitMessage", val)}
+              onChange={(val) => onChange("overwriteDefaultCommitMessage", val)}
               label={t("scm-review-plugin.config.overwriteDefaultCommitMessage.label")}
               helpText={t("scm-review-plugin.config.overwriteDefaultCommitMessage.helpText")}
             />
@@ -185,7 +157,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
                   label={t("scm-review-plugin.config.commitMessageTemplate.label")}
                   helpText={t("scm-review-plugin.config.commitMessageTemplate.helpText")}
                   value={commitMessageTemplate}
-                  onChange={val => onChange("commitMessageTemplate", val)}
+                  onChange={(val) => onChange("commitMessageTemplate", val)}
                 />
                 <span>
                   <Icon name="info-circle" color="blue-light" />
@@ -199,51 +171,44 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
           <hr className="my-4" />
           <fieldset className="is-flex is-flex-direction-column">
             <legend className="is-size-5 mb-2">{t("scm-review-plugin.config.legends.creation")}</legend>
-            <ChipInputField
-              value={labels.map(label => ({ value: label, label }))}
-              onChange={newValue =>
-                onChange(
-                  "labels",
-                  newValue.map(({ value }) => value)
-                )
-              }
-              label={t("scm-review-plugin.config.availableLabels.label")}
-              placeholder={t("scm-review-plugin.config.availableLabels.placeholder")}
-              aria-label={t("scm-review-plugin.config.availableLabels.ariaLabel")}
-              ref={chipInputRef}
-              information={t("scm-review-plugin.config.availableLabels.information")}
-            />
-            <ChipInputField.AddButton inputRef={chipInputRef} className="is-align-self-flex-end">
-              {t("scm-review-plugin.config.availableLabels.addButton.label")}
-            </ChipInputField.AddButton>
+            <LabelInput labels={labels} onChange={(newValues) => onChange("labels", newValues)} />
             <DefaultTaskEditor
               defaultTasks={state.defaultTasks}
-              addTask={newDefaultTask => setState({ ...state, defaultTasks: [...state.defaultTasks, newDefaultTask] })}
+              addTask={(newDefaultTask) =>
+                setState({ ...state, defaultTasks: [...state.defaultTasks, newDefaultTask] })
+              }
               editTask={(task: string, index: number) =>
-                setState(prevState => {
+                setState((prevState) => {
                   const newTasks = [...prevState.defaultTasks];
                   newTasks[index] = task;
                   return { ...prevState, defaultTasks: newTasks };
                 })
               }
-              removeTask={defaultTask =>
-                setState({ ...state, defaultTasks: state.defaultTasks.filter(t => t !== defaultTask) })
+              removeTask={(defaultTask) =>
+                setState({ ...state, defaultTasks: state.defaultTasks.filter((t) => t !== defaultTask) })
               }
             />
-            <UserList values={defaultReviewers} onChange={onChange} />
+            <ReviewerInput
+              values={defaultReviewers}
+              onChange={(newValues) => onChange("defaultReviewers", newValues)}
+              label={t("scm-review-plugin.config.defaultReviewers.label")}
+              placeholder={t("scm-review-plugin.config.defaultReviewers.placeholder")}
+              ariaLabel={t("scm-review-plugin.config.defaultReviewers.placeholder")}
+              information={t("scm-review-plugin.config.defaultReviewers.information")}
+            />
           </fieldset>
           <hr className="my-4" />
           <fieldset>
             <legend className="is-size-5 mb-4">{t("scm-review-plugin.config.legends.restrictions")}</legend>
             <Checkbox
               checked={preventMergeFromAuthor}
-              onChange={val => onChange("preventMergeFromAuthor", val)}
+              onChange={(val) => onChange("preventMergeFromAuthor", val)}
               label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
               helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
             />
             <Checkbox
               checked={restrictBranchWriteAccess}
-              onChange={val => onChange("restrictBranchWriteAccess", val)}
+              onChange={(val) => onChange("restrictBranchWriteAccess", val)}
               label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
             />
             {restrictBranchWriteAccess && (
@@ -253,13 +218,13 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
                 <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
                 <BranchList
                   protections={protectedBranchPatterns}
-                  onChange={val => onChange("protectedBranchPatterns", val)}
+                  onChange={(val) => onChange("protectedBranchPatterns", val)}
                 />
                 <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
                 <p className="mb-4">{t("scm-review-plugin.config.branchProtection.bypasses.note")}</p>
                 <BypassList
                   bypasses={branchProtectionBypasses}
-                  onChange={val => onChange("branchProtectionBypasses", val)}
+                  onChange={(val) => onChange("branchProtectionBypasses", val)}
                 />
               </>
             )}

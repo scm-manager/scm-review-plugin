@@ -1,0 +1,4 @@
+- type: added
+  description: A warning will be shown to users, if they input a duplicate label
+- type: added
+  description: A warning will be shown to users, if they input a non existent username or a duplicate username as a default reviewer

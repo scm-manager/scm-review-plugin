@@ -424,10 +424,11 @@
         "label": "Labels verwalten",
         "ariaLabel": "Neues Label eingeben",
         "placeholder": "Neues Label eingeben",
-        "information": "Erstellen Sie neue Tags, indem sie den Inhalt eingeben und mit der Enter-Taste oder dem Button „Label hinzufügen“ hinzufügen.",
+        "information": "Erstellen Sie neue Labels, indem Sie den Inhalt eingeben und mit der Enter-Taste oder dem Button „Label hinzufügen“ hinzufügen.",
         "addButton": {
           "label": "Label hinzufügen"
-        }
+        },
+        "duplicateWarning": "Das Label wurde bereits hinzugefügt"
       },
       "defaultReviewers": {
         "label": "Standard-Reviewer",
@@ -435,7 +436,9 @@
         "placeholder": "Standard-Reviewer hinzufügen",
         "information": "Fügen Sie neue Standard-Reviewer hinzu, indem Sie den Benutzernamen eingeben und wählen Sie diesen aus den Vorschlägen aus.",
         "loading": "Suche ...",
-        "noOptions": "Kein Vorschlag für Benutzername verfügbar."
+        "noOptions": "Kein Vorschlag für Benutzername verfügbar.",
+        "duplicateWarning": "Reviewer wurde bereits hinzugefügt",
+        "nonExistingUser": "Reviewer existiert nicht in der Benutzerdatenbank"
       },
       "restrictBranchWriteAccess": {
         "label": "Branch-Schutz aktiviert"

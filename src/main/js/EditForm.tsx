@@ -16,12 +16,11 @@
 
 import React, { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 import { InputField, Textarea } from "@scm-manager/ui-components";
-import { ErrorNotification, Label, Select } from "@scm-manager/ui-core";
-import { Checkbox, ChipInputField, Combobox } from "@scm-manager/ui-forms";
+import { Checkbox } from "@scm-manager/ui-forms";
 import { useTranslation } from "react-i18next";
 import { useUserSuggestions } from "@scm-manager/ui-api";
-import { PullRequest, Reviewer } from "./types/PullRequest";
-import { Branch } from "@scm-manager/ui-types";
+import { PullRequest } from "./types/PullRequest";
+import ReviewerInput from "./ReviewerInput";
 
 type Entrypoint = "create" | "edit";
 
@@ -38,7 +37,7 @@ const EditForm: FC<Props> = ({
   pullRequest,
   disabled,
   availableLabels,
-  shouldDeleteSourceBranch
+  shouldDeleteSourceBranch,
 }) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
@@ -48,7 +47,7 @@ const EditForm: FC<Props> = ({
       setDeleteSourceBranch(pr.shouldDeleteSourceBranch || false);
       handleFormChange(pr);
     },
-    [handleFormChange, deleteSourceBranch]
+    [handleFormChange, deleteSourceBranch],
   );
 
   useEffect(() => {
@@ -60,10 +59,10 @@ const EditForm: FC<Props> = ({
       if (checked) {
         handleFormChange({ labels: [...pullRequest.labels, label] });
       } else {
-        handleFormChange({ labels: pullRequest.labels.filter(prLabel => prLabel !== label) });
+        handleFormChange({ labels: pullRequest.labels.filter((prLabel) => prLabel !== label) });
       }
     },
-    [handleFormChange, pullRequest]
+    [handleFormChange, pullRequest],
   );
 
   return (
@@ -83,31 +82,31 @@ const EditForm: FC<Props> = ({
         label={t("scm-review-plugin.pullRequest.title")}
         validationError={pullRequest?.title === ""}
         errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
-        onChange={value => handleFormChange({ title: value })}
+        onChange={(value) => handleFormChange({ title: value })}
         disabled={disabled}
       />
       <Textarea
         name="description"
         value={pullRequest?.description}
         label={t("scm-review-plugin.pullRequest.description")}
-        onChange={value => handleFormChange({ description: value })}
+        onChange={(value) => handleFormChange({ description: value })}
         disabled={disabled}
       />
-      <ChipInputField<Reviewer>
-        value={pullRequest?.reviewer?.map(reviewer => ({ label: reviewer.displayName, value: reviewer })) ?? []}
-        onChange={newValue => handleFormChange({ reviewer: newValue.map(({ value }) => value) })}
+      <ReviewerInput
+        values={pullRequest?.reviewer?.map((reviewer) => reviewer.id) ?? []}
+        onChange={(newValues) =>
+          handleFormChange({
+            reviewer: newValues.map((reviewerId) => ({ id: reviewerId, displayName: reviewerId, approved: false })),
+          })
+        }
         label={t("scm-review-plugin.pullRequest.reviewer")}
         placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
-        aria-label={t("scm-review-plugin.pullRequest.addReviewer")}
-        isNewItemDuplicate={(a, b) => a.value.id === b.value.id}
-        disabled={disabled}
-      >
-        <Combobox options={userSuggestions} />
-      </ChipInputField>
+        ariaLabel={t("scm-review-plugin.pullRequest.addReviewer")}
+      />
       {availableLabels.length > 0 ? (
         <fieldset className="is-flex is-flex-direction-column mb-4">
           <legend className="label">{t("scm-review-plugin.pullRequest.labels")}</legend>
-          {availableLabels.map(label => (
+          {availableLabels.map((label) => (
             <Checkbox
               key={label}
               checked={pullRequest?.labels.includes(label)}
