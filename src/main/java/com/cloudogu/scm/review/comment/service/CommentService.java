@@ -402,6 +402,9 @@ public class CommentService {
 
   @Subscribe
   public void addCommentOnTargetBranchChange(PullRequestEvent updatedEvent) {
+    if (updatedEvent.getOldItem() == null || updatedEvent.getItem() == null) {
+      return;
+    }
     if (updatedEvent.getItem().getTarget().equals(updatedEvent.getOldItem().getTarget())) {
       return;
     }
