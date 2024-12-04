@@ -35,7 +35,8 @@
       "moreDiffsAvailable": "Es sind weitere Diffs verfügbar.",
       "partialMoreDiffsAvailable": "Es sind weitere Diffs mit insgesamt {{count}} Kommentar(en) verfügbar.",
       "loadMore": "Weitere laden",
-      "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein."
+      "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein.",
+      "treeTitle": "Dateibaum"
     },
     "noRequests": "Keine Pull-Requests mit diesen Kriterien gefunden.",
     "pullRequest": {

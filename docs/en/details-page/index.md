@@ -28,11 +28,16 @@ For each file, you will find multiple buttons for various options, like
 - jump to the source or the target file
 - a button indicating a merge conflict for this file, if there is one
 
-On the left side just above the diff view you are able to see new, modified and deleted files summarized
+On the left side just above the diff view you are able to see new, modified, deleted, renamed and copied files summarized
 
 On the right side, just opposite of the summarized files there is a coghweel button with the following options:
 - The first checkbox show and hide the whitespace changes.
 - The second checkbox can collapse all changesets.
+
+There are three radio buttons to change the layout in the changeset:
+- With the first button, only the diffs are displayed.
+- The second button shows the diffs and the file tree.
+- With the last button, only the file tree is displayed.
 
 The changes are indicated based on the established format:
 

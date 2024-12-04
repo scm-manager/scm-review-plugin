@@ -30,6 +30,8 @@ import {
   FileTreeContent,
   getFileNameFromHash,
   WhitespaceMode,
+  LayoutRadioButtons,
+  useLayoutState,
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
@@ -54,13 +56,24 @@ const StickyContainer = styled.div<{ top: number }>`
   z-index: 11;
 `;
 
-export const CoreDiffContent = styled.div`
-  width: 100%;
+export const StickyTreeContainer = styled.div`
+  position: sticky;
+  top: 6rem;
+  height: 100%;
+`;
+
+export const Divider = styled.div`
+  margin-bottom: 16px;
+  margin-left: 12px;
+  margin-right: 12px;
+  border-bottom: 1px solid var(--scm-border-color);
+  box-shadow: 0 24px 3px -24px var(--scm-border-color);
 `;
 
 const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, stickyHeader, ...props }) => {
   const [t] = useTranslation("plugins");
   const [ignoreWhitespace, setIgnoreWhitespace] = useState<WhitespaceMode>("NONE");
+  const [layout, setLayout] = useLayoutState();
   const { error, isLoading, data, fetchNextPage, isFetchingNextPage } = useDiff(diffUrl, {
     limit: 25,
     refetchOnWindowFocus: false,
@@ -73,6 +86,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
 
   const setFilePath = (path: string) => {
     setPrevHash("");
+    setLayout("Both");
     history.push(`#diff-${encodeURIComponent(path)}`);
   };
 
@@ -99,31 +113,45 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
   const overlapBetweenPanelHeader = 5;
 
   return (
-    <div className="is-flex has-gap-4 mb-4 mt-4 is-justify-content-space-between">
-      <FileTreeContent className={"is-three-quarters"}>
-        {data?.tree && (
-          <DiffFileTree
-            tree={data.tree}
-            currentFile={decodeURIComponent(getFileNameFromHash(location.hash) ?? "")}
-            setCurrentFile={setFilePath}
-          />
-        )}
-      </FileTreeContent>
-      <CoreDiffContent>
+    <div className="columns is-multiline">
+      <div className="column is-four-fifth p-0 pt-3 pl-2">
         <DiffStatistics data={data.statistics} />
-        <StickyContainer
-          className="is-hidden-mobile"
-          top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
-        >
-          <DiffDropDown
-            collapseDiffs={collapseDiffs}
-            renderOnMount={true}
-            ignoreWhitespacesMode={ignoreWhitespace}
-            setIgnoreWhitespacesMode={(whiteSpaceMode: WhitespaceMode) => {
-              setIgnoreWhitespace(whiteSpaceMode);
-            }}
-          />
-        </StickyContainer>
+      </div>
+      <StickyContainer
+        className="is-hidden-mobile column is-one-fifth p-0"
+        top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
+      >
+        <DiffDropDown
+          collapseDiffs={collapseDiffs}
+          renderOnMount={true}
+          ignoreWhitespacesMode={ignoreWhitespace}
+          setIgnoreWhitespacesMode={(whiteSpaceMode: WhitespaceMode) => {
+            setIgnoreWhitespace(whiteSpaceMode);
+          }}
+        />
+      </StickyContainer>
+      <div className="column is-full p-0 pl-3 pb-4">
+        <LayoutRadioButtons layout={layout} setLayout={setLayout} />
+      </div>
+      <StickyTreeContainer
+        className={
+          (layout === "Both" ? "column pl-3 is-one-quarter" : "column pl-3 is-full") +
+          (layout !== "Diff" ? "" : " is-hidden")
+        }
+      >
+        <FileTreeContent isBorder={layout !== "Diff"}>
+          <h3 className={"title is-6 mt-5 pl-3"}>{t("scm-review-plugin.diff.treeTitle")}</h3>
+          <Divider />
+          {data?.tree && (
+            <DiffFileTree
+              tree={data.tree}
+              currentFile={decodeURIComponent(getFileNameFromHash(location.hash) ?? "")}
+              setCurrentFile={setFilePath}
+            />
+          )}
+        </FileTreeContent>
+      </StickyTreeContainer>
+      <div className={layout !== "Tree" ? "column" : "is-hidden"}>
         <CoreDiff
           diff={data.files}
           ignoreWhitespace={ignoreWhitespace}
@@ -147,7 +175,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
             isFetchingNextPage={isFetchingNextPage}
           />
         ) : null}
-      </CoreDiffContent>
+      </div>
     </div>
   );
 };

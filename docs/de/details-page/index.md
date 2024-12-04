@@ -28,11 +28,16 @@ Für jede Datei gibt es mehrere Schaltflächen für verschiedene Optionen, wie
 - zur Source- oder Target-Datei springen
 - eine Schaltfläche, die einen Merge-Konflikt für diese Datei anzeigt, falls vorhanden
 
-Auf der linken Seite, direkt über der Diff-Ansicht, kann man eine Zusammenfassung der neuen, geänderten und gelöschten Dateien sehen.
+Auf der linken Seite, direkt über der Diff-Ansicht, kann man eine Zusammenfassung der neuen, geänderten, gelöschten, umbenannten und kopierten Dateien sehen.
 
 Auf der rechten Seite, direkt gegenüber der Zusammenfassung der Dateien, befindet sich ein Zahnrad-Menü mit den folgenden Optionen:
 - Mit der ersten Checkbox können die Whitespaces-Änderungen ein- und ausgeblendet werden.
 - Die zweite ermöglicht das Ein- und Ausblenden aller Changesets.
+
+Für die Diffs gibt es drei Radio-Buttons um das Layout zu ändern:
+- Mit dem ersten Button werden nur die Diffs angezeigt.
+- Mit dem zweiten Button werden die Diffs und der Dateibaum angezeigt.
+- Mit dem letzten Button wird nur der Dateibaum angezeigt.
 
 Die Änderungen sind nach dem bekannten Format für Diffs farblich gekennzeichnet:
 

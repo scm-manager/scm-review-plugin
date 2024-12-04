@@ -35,7 +35,8 @@
       "moreDiffsAvailable": "There are more diffs available.",
       "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} comment(s).",
       "loadMore": "Load more",
-      "noChangesets": "No changesets found. The commits could have been removed."
+      "noChangesets": "No changesets found. The commits could have been removed.",
+      "treeTitle": "Diff-Tree"
     },
     "noRequests": "No pull requests matching the selected criteria found",
     "pullRequest": {
