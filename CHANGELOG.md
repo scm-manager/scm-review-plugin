@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.6.0 - 2024-12-05
+### Added
+- A warning will be shown to users, if they input a duplicate label
+- A warning will be shown to users, if they input a nonexistent username or a duplicate username as a default reviewer
+- Option to change layout for the diff view inside a pull request
+
+### Fixed
+- Exception thrown when a new pull request is created
+- Searching for pull requests can cause an error, if a pull request is missing the description property
+- Invalid show whitespace state, if user changed tabs in the pull request view
+
 ## 3.5.2 - 2024-11-05
 ### Fixed
 - The need for the user read permission to update a pull request

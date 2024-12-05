@@ -1,2 +1,0 @@
-- type: fixed
-  description: Searching for pull requests can cause an error, if a pull request is missing the description property
