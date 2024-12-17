@@ -152,8 +152,8 @@
           "edit": "Edit",
           "approve": "Approve",
           "disapprove": "Disapprove",
-          "subscribe": "Subscribe",
-          "unsubscribe": "Unsubscribe"
+          "subscribe": "Subscribe to pull request information",
+          "unsubscribe": "Unsubscribe from pull request information"
         }
       },
       "selector": {

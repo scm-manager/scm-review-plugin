@@ -28,7 +28,6 @@ import {
   DateFromNow,
   devices,
   ErrorNotification,
-  Icon,
   Loading,
   Tag,
   Tooltip
@@ -63,6 +62,7 @@ import LabelsList from "./LabelsList";
 import ReopenButton from "./ReopenButton";
 import { useQueryClient } from "react-query";
 import ResizeObserver from "resize-observer-polyfill";
+import { LinkButton, Icon } from "@scm-manager/ui-core";
 
 type Props = {
   repository: Repository;
@@ -353,9 +353,13 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   if ((pullRequest._links?.update as Link)?.href) {
     const toEdit = `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/edit`;
     editButton = (
-      <Button link={toEdit} title={t("scm-review-plugin.pullRequest.details.buttons.edit")} color="link is-outlined">
-        <Icon name="edit fa-fw" color="inherit" />
-      </Button>
+      <LinkButton
+        className="is-link is-outlined"
+        to={toEdit}
+        aria-label={t("scm-review-plugin.pullRequest.details.buttons.edit")}
+      >
+        <Icon>edit</Icon>
+      </LinkButton>
     );
   }
 
@@ -423,7 +427,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
               />
             )}
           </div>
-          <div className="media-right">
+          <div className="media-right" aria-live="polite">
             <MobileFlexButtonGroup>
               {subscriptionButton}
               {editButton}

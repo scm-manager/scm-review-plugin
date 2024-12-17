@@ -15,7 +15,7 @@
  */
 
 import React, { FC } from "react";
-import { Icon } from "@scm-manager/ui-components";
+import { Button, Icon } from "@scm-manager/ui-core";
 
 type Props = {
   title: string;
@@ -24,11 +24,9 @@ type Props = {
 };
 
 const ToolbarIcon: FC<Props> = ({ title, icon, onClick }) => (
-  <a className="level-item" onClick={onClick} title={title}>
-    <span className="icon is-small">
-      <Icon color="link" name={icon} />
-    </span>
-  </a>
+  <Button className="level-item is-link p-0" onClick={onClick} aria-label={title} variant="tertiary">
+    <Icon>{icon}</Icon>
+  </Button>
 );
 
 export default ToolbarIcon;

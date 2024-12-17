@@ -152,8 +152,8 @@
           "edit": "Bearbeiten",
           "approve": "Freigeben",
           "disapprove": "Freigabe zurückziehen",
-          "subscribe": "Subscribe",
-          "unsubscribe": "Unsubscribe"
+          "subscribe": "Pull-Request-Informationen abonnieren",
+          "unsubscribe": "Pull-Request-Informationen abbestellen"
         }
       },
       "selector": {

@@ -16,7 +16,7 @@
 
 import React from "react";
 import { WithTranslation, withTranslation } from "react-i18next";
-import { Button, Icon } from "@scm-manager/ui-components";
+import { Button, Icon } from "@scm-manager/ui-core";
 
 type Props = WithTranslation & {
   loading: boolean;
@@ -30,12 +30,12 @@ class UnsubscribeButton extends React.Component<Props, State> {
     const { loading, action, t } = this.props;
     return (
       <Button
-        loading={loading}
-        action={action}
-        title={t("scm-review-plugin.pullRequest.details.buttons.unsubscribe")}
-        color="link is-outlined"
+        isLoading={loading}
+        onClick={action}
+        className="is-link is-outlined"
+        aria-label={t("scm-review-plugin.pullRequest.details.buttons.unsubscribe")}
       >
-        <Icon name="minus fa-fw" color="inherit" />
+        <Icon>minus</Icon>
       </Button>
     );
   }
