@@ -172,6 +172,7 @@ const PullRequestComment: FC<Props> = ({
           onSubmit={updateComment}
           onCancel={cancelUpdate}
           onPaste={handleImagePaste(createWithImageLink || "", setImages, setCommentText)}
+          autofocus
         />
       </>
     );

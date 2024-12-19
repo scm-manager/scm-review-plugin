@@ -35,7 +35,7 @@ type Props = {
   reply?: boolean;
 };
 
-const CreateComment: FC<Props> = ({ repository, pullRequest, url, commentWithImageUrl, location, onCancel, reply }) => {
+const CreateComment: FC<Props> = ({ repository, pullRequest, url, commentWithImageUrl, location, onCancel, reply, autofocus }) => {
   const [t] = useTranslation("plugins");
 
   const { create, isLoading, error } = useCreateComment(repository, pullRequest);
@@ -142,6 +142,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, commentWithIma
                   onCancel={onCancel}
                   onSubmit={submit}
                   onPaste={handleImagePaste(commentWithImageUrl, setImages, setCommentText)}
+                  autofocus={autofocus}
                 />
               </div>
             </div>

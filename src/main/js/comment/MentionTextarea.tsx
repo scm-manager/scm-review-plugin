@@ -81,6 +81,7 @@ type Props = {
   onSubmit: () => void;
   onCancel?: () => void;
   onPaste?: (pasteEvent: ClipboardEvent<HTMLTextAreaElement>) => void;
+  autofocus?: boolean;
 };
 
 const MentionTextarea: FC<Props> = ({
@@ -91,7 +92,8 @@ const MentionTextarea: FC<Props> = ({
   onChange,
   onSubmit,
   onCancel,
-  onPaste
+  onPaste,
+  autofocus
 }) => {
   const userSuggestions = useUserSuggestions();
 
@@ -120,6 +122,7 @@ const MentionTextarea: FC<Props> = ({
           allowSpaceInQuery={true}
           allowSuggestionsAboveCursor={true}
           onPaste={onPaste}
+          autoFocus={autofocus}
         >
           <Mention
             markup="@[__id__]"

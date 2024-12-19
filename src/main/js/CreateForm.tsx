@@ -40,6 +40,8 @@ type Props = {
   shouldDeleteSourceBranch: boolean;
 };
 
+const autoFocus = (el: HTMLSelectElement) => el?.focus();
+
 const CreateForm: FC<Props> = ({
   pullRequest,
   handleFormChange,
@@ -75,9 +77,10 @@ const CreateForm: FC<Props> = ({
             name="source"
             label={t("scm-review-plugin.pullRequest.sourceBranch")}
             options={createOptions() || []}
-            onChange={value => handleFormChange({ source: value })}
+            onChange={e => handleFormChange({ source: e.target.value })}
             loading={branchesLoading}
             value={pullRequest?.source}
+            ref={autoFocus}
           />
         </div>
         <div className="column is-clipped">
