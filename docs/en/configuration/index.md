@@ -27,9 +27,12 @@ Here you can set defaults for merges. These are:
 - To use custom text for the default commit messages in the merge dialog, enable the option **Overwrite default
   commit message**. The message set here replaces the default messages created by SCM-Manager.
 
-  It is possible to use template mechanisms in this message. To do so, use double curly braces with variable names
-  like `{{variable}}`. Variables containing lists of data can be iterated with the patterns `{{#variable}}` and
+  It is possible to use template mechanisms in this message. To do so, use double or triple curly braces with variable names
+  like `{{{variable}}}`. Variables containing lists of data can be iterated with the patterns `{{#variable}}` and
   `{{/variable}}`. If a variable is a boolean value, conditional parts can be specified the same way.
+  
+  Variables in double curly braces will be escaped, so that special characters like `&`, `<`, `>`, `"` and line breaks
+  are replaced by HTML sequences like `&10;`. To prevent this, use triple curly braces.
 
   The following variables are available:
   - `namespace` The namespace of the repository
@@ -60,18 +63,18 @@ Here you can set defaults for merges. These are:
   Here is an example, rendering some pull request metadata, the commit messages of the single commits and the contributors:
 
 ```
-Pull Request #{{pullRequest.id}} by {{author.displayName}}
+Pull Request #{{{pullRequest.id}}} by {{{author.displayName}}}
 
-Merged by {{currentUser.displayName}}
+Merged by {{{currentUser.displayName}}}
 
 Merges the following commits:
 {{#changesets}}
-  - {{description}}
+  - {{{description}}}
 {{/changesets}}
 
 Contributors:
 {{#contributors}}
-  {{type}}: {{person.name}} ({{person.mail}})
+  {{{type}}}: {{{person.name}}} ({{{person.mail}}})
 {{/contributors}}
 ```
 

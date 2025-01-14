@@ -26,10 +26,14 @@ Hier können die Standardwerte für Merges eingestellt werden. Diese sind:
   - Mit der Option **Default Commit-Nachricht überschreiben** kann eine eigene Commit-Nachricht definiert werden, die
     als Vorschlag im Merge Dialog gesetzt wird. Diese ersetzt somit die Standardnachrichten des SCM-Managers.
     
-    In dieser Nachricht können Template-Mechanismen genutzt werden, indem in doppelten geschweiften Klammern gesetzte
-    Variablen (`{{variable}}`) angesprochen werden. Variablen mit Listen an Daten können mit `{{#variable}}` und
+    In dieser Nachricht können Template-Mechanismen genutzt werden, indem in doppelten bzw. dreifachen geschweiften Klammern gesetzte
+    Variablen (`{{{variable}}}`) angesprochen werden. Variablen mit Listen an Daten können mit `{{#variable}}` und
     `{{/variable}}` iteriert werden. Bei booleschen Werten können mit dieser Syntax Blócke markiert werden, die nur
     dann dargestellt werden, wenn dieser Wert 'wahr' ist.
+    
+    Bei Variablen, die in doppelten geschweiften Klammern gesetzt werden, werden werden bestimmte Sonderzeichen wie `&`,
+    `<`, `>`, `"` sowie Zeilenumbrüche durch HTML-Sequenzen wie `&10;` ersetzt. Um dies zu verhindern, müssen die
+    Variablen in dreifachen geschweiften Klammern gesetzt werden.
     
     Die folgenden Variablen stehen zur Verfügung:
     - `namespace` Der Namespace des Repositories
@@ -61,18 +65,18 @@ Hier können die Standardwerte für Merges eingestellt werden. Diese sind:
     die Mitwirkenden aufgelistet:
     
 ```
-Pull Request #{{pullRequest.id}} by {{author.displayName}}
+Pull Request #{{{pullRequest.id}}} by {{{author.displayName}}}
 
-Merged by {{currentUser.displayName}}
+Merged by {{{currentUser.displayName}}}
 
 Merges the following commits:
 {{#changesets}}
-  - {{description}}
+  - {{{description}}}
 {{/changesets}}
 
 Contributors:
 {{#contributors}}
-  {{type}}: {{person.name}} ({{person.mail}})
+  {{{type}}}: {{{person.name}}} ({{{person.mail}}})
 {{/contributors}}
 ```
 
