@@ -183,3 +183,8 @@ export type Tasks = {
 export type CheckResult = {
   status: "PR_VALID" | "BRANCHES_NOT_DIFFER" | "PR_ALREADY_EXISTS";
 };
+
+export type Banner = HalRepresentation & {
+  branch: string;
+  pushedAt: Date;
+};

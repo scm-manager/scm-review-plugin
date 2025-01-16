@@ -44,6 +44,7 @@ import { MyDataExtension, MyEventExtension, MyTaskExtension } from "@scm-manager
 import BranchDetailsPullRequests from "./BranchDetailsPullRequests";
 import PullRequestReopenedEvent from "./landingpage/PullRequestReopenedEvent";
 import { isRouteMatching } from "./isRouteMatching";
+import PullRequestBannerList from "./PullRequestBannerList";
 
 type PredicateProps = {
   repository: Repository;
@@ -131,6 +132,8 @@ binder.bind<extensionPoints.BranchListMenu>(
 );
 
 binder.bind("repository.route", ShowPullRequestsRoute);
+
+binder.bind("repository.banner", PullRequestBannerList);
 
 binder.bind<extensionPoints.ReposBranchDetailsInformation>(
   "repos.branch-details.information",

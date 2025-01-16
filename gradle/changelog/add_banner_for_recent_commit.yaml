@@ -1,0 +1,2 @@
+- type: added
+  description: Banner will show if a commit is pushed to a branch without pull request

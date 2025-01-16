@@ -19,6 +19,7 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.config.api.RepositoryConfigResource;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
+import com.cloudogu.scm.review.pullrequest.api.PullRequestSuggestionResource;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.workflow.EngineConfigService;
 import com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource;
@@ -86,6 +87,9 @@ public class RepositoryLinkEnricher implements HalEnricher {
         LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), RepositoryEngineConfigResource.class);
         appender.appendLink("effectiveWorkflowConfig", linkBuilder.method("getEffectiveRepositoryEngineConfig").parameters(repository.getNamespace(), repository.getName()).href());
       }
+
+      LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), PullRequestSuggestionResource.class);
+      appender.appendLink("pullRequestSuggestions", linkBuilder.method("getAllPushEntries").parameters(repository.getNamespace(), repository.getName()).href());
     }
   }
 

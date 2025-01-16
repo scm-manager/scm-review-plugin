@@ -270,6 +270,8 @@
       }
     },
     "pullRequests": {
+      "banner": "{{branch}} wurde <0/> von Ihnen aktualisiert",
+      "closeBanner": "Banner schließen",
       "pageSubtitle": "Pull-Requests",
       "errorTitle": "Fehler",
       "errorSubtitle": "Unbekannter Pull-Request-Fehler",

@@ -252,4 +252,17 @@ public class RepositoryLinkEnricherTest {
     HalEnricherContext context = HalEnricherContext.of(repo);
     enricher.enrich(context, appender);
   }
+
+  @Test
+  @SubjectAware(username = "trillian", password = "secret")
+  public void shouldEnrichPullRequestSuggestionLinkIfPullRequestsAreSupported() {
+    when(pullRequestService.supportsPullRequests(any())).thenReturn(true);
+    when(globalEngineConfigurator.getEngineConfiguration()).thenReturn(new GlobalEngineConfiguration());
+
+    enricher = new RepositoryLinkEnricher(scmPathInfoStoreProvider, pullRequestService, configService, engineConfigService);
+    Repository repo = new Repository("id", "type", "space", "name");
+    HalEnricherContext context = HalEnricherContext.of(repo);
+    enricher.enrich(context, appender);
+    verify(appender).appendLink("pullRequestSuggestions", "https://scm-manager.org/scm/api/v2/push-entries/space/name");
+  }
 }

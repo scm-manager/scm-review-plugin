@@ -270,6 +270,8 @@
       }
     },
     "pullRequests": {
+      "banner": "{{branch}} was pushed by you <0/>",
+      "closeBanner": "Close banner",
       "pageSubtitle": "Pull Requests",
       "errorTitle": "Error",
       "errorSubtitle": "Unspecified pull request error",
