@@ -1,4 +1,0 @@
-- type: changed
-  description: Set focus to source branch input in pull request creation form
-- type: changed
-  description: Set focus to comment text area in comment creation/edit

@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.7.0 - 2025-01-23
+### Added
+- Banner will show if a commit is pushed to a branch without pull request
+
+### Fixed
+- Links (and click-actions) in PRs are accessible for assistive technologies
+- Documentation for templating commit messages without escaping characters
+
+### Changed
+- Set focus to source branch input in pull request creation form
+- Set focus to comment text area in comment creation/edit
+
 ## 3.6.0 - 2024-12-05
 ### Added
 - A warning will be shown to users, if they input a duplicate label
