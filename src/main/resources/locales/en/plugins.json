@@ -760,6 +760,10 @@
     "RhFWK2Nf31": {
       "displayName": "Invalid branches",
       "description": "Source and target branch must not be the same."
+    },
+    "BcRBqXYze1": {
+      "displayName": "Illegal state change",
+      "description": "The requested state change is not allowed."
     }
   },
   "workflow": {

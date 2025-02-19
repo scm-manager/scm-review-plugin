@@ -762,6 +762,10 @@
     "RhFWK2Nf31": {
       "displayName": "Ungültige Branches",
       "description": "Source- und Target-Branch dürfen nicht übereinstimmen."
+    },
+    "BcRBqXYze1": {
+      "displayName": "Unzulässiger Statusübergang",
+      "description": "Der angefragte Statusübergang ist nicht zulässig."
     }
   },
   "workflow": {
