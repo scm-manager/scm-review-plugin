@@ -29,6 +29,8 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
   const initialFocusRef = useRef<HTMLTextAreaElement>(null);
   const [message, setMessage] = useState("");
 
+  console.log("Loading: ", loading);
+
   const body = (
     <>
       <p>{t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.hint")}</p>
@@ -49,6 +51,7 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
       <SubmitButton
         label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit")}
         action={() => reject(message)}
+        loading={loading}
       />
       <Button
         label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel")}
