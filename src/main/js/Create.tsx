@@ -16,6 +16,7 @@
 
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { ErrorNotification, Level, Notification, SubmitButton, Subtitle } from "@scm-manager/ui-components";
+import { useDocumentTitleForRepository } from "@scm-manager/ui-core";
 import { Checkbox } from "@scm-manager/ui-forms";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
@@ -34,6 +35,7 @@ type Props = {
 
 const Create: FC<Props> = ({ repository }) => {
   const [t] = useTranslation("plugins");
+  useDocumentTitleForRepository(repository, t("scm-review-plugin.create.title"));
   const history = useHistory();
   const [pullRequest, setPullRequest] = useState<PullRequest>({
     title: "",

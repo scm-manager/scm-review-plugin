@@ -14,10 +14,12 @@
     },
     "repositoryCardTooltip": "Pull Requests",
     "create": {
+      "title": "Create Pull Request",
       "subtitle": "Creates a new pull request for {{repositoryName}}",
       "submitButton": "Create Pull Request"
     },
     "edit": {
+      "title": "Edit Pull Request",
       "subtitle": "Edit pull request for {{repositoryName}}",
       "submitButton": "Edit Pull Request"
     },
@@ -174,12 +176,21 @@
         "LAST_MOD_DESC": "latest first"
       },
       "sortSelectorLabel": "Sort by",
+      "titlePart": {
+        "IN_PROGRESS": "Open Pull Requests",
+        "MINE": "My Pull Requests",
+        "REVIEWER": "Pull Requests to be reviewed",
+        "ALL": "All Pull Requests",
+        "REJECTED": "Rejected Pull Requests",
+        "MERGED": "Merged Pull Requests"
+      },
       "guard": {
         "mergeFromAuthorNotAllowed": {
           "obstacle": "You should not merge your own pull request."
         }
       }
     },
+    "pullRequestWithIDAndNamespaceName": "Pull Request #{{id}} in {{namespace}}/{{name}}",
     "showPullRequest": {
       "mergeButton": {
         "buttonTitle": "Merge Pull Request",
@@ -297,6 +308,8 @@
         }
       }
     },
+    "pullRequestsWithStatusAndNamespaceName": "{{status}} in {{namespace}}/{{name}}",
+    "pullRequestsWithStatusPageAndNamespaceName": "{{status}} page {{page}} of {{total}} in {{namespace}}/{{name}}",
     "comment": {
       "addComment": "Add comment",
       "addTask": "Add task",

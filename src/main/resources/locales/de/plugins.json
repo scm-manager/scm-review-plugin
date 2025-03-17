@@ -14,10 +14,12 @@
     },
     "repositoryCardTooltip": "Pull-Requests",
     "create": {
+      "title": "Pull-Request erstellen",
       "subtitle": "Erstellt einen neuen Pull-Request für {{repositoryName}}",
       "submitButton": "Pull-Request erstellen"
     },
     "edit": {
+      "title": "Pull-Request ändern",
       "subtitle": "Pull-Request ändern für {{repositoryName}}",
       "submitButton": "Pull-Request ändern"
     },
@@ -77,8 +79,8 @@
       },
       "changes": {
         "rejectionCause": {
-          "SOURCE_BRANCH_DELETED":  ", weil der Source-Branch gelöscht wurde",
-          "TARGET_BRANCH_DELETED":  ", weil der Target-Branch gelöscht wurde",
+          "SOURCE_BRANCH_DELETED": ", weil der Source-Branch gelöscht wurde",
+          "TARGET_BRANCH_DELETED": ", weil der Target-Branch gelöscht wurde",
           "REJECTED_BY_USER": ", weil der Pull-Request von einem Benutzer abgelehnt wurde"
         },
         "noChanges": "Keine Änderungen vorhanden",
@@ -174,12 +176,21 @@
         "LAST_MOD_DESC": "letzte Änderung (älteste zuerst)"
       },
       "sortSelectorLabel": "Sortieren nach",
+      "titlePart": {
+        "IN_PROGRESS": "Offene Pull-Requests",
+        "MINE": "Meine Pull-Requests",
+        "REVIEWER": "Pull-Requests zu reviewen",
+        "ALL": "Alle Pull-Requests",
+        "REJECTED": "Abgelehnte Pull-Requests",
+        "MERGED": "Gemergte Pull-Requests"
+      },
       "guard": {
         "mergeFromAuthorNotAllowed": {
           "obstacle": "Sie sollten nicht Ihren eigenen Pull-Request mergen."
         }
       }
     },
+    "pullRequestWithIDAndNamespaceName": "Pull-Request #{{id}} in {{namespace}}/{{name}}",
     "showPullRequest": {
       "mergeButton": {
         "buttonTitle": "Pull-Request mergen",
@@ -297,6 +308,8 @@
         }
       }
     },
+    "pullRequestsWithStatusAndNamespaceName": "{{status}} in {{namespace}}/{{name}}",
+    "pullRequestsWithStatusPageAndNamespaceName": "{{status}} Seite {{page}} von {{total}} in {{namespace}}/{{name}}",
     "comment": {
       "addComment": "Kommentar hinzufügen",
       "markReviewed": "Abgeschlossen",

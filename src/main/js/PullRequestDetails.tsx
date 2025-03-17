@@ -32,6 +32,7 @@ import {
   Tag,
   Tooltip
 } from "@scm-manager/ui-components";
+import { LinkButton, Icon, useDocumentTitle } from "@scm-manager/ui-core";
 import { MergeCommit, PullRequest } from "./types/PullRequest";
 import {
   invalidateQueries,
@@ -62,7 +63,6 @@ import LabelsList from "./LabelsList";
 import ReopenButton from "./ReopenButton";
 import { useQueryClient } from "react-query";
 import ResizeObserver from "resize-observer-polyfill";
-import { LinkButton, Icon } from "@scm-manager/ui-core";
 
 type Props = {
   repository: Repository;
@@ -196,20 +196,31 @@ const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
 
 const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
+  useDocumentTitle(
+    pullRequest.title,
+    t("scm-review-plugin.pullRequestWithIDAndNamespaceName", {
+      id: pullRequest.id,
+      namespace: repository.namespace,
+      name: repository.name,
+    }),
+  );
   const [targetOrSourceBranchDeleted, setTargetOrSourceBranchDeleted] = useState(false);
   const [isVisible, setVisible] = useState(false);
 
   const { reject, isLoading: rejectLoading, error: rejectError } = useRejectPullRequest(repository, pullRequest);
   const { reopen, isLoading: reopenLoading, error: reopenError } = useReopenPullRequest(repository, pullRequest);
-  const { readyForReview, isLoading: readyForReviewLoading, error: readyForReviewError } = useReadyForReviewPullRequest(
-    repository,
-    pullRequest
-  );
+  const {
+    readyForReview,
+    isLoading: readyForReviewLoading,
+    error: readyForReviewError,
+  } = useReadyForReviewPullRequest(repository, pullRequest);
   const { merge, isLoading: mergeLoading, error: mergeError } = useMergePullRequest(repository, pullRequest);
-  const { data: mergeCheck, isLoading: mergeDryRunLoading, error: mergeDryRunError } = useMergeDryRun(
-    repository,
-    pullRequest,
-    (targetOrSourceDeleted: boolean) => setTargetOrSourceBranchDeleted(targetOrSourceDeleted)
+  const {
+    data: mergeCheck,
+    isLoading: mergeDryRunLoading,
+    error: mergeDryRunError,
+  } = useMergeDryRun(repository, pullRequest, (targetOrSourceDeleted: boolean) =>
+    setTargetOrSourceBranchDeleted(targetOrSourceDeleted),
   );
   const { isLoading: branchLoading, data: branch } = useBranch(repository, pullRequest.source);
   const astPlugins = useMemo(() => {

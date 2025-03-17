@@ -18,6 +18,7 @@ import React, { FC, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
 import { ErrorPage, LinkPaginator, Loading, Notification, Subtitle, urls } from "@scm-manager/ui-components";
+import { useDocumentTitle } from "@scm-manager/ui-core";
 import StatusSelector from "./table/StatusSelector";
 import { usePullRequests } from "./pullRequest";
 import { PullRequest } from "./types/PullRequest";
@@ -45,7 +46,6 @@ const NoGrowLinkButton = styled(LinkButton)`
 `;
 
 const PullRequestsOverview: FC<Props> = ({ repository }) => {
-  const [t] = useTranslation("plugins");
   const location = useLocation();
   const search = urls.getQueryStringFromLocation(location);
   const sortByQuery = urls.getValueStringFromLocationByKey(location, "sortBy") || "";
@@ -58,8 +58,25 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
     page,
     status: statusFilter,
     sortBy: sortFilter,
-    pageSize: 10
+    pageSize: 10,
   });
+  const [t] = useTranslation("plugins");
+  useDocumentTitle(
+    data?.pageTotal && data.pageTotal > 1 && page
+      ? t("scm-review-plugin.pullRequestsWithStatusPageAndNamespaceName", {
+          status: t(`scm-review-plugin.pullRequest.titlePart.${statusFilter}`),
+          page: page,
+          total: data.pageTotal,
+          namespace: repository.namespace,
+          name: repository.name,
+        })
+      : t("scm-review-plugin.pullRequestsWithStatusAndNamespaceName", {
+        status: t(`scm-review-plugin.pullRequest.titlePart.${statusFilter}`),
+        namespace: repository.namespace,
+          name: repository.name,
+        }),
+  );
+
   const handleQueryChange = useCallback(
     (newStatus: string, newSort: string) => {
       setStatusFilter(newStatus);

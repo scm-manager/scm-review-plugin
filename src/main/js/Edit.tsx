@@ -16,7 +16,7 @@
 
 import React, { FC, useCallback, useState } from "react";
 import { SubmitButton } from "@scm-manager/ui-components";
-import { Checkbox, ErrorNotification, Label, Level, Loading, Subtitle } from "@scm-manager/ui-core";
+import { Checkbox, ErrorNotification, Label, Level, Loading, Subtitle, useDocumentTitleForRepository } from "@scm-manager/ui-core";
 import { Repository } from "@scm-manager/ui-types";
 import { CheckResult, PullRequest } from "./types/PullRequest";
 import EditForm from "./EditForm";
@@ -34,6 +34,7 @@ type Props = {
 
 const Edit: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
+  useDocumentTitleForRepository(repository, t("scm-review-plugin.edit.title"));
   const match = useRouteMatch();
   const history = useHistory();
   const [modifiedPullRequest, setModifiedPullRequest] = useState<PullRequest>(pullRequest);
