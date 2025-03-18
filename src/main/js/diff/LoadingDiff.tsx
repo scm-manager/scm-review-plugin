@@ -32,6 +32,7 @@ import {
   WhitespaceMode,
   LayoutRadioButtons,
   useLayoutState,
+  devices
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
@@ -57,7 +58,11 @@ const StickyContainer = styled.div<{ top: number }>`
 `;
 
 export const StickyTreeContainer = styled.div`
-  position: sticky;
+  @media (min-width: ${devices.widescreen.width}px) {
+    position: sticky;
+    flex: none;
+    width: 25%;
+  }
   top: 6rem;
   height: 100%;
 `;
@@ -135,7 +140,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
       </div>
       <StickyTreeContainer
         className={
-          (layout === "Both" ? "column pl-3 is-one-quarter" : "column pl-3 is-full") +
+          (layout === "Both" ? "column pl-3" : "column pl-3 is-full") +
           (layout !== "Diff" ? "" : " is-hidden")
         }
       >
