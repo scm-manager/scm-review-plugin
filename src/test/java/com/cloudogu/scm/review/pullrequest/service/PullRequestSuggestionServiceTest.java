@@ -129,6 +129,38 @@ class PullRequestSuggestionServiceTest {
     }
 
     @Test
+    void shouldUpdatePushedAtForPushEntryOfCorrespondingRepositoryBranchAndPusher() {
+      PullRequestSuggestionService.PushEntry existingPushEntry = new PullRequestSuggestionService.PushEntry(
+        repository.getId(),
+        "feature",
+        "Trainer Red",
+        Instant.now(clock).minus(1, ChronoUnit.MILLIS)
+      );
+      PullRequestSuggestionService.PushEntry existingPushEntryOfDifferentRepository = new PullRequestSuggestionService.PushEntry(
+        "different",
+        "feature",
+        "Trainer Red",
+        Instant.now(clock).minus(1, ChronoUnit.MILLIS)
+      );
+
+      suggestionService.getPushEntries().add(existingPushEntryOfDifferentRepository);
+      suggestionService.getPushEntries().add(existingPushEntry);
+
+      suggestionService.onBranchUpdated(createPostReceiveRepositoryHookEvent());
+
+      assertThat(suggestionService.getPushEntries()).usingRecursiveComparison().isEqualTo(
+        List.of(
+          new PullRequestSuggestionService.PushEntry(
+            "different", "feature", "Trainer Red", Instant.now(clock).minus(1, ChronoUnit.MILLIS)
+          ),
+          new PullRequestSuggestionService.PushEntry(
+            repository.getId(), "feature", "Trainer Red", Instant.now(clock)
+          )
+        )
+      );
+    }
+
+    @Test
     void shouldAddPushEntryForSameRepositoryWithDuplicateBranchButDifferentPusher() {
       PullRequestSuggestionService.PushEntry existingPushEntry = new PullRequestSuggestionService.PushEntry(
         repository.getId(), "feature", "Trainer Blue", Instant.now(clock)
@@ -226,7 +258,7 @@ class PullRequestSuggestionServiceTest {
     }
 
     @Test
-    void shouldRemovePushEntriesForDeletedBranches() {
+    void shouldRemovePushEntriesOfRepositoryForDeletedBranches() {
       when(hookContext.getBranchProvider().getDeletedOrClosed()).thenReturn(
         List.of("feature")
       );
@@ -234,11 +266,19 @@ class PullRequestSuggestionServiceTest {
       PullRequestSuggestionService.PushEntry existingPushEntry = new PullRequestSuggestionService.PushEntry(
         repository.getId(), "feature", "Trainer Red", Instant.now(clock)
       );
+      PullRequestSuggestionService.PushEntry existingPushEntryOtherRepository = new PullRequestSuggestionService.PushEntry(
+        "other", "feature", "Trainer Red", Instant.now(clock)
+      );
       suggestionService.getPushEntries().add(existingPushEntry);
+      suggestionService.getPushEntries().add(existingPushEntryOtherRepository);
 
       suggestionService.onBranchUpdated(createPostReceiveRepositoryHookEvent());
 
-      assertThat(suggestionService.getPushEntries()).isEmpty();
+      assertThat(suggestionService.getPushEntries()).usingRecursiveComparison().isEqualTo(
+        List.of(
+          existingPushEntryOtherRepository
+        )
+      );
     }
   }
 

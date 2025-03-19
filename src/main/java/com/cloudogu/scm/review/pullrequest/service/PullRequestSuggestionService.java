@@ -23,6 +23,7 @@ import jakarta.inject.Singleton;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
@@ -36,6 +37,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Singleton
+@Slf4j
 public class PullRequestSuggestionService {
 
   private static final long PUSH_ENTRY_LIFETIME_IN_HOURS = 2;
@@ -81,16 +83,41 @@ public class PullRequestSuggestionService {
         .forEach(
           branch -> pushEntries
             .stream()
-            .filter(pushEntry -> pushEntryAlreadyExists(repository.getId(), branch, pushedBy))
+            .filter(pushEntry -> pushEntry.belongsToRepositoryBranchAndUser(repository.getId(), branch, pushedBy))
             .findFirst()
             .ifPresentOrElse(
-              pushEntry -> pushEntry.setPushedAt(now),
-              () -> pushEntries.add(new PushEntry(repository.getId(), branch, pushedBy, now))
+              pushEntry -> {
+                log.debug(
+                  "Update push entries pushed at to {} for repository {} and branch {} from user {}",
+                  now.toString(),
+                  repository.getId(),
+                  branch,
+                  pushedBy
+                );
+                pushEntry.setPushedAt(now);
+              },
+              () -> {
+                log.debug(
+                  "create new push entry at {} for repository {} and branch {} from user {}",
+                  now.toString(),
+                  repository.getId(),
+                  branch,
+                  pushedBy
+                );
+                pushEntries.add(new PushEntry(repository.getId(), branch, pushedBy, now));
+              }
             )
         );
 
       deletedBranches.forEach(
-        branch -> pushEntries.removeIf(pushEntry -> pushEntry.branch.equals(branch))
+        branch -> {
+          log.debug(
+            "Remove push entries for branch {} of repository {}, because branch was deleted",
+            branch,
+            repository.getId()
+          );
+          pushEntries.removeIf(pushEntry -> pushEntry.belongsToRepositoryAndBranch(repository.getId(), branch));
+        }
       );
     }
   }
@@ -101,17 +128,18 @@ public class PullRequestSuggestionService {
     );
   }
 
-  private boolean pushEntryAlreadyExists(String repositoryId, String branch, String pushedBy) {
-    return pushEntries.stream().anyMatch(
-      pushEntry -> pushEntry.belongsTo(repositoryId, branch, pushedBy)
-    );
-  }
-
   @Subscribe(async = false)
   public void onPullRequestCreated(PullRequestEvent event) {
     if (event.getEventType() != HandlerEventType.CREATE) {
       return;
     }
+
+    log.debug(
+      "Remove push entries for branch {} of repository {}, because a pull request {} was created",
+      event.getPullRequest().getSource(),
+      event.getRepository().getId(),
+      event.getPullRequest().toString()
+    );
 
     synchronized (this) {
       pushEntries.removeIf(pushEntry -> pushEntry.belongsToCreatedPullRequest(event));
@@ -119,8 +147,15 @@ public class PullRequestSuggestionService {
   }
 
   public void removePushEntry(String repositoryId, String branch, String pushedBy) {
+    log.debug(
+      "Remove push entry for branch {} of repository {} from user {}",
+      branch,
+      repositoryId,
+      pushedBy
+    );
+
     synchronized (this) {
-      pushEntries.removeIf(pushEntry -> pushEntry.belongsTo(repositoryId, branch, pushedBy));
+      pushEntries.removeIf(pushEntry -> pushEntry.belongsToRepositoryBranchAndUser(repositoryId, branch, pushedBy));
     }
   }
 
@@ -130,13 +165,23 @@ public class PullRequestSuggestionService {
 
       return pushEntries
         .stream()
-        .filter(pushEntry -> pushEntry.belongsTo(repositoryId, pushedBy))
+        .filter(pushEntry -> pushEntry.belongsToRepositoryAndUser(repositoryId, pushedBy))
         .toList();
     }
   }
 
   private boolean isExpired(PushEntry pushEntry) {
-    return ChronoUnit.HOURS.between(pushEntry.pushedAt, Instant.now(clock)) >= PUSH_ENTRY_LIFETIME_IN_HOURS;
+    if (ChronoUnit.HOURS.between(pushEntry.pushedAt, Instant.now(clock)) >= PUSH_ENTRY_LIFETIME_IN_HOURS) {
+      log.debug("Push entry for repository {}, branch {} from user {} pushed at {} is expired and should be removed",
+        pushEntry.getRepositoryId(),
+        pushEntry.getBranch(),
+        pushEntry.getPushedBy(),
+        pushEntry.getPushedAt().toString()
+      );
+      return true;
+    }
+
+    return false;
   }
 
   @Data
@@ -148,13 +193,18 @@ public class PullRequestSuggestionService {
     private String pushedBy;
     private Instant pushedAt;
 
-    boolean belongsTo(String repositoryId, String branch, String pushedBy) {
+    boolean belongsToRepositoryBranchAndUser(String repositoryId, String branch, String pushedBy) {
       return this.repositoryId.equals(repositoryId) &&
         this.branch.equals(branch) &&
         this.pushedBy.equals(pushedBy);
     }
 
-    boolean belongsTo(String repositoryId, String pushedBy) {
+    boolean belongsToRepositoryAndBranch(String repositoryId, String branch) {
+      return this.repositoryId.equals(repositoryId) &&
+        this.branch.equals(branch);
+    }
+
+    boolean belongsToRepositoryAndUser(String repositoryId, String pushedBy) {
       return this.repositoryId.equals(repositoryId) && this.pushedBy.equals(pushedBy);
     }
 
