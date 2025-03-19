@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.8.0 - 2025-03-19
+### Added
+- Descriptive document titles
+
+### Fixed
+- Loading state of reject button
+- Updating the "pushed at" timestamp of a pull request suggestion
+- Only removing the push entries of a deleted branch, if the repository also matches
+- File diffs overlapping with the file tree at a certain screen width
+
 ## 3.7.1 - 2025-01-27
 ### Fixed
 - Style of buttons for comment tools

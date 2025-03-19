@@ -1,4 +1,0 @@
-- type: fixed
-  description: Updating the "pushed at" timestamp of a pull request suggestion
-- type: fixed
-  description: Only removing the push entries of a deleted branch, if the repository also matches
