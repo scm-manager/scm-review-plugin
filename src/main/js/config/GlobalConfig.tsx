@@ -17,16 +17,17 @@
 import React from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import ConfigEditor from "./ConfigEditor";
+import { useTranslation } from "react-i18next";
+import { useDocumentTitle } from "@scm-manager/ui-core";
 
 type Props = {
   link: string;
 };
 
-class GlobalConfig extends React.Component<Props> {
-  render() {
-    const { link } = this.props;
-    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="global" />} />;
-  }
-}
+export default function GlobalConfig({ link }: Readonly<Props>) {
+  const [t] = useTranslation("plugins");
 
-export default GlobalConfig;
+  useDocumentTitle(t("scm-review-plugin.config.title"));
+
+  return <Configuration link={link} render={(props) => <ConfigEditor {...props} configType="global" />} />;
+}

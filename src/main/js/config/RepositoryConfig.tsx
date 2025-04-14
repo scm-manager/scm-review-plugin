@@ -17,16 +17,20 @@
 import React from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import ConfigEditor from "./ConfigEditor";
+import { useRepositoryContext } from "@scm-manager/ui-api";
+import { useDocumentTitleForRepository } from "@scm-manager/ui-core";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   link: string;
 };
 
-class RepositoryConfig extends React.Component<Props> {
-  render() {
-    const { link } = this.props;
-    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="repository" />} />;
-  }
-}
+export default function RepositoryConfig({ link }: Readonly<Props>) {
+  const repository = useRepositoryContext();
+  const [t] = useTranslation("plugins");
 
-export default RepositoryConfig;
+  // @ts-ignore - it's a dedicated repository config
+  useDocumentTitleForRepository(repository, t("scm-review-plugin.config.title"));
+
+  return <Configuration link={link} render={(props) => <ConfigEditor {...props} configType="repository" />} />;
+}

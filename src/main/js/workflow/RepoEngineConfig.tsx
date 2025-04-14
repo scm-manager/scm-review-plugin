@@ -17,12 +17,18 @@
 import React, { FC } from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import EngineConfigEditor from "./EngineConfigEditor";
+import { useTranslation } from "react-i18next";
+import { useDocumentTitleForRepository } from "@scm-manager/ui-core";
+import { Repository } from "@scm-manager/ui-types";
 
 type Props = {
   link: string;
+  repository: Repository;
 };
 
-const RepoEngineConfig: FC<Props> = ({ link }) => {
+const RepoEngineConfig: FC<Props> = ({ link, repository }) => {
+  const [t] = useTranslation("plugins");
+  useDocumentTitleForRepository(repository, t("scm-review-plugin.navLink.workflow"));
   return <Configuration link={link} render={props => <EngineConfigEditor {...props} global={false} />} />;
 };
 

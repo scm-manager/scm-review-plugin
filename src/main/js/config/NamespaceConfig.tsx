@@ -17,16 +17,20 @@
 import React from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import ConfigEditor from "./ConfigEditor";
+import { useTranslation } from "react-i18next";
+import { useDocumentTitle } from "@scm-manager/ui-core";
+import { useNamespaceAndNameContext } from "@scm-manager/ui-api";
 
 type Props = {
   link: string;
 };
 
-class NamespaceConfig extends React.Component<Props> {
-  render() {
-    const { link } = this.props;
-    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="namespace" />} />;
-  }
-}
+export default function NamespaceConfig({ link }: Readonly<Props>) {
+  const [t] = useTranslation("plugins");
+  const namespace = useNamespaceAndNameContext();
 
-export default NamespaceConfig;
+  // @ts-ignore - it's a dedicated namespace config
+  useDocumentTitle(t("scm-review-plugin.config.title"), namespace.namespace);
+
+  return <Configuration link={link} render={(props) => <ConfigEditor {...props} configType="namespace" />} />;
+}
