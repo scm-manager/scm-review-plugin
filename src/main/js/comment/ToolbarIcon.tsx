@@ -16,7 +16,6 @@
 
 import React, { FC } from "react";
 import { Button, Icon } from "@scm-manager/ui-core";
-import styled from "styled-components";
 
 type Props = {
   title: string;
@@ -25,13 +24,7 @@ type Props = {
 };
 
 const ToolbarIcon: FC<Props> = ({ title, icon, onClick }) => (
-  <Button
-    style={{ backgroundColor: "#00000000", textDecoration: "none", margin: 0 }}
-    className="level-item is-link p-0"
-    onClick={onClick}
-    aria-label={title}
-    variant="tertiary"
-  >
+  <Button className="level-item is-link p-0 m-0" onClick={onClick} aria-label={title} variant="tertiary">
     <Icon>{icon}</Icon>
   </Button>
 );
