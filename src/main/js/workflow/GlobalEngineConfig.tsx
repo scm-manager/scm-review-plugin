@@ -17,16 +17,12 @@
 import React, { FC } from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import EngineConfigEditor from "./EngineConfigEditor";
-import { useDocumentTitle } from "@scm-manager/ui-core";
-import { useTranslation } from "react-i18next";
 
 type Props = {
   link: string;
 };
 
 const GlobalEngineConfig: FC<Props> = ({ link }) => {
-  const [t] = useTranslation("plugins");
-  useDocumentTitle(t("scm-review-plugin.navLink.workflow"));
   return <Configuration link={link} render={props => <EngineConfigEditor {...props} global={true} />} />;
 };
 
