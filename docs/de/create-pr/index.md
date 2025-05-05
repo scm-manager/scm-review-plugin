@@ -18,7 +18,8 @@ Ein Draft Pull Request ist ein vollwertiger Pull Request, jedoch weist der Statu
 
 ![Neuen Pull Request erstellen](assets/createPR.png)
 
-Zusätzlich zeigt das Review-Plugin Vorschläge an, ob man für einen aktualisierten Branch ein Pull Request erstellen möchte.
+Falls mindestens zwei Branches in einem Repository existieren, zeigt das Review-Plugin zusätzlich Vorschläge an, 
+ob man für einen aktualisierten Branch ein Pull Request zu einem anderen Branch erstellen möchte.
 Diese Vorschläge werden in Bannern unterhalb des Namespaces und dem Namen eines Repositories dargestellt.
 Jeder Vorschlag enthält die Information welcher Branch aktualisiert wurde und wann das geschehen ist.
 Zusätzlich beinhalten die Vorschläge zwei Buttons.

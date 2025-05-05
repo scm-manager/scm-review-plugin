@@ -10,7 +10,8 @@ In addition, the pull request can be created as a draft pull request by ticking 
 
 ![Create a new Pull Request](assets/createPR.png)
 
-In addition, the review plugin displays suggestions whether you would like to create a pull request for an updated branch.
+If at least two branches exist within a repository, the review plugin displays suggestions whether you would like to 
+create a pull request for an updated branch to a different one.
 These suggestions are displayed in banners below the namespace and the name of a repository.
 Each suggestion contains information about which branch has been updated and when this was done.
 The suggestions also contain two buttons.

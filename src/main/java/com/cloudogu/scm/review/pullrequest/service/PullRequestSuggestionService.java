@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.BranchResolver;
 import com.github.legman.Subscribe;
 import com.google.common.annotations.VisibleForTesting;
 import jakarta.inject.Inject;
@@ -44,16 +45,18 @@ public class PullRequestSuggestionService {
 
   private final List<PushEntry> pushEntries = new ArrayList<>();
   private final PullRequestService pullRequestService;
+  private final BranchResolver branchResolver;
   private final Clock clock;
 
   @Inject
-  public PullRequestSuggestionService(PullRequestService pullRequestService) {
-    this(pullRequestService, Clock.systemUTC());
+  public PullRequestSuggestionService(PullRequestService pullRequestService, BranchResolver branchResolver) {
+    this(pullRequestService, branchResolver, Clock.systemUTC());
   }
 
   @VisibleForTesting
-  PullRequestSuggestionService(PullRequestService pullRequestService, Clock clock) {
+  PullRequestSuggestionService(PullRequestService pullRequestService, BranchResolver branchResolver, Clock clock) {
     this.pullRequestService = pullRequestService;
+    this.branchResolver = branchResolver;
     this.clock = clock;
   }
 
@@ -66,7 +69,10 @@ public class PullRequestSuggestionService {
   public void onBranchUpdated(PostReceiveRepositoryHookEvent event) {
     Repository repository = event.getRepository();
 
-    if (!pullRequestService.supportsPullRequests(repository)) {
+    boolean isNotSupported = !pullRequestService.supportsPullRequests(repository);
+    boolean isSingleOrNoBranch = branchResolver.getAll(repository).size() < 2;
+
+    if (isNotSupported || isSingleOrNoBranch) {
       return;
     }
 

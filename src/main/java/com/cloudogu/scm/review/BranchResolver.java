@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.review;
 
+import jakarta.inject.Inject;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.Repository;
@@ -23,7 +24,6 @@ import sonia.scm.repository.api.BranchesCommandBuilder;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
-import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -40,14 +40,17 @@ public class BranchResolver {
   }
 
   public Branch resolve(Repository repository, String branchName) {
+    return getAll(repository)
+      .stream()
+      .filter(b -> b.getName().equals(branchName))
+      .findFirst()
+      .orElseThrow(() -> notFound(entity("branch", branchName).in(repository)));
+  }
+
+  public List<Branch> getAll(Repository repository) {
     try (RepositoryService repositoryService = repositoryServiceFactory.create(repository)) {
       BranchesCommandBuilder branchesCommand = repositoryService.getBranchesCommand();
-      List<Branch> allBranches = branchesCommand.getBranches().getBranches();
-      return allBranches
-        .stream()
-        .filter(b -> b.getName().equals(branchName))
-        .findFirst()
-        .orElseThrow(() -> notFound(entity("branch", branchName).in(repository)));
+      return branchesCommand.getBranches().getBranches();
     } catch (IOException e) {
       throw new InternalRepositoryException(repository, "could not read branches", e);
     }

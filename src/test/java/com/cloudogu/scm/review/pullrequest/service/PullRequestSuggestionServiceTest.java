@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.TestData;
 import org.github.sdorra.jse.ShiroExtension;
 import org.github.sdorra.jse.SubjectAware;
@@ -29,6 +30,8 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
+import sonia.scm.repository.Branch;
+import sonia.scm.repository.Person;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryHookEvent;
@@ -61,9 +64,12 @@ class PullRequestSuggestionServiceTest {
   @Mock
   private PullRequestService pullRequestService;
 
+  @Mock
+  private BranchResolver branchResolver;
+
   @BeforeEach
   void setup() {
-    suggestionService = new PullRequestSuggestionService(pullRequestService, clock);
+    suggestionService = new PullRequestSuggestionService(pullRequestService, branchResolver, clock);
   }
 
   @Nested
@@ -75,6 +81,18 @@ class PullRequestSuggestionServiceTest {
       when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(
         List.of("feature")
       );
+      when(branchResolver.getAll(repository)).thenReturn(List.of(
+        Branch.defaultBranch(
+          "main",
+          "revisionOnMain",
+          Instant.now(clock).minus(1, ChronoUnit.MILLIS).toEpochMilli(),
+          Person.toPerson("person1")),
+        Branch.normalBranch(
+          "feature",
+          "revisionOnFeature",
+          Instant.now(clock).minus(1, ChronoUnit.MILLIS).toEpochMilli(),
+          Person.toPerson("person2"))
+      ));
     }
 
     private PostReceiveRepositoryHookEvent createPostReceiveRepositoryHookEvent() {
@@ -90,6 +108,19 @@ class PullRequestSuggestionServiceTest {
     @Test
     void shouldIgnorePushBecauseRepositoryDoesNotSupportPullRequests() {
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(false);
+      suggestionService.onBranchUpdated(createPostReceiveRepositoryHookEvent());
+      assertThat(suggestionService.getPushEntries()).isEmpty();
+    }
+
+    @Test
+    void shouldIgnorePushBecauseRepositoryHasOnlyOneBranch() {
+      when(branchResolver.getAll(repository)).thenReturn(List.of(
+        Branch.defaultBranch(
+          "main",
+          "revisionOnMain",
+          Instant.now(clock).minus(1, ChronoUnit.MILLIS).toEpochMilli(),
+          Person.toPerson("person1"))
+      ));
       suggestionService.onBranchUpdated(createPostReceiveRepositoryHookEvent());
       assertThat(suggestionService.getPushEntries()).isEmpty();
     }
