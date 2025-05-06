@@ -16,7 +16,8 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Tooltip } from "@scm-manager/ui-components";
+import { Tooltip } from "@scm-manager/ui-components";
+import { Button, ButtonVariants, StatusIcon, StatusVariants } from "@scm-manager/ui-core";
 import ManualMergeInformation from "./ManualMergeInformation";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import { Link, Repository } from "@scm-manager/ui-types";
@@ -45,7 +46,7 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
   };
 
   const existsNotOverrideableObstacles = () => {
-    return mergeCheck ? mergeCheck.mergeObstacles.filter(obstacle => !obstacle.overrideable).length > 0 : false;
+    return mergeCheck ? mergeCheck.mergeObstacles.filter((obstacle) => !obstacle.overrideable).length > 0 : false;
   };
 
   const existsObstacles = () => {
@@ -62,20 +63,20 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
   };
 
   const renderButton = () => {
-    const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map(o => t(o.key)).join("\n") : "";
+    const checkHints = mergeCheck ? mergeCheck.mergeObstacles.map((o) => t(o.key)).join("\n") : "";
     const obstaclesPresent = existsObstacles();
     const obstaclesNotOverrideable = existsNotOverrideableObstacles();
     let color;
     if (mergeCheck?.hasConflicts) {
-      color = "warning";
+      color = ButtonVariants.SIGNAL;
     } else if (obstaclesPresent) {
       if (obstaclesNotOverrideable) {
-        color = "warning";
+        color = ButtonVariants.SIGNAL;
       } else {
-        color = "danger";
+        color = ButtonVariants.DANGER;
       }
     } else {
-      color = "primary";
+      color = ButtonVariants.PRIMARY;
     }
 
     const disabled = isMergeButtonDisabled();
@@ -92,14 +93,18 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
     }
 
     const button = (
-      <Button
-        label={t("scm-review-plugin.showPullRequest.mergeButton.buttonTitle")}
-        loading={loading}
-        action={action}
-        color={color}
-        disabled={disabled || obstaclesNotOverrideable}
-        icon={checkHints ? "exclamation-triangle" : ""}
-      />
+      <Button isLoading={loading} onClick={action} variant={color} disabled={disabled || obstaclesNotOverrideable}>
+        {checkHints ? (
+          <StatusIcon
+            className="mr-2"
+            variant={color === ButtonVariants.DANGER ? StatusVariants.DANGER : StatusVariants.WARNING}
+            invert={true}
+          />
+        ) : (
+          ""
+        )}
+        {t("scm-review-plugin.showPullRequest.mergeButton.buttonTitle")}
+      </Button>
     );
     if (checkHints) {
       return (
@@ -116,7 +121,7 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
     if (overrideMessage) {
       return {
         ...mergeCommit,
-        overrideMessage: overrideMessage
+        overrideMessage: overrideMessage,
       };
     } else {
       return mergeCommit;

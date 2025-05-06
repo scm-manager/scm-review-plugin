@@ -16,7 +16,7 @@
 
 import React, { FC } from "react";
 import { Branch, Repository } from "@scm-manager/ui-types";
-import { Icon, urls } from "@scm-manager/ui-components";
+import { urls } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, useLocation, useRouteMatch } from "react-router-dom";
@@ -25,6 +25,7 @@ import { MergePreventReason, PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
 import MergeConflicts from "./MergeConflicts";
 import RootChangesContainer from "./change/RootChangesContainer";
+import { StatusIcon } from "@scm-manager/ui-core";
 
 type Props = {
   repository: Repository;
@@ -103,7 +104,7 @@ const Tabs: FC<TabProps> = ({ isClosed, pullRequest, activeTab, baseURL, targetB
       <SingleTab name="conflicts" activeTab={activeTab}>
         <Link to={`${baseURL}/conflicts/`}>
           {t("scm-review-plugin.pullRequest.tabs.conflicts")}
-          <Icon className="ml-2" color="warning" name="exclamation-triangle" />
+          <StatusIcon className="ml-2" variant="warning" iconSize="xs" />
         </Link>
       </SingleTab>
     );
@@ -159,7 +160,7 @@ const Routes: FC<RouteProps> = ({
   mergePreventReasons,
   shouldFetchChangesets,
   sourceBranch,
-  stickyHeaderHeight
+  stickyHeaderHeight,
 }) => {
   let routeComments = null;
   let routeChangeset = null;

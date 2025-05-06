@@ -18,8 +18,8 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Result } from "../types/EngineConfig";
-import { Icon } from "@scm-manager/ui-components";
 import classNames from "classnames";
+import { StatusIcon, StatusVariants } from "@scm-manager/ui-core";
 
 type Props = {
   result: Result;
@@ -64,12 +64,11 @@ const ModalRow: FC<Props> = ({ result }) => {
     <Entry
       className={classNames("is-flex", "is-flex-direction-row", "is-justify-content-space-between", "px-0", "py-4")}
     >
-      <Left>
+      <Left className={"is-flex is-align-items-center"}>
         <span className="has-text-weight-bold">{t("workflow.rule." + result?.rule + ".name")}</span>
-        <Icon
-          className="ml-1"
-          color={result?.failed ? "danger" : "success"}
-          name={result?.failed ? "times-circle" : "check-circle"}
+        <StatusIcon
+          className="ml-2"
+          variant={result?.failed ? StatusVariants.DANGER : StatusVariants.SUCCESS}
           alt={t(`scm-review-plugin.pullRequests.aria.workflow.status.${result.failed ? "fail" : "success"}`)}
         />
       </Left>

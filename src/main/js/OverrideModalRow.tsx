@@ -16,8 +16,8 @@
 
 import React, { FC } from "react";
 import { useTranslation, withTranslation, WithTranslation } from "react-i18next";
-import { Icon } from "@scm-manager/ui-components";
 import { Result } from "./types/EngineConfig";
+import { StatusIcon } from "@scm-manager/ui-core";
 
 type Props = WithTranslation & {
   result: Result;
@@ -28,7 +28,7 @@ const OverrideModalRow: FC<Props> = ({ result }) => {
 
   return (
     <div className="is-flex is-align-items-center py-1">
-      <Icon className="pr-2" color="warning" name="exclamation-triangle" />
+      <StatusIcon className="pr-2" variant="warning" />
       <p>{t(result?.rule)}</p>
     </div>
   );

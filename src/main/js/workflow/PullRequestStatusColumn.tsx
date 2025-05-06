@@ -19,11 +19,12 @@ import { useStatusbar } from "./useStatusbar";
 import { SmallLoadingSpinner } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
-import StatusIcon, { getColor, getIcon, getTitle } from "./StatusIcon";
+import { StatusIcon, StatusVariants } from "@scm-manager/ui-core";
 import ModalRow from "./ModalRow";
 import { Popover } from "@scm-manager/ui-overlays";
 import { useTranslation } from "react-i18next";
 import { Card } from "@scm-manager/ui-layout";
+import { Result } from "../types/EngineConfig";
 
 type Props = {
   repository: Repository;
@@ -51,24 +52,48 @@ const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
       trigger={
         <Card.Details.ButtonDetail
           aria-label={t("scm-review-plugin.pullRequests.aria.workflow.label", {
-            status: t(`scm-review-plugin.pullRequests.aria.workflow.status.${getTitle(data.results)}`)
+            status: t(`scm-review-plugin.pullRequests.aria.workflow.status.${getTitle(data.results)}`),
           })}
         >
           <Card.Details.Detail.Label aria-hidden>
             {t("scm-review-plugin.pullRequests.details.workflow")}
           </Card.Details.Detail.Label>
-          <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} size="lg" />
+          <StatusIcon variant={getVariant(data.results)} />
         </Card.Details.ButtonDetail>
       }
       title={title}
     >
       <ul>
-        {data.results.map(r => (
+        {data.results.map((r) => (
           <ModalRow key={r.rule} result={r} />
         ))}
       </ul>
     </Popover>
   );
+};
+
+export const getVariant = (results: Result[]) => {
+  if (results && results.length) {
+    if (results.some((it) => it.failed)) {
+      return StatusVariants.DANGER;
+    } else {
+      return StatusVariants.SUCCESS;
+    }
+  } else {
+    return StatusVariants.UNDEFINED;
+  }
+};
+
+export const getTitle = (results: Result[]) => {
+  if (results && results.length) {
+    if (results.some((it) => it.failed)) {
+      return "fail";
+    } else {
+      return "success";
+    }
+  } else {
+    return "pending";
+  }
 };
 
 export default PullRequestStatusColumn;
