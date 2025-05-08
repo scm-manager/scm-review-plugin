@@ -99,6 +99,7 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
             className="mr-2"
             variant={color === ButtonVariants.DANGER ? StatusVariants.DANGER : StatusVariants.WARNING}
             invert={true}
+            iconSize="md"
           />
         ) : (
           ""

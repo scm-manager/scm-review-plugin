@@ -29,18 +29,16 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
   const initialFocusRef = useRef<HTMLTextAreaElement>(null);
   const [message, setMessage] = useState("");
 
-  console.log("Loading: ", loading);
-
   const body = (
     <>
       <p>{t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.hint")}</p>
-      <hr/>
+      <hr />
       <Textarea
         label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.label")}
         helpText={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.help")}
         value={message}
         placeholder={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.placeholder")}
-        onChange={event => setMessage(event.target.value)}
+        onChange={(event) => setMessage(event.target.value)}
         ref={initialFocusRef}
       />
     </>
