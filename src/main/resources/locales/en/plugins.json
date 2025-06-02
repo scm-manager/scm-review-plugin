@@ -150,6 +150,7 @@
         "branchDeleted": "The target or source branch has been deleted!",
         "approved": "Approved by {{name}}",
         "ignoredMergeObstacles": "Following rules were ignored on merging the pull request:",
+        "copyButton": "Copy to clipboard",
         "buttons": {
           "edit": "Edit",
           "approve": "Approve",

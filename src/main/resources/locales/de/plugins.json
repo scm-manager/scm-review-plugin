@@ -150,6 +150,7 @@
         "branchDeleted": "Der Source- oder Target-Branch wurde gelöscht!",
         "approved": "Freigegeben durch {{name}}",
         "ignoredMergeObstacles": "Folgende Regeln wurden beim Mergen des Pull-Requests ignoriert:",
+        "copyButton": "In die Zwischenablage kopieren",
         "buttons": {
           "edit": "Bearbeiten",
           "approve": "Freigeben",

@@ -20,7 +20,7 @@ import { Tag } from "@scm-manager/ui-components";
 
 const ShortTag = styled(Tag).attrs(() => ({
   className: "is-medium",
-  color: "light"
+  color: "light",
 }))`
   overflow: hidden;
   text-overflow: ellipsis;
@@ -36,10 +36,19 @@ type Props = {
   title: string;
 };
 
-const BranchTag: FC<Props> = ({ label, title }) => {
+const BranchTag: FC<Props> = ({ label, title, children }) => {
   return (
     <span className="is-flex align-items-center">
-      <ShortTag title={title}>{label}</ShortTag>
+      <ShortTag title={title}>
+        {children ? (
+          <div className="is-flex">
+            {label}
+            <div className="ml-2">{children}</div>
+          </div>
+        ) : (
+          <>{label}</>
+        )}
+      </ShortTag>
     </span>
   );
 };

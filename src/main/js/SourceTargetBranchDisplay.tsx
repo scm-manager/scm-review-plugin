@@ -15,8 +15,9 @@
  */
 
 import React, { FC } from "react";
-import BranchTag from "./BranchTag";
 import classNames from "classnames";
+import BranchTag from "./BranchTag";
+import CopyToClipboardButton from "./CopyToClipboardButton";
 
 type Props = {
   className?: string;
@@ -28,7 +29,9 @@ type Props = {
 const SourceTargetBranchDisplay: FC<Props> = ({ className, children, source, target, wrapper = "div" }) => {
   const content = (
     <>
-      <BranchTag label={source} title={source} />
+      <BranchTag label={source} title={source}>
+        <CopyToClipboardButton text={source} />
+      </BranchTag>
       <i className="fas fa-long-arrow-alt-right m-1" />
       <BranchTag label={target} title={target} />
     </>
@@ -37,7 +40,7 @@ const SourceTargetBranchDisplay: FC<Props> = ({ className, children, source, tar
     wrapper,
     { className: classNames(className, "is-flex", "is-align-items-center", "is-flex-wrap-wrap") },
     content,
-    children
+    children,
   );
 };
 
