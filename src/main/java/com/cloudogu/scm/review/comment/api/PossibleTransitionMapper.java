@@ -19,8 +19,8 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.comment.service.CommentTransition;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
-
 import jakarta.inject.Inject;
+
 import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;

@@ -16,10 +16,15 @@
 
 package com.cloudogu.scm.review.comment.service;
 
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import sonia.scm.repository.Repository;
+import sonia.scm.store.QueryableType;
 import sonia.scm.xml.XmlMapStringAdapter;
 
 import java.time.Instant;
@@ -33,6 +38,9 @@ import static java.util.Collections.unmodifiableList;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
+@QueryableType({Repository.class, PullRequest.class})
+@EqualsAndHashCode(callSuper = true)
+@ToString
 public class Comment extends BasicComment {
 
   public static Comment createSystemComment(String key, Map<String, String> systemCommentParameters) {
@@ -130,10 +138,6 @@ public class Comment extends BasicComment {
 
   public void removeReply(BasicComment reply) {
     this.replies.remove(reply);
-  }
-
-  public void addCommentTransition(ExecutedTransition<CommentTransition> transition) {
-    super.addTransition(transition);
   }
 
   public InlineContext getContext() {

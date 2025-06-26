@@ -18,13 +18,13 @@ package com.cloudogu.scm.review.pullrequest.dto;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import jakarta.inject.Inject;
 import sonia.scm.repository.Branch;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
-import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 

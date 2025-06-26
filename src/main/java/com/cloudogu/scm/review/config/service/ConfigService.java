@@ -18,6 +18,8 @@ package com.cloudogu.scm.review.config.service;
 
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.config.ConfigEvaluator;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.group.GroupCollector;
 import sonia.scm.repository.NamespaceAndName;
@@ -26,8 +28,6 @@ import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.util.GlobUtil;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.util.Collection;
 import java.util.Set;
 

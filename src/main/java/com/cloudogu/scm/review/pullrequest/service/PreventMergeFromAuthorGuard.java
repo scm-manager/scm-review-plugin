@@ -18,10 +18,10 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.config.service.ConfigService;
+import jakarta.inject.Inject;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
-import jakarta.inject.Inject;
 import java.util.Collection;
 
 import static java.util.Collections.emptySet;

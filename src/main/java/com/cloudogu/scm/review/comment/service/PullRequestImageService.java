@@ -39,12 +39,11 @@ import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.cloudogu.scm.review.comment.AcceptedImageTypes.MAX_ACCEPTED_IMAGE_TYPE_STRING_LENGTH;
-import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 @Singleton
 public class PullRequestImageService {
@@ -53,14 +52,14 @@ public class PullRequestImageService {
   private final BlobStoreFactory blobStoreFactory;
   private final RepositoryResolver repositoryResolver;
 
-  private final CommentStoreFactory commentStoreFactory;
+  private final CommentStoreBuilder commentStoreBuilder;
 
   private final int maxImageSizeInBytes;
 
   @Inject
   public PullRequestImageService(BlobStoreFactory blobStoreFactory,
                                  RepositoryResolver repositoryResolver,
-                                 CommentStoreFactory commentStoreFactory,
+                                 CommentStoreBuilder commentStoreBuilder,
                                  @ConfigValue(
                                    key = "maxImageSizeInBytes",
                                    defaultValue = "8000000",
@@ -68,14 +67,14 @@ public class PullRequestImageService {
                                  int maxImageSizeInBytes) {
     this.blobStoreFactory = blobStoreFactory;
     this.repositoryResolver = repositoryResolver;
-    this.commentStoreFactory = commentStoreFactory;
+    this.commentStoreBuilder = commentStoreBuilder;
     this.maxImageSizeInBytes = maxImageSizeInBytes;
   }
 
   public void createReplyImage(NamespaceAndName namespaceAndName, String pullRequestId, String commentId, String replyId, String fileHash, String filetype, InputStream imageStream) {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
     PermissionCheck.checkComment(repository);
-    CommentStore commentStore = commentStoreFactory.create(repository);
+    CommentStore commentStore = commentStoreBuilder.create(repository);
     Comment comment = commentStore.getPullRequestCommentById(pullRequestId, commentId)
       .orElseThrow(() -> new NotFoundException(Comment.class, commentId));
     Reply reply = comment.getReplies().stream().filter(r -> r.getId().equals(replyId)).findFirst()
@@ -89,7 +88,7 @@ public class PullRequestImageService {
   public void createCommentImage(NamespaceAndName namespaceAndName, String pullRequestId, String commentId, String fileHash, String filetype, InputStream imageStream) {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
     PermissionCheck.checkComment(repository);
-    CommentStore commentStore = commentStoreFactory.create(repository);
+    CommentStore commentStore = commentStoreBuilder.create(repository);
     Comment comment = commentStore.getPullRequestCommentById(pullRequestId, commentId)
       .orElseThrow(() -> new NotFoundException(Comment.class, commentId));
 
@@ -199,7 +198,7 @@ public class PullRequestImageService {
 
   private void deleteImages(BasicCommentEvent<?> event, Set<String> imagesToDelete, FilterImagesToDelete filter) {
     BlobStore imageStore = createImageStore(event.getRepository());
-    CommentStore commentStore = commentStoreFactory.create(event.getRepository());
+    CommentStore commentStore = commentStoreBuilder.create(event.getRepository());
     filter.handle(imagesToDelete, commentStore.getAll(event.getPullRequest().getId()));
     imagesToDelete.forEach(imageStore::remove);
   }
@@ -210,7 +209,7 @@ public class PullRequestImageService {
 
   @FunctionalInterface
   private interface FilterImagesToDelete {
-    void handle(Set<String> imagesToDelete, List<Comment> comments);
+    void handle(Set<String> imagesToDelete, Collection<Comment> comments);
   }
 
   @Getter

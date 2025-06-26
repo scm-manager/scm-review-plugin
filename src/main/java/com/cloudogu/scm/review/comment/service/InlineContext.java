@@ -16,12 +16,12 @@
 
 package com.cloudogu.scm.review.comment.service;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 @AllArgsConstructor

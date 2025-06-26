@@ -22,6 +22,10 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.github.legman.Subscribe;
+import jakarta.inject.Inject;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Getter;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
@@ -34,10 +38,6 @@ import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
-import jakarta.inject.Inject;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import java.time.Instant;
 import java.util.Optional;
 

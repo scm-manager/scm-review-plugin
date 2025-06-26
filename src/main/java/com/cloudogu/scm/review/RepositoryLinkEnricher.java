@@ -23,6 +23,8 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestSuggestionResource;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.workflow.EngineConfigService;
 import com.cloudogu.scm.review.workflow.RepositoryEngineConfigResource;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -31,9 +33,6 @@ import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 
 import static com.cloudogu.scm.review.PermissionCheck.mayConfigure;
 import static com.cloudogu.scm.review.PermissionCheck.mayConfigureWorkflowConfig;

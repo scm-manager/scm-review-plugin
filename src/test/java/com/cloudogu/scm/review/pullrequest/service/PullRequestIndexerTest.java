@@ -17,6 +17,7 @@
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.google.common.collect.ImmutableList;
+import jakarta.servlet.ServletContextEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,6 @@ import sonia.scm.search.IndexLogStore;
 import sonia.scm.search.SearchEngine;
 import sonia.scm.search.SerializableIndexTask;
 
-import jakarta.servlet.ServletContextEvent;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;

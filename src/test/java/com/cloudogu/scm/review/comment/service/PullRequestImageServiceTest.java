@@ -84,7 +84,7 @@ class PullRequestImageServiceTest {
   private RepositoryResolver repositoryResolver;
 
   @Mock
-  private CommentStoreFactory commentStoreFactory;
+  private CommentStoreBuilder commentStoreBuilder;
 
   @Mock
   private CommentStore featureCommentStore;
@@ -102,10 +102,10 @@ class PullRequestImageServiceTest {
     hotfixComment.addReply(thirdHotfixReply);
 
     blobStoreFactory = new InMemoryBlobStoreFactory();
-    imageService = new PullRequestImageService(blobStoreFactory, repositoryResolver, commentStoreFactory, 8_000_000);
+    imageService = new PullRequestImageService(blobStoreFactory, repositoryResolver, commentStoreBuilder, 8_000_000);
 
     lenient().when(repositoryResolver.resolve(any(NamespaceAndName.class))).thenReturn(repository);
-    lenient().when(commentStoreFactory.create(repository)).thenReturn(featureCommentStore);
+    lenient().when(commentStoreBuilder.create(repository)).thenReturn(featureCommentStore);
     lenient().when(featureCommentStore.getAll(featurePullRequest.getId())).thenReturn(List.of(featureComment, hotfixComment));
     lenient().when(featureCommentStore.getPullRequestCommentById(featurePullRequest.getId(), featureComment.getId())).thenReturn(Optional.of(featureComment));
     lenient().when(featureCommentStore.getPullRequestCommentById(featurePullRequest.getId(), hotfixComment.getId())).thenReturn(Optional.of(hotfixComment));

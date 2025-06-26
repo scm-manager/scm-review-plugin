@@ -16,7 +16,10 @@
 
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.pullrequest.api.PullRequestSelector;
+import com.cloudogu.scm.review.pullrequest.api.RequestParameters;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -25,8 +28,6 @@ import sonia.scm.user.User;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
 
 
 /**
@@ -70,6 +71,10 @@ public interface PullRequestService {
    * @return all pull requests related to the given repository
    */
   List<PullRequest> getAll(String namespace, String name);
+
+  List<PullRequest> getAll(String namespace, String name, RequestParameters parameters);
+
+  int count(String namespace, String name, PullRequestSelector selector);
 
   /**
    * Check if the branch exists in the repository
@@ -195,4 +200,8 @@ public interface PullRequestService {
   boolean supportsPullRequests(Repository repository);
 
   void convertToPR(Repository repository, String pullRequestId);
+
+  default User getCurrentUser() {
+    return CurrentUserResolver.getCurrentUser();
+  }
 }

@@ -155,7 +155,7 @@ class MailTextResolverTest {
   @Test
   void shouldRenderEmailOnCommentTransition() {
     Comment taskComment = oldComment.clone();
-    taskComment.addCommentTransition(new ExecutedTransition<>("new", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "dent"));
+    taskComment.addExecutedTransition(new ExecutedTransition<>("new", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "dent"));
     CommentEvent event = new CommentEvent(repository, pullRequest, comment, oldComment, HandlerEventType.MODIFY);
 
     CommentEventMailTextResolver renderer = new CommentEventMailTextResolver(event);

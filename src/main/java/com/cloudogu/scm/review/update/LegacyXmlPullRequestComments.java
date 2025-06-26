@@ -14,22 +14,28 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-package com.cloudogu.scm.review.comment.service;
-
-import lombok.Data;
+package com.cloudogu.scm.review.update;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@AllArgsConstructor
 @XmlRootElement(name = "pull-request-comments")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class PullRequestComments {
+class LegacyXmlPullRequestComments {
 
   @XmlElement(name = "comment")
-  private List<Comment> comments = new ArrayList<>();
+  private List<LegacyXmlComment> comments;
+
+  public LegacyXmlPullRequestComments() {
+    this(new ArrayList<>());
+  }
 }

@@ -20,8 +20,6 @@ package com.cloudogu.scm.review.comment.service;
 import sonia.scm.BadRequestException;
 import sonia.scm.ContextEntry;
 
-import java.util.List;
-
 public class ImageUploadFailedException extends BadRequestException {
 
   public ImageUploadFailedException(Exception wrappedException) {

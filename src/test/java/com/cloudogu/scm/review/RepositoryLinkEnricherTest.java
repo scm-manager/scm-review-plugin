@@ -40,7 +40,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricherContext;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
-import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 
 import java.net.URI;

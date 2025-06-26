@@ -21,6 +21,9 @@ import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.StatusChangeNotAllowedException;
+import com.cloudogu.scm.review.pullrequest.api.PullRequestSelector;
+import com.cloudogu.scm.review.pullrequest.api.PullRequestSortSelector;
+import com.cloudogu.scm.review.pullrequest.api.RequestParameters;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +40,8 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.store.Condition;
+import sonia.scm.store.QueryableStore;
 import sonia.scm.user.User;
 
 import java.io.IOException;
@@ -68,12 +73,12 @@ public class DefaultPullRequestService implements PullRequestService {
 
   private final BranchResolver branchResolver;
   private final RepositoryResolver repositoryResolver;
-  private final PullRequestStoreFactory storeFactory;
+  private final PullRequestStoreBuilder storeFactory;
   private final ScmEventBus eventBus;
   private final RepositoryServiceFactory repositoryServiceFactory;
 
   @Inject
-  public DefaultPullRequestService(RepositoryResolver repositoryResolver, BranchResolver branchResolver, PullRequestStoreFactory storeFactory, ScmEventBus eventBus, RepositoryServiceFactory repositoryServiceFactory) {
+  public DefaultPullRequestService(RepositoryResolver repositoryResolver, BranchResolver branchResolver, PullRequestStoreBuilder storeFactory, ScmEventBus eventBus, RepositoryServiceFactory repositoryServiceFactory) {
     this.repositoryResolver = repositoryResolver;
     this.branchResolver = branchResolver;
     this.storeFactory = storeFactory;
@@ -84,12 +89,15 @@ public class DefaultPullRequestService implements PullRequestService {
   @Override
   public String add(Repository repository, PullRequest pullRequest) {
     verifyBranchCheck(checkIfPullRequestIsValid(repository, pullRequest, pullRequest.getSource(), pullRequest.getTarget()), repository, pullRequest);
-    pullRequest.setCreationDate(Instant.now());
-    pullRequest.setLastModified(null);
+    Instant now = Instant.now();
+    pullRequest.setCreationDate(now);
+    pullRequest.setLastModified(now);
     computeSubscriberForNewPullRequest(pullRequest);
-    String id = getStore(repository).add(pullRequest);
-    eventBus.post(new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE));
-    return id;
+    try (PullRequestStore store = getStore(repository)) {
+      String id = store.add(pullRequest);
+      eventBus.post(new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE));
+      return id;
+    }
   }
 
   private void computeSubscriberForNewPullRequest(PullRequest pullRequest) {
@@ -102,53 +110,54 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public void update(Repository repository, String pullRequestId, PullRequest pullRequest) {
-    PullRequestStore store = getStore(repository);
-    PullRequest oldPullRequest = store.get(pullRequestId);
-    Set<String> addedReviewers = computeAddedReviewersForChangedPullRequest(oldPullRequest, pullRequest);
-    Set<String> removedReviewers = computeRemovedReviewersForChangedPullRequest(oldPullRequest, pullRequest);
+    try (PullRequestStore store = getStore(repository)) {
+      PullRequest oldPullRequest = store.get(pullRequestId);
+      Set<String> addedReviewers = computeAddedReviewersForChangedPullRequest(oldPullRequest, pullRequest);
+      Set<String> removedReviewers = computeRemovedReviewersForChangedPullRequest(oldPullRequest, pullRequest);
 
-    Set<String> newSubscriber = new HashSet<>(oldPullRequest.getSubscriber());
-    newSubscriber.addAll(addedReviewers);
+      Set<String> newSubscriber = new HashSet<>(oldPullRequest.getSubscriber());
+      newSubscriber.addAll(addedReviewers);
 
-    Map<String, Boolean> newReviewers = new HashMap<>(oldPullRequest.getReviewer());
+      Map<String, Boolean> newReviewers = new HashMap<>(oldPullRequest.getReviewer());
 
-    if (oldPullRequest.isOpen() && pullRequest.isDraft()) {
-      eventBus.post(new PullRequestStatusChangedEvent(repository, pullRequest, DRAFT));
-      newReviewers
-        .keySet()
-        .forEach(reviewer -> newReviewers.put(reviewer, false));
-    } else if (oldPullRequest.isDraft() && pullRequest.isOpen()) {
-      eventBus.post(new PullRequestStatusChangedEvent(repository, pullRequest, OPEN));
-    }
+      if (oldPullRequest.isOpen() && pullRequest.isDraft()) {
+        eventBus.post(new PullRequestStatusChangedEvent(repository, pullRequest, DRAFT));
+        newReviewers
+          .keySet()
+          .forEach(reviewer -> newReviewers.put(reviewer, false));
+      } else if (oldPullRequest.isDraft() && pullRequest.isOpen()) {
+        eventBus.post(new PullRequestStatusChangedEvent(repository, pullRequest, OPEN));
+      }
 
-    addedReviewers.forEach(reviewer -> newReviewers.putIfAbsent(reviewer, false));
-    removedReviewers.forEach(newReviewers::remove);
+      addedReviewers.forEach(reviewer -> newReviewers.putIfAbsent(reviewer, false));
+      removedReviewers.forEach(newReviewers::remove);
 
-    PullRequest newPullRequest = oldPullRequest.toBuilder()
-      .targetRevision(pullRequest.getTargetRevision())
-      .title(pullRequest.getTitle())
-      .description(pullRequest.getDescription())
-      .lastModified(Instant.now())
-      .reviewer(newReviewers)
-      .labels(pullRequest.getLabels())
-      .target(pullRequest.getTarget())
-      .shouldDeleteSourceBranch(pullRequest.isShouldDeleteSourceBranch())
-      .build();
+      PullRequest newPullRequest = oldPullRequest.toBuilder()
+        .targetRevision(pullRequest.getTargetRevision())
+        .title(pullRequest.getTitle())
+        .description(pullRequest.getDescription())
+        .lastModified(Instant.now())
+        .reviewer(newReviewers)
+        .labels(pullRequest.getLabels())
+        .target(pullRequest.getTarget())
+        .shouldDeleteSourceBranch(pullRequest.isShouldDeleteSourceBranch())
+        .build();
 
-    if (oldPullRequest.isInProgress() && pullRequest.getStatus() != null && pullRequest.getStatus().isInProgress()) {
-      newPullRequest.setStatus(pullRequest.getStatus());
-    }
+      if (oldPullRequest.isInProgress() && pullRequest.getStatus() != null && pullRequest.getStatus().isInProgress()) {
+        newPullRequest.setStatus(pullRequest.getStatus());
+      }
 
-    newPullRequest.setSubscriber(newSubscriber);
-    boolean targetBranchHasChanged = !StringUtils.equals(newPullRequest.getTarget(), oldPullRequest.getTarget());
-    if (targetBranchHasChanged) {
-      verifyBranchCheck(checkIfPullRequestIsValid(repository, pullRequest, newPullRequest.getTarget()), repository, pullRequest);
-      removeAllApprover(newPullRequest);
-    }
-    store.update(newPullRequest);
-    eventBus.post(new PullRequestEvent(repository, newPullRequest, oldPullRequest, HandlerEventType.MODIFY));
-    if (targetBranchHasChanged) {
-      eventBus.post(new PullRequestUpdatedEvent(repository, newPullRequest));
+      newPullRequest.setSubscriber(newSubscriber);
+      boolean targetBranchHasChanged = !StringUtils.equals(newPullRequest.getTarget(), oldPullRequest.getTarget());
+      if (targetBranchHasChanged) {
+        verifyBranchCheck(checkIfPullRequestIsValid(repository, pullRequest, newPullRequest.getTarget()), repository, pullRequest);
+        removeAllApprover(newPullRequest);
+      }
+      store.update(newPullRequest);
+      eventBus.post(new PullRequestEvent(repository, newPullRequest, oldPullRequest, HandlerEventType.MODIFY));
+      if (targetBranchHasChanged) {
+        eventBus.post(new PullRequestUpdatedEvent(repository, newPullRequest));
+      }
     }
   }
 
@@ -181,12 +190,59 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public PullRequest get(Repository repository, String id) {
-    return getStore(repository).get(id);
+    try (PullRequestStore store = getStore(repository)) {
+      return store.get(id);
+    }
   }
 
   @Override
   public List<PullRequest> getAll(String namespace, String name) {
-    return getStore(namespace, name).getAll();
+    try (PullRequestStore store = getStore(namespace, name)) {
+      return store.getAll();
+    }
+  }
+
+  @Override
+  public List<PullRequest> getAll(String namespace, String name, RequestParameters requestParameters) {
+    Condition<PullRequest>[] conditions =
+      computeConditions(requestParameters.pullRequestSelector());
+    PullRequestSortSelector.Sort sort = requestParameters.pullRequestSortSelector().getSort();
+    try (QueryableStore<PullRequest> store = storeFactory.createQueryable(getRepository(namespace, name))) {
+      return store
+        .query(conditions)
+        .orderBy(sort.field(), sort.orderOptions())
+        .findAll(requestParameters.offset(), requestParameters.limit());
+    }
+  }
+
+  public int count(String namespace, String name, PullRequestSelector selector) {
+    Condition<PullRequest>[] conditions =
+      computeConditions(selector);
+    try (QueryableStore<PullRequest> store = storeFactory.createQueryable(getRepository(namespace, name))) {
+      return (int) store
+        .query(conditions)
+        .count();
+    }
+  }
+
+  private static Condition<PullRequest>[] computeConditions(PullRequestSelector selector) {
+    return switch (selector) {
+      case ALL -> new Condition[0];
+      case MINE -> {
+        String userId = SecurityUtils.getSubject().getPrincipal().toString();
+        yield new Condition[]{
+          PullRequestQueryFields.AUTHOR.eq(userId)
+        };
+      }
+      case MERGED -> new Condition[]{PullRequestQueryFields.STATUS.eq(MERGED)};
+      case REJECTED -> new Condition[]{PullRequestQueryFields.STATUS.eq(REJECTED)};
+      case REVIEWER -> new Condition[]{
+        PullRequestQueryFields.REVIEWER.containsKey(SecurityUtils.getSubject().getPrincipal().toString()),
+        PullRequestQueryFields.STATUS.eq(OPEN)
+      };
+      case IN_PROGRESS -> new Condition[]{PullRequestQueryFields.STATUS.in(OPEN, DRAFT)};
+      case OPEN -> new Condition[]{PullRequestQueryFields.STATUS.in(OPEN, DRAFT)};
+    };
   }
 
   @Override
@@ -194,13 +250,15 @@ public class DefaultPullRequestService implements PullRequestService {
     List<PullRequestStatus> inProgressStatus = stream(PullRequestStatus.values())
       .filter(PullRequestStatus::isInProgress)
       .toList();
-    return getStore(repository).getAll()
-      .stream()
-      .filter(pullRequest ->
-        inProgressStatus.contains(pullRequest.getStatus()) &&
-          pullRequest.getSource().equals(source) &&
-          pullRequest.getTarget().equals(target))
-      .findFirst();
+    try (PullRequestStore store = getStore(repository)) {
+      return store.getAll()
+        .stream()
+        .filter(pullRequest ->
+          inProgressStatus.contains(pullRequest.getStatus()) &&
+            pullRequest.getSource().equals(source) &&
+            pullRequest.getTarget().equals(target))
+        .findFirst();
+    }
   }
 
   @Override
@@ -222,7 +280,7 @@ public class DefaultPullRequestService implements PullRequestService {
       pullRequest.setTargetRevision(getBranchRevision(repository, pullRequest.getTarget()));
       setPullRequestClosed(pullRequest);
       pullRequest.setStatus(REJECTED);
-      getStore(repository).update(pullRequest);
+      updatePullRequest(repository, pullRequest);
       eventBus.post(new PullRequestRejectedEvent(repository, pullRequest, cause, message, previousStatus));
     } else if (pullRequest.isMerged()) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
@@ -231,23 +289,24 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public void reopen(Repository repository, String pullRequestId) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
-    PermissionCheck.checkCreate(repository);
-    checkBranch(repository, pullRequest.getSource());
-    checkBranch(repository, pullRequest.getTarget());
+    try (PullRequestStore store = getStore(repository)) {
+      PullRequest pullRequest = store.get(pullRequestId);
+      PermissionCheck.checkCreate(repository);
+      checkBranch(repository, pullRequest.getSource());
+      checkBranch(repository, pullRequest.getTarget());
 
-    boolean isPrCreationValid = PR_VALID.equals(checkIfPullRequestIsValid(repository, pullRequest.getSource(), pullRequest.getTarget()));
-    if (pullRequest.isRejected() && isPrCreationValid) {
-      pullRequest.setStatus(OPEN);
-      pullRequest.setSourceRevision(null);
-      pullRequest.setTargetRevision(null);
-      pullRequest.setReviser(null);
-      pullRequest.setCloseDate(null);
-      store.update(pullRequest);
-      eventBus.post(new PullRequestReopenedEvent(repository, pullRequest));
-    } else {
-      throw new StatusChangeNotAllowedException(repository, pullRequest);
+      boolean isPrCreationValid = PR_VALID.equals(checkIfPullRequestIsValid(repository, pullRequest.getSource(), pullRequest.getTarget()));
+      if (pullRequest.isRejected() && isPrCreationValid) {
+        pullRequest.setStatus(OPEN);
+        pullRequest.setSourceRevision(null);
+        pullRequest.setTargetRevision(null);
+        pullRequest.setReviser(null);
+        pullRequest.setCloseDate(null);
+        store.update(pullRequest);
+        eventBus.post(new PullRequestReopenedEvent(repository, pullRequest));
+      } else {
+        throw new StatusChangeNotAllowedException(repository, pullRequest);
+      }
     }
   }
 
@@ -302,7 +361,7 @@ public class DefaultPullRequestService implements PullRequestService {
     PullRequest pullRequest = get(repository, pullRequestId);
     pullRequest.setTargetRevision(targetRevision);
     pullRequest.setSourceRevision(revisionToMerge);
-    getStore(repository).update(pullRequest);
+    updatePullRequest(repository, pullRequest);
   }
 
   @Override
@@ -311,7 +370,7 @@ public class DefaultPullRequestService implements PullRequestService {
     if (pullRequest.isInProgress()) {
       pullRequest.setStatus(MERGED);
       setPullRequestClosed(pullRequest);
-      getStore(repository).update(pullRequest);
+      updatePullRequest(repository, pullRequest);
       eventBus.post(new PullRequestMergedEvent(repository, pullRequest));
     } else if (pullRequest.isRejected()) {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
@@ -326,7 +385,7 @@ public class DefaultPullRequestService implements PullRequestService {
     pullRequest.setStatus(MERGED);
     setPullRequestClosed(pullRequest);
     pullRequest.setIgnoredMergeObstacles(ignoredMergeObstacles);
-    getStore(repository).update(pullRequest);
+    updatePullRequest(repository, pullRequest);
     eventBus.post(new PullRequestEmergencyMergedEvent(repository, pullRequest));
   }
 
@@ -340,7 +399,7 @@ public class DefaultPullRequestService implements PullRequestService {
     PullRequest pullRequest = get(repository, pullRequestId);
     if (pullRequest.isInProgress()) {
       removeAllApprover(pullRequest);
-      getStore(repository).update(pullRequest);
+      updatePullRequest(repository, pullRequest);
       eventBus.post(new PullRequestUpdatedEvent(repository, pullRequest));
     }
   }
@@ -355,10 +414,12 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public boolean hasUserApproved(Repository repository, String pullRequestId, User user) {
-    return getStore(repository).get(pullRequestId).getReviewer().entrySet()
-      .stream()
-      .filter(Map.Entry::getValue)
-      .anyMatch(entry -> entry.getKey().equals(user.getId()));
+    try (PullRequestStore store = getStore(repository)) {
+      return store.get(pullRequestId).getReviewer().entrySet()
+        .stream()
+        .filter(Map.Entry::getValue)
+        .anyMatch(entry -> entry.getKey().equals(user.getId()));
+    }
   }
 
   @Override
@@ -368,7 +429,7 @@ public class DefaultPullRequestService implements PullRequestService {
     PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     boolean isNewApprover = !pullRequest.getReviewer().containsKey(user.getId());
     pullRequest.addApprover(user.getId());
-    getStore(repository).update(pullRequest);
+    updatePullRequest(repository, pullRequest);
     eventBus.post(new PullRequestApprovalEvent(repository, pullRequest, user, isNewApprover, APPROVED));
   }
 
@@ -385,23 +446,25 @@ public class DefaultPullRequestService implements PullRequestService {
       .ifPresent(
         approval -> {
           pullRequest.removeApprover(approval);
-          getStore(repository).update(pullRequest);
+          updatePullRequest(repository, pullRequest);
           eventBus.post(new PullRequestApprovalEvent(repository, pullRequest, user, isNewApprover, APPROVAL_REMOVED));
         });
   }
 
   @Override
   public boolean isUserSubscribed(Repository repository, String pullRequestId, User user) {
-    return getStore(repository).get(pullRequestId).getSubscriber()
-      .stream()
-      .anyMatch(recipient -> user.getId().equals(recipient));
+    try (PullRequestStore store = getStore(repository)) {
+      return store.get(pullRequestId).getSubscriber()
+        .stream()
+        .anyMatch(recipient -> user.getId().equals(recipient));
+    }
   }
 
   @Override
   public void subscribe(Repository repository, String pullRequestId, User user) {
     PullRequest pullRequest = getPullRequestFromStore(repository, pullRequestId);
     pullRequest.addSubscriber(user.getId());
-    getStore(repository).update(pullRequest);
+    updatePullRequest(repository, pullRequest);
     eventBus.post(new PullRequestSubscribedEvent(
       repository, pullRequest, user, PullRequestSubscribedEvent.EventType.SUBSCRIBED
     ));
@@ -415,7 +478,7 @@ public class DefaultPullRequestService implements PullRequestService {
       .filter(recipient -> user.getId().equals(recipient))
       .findFirst()
       .ifPresent(pullRequest::removeSubscriber);
-    getStore(repository).update(pullRequest);
+    updatePullRequest(repository, pullRequest);
     eventBus.post(new PullRequestSubscribedEvent(
       repository, pullRequest, user, PullRequestSubscribedEvent.EventType.UNSUBSCRIBED
     ));
@@ -423,30 +486,32 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public void markAsReviewed(Repository repository, String pullRequestId, String path, User user) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
-    Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
-    ReviewMark reviewMark = new ReviewMark(path, user.getId());
-    reviewMarks.add(reviewMark);
-    pullRequest.setReviewMarks(reviewMarks);
-    store.update(pullRequest);
-    eventBus.post(new PullRequestReviewMarkEvent(
-      repository, pullRequest, reviewMark, PullRequestReviewMarkEvent.EventType.ADDED
-    ));
+    try (PullRequestStore store = getStore(repository)) {
+      PullRequest pullRequest = store.get(pullRequestId);
+      Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
+      ReviewMark reviewMark = new ReviewMark(path, user.getId());
+      reviewMarks.add(reviewMark);
+      pullRequest.setReviewMarks(reviewMarks);
+      store.update(pullRequest);
+      eventBus.post(new PullRequestReviewMarkEvent(
+        repository, pullRequest, reviewMark, PullRequestReviewMarkEvent.EventType.ADDED
+      ));
+    }
   }
 
   @Override
   public void markAsNotReviewed(Repository repository, String pullRequestId, String path, User user) {
-    PullRequestStore store = getStore(repository);
-    PullRequest pullRequest = store.get(pullRequestId);
-    Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
-    ReviewMark reviewMark = new ReviewMark(path, user.getId());
-    reviewMarks.remove(reviewMark);
-    pullRequest.setReviewMarks(reviewMarks);
-    store.update(pullRequest);
-    eventBus.post(new PullRequestReviewMarkEvent(
-      repository, pullRequest, reviewMark, PullRequestReviewMarkEvent.EventType.REMOVED
-    ));
+    try (PullRequestStore store = getStore(repository)) {
+      PullRequest pullRequest = store.get(pullRequestId);
+      Set<ReviewMark> reviewMarks = new HashSet<>(pullRequest.getReviewMarks());
+      ReviewMark reviewMark = new ReviewMark(path, user.getId());
+      reviewMarks.remove(reviewMark);
+      pullRequest.setReviewMarks(reviewMarks);
+      store.update(pullRequest);
+      eventBus.post(new PullRequestReviewMarkEvent(
+        repository, pullRequest, reviewMark, PullRequestReviewMarkEvent.EventType.REMOVED
+      ));
+    }
   }
 
   @Override
@@ -458,7 +523,7 @@ public class DefaultPullRequestService implements PullRequestService {
     Set<ReviewMark> newReviewMarks = new HashSet<>(pullRequest.getReviewMarks());
     newReviewMarks.removeAll(marksToBeRemoved);
     pullRequest.setReviewMarks(newReviewMarks);
-    getStore(repository).update(pullRequest);
+    updatePullRequest(repository, pullRequest);
 
     for (ReviewMark reviewMark : marksToBeRemoved) {
       eventBus.post(new PullRequestReviewMarkEvent(
@@ -486,11 +551,17 @@ public class DefaultPullRequestService implements PullRequestService {
     if (pullRequest.isDraft()) {
       PullRequest oldPullRequest = pullRequest.toBuilder().build();
       pullRequest.setStatus(OPEN);
-      getStore(repository).update(pullRequest);
+      updatePullRequest(repository, pullRequest);
       eventBus.post(new PullRequestStatusChangedEvent(repository, pullRequest, OPEN));
       eventBus.post(new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY));
     } else {
       throw new StatusChangeNotAllowedException(repository, pullRequest);
+    }
+  }
+
+  private void updatePullRequest(Repository repository, PullRequest pullRequest) {
+    try (PullRequestStore store = getStore(repository)) {
+      store.update(pullRequest);
     }
   }
 
@@ -500,13 +571,10 @@ public class DefaultPullRequestService implements PullRequestService {
       .forEach(pullRequest::removeApprover);
   }
 
-  private User getCurrentUser() {
-    return SecurityUtils.getSubject().getPrincipals().oneByType(User.class);
-  }
-
   private PullRequest getPullRequestFromStore(Repository repository, String pullRequestId) {
-    PullRequestStore store = getStore(repository);
-    return store.get(pullRequestId);
+    try (PullRequestStore store = getStore(repository)) {
+      return store.get(pullRequestId);
+    }
   }
 
   private PullRequestStore getStore(String namespace, String name) {

@@ -58,8 +58,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static sonia.scm.repository.api.HookFeature.BRANCH_PROVIDER;
 import static sonia.scm.repository.api.HookFeature.MERGE_DETECTION_PROVIDER;

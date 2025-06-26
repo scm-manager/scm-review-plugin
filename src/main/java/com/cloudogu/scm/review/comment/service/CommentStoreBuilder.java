@@ -16,29 +16,27 @@
 
 package com.cloudogu.scm.review.comment.service;
 
+import jakarta.inject.Inject;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
-import sonia.scm.store.DataStore;
-import sonia.scm.store.DataStoreFactory;
+import sonia.scm.store.QueryableStore;
 
-import jakarta.inject.Inject;
+public class CommentStoreBuilder {
 
-public class CommentStoreFactory {
-
-  private static final String PULL_REQUEST_COMMENT_STORE_NAME = "pullRequestComment";
-
-  private final DataStoreFactory dataStoreFactory;
+  private final CommentStoreFactory dataStoreFactory;
   private final KeyGenerator keyGenerator;
 
   @Inject
-  public CommentStoreFactory(DataStoreFactory dataStoreFactory, KeyGenerator keyGenerator) {
-    this.dataStoreFactory = dataStoreFactory;
+  public CommentStoreBuilder(CommentStoreFactory commentStoreFactory, KeyGenerator keyGenerator) {
+    this.dataStoreFactory = commentStoreFactory;
     this.keyGenerator = keyGenerator;
   }
 
   public CommentStore create(Repository repository) {
-    DataStore<PullRequestComments> store = dataStoreFactory.withType(PullRequestComments.class).withName(PULL_REQUEST_COMMENT_STORE_NAME).forRepository(repository).build();
-    return new CommentStore(store, keyGenerator);
+    return new CommentStore(pullRequestId -> dataStoreFactory.getMutable(repository.getId(), pullRequestId), keyGenerator);
   }
 
+  public QueryableStore<Comment> get(Repository repository, String pullRequestId) {
+    return dataStoreFactory.get(repository.getId(), pullRequestId);
+  }
 }

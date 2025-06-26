@@ -20,7 +20,6 @@ import com.cloudogu.scm.review.BranchResolver;
 import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
-import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
@@ -67,7 +66,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
@@ -157,11 +155,11 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
 
   @AfterMapping
   void mapTasks(@MappingTarget PullRequestDto target, PullRequest pullRequest, @Context Repository repository) {
-    List<Comment> comments = commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId());
+    commentService.getAll(repository.getNamespace(), repository.getName(), pullRequest.getId());
     target.setTasks(
       new TasksDto(
-        countCommentsByFilter(comments, c -> c.getType() == CommentType.TASK_TODO),
-        countCommentsByFilter(comments, c -> c.getType() == CommentType.TASK_DONE)
+        commentService.getCount(repository.getNamespace(), repository.getName(), pullRequest.getId(), CommentType.TASK_TODO),
+        commentService.getCount(repository.getNamespace(), repository.getName(), pullRequest.getId(), CommentType.TASK_DONE)
       )
     );
   }
@@ -174,10 +172,6 @@ public abstract class PullRequestMapper extends BaseMapper<PullRequest, PullRequ
       .map(ReviewMark::getFile)
       .toList();
     target.setMarkedAsReviewed(filesMarkedAsReviewed);
-  }
-
-  private long countCommentsByFilter(List<Comment> comments, Predicate<Comment> filter) {
-    return comments.stream().filter(filter).count();
   }
 
   @ObjectFactory

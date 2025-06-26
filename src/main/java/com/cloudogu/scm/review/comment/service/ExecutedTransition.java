@@ -19,6 +19,8 @@ package com.cloudogu.scm.review.comment.service;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import java.io.Serializable;
 
 @XmlRootElement(name = "transition")
@@ -26,6 +28,7 @@ import java.io.Serializable;
 public class ExecutedTransition<T extends Transition> implements Serializable {
 
   private String id;
+  @XmlJavaTypeAdapter(TransitionAdapter.class)
   private T transition;
   private long date;
   private String user;

@@ -17,7 +17,6 @@
 package com.cloudogu.scm.review.config.service;
 
 import com.cloudogu.scm.review.config.WithDisableConfig;
-
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;

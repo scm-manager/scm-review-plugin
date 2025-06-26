@@ -35,7 +35,6 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
@@ -46,16 +45,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import sonia.scm.api.v2.resources.ErrorDto;
-import sonia.scm.repository.Changeset;
-import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.Repository;
-import sonia.scm.repository.api.RepositoryService;
-import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.user.User;
-import sonia.scm.user.UserDisplayManager;
-import sonia.scm.web.VndMediaType;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.validation.Valid;
@@ -73,6 +62,16 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import sonia.scm.api.v2.resources.ErrorDto;
+import sonia.scm.repository.Changeset;
+import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.api.RepositoryService;
+import sonia.scm.repository.api.RepositoryServiceFactory;
+import sonia.scm.user.User;
+import sonia.scm.user.UserDisplayManager;
+import sonia.scm.web.VndMediaType;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
@@ -275,23 +274,18 @@ public class PullRequestRootResource {
   ) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
-    List<PullRequest> pullRequests =
-      service.getAll(namespace, name)
-        .stream()
-        .filter(pullRequestSelector)
-        .sorted(pullRequestSortSelector.compare())
-        .toList();
-    List<List<PullRequest>> pagedPullRequests = Lists.partition(pullRequests, pageSize);
+    int totalCount = service.count(namespace, name, pullRequestSelector);
+    int pageCount = (int) Math.ceil((double) totalCount / pageSize);
 
     PullRequestResourceLinks resourceLinks = new PullRequestResourceLinks(uriInfo::getBaseUri);
-    NumberedPaging paging = zeroBasedNumberedPaging(page, pageSize, pullRequests.size());
+    NumberedPaging paging = zeroBasedNumberedPaging(page, pageSize, totalCount);
     Links.Builder linkBuilder = PagedCollections.createPagedSelfLinks(paging, resourceLinks.pullRequestCollection()
       .all(namespace, name));
     if (PermissionCheck.mayCreate(repository)) {
       linkBuilder.single(link("create", resourceLinks.pullRequestCollection().create(namespace, name)));
     }
 
-    if (pullRequests.isEmpty() || page >= pagedPullRequests.size()) {
+    if (totalCount == 0 || page >= pageCount) {
       return Response.ok(
         PagedCollections.createPagedCollection(
           createHalRepresentation(linkBuilder, Collections.emptyList()),
@@ -300,7 +294,14 @@ public class PullRequestRootResource {
         )).build();
     }
 
-    List<PullRequestDto> pullRequestDtos = pagedPullRequests.get(page)
+    List<PullRequest> pullRequests =
+      service.getAll(
+        namespace,
+        name,
+        new RequestParameters(pullRequestSelector, pullRequestSortSelector, page * pageSize, pageSize)
+      );
+
+    List<PullRequestDto> pullRequestDtos = pullRequests
       .stream()
       .map(pr -> mapper.using(uriInfo).map(pr, repository))
       .toList();
@@ -309,7 +310,7 @@ public class PullRequestRootResource {
       PagedCollections.createPagedCollection(
         createHalRepresentation(linkBuilder, pullRequestDtos),
         page,
-        pagedPullRequests.size()
+        pageCount
       )).build();
   }
 

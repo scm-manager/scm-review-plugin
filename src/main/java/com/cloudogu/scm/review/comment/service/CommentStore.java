@@ -18,66 +18,54 @@ package com.cloudogu.scm.review.comment.service;
 
 import com.google.common.util.concurrent.Striped;
 import sonia.scm.security.KeyGenerator;
-import sonia.scm.store.DataStore;
+import sonia.scm.store.QueryableMutableStore;
+import sonia.scm.store.QueryableStore;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
+import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static java.util.Optional.ofNullable;
 
 public class CommentStore {
 
   private static final Striped<Lock> LOCKS = Striped.lock(10);
 
-  private final DataStore<PullRequestComments> store;
+  private final Function<String, QueryableMutableStore<Comment>> storeSupplier;
   private KeyGenerator keyGenerator;
 
-  CommentStore(DataStore<PullRequestComments> store, KeyGenerator keyGenerator) {
-    this.store = store;
+  CommentStore(Function<String, QueryableMutableStore<Comment>> storeSupplier, KeyGenerator keyGenerator) {
+    this.storeSupplier = storeSupplier;
     this.keyGenerator = keyGenerator;
   }
 
   public String add(String pullRequestId, Comment pullRequestComment) {
     return withLockDo(pullRequestId, () -> {
-      PullRequestComments pullRequestComments = ofNullable(store.get(pullRequestId)).orElse(new PullRequestComments());
-      String commentId = keyGenerator.createKey();
-      pullRequestComment.setId(commentId);
-      pullRequestComments.getComments().add(pullRequestComment);
-      store.put(pullRequestId, pullRequestComments);
-      return commentId;
+      try (QueryableMutableStore<Comment> store = storeSupplier.apply(pullRequestId)) {
+        String commentId = keyGenerator.createKey();
+        pullRequestComment.setId(commentId);
+        store.put(commentId, pullRequestComment);
+        return commentId;
+      }
     });
   }
 
   public void update(String pullRequestId, Comment rootComment) {
     withLockDo(pullRequestId, () -> {
-      PullRequestComments pullRequestComments = this.get(pullRequestId);
-      List<Comment> pullRequestCommentList = pullRequestComments.getComments();
-      for (int i = 0; i < pullRequestCommentList.size(); ++i) {
-        if (pullRequestCommentList.get(i).getId().equals(rootComment.getId())) {
-          pullRequestCommentList.set(i, rootComment);
-          break;
-        }
+      try (QueryableMutableStore<Comment> store = storeSupplier.apply(pullRequestId)) {
+        store.put(rootComment.getId(), rootComment);
       }
-      store.put(pullRequestId, pullRequestComments);
       return null;
     });
   }
 
   public List<Comment> getAll(String pullRequestId) {
-    return get(pullRequestId).getComments();
-  }
-
-  PullRequestComments get(String pullRequestId) {
-    return withLockDo(pullRequestId, () -> {
-      PullRequestComments result = store.get(pullRequestId);
-      if (result == null) {
-        return new PullRequestComments();
-      }
-      return result;
-    });
+    try (QueryableMutableStore<Comment> store = storeSupplier.apply(pullRequestId)) {
+      return store
+        .query()
+        .orderBy(CommentQueryFields.DATE, QueryableStore.Order.ASC)
+        .findAll();
+    }
   }
 
   Optional<Comment> getPullRequestCommentById(String pullRequestId, String commentId) {
@@ -86,14 +74,9 @@ public class CommentStore {
 
   public void delete(String pullRequestId, String commentId) {
     withLockDo(pullRequestId, () -> {
-      PullRequestComments pullRequestComments = get(pullRequestId);
-      for (Iterator<Comment> iter = pullRequestComments.getComments().iterator(); iter.hasNext(); ) {
-        if (iter.next().getId().equals(commentId)) {
-          iter.remove();
-          break;
-        }
+      try (QueryableMutableStore<Comment> store = storeSupplier.apply(pullRequestId)) {
+        store.remove(commentId);
       }
-      store.put(pullRequestId, pullRequestComments);
       return null;
     });
   }

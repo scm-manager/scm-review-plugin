@@ -29,14 +29,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.apache.commons.lang.StringUtils;
-import sonia.scm.api.v2.resources.ErrorDto;
-import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.api.MergeStrategy;
-import sonia.scm.repository.spi.MergeConflictResult;
-import sonia.scm.user.DisplayUser;
-import sonia.scm.web.VndMediaType;
-
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -49,6 +41,14 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
+import org.apache.commons.lang.StringUtils;
+import sonia.scm.api.v2.resources.ErrorDto;
+import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.api.MergeStrategy;
+import sonia.scm.repository.spi.MergeConflictResult;
+import sonia.scm.user.DisplayUser;
+import sonia.scm.web.VndMediaType;
+
 import java.util.List;
 
 import static java.lang.String.format;

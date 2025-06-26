@@ -16,22 +16,24 @@
 
 package com.cloudogu.scm.review.pullrequest.service;
 
-import com.cloudogu.scm.review.XmlInstantAdapter;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sonia.scm.repository.Repository;
 import sonia.scm.search.Indexed;
 import sonia.scm.search.IndexedType;
+import sonia.scm.store.Id;
+import sonia.scm.store.QueryableType;
 
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashMap;
@@ -52,7 +54,9 @@ import static java.util.Collections.unmodifiableSet;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Builder(toBuilder = true)
 @ToString
+@EqualsAndHashCode
 @IndexedType(repositoryScoped = true, namespaceScoped = true)
+@QueryableType(Repository.class)
 @SuppressWarnings("UnstableApiUsage")
 public class PullRequest implements Serializable {
 
@@ -60,6 +64,7 @@ public class PullRequest implements Serializable {
 
   static final int VERSION = 1;
 
+  @Id
   @Indexed(type = Indexed.Type.STORED_ONLY)
   private String id;
   @Indexed(analyzer = Indexed.Analyzer.IDENTIFIER)
@@ -73,13 +78,10 @@ public class PullRequest implements Serializable {
   private String author;
   private String reviser;
   @Indexed
-  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant closeDate;
   @Indexed
-  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant creationDate;
   @Indexed
-  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant lastModified;
   @Indexed
   private PullRequestStatus status;

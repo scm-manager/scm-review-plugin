@@ -20,7 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Striped;
 import sonia.scm.NotFoundException;
 import sonia.scm.repository.Repository;
-import sonia.scm.store.DataStore;
+import sonia.scm.store.QueryableMutableStore;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,14 +29,14 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
-public class PullRequestStore {
+public class PullRequestStore implements AutoCloseable {
 
   private static final Striped<Lock> LOCKS = Striped.lock(10);
 
-  private final DataStore<PullRequest> store;
+  private final QueryableMutableStore<PullRequest> store;
   private Repository repository;
 
-  PullRequestStore(DataStore<PullRequest> store, Repository repository) {
+  PullRequestStore(QueryableMutableStore<PullRequest> store, Repository repository) {
     this.store = store;
     this.repository = repository;
   }
@@ -45,7 +45,6 @@ public class PullRequestStore {
     return withLockDo(() -> {
       String id = createId();
       pullRequest.setId(id);
-      pullRequest.setCreationDate(Instant.now());
       store.put(id, pullRequest);
       return id;
     });
@@ -91,13 +90,19 @@ public class PullRequestStore {
   String createId() {
     return String.valueOf(
       store
-        .getAll()
-        .values()
+        .query()
+        .project(PullRequestQueryFields.INTERNAL_ID)
+        .findAll()
         .stream()
-        .map(PullRequest::getId)
+        .map(a -> a[0].toString())
         .mapToInt(Integer::parseInt)
         .max()
         .orElse(0) + 1
     );
+  }
+
+  @Override
+  public void close() {
+    store.close();
   }
 }

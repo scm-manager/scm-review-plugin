@@ -25,12 +25,12 @@ import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.Reply;
 import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.github.legman.Subscribe;
+import jakarta.inject.Inject;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
-import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Function;

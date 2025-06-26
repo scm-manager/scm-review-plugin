@@ -42,6 +42,11 @@ import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.inject.util.Providers;
+import jakarta.inject.Provider;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.Before;
@@ -57,12 +62,6 @@ import sonia.scm.sse.ChannelRegistry;
 import sonia.scm.store.Blob;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.RestDispatcher;
-
-import jakarta.inject.Provider;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -433,8 +432,8 @@ public class CommentRootResourceTest {
   public void shouldEmbedTransitions() throws URISyntaxException, IOException {
     mockExistingComments();
     Comment commentWithTransitions = service.get("space", "name", "1", "1");
-    commentWithTransitions.addCommentTransition(new ExecutedTransition<>("1", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "slarti"));
-    commentWithTransitions.addCommentTransition(new ExecutedTransition<>("2", CommentTransition.SET_DONE, System.currentTimeMillis(), "dent"));
+    commentWithTransitions.addExecutedTransition(new ExecutedTransition<>("1", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "slarti"));
+    commentWithTransitions.addExecutedTransition(new ExecutedTransition<>("2", CommentTransition.SET_DONE, System.currentTimeMillis(), "dent"));
 
     MockHttpRequest request =
       MockHttpRequest

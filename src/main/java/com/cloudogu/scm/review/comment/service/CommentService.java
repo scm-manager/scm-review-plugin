@@ -39,6 +39,7 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
+import sonia.scm.store.QueryableStore;
 
 import java.util.Collection;
 import java.util.List;
@@ -65,17 +66,17 @@ public class CommentService {
 
   private final RepositoryResolver repositoryResolver;
   private final PullRequestService pullRequestService;
-  private final CommentStoreFactory storeFactory;
+  private final CommentStoreBuilder storeBuilder;
   private final KeyGenerator keyGenerator;
   private final ScmEventBus eventBus;
   private final CommentInitializer commentInitializer;
   private final MentionMapper mentionMapper;
 
   @Inject
-  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper) {
+  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreBuilder storeBuilder, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper) {
     this.repositoryResolver = repositoryResolver;
     this.pullRequestService = pullRequestService;
-    this.storeFactory = storeFactory;
+    this.storeBuilder = storeBuilder;
     this.keyGenerator = keyGenerator;
     this.eventBus = eventBus;
     this.commentInitializer = commentInitializer;
@@ -159,7 +160,7 @@ public class CommentService {
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
     handleMentions(repository, pullRequest, rootComment, clone);
-    rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
+    rootComment.addExecutedTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
     getCommentStore(repository).update(pullRequestId, rootComment);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
   }
@@ -194,7 +195,7 @@ public class CommentService {
     Comment clone = comment.clone();
     transition.accept(clone);
     ExecutedTransition<CommentTransition> executedTransition = new ExecutedTransition<>(keyGenerator.createKey(), transition, System.currentTimeMillis(), getCurrentUserId());
-    clone.addCommentTransition(executedTransition);
+    clone.addExecutedTransition(executedTransition);
     getCommentStore(repository).update(pullRequestId, clone);
     eventBus.post(new CommentEvent(repository, pullRequest, clone, comment, HandlerEventType.MODIFY));
     return executedTransition;
@@ -216,7 +217,7 @@ public class CommentService {
         PermissionCheck.checkModifyComment(repository, reply);
         Reply clone = reply.clone();
         reply.setComment(changedReply.getComment());
-        reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
+        reply.addExecutedTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
         handleMentions(repository, pullRequest, reply, clone);
         getCommentStore(repository).update(pullRequestId, parent);
         eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, parent, HandlerEventType.MODIFY));
@@ -228,6 +229,15 @@ public class CommentService {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkRead(repository);
     return getCommentStore(repository).getAll(pullRequestId);
+  }
+
+  public int getCount(String namespace, String name, String pullRequestId, CommentType type) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    try (QueryableStore<Comment> store = storeBuilder.get(repository, pullRequestId)) {
+      return (int) store
+        .query(CommentQueryFields.TYPE.eq(type))
+        .count();
+    }
   }
 
   public void delete(String namespace, String name, String pullRequestId, String commentId) {
@@ -299,7 +309,7 @@ public class CommentService {
   }
 
   private CommentStore getCommentStore(Repository repository) {
-    return storeFactory.create(repository);
+    return storeBuilder.create(repository);
   }
 
   void addStatusChangedComment(Repository repository, String pullRequestId, SystemCommentType commentType) {

@@ -16,9 +16,9 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import jakarta.xml.bind.JAXB;
 import sonia.scm.store.ConfigurationStore;
 
-import jakarta.xml.bind.JAXB;
 import java.io.File;
 
 /**

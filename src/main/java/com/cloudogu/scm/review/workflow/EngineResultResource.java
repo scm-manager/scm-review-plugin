@@ -20,16 +20,10 @@ import com.cloudogu.scm.review.PullRequestResourceLinks;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import de.otto.edison.hal.Links;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import sonia.scm.api.v2.resources.ErrorDto;
-import sonia.scm.repository.Repository;
-import sonia.scm.web.VndMediaType;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -37,6 +31,10 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
+import sonia.scm.api.v2.resources.ErrorDto;
+import sonia.scm.repository.Repository;
+import sonia.scm.web.VndMediaType;
+
 import java.util.List;
 import java.util.stream.Collectors;
 

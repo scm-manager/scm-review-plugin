@@ -19,6 +19,8 @@ package com.cloudogu.scm.review.events;
 import com.cloudogu.scm.review.pullrequest.service.BasicPullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.github.legman.Subscribe;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -29,9 +31,6 @@ import sonia.scm.security.SessionId;
 import sonia.scm.sse.Channel;
 import sonia.scm.sse.ChannelRegistry;
 import sonia.scm.sse.Message;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 
 @Singleton
 @Extension

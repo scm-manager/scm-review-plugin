@@ -18,9 +18,9 @@ package com.cloudogu.scm.review.workflow;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.inject.Inject;
 import sonia.scm.api.v2.resources.BaseMapper;
 
-import jakarta.inject.Inject;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 

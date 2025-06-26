@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.ImmutableList.of;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class EngineConfiguratorTest {
 

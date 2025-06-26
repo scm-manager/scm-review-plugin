@@ -17,14 +17,14 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import jakarta.validation.constraints.Min;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import sonia.scm.plugin.Extension;
 
-import jakarta.validation.constraints.Min;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.Optional;
 
 @Extension

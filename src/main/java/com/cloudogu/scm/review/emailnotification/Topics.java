@@ -22,7 +22,13 @@ import sonia.scm.plugin.Extension;
 
 import java.util.Collection;
 
-import static com.cloudogu.scm.review.emailnotification.MailTextResolver.*;
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_APPROVALS;
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_CLOSED;
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_COMMENTS;
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_MENTIONS;
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_PR_CHANGED;
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_PR_UPDATED;
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_REPLIES;
 import static java.util.Arrays.asList;
 
 @Extension

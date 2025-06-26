@@ -26,9 +26,7 @@ import org.apache.shiro.authz.UnauthorizedException;
 import org.junit.Rule;
 import org.junit.Test;
 import sonia.scm.repository.Repository;
-import sonia.scm.repository.RepositoryPermission;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 

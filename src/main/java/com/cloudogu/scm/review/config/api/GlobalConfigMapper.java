@@ -21,12 +21,12 @@ import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.GlobalPullRequestConfig;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import jakarta.ws.rs.core.UriInfo;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 
-import jakarta.ws.rs.core.UriInfo;
 import java.util.List;
 
 @Mapper

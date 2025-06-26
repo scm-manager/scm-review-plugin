@@ -25,6 +25,7 @@ import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.Links;
+import jakarta.inject.Inject;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -36,8 +37,6 @@ import sonia.scm.repository.Repository;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.EdisonHalAppender;
-
-import jakarta.inject.Inject;
 
 import java.util.Collection;
 import java.util.OptionalInt;

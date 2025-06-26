@@ -28,9 +28,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryTestData;
 
-import static sonia.scm.store.SerializationTestUtil.toAndFromJsonAndXml;
 import static com.google.common.collect.ImmutableMap.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static sonia.scm.store.SerializationTestUtil.toAndFromJsonAndXml;
 
 @ExtendWith(MockitoExtension.class)
 class ApprovedByXReviewersRuleTest {

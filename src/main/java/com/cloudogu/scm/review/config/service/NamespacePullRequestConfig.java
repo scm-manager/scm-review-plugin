@@ -18,13 +18,12 @@ package com.cloudogu.scm.review.config.service;
 
 import com.cloudogu.scm.review.config.OverwritableConfig;
 import com.cloudogu.scm.review.config.WithDisableConfig;
-import lombok.Getter;
-import lombok.Setter;
-
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import lombok.Getter;
+import lombok.Setter;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "namespace-config")

@@ -18,6 +18,7 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.github.legman.Subscribe;
+import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.EagerSingleton;
 import sonia.scm.plugin.Extension;
@@ -29,7 +30,6 @@ import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
-import jakarta.inject.Inject;
 import java.io.IOException;
 
 @Slf4j

@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.review.update;
 
+import jakarta.inject.Inject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -27,7 +28,6 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.RepositoryLocationResolver;
 import sonia.scm.version.Version;
 
-import jakarta.inject.Inject;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

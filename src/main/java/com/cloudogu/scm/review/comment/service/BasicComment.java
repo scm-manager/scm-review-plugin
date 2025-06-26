@@ -16,14 +16,13 @@
 
 package com.cloudogu.scm.review.comment.service;
 
-import com.cloudogu.scm.review.XmlInstantAdapter;
-
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -38,12 +37,13 @@ import static java.util.Collections.unmodifiableSet;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
+@EqualsAndHashCode
+@ToString
 public abstract class BasicComment implements Cloneable, Serializable {
 
   private String id;
   private String comment;
   private String author;
-  @XmlJavaTypeAdapter(XmlInstantAdapter.class)
   private Instant date;
   private Set<String> mentionUserIds;
 
@@ -93,10 +93,9 @@ public abstract class BasicComment implements Cloneable, Serializable {
     this.executedTransitions.add(transition);
   }
 
-  void addTransition(ExecutedTransition<?> transition) {
+  public void addExecutedTransition(ExecutedTransition transition) {
     this.executedTransitions.add(transition);
   }
-
 
   public Set<String> getMentionUserIds() {
     if (mentionUserIds == null) {

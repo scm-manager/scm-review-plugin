@@ -17,14 +17,13 @@
 package com.cloudogu.scm.review.config.update;
 
 import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
+import jakarta.inject.Inject;
 import sonia.scm.migration.RepositoryUpdateContext;
 import sonia.scm.migration.RepositoryUpdateStep;
 import sonia.scm.plugin.Extension;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 import sonia.scm.version.Version;
-
-import jakarta.inject.Inject;
 
 @Extension
 public class BranchRestrictionsRepositoryUpdateStep implements RepositoryUpdateStep {

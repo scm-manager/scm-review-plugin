@@ -16,11 +16,11 @@
 
 package com.cloudogu.scm.review.workflow;
 
+import jakarta.inject.Inject;
 import sonia.scm.plugin.PluginLoader;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
-import jakarta.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 

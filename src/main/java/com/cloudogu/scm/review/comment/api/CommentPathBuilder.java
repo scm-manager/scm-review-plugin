@@ -19,11 +19,10 @@ package com.cloudogu.scm.review.comment.api;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
-import sonia.scm.api.v2.resources.LinkBuilder;
-import sonia.scm.api.v2.resources.ScmPathInfoStore;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
+import sonia.scm.api.v2.resources.LinkBuilder;
+import sonia.scm.api.v2.resources.ScmPathInfoStore;
 
 import static com.cloudogu.scm.review.LinkRevisionAppender.append;
 

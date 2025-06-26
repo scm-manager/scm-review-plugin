@@ -44,7 +44,7 @@ import sonia.scm.repository.RepositoryHookEvent;
 import sonia.scm.repository.RepositoryHookType;
 import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.repository.api.HookContext;
-import sonia.scm.store.InMemoryByteDataStoreFactory;
+import sonia.scm.store.QueryableStoreExtension;
 import sonia.scm.user.User;
 
 import java.time.Clock;
@@ -59,7 +59,8 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith({MockitoExtension.class, ShiroExtension.class})
+@ExtendWith({MockitoExtension.class, ShiroExtension.class, QueryableStoreExtension.class})
+@QueryableStoreExtension.QueryableTypes(PullRequestChange.class)
 class PullRequestChangeServiceTest {
 
   private final Repository repository = RepositoryTestData.create42Puzzle();
@@ -84,10 +85,9 @@ class PullRequestChangeServiceTest {
   private final User trainerRed = new User("Trainer Red", "Trainer Red Display", "trainer@red.com");
 
   @BeforeEach
-  void setUp() {
+  void setUp(PullRequestChangeStoreFactory prChangeStoreFactory) {
     ThreadContext.bind(subject);
-    InMemoryByteDataStoreFactory dataStoreFactory = new InMemoryByteDataStoreFactory();
-    changeService = new PullRequestChangeService(repositoryResolver, dataStoreFactory, clock, pullRequestService);
+    changeService = new PullRequestChangeService(repositoryResolver, prChangeStoreFactory, clock, pullRequestService);
 
     lenient().when(repositoryResolver.resolve(namespaceAndName)).thenReturn(repository);
 

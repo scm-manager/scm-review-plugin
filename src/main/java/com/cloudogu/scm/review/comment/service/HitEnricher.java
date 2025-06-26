@@ -17,6 +17,7 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
+import jakarta.inject.Inject;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -26,7 +27,6 @@ import sonia.scm.search.Hit;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
-import jakarta.inject.Inject;
 import java.util.Optional;
 
 @Extension

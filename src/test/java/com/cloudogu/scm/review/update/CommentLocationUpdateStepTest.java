@@ -16,10 +16,9 @@
 
 package com.cloudogu.scm.review.update;
 
-import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.Location;
-import com.cloudogu.scm.review.comment.service.PullRequestComments;
 import com.google.common.io.Resources;
+import jakarta.xml.bind.JAXB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.RepositoryLocationResolver;
 
-import jakarta.xml.bind.JAXB;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -73,10 +71,10 @@ class CommentLocationUpdateStepTest {
 
     updateStep.doUpdate();
 
-    PullRequestComments commentsOfOne = JAXB.unmarshal(one.toFile(), PullRequestComments.class);
+    LegacyXmlPullRequestComments commentsOfOne = JAXB.unmarshal(one.toFile(), LegacyXmlPullRequestComments.class);
     assertThat(commentsOfOne.getComments())
       .hasSize(4)
-      .extracting(Comment::getLocation)
+      .extracting(LegacyXmlComment::getLocation)
       .containsOnly(
         null,
         null,
@@ -84,10 +82,10 @@ class CommentLocationUpdateStepTest {
         new Location("README.md", "@@ -1,3 +1,41 @@", null, 39)
       );
 
-    PullRequestComments commentsOfTwo = JAXB.unmarshal(two.toFile(), PullRequestComments.class);
+    LegacyXmlPullRequestComments commentsOfTwo = JAXB.unmarshal(two.toFile(), LegacyXmlPullRequestComments.class);
     assertThat(commentsOfTwo.getComments())
       .hasSize(3)
-      .extracting(Comment::getLocation)
+      .extracting(LegacyXmlComment::getLocation)
       .containsOnly(
         new Location("README.md", "@@ -1,3 +1,41 @@", null, 39),
         new Location("README.md", "@@ -1,3 +1,41 @@", 39, null),

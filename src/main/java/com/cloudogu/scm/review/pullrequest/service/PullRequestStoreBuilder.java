@@ -16,26 +16,26 @@
 
 package com.cloudogu.scm.review.pullrequest.service;
 
-import sonia.scm.repository.Repository;
-import sonia.scm.store.DataStore;
-import sonia.scm.store.DataStoreFactory;
-
 import jakarta.inject.Inject;
+import sonia.scm.repository.Repository;
+import sonia.scm.store.QueryableMutableStore;
+import sonia.scm.store.QueryableStore;
 
-public class PullRequestStoreFactory {
+public class PullRequestStoreBuilder {
 
-  private static final String PULL_REQUEST_STORE_NAME = "pullRequest";
-
-  private final DataStoreFactory dataStoreFactory;
+  private final PullRequestStoreFactory storeFactory;
 
   @Inject
-  public PullRequestStoreFactory(DataStoreFactory dataStoreFactory) {
-    this.dataStoreFactory = dataStoreFactory;
+  public PullRequestStoreBuilder(PullRequestStoreFactory storeFactory) {
+    this.storeFactory = storeFactory;
   }
 
   public PullRequestStore create(Repository repository) {
-    DataStore<PullRequest> store = dataStoreFactory.withType(PullRequest.class).withName(PULL_REQUEST_STORE_NAME).forRepository(repository).build();
+    QueryableMutableStore<PullRequest> store = storeFactory.getMutable(repository.getId());
     return new PullRequestStore(store, repository);
   }
 
+  public QueryableStore<PullRequest> createQueryable(Repository repository) {
+    return storeFactory.get(repository.getId());
+  }
 }

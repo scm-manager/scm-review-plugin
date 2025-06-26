@@ -17,10 +17,10 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.comment.service.BasicComment;
+import jakarta.inject.Inject;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 
-import jakarta.inject.Inject;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;

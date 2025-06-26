@@ -19,13 +19,13 @@ package com.cloudogu.scm.review.guard;
 import com.cloudogu.scm.editor.ChangeGuard;
 import com.cloudogu.scm.editor.ChangeObstacle;
 import com.cloudogu.scm.review.config.service.ConfigService;
+import jakarta.inject.Inject;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 
-import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Stream;

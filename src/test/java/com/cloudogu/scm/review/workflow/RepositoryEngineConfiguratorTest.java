@@ -17,6 +17,8 @@
 package com.cloudogu.scm.review.workflow;
 
 import com.google.common.collect.ImmutableList;
+import jakarta.inject.Inject;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,8 +35,6 @@ import sonia.scm.repository.RepositoryTestData;
 import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.ConfigurationStoreFactory;
 
-import jakarta.inject.Inject;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;

@@ -16,13 +16,13 @@
 
 package com.cloudogu.scm.review;
 
+import jakarta.inject.Inject;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.Modifications;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
-import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;

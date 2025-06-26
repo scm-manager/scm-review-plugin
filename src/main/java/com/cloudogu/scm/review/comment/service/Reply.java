@@ -16,8 +16,13 @@
 
 package com.cloudogu.scm.review.comment.service;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 import java.time.Instant;
 
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class Reply extends BasicComment {
 
   private boolean systemReply = false;

@@ -22,6 +22,7 @@ import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.github.legman.Subscribe;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
@@ -34,7 +35,6 @@ import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
-import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 

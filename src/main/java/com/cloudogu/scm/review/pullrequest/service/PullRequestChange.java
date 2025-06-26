@@ -23,6 +23,8 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sonia.scm.repository.Repository;
+import sonia.scm.store.QueryableType;
 import sonia.scm.xml.XmlInstantAdapter;
 
 import java.time.Instant;
@@ -33,6 +35,7 @@ import java.util.Map;
 @XmlAccessorType(XmlAccessType.FIELD)
 @NoArgsConstructor
 @AllArgsConstructor
+@QueryableType({Repository.class, PullRequest.class})
 public class PullRequestChange {
   private String prId;
 

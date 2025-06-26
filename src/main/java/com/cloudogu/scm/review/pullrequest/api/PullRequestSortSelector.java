@@ -17,43 +17,28 @@
 package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import lombok.Getter;
+import sonia.scm.store.QueryableStore;
 
-import java.time.Instant;
-import java.util.Comparator;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestQueryFields.ID;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestQueryFields.LASTMODIFIED;
+import static com.cloudogu.scm.review.pullrequest.service.PullRequestQueryFields.STATUS;
 
-import static java.util.Comparator.comparing;
-
+@Getter
 public enum PullRequestSortSelector {
-  ID_ASC(comparing(PullRequestSortSelector::computeIdAsNumber)),
-  ID_DESC(comparing(PullRequestSortSelector::computeIdAsNumber).reversed()),
-  STATUS_ASC(comparing(PullRequest::getStatus)),
-  STATUS_DESC(comparing(PullRequest::getStatus).reversed()),
-  LAST_MOD_ASC(comparing(PullRequestSortSelector::computeLastModifiedForSort)),
-  LAST_MOD_DESC(comparing(PullRequestSortSelector::computeLastModifiedForSort).reversed());
+  ID_ASC(new Sort(ID, new QueryableStore.OrderOptions(QueryableStore.Order.ASC, true))),
+  ID_DESC(new Sort(ID, new QueryableStore.OrderOptions(QueryableStore.Order.DESC, true))),
+  STATUS_ASC(new Sort(STATUS, new QueryableStore.OrderOptions(QueryableStore.Order.ASC, false))),
+  STATUS_DESC(new Sort(STATUS, new QueryableStore.OrderOptions(QueryableStore.Order.DESC, false))),
+  LAST_MOD_ASC(new Sort(LASTMODIFIED, new QueryableStore.OrderOptions(QueryableStore.Order.ASC, false))),
+  LAST_MOD_DESC(new Sort(LASTMODIFIED, new QueryableStore.OrderOptions(QueryableStore.Order.DESC, false)));
 
-  private final Comparator<PullRequest> comparator;
+  private final Sort sort;
 
-  PullRequestSortSelector(Comparator<PullRequest> comparator) {
-    this.comparator = comparator;
+  PullRequestSortSelector(Sort sort) {
+    this.sort = sort;
   }
 
-  public Comparator<PullRequest> compare() {
-    return this.comparator;
-  }
-
-  private static Instant computeLastModifiedForSort(PullRequest pullRequest) {
-    if (pullRequest.getLastModified() == null) {
-      return pullRequest.getCreationDate();
-    } else {
-      return pullRequest.getLastModified();
-    }
-  }
-
-  public static int computeIdAsNumber(PullRequest pullRequest) {
-    try {
-      return Integer.parseInt(pullRequest.getId());
-    } catch (NumberFormatException e) {
-      return Integer.MAX_VALUE;
-    }
+  public record Sort(QueryableStore.QueryField<PullRequest, ?> field, QueryableStore.OrderOptions orderOptions) {
   }
 }

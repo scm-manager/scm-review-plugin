@@ -19,10 +19,10 @@ package com.cloudogu.scm.review.workflow;
 import com.cloudogu.scm.review.pullrequest.service.MergeGuard;
 import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import jakarta.inject.Inject;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
-import jakarta.inject.Inject;
 import java.util.Collection;
 import java.util.stream.Collectors;
 

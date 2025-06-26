@@ -18,10 +18,9 @@ package com.cloudogu.scm.review.comment.api;
 
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Links;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-
-import jakarta.validation.constraints.NotNull;
 
 @Getter @Setter
 public class TransitionDto extends HalRepresentation {

@@ -18,6 +18,8 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.config.api.NamespaceConfigResource;
 import com.cloudogu.scm.review.config.service.ConfigService;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -26,9 +28,6 @@ import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Namespace;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 
 import static com.cloudogu.scm.review.PermissionCheck.mayConfigure;
 

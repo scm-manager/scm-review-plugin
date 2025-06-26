@@ -20,10 +20,10 @@ import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import jakarta.inject.Inject;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Repository;
 
-import jakarta.inject.Inject;
 import java.util.List;
 
 @Extension

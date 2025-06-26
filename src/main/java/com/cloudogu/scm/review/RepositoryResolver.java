@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.review;
 
+import jakarta.inject.Inject;
 import sonia.scm.ContextEntry;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -23,8 +24,6 @@ import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-
-import jakarta.inject.Inject;
 
 import static sonia.scm.NotFoundException.notFound;
 

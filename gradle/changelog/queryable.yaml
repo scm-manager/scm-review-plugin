@@ -1,0 +1,2 @@
+- type: changed
+  description: Data is no longer stored using the XML based stores, but instead using the new SQLite based stores.

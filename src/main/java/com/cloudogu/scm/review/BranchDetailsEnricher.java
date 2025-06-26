@@ -19,6 +19,7 @@ package com.cloudogu.scm.review;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import de.otto.edison.hal.HalRepresentation;
+import jakarta.inject.Inject;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -27,7 +28,6 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.BranchDetails;
 import sonia.scm.repository.Repository;
 
-import jakarta.inject.Inject;
 import java.util.List;
 import java.util.stream.Collectors;
 

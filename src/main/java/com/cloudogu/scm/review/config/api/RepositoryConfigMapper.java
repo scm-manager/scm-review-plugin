@@ -19,13 +19,12 @@ package com.cloudogu.scm.review.config.api;
 import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import jakarta.ws.rs.core.UriInfo;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.ObjectFactory;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.repository.Repository;
-
-import jakarta.ws.rs.core.UriInfo;
 
 @Mapper
 public abstract class RepositoryConfigMapper {

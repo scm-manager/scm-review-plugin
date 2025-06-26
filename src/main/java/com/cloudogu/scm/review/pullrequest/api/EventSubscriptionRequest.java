@@ -16,12 +16,11 @@
 
 package com.cloudogu.scm.review.pullrequest.api;
 
-import lombok.Getter;
-import sonia.scm.security.SessionId;
-
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
+import lombok.Getter;
+import sonia.scm.security.SessionId;
 
 @Getter
 public class EventSubscriptionRequest {

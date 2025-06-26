@@ -17,6 +17,10 @@
 package com.cloudogu.scm.review.update;
 
 import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,10 +33,6 @@ import sonia.scm.store.ConfigurationStore;
 import sonia.scm.store.InMemoryByteConfigurationStore;
 import sonia.scm.store.InMemoryByteConfigurationStoreFactory;
 
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -20,17 +20,16 @@ import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import jakarta.inject.Inject;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
-import jakarta.inject.Inject;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.DRAFT;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static java.util.Arrays.asList;
 
@@ -45,10 +44,6 @@ class OpenPullRequestProvider {
     this.serviceFactory = serviceFactory;
     this.pullRequestService = pullRequestService;
     this.repositoryManager = repositoryManager;
-  }
-
-  void findOpenAndDraftPullRequests(RepositoryAndPullRequestConsumer forEachPullRequest) {
-    findPullRequestsWithStatus(forEachPullRequest, OPEN, DRAFT);
   }
 
   void findOpenPullRequests(RepositoryAndPullRequestConsumer forEachPullRequest) {

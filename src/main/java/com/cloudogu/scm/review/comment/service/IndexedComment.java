@@ -17,12 +17,12 @@
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.XmlInstantAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import lombok.Getter;
 import sonia.scm.search.Indexed;
 import sonia.scm.search.IndexedType;
-import java.io.Serializable;
 
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.io.Serializable;
 import java.time.Instant;
 
 @IndexedType(repositoryScoped = true, namespaceScoped = true)

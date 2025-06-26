@@ -16,12 +16,11 @@
 
 package com.cloudogu.scm.review.comment.api;
 
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
-
-import jakarta.validation.constraints.Size;
 
 @Getter
 @Setter

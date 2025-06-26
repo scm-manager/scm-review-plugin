@@ -18,6 +18,8 @@ package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.config.api.GlobalConfigResource;
 import com.cloudogu.scm.review.workflow.GlobalEngineConfigResource;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import sonia.scm.api.v2.resources.Enrich;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
@@ -26,9 +28,6 @@ import sonia.scm.api.v2.resources.Index;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import sonia.scm.plugin.Extension;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 
 @Extension
 @Enrich(Index.class)

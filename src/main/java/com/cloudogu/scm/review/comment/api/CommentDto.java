@@ -17,12 +17,12 @@
 package com.cloudogu.scm.review.comment.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.Valid;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 

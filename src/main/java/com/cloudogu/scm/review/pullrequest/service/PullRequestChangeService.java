@@ -26,11 +26,7 @@ import com.github.legman.Subscribe;
 import com.google.common.base.Strings;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.ToString;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.HandlerEventType;
@@ -38,8 +34,8 @@ import sonia.scm.repository.Modifications;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
-import sonia.scm.store.DataStore;
-import sonia.scm.store.DataStoreFactory;
+import sonia.scm.store.QueryableMutableStore;
+import sonia.scm.store.QueryableStore;
 import sonia.scm.user.User;
 
 import java.time.Clock;
@@ -84,57 +80,47 @@ public class PullRequestChangeService {
   private static final String REJECTION_CAUSE = "rejectionCause";
   private static final String REJECTION_MESSAGE = "rejectionMessage";
 
-  private static final String storeName = "pullRequestChanges";
-
   private final RepositoryResolver repositoryResolver;
-  private final DataStoreFactory dataStoreFactory;
+  private final PullRequestChangeStoreFactory prChangeStoreFactory;
   private final Clock clock;
   private final PullRequestService pullRequestService;
 
   @Inject
-  public PullRequestChangeService(RepositoryResolver repositoryResolver, DataStoreFactory dataStoreFactory, PullRequestService pullRequestService) {
-    this(repositoryResolver, dataStoreFactory, Clock.systemDefaultZone(), pullRequestService);
+  public PullRequestChangeService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, PullRequestChangeStoreFactory prChangeStoreFactory) {
+    this(repositoryResolver, prChangeStoreFactory, Clock.systemDefaultZone(), pullRequestService);
   }
 
-  public PullRequestChangeService(RepositoryResolver repositoryResolver, DataStoreFactory dataStoreFactory, Clock clock, PullRequestService pullRequestService) {
+  public PullRequestChangeService(RepositoryResolver repositoryResolver, PullRequestChangeStoreFactory prChangeStoreFactory, Clock clock, PullRequestService pullRequestService) {
     this.repositoryResolver = repositoryResolver;
-    this.dataStoreFactory = dataStoreFactory;
+    this.prChangeStoreFactory = prChangeStoreFactory;
     this.clock = clock;
     this.pullRequestService = pullRequestService;
   }
 
   public List<PullRequestChange> getAllChangesOfPullRequest(NamespaceAndName namespaceAndName, String pullRequestId) {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
-    DataStore<PullRequestChangeContainer> store = dataStoreFactory.withType(PullRequestChangeContainer.class)
-      .withName(storeName)
-      .forRepository(repository)
-      .build();
-
-    return store.getOptional(pullRequestId).orElseGet(PullRequestChangeContainer::new).allChanges;
+    try (QueryableStore<PullRequestChange> store = prChangeStoreFactory.get(repository.getId(), pullRequestId)) {
+      return store.query().orderBy(PullRequestChangeQueryFields.INTERNAL_ID, QueryableStore.Order.ASC).findAll();
+    }
   }
 
   public void addPullRequestChange(NamespaceAndName namespaceAndName, PullRequestChange change) {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
-    DataStore<PullRequestChangeContainer> store = dataStoreFactory.withType(PullRequestChangeContainer.class)
-      .withName(storeName)
-      .forRepository(repository)
-      .build();
-
-    PullRequestChangeContainer changes = store.getOptional(change.getPrId()).orElseGet(PullRequestChangeContainer::new);
-    changes.allChanges.add(change);
-    store.put(change.getPrId(), changes);
+    try (QueryableMutableStore<PullRequestChange> mutableStore = prChangeStoreFactory.getMutable(repository.getId(), change.getPrId())) {
+      String nextId = createChangeId(repository.getId(), change.getPrId());
+      mutableStore.put(nextId, change);
+    }
   }
 
-  public void addAllPullRequestChanges(NamespaceAndName namespaceAndName, String pullRequestId, Collection<PullRequestChange> changes) {
+  public void addAllPullRequestChanges(NamespaceAndName namespaceAndName, String pullrequestId, Collection<PullRequestChange> changes) {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
-    DataStore<PullRequestChangeContainer> store = dataStoreFactory.withType(PullRequestChangeContainer.class)
-      .withName(storeName)
-      .forRepository(repository)
-      .build();
 
-    PullRequestChangeContainer currentChanges = store.getOptional(pullRequestId).orElseGet(PullRequestChangeContainer::new);
-    currentChanges.allChanges.addAll(changes);
-    store.put(pullRequestId, currentChanges);
+    try (QueryableMutableStore<PullRequestChange> mutableStore = prChangeStoreFactory.getMutable(repository.getId(), pullrequestId)) {
+      for (PullRequestChange change : changes) {
+        String nextId = createChangeId(repository.getId(), change.getPrId());
+        mutableStore.put(nextId, change);
+      }
+    }
   }
 
   @Subscribe(async = false)
@@ -181,6 +167,16 @@ public class PullRequestChangeService {
     computeChangesInReviewers(oldPr.getReviewer(), updatedPr.getReviewer(), namespaceAndName, user, pullRequestId);
 
     addAllPullRequestChanges(namespaceAndName, pullRequestId, changes);
+  }
+
+  private String createChangeId(String repositoryId, String pullRequestId) {
+    try (QueryableStore<PullRequestChange> store = prChangeStoreFactory.get(repositoryId, pullRequestId)) {
+      List<QueryableStore.Result<PullRequestChange>> latest = store.query().withIds().orderBy(PullRequestChangeQueryFields.INTERNAL_ID, QueryableStore.Order.DESC).findAll(0, 1);
+
+      int nextId = latest.isEmpty() ? 1 : Integer.parseInt(latest.get(0).getId()) + 1;
+
+      return String.valueOf(nextId);
+    }
   }
 
   private User getUser() {
@@ -585,13 +581,6 @@ public class PullRequestChangeService {
   @FunctionalInterface
   private interface BuildAdditionalInfo {
     Map<String, String> build(Object value);
-  }
-
-  @Getter
-  @XmlRootElement(name = "pull-request-change-container")
-  @XmlAccessorType(XmlAccessType.FIELD)
-  static class PullRequestChangeContainer {
-    private final List<PullRequestChange> allChanges = new ArrayList<>();
   }
 
   @ToString

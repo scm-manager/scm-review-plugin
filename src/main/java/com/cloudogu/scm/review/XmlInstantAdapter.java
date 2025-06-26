@@ -17,6 +17,7 @@
 package com.cloudogu.scm.review;
 
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+
 import java.time.Instant;
 
 public class XmlInstantAdapter extends XmlAdapter<Long, Instant> {

@@ -18,13 +18,10 @@ package com.cloudogu.scm.review.pullrequest.dto;
 
 import com.cloudogu.scm.review.pullrequest.service.PullRequestChange;
 import de.otto.edison.hal.HalRepresentation;
-import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sonia.scm.xml.XmlInstantAdapter;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 

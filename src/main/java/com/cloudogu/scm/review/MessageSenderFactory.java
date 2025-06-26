@@ -16,10 +16,9 @@
 
 package com.cloudogu.scm.review;
 
+import jakarta.inject.Inject;
 import sonia.scm.config.ScmConfiguration;
 import sonia.scm.repository.RepositoryHookEvent;
-
-import jakarta.inject.Inject;
 
 import static sonia.scm.repository.api.HookFeature.MESSAGE_PROVIDER;
 

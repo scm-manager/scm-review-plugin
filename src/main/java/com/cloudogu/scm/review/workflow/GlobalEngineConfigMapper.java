@@ -19,12 +19,11 @@ package com.cloudogu.scm.review.workflow;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
 import de.otto.edison.hal.Links;
+import jakarta.ws.rs.core.UriInfo;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ObjectFactory;
-
-import jakarta.ws.rs.core.UriInfo;
 
 import static de.otto.edison.hal.Link.link;
 

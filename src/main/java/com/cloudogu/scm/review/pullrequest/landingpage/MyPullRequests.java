@@ -19,37 +19,60 @@ package com.cloudogu.scm.review.pullrequest.landingpage;
 import com.cloudogu.scm.landingpage.mydata.MyData;
 import com.cloudogu.scm.landingpage.mydata.MyDataProvider;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestQueryFields;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
+import jakarta.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryManager;
+import sonia.scm.store.QueryableStore;
 
-import jakarta.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Extension
 @Requires("scm-landingpage-plugin")
 public class MyPullRequests implements MyDataProvider {
 
-  private final OpenPullRequestProvider pullRequestProvider;
   private final PullRequestMapper mapper;
 
+  private final PullRequestStoreFactory storeFactory;
+  private final RepositoryManager repositoryManager;
+
   @Inject
-  public MyPullRequests(OpenPullRequestProvider pullRequestProvider, PullRequestMapper mapper) {
-    this.pullRequestProvider = pullRequestProvider;
+  public MyPullRequests(PullRequestMapper mapper, PullRequestStoreFactory storeFactory, RepositoryManager repositoryManager) {
     this.mapper = mapper;
+    this.storeFactory = storeFactory;
+    this.repositoryManager = repositoryManager;
   }
 
   @Override
   public Iterable<MyData> getData() {
     String subject = SecurityUtils.getSubject().getPrincipal().toString();
-    Collection<MyData> result = new ArrayList<>();
-    pullRequestProvider.findOpenAndDraftPullRequests((repository, stream) -> stream
-        .filter(pr -> pr.getAuthor().equals(subject))
-        .forEach(pr -> result.add(new MyPullRequestData(repository, pr, mapper)))
-    );
-    return result;
+    try (QueryableStore<PullRequest> store = storeFactory.getOverall()) {
+      return store
+        .query(
+          PullRequestQueryFields.AUTHOR.eq(subject),
+          PullRequestQueryFields.STATUS.in(PullRequestStatus.OPEN, PullRequestStatus.DRAFT)
+        ).withIds()
+        .findAll()
+        .stream().map(
+          result -> {
+            Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
+            if (repository == null) {
+              return null;
+            }
+            PullRequest pullRequest = result.getEntity();
+            return new MyPullRequestData(repository, pullRequest, mapper);
+          }
+        ).filter(Objects::nonNull)
+        .collect(Collectors.toList());
+    }
   }
 
   @Override

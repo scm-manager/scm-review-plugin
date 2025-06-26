@@ -42,8 +42,8 @@ public class TestData {
     pullRequest.setId(id);
     pullRequest.setDescription("Hitchhiker's guide to the galaxy");
     pullRequest.setAuthor("dent");
-    pullRequest.setCreationDate(Instant.MIN);
-    pullRequest.setLastModified(Instant.MIN);
+    pullRequest.setCreationDate(Instant.ofEpochMilli(962430000000L));
+    pullRequest.setLastModified(Instant.ofEpochMilli(962430000000L));
     pullRequest.setStatus(pullRequestStatus);
     return pullRequest;
   }

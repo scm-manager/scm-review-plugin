@@ -16,10 +16,10 @@
 
 package com.cloudogu.scm.review.comment.service;
 
-import sonia.scm.repository.api.DiffLine;
-
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
+import sonia.scm.repository.api.DiffLine;
+
 import java.util.OptionalInt;
 
 @XmlAccessorType(XmlAccessType.FIELD)

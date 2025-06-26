@@ -18,13 +18,13 @@ package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.ConfigService;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.repository.Changeset;
 import sonia.scm.repository.Contributor;
 import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
-import sonia.scm.repository.Person;
 import sonia.scm.repository.api.Command;
 import sonia.scm.repository.api.MergeStrategy;
 import sonia.scm.repository.api.RepositoryService;
@@ -35,7 +35,6 @@ import sonia.scm.user.EMail;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
-import jakarta.inject.Inject;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;

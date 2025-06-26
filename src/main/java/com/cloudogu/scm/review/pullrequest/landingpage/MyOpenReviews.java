@@ -19,11 +19,11 @@ package com.cloudogu.scm.review.pullrequest.landingpage;
 import com.cloudogu.scm.landingpage.mytasks.MyTask;
 import com.cloudogu.scm.landingpage.mytasks.MyTaskProvider;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
+import jakarta.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 
-import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 
