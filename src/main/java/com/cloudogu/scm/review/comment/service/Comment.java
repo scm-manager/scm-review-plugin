@@ -124,7 +124,7 @@ public class Comment extends BasicComment {
     this.systemCommentParameters = systemCommentParameters;
   }
 
-  void setSystemComment(boolean systemComment) {
+  public void setSystemComment(boolean systemComment) {
     this.systemComment = systemComment;
   }
 
