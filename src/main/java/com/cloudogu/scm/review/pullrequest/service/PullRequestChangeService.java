@@ -25,17 +25,19 @@ import com.cloudogu.scm.review.comment.service.ReplyEvent;
 import com.github.legman.Subscribe;
 import com.google.common.base.Strings;
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 import org.apache.shiro.SecurityUtils;
+import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
+import sonia.scm.plugin.Extension;
 import sonia.scm.repository.Modifications;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
 import sonia.scm.store.QueryableMutableStore;
 import sonia.scm.store.QueryableStore;
+import sonia.scm.store.QueryableStore.OrderOptions;
 import sonia.scm.user.User;
 
 import java.time.Clock;
@@ -48,7 +50,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Singleton
+@Extension
+@EagerSingleton
 public class PullRequestChangeService {
 
   private static final String SOURCE_BRANCH = "SOURCE_BRANCH";
@@ -100,7 +103,9 @@ public class PullRequestChangeService {
   public List<PullRequestChange> getAllChangesOfPullRequest(NamespaceAndName namespaceAndName, String pullRequestId) {
     Repository repository = repositoryResolver.resolve(namespaceAndName);
     try (QueryableStore<PullRequestChange> store = prChangeStoreFactory.get(repository.getId(), pullRequestId)) {
-      return store.query().orderBy(PullRequestChangeQueryFields.INTERNAL_ID, QueryableStore.Order.ASC).findAll();
+      return store.query()
+        .orderBy(PullRequestChangeQueryFields.INTERNAL_ID, new OrderOptions(QueryableStore.Order.ASC, true))
+        .findAll();
     }
   }
 
@@ -171,7 +176,11 @@ public class PullRequestChangeService {
 
   private String createChangeId(String repositoryId, String pullRequestId) {
     try (QueryableStore<PullRequestChange> store = prChangeStoreFactory.get(repositoryId, pullRequestId)) {
-      List<QueryableStore.Result<PullRequestChange>> latest = store.query().withIds().orderBy(PullRequestChangeQueryFields.INTERNAL_ID, QueryableStore.Order.DESC).findAll(0, 1);
+      List<QueryableStore.Result<PullRequestChange>> latest =
+        store.query()
+          .withIds()
+          .orderBy(PullRequestChangeQueryFields.INTERNAL_ID, new OrderOptions(QueryableStore.Order.DESC, true))
+          .findAll(0, 1);
 
       int nextId = latest.isEmpty() ? 1 : Integer.parseInt(latest.get(0).getId()) + 1;
 
