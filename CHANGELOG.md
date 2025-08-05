@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.10.0 - 2025-08-05
+### Added
+- Button for copy source branch to clipboard
+- Icon for displaying a status like success
+
+### Fixed
+- Document titles for configuration pages from core
+
+### Changed
+- Suppress pull request suggestion for repositories with a single branch
+- Data is no longer stored using the XML based stores, but instead using the new SQLite based stores.
+
 ## 3.9.0 - 2025-04-15
 ### Added
 - Add descriptive document title for pull request and workflow engine configuration pages
