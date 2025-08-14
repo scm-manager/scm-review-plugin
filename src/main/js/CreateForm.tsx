@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 import React, { FC } from "react";
 import { Branch } from "@scm-manager/ui-types";
 import { ErrorNotification, Select } from "@scm-manager/ui-components";
@@ -28,21 +21,26 @@ import { CheckResult, PullRequest } from "./types/PullRequest";
 import { useTranslation } from "react-i18next";
 import EditForm from "./EditForm";
 import styled from "styled-components";
+import InitialTasks from "./InitialTasks";
+import { CheckResultDisplay } from "./CheckResultDisplay";
 
-const ValidationError = styled.p`
-  font-size: 0.75rem;
-  margin-top: -3em;
-  margin-bottom: 3em;
+const MergeContainer = styled.fieldset`
+  margin-top: -2em;
 `;
 
 type Props = {
   pullRequest: PullRequest;
-  handleFormChange: (pr: PullRequest) => void;
+  handleFormChange: (pr: Partial<PullRequest>) => void;
   checkResult?: CheckResult;
   branches?: Branch[];
   branchesError?: Error | null;
   branchesLoading: boolean;
+  disabled?: boolean;
+  availableLabels: string[];
+  shouldDeleteSourceBranch: boolean;
 };
+
+const autoFocus = (el: HTMLSelectElement) => el?.focus();
 
 const CreateForm: FC<Props> = ({
   pullRequest,
@@ -50,22 +48,14 @@ const CreateForm: FC<Props> = ({
   checkResult,
   branches,
   branchesError,
-  branchesLoading
+  branchesLoading,
+  disabled,
+  availableLabels,
+  shouldDeleteSourceBranch
 }) => {
   const [t] = useTranslation("plugins");
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-  };
-
-  const renderValidationError = () => {
-    if (checkResult && checkResult.status !== "PR_VALID") {
-      return (
-        <ValidationError className="has-text-danger">
-          {t(`scm-review-plugin.pullRequest.validation.${checkResult.status}`)}
-        </ValidationError>
-      );
-    }
   };
 
   const createOptions = () => {
@@ -78,19 +68,19 @@ const CreateForm: FC<Props> = ({
   if (branchesError) {
     return <ErrorNotification error={branchesError} />;
   }
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="columns">
-        <div className="column is-clipped">
+        <div className="column">
           <Select
             className="is-fullwidth"
             name="source"
             label={t("scm-review-plugin.pullRequest.sourceBranch")}
             options={createOptions() || []}
-            onChange={value => handleFormChange({ ...pullRequest, source: value })}
+            onChange={e => handleFormChange({ source: e.target.value })}
             loading={branchesLoading}
             value={pullRequest?.source}
+            ref={autoFocus}
           />
         </div>
         <div className="column is-clipped">
@@ -99,14 +89,23 @@ const CreateForm: FC<Props> = ({
             name="target"
             label={t("scm-review-plugin.pullRequest.targetBranch")}
             options={createOptions() || []}
-            onChange={value => handleFormChange({ ...pullRequest, target: value })}
+            onChange={value => handleFormChange({ target: value })}
             loading={branchesLoading}
             value={pullRequest?.target}
           />
         </div>
       </div>
-      {renderValidationError()}
-      <EditForm handleFormChange={handleFormChange} pullRequest={pullRequest} />
+      <MergeContainer>
+        <CheckResultDisplay checkResult={checkResult} />
+        <EditForm
+          handleFormChange={handleFormChange}
+          pullRequest={pullRequest}
+          disabled={disabled}
+          availableLabels={availableLabels}
+          shouldDeleteSourceBranch={shouldDeleteSourceBranch}
+        />
+      </MergeContainer>
+      <InitialTasks value={pullRequest.initialTasks} onChange={value => handleFormChange({ initialTasks: value })} />
     </form>
   );
 };

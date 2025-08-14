@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.PermissionCheck;
@@ -32,19 +25,19 @@ import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.Links;
+import jakarta.inject.Inject;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import sonia.scm.api.v2.resources.HalAppenderMapper;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.EdisonHalAppender;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Collection;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -69,8 +62,8 @@ public abstract class CommentMapper extends HalAppenderMapper {
   private MentionMapper mentionMapper;
 
   @Mapping(target = "attributes", ignore = true) // We do not map HAL attributes
-  @Mapping(target = "author", source = "author", qualifiedByName = "mapAuthor")
-  @Mapping(target = "mentions", source = "mentionUserIds", qualifiedByName = "mapMentions")
+  @Mapping(target = "author", source = "author")
+  @Mapping(target = "mentions", source = "mentionUserIds")
   abstract CommentDto map(Comment pullRequestComment, @Context Repository repository, @Context String pullRequestId, @Context Collection<CommentTransition> possibleTransitions, @Context BranchRevisionResolver.RevisionResult revisions);
 
   @Mapping(target = "mentionUserIds", ignore = true)
@@ -80,7 +73,6 @@ public abstract class CommentMapper extends HalAppenderMapper {
 
   abstract ContextLine map(CommentDto.ContextLineDto line);
 
-  @Named("mapAuthor")
   DisplayedUserDto mapAuthor(String authorId) {
     return new DisplayUserMapper(userDisplayManager).map(authorId);
   }
@@ -101,6 +93,7 @@ public abstract class CommentMapper extends HalAppenderMapper {
     linksBuilder.self(commentPathBuilder.createCommentSelfUri(namespace, name, pullRequestId, target.getId()));
     if (!target.isSystemComment() && PermissionCheck.mayModifyComment(repository, source)) {
       linksBuilder.single(link("update", commentPathBuilder.createUpdateCommentUri(namespace, name, pullRequestId, target.getId(), revisions)));
+      linksBuilder.single(link("updateWithImages", commentPathBuilder.createUpdateCommentWithImageUri(namespace, name, pullRequestId, target.getId(), revisions)));
       linksBuilder.single(link("possibleTransitions", commentPathBuilder.createPossibleTransitionUri(namespace, name, pullRequestId, target.getId())));
       if (source.getReplies().isEmpty()) {
         linksBuilder.single(link("delete", commentPathBuilder.createDeleteCommentUri(namespace, name, pullRequestId, target.getId(), revisions)));
@@ -151,6 +144,7 @@ public abstract class CommentMapper extends HalAppenderMapper {
     final Links.Builder linksBuilder = new Links.Builder();
     if (PermissionCheck.mayComment(repository)) {
       linksBuilder.single(link("reply", commentPathBuilder.createReplyCommentUri(namespace, name, pullRequestId, commentId, revisions)));
+      linksBuilder.single(link("replyWithImages", commentPathBuilder.createReplyCommentWithImageUri(namespace, name, pullRequestId, commentId, revisions)));
     }
     target.add(linksBuilder.build());
   }

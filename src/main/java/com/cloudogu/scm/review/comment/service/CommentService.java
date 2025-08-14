@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.comment.service;
 
 import com.cloudogu.scm.review.PermissionCheck;
@@ -28,10 +21,15 @@ import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.api.MentionMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEmergencyMergedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent;
 import com.github.legman.Subscribe;
+import com.google.common.base.Strings;
+import jakarta.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
@@ -41,10 +39,11 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.security.KeyGenerator;
+import sonia.scm.store.QueryableStore;
 
-import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -67,17 +66,17 @@ public class CommentService {
 
   private final RepositoryResolver repositoryResolver;
   private final PullRequestService pullRequestService;
-  private final CommentStoreFactory storeFactory;
+  private final CommentStoreBuilder storeBuilder;
   private final KeyGenerator keyGenerator;
   private final ScmEventBus eventBus;
   private final CommentInitializer commentInitializer;
   private final MentionMapper mentionMapper;
 
   @Inject
-  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreFactory storeFactory, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper) {
+  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreBuilder storeBuilder, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper) {
     this.repositoryResolver = repositoryResolver;
     this.pullRequestService = pullRequestService;
-    this.storeFactory = storeFactory;
+    this.storeBuilder = storeBuilder;
     this.keyGenerator = keyGenerator;
     this.eventBus = eventBus;
     this.commentInitializer = commentInitializer;
@@ -140,8 +139,7 @@ public class CommentService {
             .in(repository.getNamespaceAndName()));
         }
       );
-
-    if (!rootComment.isOutdated()) {
+    if (rootComment.getType() == CommentType.COMMENT && !rootComment.isOutdated()) {
       rootComment.setOutdated(true);
       getCommentStore(repository).update(pullRequestId, rootComment);
     }
@@ -162,7 +160,7 @@ public class CommentService {
     Comment clone = rootComment.clone();
     rootComment.setComment(changedComment.getComment());
     handleMentions(repository, pullRequest, rootComment, clone);
-    rootComment.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
+    rootComment.addExecutedTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
     getCommentStore(repository).update(pullRequestId, rootComment);
     eventBus.post(new CommentEvent(repository, pullRequest, rootComment, clone, HandlerEventType.MODIFY));
   }
@@ -197,9 +195,9 @@ public class CommentService {
     Comment clone = comment.clone();
     transition.accept(clone);
     ExecutedTransition<CommentTransition> executedTransition = new ExecutedTransition<>(keyGenerator.createKey(), transition, System.currentTimeMillis(), getCurrentUserId());
-    clone.addCommentTransition(executedTransition);
+    clone.addExecutedTransition(executedTransition);
     getCommentStore(repository).update(pullRequestId, clone);
-    eventBus.post(new CommentEvent(repository, pullRequest, comment, clone, HandlerEventType.MODIFY));
+    eventBus.post(new CommentEvent(repository, pullRequest, clone, comment, HandlerEventType.MODIFY));
     return executedTransition;
   }
 
@@ -219,7 +217,7 @@ public class CommentService {
         PermissionCheck.checkModifyComment(repository, reply);
         Reply clone = reply.clone();
         reply.setComment(changedReply.getComment());
-        reply.addTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
+        reply.addExecutedTransition(new ExecutedTransition<>(keyGenerator.createKey(), CHANGE_TEXT, System.currentTimeMillis(), getCurrentUserId()));
         handleMentions(repository, pullRequest, reply, clone);
         getCommentStore(repository).update(pullRequestId, parent);
         eventBus.post(new ReplyEvent(repository, pullRequest, reply, clone, parent, HandlerEventType.MODIFY));
@@ -231,6 +229,15 @@ public class CommentService {
     Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
     PermissionCheck.checkRead(repository);
     return getCommentStore(repository).getAll(pullRequestId);
+  }
+
+  public int getCount(String namespace, String name, String pullRequestId, CommentType type) {
+    Repository repository = repositoryResolver.resolve(new NamespaceAndName(namespace, name));
+    try (QueryableStore<Comment> store = storeBuilder.get(repository, pullRequestId)) {
+      return (int) store
+        .query(CommentQueryFields.TYPE.eq(type))
+        .count();
+    }
   }
 
   public void delete(String namespace, String name, String pullRequestId, String commentId) {
@@ -302,10 +309,10 @@ public class CommentService {
   }
 
   private CommentStore getCommentStore(Repository repository) {
-    return storeFactory.create(repository);
+    return storeBuilder.create(repository);
   }
 
-  public void addStatusChangedComment(Repository repository, String pullRequestId, SystemCommentType commentType) {
+  void addStatusChangedComment(Repository repository, String pullRequestId, SystemCommentType commentType) {
     Comment comment = Comment.createSystemComment(commentType.getKey());
     addWithoutPermissionCheck(repository, pullRequestId, comment);
   }
@@ -320,7 +327,7 @@ public class CommentService {
 
   private Optional<ReplyWithParent> findReplyWithParent(Repository repository, String pullRequestId, String commentId) {
     return streamAllRepliesWithParents(repository, pullRequestId)
-      .filter(ReplyWithParent -> ReplyWithParent.reply.getId().equals(commentId))
+      .filter(replyWithParent -> replyWithParent.reply.getId().equals(commentId))
       .findFirst();
   }
 
@@ -365,7 +372,58 @@ public class CommentService {
 
   @Subscribe
   public void addCommentOnReject(PullRequestRejectedEvent rejectedEvent) {
-    addStatusChangedComment(rejectedEvent.getRepository(), rejectedEvent.getPullRequest().getId(), getCommentType(rejectedEvent.getCause()));
+    Comment comment = Comment.createSystemComment(getCommentType(rejectedEvent.getCause()).getKey());
+
+    String commentId = addWithoutPermissionCheck(
+      rejectedEvent.getRepository(),
+      rejectedEvent.getPullRequest().getId(),
+      comment
+    );
+
+    if(!Strings.isNullOrEmpty(rejectedEvent.getMessage())) {
+      reply(
+        rejectedEvent.getRepository().getNamespace(),
+        rejectedEvent.getRepository().getName(),
+        rejectedEvent.getPullRequest().getId(),
+        commentId,
+        Reply.createNewReply(rejectedEvent.getMessage())
+      );
+    }
+  }
+
+  @Subscribe
+  public void addCommentOnReopen(PullRequestReopenedEvent reopenedEvent) {
+    addStatusChangedComment(reopenedEvent.getRepository(), reopenedEvent.getPullRequest().getId(), SystemCommentType.REOPENED);
+  }
+
+  @Subscribe
+  public void addCommentOnStatusChanged(PullRequestStatusChangedEvent mergedEvent) {
+    switch (mergedEvent.getStatus()) {
+      case DRAFT:
+        addStatusChangedComment(mergedEvent.getRepository(), mergedEvent.getPullRequest().getId(), SystemCommentType.STATUS_TO_DRAFT);
+        break;
+      case OPEN:
+        addStatusChangedComment(mergedEvent.getRepository(), mergedEvent.getPullRequest().getId(), SystemCommentType.STATUS_TO_OPEN);
+        break;
+      default:
+        throw new IllegalArgumentException("unknown status: " + mergedEvent.getStatus());
+    }
+  }
+
+  @Subscribe
+  public void addCommentOnTargetBranchChange(PullRequestEvent updatedEvent) {
+    if (updatedEvent.getOldItem() == null || updatedEvent.getItem() == null) {
+      return;
+    }
+    if (updatedEvent.getItem().getTarget().equals(updatedEvent.getOldItem().getTarget())) {
+      return;
+    }
+    Comment comment = Comment.createSystemComment(
+      SystemCommentType.TARGET_CHANGED.getKey(),
+      Map.of(
+        "oldTarget", updatedEvent.getOldItem().getTarget(),
+        "newTarget", updatedEvent.getItem().getTarget()));
+    addWithoutPermissionCheck(updatedEvent.getRepository(), updatedEvent.getItem().getId(), comment);
   }
 
   private SystemCommentType getCommentType(PullRequestRejectedEvent.RejectionCause cause) {

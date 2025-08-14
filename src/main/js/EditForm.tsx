@@ -1,86 +1,122 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
-import React, { FC } from "react";
-import { Autocomplete, InputField, TagGroup, Textarea } from "@scm-manager/ui-components";
+
+import React, { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
+import { InputField, Textarea } from "@scm-manager/ui-components";
+import { Checkbox } from "@scm-manager/ui-forms";
 import { useTranslation } from "react-i18next";
-import { DisplayedUser, SelectValue } from "@scm-manager/ui-types";
 import { useUserSuggestions } from "@scm-manager/ui-api";
 import { PullRequest } from "./types/PullRequest";
+import ReviewerInput from "./ReviewerInput";
+
+type Entrypoint = "create" | "edit";
 
 type Props = {
-  handleFormChange: (pr: PullRequest) => void;
+  handleFormChange: (pr: Partial<PullRequest>) => void;
   pullRequest: PullRequest;
+  disabled?: boolean;
+  availableLabels: string[];
+  shouldDeleteSourceBranch: boolean;
 };
 
-const EditForm: FC<Props> = ({ handleFormChange, pullRequest }) => {
+const EditForm: FC<Props> = ({
+  handleFormChange,
+  pullRequest,
+  disabled,
+  availableLabels,
+  shouldDeleteSourceBranch,
+}) => {
   const [t] = useTranslation("plugins");
   const userSuggestions = useUserSuggestions();
+  const [deleteSourceBranch, setDeleteSourceBranch] = useState<boolean>(shouldDeleteSourceBranch);
+  const handleDeleteSourceBranch = useCallback(
+    (pr: Partial<PullRequest>) => {
+      setDeleteSourceBranch(pr.shouldDeleteSourceBranch || false);
+      handleFormChange(pr);
+    },
+    [handleFormChange, deleteSourceBranch],
+  );
 
-  const removeReviewer = (users: DisplayedUser[]) => {
-    if (pullRequest.reviewer) {
-      const newList = pullRequest.reviewer.filter(item => users.includes(item));
-      handleFormChange({ ...pullRequest, reviewer: newList });
-    }
-  };
+  useEffect(() => {
+    setDeleteSourceBranch(shouldDeleteSourceBranch);
+  }, [shouldDeleteSourceBranch]);
 
-  const selectName = (selection: SelectValue) => {
-    const newList = pullRequest.reviewer || [];
-    newList.push({ id: selection.value.id, displayName: selection.value.displayName, mail: "", approved: false });
-    handleFormChange({ ...pullRequest, reviewer: newList });
-  };
+  const handleLabelSelectChange = useCallback(
+    (label: string, checked: boolean) => {
+      if (checked) {
+        handleFormChange({ labels: [...pullRequest.labels, label] });
+      } else {
+        handleFormChange({ labels: pullRequest.labels.filter((prLabel) => prLabel !== label) });
+      }
+    },
+    [handleFormChange, pullRequest],
+  );
 
   return (
     <>
+      <Checkbox
+        key={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
+        checked={deleteSourceBranch}
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+          handleDeleteSourceBranch({ shouldDeleteSourceBranch: event.target.checked })
+        }
+        label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.help")}
+        labelClassName="is-align-self-flex-start mb-4"
+      />
       <InputField
         name="title"
         value={pullRequest?.title}
         label={t("scm-review-plugin.pullRequest.title")}
         validationError={pullRequest?.title === ""}
         errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
-        onChange={value => handleFormChange({ ...pullRequest, title: value })}
+        onChange={(value) => handleFormChange({ title: value })}
+        disabled={disabled}
       />
       <Textarea
         name="description"
         value={pullRequest?.description}
         label={t("scm-review-plugin.pullRequest.description")}
-        onChange={value => handleFormChange({ ...pullRequest, description: value })}
+        onChange={(value) => handleFormChange({ description: value })}
+        disabled={disabled}
       />
-      <TagGroup
-        items={pullRequest?.reviewer || []}
+      <ReviewerInput
+        values={pullRequest?.reviewer?.map((reviewer) => reviewer.id) ?? []}
+        onChange={(newValues) =>
+          handleFormChange({
+            reviewer: newValues.map((reviewerId) => ({ id: reviewerId, displayName: reviewerId, approved: false })),
+          })
+        }
         label={t("scm-review-plugin.pullRequest.reviewer")}
-        onRemove={removeReviewer}
+        placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
+        ariaLabel={t("scm-review-plugin.pullRequest.addReviewer")}
       />
-      <div className="field">
-        <div className="control">
-          <Autocomplete
-            creatable={false}
-            loadSuggestions={userSuggestions}
-            valueSelected={selectName}
-            placeholder={t("scm-review-plugin.pullRequest.addReviewer")}
-          />
-        </div>
-      </div>
+      {availableLabels.length > 0 ? (
+        <fieldset className="is-flex is-flex-direction-column mb-4">
+          <legend className="label">{t("scm-review-plugin.pullRequest.labels")}</legend>
+          {availableLabels.map((label) => (
+            <Checkbox
+              key={label}
+              checked={pullRequest?.labels.includes(label)}
+              onChange={(event: ChangeEvent<HTMLInputElement>) => handleLabelSelectChange(label, event.target.checked)}
+              label={label}
+              labelClassName="is-align-self-flex-start"
+            />
+          ))}
+        </fieldset>
+      ) : null}
     </>
   );
 };

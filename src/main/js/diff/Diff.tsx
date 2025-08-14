@@ -1,31 +1,23 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useBranch } from "@scm-manager/ui-api";
-import { Hunk, Repository } from "@scm-manager/ui-types";
+import { Branch, Hunk, Repository } from "@scm-manager/ui-types";
 import {
   AnnotationFactoryContext,
   DiffEventContext,
@@ -68,8 +60,11 @@ type Props = {
   comments?: Comments;
   diffUrl: string;
   createLink?: string;
+  createLinkWithImages?: string;
   fileContentFactory: FileContentFactory;
   reviewedFiles: string[];
+  sourceBranch?: Branch;
+  stickyHeaderHeight: number;
 };
 
 type Revisions = {
@@ -78,11 +73,10 @@ type Revisions = {
   changed: boolean;
 };
 
-const useHasChanged = (repository: Repository, pullRequest: PullRequest) => {
+const useHasChanged = (repository: Repository, pullRequest: PullRequest, source: Branch | undefined) => {
   const [revisions, setRevisions] = useState<Revisions>();
   const invalidate = useInvalidateDiff(repository, pullRequest);
 
-  const { data: source } = useBranch(repository, pullRequest.source);
   const { data: target } = useBranch(repository, pullRequest.target);
 
   const ctx = useChangeNotificationContext();
@@ -128,12 +122,15 @@ const Diff: FC<Props> = ({
   comments,
   diffUrl,
   createLink,
+  createLinkWithImages,
   fileContentFactory,
-  reviewedFiles
+  reviewedFiles,
+  sourceBranch,
+  stickyHeaderHeight
 }) => {
   const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
   const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
-  const { changed, ignore, reload } = useHasChanged(repository, pullRequest);
+  const { changed, ignore, reload } = useHasChanged(repository, pullRequest, sourceBranch);
 
   const openInlineEditor = (location: Location) => {
     if (isInlineLocation(location)) {
@@ -311,6 +308,7 @@ const Diff: FC<Props> = ({
               pullRequest={pullRequest}
               comment={comment}
               createLink={createLink}
+              createWithImageLink={createLinkWithImages}
             />
           </CommentWrapper>
         ))}
@@ -326,6 +324,7 @@ const Diff: FC<Props> = ({
             repository={repository}
             pullRequest={pullRequest}
             url={createLink}
+            commentWithImageUrl={createLinkWithImages}
             location={location}
             onCancel={() => closeEditor(location)}
             autofocus={true}
@@ -351,7 +350,7 @@ const Diff: FC<Props> = ({
         diffUrl={diffUrl}
         actions={actions}
         pullRequestComments={comments?._embedded.pullRequestComments || []}
-        stickyHeader={true}
+        stickyHeader={stickyHeaderHeight}
       />
     </StyledDiffWrapper>
   );

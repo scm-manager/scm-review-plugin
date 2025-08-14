@@ -1,116 +1,145 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
-import React, { FC, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import styled from "styled-components";
-import { Repository } from "@scm-manager/ui-types";
-import { CreateButton, ErrorPage, LinkPaginator, Loading, Notification, urls } from "@scm-manager/ui-components";
-import PullRequestTable from "./table/PullRequestTable";
-import StatusSelector from "./table/StatusSelector";
-import { usePullRequests } from "./pullRequest";
-import { PullRequest } from "./types/PullRequest";
-import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 
-const ScrollingTable = styled.div`
-  overflow-x: auto;
+import { PullRequest, Reviewer } from "./types/PullRequest";
+import { Card, CardListBox } from "@scm-manager/ui-layout";
+import { Link } from "react-router-dom";
+import { DateFromNow, Notification } from "@scm-manager/ui-components";
+import { PullRequestListDetailExtension } from "./types/ExtensionPoints";
+import classNames from "classnames";
+import { evaluateTagColor } from "./pullRequest";
+import React, { FC } from "react";
+import { Repository } from "@scm-manager/ui-types";
+import styled from "styled-components";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
+import { Trans, useTranslation } from "react-i18next";
+import PullRequestStatusColumn from "./workflow/PullRequestStatusColumn";
+import useEngineConfig from "./workflow/useEngineConfig";
+import { Tooltip } from "@scm-manager/ui-overlays";
+
+const SubtitleRow = styled(CardListBox.Card.Row)`
+  white-space: pre;
 `;
+
+const createTooltipMessage = (reviewers: Reviewer[]) => {
+  return reviewers.map(({ displayName, approved }) => `- ${displayName}${approved ? " ✔" : ""}`).join("\n");
+};
+
+const ReviewersDetail: FC<{ pullRequest: PullRequest }> = ({ pullRequest }) => {
+  const [t] = useTranslation("plugins");
+  const content = (
+    <Card.Details.Detail className={classNames({ "is-relative": pullRequest.reviewer?.length })}>
+      <Card.Details.Detail.Label>{t("scm-review-plugin.pullRequests.details.reviewers")}</Card.Details.Detail.Label>
+      <Card.Details.Detail.Tag>
+        {pullRequest.reviewer?.reduce((p, { approved }) => (approved ? p + 1 : p), 0)}/
+        {pullRequest.reviewer?.length ?? 0}
+      </Card.Details.Detail.Tag>
+    </Card.Details.Detail>
+  );
+  if (pullRequest.reviewer?.length) {
+    return (
+      <Tooltip
+        message={t("scm-review-plugin.pullRequest.reviewer") + ":\n" + createTooltipMessage(pullRequest.reviewer)}
+      >
+        {content}
+      </Tooltip>
+    );
+  }
+  return content;
+};
 
 type Props = {
   repository: Repository;
+  pullRequests?: PullRequest[];
 };
 
-const PullRequestList: FC<Props> = ({ repository }) => {
+const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
   const [t] = useTranslation("plugins");
-  const location = useLocation();
-  const search = urls.getQueryStringFromLocation(location);
-  const match: { params: { page: string } } = useRouteMatch();
-  const [statusFilter, setStatusFilter] = useState<string>(search || "OPEN");
-  const history = useHistory();
-  const page = useMemo(() => urls.getPageFromMatch(match), [match]);
-  const { data, error, isLoading } = usePullRequests(repository, { page, status: statusFilter, pageSize: 10 });
+  const { data, error } = useEngineConfig(repository);
 
-  if (isLoading || !data) {
-    return <Loading />;
+  if (!pullRequests?.length) {
+    return <Notification type="info">{t("scm-review-plugin.noRequests")}</Notification>;
   }
-
-  const handleStatusChange = (newStatus: string) => {
-    setStatusFilter(newStatus);
-    history.replace(`1?q=${newStatus}`);
-  };
-
-  const renderPullRequestTable = () => {
-    return (
-      <div className="panel">
-        <div className="panel-heading">
-          <StatusSelector handleTypeChange={handleStatusChange} status={statusFilter} />
-        </div>
-
-        {isLoading ? (
-          <Loading />
-        ) : (
-          <>
-            <ScrollingTable className="panel-block">
-              <PullRequestTable repository={repository} pullRequests={data._embedded?.pullRequests as PullRequest[]} />
-            </ScrollingTable>
-            <div className="panel-footer">
-              <LinkPaginator collection={data} page={page} filter={statusFilter} />
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
-  if (!repository._links.pullRequest) {
-    return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
-  }
-
-  if (error) {
-    return (
-      <ErrorPage
-        title={t("scm-review-plugin.pullRequests.errorTitle")}
-        subtitle={t("scm-review-plugin.pullRequests.errorSubtitle")}
-        error={error}
-      />
-    );
-  }
-
-  const url = `/repo/${repository.namespace}/${repository.name}/pull-requests`;
-
-  if (data && data.pageTotal < page && page > 1) {
-    return <Redirect to={`${url}/${data.pageTotal}`} />;
-  }
-
-  const createButton = data?._links?.create ? (
-    <CreateButton label={t("scm-review-plugin.pullRequests.createButton")} link={`${url}/add/changesets/`} />
-  ) : null;
 
   return (
-    <>
-      {renderPullRequestTable()}
-      {createButton}
-    </>
+    <CardListBox className="p-2">
+      {pullRequests.map(pullRequest => (
+        <CardListBox.Card key={pullRequest.id}>
+          <Card.Row className="is-flex">
+            <Card.Title>
+              <Link to={`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`}>
+                {pullRequest.title}
+              </Link> <span className="has-text-secondary ml-1" aria-label={t("scm-review-plugin.pullRequests.aria.id")}>
+              <span aria-hidden>#</span>
+              {pullRequest.id}
+            </span>
+            </Card.Title>
+          </Card.Row>
+          <SubtitleRow className="is-flex is-flex-wrap-wrap is-size-7 has-text-secondary">
+            <Trans
+              t={t}
+              i18nKey="scm-review-plugin.pullRequests.subtitle"
+              values={{
+                author: pullRequest.author?.displayName,
+                source: pullRequest.source,
+                target: pullRequest.target
+              }}
+              components={{
+                highlight: <span className="has-text-default" />,
+                date: <DateFromNow className="is-relative" date={pullRequest.creationDate} />,
+                space: <span />
+              }}
+            />
+          </SubtitleRow>
+          <Card.Row className="is-flex is-align-items-center is-justify-content-space-between is-size-7">
+            <Card.Details>
+              <Card.Details.Detail>
+                <Card.Details.Detail.Label>
+                  {t("scm-review-plugin.pullRequests.details.tasks")}
+                </Card.Details.Detail.Label>
+                <Card.Details.Detail.Tag>
+                  {pullRequest.tasks?.done}/{pullRequest.tasks ? pullRequest.tasks.todo + pullRequest.tasks.done : 0}
+                </Card.Details.Detail.Tag>
+              </Card.Details.Detail>
+              <ReviewersDetail pullRequest={pullRequest} />
+              {!error && data?.enabled && data?.rules.length && pullRequest._links.workflowResult ? (
+                <PullRequestStatusColumn pullRequest={pullRequest} repository={repository} />
+              ) : null}
+              <ExtensionPoint<PullRequestListDetailExtension>
+                name="pull-requests.list.detail"
+                props={{
+                  pullRequest,
+                  repository
+                }}
+                renderAll
+              />
+            </Card.Details>
+            <span
+              className={classNames(
+                "tag is-rounded is-align-self-flex-end",
+                `is-${evaluateTagColor(pullRequest.status)}`
+              )}
+              aria-label={t("scm-review-plugin.pullRequests.aria.status")}
+            >
+              {pullRequest.status}
+            </span>
+          </Card.Row>
+        </CardListBox.Card>
+      ))}
+    </CardListBox>
   );
 };
 

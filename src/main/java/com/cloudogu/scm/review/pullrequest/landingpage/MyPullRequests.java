@@ -1,62 +1,78 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.pullrequest.landingpage;
 
 import com.cloudogu.scm.landingpage.mydata.MyData;
 import com.cloudogu.scm.landingpage.mydata.MyDataProvider;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestQueryFields;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
+import jakarta.inject.Inject;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
+import sonia.scm.repository.Repository;
+import sonia.scm.repository.RepositoryManager;
+import sonia.scm.store.QueryableStore;
 
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Extension
 @Requires("scm-landingpage-plugin")
 public class MyPullRequests implements MyDataProvider {
 
-  private final OpenPullRequestProvider pullRequestProvider;
   private final PullRequestMapper mapper;
 
+  private final PullRequestStoreFactory storeFactory;
+  private final RepositoryManager repositoryManager;
+
   @Inject
-  public MyPullRequests(OpenPullRequestProvider pullRequestProvider, PullRequestMapper mapper) {
-    this.pullRequestProvider = pullRequestProvider;
+  public MyPullRequests(PullRequestMapper mapper, PullRequestStoreFactory storeFactory, RepositoryManager repositoryManager) {
     this.mapper = mapper;
+    this.storeFactory = storeFactory;
+    this.repositoryManager = repositoryManager;
   }
 
   @Override
   public Iterable<MyData> getData() {
     String subject = SecurityUtils.getSubject().getPrincipal().toString();
-    Collection<MyData> result = new ArrayList<>();
-    pullRequestProvider.findOpenPullRequests((repository, stream) -> stream
-        .filter(pr -> pr.getAuthor().equals(subject))
-        .forEach(pr -> result.add(new MyPullRequestData(repository, pr, mapper)))
-    );
-    return result;
+    try (QueryableStore<PullRequest> store = storeFactory.getOverall()) {
+      return store
+        .query(
+          PullRequestQueryFields.AUTHOR.eq(subject),
+          PullRequestQueryFields.STATUS.in(PullRequestStatus.OPEN, PullRequestStatus.DRAFT)
+        ).withIds()
+        .findAll()
+        .stream().map(
+          result -> {
+            Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
+            if (repository == null) {
+              return null;
+            }
+            PullRequest pullRequest = result.getEntity();
+            return new MyPullRequestData(repository, pullRequest, mapper);
+          }
+        ).filter(Objects::nonNull)
+        .collect(Collectors.toList());
+    }
   }
 
   @Override

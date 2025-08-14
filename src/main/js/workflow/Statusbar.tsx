@@ -1,36 +1,29 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
 import React, { FC, useState } from "react";
 import { PullRequest } from "../types/PullRequest";
-import { ErrorNotification, Icon } from "@scm-manager/ui-components";
+import { ErrorNotification } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import classNames from "classnames";
 import StatusModalView from "./StatusModalView";
 import { useStatusbar } from "./useStatusbar";
+import { StatusIcon, StatusVariants } from "@scm-manager/ui-core";
 
 type Props = {
   repository: Repository;
@@ -59,10 +52,9 @@ const Statusbar: FC<Props> = ({ repository, pullRequest }) => {
     return <ErrorNotification error={error} />;
   }
 
-  const failedRules = data.results.filter(r => r.failed).length;
+  const failedRules = data.results.filter((r) => r.failed).length;
   const failed = failedRules > 0;
-  const color = failed ? "warning" : "success";
-  const icon = failed ? "exclamation-triangle" : "check-circle";
+  const icon = failed ? StatusVariants.DANGER : StatusVariants.SUCCESS;
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
@@ -72,22 +64,29 @@ const Statusbar: FC<Props> = ({ repository, pullRequest }) => {
     <>
       {modalOpen && <StatusModalView onClose={toggleModal} result={data.results} failed={failed} />}
       <Notification
-        className={classNames("media", "notification is-grey-lighter", "has-cursor-pointer")}
+        className={classNames(
+          "media",
+          "notification is-grey-lighter",
+          "has-cursor-pointer",
+          "is-flex is-align-items-center",
+        )}
         onClick={() => toggleModal()}
       >
-        <Icon className="fa-lg pr-2" color={color} name={icon} />
-        <span className="has-text-weight-bold">
-          {t("scm-review-plugin.workflow.statusbar.rules", {
-            count: data?.results && data.results.length
-          })}
-        </span>
-        <i className="fas fa-angle-right mx-2 my-0" />
+        <StatusIcon className="mr-2" variant={icon} sizes="lg" />
         <span>
-          {failedRules === 0
-            ? t("scm-review-plugin.workflow.statusbar.noFailedRules")
-            : t("scm-review-plugin.workflow.statusbar.failedRules", {
-                count: failedRules
-              })}
+          <span className="has-text-weight-bold">
+            {t("scm-review-plugin.workflow.statusbar.rules", {
+              count: data?.results && data.results.length,
+            })}
+          </span>
+          <i className="fas fa-angle-right mx-2 my-0" />
+          <span>
+            {failedRules === 0
+              ? t("scm-review-plugin.workflow.statusbar.noFailedRules")
+              : t("scm-review-plugin.workflow.statusbar.failedRules", {
+                  count: failedRules,
+                })}
+          </span>{" "}
         </span>
       </Notification>
     </>

@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<!--
+    Copyright (c) 2020 - present Cloudogu GmbH
+
+    This program is free software: you can redistribute it and/or modify it under
+    the terms of the GNU Affero General Public License as published by the Free
+    Software Foundation, version 3.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+    details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program. If not, see https://www.gnu.org/licenses/.
+-->
+
+<global-config>
+  <defaultMergeStrategy>FAST_FORWARD_IF_POSSIBLE</defaultMergeStrategy>
+  <deleteBranchOnMerge>true</deleteBranchOnMerge>
+  <restrictBranchWriteAccess>true</restrictBranchWriteAccess>
+  <protected-branch-patterns>main</protected-branch-patterns>
+  <protected-branch-patterns>master</protected-branch-patterns>
+  <defaultTasks>eat</defaultTasks>
+  <defaultTasks>drink</defaultTasks>
+  <protection-bypasses>
+    <name>ford</name>
+    <group>false</group>
+  </protection-bypasses>
+  <preventMergeFromAuthor>true</preventMergeFromAuthor>
+  <defaultReviewers>trillian</defaultReviewers>
+  <defaultReviewers>marvin</defaultReviewers>
+  <labels>hitchhike</labels>
+  <labels>vogon</labels>
+  <overwriteDefaultCommitMessage>true</overwriteDefaultCommitMessage>
+  <commitMessageTemplate>Test</commitMessageTemplate>
+  <disable-repository-configuration>true</disable-repository-configuration>
+</global-config>

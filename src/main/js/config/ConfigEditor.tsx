@@ -1,141 +1,238 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import { Title, Checkbox, Subtitle } from "@scm-manager/ui-components";
+
+import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Trans, useTranslation, WithTranslation } from "react-i18next";
+import { Checkbox, Icon, Select, Subtitle, Textarea, Title } from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
-import { Config, ProtectionBypass } from "../types/Config";
+import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
+import DefaultTaskEditor from "./DefaultTaskEditor";
+import { isEqual } from "lodash-es";
+import { Prompt } from "react-router-dom";
+import LabelInput from "../LabelInput";
+import ReviewerInput from "../ReviewerInput";
 
 type Props = WithTranslation & {
   onConfigurationChange: (config: State, valid: boolean) => void;
   initialConfiguration: Config;
-  global: boolean;
+  configType: "global" | "namespace" | "repository";
 };
 
 type State = Config;
 
-class ConfigEditor extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = props.initialConfiguration;
-  }
+const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, configType }) => {
+  const [t] = useTranslation("plugins");
+  const [state, setState] = useState(initialConfiguration);
+  const onChange = useCallback(<K extends keyof Config>(prop: K, val: Config[K]) => {
+    setState((prevState) => ({
+      ...prevState,
+      [prop]: val,
+    }));
+  }, []);
+  const hasChanges = useMemo(() => !isEqual(initialConfiguration, state), [initialConfiguration, state]);
+  const onBeforeUnload = useCallback(
+    (e: BeforeUnloadEvent) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    },
+    [hasChanges],
+  );
 
-  onChangeRestrictBranchWriteAccess = (isRestrictBranchWriteAccess: boolean) => {
-    this.setState(
-      {
-        restrictBranchWriteAccess: isRestrictBranchWriteAccess
-      },
-      () => this.props.onConfigurationChange(this.state, true)
-    );
-  };
+  useEffect(() => onConfigurationChange(state, true), [onConfigurationChange, state]);
+  useEffect(() => {
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [onBeforeUnload]);
 
-  onChangeDisableRepositoryConfiguration = (isChangeDisableRepositoryConfiguration: boolean) => {
-    this.setState(
-      {
-        disableRepositoryConfiguration: isChangeDisableRepositoryConfiguration
-      },
-      () => this.props.onConfigurationChange(this.state, true)
-    );
-  };
+  const {
+    restrictBranchWriteAccess,
+    protectedBranchPatterns,
+    branchProtectionBypasses,
+    preventMergeFromAuthor,
+    disableRepositoryConfiguration,
+    overwriteParentConfig,
+    defaultReviewers,
+    deleteBranchOnMerge,
+    defaultMergeStrategy,
+    labels,
+    overwriteDefaultCommitMessage,
+    commitMessageTemplate,
+  } = state;
 
-  onChangePreventMergeFromAuthor = (isChangePreventMergeFromAuthor: boolean) => {
-    this.setState(
-      {
-        preventMergeFromAuthor: isChangePreventMergeFromAuthor
-      },
-      () => this.props.onConfigurationChange(this.state, true)
-    );
-  };
-
-  onChangeBranches = (newBranches: string[]) => {
-    this.setState(
-      {
-        protectedBranchPatterns: newBranches
-      },
-      () => this.props.onConfigurationChange(this.state, true)
-    );
-  };
-
-  onChangeBypasses = (newBypasses: ProtectionBypass[]) => {
-    this.setState(
-      {
-        branchProtectionBypasses: newBypasses
-      },
-      () => this.props.onConfigurationChange(this.state, true)
-    );
-  };
-
-  render() {
-    const { global, t } = this.props;
-    const {
-      restrictBranchWriteAccess,
-      protectedBranchPatterns,
-      branchProtectionBypasses,
-      preventMergeFromAuthor,
-      disableRepositoryConfiguration
-    } = this.state;
-    return (
-      <>
-        {global && (
-          <>
-            <Title title={t("scm-review-plugin.config.title")} />
-            <Checkbox
-              checked={!!disableRepositoryConfiguration}
-              onChange={this.onChangeDisableRepositoryConfiguration}
-              label={t("scm-review-plugin.config.disableRepositoryConfiguration.label")}
-              helpText={t("scm-review-plugin.config.disableRepositoryConfiguration.helpText")}
+  // @ts-ignore
+  // @ts-ignore
+  // @ts-ignore
+  return (
+    <>
+      <Prompt message={t("scm-review-plugin.config.navigationPrompt")} when={hasChanges} />
+      {configType === "global" ? (
+        <Title title={t("scm-review-plugin.config.title")} />
+      ) : (
+        <Subtitle>{t("scm-review-plugin.config.title")}</Subtitle>
+      )}
+      {configType !== "repository" ? (
+        <Checkbox
+          checked={!!disableRepositoryConfiguration}
+          onChange={(val) => onChange("disableRepositoryConfiguration", val)}
+          label={
+            configType === "global"
+              ? t("scm-review-plugin.config.disableRepositoryAndNamespaceConfiguration.label")
+              : t("scm-review-plugin.config.disableRepositoryConfiguration.label")
+          }
+          helpText={
+            configType === "global"
+              ? t("scm-review-plugin.config.disableRepositoryAndNamespaceConfiguration.helpText")
+              : t("scm-review-plugin.config.disableRepositoryConfiguration.helpText")
+          }
+        />
+      ) : null}
+      {configType !== "global" ? (
+        <Checkbox
+          checked={!!overwriteParentConfig}
+          onChange={(val) => onChange("overwriteParentConfig", val)}
+          label={
+            configType === "namespace"
+              ? t("scm-review-plugin.config.overwriteGlobal.label")
+              : t("scm-review-plugin.config.overwriteAll.label")
+          }
+          helpText={
+            configType === "namespace"
+              ? t("scm-review-plugin.config.overwriteGlobal.helpText")
+              : t("scm-review-plugin.config.overwriteAll.helpText")
+          }
+        />
+      ) : null}
+      {!!overwriteParentConfig || configType === "global" ? (
+        <>
+          <hr className="my-4" />
+          <fieldset>
+            <legend className="is-size-5 mb-4">{t("scm-review-plugin.config.legends.mergeDialog")}</legend>
+            <Select
+              options={MERGE_STRATEGIES.map((strategy) => ({
+                label: t("scm-review-plugin.showPullRequest.mergeStrategies." + strategy),
+                value: strategy,
+              }))}
+              onChange={(val) => onChange("defaultMergeStrategy", val as MergeStrategy)}
+              label={t("scm-review-plugin.config.defaultMergeStrategy.label")}
+              helpText={t("scm-review-plugin.config.defaultMergeStrategy.helpText")}
+              value={defaultMergeStrategy}
             />
-          </>
-        )}
-        {!global && <Subtitle>{t("scm-review-plugin.config.title")}</Subtitle>}
-        <Checkbox
-          checked={restrictBranchWriteAccess}
-          onChange={this.onChangeRestrictBranchWriteAccess}
-          label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
-          helpText={t("scm-review-plugin.config.restrictBranchWriteAccess.helpText")}
-        />
-        <Checkbox
-          checked={preventMergeFromAuthor}
-          onChange={this.onChangePreventMergeFromAuthor}
-          label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
-          helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
-        />
-        {restrictBranchWriteAccess && (
-          <>
-            <hr />
-            <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
-            <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
-            <BranchList branches={protectedBranchPatterns} onChange={this.onChangeBranches} />
-            <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
-            <p className="mb-4">{t("scm-review-plugin.config.branchProtection.bypasses.note")}</p>
-            <BypassList bypasses={branchProtectionBypasses} onChange={this.onChangeBypasses} />
-          </>
-        )}
-      </>
-    );
-  }
-}
+            <fieldset>
+              <legend className="is-size-6 mb-1 has-text-weight-bold">
+                {t("scm-review-plugin.config.legends.branchOptions")}
+              </legend>
+              <Checkbox
+                checked={deleteBranchOnMerge}
+                onChange={(val) => onChange("deleteBranchOnMerge", val)}
+                label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.explanation")}
+                helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
+              />
+            </fieldset>
+            <Checkbox
+              checked={overwriteDefaultCommitMessage}
+              onChange={(val) => onChange("overwriteDefaultCommitMessage", val)}
+              label={t("scm-review-plugin.config.overwriteDefaultCommitMessage.label")}
+              helpText={t("scm-review-plugin.config.overwriteDefaultCommitMessage.helpText")}
+            />
+            {overwriteDefaultCommitMessage && (
+              <>
+                <Textarea
+                  label={t("scm-review-plugin.config.commitMessageTemplate.label")}
+                  helpText={t("scm-review-plugin.config.commitMessageTemplate.helpText")}
+                  value={commitMessageTemplate}
+                  onChange={(val) => onChange("commitMessageTemplate", val)}
+                />
+                <span>
+                  <Icon name="info-circle" color="blue-light" />
+                  <Trans t={t} i18nKey="scm-review-plugin.config.commitMessageTemplate.hint">
+                    <a target="_blank" href="/scm/mustacheDocs" />
+                  </Trans>
+                </span>
+              </>
+            )}
+          </fieldset>
+          <hr className="my-4" />
+          <fieldset className="is-flex is-flex-direction-column">
+            <legend className="is-size-5 mb-2">{t("scm-review-plugin.config.legends.creation")}</legend>
+            <LabelInput labels={labels} onChange={(newValues) => onChange("labels", newValues)} />
+            <DefaultTaskEditor
+              defaultTasks={state.defaultTasks}
+              addTask={(newDefaultTask) =>
+                setState({ ...state, defaultTasks: [...state.defaultTasks, newDefaultTask] })
+              }
+              editTask={(task: string, index: number) =>
+                setState((prevState) => {
+                  const newTasks = [...prevState.defaultTasks];
+                  newTasks[index] = task;
+                  return { ...prevState, defaultTasks: newTasks };
+                })
+              }
+              removeTask={(defaultTask) =>
+                setState({ ...state, defaultTasks: state.defaultTasks.filter((t) => t !== defaultTask) })
+              }
+            />
+            <ReviewerInput
+              values={defaultReviewers}
+              onChange={(newValues) => onChange("defaultReviewers", newValues)}
+              label={t("scm-review-plugin.config.defaultReviewers.label")}
+              placeholder={t("scm-review-plugin.config.defaultReviewers.placeholder")}
+              ariaLabel={t("scm-review-plugin.config.defaultReviewers.placeholder")}
+              information={t("scm-review-plugin.config.defaultReviewers.information")}
+            />
+          </fieldset>
+          <hr className="my-4" />
+          <fieldset>
+            <legend className="is-size-5 mb-4">{t("scm-review-plugin.config.legends.restrictions")}</legend>
+            <Checkbox
+              checked={preventMergeFromAuthor}
+              onChange={(val) => onChange("preventMergeFromAuthor", val)}
+              label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
+              helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
+            />
+            <Checkbox
+              checked={restrictBranchWriteAccess}
+              onChange={(val) => onChange("restrictBranchWriteAccess", val)}
+              label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
+            />
+            {restrictBranchWriteAccess && (
+              <>
+                <hr />
+                <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.branches.subtitle")} />
+                <p className="mb-4">{t("scm-review-plugin.config.branchProtection.branches.note")}</p>
+                <BranchList
+                  protections={protectedBranchPatterns}
+                  onChange={(val) => onChange("protectedBranchPatterns", val)}
+                />
+                <Subtitle subtitle={t("scm-review-plugin.config.branchProtection.bypasses.subtitle")} />
+                <p className="mb-4">{t("scm-review-plugin.config.branchProtection.bypasses.note")}</p>
+                <BypassList
+                  bypasses={branchProtectionBypasses}
+                  onChange={(val) => onChange("branchProtectionBypasses", val)}
+                />
+              </>
+            )}
+          </fieldset>
+        </>
+      ) : null}
+    </>
+  );
+};
 
-export default withTranslation("plugins")(ConfigEditor);
+export default ConfigEditor;

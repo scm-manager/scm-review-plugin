@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.pullrequest.api;
 
 import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
@@ -37,6 +30,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
+import sonia.scm.repository.api.MergePreventReason;
+import sonia.scm.repository.api.MergePreventReasonType;
 import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.web.JsonMockHttpResponse;
@@ -46,6 +41,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 import static com.google.common.io.Resources.getResource;
 import static com.google.common.io.Resources.toByteArray;
@@ -109,7 +105,7 @@ class MergeResourceTest {
 
   @Test
   void shouldHandleSuccessfulDryRun() throws IOException, URISyntaxException {
-    when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(false, emptyList()));
+    when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(false, emptyList(), null));
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
 
@@ -123,8 +119,14 @@ class MergeResourceTest {
   }
 
   @Test
-  void shouldHandleFailedDryRun() throws IOException, URISyntaxException {
-    when(mergeService.checkMerge(any(), any())).thenReturn(new MergeCheckResult(true, emptyList()));
+  void shouldHandleFailedDryRun_FileConflicts() throws IOException, URISyntaxException {
+    when(mergeService.checkMerge(any(), any())).thenReturn(
+      new MergeCheckResult(
+        true,
+        emptyList(),
+        List.of(new MergePreventReason(MergePreventReasonType.FILE_CONFLICTS))
+      )
+    );
 
     byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
     MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/merge-check", mergeCommandJson);
@@ -133,6 +135,27 @@ class MergeResourceTest {
 
     assertThat(response.getStatus()).isEqualTo(200);
     assertThat(response.getContentAsString()).contains("\"hasConflicts\":true");
+    assertThat(response.getContentAsString()).contains("\"mergePreventReasons\":[{\"type\":\"FILE_CONFLICTS\",\"affectedPaths\":[]}]");
+  }
+
+  @Test
+  void shouldHandleFailedDryRun_ExternalMergeTool() throws IOException, URISyntaxException {
+    when(mergeService.checkMerge(any(), any())).thenReturn(
+      new MergeCheckResult(
+        true,
+        emptyList(),
+        List.of(new MergePreventReason(MergePreventReasonType.EXTERNAL_MERGE_TOOL))
+      )
+    );
+
+    byte[] mergeCommandJson = loadJson("com/cloudogu/scm/review/mergeCommand.json");
+    MockHttpRequest request = createHttpPostRequest(MERGE_URL + "/merge-check", mergeCommandJson);
+    MockHttpResponse response = new MockHttpResponse();
+    dispatcher.invoke(request, response);
+
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"hasConflicts\":true");
+    assertThat(response.getContentAsString()).contains("\"mergePreventReasons\":[{\"type\":\"EXTERNAL_MERGE_TOOL\",\"affectedPaths\":[]}]");
   }
 
   @Test

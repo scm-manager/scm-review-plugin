@@ -1,41 +1,53 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.comment.service;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import sonia.scm.repository.Repository;
+import sonia.scm.store.QueryableType;
+import sonia.scm.xml.XmlMapStringAdapter;
+
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static com.cloudogu.scm.review.comment.service.CommentType.COMMENT;
 import static java.util.Collections.unmodifiableList;
 
 @XmlRootElement(name = "comment")
 @XmlAccessorType(XmlAccessType.FIELD)
+@QueryableType({Repository.class, PullRequest.class})
+@EqualsAndHashCode(callSuper = true)
+@ToString
 public class Comment extends BasicComment {
+
+  public static Comment createSystemComment(String key, Map<String, String> systemCommentParameters) {
+    Comment systemComment = createSystemComment(key);
+    systemComment.setSystemCommentParameters(systemCommentParameters);
+    return systemComment;
+  }
 
   public static Comment createSystemComment(String key) {
     Comment comment = new Comment();
@@ -62,6 +74,8 @@ public class Comment extends BasicComment {
   private boolean outdated;
   private InlineContext context;
   private boolean emergencyMerged;
+  @XmlJavaTypeAdapter(XmlMapStringAdapter.class)
+  private Map<String, String> systemCommentParameters = Collections.emptyMap();
 
   private List<Reply> replies = new ArrayList<>();
 
@@ -90,6 +104,10 @@ public class Comment extends BasicComment {
     return unmodifiableList(replies);
   }
 
+  public Map<String, String> getSystemCommentParameters() {
+    return Collections.unmodifiableMap(systemCommentParameters);
+  }
+
   public void setType(CommentType type) {
     this.type = type;
   }
@@ -102,7 +120,11 @@ public class Comment extends BasicComment {
     this.outdated = outdated;
   }
 
-  void setSystemComment(boolean systemComment) {
+  public void setSystemCommentParameters(Map<String, String> systemCommentParameters) {
+    this.systemCommentParameters = systemCommentParameters;
+  }
+
+  public void setSystemComment(boolean systemComment) {
     this.systemComment = systemComment;
   }
 
@@ -116,10 +138,6 @@ public class Comment extends BasicComment {
 
   public void removeReply(BasicComment reply) {
     this.replies.remove(reply);
-  }
-
-  public void addCommentTransition(ExecutedTransition<CommentTransition> transition) {
-    super.addTransition(transition);
   }
 
   public InlineContext getContext() {

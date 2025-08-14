@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.emailnotification;
 
 import com.cloudogu.scm.review.TestData;
@@ -34,7 +27,9 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestApprovalEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestMergedEvent;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestReopenedEvent;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.apache.shiro.subject.Subject;
@@ -61,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_PR_CHANGED;
 import static com.cloudogu.scm.review.emailnotification.MailTextResolver.TOPIC_PR_UPDATED;
 import static com.google.common.collect.ImmutableSet.of;
 import static java.util.Arrays.asList;
@@ -90,27 +86,28 @@ class EmailNotificationHookTest {
   EmailNotificationHook emailNotificationHook;
 
   private PullRequest pullRequest;
-  private Set<String> subscriber;
   private Repository repository;
   private PullRequest oldPullRequest;
   private Comment comment;
   private Comment oldComment;
-  private Map<String, Boolean> reviewers = new HashMap<>();
+  private final Map<String, Boolean> reviewers = new HashMap<>();
 
   @BeforeEach
   void setUp() {
     pullRequest = TestData.createPullRequest();
-    subscriber = of(currentUser, subscribedButNotReviewer, subscribedAndReviewer);
+    Set<String> subscriber = of(currentUser, subscribedButNotReviewer, subscribedAndReviewer);
     pullRequest.setSubscriber(subscriber);
 
     reviewers.put(subscribedAndReviewer, Boolean.FALSE);
     reviewers.put(reviewerButNotSubscribed, Boolean.TRUE);
     pullRequest.setReviewer(reviewers);
+    pullRequest.setTarget("develop");
 
     repository = createHeartOfGold();
     oldPullRequest = TestData.createPullRequest();
     oldPullRequest.setTitle("old Title");
     oldPullRequest.setDescription("old Description");
+    oldPullRequest.setTarget("main");
     comment = TestData.createComment();
     oldComment = TestData.createComment();
     oldComment.setComment("this is my old comment");
@@ -186,7 +183,7 @@ class EmailNotificationHookTest {
 
   @Test
   void shouldSendEmailsAfterUpdatingPullRequest() throws Exception {
-    PullRequestUpdatedEvent event = new PullRequestUpdatedEvent(repository, pullRequest);
+    PullRequestUpdatedMailEvent event = new PullRequestUpdatedMailEvent(repository, pullRequest);
     emailNotificationHook.handleUpdatedPullRequest(event);
 
     ArgumentCaptor<PullRequestUpdatedMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestUpdatedMailTextResolver.class);
@@ -196,6 +193,121 @@ class EmailNotificationHookTest {
     assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR updated");
     assertThat(resolver.getTopic()).isEqualTo(TOPIC_PR_UPDATED);
     assertThat(resolver.getContentTemplatePath()).contains("updated_pull_request");
+  }
+
+  @Test
+  void shouldSendEmailAfterPullRequestCreation() throws Exception {
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldNotSendEmailAfterPullRequestDraftCreation() throws Exception {
+    pullRequest.setStatus(PullRequestStatus.DRAFT);
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, null, HandlerEventType.CREATE);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service, never()).sendEmail(any(), any());
+  }
+
+  @Test
+  void shouldSendEmailBecauseTitleWasChanged() throws Exception {
+    oldPullRequest.setTitle("changed Title");
+    oldPullRequest.setDescription(pullRequest.getDescription());
+    oldPullRequest.setTarget(pullRequest.getTarget());
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldSendEmailBecauseDescriptionWasChanged() throws Exception {
+    oldPullRequest.setTitle(pullRequest.getTitle());
+    oldPullRequest.setDescription("different description");
+    oldPullRequest.setTarget(pullRequest.getTarget());
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldSendEmailBecauseTargetWasChanged() throws Exception {
+    oldPullRequest.setTitle(pullRequest.getTitle());
+    oldPullRequest.setDescription(pullRequest.getDescription());
+    oldPullRequest.setTarget("Different target");
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldNotSendEmailBecauseTitleDescriptionAndTargetWereUnchanged() throws Exception {
+    oldPullRequest.setTitle(pullRequest.getTitle());
+    oldPullRequest.setDescription(pullRequest.getDescription());
+    oldPullRequest.setTarget(pullRequest.getTarget());
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service, never()).sendEmail(any(), any());
+  }
+
+  @Test
+  void shouldNotSendEmailBecauseTitleDescriptionAndTargetWereChangedOfDraftPullRequest() throws Exception {
+    oldPullRequest.setStatus(PullRequestStatus.DRAFT);
+    oldPullRequest.setTitle("Different Title");
+    oldPullRequest.setDescription("Different description");
+    oldPullRequest.setTarget("Different target");
+
+    pullRequest.setStatus(PullRequestStatus.DRAFT);
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service, never()).sendEmail(any(), any());
+  }
+
+  @Test
+  void shouldNotSendEmailsAfterUpdatingReviewersInPullRequest() throws Exception {
+    Map<String, Boolean> reviewers = new HashMap<>();
+    reviewers.put(subscribedAndReviewer, Boolean.FALSE);
+
+    oldPullRequest.setReviewer(reviewers);
+    oldPullRequest.setTitle("PR");
+    oldPullRequest.setDescription("Hitchhiker's guide to the galaxy");
+    Set<String> subscriber = of(currentUser, subscribedButNotReviewer, subscribedAndReviewer);
+    oldPullRequest.setSubscriber(subscriber);
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+    verify(service, never()).sendEmail(eq(Collections.emptySet()), isA(PullRequestUpdatedMailTextResolver.class));
+  }
+
+  @Test
+  void shouldSendEmailsAfterUpdatingDraftToPullRequest() throws Exception {
+    PullRequest oldPullRequest = pullRequest.toBuilder().status(PullRequestStatus.DRAFT).build();
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+
+    ArgumentCaptor<PullRequestStatusChangedMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestStatusChangedMailTextResolver.class);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), captor.capture());
+    PullRequestStatusChangedMailTextResolver resolver = captor.getValue();
+    assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR opened for review");
+    assertThat(resolver.getTopic()).isEqualTo(TOPIC_PR_CHANGED);
+  }
+
+  @Test
+  void shouldSendEmailsAfterChangingPullRequestToDraft() throws Exception {
+    PullRequest oldPullRequest = pullRequest.toBuilder().build();
+    PullRequest draftPullRequest = pullRequest.toBuilder().status(PullRequestStatus.DRAFT).build();
+    PullRequestEvent event = new PullRequestEvent(repository, draftPullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+
+    ArgumentCaptor<PullRequestStatusChangedMailTextResolver> captor = ArgumentCaptor.forClass(PullRequestStatusChangedMailTextResolver.class);
+    verify(service).sendEmail(eq(of(subscribedAndReviewer)), captor.capture());
+    PullRequestStatusChangedMailTextResolver resolver = captor.getValue();
+    assertThat(resolver.getMailSubject(Locale.ENGLISH)).contains("PR converted to draft");
+    assertThat(resolver.getTopic()).isEqualTo(TOPIC_PR_CHANGED);
   }
 
   @Test
@@ -212,6 +324,14 @@ class EmailNotificationHookTest {
     emailNotificationHook.handleRejectedPullRequest(event);
 
     verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestRejectedMailTextResolver.class));
+  }
+
+  @Test
+  void shouldSendEmailsAfterReopeningPullRequest() throws Exception {
+    PullRequestReopenedEvent event = new PullRequestReopenedEvent(repository, pullRequest);
+    emailNotificationHook.handleReopenedPullRequest(event);
+
+    verify(service).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestReopenedMailTextResolver.class));
   }
 
   @Test
@@ -270,6 +390,15 @@ class EmailNotificationHookTest {
 
     verify(service).sendEmail(eq(newMentions), isA(MentionEventMailTextResolver.class));
     verify(service).sendEmail(eq(Collections.emptySet()), isA(MentionEventMailTextResolver.class));
+  }
+
+  @Test
+  void shouldNotSendEmailsAfterRejectingDraft() throws Exception {
+    pullRequest.setStatus(PullRequestStatus.DRAFT);
+    PullRequestRejectedEvent event = new PullRequestRejectedEvent(repository, pullRequest, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER);
+    emailNotificationHook.handleRejectedPullRequest(event);
+
+    verify(service, never()).sendEmail(eq(of(subscribedButNotReviewer, subscribedAndReviewer)), isA(PullRequestRejectedMailTextResolver.class));
   }
 
   @BeforeEach

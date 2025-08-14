@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.pullrequest.service;
 
 import com.cloudogu.scm.review.InternalMergeSwitch;
@@ -115,6 +108,8 @@ class MergeServiceTest {
   private InternalMergeSwitch internalMergeSwitch;
   @Mock
   private UserDisplayManager userDisplayManager;
+  @Mock
+  private MergeCommitMessageService mergeCommitMessageService;
 
   @Mock
   private EMail email;
@@ -125,7 +120,7 @@ class MergeServiceTest {
 
   @BeforeEach
   void initService() {
-    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, internalMergeSwitch, userDisplayManager, email);
+    service = new MergeService(serviceFactory, pullRequestService, mergeGuards, internalMergeSwitch, userDisplayManager, mergeCommitMessageService);
     lenient().doAnswer(invocation -> {
         invocation.<Runnable>getArgument(0).run();
         return null;
@@ -317,12 +312,13 @@ class MergeServiceTest {
 
   @Test
   void shouldDoDryRun() {
-    when(subject.isPermitted("repository:push:" + REPOSITORY.getId())).thenReturn(true);
+    when(subject.isPermitted("repository:readPullRequest:" + REPOSITORY.getId())).thenReturn(true);
     mockPullRequest("mergeable", "master", "1");
     when(mergeCommandBuilder.dryRun()).thenReturn(new MergeDryRunCommandResult(true));
 
     MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
+    verify(mergeCommandBuilder).dryRun();
     assertThat(mergeCheckResult.hasConflicts()).isFalse();
   }
 
@@ -339,13 +335,15 @@ class MergeServiceTest {
   class WithSquashMerge {
 
     private final DisplayUser pullRequestAuthor = DisplayUser.from(new User("zaphod", "Zaphod Beeblebrox", "zaphod@hitchhiker.com"));
+    private final String pullRequestTitle = "Replace variable X with Y";
+    private PullRequest pullRequest;
 
     @BeforeEach
     void preparePullRequest() throws IOException {
-      when(subject.isPermitted("repository:read:" + REPOSITORY.getId())).thenReturn(true);
-      when(repositoryService.isSupported(Command.LOG)).thenReturn(true);
-      PullRequest pullRequest = createPullRequest();
+      pullRequest = createPullRequest();
       pullRequest.setAuthor("zaphod");
+      pullRequest.setTitle(pullRequestTitle);
+
       when(pullRequestService.get(REPOSITORY.getNamespace(), REPOSITORY.getName(), "1")).thenReturn(pullRequest);
 
       when(userDisplayManager.get("zaphod")).thenReturn(Optional.of(pullRequestAuthor));
@@ -359,8 +357,6 @@ class MergeServiceTest {
         changesetWithContributor,
         new Changeset("1", 1L, pullRequestAuthor, "first commit")
       ));
-
-      when(logCommandBuilder.getChangesets()).thenReturn(changesets);
     }
 
     @Nested
@@ -374,28 +370,6 @@ class MergeServiceTest {
       }
 
       @Test
-      void shouldContainCommitMessagesFromSingleCommits() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-        assertThat(commitDefaults.getCommitMessage()).startsWith("Squash commits of branch squash:\n" +
-          "\n" +
-          "- first commit\n" +
-          "\n" +
-          "- second commit\n" +
-          "with multiple lines\n" +
-          "\n" +
-          "- third commit\n");
-      }
-
-      @Test
-      void shouldHaveAuthorFromPullRequest() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitAuthor())
-          .usingRecursiveComparison()
-          .isEqualTo(pullRequestAuthor);
-      }
-
-      @Test
       void shouldUseCurrentUserAsAuthorWhenPullRequestAuthorIsUnknown() {
         when(userDisplayManager.get("zaphod")).thenReturn(empty());
 
@@ -405,43 +379,25 @@ class MergeServiceTest {
           .usingRecursiveComparison()
           .isEqualTo(DisplayUser.from(user));
       }
-
-      @Test
-      void shouldHaveCommitterFromCurrentUserIsDifferentThanPullRequestAuthor() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitMessage()).contains("Committed-by: Phil Groundhog <phil@groundhog.com>");
-      }
-
-      @Test
-      void shouldHaveCommitterFromSingleCommits() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitMessage()).contains("Co-authored-by: Arthur <dent@hitchhiker.com>");
-      }
-
-      @Test
-      void shouldHaveCoAuthorFromSingleCommits() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitMessage()).contains("Co-authored-by: Ford <prefect@hitchhiker.org>");
-      }
-
-      @Test
-      void shouldNotHaveOtherContributorsThanCoAuthoredFromCommits() {
-        CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
-
-        assertThat(commitDefaults.getCommitMessage()).doesNotContain("marvin@example.org");
-      }
     }
 
     @Test
-    void shouldNotHaveCommitterWhenCurrentUserIsPullRequestAuthor() {
-      mockUser(pullRequestAuthor.getId(), pullRequestAuthor.getDisplayName(), pullRequestAuthor.getMail());
+    void shouldHaveAuthorFromPullRequest() {
+      CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
+
+      assertThat(commitDefaults.getCommitAuthor())
+        .usingRecursiveComparison()
+        .isEqualTo(pullRequestAuthor);
+    }
+
+    @Test
+    void shouldTakeCommitMessageFromService() {
+      when(mergeCommitMessageService.determineDefaultMessage(REPOSITORY.getNamespaceAndName(), pullRequest, MergeStrategy.SQUASH))
+        .thenReturn("Great message");
 
       CommitDefaults commitDefaults = service.createCommitDefaults(REPOSITORY.getNamespaceAndName(), "1", MergeStrategy.SQUASH);
 
-      assertThat(commitDefaults.getCommitMessage()).doesNotContain("Committed-by");
+      assertThat(commitDefaults.getCommitMessage()).isEqualTo("Great message");
     }
   }
 

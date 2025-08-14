@@ -1,31 +1,29 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { DisplayedUser, HalRepresentation, Links, PagedCollection } from "@scm-manager/ui-types";
+import {
+  DisplayedUser,
+  HalRepresentation,
+  HalRepresentationWithEmbedded,
+  Links,
+  PagedCollection
+} from "@scm-manager/ui-types";
 import { ReactText } from "react";
 
-export type PullRequestStatus = "OPEN" | "MERGED" | "REJECTED";
+export type PullRequestStatus = "OPEN" | "MERGED" | "REJECTED" | "DRAFT";
 
 export type Reviewer = DisplayedUser & {
   approved: boolean;
@@ -38,7 +36,7 @@ export type BasicPullRequest = {
 };
 
 export type PullRequest = BasicPullRequest &
-  HalRepresentation & {
+  HalRepresentationWithEmbedded<{ availableLabels: { availableLabels: string[] } }> & {
     description?: string;
     author?: DisplayedUser;
     reviser?: DisplayedUser;
@@ -46,6 +44,7 @@ export type PullRequest = BasicPullRequest &
     id?: string;
     creationDate?: string;
     reviewer?: Reviewer[];
+    labels: string[];
     status: PullRequestStatus;
     tasks?: Tasks;
     sourceRevision?: string;
@@ -53,6 +52,8 @@ export type PullRequest = BasicPullRequest &
     markedAsReviewed?: string[];
     emergencyMerged?: boolean;
     ignoredMergeObstacles?: string[];
+    shouldDeleteSourceBranch: boolean;
+    initialTasks: string[];
   };
 
 export type Location = {
@@ -70,6 +71,7 @@ export type BasicComment = {
   type: CommentType;
   mentions: Mention[];
   location?: Location;
+  systemCommentParameters?: { [key: string]: string };
 };
 
 export type Comment = BasicComment & {
@@ -84,6 +86,12 @@ export type Comment = BasicComment & {
   context?: Context;
   _links: Links;
   _embedded?: { [key: string]: any };
+};
+
+export type CommentImage = {
+  fileHash: string;
+  file: File;
+  filetype: string;
 };
 
 export type Mention = {
@@ -140,9 +148,15 @@ export type MergeCommit = {
   overrideMessage?: string;
 };
 
+export type MergePreventReason = {
+  type: "FILE_CONFLICTS" | "EXTERNAL_MERGE_TOOL";
+  affectedPaths?: string[];
+};
+
 export type MergeCheck = {
   hasConflicts: boolean;
   mergeObstacles: MergeObstacle[];
+  mergePreventReasons?: MergePreventReason[];
 };
 
 export type MergeObstacle = {
@@ -168,4 +182,9 @@ export type Tasks = {
 
 export type CheckResult = {
   status: "PR_VALID" | "BRANCHES_NOT_DIFFER" | "PR_ALREADY_EXISTS";
+};
+
+export type Banner = HalRepresentation & {
+  branch: string;
+  pushedAt: Date;
 };

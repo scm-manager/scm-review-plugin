@@ -1,30 +1,25 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.config.api;
 
 import com.cloudogu.scm.review.config.service.ConfigService;
-import com.cloudogu.scm.review.config.service.PullRequestConfig;
+import com.cloudogu.scm.review.config.service.RepositoryPullRequestConfig;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -42,8 +37,6 @@ import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.web.RestDispatcher;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -85,7 +78,7 @@ class RepositoryConfigResourceTest {
 
     lenient().when(uriInfo.getBaseUri()).thenReturn(URI.create("localhost/scm/api"));
 
-    lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new PullRequestConfig());
+    lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new RepositoryPullRequestConfig());
   }
 
   @Nested
@@ -140,9 +133,9 @@ class RepositoryConfigResourceTest {
       }
 
       @Test
-      void shouldSetConfig() throws URISyntaxException, UnsupportedEncodingException {
+      void shouldSetConfig() throws URISyntaxException {
         MockHttpRequest request = MockHttpRequest.put("/v2/pull-requests/space/X/config")
-          .content("{\"restrictBranchWriteAccess\": true, \"protectedBranchPatterns\": [\"feature/*\"]}".getBytes())
+          .content("{\"restrictBranchWriteAccess\": true, \"protectedBranchPatterns\": [{\"branch\":\"feature/*\", \"path\":\"*\"}]}".getBytes())
           .contentType(MediaType.APPLICATION_JSON);
 
         dispatcher.invoke(request, response);
@@ -151,7 +144,8 @@ class RepositoryConfigResourceTest {
         verify(configService)
           .setRepositoryPullRequestConfig(eq(REPOSITORY), argThat(argument -> {
             assertThat(argument.isRestrictBranchWriteAccess()).isTrue();
-            assertThat(argument.getProtectedBranchPatterns()).contains("feature/*");
+            assertThat(argument.getProtectedBranchPatterns().get(0).getBranch()).contains("feature/*");
+            assertThat(argument.getProtectedBranchPatterns().get(0).getPath()).contains("*");
             return true;
           }));
       }
@@ -179,7 +173,7 @@ class RepositoryConfigResourceTest {
     @BeforeEach
     void initRepositoryManager() {
       when(repositoryManager.get(new NamespaceAndName("space", "X"))).thenReturn(REPOSITORY);
-      lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new PullRequestConfig());
+      lenient().when(configService.getRepositoryPullRequestConfig(REPOSITORY)).thenReturn(new RepositoryPullRequestConfig());
     }
 
     @AfterEach

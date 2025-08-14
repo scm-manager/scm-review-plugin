@@ -1,34 +1,27 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 import React, { FC, ReactText, useState } from "react";
 import classNames from "classnames";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { ConfirmAlert, confirmAlert, DateFromNow, ErrorNotification } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
-import { Comment, Mention, PossibleTransition, PullRequest } from "../types/PullRequest";
-import { useDeleteComment, useTransformComment, useUpdateComment } from "../pullRequest";
+import { Comment, CommentImage, Mention, PossibleTransition, PullRequest } from "../types/PullRequest";
+import { useDeleteComment, useTransformComment, useUpdateComment, useUpdateCommentWithImages } from "../pullRequest";
 import CommentSpacingWrapper from "./CommentSpacingWrapper";
 import CommentActionToolbar from "./CommentActionToolbar";
 import CommentTags from "./CommentTags";
@@ -40,6 +33,7 @@ import EditButtons from "./EditButtons";
 import Replies from "./Replies";
 import ReplyEditor from "./ReplyEditor";
 import MentionTextarea from "./MentionTextarea";
+import handleImagePaste from "./handleImagePaste";
 
 const LinkWithInheritColor = styled.a`
   color: inherit;
@@ -55,9 +49,17 @@ type Props = {
   parent?: Comment;
   comment: Comment;
   createLink?: string;
+  createWithImageLink?: string;
 };
 
-const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, comment, createLink }) => {
+const PullRequestComment: FC<Props> = ({
+  repository,
+  pullRequest,
+  parent,
+  comment,
+  createLink,
+  createWithImageLink
+}) => {
   const [t] = useTranslation("plugins");
   const [collapsed, setCollapsed] = useState(comment.type === "TASK_DONE");
   const [edit, setEdit] = useState(false);
@@ -65,6 +67,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
   const [contextModalOpen, setContextModalOpen] = useState(false);
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
   const [commentType, setCommentType] = useState(comment.type);
+  const [images, setImages] = useState<CommentImage[]>([]);
   const [commentText, setCommentText] = useState(comment.comment || "");
   const [mentions, setMentions] = useState<Mention[]>(comment.mentions || []);
   const [replyEditor, setReplyEditor] = useState<Comment>();
@@ -72,6 +75,7 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
   const { remove, isLoading: deleteLoading, error: deleteError } = useDeleteComment(repository, pullRequest);
 
   const { update } = useUpdateComment(repository, pullRequest);
+  const { update: updateWithImage } = useUpdateCommentWithImages(repository, pullRequest);
   const { transform } = useTransformComment(repository, pullRequest);
 
   const startUpdate = () => {
@@ -92,7 +96,11 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
       return;
     }
 
-    update({ ...comment, type: commentType, comment: commentText, mentions });
+    if (images.length === 0) {
+      update({ ...comment, type: commentType, comment: commentText, mentions });
+    } else {
+      updateWithImage({ ...comment, type: commentType, comment: commentText, mentions }, images);
+    }
     setEdit(false);
   };
 
@@ -163,6 +171,8 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
           onChange={handleChanges}
           onSubmit={updateComment}
           onCancel={cancelUpdate}
+          onPaste={handleImagePaste(createWithImageLink || "", setImages, setCommentText)}
+          autofocus
         />
       </>
     );
@@ -259,7 +269,13 @@ const PullRequestComment: FC<Props> = ({ repository, pullRequest, parent, commen
         </article>
       </CommentSpacingWrapper>
       {!collapsed && (
-        <Replies repository={repository} pullRequest={pullRequest} comment={comment} createLink={createLink} />
+        <Replies
+          repository={repository}
+          pullRequest={pullRequest}
+          comment={comment}
+          createLink={createLink}
+          createWithImagesLink={createWithImageLink}
+        />
       )}
       {createReplyEditorIfNeeded(comment?.id)}
     </>

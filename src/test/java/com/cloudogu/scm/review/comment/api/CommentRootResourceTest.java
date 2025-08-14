@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.RepositoryResolver;
@@ -32,12 +25,15 @@ import com.cloudogu.scm.review.comment.service.ExecutedTransition;
 import com.cloudogu.scm.review.comment.service.InlineContext;
 import com.cloudogu.scm.review.comment.service.Location;
 import com.cloudogu.scm.review.comment.service.MockedDiffLine;
+import com.cloudogu.scm.review.comment.service.PullRequestImageService;
 import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,6 +42,11 @@ import com.github.sdorra.shiro.SubjectAware;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.inject.util.Providers;
+import jakarta.inject.Provider;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.Before;
@@ -58,18 +59,16 @@ import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.sse.ChannelRegistry;
+import sonia.scm.store.Blob;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.RestDispatcher;
 
-import javax.inject.Provider;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static com.cloudogu.scm.review.comment.service.ContextLine.copy;
@@ -127,6 +126,14 @@ public class CommentRootResourceTest {
 
   @Mock
   private ChannelRegistry channelRegistry;
+  @Mock
+  private ConfigService configService;
+
+  @Mock
+  private PullRequestChangeService pullRequestChangeService;
+
+  @Mock
+  private PullRequestImageService pullRequestImageService;
 
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock();
 
@@ -146,11 +153,11 @@ public class CommentRootResourceTest {
     commentMapper.setExecutedTransitionMapper(executedTransitionMapper);
     commentMapper.setPossibleTransitionMapper(possibleTransitionMapper);
     replyMapper.setExecutedTransitionMapper(executedTransitionMapper);
-    CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder, pullRequestService, branchRevisionResolver);
+    CommentRootResource resource = new CommentRootResource(commentMapper, repositoryResolver, service, commentResourceProvider, commentPathBuilder, pullRequestService, branchRevisionResolver, pullRequestImageService);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-            serviceFactory, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), null, channelRegistry)));
+            commentService, serviceFactory, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), null, channelRegistry, pullRequestChangeService)), configService, userDisplayManager);
     dispatcher.addSingletonResource(pullRequestRootResource);
     when(branchRevisionResolver.getRevisions(any(), any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
@@ -172,6 +179,39 @@ public class CommentRootResourceTest {
 
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
     assertThat(response.getOutputHeaders().getFirst("Location")).hasToString("/v2/pull-requests/space/name/1/comments/1");
+  }
+
+  @Test
+  public void shouldCreateCommentWithImage() throws URISyntaxException, IOException {
+    when(pullRequestService.get(any(), any(), any())).thenReturn(PULL_REQUEST);
+    when(service.add(eq(REPOSITORY_NAMESPACE), eq(REPOSITORY_NAME), eq("1"), argThat(t -> t.getComment().equals("this is my comment")))).thenReturn("1");
+    String commentJson = "{\"comment\" : \"this is my comment\", \"filetypes\": {\"file0\": \"image/png\"}}";
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/images?sourceRevision=source&targetRevision=target");
+
+    MultipartUploadHelper.multipartRequest(request, Collections.singletonMap("file0", new ByteArrayInputStream("content".getBytes())), commentJson);
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+    assertThat(response.getOutputHeaders().getFirst("Location")).hasToString("/v2/pull-requests/space/name/1/comments/1");
+  }
+
+  @Test
+  public void shouldGetCommentImage() throws URISyntaxException, IOException {
+    Blob blob = mock(Blob.class);
+    when(blob.getInputStream()).thenReturn(new ByteArrayInputStream("image/png\0content".getBytes()));
+    PullRequestImageService.ImageStream imageStream = new PullRequestImageService.ImageStream(blob);
+    when(pullRequestImageService.getPullRequestImage(any(), any(), any())).thenReturn(imageStream);
+
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/images/dummyHash");
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    assertThat(response.getOutput()).isEqualTo("content".getBytes());
   }
 
   @Test
@@ -344,7 +384,7 @@ public class CommentRootResourceTest {
 
   @Test
   @SubjectAware(username = "createCommentUser", password = "secret")
-  public void shouldGetOnlyTheSelfLinkÍfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
+  public void shouldGetOnlyTheSelfLinkIfTheAuthorIsNotTheCurrentUser() throws URISyntaxException, IOException {
     mockExistingComments();
 
     MockHttpRequest request =
@@ -392,8 +432,8 @@ public class CommentRootResourceTest {
   public void shouldEmbedTransitions() throws URISyntaxException, IOException {
     mockExistingComments();
     Comment commentWithTransitions = service.get("space", "name", "1", "1");
-    commentWithTransitions.addCommentTransition(new ExecutedTransition<>("1", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "slarti"));
-    commentWithTransitions.addCommentTransition(new ExecutedTransition<>("2", CommentTransition.SET_DONE, System.currentTimeMillis(), "dent"));
+    commentWithTransitions.addExecutedTransition(new ExecutedTransition<>("1", CommentTransition.MAKE_TASK, System.currentTimeMillis(), "slarti"));
+    commentWithTransitions.addExecutedTransition(new ExecutedTransition<>("2", CommentTransition.SET_DONE, System.currentTimeMillis(), "dent"));
 
     MockHttpRequest request =
       MockHttpRequest

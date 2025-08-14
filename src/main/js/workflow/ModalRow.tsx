@@ -1,39 +1,31 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
 import React, { FC } from "react";
-import { useTranslation, withTranslation, WithTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { Result } from "../types/EngineConfig";
-import { Icon } from "@scm-manager/ui-components";
 import classNames from "classnames";
+import { StatusIcon, StatusVariants } from "@scm-manager/ui-core";
 
-type Props = WithTranslation & {
+type Props = {
   result: Result;
 };
 
-const Entry = styled.div`
+const Entry = styled.li`
   // css adjacent with same component
   & + & {
     border-top: 1px solid rgba(219, 219, 219, 0.5);
@@ -72,13 +64,13 @@ const ModalRow: FC<Props> = ({ result }) => {
     <Entry
       className={classNames("is-flex", "is-flex-direction-row", "is-justify-content-space-between", "px-0", "py-4")}
     >
-      <Left>
-        <Icon
-          className="mr-2"
-          color={result?.failed ? "warning" : "success"}
-          name={result?.failed ? "exclamation-triangle" : "check-circle"}
+      <Left className={"is-flex is-align-items-center"}>
+        <span className="has-text-weight-bold">{t("workflow.rule." + result?.rule + ".name")}</span>
+        <StatusIcon
+          className="ml-2"
+          variant={result?.failed ? StatusVariants.DANGER : StatusVariants.SUCCESS}
+          alt={t(`scm-review-plugin.pullRequests.aria.workflow.status.${result.failed ? "fail" : "success"}`)}
         />
-        <strong>{t("workflow.rule." + result?.rule + ".name")}</strong>
       </Left>
       <Right>
         <p>{t(getTranslationKey(result), result?.context)}</p>
@@ -87,4 +79,4 @@ const ModalRow: FC<Props> = ({ result }) => {
   );
 };
 
-export default withTranslation("plugins")(ModalRow);
+export default ModalRow;

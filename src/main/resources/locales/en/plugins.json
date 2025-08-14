@@ -14,26 +14,31 @@
     },
     "repositoryCardTooltip": "Pull Requests",
     "create": {
+      "title": "Create Pull Request",
       "subtitle": "Creates a new pull request for {{repositoryName}}",
       "submitButton": "Create Pull Request"
     },
     "edit": {
+      "title": "Edit Pull Request",
       "subtitle": "Edit pull request for {{repositoryName}}",
       "submitButton": "Edit Pull Request"
     },
     "diff": {
       "notSupported": "Diffs for pull request are not supported by the type of repository",
       "collapseDiffs": "Collapse",
+      "ignoreWhitespace": "Ignore whitespaces changes",
+      "activateWhitespace": "Show whitespaces changes",
       "markReviewed": "Mark file as reviewed. This is for convenience only. Marked files are collapsed by default.",
       "markNotReviewed": "Remove review mark from file.",
       "addComment": "Add comment for file",
       "jumpToSource": "Jump to source",
       "jumpToTarget": "Jump to target",
+      "jumpToConflict": "Jump to conflict",
       "moreDiffsAvailable": "There are more diffs available.",
-      "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} comment.",
-      "partialMoreDiffsAvailable_plural": "There are more diffs available and among them {{count}} comments.",
+      "partialMoreDiffsAvailable": "There are more diffs available and among them {{count}} comment(s).",
       "loadMore": "Load more",
-      "noChangesets": "No changesets found. The commits could have been removed."
+      "noChangesets": "No changesets found. The commits could have been removed.",
+      "treeTitle": "Diff-Tree"
     },
     "noRequests": "No pull requests matching the selected criteria found",
     "pullRequest": {
@@ -43,14 +48,19 @@
       "validation": {
         "title": "Title is required",
         "BRANCHES_NOT_DIFFER": "No differences between source branch and target branch",
-        "PR_ALREADY_EXISTS": "The pull request with your selected source branch and target branch already exists"
+        "PR_ALREADY_EXISTS": "The pull request with your selected source and target branch already exists",
+        "SAME_BRANCHES": "A pull request must not have identical source and target branches"
       },
       "description": "Description",
       "status": "Status",
+      "createAsDraft": "Create as draft",
+      "changeToDraft": "Change to draft",
+      "changeToDraftHelpText": "When converting to a draft, the approvals by users are deleted.",
       "statusLabel": {
         "OPEN": "OPEN",
         "MERGED": "MERGED",
-        "REJECTED": "REJECTED"
+        "REJECTED": "REJECTED",
+        "DRAFT": "DRAFT"
       },
       "id": "ID",
       "author": "Author",
@@ -59,39 +69,121 @@
       "date": "Date",
       "reviewer": "Reviewers",
       "addReviewer": "Add Reviewer",
+      "labels": "Labels",
       "tabs": {
         "commits": "Commits",
         "diff": "Diff",
         "conflicts": "Conflicts",
-        "comments": "Comments"
+        "comments": "Comments",
+        "changes": "Change history"
+      },
+      "changes": {
+        "rejectionCause": {
+          "SOURCE_BRANCH_DELETED": ", because the source branch was deleted",
+          "TARGET_BRANCH_DELETED": ", because the target branch was deleted",
+          "REJECTED_BY_USER": ", because a user rejected the pull request"
+        },
+        "noChanges": "No changes available",
+        "titles": {
+          "edit": "Edited {{propertyName}}",
+          "created": "Added {{propertyName}}",
+          "removed": "Removed {{propertyName}}"
+        },
+        "properties": {
+          "TARGET_BRANCH": "Target Branch",
+          "LABELS": "Label",
+          "TITLE": "Title",
+          "DESCRIPTION": "Description",
+          "DELETE_SOURCE_BRANCH_AFTER_MERGE": "Source branch will be deleted after successful merge",
+          "REVIEWER": "Reviewer",
+          "PR_STATUS": "Pull Request Status",
+          "COMMENT": "Comment",
+          "REPLY": "Reply",
+          "TASK": "Task",
+          "SUBSCRIBER": "Subscriber",
+          "FINISHED_TASK": "Task marked as finished",
+          "UNFINISHED_TASK": "Task marked as unfinished",
+          "COMMENT_TO_TASK": "Edited comment to be a task",
+          "TASK_TO_COMMENT": "Edited task to be a comment",
+          "REVIEW_MARKS": "File marked as reviewed",
+          "SOURCE_BRANCH_REVISION": "Source Branch Revision"
+        },
+        "changedBy": "Changed by",
+        "changedByUnknown": "Changed by unknown user",
+        "changedAt": "Changed",
+        "previousValue": "Previously:",
+        "currentValue": "Currently:",
+        "reviewer": {
+          "removed": "Removed '{{username}}' as a reviewer",
+          "added": "Added '{{username}}' as a reviewer",
+          "addedWithApproval": "with an approval",
+          "addedWithoutApproval": "without an approval",
+          "approved": "'{{username}}' has approved",
+          "disapproved": "'{{username}}' withdrew the approval"
+        },
+        "changedTargetBranch": "Changed target branch from `{{previous}}` to `{{current}}`",
+        "changedPrStatus": "Changed pull request status from `{{previous}}` to `{{current}}`",
+        "subscriber": {
+          "removed": "'{{username}}' is no longer subscribed to the pull request",
+          "added": "'{{username}}' has subscribed to the pull request"
+        },
+        "reviewMark": {
+          "added": "'{{username}}' has marked the file '{{file}}' as reviewed",
+          "removed": "'{{username}}' has removed the reviewed mark for the file '{{file}}'"
+        },
+        "added": "Added: ",
+        "removed": "Removed: ",
+        "revision": {
+          "previous": "Previous revision: ",
+          "current": "Current revision: "
+        }
       },
       "tasks": {
         "todo": "{{count}} task open",
-        "todo_plural": "{{count}} tasks open",
+        "todo_other": "{{count}} tasks open",
         "done": "{{done}} / {{total}} tasks done",
         "allDone": "All tasks done"
       },
       "noChangesets": "No changesets found. The commits could have been removed.",
       "details": {
         "notification": "Pull request merged successfully!",
-        "targetDeleted": "The target branch has been deleted!",
+        "branchDeleted": "The target or source branch has been deleted!",
         "approved": "Approved by {{name}}",
         "ignoredMergeObstacles": "Following rules were ignored on merging the pull request:",
+        "copyButton": "Copy to clipboard",
         "buttons": {
           "edit": "Edit",
           "approve": "Approve",
           "disapprove": "Disapprove",
-          "subscribe": "Subscribe",
-          "unsubscribe": "Unsubscribe"
+          "subscribe": "Subscribe to pull request information",
+          "unsubscribe": "Unsubscribe from pull request information"
         }
       },
       "selector": {
-        "OPEN": "open",
+        "IN_PROGRESS": "open/draft",
         "MINE": "mine",
         "REVIEWER": "to be reviewed",
         "ALL": "all",
         "REJECTED": "rejected",
         "MERGED": "merged"
+      },
+      "selectorLabel": "Filter by",
+      "sortSelector": {
+        "ID_ASC": "id (ascending)",
+        "ID_DESC": "id (descending)",
+        "STATUS_ASC": "status (ascending)",
+        "STATUS_DESC": "status (descending)",
+        "LAST_MOD_ASC": "newest first",
+        "LAST_MOD_DESC": "latest first"
+      },
+      "sortSelectorLabel": "Sort by",
+      "titlePart": {
+        "IN_PROGRESS": "Open Pull Requests",
+        "MINE": "My Pull Requests",
+        "REVIEWER": "Pull Requests to be reviewed",
+        "ALL": "All Pull Requests",
+        "REJECTED": "Rejected Pull Requests",
+        "MERGED": "Merged Pull Requests"
       },
       "guard": {
         "mergeFromAuthorNotAllowed": {
@@ -99,6 +191,7 @@
         }
       }
     },
+    "pullRequestWithIDAndNamespaceName": "Pull Request #{{id}} in {{namespace}}/{{name}}",
     "showPullRequest": {
       "mergeButton": {
         "buttonTitle": "Merge Pull Request",
@@ -114,7 +207,8 @@
         "cancel": "Cancel",
         "deleteSourceBranch": {
           "flag": "Delete source branch",
-          "help": "Source branch will be deleted after successful merge"
+          "help": "Source branch will be deleted after successful merge",
+          "explanation": "Preset for deleting the source branch after a successful merge"
         },
         "commitMessage": "Please insert your commit message",
         "commitAuthor": "Author",
@@ -131,8 +225,8 @@
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward if possible",
         "help": {
           "REBASE": "Executes a rebase before the merge. Commits on the source branch are directly applied to the target branch.",
-          "SQUASH": "Squash all commits of source branch into one new commit --and merge into-- on top of the target branch",
-          "MERGE_COMMIT": "Merge branches with new commit and custom commit message",
+          "SQUASH": "Squash all commits of source branch into one new commit and merge on top of the target branch.",
+          "MERGE_COMMIT": "Merge branches with new commit and custom commit message.",
           "FAST_FORWARD_IF_POSSIBLE": "Try to merge branches using fast-forward without creating a new commit. If a fast forward is not possible, a normal merge commit will be created."
         }
       },
@@ -140,25 +234,83 @@
         "buttonTitle": "Reject Pull Request",
         "confirmAlert": {
           "title": "Reject Pull Request",
-          "message": "Do you really want to reject this pull request?",
-          "submit": "Yes",
-          "cancel": "No"
+          "submit": "Reject",
+          "cancel": "Cancel",
+          "message": {
+            "hint": "Do you really want to reject this pull request? You can always reopen it later.",
+            "label": "Optional Comment",
+            "help": "Explain why you reject this pull request. The message will be added as a normal comment to the pull request.",
+            "placeholder": "Add an optional comment, why you reject this pull request."
+          }
         }
+      },
+      "reopenButton": {
+        "buttonTitle": "Reopen Pull Request",
+        "confirmAlert": {
+          "title": "Reopen Pull Request",
+          "submit": "Reopen",
+          "cancel": "Cancel",
+          "message": {
+            "hint": "Do you really want to reopen this pull request?"
+          }
+        }
+      },
+      "convertDraftButton": {
+        "buttonTitle": "Ready for Review"
       },
       "overrideModal": {
         "title": "Workflow Engine",
         "cancel": "Cancel",
         "continue": "Merge Pull Request",
         "introduction": "Some rules are broken:",
-        "addMessageText": "Additionally to the merge message in the next step you should add a comment, why you want to performe the emergency merge:"
+        "addMessageText": "Additionally to the merge message in the next step you should add a comment, why you want to perform the emergency merge:"
+      },
+      "deleteSourceBranchButton": {
+        "buttonTitle": "Delete Source Branch",
+        "deleteModal": {
+          "title": "Delete Source Branch?",
+          "message": "Really delete the source branch '{{branch}}'?",
+          "messageForDifferentRevision": "The branch has diverged from the revision that was merged with this pull request. The last change on the branch '{{branch}}' was {{lastCommitDate}}.",
+          "submit": "Delete",
+          "cancel": "Cancel"
+        },
+        "deleteErrorModal": {
+          "title": "Delete Source Branch",
+          "message": "There was an error deleting the branch '{{branch}}'.",
+          "cancel": "Cancel"
+        }
       }
     },
     "pullRequests": {
+      "banner": "{{branch}} was pushed by you <0/>",
+      "closeBanner": "Close banner",
+      "pageSubtitle": "Pull Requests",
       "errorTitle": "Error",
       "errorSubtitle": "Unspecified pull request error",
       "forbidden": "You do not have the permission to read pull requests!",
-      "createButton": "Create Pull Request"
+      "createButton": "Create Pull Request",
+      "subtitle": "{{author}} requested to merge <highlight>{{source}}</highlight> into <highlight>{{target}}</highlight><space> </space><date />",
+      "details": {
+        "tasks": "Tasks",
+        "reviewers": "Reviewers",
+        "workflow": "Workflows",
+        "pullRequests": "Pull Requests"
+      },
+      "aria": {
+        "id": "ID",
+        "status": "Status",
+        "workflow": {
+          "label": "Workflows: {{status}}",
+          "status": {
+            "fail": "Failed",
+            "success": "Succeeded",
+            "pending": "Pending"
+          }
+        }
+      }
     },
+    "pullRequestsWithStatusAndNamespaceName": "{{status}} in {{namespace}}/{{name}}",
+    "pullRequestsWithStatusPageAndNamespaceName": "{{status}} page {{page}} of {{total}} in {{namespace}}/{{name}}",
     "comment": {
       "addComment": "Add comment",
       "addTask": "Add task",
@@ -177,7 +329,8 @@
       "markedDoneBy": "finished by",
       "contextModal": {
         "title": "Original Context",
-        "message": "This is the original diff context at the time of comment creation"
+        "message": "This is the original diff context at the time of comment creation",
+        "jumpToDiff": "Jump to file diff"
       },
       "confirmDeleteAlert": {
         "title": "Delete Comment",
@@ -204,7 +357,7 @@
         "cancel": "No"
       },
       "makeCommentAlert": {
-        "title": "Make this a Normal Comment",
+        "title": "Change to a normal Comment",
         "message": "Do you really want to transform this task to a normal comment?",
         "submit": "Yes",
         "cancel": "No"
@@ -218,9 +371,13 @@
       "systemMessage": {
         "merged": "The pull request has been merged.",
         "rejected": "The pull request has been rejected.",
+        "reopened": "The pull request has been reopened.",
         "sourceDeleted": "The source branch of the pull request has been deleted.",
         "targetDeleted": "The target branch of the pull request has been deleted.",
-        "emergencyMerged": "The pull request has been merged with an emergency merge. The workflow engine rules has been ignored."
+        "targetChanged": "The target branch of the pull request has been changed from `{{oldTarget}}` to `{{newTarget}}`.",
+        "emergencyMerged": "The pull request has been merged with an emergency merge. The Workflow Engine rules have been ignored.",
+        "statusToOpen": "The pull request has been opened for review.",
+        "statusToDraft": "The pull request has been converted to draft."
       },
       "type": {
         "comment": "Comment",
@@ -255,8 +412,14 @@
         "DELETED_BY_THEM": "deleted by them"
       },
       "hint": {
-        "header": "Found conflicting changes",
-        "text": "Learn how to resolve the conflicts to merge this branch."
+        "EXTERNAL_MERGE_TOOL": {
+          "header": "Found conflict because changed files must be merged by external merge tool",
+          "text": "An external merge tool was configured for this repository. Learn how to resolve the conflicts to merge this branch."
+        },
+        "FILE_CONFLICTS": {
+          "header": "Found conflicting changes in changed files",
+          "text": "Learn how to resolve the conflicts to merge this branch."
+        }
       }
     },
     "branch": {
@@ -265,28 +428,86 @@
     },
     "config": {
       "title": "Pull Requests Configuration",
+      "navigationPrompt": "You have unsaved changes. Do you really want to leave this page?",
+      "legends": {
+        "mergeDialog": "Merge Dialog",
+        "creation": "Creation",
+        "restrictions": "Restrictions",
+        "branchOptions": "Preset for deleting the source branch after a successful merge"
+      },
+      "availableLabels": {
+        "label": "Manage Labels",
+        "ariaLabel": "Enter a new label",
+        "placeholder": "Enter a new label",
+        "information": "Create new labels by entering the content and adding it with the Enter key or the “Add Label” button.",
+        "addButton": {
+          "label": "Add Label"
+        },
+        "duplicateWarning": "Label has already been added"
+      },
+      "defaultReviewers": {
+        "label": "Default Reviewers",
+        "addButton": "Add",
+        "placeholder": "Add default reviewer",
+        "information": "Add new default reviewers by entering the user name and selecting it from the suggestions.",
+        "loading": "Loading …",
+        "noOptions": "No suggestion available",
+        "duplicateWarning": "Reviewer has already been added",
+        "nonExistingUser": "Reviewer does not exist in user database"
+      },
       "restrictBranchWriteAccess": {
-        "label": "Branch protection enabled",
-        "helpText": "Enables branch protection, so that branches are only modifiable with pull requests."
+        "label": "Branch protection enabled"
       },
       "disableRepositoryConfiguration": {
-        "label": "Do not allow repository configuration",
-        "helpText": "Do not allow repository owners to configure pull requests."
+        "label": "Disable repository configuration",
+        "helpText": "Repository owners may not configure pull requests on repository level."
+      },
+      "deleteBranchOnMerge": {
+        "label": "Delete source branch on merge",
+        "helpText": "The value can still be changed when creating or editing a pull request."
+      },
+      "defaultMergeStrategy": {
+        "label": "Default merge strategy",
+        "helpText": "The preselected merge strategy in the merge modal."
+      },
+      "overwriteDefaultCommitMessage": {
+        "label": "Overwrite default commit message",
+        "helpText": "If selected, the default commit message will be replaced with the given custom template."
+      },
+      "commitMessageTemplate": {
+        "label": "Commit message template",
+        "hint": "This message can contain template expressions. Find out more about this and see a simple example on the <0>documentation page</0>.",
+        "helpText": "This template will be used instead of the default commit message when a pull request is merged."
+      },
+      "disableRepositoryAndNamespaceConfiguration": {
+        "label": "Disable repository and namespace configuration",
+        "helpText": "Repository owners may not configure pull requests on namespace or repository level."
+      },
+      "overwriteAll": {
+        "label": "Override parent configuration",
+        "helpText": "Global and namespace specific configuration is overridden by the repository configuration."
+      },
+      "overwriteGlobal": {
+        "label": "Override global configuration",
+        "helpText": "Global configuration is overridden by the namespace configuration."
       },
       "branchProtection": {
         "branches": {
-          "subtitle": "Restrictions on Branches",
-          "note": "Branches matching the following patterns will only be writable by pull requests:",
-          "noBranches": "No branch patterns defined.",
-          "deleteBranch": "Delete this branch pattern",
+          "subtitle": "Restrictions on Branches / Paths",
+          "note": "Branches AND paths matching the following patterns will only be writable by pull requests. Additionally, it will not be possible to create or delete branches with paths matching the patterns.",
+          "noBranches": "No branch protection patterns defined.",
+          "deleteBranch": "Delete this branch protection pattern",
           "newBranch": {
             "label": "Add branch pattern",
-            "helpText": "Add a new branch pattern to the list of protected branches.",
-            "pattern": "Pattern",
-            "add": {
-              "label": "Add",
-              "helpText": "Add the given branch to the list of protected branches."
-            }
+            "pattern": "Branch Pattern"
+          },
+          "newPath": {
+            "label": "Add path pattern",
+            "pattern": "Path Pattern"
+          },
+          "add": {
+            "label": "Add",
+            "helpText": "Add the given protection to the list of protections."
           }
         },
         "bypasses": {
@@ -307,6 +528,25 @@
       "preventMergeFromAuthor": {
         "label": "Prevent authors from merging own pull requests",
         "helpText": "Check this to prevent authors to merge pull requests created by them. This can be overridden with the emergency merge permission."
+      },
+      "defaultTasks": {
+        "label": "Default Tasks",
+        "information": "Add tasks that are automatically added when a pull request is created.",
+        "addTask": "Add Task",
+        "deleteTask": "Delete Task",
+        "editTask": "Edit Task",
+        "noTasks": "No default tasks configured.",
+        "modal": {
+          "createTitle": "Create new default task",
+          "createInput": "Add default task",
+          "editTitle": "Edit existing default task",
+          "editInput": "Edit default task",
+          "markdownInformation": "This input field supports the <0>MarkDown Syntax</0>.",
+          "preview": "Preview",
+          "addTask": "Create Task",
+          "editTask": "Edit Task",
+          "cancel": "Cancel"
+        }
       }
     },
     "obstacle": "This branch can only be modified by pull requests.",
@@ -319,9 +559,16 @@
       },
       "created": {
         "header": "New pull request: #{{id}} {{title}}",
-        "footerStart": "Created by",
-        "footerMiddle": "in repository",
-        "footerEnd": ""
+        "draftHeader": "New draft pull request: #{{id}} {{title}}",
+        "footer": "Created by {{author}} in repository {{namespace}}/{{name}}"
+      },
+      "reopened": {
+        "header": "Pull request reopened: #{{id}} {{title}}",
+        "footer": "Reopened by {{author}} in repository {{namespace}}/{{name}}"
+      },
+      "draftToOpen": {
+        "header": "Open for review: #{{id}} {{title}}",
+        "footer": "Opened for review by {{author}} in repository {{namespace}}/{{name}}"
       },
       "todo": {
         "todo": "{{open}}/{{count}} tasks",
@@ -336,8 +583,8 @@
     },
     "workflow": {
       "enableEngine": {
-        "label": "Activate workflow engine",
-        "helpText": "Activate the workflow engine and validate all pull requests by the defined rules."
+        "label": "Activate Workflow Engine",
+        "helpText": "Activate the Workflow Engine and validate all pull requests by the defined rules."
       },
       "rule": {
         "column": {
@@ -357,19 +604,19 @@
       "noRulesConfigured": "No rules configured yet.",
       "statusbar": {
         "rules": "{{count}} rule",
-        "rules_plural": "{{count}} rules",
+        "rules_other": "{{count}} rules",
         "failedRules": "{{count}} rule is not fulfilled",
-        "failedRules_plural": "{{count}} rules are not fulfilled",
+        "failedRules_other": "{{count}} rules are not fulfilled",
         "noFailedRules": "All rules fulfilled"
       },
       "modal": {
         "failedTitle": "{{count}} rule is not fulfilled",
-        "failedTitle_plural": "{{count}} rules are not fulfilled",
+        "failedTitle_other": "{{count}} rules are not fulfilled",
         "successTitle": "All rules fulfilled"
       },
       "disableRepositoryConfiguration": {
         "label": "Do not allow repository configuration",
-        "helpText": "Do not allow repository owners to configure the workflow engine."
+        "helpText": "Do not allow repository owners to configure the Workflow Engine."
       },
       "globalConfig": {
         "title": "Workflow Engine"
@@ -378,7 +625,8 @@
     "search": {
       "invalidResult": "Found invalid pull request search result",
       "source": "Source Branch",
-      "target": "Target Branch"
+      "target": "Target Branch",
+      "subtitle": "<highlight>{{source}}</highlight> into <highlight>{{target}}</highlight><space> </space><date />"
     },
     "shortcuts": {
       "pullRequests": "Switch to pull requests"
@@ -386,34 +634,27 @@
   },
   "mailTopics": {
     "review-plugin": {
-      "label": "Pull Requests",
+      "label": "Events at Pull Requests",
       "prChanged": {
-        "label": "New/changed pull requests",
-        "helpText": "Mails on new or changed of pull requests."
+        "label": "New / changed pull requests"
       },
       "closed": {
-        "label": "Closing pull requests",
-        "helpText": "Mails when pull requests have been merged or finally rejected."
+        "label": "Closing pull requests"
       },
       "comments": {
-        "label": "New/changed comments",
-        "helpText": "Mails on new or changed comments in pull requests you have subscribed."
+        "label": "new / changed comments"
       },
       "replies": {
-        "label": "Replies to comments",
-        "helpText": "Mails on replies to commments in pull requests you have subscribed."
+        "label": "Replies to comments"
       },
       "approvals": {
-        "label": "Approvals",
-        "helpText": "Mails when subscribed pull requests have been approved or approvals have been revoked."
+        "label": "Approvals of Pull Requests"
       },
       "mentions": {
-        "label": "Mentions",
-        "helpText": "Mails when you have been mentioned in a comment."
+        "label": "Mentions"
       },
       "prUpdated": {
-        "label": "Updated",
-        "helpText": "Mails when pull requests have been updated."
+        "label": "Updates of Pull Requests"
       }
     }
   },
@@ -447,8 +688,8 @@
     "configuration": {
       "read,write": {
         "workflowConfig": {
-          "displayName": "Configure workflow engine configuration",
-          "description": "May configure workflow engine configuration for all repositories"
+          "displayName": "Configure Workflow Engine configuration",
+          "description": "May configure Workflow Engine configuration for all repositories"
         }
       }
     }
@@ -480,12 +721,12 @@
         "description": "May configure pull requests for this repository"
       },
       "readWorkflowConfig": {
-        "displayName": "read workflow engine configuration",
-        "description": "May read the workflow engine configuration for this repository"
+        "displayName": "read Workflow Engine configuration",
+        "description": "May read the Workflow Engine configuration for this repository"
       },
       "writeWorkflowConfig": {
-        "displayName": "write workflow engine configuration",
-        "description": "May configure the workflow engine configuration for this repository"
+        "displayName": "write Workflow Engine configuration",
+        "description": "May configure the Workflow Engine configuration for this repository"
       },
       "performEmergencyMerge": {
         "displayName": "performe emergency merge",
@@ -494,6 +735,18 @@
     }
   },
   "errors": {
+    "xfbjOHZ73A": {
+      "displayName": "Upload failed",
+      "description": "Something went wrong, when uploading an image"
+    },
+    "CRDEiBAulq": {
+      "displayName": "Image size too big",
+      "description": "The uploaded image exceeds the allowed maximum size (default 8MB)"
+    },
+    "HPsg0smonb": {
+      "displayName": "Hash value of the an uploaded image could not be verified",
+      "description": "The calculated hash value of an uploaded image does not match the hash value provided by the client. Probably something went wrong, when uploading the image."
+    },
     "FTRhcI0To1": {
       "displayName": "Pull request not open",
       "description": "Merges can only be performed for open pull requests."
@@ -510,9 +763,21 @@
       "displayName": "Branch only writable with pull requests",
       "description": "The branch can only be changed by merging pull requests."
     },
+    "3qTv86jGL1": {
+      "displayName": "Path only writable with pull requests",
+      "description": "In the branch the path can only be changed by merging pull requests."
+    },
     "6nRxQptwH1": {
       "displayName": "Invalid formatting",
       "description": "The format of the rule configuration is invalid."
+    },
+    "RhFWK2Nf31": {
+      "displayName": "Invalid branches",
+      "description": "Source and target branch must not be the same."
+    },
+    "BcRBqXYze1": {
+      "displayName": "Illegal state change",
+      "description": "The requested state change is not allowed."
     }
   },
   "workflow": {
@@ -573,7 +838,7 @@
           },
           "status": {
             "exampleValue": "OPEN",
-            "hints": "Pull request status like OPEN, MERGED, REJECTED"
+            "hints": "Available pull request status: OPEN, MERGED, REJECTED or DRAFT."
           },
           "creationDate": {
             "exampleValue": "1623057235",
@@ -588,7 +853,7 @@
             "hints": "Timestamp of last modification in ms since 01-01-1970. Range search possible."
           },
           "overrideMessage": {
-            "hints": "Message why the pull request was emergency merged and ignored the workflow engine rules.",
+            "hints": "Message why the pull request was emergency merged and ignored the Workflow Engine rules.",
             "exampleValue": "The PROD system was on fire so we had to emergency merge our fix."
           },
           "emergencyMerged": {
@@ -628,6 +893,37 @@
           }
         }
       }
+    }
+  },
+  "mustacheDoc": {
+    "CommitMessageTemplate": {
+      "name": "Commit Message Template",
+      "properties": {
+        "namespace": "Namespace of the repository",
+        "repositoryName": "Name of the repository",
+        "pullRequest.id": "Pull request ID",
+        "pullRequest.title": "Pull request title",
+        "pullRequest.description": "Pull request description",
+        "pullRequest.source": "Pull request source branch",
+        "pullRequest.target": "Pull request target branch",
+        "author.displayName": "Name of the author",
+        "author.mail": "Mail address of the author",
+        "currentUser.displayName": "Name of the current user",
+        "currentUser.mail": "Mail address of the current user",
+        "date": "Current date and time (UTC)",
+        "localDate": "Current date and time (server timezone)",
+        "changesets[]": "List of changesets that will be merged with this pull request. Each changeset contains sub properties",
+        "changeset.author.name": "Author of the changeset",
+        "changeset.author.mail": "Mail address of the author",
+        "changeset.description": "Changeset message",
+        "changeset.id": "Changeset revision",
+        "contributors[]": "List of contributors for this pull request with the following properties",
+        "contributor.type": "Type of the contribution",
+        "contributor.person.name": "Contributors name",
+        "contributor.person.mail": "Contributors mail address"
+      },
+      "exampleContent": "Pull Request ${{pullRequest.id}} by {{author.displayName}}\n\nMerge by {{currentUser.displayName}}\n\nMerges the following commits:\n{{#changesets}}\n  - {{description}}\n{{/changesets}}",
+      "exampleIntroduction": "Here is an example, rendering some pull request metadata and the commit messages of each commit"
     }
   }
 }

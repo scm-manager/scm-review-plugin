@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 import React, { FC, useState } from "react";
 import { DiffButton, ErrorNotification } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
@@ -50,6 +43,23 @@ const MarkReviewedButton: FC<Props> = ({ repository, pullRequest, oldPath, newPa
   const [marked, setMarked] = useState(reviewedFiles.some((markedFile: string) => markedFile === determinePath()));
   const { mark, unmark, error } = useUpdateReviewMark(repository, pullRequest, determinePath());
 
+  const reposition = (id: string) => {
+    const element = document.getElementById(id);
+    // Prevent skipping diffs on collapsing long ones because of the sticky header
+    // We jump to the start of the diff and afterwards go slightly up to show the diff header right under the page header
+    // Only scroll if diff is not collapsed and is using the "sticky" mode
+    const pageHeaderSize = 50;
+    if (element && element.getBoundingClientRect().top < pageHeaderSize) {
+      element.scrollIntoView();
+      window.scrollBy(0, -pageHeaderSize);
+    }
+  };
+
+  const getAnchorId = (newPath: string, oldPath: string) => {
+    const path = newPath ? newPath : oldPath;
+    return path?.toLowerCase().replace(/\W/g, "-");
+  };
+
   const markFile = () => {
     mark();
     setReviewed(determinePath(), true);
@@ -75,7 +85,18 @@ const MarkReviewedButton: FC<Props> = ({ repository, pullRequest, oldPath, newPa
       <DiffButton onClick={unmarkFile} tooltip={t("scm-review-plugin.diff.markNotReviewed")} icon="clipboard-check" />
     );
   } else {
-    return <DiffButton onClick={markFile} tooltip={t("scm-review-plugin.diff.markReviewed")} icon="clipboard" />;
+    const anchorId = getAnchorId(newPath, oldPath);
+    return (
+      <DiffButton
+        id={anchorId}
+        onClick={() => {
+          markFile();
+          reposition(anchorId);
+        }}
+        tooltip={t("scm-review-plugin.diff.markReviewed")}
+        icon="clipboard"
+      />
+    );
   }
 };
 

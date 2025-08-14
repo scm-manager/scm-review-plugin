@@ -1,44 +1,30 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
 import React, { FC } from "react";
 import { useStatusbar } from "./useStatusbar";
-import { SmallLoadingSpinner, NoStyleButton } from "@scm-manager/ui-components";
+import { SmallLoadingSpinner } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
-import StatusIcon, { getColor, getIcon } from "./StatusIcon";
-import * as Tooltip from "@radix-ui/react-tooltip";
+import { StatusIcon, StatusVariants } from "@scm-manager/ui-core";
 import ModalRow from "./ModalRow";
-import styled from "styled-components";
-
-const StyledArrow = styled(Tooltip.Arrow)`
-  fill: var(--scm-popover-border-color);
-`;
-
-const StyledContent = styled(Tooltip.Content)`
-  z-index: 500;
-`;
+import { Popover } from "@scm-manager/ui-overlays";
+import { useTranslation } from "react-i18next";
+import { Card } from "@scm-manager/ui-layout";
+import { Result } from "../types/EngineConfig";
 
 type Props = {
   repository: Repository;
@@ -46,39 +32,68 @@ type Props = {
 };
 
 const PullRequestStatusColumn: FC<Props> = ({ pullRequest, repository }) => {
+  const [t] = useTranslation("plugins");
   const { data, error, isLoading } = useStatusbar(repository, pullRequest);
 
   if (isLoading) {
-    return <SmallLoadingSpinner />;
+    return <SmallLoadingSpinner className="is-inline-block" />;
   }
 
   if (error || !data) {
     return null;
   }
 
-  const icon = <StatusIcon color={getColor(data.results)} icon={getIcon(data.results)} />;
-
-  if (!data.results.length) {
-    return icon;
-  }
+  const title = (
+    <h1 className="has-text-weight-bold is-size-5">{t("scm-review-plugin.pullRequests.details.workflow")}</h1>
+  );
 
   return (
-    <Tooltip.Provider>
-      <Tooltip.Root>
-        <Tooltip.Trigger asChild={true}>
-          <NoStyleButton>{icon}</NoStyleButton>
-        </Tooltip.Trigger>
-        <Tooltip.Portal>
-          <StyledContent className="box m-0 popover">
-            {data.results.map(r => (
-              <ModalRow result={r} />
-            ))}
-            <StyledArrow />
-          </StyledContent>
-        </Tooltip.Portal>
-      </Tooltip.Root>
-    </Tooltip.Provider>
+    <Popover
+      trigger={
+        <Card.Details.ButtonDetail
+          aria-label={t("scm-review-plugin.pullRequests.aria.workflow.label", {
+            status: t(`scm-review-plugin.pullRequests.aria.workflow.status.${getTitle(data.results)}`),
+          })}
+        >
+          <Card.Details.Detail.Label aria-hidden>
+            {t("scm-review-plugin.pullRequests.details.workflow")}
+          </Card.Details.Detail.Label>
+          <StatusIcon variant={getVariant(data.results)} />
+        </Card.Details.ButtonDetail>
+      }
+      title={title}
+    >
+      <ul>
+        {data.results.map((r) => (
+          <ModalRow key={r.rule} result={r} />
+        ))}
+      </ul>
+    </Popover>
   );
+};
+
+export const getVariant = (results: Result[]) => {
+  if (results && results.length) {
+    if (results.some((it) => it.failed)) {
+      return StatusVariants.DANGER;
+    } else {
+      return StatusVariants.SUCCESS;
+    }
+  } else {
+    return StatusVariants.UNDEFINED;
+  }
+};
+
+export const getTitle = (results: Result[]) => {
+  if (results && results.length) {
+    if (results.some((it) => it.failed)) {
+      return "fail";
+    } else {
+      return "success";
+    }
+  } else {
+    return "pending";
+  }
 };
 
 export default PullRequestStatusColumn;

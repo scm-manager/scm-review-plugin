@@ -14,7 +14,30 @@ The "Commits" tab shows all commits from the source branch starting from where b
 ![Pull Request - Commits](assets/commits.png)
 
 ### Diff
-The "Diff" tab shows the changes between the target and source branch on a file level.
+The "Diff" tab shows the changes between the source branch and the root of source and target branches on a file level.
+On the left there is a files tree that shows every file that has been changed.
+To jump to a specific file it is possible to select this file in the tree.
+
+For each file, you will find multiple buttons for various options, like
+
+- zoom the diff
+- show or hide whitespace characters
+- mark the file as reviewed (this is for your personal workflow only and has no further effect; if a file marked as
+  reviewed is changed, the mark will be removed)
+- create a comment on file level
+- jump to the source or the target file
+- a button indicating a merge conflict for this file, if there is one
+
+On the left side just above the diff view you are able to see new, modified, deleted, renamed and copied files summarized
+
+On the right side, just opposite of the summarized files there is a coghweel button with the following options:
+- The first checkbox show and hide the whitespace changes.
+- The second checkbox can collapse all changesets.
+
+There are three radio buttons to change the layout in the changeset:
+- With the first button, only the diffs are displayed.
+- The second button shows the diffs and the file tree.
+- With the last button, only the file tree is displayed.
 
 The changes are indicated based on the established format:
 

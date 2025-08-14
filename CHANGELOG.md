@@ -4,6 +4,280 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.10.0 - 2025-08-05
+### Added
+- Button for copy source branch to clipboard
+- Icon for displaying a status like success
+
+### Fixed
+- Document titles for configuration pages from core
+
+### Changed
+- Suppress pull request suggestion for repositories with a single branch
+- Data is no longer stored using the XML based stores, but instead using the new SQLite based stores.
+
+## 3.9.0 - 2025-04-15
+### Added
+- Add descriptive document title for pull request and workflow engine configuration pages
+
+## 3.8.0 - 2025-03-19
+### Added
+- Descriptive document titles
+
+### Fixed
+- Loading state of reject button
+- Updating the "pushed at" timestamp of a pull request suggestion
+- Only removing the push entries of a deleted branch, if the repository also matches
+- File diffs overlapping with the file tree at a certain screen width
+
+## 3.7.1 - 2025-01-27
+### Fixed
+- Style of buttons for comment tools
+
+## 3.7.0 - 2025-01-23
+### Added
+- Banner will show if a commit is pushed to a branch without pull request
+
+### Fixed
+- Links (and click-actions) in PRs are accessible for assistive technologies
+- Documentation for templating commit messages without escaping characters
+
+### Changed
+- Set focus to source branch input in pull request creation form
+- Set focus to comment text area in comment creation/edit
+
+## 3.6.0 - 2024-12-05
+### Added
+- A warning will be shown to users, if they input a duplicate label
+- A warning will be shown to users, if they input a nonexistent username or a duplicate username as a default reviewer
+- Option to change layout for the diff view inside a pull request
+
+### Fixed
+- Exception thrown when a new pull request is created
+- Searching for pull requests can cause an error, if a pull request is missing the description property
+- Invalid show whitespace state, if user changed tabs in the pull request view
+
+## 3.5.2 - 2024-11-05
+### Fixed
+- The need for the user read permission to update a pull request
+
+## 3.5.1 - 2024-10-16
+### Fixed
+- Missing create button when there are no pull requests
+- Sort of pull requests by id
+
+## 3.5.0 - 2024-10-09
+### Added
+- The diff view of a pull request now contains a file tree
+- Button with link to conflict as marker for conflicting changes in pull request diff view
+
+### Bugfix
+- Performance issue in pull request overview page
+
+## 3.4.0 - 2024-09-11
+### Changed
+- Changeover to AGPLv3 license
+
+## 3.3.0 - 2024-08-20
+### Added
+- Improved label and explanatory line for labels and default reviewers in PR configuration
+- Show conflicts for external merge tools in pull requests
+- The pull request diff view shows the amount of modified, newly added and deleted files contained in that pull request
+- A cogwheel menu to the sticky header and removed old icon buttons
+
+### Fixed
+- Authors can reject their pull request
+- Use consistent wording to describe similar facts. Fix spelling.
+- Missing link for mustache templating docs on commit messages
+- If only reviewers are changed, no change notifications will be sent via email
+
+## 3.2.0 - 2024-05-23
+### Added
+- System comments are now added when target branches are changed in pull requests
+- The changes within a pull request are now getting tracked
+- Images can now be added to comments and replies by copy and pasting them into the textarea
+- Global button to ignore whitespaces and tabs inside of diffs
+- Sticky header in pull requests
+
+### Fixed
+- Checkboxes for draft state can be disabled again
+- When changing the target branch, the select will not clip the container its in anymore
+- Grammar mistakes inside the partial diff notification
+
+### Changed
+- Target branches can only be changed when no other pull requests with the same branches exist and the new pull requests still has differences
+- Approvals for pull requests are now removed when the target branch is changed
+
+## 3.1.0 - 2024-03-08
+### Added
+- It is now possible to change the target branch when editing pull requests
+
+### Fixed
+- Display of default tasks in pull request creation form
+- Error when the source branch is deleted
+
+## 3.0.0 - 2024-02-27
+### Added
+- Checkbox on pull request creation to delete source branch on merge
+
+### Fixed
+- Fixed the workflow engine not using plural, if multiple rules are not fulfilled
+
+### Changed
+- User can now summarize their emails regarding pull requests into one single email
+
+## 2.33.0 - 2024-01-17
+### Added
+- Functionality to reopen rejected pull requests
+
+### Fixed
+- Broken layout in comment search results
+- Generate the ID for new pull requests correctly, when pull requests have been deleted from the file system.
+- Missing workflow rule configuration breaking form
+- Accessing possible undefined variables in pull request search
+
+### Changed
+- Improve data entry of default reviewers
+
+## 2.32.0 - 2023-11-17
+### Added
+- Button in Comment Context Modal to jump to diff
+
+### Fixed
+- Missing changes for protected branches on special occasions
+- the title of a pr will now break properly when its length exceeds the container
+
+## 2.31.2 - 2014-01-04
+### Fixed
+- Applied fixes from 2.27.3
+
+## 2.31.0 - 2023-10-11
+### Fixed
+- Send specific email when status changed from draft to open and vica versa
+- Link between label and textarea in default task modal
+
+### Changed
+- Enhance pull request branch restrictions to also apply for paths
+- A warning appears, when the pull request configuration page is closed with pending changes
+- The available labels input now has an additional add button for improved clarity
+- Pull Request labels are now configured as a group of checkboxes for improved clarity
+- The default squash commit message does not contain the author and the committer anymore
+- The default squash commit message now contains the reviewers but not the author or committer
+- The default squash commit message now contains the co authors without the author
+- The click target for workflow engine and reviews card details now includes the label
+- Default task descriptions added and translations improved
+- PR rejection reasons created by a user, are now created as an reply to the system comment instead of being a standalone comment
+
+## 2.30.1 - 2023-09-04
+### Fixed
+- View of closed pull request with deleted source branch
+- Unnecessary request for merge defaults
+- Make pull request search accessible
+
+## 2.30.0 - 2023-08-31
+### Fixed
+- Error on pull request creation
+
+### Changed
+- Changes on the target branch will not trigger a pr updated mail notification anymore
+
+### Bugfix
+- Programmatically accessible tab panel
+
+## 2.29.0 - 2023-08-25
+### Added
+- Sort pull request overview by fields
+- Pull request count to each branch list item
+- Documentation for the mustache model commit message template via mustache model plugin
+- Event and system comment on switch pull request status
+
+### Fixed
+- Input for available PR labels not working with core version 2.45.0
+- Delete source branch without permission
+- Merge conflicts in pull request are now available with pull request read permission
+- User can now set his own pull request as ready to review without merge permission
+- The id of a pull request is now part of the header and will always be placed at the end of the header
+- Workflow icon accessible in pull request overview
+
+### Changed
+- The new popover for the pull requests has been implemented inside the branch details
+- Icons of workflow engine
+- Using a popover instead of a tooltip for the workflow engine results
+- Tasks cannot be outdated anymore
+- The location of the create pr button has been moved from the bottom to the table top row
+- Display reviewer approval status in pr overview
+- Moved create PR button to extension menu in branch list
+- Refactor pull request overview to use card layout
+
+## 2.28.2 - 2023-08-09
+### Fixed
+- Input for available PR labels not working with core version 2.45.0
+
+## 2.28.1 - 2023-07-20
+### Fixed
+- Message Sender for Draft Pull Requests
+
+## 2.28.0 - 2023-07-18
+### Added
+- Optional message when a pull request is rejected
+- Commit message templates
+
+## 2.27.3 - 2024-01-04
+### Fixed
+- Generate the ID for new pull requests correctly, when pull requests have been deleted from the file system.
+- Approvals are no longer removed from pull requests, when the target branch has been modified
+
+## 2.27.2 - 2023-07-06
+### Fixed
+- Prevent illegal status update (Fix from 2.26.3)
+
+## 2.27.1 - 2023-06-15
+### Fixed
+- Breaking API change for pull request creation
+
+## 2.27.0 - 2023-06-09
+### Added
+- Add merge strategy and branch deletion flag to config
+- Pull requests can now have labels
+- Namespace configuration for pull requests
+- Default tasks for new pull requests
+
+## 2.26.3 - 2023-07-06
+### Fixed
+- Prevent illegal status update
+
+## 2.26.2 - 2023-06-08
+### Fixed
+- Create pull request if global config disables repo config
+
+## 2.26.1 - 2023-05-23
+### Fixed
+- Re-add OPEN selector for external usage of REST api
+- Pull requests cannot be edited in most circumstances
+
+## 2.26.0 - 2023-05-19
+### Added
+- Draft pull requests
+
+### Changed
+- Pre-populate title and description fields in pull request creation form if diff contains only single commit
+- Reset reviewer status in case of code changes
+
+## 2.25.0 - 2023-04-12
+### Fixed
+- Fix scroll position after sticky diff "marked as reviewed"
+
+### Changed
+- Update default merge commit message for squash
+
+## 2.24.0 - 2023-02-15
+### Added
+- Functionality to declare default reviewers for repositories
+
+## 2.23.0 - 2023-01-23
+### Added
+- Button to delete source branch after merge
+
 ## 2.22.0 - 2022-11-22
 ### Changed
 - Add keyboard shortcut to navigate to the pull request overview ([#219](https://github.com/scm-manager/scm-review-plugin/pull/219))
@@ -313,10 +587,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make navigation item collapsable ([#55](https://github.com/scm-manager/scm-review-plugin/pull/55))
 
 ## 2.0.0-rc5 - 2020-02-18
-Re-release of 2.0.0-rc3
+### Changed
+- Re-release of 2.0.0-rc3
 
 ## 2.0.0-rc4 - 2020-02-18
-Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and [#53](https://github.com/scm-manager/scm-review-plugin/pull/53) to 2.0.0-rc2
+### Changed
+- Backport of [#48](https://github.com/scm-manager/scm-review-plugin/pull/48)) and [#53](https://github.com/scm-manager/scm-review-plugin/pull/53) to 2.0.0-rc2
 
 ## 2.0.0-rc3 - 2020-02-14
 ### Added

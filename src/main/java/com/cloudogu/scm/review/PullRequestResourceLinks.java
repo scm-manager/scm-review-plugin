@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.comment.api.CommentRootResource;
@@ -85,6 +78,12 @@ public class PullRequestResourceLinks {
         .method("check").parameters(namespace, name)
         .href();
     }
+
+    public String template(String namespace, String name) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestTemplate").parameters(namespace, name)
+        .href();
+    }
   }
 
   public PullRequestLinks pullRequest() {
@@ -147,6 +146,20 @@ public class PullRequestResourceLinks {
         .href();
     }
 
+    public String rejectWithMessage(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("rejectWithMessage").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
+    public String reopen(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("reopen").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
     public String subscription(String namespace, String name, String pullRequestId) {
       return pullRequestLinkBuilder
         .method("getPullRequestResource").parameters()
@@ -167,6 +180,39 @@ public class PullRequestResourceLinks {
         .method("markAsReviewed").parameters(namespace, name, pullRequestId, "PATH")
         .href()
         .replace("PATH", "{path}");
+    }
+
+    public String convertToPR(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("convertToPR").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+
+    public String check(String namespace, String name, String pullRequestId) {
+      return pullRequestLinkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("check").parameters(namespace, name, pullRequestId)
+        .href();
+    }
+  }
+
+  public PullRequestChangesLinks pullRequestChanges() {
+    return new PullRequestChangesLinks(scmPathInfo);
+  }
+
+  public static class PullRequestChangesLinks {
+    private final LinkBuilder linkBuilder;
+
+    public PullRequestChangesLinks(ScmPathInfo pathInfo) {
+      linkBuilder = new LinkBuilder(pathInfo, PullRequestRootResource.class, PullRequestResource.class);
+    }
+
+    public String readAll(String namespace, String name, String pullRequestId) {
+      return linkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("getChanges").parameters(namespace, name, pullRequestId)
+        .href();
     }
   }
 
@@ -194,6 +240,16 @@ public class PullRequestResourceLinks {
         .method("getPullRequestResource").parameters()
         .method("comments").parameters()
         .method("create").parameters(namespace, name, pullRequestId)
+        .href();
+      return
+        LinkRevisionAppender.append(link, revisionResult);
+    }
+
+    public String createWithImages(String namespace, String name, String pullRequestId, BranchRevisionResolver.RevisionResult revisionResult) {
+      String link = linkBuilder
+        .method("getPullRequestResource").parameters()
+        .method("comments").parameters()
+        .method("createWithImage").parameters(namespace, name, pullRequestId)
         .href();
       return
         LinkRevisionAppender.append(link, revisionResult);

@@ -1,28 +1,26 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.pullrequest.service;
 
+import com.cloudogu.scm.review.CurrentUserResolver;
+import com.cloudogu.scm.review.PermissionCheck;
+import com.cloudogu.scm.review.pullrequest.api.PullRequestSelector;
+import com.cloudogu.scm.review.pullrequest.api.RequestParameters;
+import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.user.User;
@@ -30,8 +28,6 @@ import sonia.scm.user.User;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static com.cloudogu.scm.review.CurrentUserResolver.getCurrentUser;
 
 
 /**
@@ -67,7 +63,7 @@ public interface PullRequestService {
    *
    * @return the pull request with the given repository, source, target and status
    */
-  Optional<PullRequest> get(Repository repository, String source, String target, PullRequestStatus status);
+  Optional<PullRequest> getInProgress(Repository repository, String source, String target);
 
   /**
    * Return all pull requests related to the given repository
@@ -75,6 +71,10 @@ public interface PullRequestService {
    * @return all pull requests related to the given repository
    */
   List<PullRequest> getAll(String namespace, String name);
+
+  List<PullRequest> getAll(String namespace, String name, RequestParameters parameters);
+
+  int count(String namespace, String name, PullRequestSelector selector);
 
   /**
    * Check if the branch exists in the repository
@@ -98,9 +98,44 @@ public interface PullRequestService {
 
   void update(Repository repository, String pullRequestId, PullRequest pullRequest);
 
-  void reject(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause);
+  default void reject(Repository repository, String pullRequestId, String message) {
+    PermissionCheck.checkReject(repository, get(repository, pullRequestId));
+    setRejected(repository, pullRequestId, PullRequestRejectedEvent.RejectionCause.REJECTED_BY_USER, message);
+  }
 
-  void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause);
+  /**
+   *
+   * @deprecated Pull requests should be rejected with a message by the user. Use
+   * {@link #reject(Repository, String, String)} instead.
+   */
+  @Deprecated(since = "2.28.0")
+  default void reject(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
+    PermissionCheck.checkMerge(repository);
+    setRejected(repository, pullRequestId, cause);
+  }
+
+  default void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause) {
+    setRejected(repository, pullRequestId, cause, null);
+  }
+
+  /**
+   * Reopen a previously rejected pull request.
+   *
+   * @since 2.33.0
+   */
+  void reopen(Repository repository, String pullRequestId);
+
+  /**
+   * @since 2.33.0
+   */
+  PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, String source, String target);
+
+  /**
+   * @since 3.2.0
+   */
+  PullRequestCheckResultDto.PullRequestCheckStatus checkIfPullRequestIsValid(Repository repository, PullRequest pullRequest, String target);
+
+  void setRejected(Repository repository, String pullRequestId, PullRequestRejectedEvent.RejectionCause cause, String message);
 
   void setRevisions(Repository repository, String id, String targetRevision, String revisionToMerge);
 
@@ -108,7 +143,9 @@ public interface PullRequestService {
 
   void setEmergencyMerged(Repository repository, String pullRequestId, String overrideMessage, List<String> ignoredMergeObstacles);
 
-  void updated(Repository repository, String pullRequestId);
+  void sourceRevisionChanged(Repository repository, String pullRequestId);
+
+  void targetRevisionChanged(Repository repository, String pullRequestId);
 
   boolean hasUserApproved(Repository repository, String pullRequestId, User user);
 
@@ -161,4 +198,10 @@ public interface PullRequestService {
   void removeReviewMarks(Repository repository, String pullRequestId, Collection<ReviewMark> marksToBeRemoved);
 
   boolean supportsPullRequests(Repository repository);
+
+  void convertToPR(Repository repository, String pullRequestId);
+
+  default User getCurrentUser() {
+    return CurrentUserResolver.getCurrentUser();
+  }
 }

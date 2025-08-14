@@ -1,36 +1,28 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import sonia.scm.api.v2.resources.LinkBuilder;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
 
 import static com.cloudogu.scm.review.LinkRevisionAppender.append;
 
@@ -74,6 +66,17 @@ class CommentPathBuilder {
     return append(link, revisions);
   }
 
+  String createUpdateCommentWithImageUri(String namespace, String name, String pullRequestId, String commentId, BranchRevisionResolver.RevisionResult revisions) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    String link = linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("updateCommentWithImage").parameters()
+      .href();
+    return append(link, revisions);
+  }
+
   String createDeleteCommentUri(String namespace, String name, String pullRequestId, String commentId, BranchRevisionResolver.RevisionResult revisions) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     String link = linkBuilder
@@ -96,6 +99,17 @@ class CommentPathBuilder {
     return append(link, revisions);
   }
 
+  String createReplyCommentWithImageUri(String namespace, String name, String pullRequestId, String commentId, BranchRevisionResolver.RevisionResult revisions) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    String link = linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("replyWithImage").parameters()
+      .href();
+    return append(link, revisions);
+  }
+
   String createUpdateReplyUri(String namespace, String name, String pullRequestId, String commentId, String replyId, BranchRevisionResolver.RevisionResult revisions) {
     LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
     String link = linkBuilder
@@ -103,6 +117,18 @@ class CommentPathBuilder {
       .method("comments").parameters()
       .method("getCommentResource").parameters(commentId)
       .method("updateReply").parameters(replyId)
+      .href();
+
+    return append(link, revisions);
+  }
+
+  String createUpdateReplyWithImageUri(String namespace, String name, String pullRequestId, String commentId, String replyId, BranchRevisionResolver.RevisionResult revisions) {
+    LinkBuilder linkBuilder = new LinkBuilder(pathInfoStore.get().get(), PullRequestRootResource.class, PullRequestResource.class, CommentRootResource.class, CommentResource.class);
+    String link = linkBuilder
+      .method("getPullRequestResource").parameters(namespace, name, pullRequestId)
+      .method("comments").parameters()
+      .method("getCommentResource").parameters(commentId)
+      .method("updateReplyWithImage").parameters(replyId)
       .href();
 
     return append(link, revisions);

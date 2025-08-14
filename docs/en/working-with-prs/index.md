@@ -11,6 +11,9 @@ Reviewers can subscribe ("+") or unsubscribe ("-") from a pull request in the up
 
 ### Approve pull request
 After a successful review, the reviewer can approve the pull request for a merge. At this point, the approval is merely an information for the author that the review is done. Once a reviewer approved a review, there is a green checkmark behind his name in the list of reviewers.
+As soon as further changes are made to the code, the review status will be reset.
+
+The [Workflow Engine](../workflow_engine/) can be used to define rules that require approvals from reviewers as part of the review process.
 
 ### Expand diff
 In the pull request all changes are shown as diff per file. This shortened view may be expanded gradually or completely.
@@ -27,6 +30,11 @@ There are three different kinds of comments for pull requests.
 All comments are shown in the "Comments" tab. The file and line comments are also shown in the "Diff" tab.
 It is possible to mention SCM-Manager user in comments. Simply type "@" and right afterwards the name, username or the e-mail-address. 
 After the third character an autocomplete form will appear suggesting the best matches.
+
+Additionally, it is possible to use images in comments. To do so, copy and paste an image into the comment editor.
+This image will be inserted as a markdown image in the comment and saved separately in the SCM-Manager when saving the comment.
+Images can be inserted directly via the clipboard (e.g. when using a screenshot tool) or by copying an image file into
+the editor. Allowed image formats are PNG, JPEG and GIF.
 
 ![Pull Request - Create comment](assets/createComment.png)
 
@@ -64,8 +72,12 @@ So you will be informed on each change of the pull request by a toast message ap
 
 ![Pull Request - Toastmessage](assets/toastmessage.png)
 
+### Convert a pull request
+A pull request created as a draft pull request can be converted into an open pull request open for review.
+An open pull request can be converted to a draft pull request using the edit function. When converting to a draft, the approvals by users are deleted.
+
 ### Reject a pull request
-If a reviewer thinks that a pull request should not be merged, he can reject it. That should happen in coordination with the author. It is not possible to reopen a rejected pull request. Instead a new pull request has to be opened.
+If a reviewer thinks that a pull request should not be merged, they can reject it. That should happen in coordination with the author. You can reopen a rejected pull request at any time.
 
 ### Merge a pull request 
 If a pull request can be merged, the changes can be applied in different ways after clicking the button "Merge Pull Request":
@@ -82,3 +94,33 @@ In case of a merge conflict, the pull request cannot be merged automatically. Th
 Approvers of this pull request will be set as "Reviewed-by" in the merge commit.
 
 ![Pull Request - Merge-Modal](assets/mergeModal.png)
+
+### Edit a pull request
+
+A pull request can be edited after creation. The author can
+
+- change the target branch,
+- change the default setting to delete the source branch,
+- change the title,
+- change the description,
+- change the reviewer and
+- change the labels.
+
+If the target branch is changed, all approvals by reviewers are reset.
+
+
+### Pull Request History
+
+All changes to a pull request are collected and can be viewed as a history of changes.
+Here are some of the tracked properties:
+
+- Source branch revision
+- Target branch
+- Title
+- Description
+- Reviewer
+- Comments 
+- Tasks
+- Pull request status
+
+![Pull Request - Change history](assets/pr-change-history.png)

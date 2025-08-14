@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.comment.service.BasicComment;
@@ -28,8 +21,11 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import sonia.scm.config.ConfigurationPermissions;
+import sonia.scm.repository.NamespacePermissions;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryPermissions;
+
+import java.util.Objects;
 
 public final class PermissionCheck {
 
@@ -120,6 +116,9 @@ public final class PermissionCheck {
   }
 
   private static boolean currentUserIsAuthor(String author) {
+    if (Objects.isNull(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal())) {
+      return false;
+    }
     return author.equals(SecurityUtils.getSubject().getPrincipals().getPrimaryPrincipal().toString());
   }
 
@@ -135,6 +134,27 @@ public final class PermissionCheck {
     return RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).isPermitted();
   }
 
+  /**
+   * A User can reject a pull request if he is the author or he has a reject permission
+   */
+  public static boolean mayRejectPullRequest(PullRequest request) {
+    return currentUserIsAuthor(request.getAuthor());
+  }
+
+  public static void checkReject(Repository repository, PullRequest request) {
+    if (!mayRejectPullRequest(request)) {
+      checkMerge(repository);
+    }
+  }
+
+  public static boolean mayConfigure(String namespace) {
+    return NamespacePermissions.custom(CONFIGURE_PULL_REQUEST, namespace).isPermitted();
+  }
+
+  public static void checkModify(String namespace) {
+    NamespacePermissions.custom(CONFIGURE_PULL_REQUEST, namespace).check();
+  }
+
   public static boolean mayReadGlobalConfig() {
     return ConfigurationPermissions.read(CONFIGURE_PERMISSION).isPermitted();
   }
@@ -147,11 +167,11 @@ public final class PermissionCheck {
     RepositoryPermissions.custom(CONFIGURE_PULL_REQUEST, repository).check();
   }
 
-  public static void checkReadGlobalkConfig() {
+  public static void checkReadGlobalConfig() {
     ConfigurationPermissions.read(CONFIGURE_PERMISSION).check();
   }
 
-  public static void checkWriteGlobalkConfig() {
+  public static void checkWriteGlobalConfig() {
     ConfigurationPermissions.write(CONFIGURE_PERMISSION).check();
   }
 

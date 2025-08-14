@@ -1,64 +1,69 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
-import React, { FC, ReactText, useState } from "react";
+
+import React, { ClipboardEvent, FC, ReactText, useState } from "react";
 import { Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
-import { CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
+import { BasicComment, CommentImage, CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
-import { useCreateComment } from "../pullRequest";
+import { useCreateComment, useCreateCommentWithImage } from "../pullRequest";
 import { createChangeIdFromLocation } from "../diff/locations";
 import MentionTextarea from "./MentionTextarea";
 import { Repository } from "@scm-manager/ui-types";
+import handleImagePaste from "./handleImagePaste";
 
 type Props = {
   repository: Repository;
   pullRequest: PullRequest;
   url: string;
+  commentWithImageUrl: string;
   location?: Location;
   onCancel?: () => void;
   autofocus?: boolean;
   reply?: boolean;
 };
 
-const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCancel, reply }) => {
+const CreateComment: FC<Props> = ({ repository, pullRequest, url, commentWithImageUrl, location, onCancel, reply, autofocus }) => {
   const [t] = useTranslation("plugins");
 
   const { create, isLoading, error } = useCreateComment(repository, pullRequest);
+  const createCommentWithImage = useCreateCommentWithImage(repository, pullRequest);
 
   const [commentType, setCommentType] = useState<CommentType>("COMMENT");
   const [commentText, setCommentText] = useState("");
   const [mentions, setMentions] = useState<Mention[]>([]);
+  const [images, setImages] = useState<CommentImage[]>([]);
 
   const submit = () => {
-    create(url, {
+    const comment: BasicComment = {
       type: commentType,
       comment: commentText,
       mentions: mentions,
       location
-    });
+    };
+
+    if (images.length !== 0 && commentWithImageUrl) {
+      createCommentWithImage.create(commentWithImageUrl, comment, images);
+    } else {
+      create(url, comment);
+    }
+
     setCommentText("");
     setCommentType("COMMENT");
     setMentions([]);
+    setImages([]);
     if (onCancel) {
       onCancel();
     }
@@ -79,7 +84,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
     return commentText && commentText.trim() !== "";
   };
 
-  if (isLoading) {
+  if (isLoading || createCommentWithImage.isLoading) {
     return <Loading />;
   }
 
@@ -136,10 +141,13 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, location, onCa
                   onChange={event => setCommentText(event.target.value)}
                   onCancel={onCancel}
                   onSubmit={submit}
+                  onPaste={handleImagePaste(commentWithImageUrl, setImages, setCommentText)}
+                  autofocus={autofocus}
                 />
               </div>
             </div>
             <ErrorNotification error={error} />
+            <ErrorNotification error={createCommentWithImage.error} />
             {toggleType}
             <div className="field">
               <Level

@@ -1,34 +1,29 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
 import React, { FC } from "react";
-import { Branch, BranchDetails, Repository } from "@scm-manager/ui-types";
-import { AvatarImage, DateFromNow, Icon, Popover, SmallLoadingSpinner, usePopover } from "@scm-manager/ui-components";
+import { Repository } from "@scm-manager/ui-types";
+import { AvatarImage, DateFromNow, SmallLoadingSpinner } from "@scm-manager/ui-components";
+import { Popover } from "@scm-manager/ui-overlays";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { PullRequest } from "./types/PullRequest";
+import { extensionPoints } from "@scm-manager/ui-extensions";
+import { Card } from "@scm-manager/ui-layout";
 
 const PullRequestEntry = styled.div`
   border-radius: 5px;
@@ -37,12 +32,6 @@ const PullRequestEntry = styled.div`
 const UnbreakableText = styled.span`
   word-break: keep-all;
 `;
-
-type Props = {
-  repository: Repository;
-  branch: Branch;
-  details?: BranchDetails;
-};
 
 type PRListProps = {
   repository: Repository;
@@ -62,7 +51,7 @@ const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
         return (
           <>
             <PullRequestEntry
-              key={key}
+              key={pr.id}
               onClick={() => history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pr.id}`)}
               className="is-clickable p-1 has-hover-background-blue"
             >
@@ -96,65 +85,31 @@ const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
   );
 };
 
-const BranchDetailsPullRequests: FC<Props> = ({ repository, branch, details }) => {
-  const history = useHistory();
-  const { popoverProps, triggerProps } = usePopover();
+const BranchDetailsPullRequests: extensionPoints.BranchListDetail["type"] = ({ repository, branchDetails }) => {
   const [t] = useTranslation("plugins");
 
-  if (branch.defaultBranch) {
-    return null;
-  }
-
-  if (!details) {
+  if (!branchDetails) {
     return <SmallLoadingSpinner />;
   }
 
-  if (!details._embedded?.pullRequests) {
-    return null;
-  }
-
-  const prs: PullRequest[] = details._embedded.pullRequests as PullRequest[];
-
-  if (prs.length > 0) {
-    return (
-      <div className="is-relative">
-        <Popover
-          title={
-            <h1 className="has-text-weight-bold is-size-5">
-              {t("scm-review-plugin.branchDetails.pullRequest.popover")}
-            </h1>
-          }
-          width={400}
-          {...popoverProps}
-        >
-          <PullRequestList repository={repository} pullRequests={prs} />
-        </Popover>
-        <div {...triggerProps} className="is-size-7">
-          <Icon name="code-branch" className="fa-rotate-180" />
-          <span>
-            {t("scm-review-plugin.branchDetails.pullRequest.pending", {
-              count: prs.length
-            })}
-          </span>
-        </div>
-      </div>
-    );
-  }
+  const prs: PullRequest[] = (branchDetails._embedded?.pullRequests ?? []) as PullRequest[];
 
   return (
-    <div
-      className="is-clickable is-size-7"
-      onClick={() =>
-        history.push(
-          `/repo/${repository.namespace}/${repository.name}/pull-requests/add/changesets/?source=${encodeURIComponent(
-            branch.name
-          )}`
-        )
+    <Popover
+      trigger={
+        <Card.Details.ButtonDetail>
+          <Card.Details.Detail.Label>
+            {t("scm-review-plugin.pullRequests.details.pullRequests")}
+          </Card.Details.Detail.Label>
+          <Card.Details.Detail.Tag>{prs.length}</Card.Details.Detail.Tag>
+        </Card.Details.ButtonDetail>
+      }
+      title={
+        <h1 className="has-text-weight-bold is-size-5">{t("scm-review-plugin.branchDetails.pullRequest.popover")}</h1>
       }
     >
-      <Icon name="code-branch" className="fa-rotate-180" />
-      <span>{t("scm-review-plugin.branchDetails.pullRequest.create")}</span>
-    </div>
+      <PullRequestList repository={repository} pullRequests={prs} />
+    </Popover>
   );
 };
 

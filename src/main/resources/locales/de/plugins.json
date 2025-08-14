@@ -1,128 +1,222 @@
 {
   "scm-review-plugin": {
     "navLink": {
-      "pullRequest": "Pull Requests",
+      "pullRequest": "Pull-Requests",
       "workflow": "Workflow Engine"
     },
     "branchDetails": {
       "pullRequest": {
         "pending": "{{count}} ausstehend",
         "create": "PR erstellen",
-        "popover": "Pull Requests",
+        "popover": "Pull-Requests",
         "targetBranch": "Ziel"
       }
     },
-    "repositoryCardTooltip": "Pull Requests",
+    "repositoryCardTooltip": "Pull-Requests",
     "create": {
-      "subtitle": "Erstellt einen neuen Pull Request für {{repositoryName}}",
-      "submitButton": "Pull Request erstellen"
+      "title": "Pull-Request erstellen",
+      "subtitle": "Erstellt einen neuen Pull-Request für {{repositoryName}}",
+      "submitButton": "Pull-Request erstellen"
     },
     "edit": {
-      "subtitle": "Pull Request ändern für {{repositoryName}}",
-      "submitButton": "Pull Request ändern"
+      "title": "Pull-Request ändern",
+      "subtitle": "Pull-Request ändern für {{repositoryName}}",
+      "submitButton": "Pull-Request ändern"
     },
     "diff": {
-      "notSupported": "Diffs für Pull Requests werden von diesem Repositorytyp nicht unterstützt.",
+      "notSupported": "Diffs für Pull-Requests werden von diesem Repository-Typ nicht unterstützt.",
       "collapseDiffs": "Auf-/Zuklappen",
-      "markReviewed": "Markiere Datei als reviewed. Diese Markierung sorgt dafür, dass diese Datei standardmäßig eingeklappt dargestellt wird.",
+      "ignoreWhitespace": "Whitespace-Änderungen ignorieren",
+      "activateWhitespace": "Whitespace-Änderungen einblenden",
+      "markReviewed": "Markiere Datei als gereviewt. Die Datei wird standardmäßig eingeklappt dargestellt.",
       "markNotReviewed": "Entferne Review-Markierung",
       "addComment": "Kommentar für Datei hinzufügen",
       "jumpToSource": "Zur Quelldatei springen",
       "jumpToTarget": "Zur Zieldatei springen",
+      "jumpToConflict": "Zum Konflikt springen",
       "moreDiffsAvailable": "Es sind weitere Diffs verfügbar.",
-      "partialMoreDiffsAvailable": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentar.",
-      "partialMoreDiffsAvailable_plural": "Es sind weitere Diffs verfügbar und unter ihnen {{count}} Kommentare.",
+      "partialMoreDiffsAvailable": "Es sind weitere Diffs mit insgesamt {{count}} Kommentar(en) verfügbar.",
       "loadMore": "Weitere laden",
-      "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein."
+      "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein.",
+      "treeTitle": "Dateibaum"
     },
-    "noRequests": "Keine Pull Requests mit diesen Kriterien gefunden.",
+    "noRequests": "Keine Pull-Requests mit diesen Kriterien gefunden.",
     "pullRequest": {
-      "sourceBranch": "Source Branch",
-      "targetBranch": "Target Branch",
+      "sourceBranch": "Source-Branch",
+      "targetBranch": "Target-Branch",
       "title": "Titel",
       "validation": {
         "title": "Titel erforderlich",
         "BRANCHES_NOT_DIFFER": "Kein Unterschied zwischen Source-Branch und Target-Branch.",
-        "PR_ALREADY_EXISTS": "Der Pull-Request zwischen dem gewählten Source-Branch und Target-Branch existiert bereits."
+        "PR_ALREADY_EXISTS": "Der Pull-Request mit dem gewählten Source- und Target-Branch existiert bereits.",
+        "SAME_BRANCHES": "Bei Pull-Requests darf der Target-Branch nicht dem Source-Branch entsprechen."
       },
       "description": "Beschreibung",
       "status": "Status",
+      "createAsDraft": "Als Draft erstellen",
+      "changeToDraft": "Zu Draft umwandeln",
+      "changeToDraftHelpText": "Beim Umwandeln in einen Draft werden die Freigaben der Nutzer gelöscht.",
       "statusLabel": {
         "OPEN": "OFFEN",
-        "MERGED": "GEMERGED",
-        "REJECTED": "ABGELEHNT"
+        "MERGED": "GEMERGT",
+        "REJECTED": "ABGELEHNT",
+        "DRAFT": "DRAFT"
       },
       "id": "ID",
       "author": "Autor",
-      "mergedBy": "Gemerged von",
+      "mergedBy": "Gemergt von",
       "rejectedBy": "Abgelehnt von",
       "date": "Datum",
-      "reviewer": "Reviewers",
+      "reviewer": "Reviewer",
       "addReviewer": "Reviewer hinzufügen",
+      "labels": "Labels",
       "tabs": {
         "commits": "Commits",
         "diff": "Diff",
         "conflicts": "Konflikte",
-        "comments": "Kommentare"
+        "comments": "Kommentare",
+        "changes": "Änderungshistorie"
+      },
+      "changes": {
+        "rejectionCause": {
+          "SOURCE_BRANCH_DELETED": ", weil der Source-Branch gelöscht wurde",
+          "TARGET_BRANCH_DELETED": ", weil der Target-Branch gelöscht wurde",
+          "REJECTED_BY_USER": ", weil der Pull-Request von einem Benutzer abgelehnt wurde"
+        },
+        "noChanges": "Keine Änderungen vorhanden",
+        "titles": {
+          "edit": "{{propertyName}} bearbeitet",
+          "created": "{{propertyName}} hinzugefügt",
+          "removed": "{{propertyName}} entfernt"
+        },
+        "properties": {
+          "TARGET_BRANCH": "Target-Branch",
+          "LABELS": "Label",
+          "TITLE": "Titel",
+          "DESCRIPTION": "Beschreibung",
+          "DELETE_SOURCE_BRANCH_AFTER_MERGE": "Source-Branch nach erfolgreichem Merge löschen",
+          "REVIEWER": "Reviewer",
+          "PR_STATUS": "Pull-Request Status",
+          "COMMENT": "Kommentar",
+          "REPLY": "Antwort",
+          "TASK": "Aufgabe",
+          "SUBSCRIBER": "Abonnent",
+          "FINISHED_TASK": "Aufgabe erledigt",
+          "UNFINISHED_TASK": "Aufgabe als offen markiert",
+          "COMMENT_TO_TASK": "Kommentar in eine Aufgabe umgewandelt",
+          "TASK_TO_COMMENT": "Aufgabe in einen Kommentar umgewandelt",
+          "REVIEW_MARKS": "Datei als gereviewt markiert",
+          "SOURCE_BRANCH_REVISION": "Source-Branch-Revision"
+        },
+        "changedTargetBranch": "Target-Branch von `{{previous}}` zu `{{current}}` geändert",
+        "changedPrStatus": "Status des Pull-Request von `{{previous}}` zu `{{current}}` geändert",
+        "changedBy": "Geändert von",
+        "changedByUnknown": "Geändert von unbekanntem Benutzer",
+        "changedAt": "Geändert",
+        "previousValue": "Vorher:",
+        "currentValue": "Nachher:",
+        "reviewer": {
+          "removed": "'{{username}}' als Reviewer entfernt",
+          "added": "'{{username}}' als Reviewer hinzugefügt",
+          "addedWithApproval": "mit Freigabe",
+          "addedWithoutApproval": "ohne Freigabe",
+          "approved": "'{{username}}' hat die Freigabe erteilt",
+          "disapproved": "'{{username}}' hat die Freigabe zurückgezogen"
+        },
+        "subscriber": {
+          "removed": "'{{username}}' abonniert den Pull-Request nicht mehr",
+          "added": "'{{username}}' abonniert den Pull-Request"
+        },
+        "reviewMark": {
+          "added": "'{{username}}' hat die Datei '{{file}}' als gereviewt markiert",
+          "removed": "'{{username}}' hat die Datei '{{file}}' nicht mehr als gereviewt markiert"
+        },
+        "added": "Hinzugefügt: ",
+        "removed": "Entfernt: ",
+        "revision": {
+          "previous": "Vorherige Revision: ",
+          "current": "Aktuelle Revision: "
+        }
       },
       "tasks": {
         "todo": "{{count}} Aufgabe offen",
-        "todo_plural": "{{count}} Aufgaben offen",
+        "todo_other": "{{count}} Aufgaben offen",
         "done": "{{done}} / {{total}} Aufgaben erledigt",
         "allDone": "Alle Aufgaben erledigt"
       },
       "noChangesets": "Keine Changesets gefunden. Die Commits könnten gelöscht worden sein.",
       "details": {
-        "notification": "Pull Request erfolgreich gemerged!",
-        "targetDeleted": "Der Target Branch wurde gelöscht!",
+        "notification": "Pull-Request erfolgreich gemergt!",
+        "branchDeleted": "Der Source- oder Target-Branch wurde gelöscht!",
         "approved": "Freigegeben durch {{name}}",
-        "ignoredMergeObstacles": "Folgende Regeln wurden beim Mergen des Pull Requests ignoriert:",
+        "ignoredMergeObstacles": "Folgende Regeln wurden beim Mergen des Pull-Requests ignoriert:",
+        "copyButton": "In die Zwischenablage kopieren",
         "buttons": {
           "edit": "Bearbeiten",
           "approve": "Freigeben",
           "disapprove": "Freigabe zurückziehen",
-          "subscribe": "Subscribe",
-          "unsubscribe": "Unsubscribe"
+          "subscribe": "Pull-Request-Informationen abonnieren",
+          "unsubscribe": "Pull-Request-Informationen abbestellen"
         }
       },
       "selector": {
-        "OPEN": "offen",
+        "IN_PROGRESS": "offen/Draft",
         "MINE": "meine",
         "REVIEWER": "zu reviewen",
         "ALL": "alle",
         "REJECTED": "abgelehnt",
-        "MERGED": "gemerged"
+        "MERGED": "gemergt"
+      },
+      "selectorLabel": "Filtern nach",
+      "sortSelector": {
+        "ID_ASC": "Id (aufsteigend)",
+        "ID_DESC": "Id (absteigend)",
+        "STATUS_ASC": "Status (aufsteigend)",
+        "STATUS_DESC": "Status (absteigend)",
+        "LAST_MOD_ASC": "letzte Änderung (neueste zuerst)",
+        "LAST_MOD_DESC": "letzte Änderung (älteste zuerst)"
+      },
+      "sortSelectorLabel": "Sortieren nach",
+      "titlePart": {
+        "IN_PROGRESS": "Offene Pull-Requests",
+        "MINE": "Meine Pull-Requests",
+        "REVIEWER": "Pull-Requests zu reviewen",
+        "ALL": "Alle Pull-Requests",
+        "REJECTED": "Abgelehnte Pull-Requests",
+        "MERGED": "Gemergte Pull-Requests"
       },
       "guard": {
         "mergeFromAuthorNotAllowed": {
-          "obstacle": "Sie sollten nicht Ihren eigenen Pull Request mergen."
+          "obstacle": "Sie sollten nicht Ihren eigenen Pull-Request mergen."
         }
       }
     },
+    "pullRequestWithIDAndNamespaceName": "Pull-Request #{{id}} in {{namespace}}/{{name}}",
     "showPullRequest": {
       "mergeButton": {
-        "buttonTitle": "Pull Request mergen",
+        "buttonTitle": "Pull-Request mergen",
         "mergeInformation": "Automatischer Merge nicht möglich.",
         "conflictTabHint": "Die bestehenden Konflikte werden im Reiter 'Konflikte' angezeigt."
       },
       "mergeModal": {
         "title": {
-          "merge": "Pull Request mergen",
-          "emergencyMerge": "Pull Request Emergency-Merge"
+          "merge": "Pull-Request mergen",
+          "emergencyMerge": "Pull-Request-Emergency-Merge"
         },
         "merge": "Merge",
         "cancel": "Abbrechen",
         "deleteSourceBranch": {
-          "flag": "Source Branch löschen",
-          "help": "Nach einem erfolgreichen Merge wird der Source-Branch entfernt"
+          "flag": "Source-Branch löschen",
+          "help": "Nach einem erfolgreichen Merge wird der Source-Branch gelöscht.",
+          "explanation": "Branch nach erfolgreichem Merge löschen"
         },
-        "commitMessage": "Bitte Commit Nachricht eingeben",
+        "commitMessage": "Bitte Commit-Nachricht eingeben",
         "commitAuthor": "Autor",
         "resetMessage": "Nachricht zurücksetzen",
         "commitMessageHint": {
           "FAST_FORWARD_IF_POSSIBLE": "Diese Nachricht wird nur genutzt, wenn Fast Forward nicht möglich ist."
         },
-        "mergeConflict": "Die Branches konnten nicht gemerged werden, da Konflikte existieren. Bitte versuchen sie eine andere Merge-Strategie oder beheben sie die Konflikte manuell."
+        "mergeConflict": "Die Branches konnten nicht gemergt werden, da Konflikte existieren. Bitte versuchen Sie eine andere Merge-Strategie oder beheben Sie die Konflikte manuell."
       },
       "mergeStrategies": {
         "SQUASH": "Squash",
@@ -130,35 +224,93 @@
         "FAST_FORWARD_IF_POSSIBLE": "Fast-Forward, wenn möglich",
         "REBASE": "Rebase",
         "help": {
-          "REBASE": "Führt einen Rebase vor dem Merge aus. Commits auf dem Source-Branch werden direkt auf den Ziel-Branch aufgespielt.",
+          "REBASE": "Führt einen Rebase vor dem Merge aus. Commits auf dem Source-Branch werden direkt auf den Target-Branch aufgespielt.",
           "SQUASH": "Alle Commits des Source-Branches werden als ein neuer Commit auf dem Target-Branch zusammengefasst.",
-          "MERGE_COMMIT": "Die Branches werden mit einem neuen Commit gemerged.",
+          "MERGE_COMMIT": "Die Branches werden mit einem neuen Commit gemergt.",
           "FAST_FORWARD_IF_POSSIBLE": "Falls möglich wird der Target-Branch ohne Merge auf den Stand des Source-Branches gesetzt. Falls dieses nicht möglich ist, wird ein normaler Merge-Commit erzeugt."
         }
       },
       "rejectButton": {
-        "buttonTitle": "Pull Request ablehnen",
+        "buttonTitle": "Pull-Request ablehnen",
         "confirmAlert": {
-          "title": "Pull Request ablehnen",
-          "message": "Soll der Pull Request wirklich abgelehnt werden?",
-          "submit": "Ja",
-          "cancel": "Nein"
+          "title": "Pull-Request ablehnen",
+          "submit": "Ablehnen",
+          "cancel": "Abbrechen",
+          "message": {
+            "hint": "Wollen Sie den Pull-Request wirklich ablehnen? Sie können ihn jeder Zeit wieder öffnen.",
+            "label": "Optionaler Kommentar",
+            "help": "Mit dieser Nachricht können Sie erklären, warum Sie den Pull-Request ablehnen. Er wird als normaler Kommentar zu dem Pull-Request hinzugefügt.",
+            "placeholder": "Optionaler Kommentar, warum Sie diesen PR ablehnen."
+          }
         }
+      },
+      "reopenButton": {
+        "buttonTitle": "Pull-Request wieder öffnen",
+        "confirmAlert": {
+          "title": "Pull-Request wieder öffnen",
+          "submit": "Wieder öffnen",
+          "cancel": "Abbrechen",
+          "message": {
+            "hint": "Wollen Sie den Pull-Request wirklich wieder öffnen?"
+          }
+        }
+      },
+      "convertDraftButton": {
+        "buttonTitle": "Bereit zum Review"
       },
       "overrideModal": {
         "title": "Workflow Engine",
         "cancel": "Abbrechen",
-        "continue": "Pull Request mergen",
+        "continue": "Pull-Request mergen",
         "introduction": "Einige Regeln wurden nicht eingehalten:",
-        "addMessageText": "Zusätzlich zu der Merge Nachricht im nächsten Schritt sollten Sie hier einen Kommentar zum Emergency Merge erfassen:"
+        "addMessageText": "Zusätzlich zu der Merge-Nachricht im nächsten Schritt sollten Sie hier einen Kommentar zum Emergency-Merge erfassen:"
+      },
+      "deleteSourceBranchButton": {
+        "buttonTitle": "Source-Branch löschen",
+        "deleteModal": {
+          "title": "Source-Branch löschen?",
+          "message": "Soll der Branch '{{branch}}' wirklich gelöscht werden?",
+          "messageForDifferentRevision": "Der Branch hat einen anderen Stand als zum Zeitpunkt, als der Merge des Pull-Request durchgeführt wurde. Die letzte Änderung auf dem Branch '{{branch}}' war {{lastCommitDate}}.",
+          "submit": "Löschen",
+          "cancel": "Abbrechen"
+        },
+        "deleteErrorModal": {
+          "title": "Source-Branch löschen",
+          "message": "Beim Löschen des Branches '{{branch}}' ist ein Fehler aufgetreten.",
+          "cancel": "Abbrechen"
+        }
       }
     },
     "pullRequests": {
+      "banner": "{{branch}} wurde <0/> von Ihnen aktualisiert",
+      "closeBanner": "Banner schließen",
+      "pageSubtitle": "Pull-Requests",
       "errorTitle": "Fehler",
-      "errorSubtitle": "Unbekannter Pull Request Fehler",
-      "forbidden": "Es fehlen Berechtigungen zum Lesen der Pull Requests!",
-      "createButton": "Pull Request erstellen"
+      "errorSubtitle": "Unbekannter Pull-Request-Fehler",
+      "forbidden": "Es fehlen Berechtigungen zum Lesen der Pull-Requests!",
+      "createButton": "Pull-Request erstellen",
+      "subtitle": "{{author}} forderte einen Merge von <highlight>{{source}}</highlight> nach <highlight>{{target}}</highlight><space> </space><date /> an",
+      "details": {
+        "tasks": "Aufgaben",
+        "reviewers": "Reviewer",
+        "workflow": "Workflows",
+        "pullRequests": "Pull-Requests"
+      },
+      "aria": {
+        "id": "ID",
+        "status": "Status",
+        "workflow": {
+          "label": "Workflows: {{status}}",
+          "status": {
+            "fail": "Fehlgeschlagen",
+            "success": "Erfolgreich",
+            "pending": "Ausstehend"
+          }
+        }
+      }
     },
+    "pullRequestsWithStatusAndNamespaceName": "{{status}} in {{namespace}}/{{name}}",
+    "pullRequestsWithStatusPageAndNamespaceName": "{{status}} Seite {{page}} von {{total}} in {{namespace}}/{{name}}",
     "comment": {
       "addComment": "Kommentar hinzufügen",
       "markReviewed": "Abgeschlossen",
@@ -179,7 +331,8 @@
       "markedDoneBy": "Abgeschlossen von",
       "contextModal": {
         "title": "Ursprünglicher Kontext",
-        "message": "Dieses ist der ursprüngliche Kontext zum Zeitpunkt der Erstellung des Kommentars"
+        "message": "Dieses ist der ursprüngliche Kontext zum Zeitpunkt der Erstellung des Kommentars",
+        "jumpToDiff": "Zum Diff der Datei springen"
       },
       "confirmDeleteAlert": {
         "title": "Kommentar löschen",
@@ -218,11 +371,15 @@
         "cancel": "Nein"
       },
       "systemMessage": {
-        "merged": "Der Pull Request wurde gemerged.",
-        "rejected": "Der Pull Request wurde abgelehnt.",
-        "sourceDeleted": "Der Quell-Branch des Pull Requests wurde gelöscht.",
-        "targetDeleted": "Der Ziel-Branch des Pull Requests wurde gelöscht.",
-        "emergencyMerged": "Dieser Pull Request wurde mit einem Emergency-Merge gemerged. Dabei wurden die Regeln der Workflow Engine ignoriert."
+        "merged": "Der Pull-Request wurde gemergt.",
+        "rejected": "Der Pull-Request wurde abgelehnt.",
+        "reopened": "Der Pull-Request wurde wieder geöffnet.",
+        "sourceDeleted": "Der Source-Branch des Pull-Requests wurde gelöscht.",
+        "targetDeleted": "Der Target-Branch des Pull-Requests wurde gelöscht.",
+        "targetChanged": "Der Target-Branch des Pull-Requests wurde von `{{oldTarget}}` in `{{newTarget}}` geändert.",
+        "emergencyMerged": "Dieser Pull-Request wurde mit einem Emergency-Merge gemergt. Dabei wurden die Regeln der Workflow Engine ignoriert.",
+        "statusToOpen": "Der Pull-Request wurde zum Review freigegeben.",
+        "statusToDraft": "Der Pull-Request wurde in einen Draft umgewandelt."
       },
       "type": {
         "comment": "Kommentar",
@@ -235,14 +392,14 @@
         "outdated": {
           "label": "veraltet",
           "title": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches",
-          "titleClickable": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Klicken Sie hier, um den ursprünglichen Kontext zu sehen."
+          "titleClickable": "Der Kommentar bezieht sich auf eine ältere Version des Source- oder Target-Branches. Untersuchen Sie den ursprünglichen Kontext."
         },
         "emergencyMerged": "Emergency-Merge"
       }
     },
     "changeNotification": {
       "title": "Neue Änderungen",
-      "description": "An diesem Pull Request wurden Änderungen vorgenommen. Laden Sie die Seite neu um diese anzuzeigen.",
+      "description": "An diesem Pull-Request wurden Änderungen vorgenommen. Laden Sie die Seite neu, um diese anzuzeigen.",
       "modificationWarning": "Warnung: Nicht gespeicherte Eingaben gehen verloren.",
       "buttons": {
         "reload": "Neu laden",
@@ -252,47 +409,111 @@
     "conflicts": {
       "types": {
         "BOTH_MODIFIED": "Konflikt",
-        "ADDED_BY_BOTH": "in Source und Target hinzugefügt",
-        "DELETED_BY_US": "im Source gelöscht",
-        "DELETED_BY_THEM": "im Target gelöscht"
+        "ADDED_BY_BOTH": "in Source- und Target-Branch hinzugefügt",
+        "DELETED_BY_US": "im Source-Branch gelöscht",
+        "DELETED_BY_THEM": "im Target-Branch gelöscht"
       },
       "hint": {
-        "header": "Änderungen mit Konflikten gefunden",
-        "text": "Finden Sie heraus, wie Sie die Konflikte auflösen und den Branch mergen können."
+        "EXTERNAL_MERGE_TOOL": {
+          "header": "Geänderte Dateien müssen mit einem externen Merge-Tool verarbeitet werden",
+          "text": "Für dieses Repository wurde eine externes Merge-Tool konfiguriert. Finden Sie heraus, wie die Konflikte aufgelöst werden können."
+        },
+        "FILE_CONFLICTS": {
+          "header": "Änderungen mit Konflikten gefunden",
+          "text": "Finden Sie heraus, wie Sie die Konflikte auflösen und den Branch mergen können."
+        }
       }
     },
     "branch": {
-      "header": "Pull Requests",
-      "createPullRequest": "Neuen Pull Request erstellen"
+      "header": "Pull-Requests",
+      "createPullRequest": "Neuen Pull-Request erstellen"
     },
     "config": {
-      "title": "Pull Requests Konfiguration",
+      "title": "Pull-Requests-Konfiguration",
+      "navigationPrompt": "Sie haben ungespeicherte Änderungen. Seite wirklich verlassen?",
+      "legends": {
+        "mergeDialog": "Merge Dialog",
+        "creation": "Erstellung",
+        "restrictions": "Einschränkungen",
+        "branchOptions": "Standardwert für das Löschen eines Branchs nach einem erfolgreichen Merge"
+      },
+      "availableLabels": {
+        "label": "Labels verwalten",
+        "ariaLabel": "Neues Label eingeben",
+        "placeholder": "Neues Label eingeben",
+        "information": "Erstellen Sie neue Labels, indem Sie den Inhalt eingeben und mit der Enter-Taste oder dem Button „Label hinzufügen“ hinzufügen.",
+        "addButton": {
+          "label": "Label hinzufügen"
+        },
+        "duplicateWarning": "Das Label wurde bereits hinzugefügt"
+      },
+      "defaultReviewers": {
+        "label": "Standard-Reviewer",
+        "addButton": "Hinzufügen",
+        "placeholder": "Standard-Reviewer hinzufügen",
+        "information": "Fügen Sie neue Standard-Reviewer hinzu, indem Sie den Benutzernamen eingeben und wählen Sie diesen aus den Vorschlägen aus.",
+        "loading": "Suche ...",
+        "noOptions": "Kein Vorschlag für Benutzername verfügbar.",
+        "duplicateWarning": "Reviewer wurde bereits hinzugefügt",
+        "nonExistingUser": "Reviewer existiert nicht in der Benutzerdatenbank"
+      },
       "restrictBranchWriteAccess": {
-        "label": "Branch-Schutz aktiviert",
-        "helpText": "Aktiviert den Branch-Schutz, so dass Branches nur durch Pull Requests geändert werden können."
+        "label": "Branch-Schutz aktiviert"
       },
       "disableRepositoryConfiguration": {
-        "label": "Pull Request Konfiguration nicht für einzelne Repositories erlauben",
-        "helpText": "Repository Owner dürfen Pull Requests nicht individuell konfigurieren."
+        "label": "Pull-Request-Konfiguration für einzelne Repositories deaktivieren",
+        "helpText": "Repository-Besitzer dürfen Pull-Requests nicht auf der Repository-Ebene konfigurieren."
+      },
+      "deleteBranchOnMerge": {
+        "label": "Source-Branch beim Merge löschen",
+        "helpText": "Der Standardwert kann bei der Merge-Erstellung oder beim Merge-Vorgang geändert werden."
+      },
+      "defaultMergeStrategy": {
+        "label": "Standard-Merge-Strategie",
+        "helpText": "Die vorausgewählte Merge-Strategie im Merge-Modal."
+      },
+      "overwriteDefaultCommitMessage": {
+        "label": "Default-Commit-Nachricht überschreiben",
+        "helpText": "Mit dieser Option kann die Default-Commit-Nachricht mit einem eigenen Template überschrieben werden."
+      },
+      "commitMessageTemplate": {
+        "label": "Template für die Commit-Nachricht",
+        "hint": "Diese Nachricht kann Ausdrücke für Templating enthalten. Hierzu finden sich weitere Informationen und Beispiele auf der <0>Dokumentationsseite</0>.",
+        "helpText": "Dieses Template wird anstelle der Default-Commit-Nachrichten beim Merge eines Pull-Requests genutzt."
+      },
+      "disableRepositoryAndNamespaceConfiguration": {
+        "label": "Pull-Request-Konfiguration für einzelne Repositories und Namespaces deaktivieren",
+        "helpText": "Repository-Inhaber dürfen Pull-Requests nicht auf der Namespace- oder Repository-Ebene konfigurieren."
+      },
+      "overwriteAll": {
+        "label": "Übergeordnete Konfigurationen überschreiben",
+        "helpText": "Globale und namespace-spezifische Konfigurationen werden durch die repository-spezifische Konfiguration überschrieben."
+      },
+      "overwriteGlobal": {
+        "label": "Globale Konfiguration überschreiben",
+        "helpText": "Globale Konfiguration wird durch die namespace-spezifische Konfiguration überschrieben."
       },
       "branchProtection": {
         "branches": {
-          "subtitle": "Beschränkungen für Branches",
-          "note": "Branches, die den folgenden Mustern entsprechen, können nur durch Pull Requests geschrieben werden:",
-          "noBranches": "Keine Muster für Branches definiert.",
-          "deleteBranch": "Dieses Muster löschen",
+          "subtitle": "Beschränkungen für Branches / Pfade",
+          "note": "Branches UND Pfade, die den folgenden Mustern entsprechen, können nur durch Pull-Requests geschrieben werden. Darüber hinaus ist es auch nicht möglich, Branches mit entsprechenden Pfaden zu erstellen oder zu löschen.",
+          "noBranches": "Keine Muster für Branches / Pfade definiert.",
+          "deleteBranch": "Diese Beschränkung löschen",
           "newBranch": {
             "label": "Muster für Branches hinzufügen",
-            "helpText": "Fügt ein Muster zu der Liste der geschützten Branches hinzu.",
-            "pattern": "Muster",
-            "add": {
-              "label": "Hinzufügen",
-              "helpText": "Fügt das gegebene Muster zu der Liste der geschützten Branches hinzu."
-            }
+            "pattern": "Branch-Muster"
+          },
+          "newPath": {
+            "label": "Muster für Pfade hinzufügen",
+            "pattern": "Pfadmuster"
+          },
+          "add": {
+            "label": "Hinzufügen",
+            "helpText": "Fügt die gegebene Beschränkung zur Liste der Beschränkungen hinzu."
           }
         },
         "bypasses": {
-          "subtitle": "Ausnahmen von den Beschränkungen",
+          "subtitle": "Ausnahmen von Beschränkungen",
           "note": "Hier aufgelistete Benutzer oder Gruppen können die obigen Branches weiterhin direkt ändern:",
           "bypassType": "Typ",
           "userBypass": "Benutzer",
@@ -307,24 +528,49 @@
         }
       },
       "preventMergeFromAuthor": {
-        "label": "Verhindern, dass Autoren ihre eigenen Pull Requests mergen",
-        "helpText": "Aktivieren Sie diese Option, damit Entwickler nicht von ihnen selbst erstellte Pull Requests mergen können. Dieses kann durch die Berechtigung zum Emergency Merge überschrieben werden."
+        "label": "Verhindern, dass Autoren ihre eigenen Pull-Requests mergen",
+        "helpText": "Aktivieren Sie diese Option, damit Entwickler nicht von ihnen selbst erstellte Pull-Requests mergen können. Dieses kann durch die Berechtigung zum Emergency-Merge überschrieben werden."
+      },
+      "defaultTasks": {
+        "label": "Standardaufgaben",
+        "information": "Fügt Aufgaben hinzu, welche automatisch beim Erstellen eines Pull-Requests angelegt werden.",
+        "addTask": "Aufgabe anlegen",
+        "deleteTask": "Aufgabe löschen",
+        "editTask": "Aufgabe ändern",
+        "noTasks": "Keine Standardaufgaben definiert.",
+        "modal": {
+          "createTitle": "Neue Standardaufgabe erstellen",
+          "createInput": "Standardaufgabe anlegen",
+          "editTitle": "Bestehende Standardaufgabe ändern",
+          "editInput": "Standardaufgabe ändern",
+          "markdownInformation": "Dieses Eingabefeld unterstützt die <0>MarkDown Syntax</0>.",
+          "preview": "Vorschau",
+          "addTask": "Aufgabe erstellen",
+          "editTask": "Aufgabe ändern",
+          "cancel": "Abbrechen"
+        }
       }
     },
-    "obstacle": "Dieser Branch kann nur mithilfe von Pull Requests geändert werden.",
+    "obstacle": "Dieser Branch kann nur durch Pull-Requests geändert werden.",
     "landingpage": {
       "myPullRequests": {
-        "title": "Meine Pull Requests",
+        "title": "Meine Pull-Requests",
         "cardSubtitle": "im Repository {{namespace}}/{{name}}",
-        "allPullRequestsLinkTitle": "Alle Pull Requests",
-        "emptyMessage": "Keine aktiven Pull Requests gefunden."
+        "allPullRequestsLinkTitle": "Alle Pull-Requests",
+        "emptyMessage": "Keine aktiven Pull-Requests gefunden."
       },
       "created": {
-        "header": "Neuer Pull Request: #{{id}} {{title}}",
-        "title": "#{{id}}: {{title}}",
-        "footerStart": "Erstellt von",
-        "footerMiddle": "im Repository",
-        "footerEnd": ""
+        "header": "Neuer Pull-Request: #{{id}} {{title}}",
+        "draftHeader": "Neuer Draft-Pull-Request: #{{id}} {{title}}",
+        "footer": "Erstellt von {{author}} im Repository {{namespace}}/{{name}}"
+      },
+      "reopened": {
+        "header": "Pull-Request wiedereröffnet: #{{id}} {{title}}",
+        "footer": "Wiedereröffnet von {{author}} im Repository {{namespace}}/{{name}}"
+      },
+      "draftToOpen": {
+        "header": "Zum Review freigegeben: #{{id}} {{title}}",
+        "footer": "Freigegeben von {{author}} im Repository {{namespace}}/{{name}}"
       },
       "todo": {
         "todo": "{{open}}/{{count}} Aufgaben",
@@ -340,7 +586,7 @@
     "workflow": {
       "enableEngine": {
         "label": "Workflow Engine aktiviert",
-        "helpText": "Aktiviert die Workflow Engine und validiert damit alle Pull Requests gegen die definierten Regeln."
+        "helpText": "Aktiviert die Workflow Engine und validiert damit alle Pull-Requests gegen die definierten Regeln."
       },
       "rule": {
         "column": {
@@ -350,7 +596,7 @@
       },
       "newRule": {
         "label": "Neue Regel hinzufügen",
-        "helpText": "Fügt eine Regel zum Validieren des Pull Requests hinzu."
+        "helpText": "Fügt eine Regel zum Validieren des Pull-Requests hinzu."
       },
       "addRule": {
         "label": "Regel hinzufügen"
@@ -360,18 +606,19 @@
       "noRulesConfigured": "Es wurden noch keine Regeln definiert.",
       "statusbar": {
         "rules": "{{count}} Regel definiert",
-        "rules_plural": "{{count}} Regeln definiert",
+        "rules_other": "{{count}} Regeln definiert",
         "failedRules": "{{count}} Regel ist nicht erfüllt",
-        "failedRules_plural": "{{count}} Regeln sind nicht erfüllt",
+        "failedRules_other": "{{count}} Regeln sind nicht erfüllt",
         "noFailedRules": "Alle Regeln sind erfüllt"
       },
       "modal": {
-        "failedTitle": "{{count}} Regeln sind nicht erfüllt",
+        "failedTitle": "{{count}} Regel ist nicht erfüllt",
+        "failedTitle_other": "{{count}} Regeln sind nicht erfüllt",
         "successTitle": "Alle Regeln sind erfüllt"
       },
       "disableRepositoryConfiguration": {
-        "label": "Workflow Engine Konfiguration nicht für einzelne Repositories erlauben",
-        "helpText": "Repository Owner dürfen die Workflow Engine nicht individuell konfigurieren."
+        "label": "Workflow-Engine-Konfiguration nicht für einzelne Repositories erlauben",
+        "helpText": "Repository-Inhaber dürfen die Workflow Engine nicht individuell konfigurieren."
       },
       "globalConfig": {
         "title": "Workflow Engine"
@@ -379,8 +626,9 @@
     },
     "search": {
       "invalidResult": "Ungültige Suchergebnisse gefunden",
-      "source": "Source Branch",
-      "target": "Target Branch"
+      "source": "Source-Branch",
+      "target": "Target-Branch",
+      "subtitle": "<highlight>{{source}}</highlight> nach <highlight>{{target}}</highlight><space> </space><date />"
     },
     "shortcuts": {
       "pullRequests": "Wechsel zu den Pull-Requests"
@@ -388,34 +636,27 @@
   },
   "mailTopics": {
     "review-plugin": {
-      "label": "Pull Requests",
+      "label": "Ereignisse bei Pull-Requests",
       "prChanged": {
-        "label": "Neue/geänderte Pull Requests",
-        "helpText": "Mails bei neuen oder geänderten Pull Requests (Titel oder Beschreibung)."
+        "label": "Neue / geänderte Pull-Requests"
       },
       "closed": {
-        "label": "Schließen von Pull Requests",
-        "helpText": "Mails, wenn ein Pull Request gemerged oder abschließend abgelehnt wird."
+        "label": "Schließen von Pull-Requests"
       },
       "comments": {
-        "label": "Neue/geänderte Kommentare",
-        "helpText": "Mails bei neuen oder geänderten Kommentaren anderer Benutzer an abonnierten Pull Requests."
+        "label": "Neue / geänderte Kommentare"
       },
       "replies": {
-        "label": "Antworten auf Kommentare",
-        "helpText": "Mails bei Antworten auf Kommentare anderer Benutzer an abonnierten Pull Requests."
+        "label": "Antworten auf Kommentare"
       },
       "approvals": {
-        "label": "Freigaben",
-        "helpText": "Mails, wenn abonnierte Pull Requests freigegeben wurden bzw. wenn Freigaben zurückgenommen wurden."
+        "label": "Freigabe eines Pull-Requests"
       },
       "mentions": {
-        "label": "Erwähnungen",
-        "helpText": "Mails bei Erwähnungen von Ihnen in Kommentaren."
+        "label": "Erwähnungen"
       },
       "prUpdated": {
-        "label": "Aktualisierungen",
-        "helpText": "Mails, wenn ein Pull Request aktualisiert wird."
+        "label": "Aktualisierung eines Pull-Requests"
       }
     }
   },
@@ -423,26 +664,26 @@
     "repository": {
       "readPullRequest": {
         "*": {
-          "displayName": "Alle Pull Requests lesen",
-          "description": "Darf alle Pull Requests aus allen Repositories lesen"
+          "displayName": "Alle Pull-Requests lesen",
+          "description": "Darf alle Pull-Requests aus allen Repositories lesen"
         }
       },
       "readPullRequest,createPullRequest,commentPullRequest,mergePullRequest": {
         "*": {
-          "displayName": "Alle Pull Requests bearbeiten",
-          "description": "Darf Pull Requests für alle Repositories erstellen, kommentieren und ablehnen"
+          "displayName": "Alle Pull-Requests bearbeiten",
+          "description": "Darf Pull-Requests für alle Repositories erstellen, kommentieren und ablehnen"
         }
       },
       "configurePullRequest": {
         "*": {
-          "displayName": "Alle Pull Requests konfigurieren",
-          "description": "Darf Pull Requests in allen Repositories konfigurieren"
+          "displayName": "Alle Pull-Requests konfigurieren",
+          "description": "Darf Pull-Requests in allen Repositories konfigurieren"
         }
       },
       "performEmergencyMerge": {
         "*": {
           "displayName": "Emergency-Merge durchführen",
-          "description": "Darf einen Emergency-Merge bei einem Pull Request durchführen und damit die Workflow Regeln ignorieren"
+          "description": "Darf einen Emergency-Merge bei einem Pull-Request durchführen und damit die Regeln der Workflow Engine ignorieren"
         }
       }
     },
@@ -458,28 +699,28 @@
   "verbs": {
     "repository": {
       "createPullRequest": {
-        "displayName": "Pull Requests erstellen",
-        "description": "Darf neue Pull Requests erstellen"
+        "displayName": "Pull-Requests erstellen",
+        "description": "Darf neue Pull-Requests erstellen"
       },
       "readPullRequest": {
-        "displayName": "Pull Requests lesen",
-        "description": "Darf Pull Requests lesen"
+        "displayName": "Pull-Requests lesen",
+        "description": "Darf Pull-Requests lesen"
       },
       "commentPullRequest": {
-        "displayName": "Pull Requests kommentieren",
-        "description": "Darf Pull Requests kommentieren"
+        "displayName": "Pull-Requests kommentieren",
+        "description": "Darf Pull-Requests kommentieren"
       },
       "modifyPullRequest": {
-        "displayName": "Pull Requests bearbeiten",
-        "description": "Darf den Titel, Beschreibung und Reviewer des Pull Requests, sowie Kommentare von anderen Benutzern bearbeiten"
+        "displayName": "Pull-Requests bearbeiten",
+        "description": "Darf den Titel, Beschreibung und Reviewer des Pull-Requests, sowie Kommentare von anderen Benutzern bearbeiten"
       },
       "mergePullRequest": {
-        "displayName": "Pull Requests mergen/ablehnen",
-        "description": "Darf Pull Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
+        "displayName": "Pull-Requests mergen/ablehnen",
+        "description": "Darf Pull-Requests akzeptieren (mergen) oder ablehnen (für den Merge wird zusätzlich die Push-Berechtigung benötigt)"
       },
       "configurePullRequest": {
-        "displayName": "Pull Requests konfigurieren",
-        "description": "Darf Pull Requests konfigurieren"
+        "displayName": "Pull-Requests konfigurieren",
+        "description": "Darf Pull-Requests konfigurieren"
       },
       "readWorkflowConfig": {
         "displayName": "Workflow Engine Konfiguration lesen",
@@ -491,18 +732,30 @@
       },
       "performEmergencyMerge": {
         "displayName": "Emergency-Merge durchführen",
-        "description": "Darf einen Pull Request auch dann mergen, wenn nicht alle in der Workflow-Engine konfigurierten Regeln erfüllt sind"
+        "description": "Darf einen Pull-Request auch dann mergen, wenn nicht alle in der Workflow Engine konfigurierten Regeln erfüllt sind"
       }
     }
   },
   "errors": {
+    "xfbjOHZ73A": {
+      "displayName": "Upload fehlgeschlagen",
+      "description": "Beim Upload eines Bildes ist etwas fehlgeschlagen."
+    },
+    "CRDEiBAulq": {
+      "displayName": "Bild überschreitet die maximale Größe",
+      "description": "Das hochgeladene Bild überschreitet die maximale Größe (Default 8MB)."
+    },
+    "HPsg0smonb": {
+      "displayName": "Hash-Wert eines hochgeladenen Bildes konnte nicht verifiziert werden",
+      "description": "Der berechnete Hash-Wert eines hochgeladenen Bildes stimmt nicht mit dem vom Client angegebenen Hash-Wert überein. Vermutlich ist beim Hochladen ein Fehler aufgetreten."
+    },
     "FTRhcI0To1": {
-      "displayName": "Pull Request nicht offen",
-      "description": "Merges können nur auf offenen Pull Requests ausgeführt werden."
+      "displayName": "Pull-Request nicht offen",
+      "description": "Merges können nur auf offenen Pull-Requests ausgeführt werden."
     },
     "CVRj80D6z1": {
       "displayName": "Keine Unterschiede gefunden",
-      "description": "Es gibt keine Unterschiede zwischen Source und Target, die gemerged werden können  (oder der Source-Branch ist ein Vorgänger des Ziel-Branches)."
+      "description": "Es gibt keine Unterschiede zwischen Source- und Target-Branch, die gemergt werden können  (oder der Source-Branch ist ein Vorgänger des Target-Branches)."
     },
     "9nRnT3cjk1": {
       "displayName": "Merge verhindert",
@@ -510,11 +763,23 @@
     },
     "FuRoChFWt1": {
       "displayName": "Nur durch PR änderbar",
-      "description": "Der Branch kann nur durch Pull Requests geschrieben werden."
+      "description": "Der Branch kann nur durch Pull-Requests geschrieben werden."
+    },
+    "3qTv86jGL1": {
+      "displayName": "Nur durch PR änderbar",
+      "description": "Der Pfad kann in dem Branch nur durch Pull-Requests geschrieben werden."
     },
     "6nRxQptwH1": {
       "displayName": "Ungültiges Format",
       "description": "Die Konfiguration für die Regel hat ein ungültiges Format."
+    },
+    "RhFWK2Nf31": {
+      "displayName": "Ungültige Branches",
+      "description": "Source- und Target-Branch dürfen nicht übereinstimmen."
+    },
+    "BcRBqXYze1": {
+      "displayName": "Unzulässiger Statusübergang",
+      "description": "Der angefragte Statusübergang ist nicht zulässig."
     }
   },
   "workflow": {
@@ -522,26 +787,26 @@
       "AllReviewerApprovedRule": {
         "name": "Durch alle Reviewer freigegeben",
         "sortKey": "Reviewer-Approval",
-        "description": "Alle eingetragenen Reviewer geben den Pull Request frei.",
-        "failed": "Nicht alle eingetragenen Reviewer geben den Pull Request frei.",
-        "obstacle": "Nicht alle eingetragenen Reviewer geben den Pull Request frei.",
-        "success": "Alle eingetragenen Reviewer haben den Pull Request freigegeben."
+        "description": "Alle eingetragenen Reviewer geben den Pull-Request frei.",
+        "failed": "Nicht alle eingetragenen Reviewer geben den Pull-Request frei.",
+        "obstacle": "Nicht alle eingetragenen Reviewer geben den Pull-Request frei.",
+        "success": "Alle eingetragenen Reviewer haben den Pull-Request freigegeben."
       },
       "AllTasksDoneRule": {
         "name": "Alle Aufgaben erledigt",
         "sortKey": "Tasks",
-        "description": "Alle Aufgaben im Pull Request sind erledigt.",
-        "failed": "Es gibt noch {{count}} offene Aufgaben im Pull Request.",
-        "obstacle": "Es gibt noch offene Aufgaben im Pull Request.",
-        "success": "Alle Aufgaben im Pull Request sind erledigt."
+        "description": "Alle Aufgaben im Pull-Request sind erledigt.",
+        "failed": "Es gibt noch {{count}} offene Aufgaben im Pull-Request.",
+        "obstacle": "Es gibt noch offene Aufgaben im Pull-Request.",
+        "success": "Alle Aufgaben im Pull-Request sind erledigt."
       },
       "ApprovedByXReviewersRule": {
         "name": "Anzahl an Freigaben",
         "sortKey": "Reviewer-Approval",
-        "description": "Der Pull Request ist von mindestens {{numberOfReviewers}} Reviewern freigegeben.",
-        "failed": "Es fehlen {{missing}} weitere Freigaben ({{actual}} von {{expected}} Reviewern haben den Pull Request freigegeben).",
+        "description": "Der Pull-Request ist von mindestens {{numberOfReviewers}} Reviewern freigegeben.",
+        "failed": "Es fehlen {{missing}} weitere Freigaben ({{actual}} von {{expected}} Reviewern haben den Pull-Request freigegeben).",
         "obstacle": "Es sind nicht ausreichend viele Freigaben vorhanden.",
-        "success": "Der Pull Request wurde von ausreichend vielen Reviewern freigegeben.",
+        "success": "Der Pull-Request wurde von ausreichend vielen Reviewern freigegeben.",
         "form": {
           "numberOfReviewers": {
             "label": "Mindestanzahl der Freigaben",
@@ -555,27 +820,27 @@
   "search": {
     "types": {
       "pullRequest": {
-        "title": "Pull Request",
-        "subtitle": "Pull Request",
-        "navItem": "Pull Request",
+        "title": "Pull-Request",
+        "subtitle": "Pull-Request",
+        "navItem": "Pull-Request",
         "fields": {
           "title": {
             "exampleValue": "Mein neuer PR"
           },
           "description": {
-            "exampleValue": "Dieser Pull Request wird später beschrieben."
+            "exampleValue": "Dieser Pull-Request wird später beschrieben."
           },
           "source": {
             "exampleValue": "feature/new_link",
-            "hints": "Source Branch"
+            "hints": "Source-Branch"
           },
           "target": {
             "exampleValue": "main",
-            "hints": "Target Branch"
+            "hints": "Target-Branch"
           },
           "status": {
             "exampleValue": "OPEN",
-            "hints": "Pull Request Status wie z. B. OPEN, MERGED, REJECTED"
+            "hints": "Verfügbare Pull-Request Status: OPEN, MERGED, REJECTED oder DRAFT."
           },
           "creationDate": {
             "exampleValue": "1623057235",
@@ -590,23 +855,23 @@
             "hints": "Zeitstempel der letzten Änderung in Millisekunden seit 01.01.1970. Zeitraum-Suche ist möglich."
           },
           "overrideMessage": {
-            "hints": "Nachricht, warum ein Pull Request im Notfall gemerged wurde und die Merge Regeln ignoriert wurden.",
+            "hints": "Nachricht, warum ein Pull-Request im Notfall gemergt wurde und die Regeln der Workflow Engine ignoriert wurden.",
             "exampleValue": "Unser Server hat gebrannt und wir mussten dringend den Fix mergen."
           },
           "emergencyMerged": {
-            "hints": "Markierung, ob ein Pull Request im Notfall gemerged wurde.",
+            "hints": "Markierung, ob ein Pull-Request im Notfall gemergt wurde.",
             "exampleValue": "true"
           }
         }
       },
       "indexedComment": {
-        "title": "Pull Request Kommentar",
-        "subtitle": "Pull Request Kommentar",
-        "navItem": "Pull Request Kommentar",
+        "title": "Pull-Request-Kommentar",
+        "subtitle": "Pull-Request-Kommentar",
+        "navItem": "Pull-Request-Kommentar",
         "fields": {
           "comment": {
             "exampleValue": "Ich mag das neue Feature!",
-            "hints": "Der Kommentartext"
+            "hints": "Der Kommentartext."
           },
           "date": {
             "exampleValue": "1628077286",
@@ -626,10 +891,41 @@
           },
           "type": {
             "exampleValue": "COMMENT",
-            "hints": "Art des Kommentars wie z. B. COMMENT, TASK_TODO oder TASK_DONE"
+            "hints": "Art des Kommentars wie z. B. COMMENT, TASK_TODO oder TASK_DONE."
           }
         }
       }
+    }
+  },
+  "mustacheDoc": {
+    "CommitMessageTemplate": {
+      "name": "Commit-Nachrichten-Vorlage",
+      "properties": {
+        "namespace": "Namespace des Repositories",
+        "repositoryName": "Name des Repositories",
+        "pullRequest.id": "Pull-Request-ID",
+        "pullRequest.title": "Pull-Request-Titel",
+        "pullRequest.description": "Pull-Request-Beschreibung",
+        "pullRequest.source": "Pull-Request Source-Branch",
+        "pullRequest.target": "Pull-Request Target-Branch",
+        "author.displayName": "Name des Autors",
+        "author.mail": "E-Mail des Autors",
+        "currentUser.displayName": "Name des aktuellen Benutzers",
+        "currentUser.mail": "E-Mail des aktuellen Benutzers",
+        "date": "Aktuelle Datum und die Zeit (UTC)",
+        "localDate": "Aktuelle Datum und die Zeit (Zeitzone des Servers)",
+        "changesets[]": "Liste von Changesets, welche mit diesem Pull-Request gemergt werden. Ein Changeset verfügt auch über Unterattribute",
+        "changeset.author.name": "Autor des Changeset",
+        "changeset.author.mail": "E-Mail des Autoren",
+        "changeset.description": "Changeset Nachricht",
+        "changeset.id": "Changeset Revision",
+        "contributors[]": "Liste der Beteiligten an diesem Pull-Request mit den folgenden Unterattributen",
+        "contributor.type": "Art der Beteiligung",
+        "contributor.person.name": "Name des Beteiligten",
+        "contributor.person.mail": "E-Mail des Beteiligten"
+      },
+      "exampleContent": "Pull-Request ${{pullRequest.id}} von {{author.displayName}}\n\nMerged von {{currentUser.displayName}}\n\nMerged folgende Commits:\n{{#changesets}}\n  - {{description}}\n{{/changesets}}",
+      "exampleIntroduction": "Hier ist ein Bespiel wie man Pull-Request-Metadaten und Commit-Nachrichten rendern könnte."
     }
   }
 }

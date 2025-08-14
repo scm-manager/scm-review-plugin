@@ -1,26 +1,19 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review;
 
 import com.cloudogu.scm.review.pullrequest.service.DefaultPullRequestService;
@@ -28,12 +21,14 @@ import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
 import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestRejectedEvent;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestUpdatedMailEvent;
 import com.github.legman.Subscribe;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.EagerSingleton;
 import sonia.scm.NotFoundException;
+import sonia.scm.event.ScmEventBus;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
@@ -42,7 +37,6 @@ import sonia.scm.repository.api.HookContext;
 import sonia.scm.repository.api.HookFeature;
 import sonia.scm.repository.spi.HookMergeDetectionProvider;
 
-import javax.inject.Inject;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -114,14 +108,14 @@ public class StatusCheckHook {
     }
 
     private void process(PullRequest pullRequest) {
-      if (hasStatusOpen(pullRequest)) {
-        processOpen(pullRequest);
+      if (pullRequest.isInProgress()) {
+        processInProgress(pullRequest);
       } else {
         LOG.debug("ignoring pull request {}, because it in status {}", pullRequest.getId(), pullRequest.getStatus());
       }
     }
 
-    private void processOpen(PullRequest pullRequest) {
+    private void processInProgress(PullRequest pullRequest) {
       if (branchesAreModified(pullRequest)) {
         if (isMerged(pullRequest)) {
           setMerged(pullRequest);
@@ -133,10 +127,6 @@ public class StatusCheckHook {
       } else if (sourceBranchWasDeleted(pullRequest)) {
         setRejected(pullRequest, PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED);
       }
-    }
-
-    private boolean hasStatusOpen(PullRequest pullRequest) {
-      return pullRequest.getStatus() == PullRequestStatus.OPEN;
     }
 
     private boolean branchesAreModified(PullRequest pullRequest) {
@@ -192,7 +182,16 @@ public class StatusCheckHook {
 
     private void updated(PullRequest pullRequest) {
       LOG.info("pull request {} was updated", pullRequest.getId());
-      pullRequestService.updated(repository, pullRequest.getId());
+      if (branchProvider.getCreatedOrModified().contains(pullRequest.getSource())) {
+        LOG.info("source branch of pull request {} was updated", pullRequest.getId());
+        pullRequestService.sourceRevisionChanged(repository, pullRequest.getId());
+      } else {
+        LOG.info("target branch of pull request {} was updated", pullRequest.getId());
+        pullRequestService.targetRevisionChanged(repository, pullRequest.getId());
+      }
+      if(branchProvider.getCreatedOrModified().contains(pullRequest.getSource()) && pullRequest.isInProgress()) {
+        ScmEventBus.getInstance().post(new PullRequestUpdatedMailEvent(repository, pullRequest));
+      }
     }
   }
 }

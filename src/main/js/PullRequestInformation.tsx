@@ -1,36 +1,31 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 import React, { FC } from "react";
-import { Repository } from "@scm-manager/ui-types";
-import { Icon, urls } from "@scm-manager/ui-components";
+import { Branch, Repository } from "@scm-manager/ui-types";
+import { urls } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Redirect, Route, Switch, useLocation, useRouteMatch } from "react-router-dom";
 import RootComments from "./comment/RootCommentContainer";
-import { PullRequest } from "./types/PullRequest";
+import { MergePreventReason, PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
 import MergeConflicts from "./MergeConflicts";
+import RootChangesContainer from "./change/RootChangesContainer";
+import { StatusIcon } from "@scm-manager/ui-core";
 
 type Props = {
   repository: Repository;
@@ -39,8 +34,11 @@ type Props = {
   target: string;
   status?: string;
   mergeHasNoConflict: boolean;
+  mergePreventReasons: MergePreventReason[];
   targetBranchDeleted: boolean;
   shouldFetchChangesets?: boolean;
+  sourceBranch?: Branch;
+  stickyHeaderHeight: number;
 };
 
 export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
@@ -55,62 +53,81 @@ export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string
   return strippedUrl === suffix;
 }
 
+type SingleTabProps = {
+  name: string;
+  activeTab: (type: string) => boolean;
+};
+
+const SingleTab: FC<SingleTabProps> = ({ name, activeTab, children }) => {
+  return (
+    <li
+      className={activeTab(name) ? "is-active" : ""}
+      id={`tab-${name}`}
+      role="tab"
+      aria-selected={activeTab(name)}
+      aria-controls={`tabpanel-${name}`}
+    >
+      {children}
+    </li>
+  );
+};
+
 type TabProps = {
   isClosed: boolean;
   baseURL: string;
-  navigationClass: (type: string) => string;
+  activeTab: (type: string) => boolean;
   pullRequest: PullRequest;
   targetBranchDeleted: boolean;
   mergeHasNoConflict: boolean;
 };
 
-const Tabs: FC<TabProps> = ({
-  isClosed,
-  pullRequest,
-  navigationClass,
-  baseURL,
-  targetBranchDeleted,
-  mergeHasNoConflict
-}) => {
+const Tabs: FC<TabProps> = ({ isClosed, pullRequest, activeTab, baseURL, targetBranchDeleted, mergeHasNoConflict }) => {
   const [t] = useTranslation("plugins");
+
   let changesetTab = null;
   let diffTab = null;
   let conflictsTab = null;
-
   if (!isClosed || (pullRequest.sourceRevision && pullRequest.targetRevision)) {
     changesetTab = (
-      <li className={navigationClass("changesets")}>
+      <SingleTab name="changesets" activeTab={activeTab}>
         <Link to={`${baseURL}/changesets/`}>{t("scm-review-plugin.pullRequest.tabs.commits")}</Link>
-      </li>
+      </SingleTab>
     );
 
     diffTab = (
-      <li className={navigationClass("diff")}>
+      <SingleTab name="diff" activeTab={activeTab}>
         <Link to={`${baseURL}/diff/`}>{t("scm-review-plugin.pullRequest.tabs.diff")}</Link>
-      </li>
+      </SingleTab>
     );
 
     conflictsTab = !mergeHasNoConflict && (
-      <li className={navigationClass("conflicts")}>
+      <SingleTab name="conflicts" activeTab={activeTab}>
         <Link to={`${baseURL}/conflicts/`}>
-          {t("scm-review-plugin.pullRequest.tabs.conflicts")} &nbsp;{" "}
-          <Icon color={"warning"} name={"exclamation-triangle"} />
+          {t("scm-review-plugin.pullRequest.tabs.conflicts")}
+          <StatusIcon className="ml-2" variant="warning" iconSize="xs" />
         </Link>
-      </li>
+      </SingleTab>
     );
   }
 
   const commentTab = pullRequest._links?.comments ? (
-    <li className={navigationClass("comments")}>
+    <SingleTab name="comments" activeTab={activeTab}>
       <Link to={`${baseURL}/comments/`}>{t("scm-review-plugin.pullRequest.tabs.comments")}</Link>
-    </li>
+    </SingleTab>
+  ) : null;
+
+  const prChangesTab = pullRequest._links?.changes ? (
+    <SingleTab name="changes" activeTab={activeTab}>
+      <Link to={`${baseURL}/changes/`}>{t("scm-review-plugin.pullRequest.tabs.changes")}</Link>
+    </SingleTab>
   ) : null;
 
   return (
     <div className="tabs">
-      <ul>
+      <ul role="tablist">
         {commentTab}
         {changesetTab}
+        {prChangesTab}
         {!targetBranchDeleted && diffTab}
         {conflictsTab}
       </ul>
@@ -124,9 +141,12 @@ type RouteProps = {
   isClosed: boolean;
   baseURL: string;
   mergeHasNoConflict: boolean;
+  mergePreventReasons: MergePreventReason[];
   source: string;
   target: string;
   shouldFetchChangesets?: boolean;
+  sourceBranch?: Branch;
+  stickyHeaderHeight: number;
 };
 
 const Routes: FC<RouteProps> = ({
@@ -137,47 +157,82 @@ const Routes: FC<RouteProps> = ({
   pullRequest,
   baseURL,
   mergeHasNoConflict,
-  shouldFetchChangesets
+  mergePreventReasons,
+  shouldFetchChangesets,
+  sourceBranch,
+  stickyHeaderHeight,
 }) => {
+  let routeComments = null;
   let routeChangeset = null;
   let routeChangesetPagination = null;
   let routeDiff = null;
   let routeConflicts = null;
+  let routePrChanges = null;
   if (!isClosed || (pullRequest.sourceRevision && pullRequest.targetRevision)) {
     const sourceRevision = isClosed && pullRequest.sourceRevision ? pullRequest.sourceRevision : source;
     const targetRevision = isClosed && pullRequest.targetRevision ? pullRequest.targetRevision : target;
+    routeComments = (
+      <Route path={`${baseURL}/comments`} exact>
+        <div id="tabpanel-comments" role="tabpanel" aria-labelledby="tab-comments">
+          {pullRequest ? <RootComments repository={repository} pullRequest={pullRequest} /> : null}
+        </div>
+      </Route>
+    );
     routeChangeset = (
       <Route path={`${baseURL}/changesets`} exact>
-        <Changesets repository={repository} pullRequest={pullRequest} shouldFetchChangesets={shouldFetchChangesets} />
+        <div id="tabpanel-changesets" role="tabpanel" aria-labelledby="tab-changesets">
+          <Changesets repository={repository} pullRequest={pullRequest} shouldFetchChangesets={shouldFetchChangesets} />
+        </div>
       </Route>
     );
     routeChangesetPagination = (
       <Route path={`${baseURL}/changesets/:page`} exact>
-        <Changesets repository={repository} pullRequest={pullRequest} shouldFetchChangesets={shouldFetchChangesets} />
+        <div id="tabpanel-changesets" role="tabpanel" aria-labelledby="tab-changesets">
+          <Changesets repository={repository} pullRequest={pullRequest} shouldFetchChangesets={shouldFetchChangesets} />
+        </div>
       </Route>
     );
     routeDiff = (
       <Route path={`${baseURL}/diff`} exact>
-        <DiffRoute repository={repository} pullRequest={pullRequest} source={sourceRevision} target={targetRevision} />
+        <div id="tabpanel-diff" role="tabpanel" aria-labelledby="tab-diff">
+          <DiffRoute
+            repository={repository}
+            pullRequest={pullRequest}
+            source={sourceRevision}
+            target={targetRevision}
+            sourceBranch={sourceBranch}
+            stickyHeaderHeight={stickyHeaderHeight}
+            mergePreventReasons={mergePreventReasons}
+          />
+        </div>
+      </Route>
+    );
+    routeConflicts = !mergeHasNoConflict && (
+      <Route path={`${baseURL}/conflicts`} exact>
+        <div id="tabpanel-conflicts" role="tabpanel" aria-labelledby="tab-conflicts">
+          <MergeConflicts repository={repository} pullRequest={pullRequest} mergePreventReasons={mergePreventReasons} />
+        </div>
       </Route>
     );
 
-    routeConflicts = !mergeHasNoConflict && (
-      <Route path={`${baseURL}/conflicts`} exact>
-        <MergeConflicts repository={repository} pullRequest={pullRequest} />
+    routePrChanges = (
+      <Route path={`${baseURL}/changes`} exact>
+        <div id="tabpanel-conflicts" role="tabpanel" aria-labelledby="tab-conflicts">
+          <RootChangesContainer pullRequest={pullRequest} repository={repository} />
+        </div>
       </Route>
     );
   }
+
   return (
     <Switch>
       <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
-      <Route path={`${baseURL}/comments`} exact>
-        {pullRequest ? <RootComments repository={repository} pullRequest={pullRequest} /> : null}
-      </Route>
+      {routeComments}
       {routeChangeset}
       {routeChangesetPagination}
       {routeDiff}
       {routeConflicts}
+      {routePrChanges}
     </Switch>
   );
 };
@@ -185,21 +240,19 @@ const Routes: FC<RouteProps> = ({
 const PullRequestInformation: FC<Props> = ({
   pullRequest,
   mergeHasNoConflict,
+  mergePreventReasons,
   status,
   targetBranchDeleted,
+  sourceBranch,
   ...restProps
 }) => {
   const location = useLocation();
   const match = useRouteMatch();
   const baseURL = match.url;
 
-  const navigationClass = (suffix: string) => {
-    if (isUrlSuffixMatching(baseURL, location.pathname, suffix)) {
-      return "is-active";
-    }
-    return "";
+  const activeTab = (suffix: string) => {
+    return isUrlSuffixMatching(baseURL, location.pathname, suffix);
   };
-
   const isClosedPullRequest = status === "MERGED" || status === "REJECTED";
 
   return (
@@ -207,7 +260,7 @@ const PullRequestInformation: FC<Props> = ({
       <Tabs
         isClosed={isClosedPullRequest}
         baseURL={baseURL}
-        navigationClass={navigationClass}
+        activeTab={activeTab}
         pullRequest={pullRequest}
         targetBranchDeleted={targetBranchDeleted}
         mergeHasNoConflict={mergeHasNoConflict}
@@ -217,7 +270,9 @@ const PullRequestInformation: FC<Props> = ({
         pullRequest={pullRequest}
         isClosed={isClosedPullRequest}
         mergeHasNoConflict={mergeHasNoConflict}
+        mergePreventReasons={mergePreventReasons}
         baseURL={baseURL}
+        sourceBranch={sourceBranch}
       />
     </>
   );

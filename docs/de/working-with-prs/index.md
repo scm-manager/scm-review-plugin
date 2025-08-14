@@ -10,7 +10,10 @@ Der Autor kann beim Erstellen bzw. Editieren seines Pull Requests Wunsch-Reviewe
 Oben rechts auf der Pull Request Detailseite kann ein Reviewer mit einem Klick auf den "+" (Plus) bzw. "-" (Minus) Button diesen Pull Request abonnieren / deabonnieren.  Der Abonnent wird über Änderungen an diesem Pull Request und neue Kommentare per E-Mail benachrichtigt.
 
 ### Pull Request freigeben
-Nach einem Review kann der Reviewer den Pull Request für den Merge freigeben. Die Freigabe gilt vorerst nur als Informationen für den Autor über das durchgeführte Review. Eine tatsächliche Freigabe im Sinne eines Entsperrens findet noch nicht statt. Sobald ein Reviewer auf "Freigeben" klickt, wird hinter seinem Namen in der Reviewer-Liste ein grüner Haken hinterlegt.
+Nach einem Review kann der Reviewer den Pull Request für den Merge freigeben. Die Freigabe gilt vorerst nur als Informationen für den Autor über das durchgeführte Review. Sobald ein Reviewer auf "Freigeben" klickt, wird hinter seinem Namen in der Reviewer-Liste ein grüner Haken angezeigt.
+Wenn später Änderungen am Code vorgenommen werden, wird der Reviewstatus zurückgesetzt.
+
+Mit Hilfe der [Workflow Engine](../workflow_engine/) können Regeln definiert werden, die im Rahmen des Review-Prozesses Freigaben von Reviewern erfordern.
 
 ### Diff erweitern
 Innerhalb des Pull Request werden die Änderungen in verkürzten Diffs pro Datei angezeigt. 
@@ -27,7 +30,12 @@ Für einen Pull Request können drei Arten von Kommentaren erstellt werden.
 
 Alle Kommentare findet man in dem Kommentar-Tab. Die Datei- und Zeilen-Kommentare findet man auch direkt an der Datei in dem Diff-Tab. 
 Es ist möglich innerhalb von Kommentaren andere Benutzer des SCM-Managers zu erwähnen. Dafür beginnt man mit einem "@"-Zeichen und tippt danach den Namen, Benutzername oder die E-Mail-Adresse des Benutzers. 
-Ab dem dritten Zeichen werden über eine Autovervollständigung passende Benutzer vorgeschlagen. Erwähnte Benutzer werden per E-Mail benachrichtigt, dass sie in dem Kommentar erwähnt wurden. 
+Ab dem dritten Zeichen werden über eine Autovervollständigung passende Benutzer vorgeschlagen. Erwähnte Benutzer werden per E-Mail benachrichtigt, dass sie in dem Kommentar erwähnt wurden.
+
+Zudem ist es möglich, Bilder in Kommentaren zu nutzen. Dafür kann ein Bild per Copy & Paste in den Kommentar-Editor eingefügt werden.
+Dieses Bild wird dann als Markdown-Bild in den Kommentar eingefügt und beim Speichern des Kommentars separat im
+SCM-Manager gespeichert. Bilder können entweder direkt über die Zwischenablage (z. B. bei Nutzung eines Screenshot-Tools)
+oder durch Kopieren einer Bilddatei in den Editor eingefügt werden. Erlaubt sind dabei die Bildformate PNG, JPEG und GIF.
 
 ![Pull Request - Create comment](assets/createComment.png)
 
@@ -65,8 +73,12 @@ Offene Aufgaben können über ein Icon auf "abgeschlossen" gesetzt werden. Aufga
 
 ![Pull Request - Create task](assets/createTask.png)
 
+### Pull Request umwandeln
+Ein als Draft Pull Request erstellter Pull Request kann in einen offenen, zum Review freigegebenen Pull Request umgewandelt werden.
+Ein offener Pull Request kann über die Bearbeiten-Funktion in einen Draft Pull Request umgewandelt werden. Beim Umwandeln in einen Draft werden die Freigaben durch Nutzer gelöscht.
+
 ### Pull Request ablehnen
-Sollte ein Pull Request aus Sicht der Reviewer nicht gemerged werden dürfen, kann dieser Pull Request abgelehnt werden. Dies sollte in Abstimmung mit dem Pull Request Autor passieren. Ein abgelehnter Pull Request kann nicht erneut geöffnet werden. Es muss stattdessen ein neuer Pull Request erstellt werden.
+Sollte ein Pull Request aus Sicht der Reviewer nicht gemerged werden dürfen, kann dieser Pull Request abgelehnt werden. Dies sollte in Abstimmung mit dem Pull Request Autor passieren. Ein abgelehnter Pull Request kann später wieder geöffnet werden.
 
 ### Pull Request mergen
 
@@ -84,3 +96,32 @@ Im Falle eines Merge-Konflikts kann der Pull Request nicht automatisch gemerged 
 In dem Merge-Commit werden die zustimmenden Reviewer als "Reviewed-by" gesetzt.
 
 ![Pull Request - Merge-Modal](assets/mergeModal.png)
+
+### Pull Request bearbeiten
+
+Ein Pull Request kann nach dem Erstellen bearbeitet werden. Der Autor kann 
+
+- den Target-Branch,
+- die Voreinstellung zum Löschen des Source-Branch,
+- den Titel,
+- die Beschreibung,
+- die Reviewer und
+- die Labels ändern.
+
+Wird der Target-Branch geändert, werden alle Freigaben durch Reviewer zurückgesetzt.
+
+### Pull Request Historie
+
+Alle Änderungen an einem Pull Request werden gesammelt und können als eine Historie angezeigt werden.
+Folgendes ist eine Dabei werden folgende Eigenschaften erfasst:
+
+- Source Branch Revision
+- Target Branch
+- Titel
+- Beschreibung
+- Reviewer
+- Kommentare
+- Tasks
+- Pull Request Status
+
+![Pull Request Änderungshistorie](assets/pr-change-history.png)

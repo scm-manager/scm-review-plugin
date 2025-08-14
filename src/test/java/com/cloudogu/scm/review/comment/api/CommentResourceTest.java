@@ -1,39 +1,39 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
+
 package com.cloudogu.scm.review.comment.api;
 
 import com.cloudogu.scm.review.RepositoryResolver;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentService;
 import com.cloudogu.scm.review.comment.service.Location;
+import com.cloudogu.scm.review.comment.service.PullRequestImageService;
 import com.cloudogu.scm.review.comment.service.Reply;
+import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestResource;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.inject.util.Providers;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import org.assertj.core.api.Assertions;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.mock.MockHttpResponse;
@@ -45,17 +45,19 @@ import org.mockito.junit.MockitoJUnitRunner;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 import sonia.scm.sse.ChannelRegistry;
+import sonia.scm.store.Blob;
+import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.RestDispatcher;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 
 import static com.cloudogu.scm.review.comment.service.Comment.createComment;
 import static java.net.URI.create;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -89,6 +91,17 @@ public class CommentResourceTest {
   private BranchRevisionResolver branchRevisionResolver;
   @Mock
   private ChannelRegistry channelRegistry;
+  @Mock
+  private ConfigService configService;
+  @Mock
+  private CommentService commentService;
+  @Mock
+  private UserDisplayManager userDisplayManager;
+
+  @Mock
+  private PullRequestImageService pullRequestImageService;
+
+  private PullRequestChangeService pullRequestChangeService;
 
   private CommentPathBuilder commentPathBuilder = CommentPathBuilderMock.createMock("https://scm-manager.org/scm/api/v2");
 
@@ -96,13 +109,13 @@ public class CommentResourceTest {
   public void init() {
     when(branchRevisionResolver.getRevisions("space", "name", "1")).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(repositoryResolver.resolve(any())).thenReturn(repository);
-    CommentResource resource = new CommentResource(service, repositoryResolver, new CommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new ExecutedTransitionMapperImpl(), branchRevisionResolver);
+    CommentResource resource = new CommentResource(service, repositoryResolver, new CommentMapperImpl(), new ReplyMapperImpl(), commentPathBuilder, new ExecutedTransitionMapperImpl(), pullRequestImageService, branchRevisionResolver);
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(
       new PullRequestMapperImpl(),
       null,
-            serviceFactory, Providers.of(
+            commentService, serviceFactory, Providers.of(
         new PullRequestResource(
           new PullRequestMapperImpl(),
           null,
@@ -114,14 +127,16 @@ public class CommentResourceTest {
               Providers.of(resource),
               commentPathBuilder,
               pullRequestService,
-              branchRevisionResolver
+              branchRevisionResolver,
+              pullRequestImageService
             )
           ),
           null,
-          channelRegistry
+          channelRegistry,
+          pullRequestChangeService
         )
-      )
-    );
+      ),
+            configService, userDisplayManager);
     dispatcher.addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);
@@ -184,6 +199,24 @@ public class CommentResourceTest {
   }
 
   @Test
+  public void shouldUpdateCommentWithImage() throws URISyntaxException, IOException {
+    String newComment = "haha";
+    String pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\", \"filetypes\": {\"file0\": \"image/png\"}}");
+    MockHttpRequest request =
+      MockHttpRequest
+        .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/images");
+
+    MultipartUploadHelper.multipartRequest(
+      request, Collections.singletonMap("file0", new ByteArrayInputStream("content".getBytes())), pullRequestCommentJson
+    );
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+    verify(service).modifyComment(eq("space"), eq("name"), eq("1"), eq("1"),
+      argThat((Comment t) -> t.getComment().equals(newComment)));
+  }
+
+  @Test
   public void shouldNotUpdateCommentIfPullRequestHasChanged() throws URISyntaxException, UnsupportedEncodingException {
     String newComment = "haha";
     byte[] pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\"}").getBytes();
@@ -209,6 +242,24 @@ public class CommentResourceTest {
         .content(pullRequestCommentJson)
         .contentType(MediaType.APPLICATION_JSON);
 
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
+    verify(service).modifyReply(eq("space"), eq("name"), eq("1"), eq("x"),
+      argThat((Reply r) -> r.getComment().equals(newComment)));
+  }
+
+  @Test
+  public void shouldUpdateReplyWithImage() throws URISyntaxException, IOException {
+    String newComment = "haha";
+    String pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\", \"filetypes\": {\"file0\": \"image/png\"}}");
+    MockHttpRequest request =
+      MockHttpRequest
+        .put("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies/x/images");
+
+    MultipartUploadHelper.multipartRequest(
+      request, Collections.singletonMap("file0", new ByteArrayInputStream("content".getBytes())), pullRequestCommentJson
+    );
     dispatcher.invoke(request, response);
 
     assertEquals(HttpServletResponse.SC_NO_CONTENT, response.getStatus());
@@ -249,6 +300,44 @@ public class CommentResourceTest {
     verify(service).reply(eq("space"), eq("name"), eq("1"), any(), any());
     assertEquals(create("https://scm-manager.org/scm/api/v2/pull-requests/space/name/1/comments/1/replies/new"), response.getOutputHeaders().getFirst("Location"));
     assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+  }
+
+  @Test
+  public void shouldReplyWithImage() throws URISyntaxException, IOException {
+    String newComment = "haha";
+    when(service.reply(eq("space"), eq("name"), eq("1"), eq("1"), argThat(t -> t.getComment().equals(newComment))))
+      .thenReturn("new");
+    String pullRequestCommentJson = ("{\"comment\" : \"" + newComment + "\", \"filetypes\": {\"file0\": \"image/png\"}}");
+    MockHttpRequest request =
+      MockHttpRequest
+        .post("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies/images");
+
+    MultipartUploadHelper.multipartRequest(
+      request, Collections.singletonMap("file0", new ByteArrayInputStream("content".getBytes())), pullRequestCommentJson
+    );
+    dispatcher.invoke(request, response);
+
+    verify(service).reply(eq("space"), eq("name"), eq("1"), any(), any());
+    assertEquals(create("https://scm-manager.org/scm/api/v2/pull-requests/space/name/1/comments/1/replies/new"),
+      response.getOutputHeaders().getFirst("Location"));
+    assertEquals(HttpServletResponse.SC_CREATED, response.getStatus());
+  }
+
+  @Test
+  public void shouldGetReplyImage() throws URISyntaxException, IOException {
+    Blob blob = mock(Blob.class);
+    when(blob.getInputStream()).thenReturn(new ByteArrayInputStream("image/png\0content".getBytes()));
+    PullRequestImageService.ImageStream imageStream = new PullRequestImageService.ImageStream(blob);
+    when(pullRequestImageService.getPullRequestImage(any(), any(), any())).thenReturn(imageStream);
+
+    MockHttpRequest request =
+      MockHttpRequest
+        .get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/space/name/1/comments/1/replies/images/dummyHash");
+
+    dispatcher.invoke(request, response);
+
+    assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+    assertThat(response.getOutput()).isEqualTo("content".getBytes());
   }
 
   @Test
