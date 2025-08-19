@@ -1,0 +1,2 @@
+- type: added
+  description: Support for the new merge strategy fast forward only
