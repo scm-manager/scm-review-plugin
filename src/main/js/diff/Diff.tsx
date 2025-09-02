@@ -351,6 +351,7 @@ const Diff: FC<Props> = ({
         actions={actions}
         pullRequestComments={comments?._embedded.pullRequestComments || []}
         stickyHeader={stickyHeaderHeight}
+        reviewedFiles={reviewedFiles}
       />
     </StyledDiffWrapper>
   );

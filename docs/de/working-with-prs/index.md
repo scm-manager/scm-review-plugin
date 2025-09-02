@@ -21,6 +21,12 @@ Diese Diffs können auch schrittweise oder komplett nachgeladen werden, um den g
 
 ![Pull Request - Diff expand](assets/diffExpand.png)
 
+### "Review-Markierungen" für einzelne Dateien
+In der Diff-Ansicht kann das Review für einzelne Dateien als abgeschlossen markiert werden. In diesem Fall wird in der
+Schaltfläche ein Haken dargestellt, die Datei wird standardmäßig eingeklappt und in dem Dateibaum wird sie ausgegraut.
+
+![Pull Request - Review-Markierungen](assets/markReviewed.png)
+
 ### Kommentare erstellen
 Für einen Pull Request können drei Arten von Kommentaren erstellt werden. 
 

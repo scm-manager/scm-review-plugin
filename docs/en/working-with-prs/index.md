@@ -20,6 +20,12 @@ In the pull request all changes are shown as diff per file. This shortened view 
 
 ![Pull Request - Diff expand](assets/diffExpand.png)
 
+### Review-Marks for single files
+In the diff view, single files can be marked as reviewed. In this case, the button will get a check-mark, the file will
+be collapsed by default, and it will be grayed-out in the file tree.
+
+![Pull Request - Review-Marks](assets/markReviewed.png)
+
 ### Create comments
 There are three different kinds of comments for pull requests.
 

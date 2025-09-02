@@ -32,12 +32,14 @@ import {
   WhitespaceMode,
   LayoutRadioButtons,
   useLayoutState,
-  devices
+  devices,
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
 import styled from "styled-components";
 import { useHistory, useLocation } from "react-router-dom";
+import { Icon } from "@scm-manager/ui-core";
+import classNames from "classnames";
 
 type LoadingDiffProps = DiffObjectProps & {
   diffUrl: string;
@@ -45,6 +47,7 @@ type LoadingDiffProps = DiffObjectProps & {
   pullRequestComments: Comment[];
   refetchOnWindowFocus?: boolean;
   stickyHeader?: boolean | number;
+  reviewedFiles?: string[];
 };
 
 const StickyContainer = styled.div<{ top: number }>`
@@ -55,6 +58,22 @@ const StickyContainer = styled.div<{ top: number }>`
   gap: 0.5rem;
   top: calc(${(props) => props.top}px + var(--scm-navbar-main-height));
   z-index: 11;
+`;
+
+export const StackedSpan = styled.span`
+  width: 3em;
+  height: 3em;
+  font-size: 0.5em;
+`;
+
+export const StyledIcon = styled(Icon)<{ isSmaller?: boolean }>`
+  ${({ isSmaller }) =>
+    isSmaller &&
+    `
+      font-size: 0.5em;
+      margin-top: 0.05rem;
+  `}
+  min-width: 1.5rem;
 `;
 
 export const StickyTreeContainer = styled.div`
@@ -75,7 +94,14 @@ export const Divider = styled.div`
   box-shadow: 0 24px 3px -24px var(--scm-border-color);
 `;
 
-const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestComments, stickyHeader, ...props }) => {
+const LoadingDiff: FC<LoadingDiffProps> = ({
+  diffUrl,
+  actions,
+  pullRequestComments,
+  stickyHeader,
+  reviewedFiles,
+  ...props
+}) => {
   const [t] = useTranslation("plugins");
   const [ignoreWhitespace, setIgnoreWhitespace] = useState<WhitespaceMode>("NONE");
   const [layout, setLayout] = useLayoutState();
@@ -140,8 +166,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
       </div>
       <StickyTreeContainer
         className={
-          (layout === "Both" ? "column pl-3" : "column pl-3 is-full") +
-          (layout !== "Diff" ? "" : " is-hidden")
+          (layout === "Both" ? "column pl-3" : "column pl-3 is-full") + (layout !== "Diff" ? "" : " is-hidden")
         }
       >
         <FileTreeContent isBorder={layout !== "Diff"}>
@@ -152,6 +177,46 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
               tree={data.tree}
               currentFile={decodeURIComponent(getFileNameFromHash(location.hash) ?? "")}
               setCurrentFile={setFilePath}
+              FileTreeNodeWrapper={({
+                path,
+                name,
+                isFile,
+                iconName,
+                iconColor,
+                changeType,
+                children,
+                isCurrentFile,
+              }) => {
+                if (isFile && reviewedFiles?.find((file) => file === path)) {
+                  console.log("rendering reviewed icon for", name);
+                  const lightIcon = (
+                    <StackedSpan className="fa-stack">
+                      <StyledIcon
+                        className={classNames("fa-stack-2x", `has-text-${iconColor}`)}
+                        type="far"
+                        alt={t("diff.showContent")}
+                      >
+                        file
+                      </StyledIcon>
+                      <StyledIcon
+                        className={classNames("fa-stack-1x", "is-relative", `has-text-${iconColor}`)}
+                        isSmaller={iconName === "circle"}
+                        alt={t(`diff.changes.${changeType}`)}
+                      >
+                        {iconName}
+                      </StyledIcon>
+                    </StackedSpan>
+                  );
+                  return (
+                    <>
+                      {lightIcon}
+                      <div className={classNames("ml-1", "has-text-secondary has-hover-color-blue", isCurrentFile ? "has-text-weight-bold": "")}>{name}</div>
+                    </>
+                  );
+                } else {
+                  return children;
+                }
+              }}
             />
           )}
         </FileTreeContent>
