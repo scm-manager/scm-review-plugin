@@ -108,6 +108,7 @@ class PullRequestSuggestionServiceTest {
     @Test
     void shouldIgnorePushBecauseRepositoryDoesNotSupportPullRequests() {
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(false);
+      when(branchResolver.getAll(repository)).thenThrow(IllegalStateException.class);
       suggestionService.onBranchUpdated(createPostReceiveRepositoryHookEvent());
       assertThat(suggestionService.getPushEntries()).isEmpty();
     }
