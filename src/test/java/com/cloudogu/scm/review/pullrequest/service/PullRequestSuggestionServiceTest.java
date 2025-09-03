@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, ShiroExtension.class})
@@ -78,10 +79,10 @@ class PullRequestSuggestionServiceTest {
     @BeforeEach
     void setup() {
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(true);
-      when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(
+      lenient().when(hookContext.getBranchProvider().getCreatedOrModified()).thenReturn(
         List.of("feature")
       );
-      when(branchResolver.getAll(repository)).thenReturn(List.of(
+      lenient().when(branchResolver.getAll(repository)).thenReturn(List.of(
         Branch.defaultBranch(
           "main",
           "revisionOnMain",
@@ -108,7 +109,10 @@ class PullRequestSuggestionServiceTest {
     @Test
     void shouldIgnorePushBecauseRepositoryDoesNotSupportPullRequests() {
       when(pullRequestService.supportsPullRequests(repository)).thenReturn(false);
+      lenient().when(branchResolver.getAll(repository)).thenThrow(InternalRepositoryException.class);
+
       suggestionService.onBranchUpdated(createPostReceiveRepositoryHookEvent());
+
       assertThat(suggestionService.getPushEntries()).isEmpty();
     }
 
