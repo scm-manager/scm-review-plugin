@@ -1,2 +1,0 @@
-- type: fixed
-  description: Fix failing post-commit Hook on SVN Repository, because it does not support the BranchResolver (call leads to visible error on client side)

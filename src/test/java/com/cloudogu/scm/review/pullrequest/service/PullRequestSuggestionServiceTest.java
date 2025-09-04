@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.HandlerEventType;
 import sonia.scm.repository.Branch;
+import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.PostReceiveRepositoryHookEvent;
 import sonia.scm.repository.Repository;
