@@ -70,9 +70,14 @@ public class PullRequestSuggestionService {
     Repository repository = event.getRepository();
 
     boolean isNotSupported = !pullRequestService.supportsPullRequests(repository);
-    boolean isSingleOrNoBranch = branchResolver.getAll(repository).size() < 2;
+    if (isNotSupported) {
+      return;
+    }
 
-    if (isNotSupported || isSingleOrNoBranch) {
+    // check the branches only if PullRequests support (abort before branch check)
+    // because BranchResolver throws an error to the client if the repository type does not support branches
+    boolean isSingleOrNoBranch = branchResolver.getAll(repository).size() < 2;
+    if (isSingleOrNoBranch) {
       return;
     }
 
