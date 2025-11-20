@@ -86,6 +86,12 @@ export const StickyTreeContainer = styled.div`
   height: 100%;
 `;
 
+const DiffContainer = styled.div<{ withTree?: boolean }>`
+  @media (min-width: ${devices.widescreen.width}px) {
+    ${({ withTree }) => withTree && `max-width: 75%`}
+  }
+`;
+
 export const Divider = styled.div`
   margin-bottom: 16px;
   margin-left: 12px;
@@ -221,7 +227,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({
           )}
         </FileTreeContent>
       </StickyTreeContainer>
-      <div className={layout !== "Tree" ? "column" : "is-hidden"}>
+      <DiffContainer withTree={layout === "Both"} className={layout !== "Tree" ? "column" : "is-hidden"}>
         <CoreDiff
           diff={data.files}
           ignoreWhitespace={ignoreWhitespace}
@@ -245,7 +251,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({
             isFetchingNextPage={isFetchingNextPage}
           />
         ) : null}
-      </div>
+      </DiffContainer>
     </div>
   );
 };

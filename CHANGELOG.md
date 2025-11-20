@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Suppress pull request suggestion for repositories with a single branch
 - Data is no longer stored using the XML based stores, but instead using the new SQLite based stores.
 
+## 3.9.1 - 2025-11-20
+### Fixed
+- Overlapping layout of diff and file tree, if comment view contains a long line
+
 ## 3.9.0 - 2025-04-15
 ### Added
 - Add descriptive document title for pull request and workflow engine configuration pages

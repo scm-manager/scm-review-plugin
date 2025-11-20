@@ -33,6 +33,10 @@ const Comments = styled.div`
   & .comment-wrapper + .inline-comment {
     border-top: 1px solid #dbdbdb; // $border
   }
+
+  & .media-content {
+    max-width: 100%;
+  }
 `;
 
 class InlineComments extends Component<Props> {
