@@ -29,6 +29,10 @@ const Wrapper = styled.div`
   & .comment-wrapper + .comment-wrapper {
     border-top: 1px solid #dbdbdb; // $border
   }
+
+  & .media-content {
+    max-width: 100%;
+  }
 `;
 
 type Props = {

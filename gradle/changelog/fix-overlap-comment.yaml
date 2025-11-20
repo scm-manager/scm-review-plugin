@@ -1,0 +1,2 @@
+- type: fixed
+  description: Overlapping layout of diff and file tree, if comment view contains a long line

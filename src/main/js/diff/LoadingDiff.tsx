@@ -32,7 +32,7 @@ import {
   WhitespaceMode,
   LayoutRadioButtons,
   useLayoutState,
-  devices
+  devices,
 } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
@@ -65,6 +65,12 @@ export const StickyTreeContainer = styled.div`
   }
   top: 6rem;
   height: 100%;
+`;
+
+const DiffContainer = styled.div<{ withTree?: boolean }>`
+  @media (min-width: ${devices.widescreen.width}px) {
+    ${({ withTree }) => withTree && `max-width: 75%`}
+  }
 `;
 
 export const Divider = styled.div`
@@ -140,8 +146,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
       </div>
       <StickyTreeContainer
         className={
-          (layout === "Both" ? "column pl-3" : "column pl-3 is-full") +
-          (layout !== "Diff" ? "" : " is-hidden")
+          (layout === "Both" ? "column pl-3" : "column pl-3 is-full") + (layout !== "Diff" ? "" : " is-hidden")
         }
       >
         <FileTreeContent isBorder={layout !== "Diff"}>
@@ -156,7 +161,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
           )}
         </FileTreeContent>
       </StickyTreeContainer>
-      <div className={layout !== "Tree" ? "column" : "is-hidden"}>
+      <DiffContainer withTree={layout === "Both"} className={layout !== "Tree" ? "column" : "is-hidden"}>
         <CoreDiff
           diff={data.files}
           ignoreWhitespace={ignoreWhitespace}
@@ -180,7 +185,7 @@ const LoadingDiff: FC<LoadingDiffProps> = ({ diffUrl, actions, pullRequestCommen
             isFetchingNextPage={isFetchingNextPage}
           />
         ) : null}
-      </div>
+      </DiffContainer>
     </div>
   );
 };
