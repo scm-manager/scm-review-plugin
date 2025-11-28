@@ -1,7 +1,7 @@
 {
     "name": "@scm-manager/scm-review-plugin",
     "private": false,
-    "version": "3.12.2",
+    "version": "3.12.3-SNAPSHOT",
     "license": "AGPL-3.0-only",
     "main": "./src/main/js/index.tsx",
     "scripts": {
