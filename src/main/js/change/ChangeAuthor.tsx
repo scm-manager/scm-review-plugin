@@ -34,7 +34,7 @@ const ChangeAuthor: FC<{ person: Person }> = ({ person }) => {
 
   return (
     <MailTo mail={person.mail}>
-      {avatar ? <ContributorAvatar src={avatar} alt={person.name}></ContributorAvatar> : null}
+      {avatar ? <ContributorAvatar src={avatar} alt={person.name} crossOrigin="anonymous" /> : null}
       {avatar ? " " : null}
       {person.name}
     </MailTo>
