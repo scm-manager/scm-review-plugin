@@ -23,6 +23,7 @@ dependencies {
   plugin "sonia.scm.plugins:scm-mustache-documentation-plugin:2.0.0"
   optionalPlugin "sonia.scm.plugins:scm-editor-plugin:3.0.0"
   optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:2.0.0"
+  optionalPlugin "sonia.scm.plugins:scm-mcp-plugin:1.0.2-SNAPSHOT"
   testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
   implementation 'commons-io:commons-io:2.16.1'
 
@@ -35,7 +36,7 @@ dependencies {
 }
 
 scmPlugin {
-  scmVersion = "3.10.3"
+  scmVersion = "3.11.0"
   displayName = "Review"
   description = "Depict a review process with pull requests"
   author = "Cloudogu GmbH"

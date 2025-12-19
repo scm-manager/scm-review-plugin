@@ -2377,31 +2377,31 @@
   dependencies:
     typescript "^4.6.0"
 
-"@scm-manager/ui-api@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-api/-/ui-api-3.10.3.tgz#71932793b41cf60c84d696372b1df9ea7341e023"
-  integrity sha512-7vsl4pTzDwfYLs6wp9oq0MZZJJL5mWVJw6iIruhHIU3+xNNrUN9tqTj7isDz2RiG1chaeaTbPq5LCMRzw0cVKw==
+"@scm-manager/ui-api@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-api/-/ui-api-3.11.0.tgz#f38363c2792b21507f139dcd108d926551ffc865"
+  integrity sha512-yFpn03l23N6BR4QIg7YtUTrnPPxImBxSAVvZ5LAP7+qIpIabE0J4Y2+YPpfm+K8QGdUH/Rg2sdojI5E2qeSu+w==
   dependencies:
     gitdiff-parser "^0.2.2"
 
-"@scm-manager/ui-buttons@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-buttons/-/ui-buttons-3.10.3.tgz#5ec2f26459615bb143d1903afc06c9a411b589a8"
-  integrity sha512-V8xAyxeQ3zyEMiBigZ5DC96E189LDvVwGowbXH4EDTBsBGxJfvy2J1NxGbKVEDJP1vk6otSu6TGvf38AEqCf6Q==
+"@scm-manager/ui-buttons@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-buttons/-/ui-buttons-3.11.0.tgz#682cfb5fac0962385a608bcf88fad5bf24bc5be5"
+  integrity sha512-c9+3HAsiuZzQKd4d5A+BvoAKs1bndfSLnHGkmShbH8YI5yY499c/QvUFFdOUqcUgLzuDIZrPiUFT/sahmoDeIQ==
   dependencies:
-    "@scm-manager/ui-core" "3.10.3"
+    "@scm-manager/ui-core" "3.11.0"
 
-"@scm-manager/ui-components@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-3.10.3.tgz#1fb248bd0b73dd41fd36b3802b8ec6c90f97109d"
-  integrity sha512-CezizCp8A+iGZ1f/xRFun9lYg3n843FaToG810cxXgVf/Cqi0nq+2ZedRcOJrXGCmJIikO33hBckhN2ZPvnvlQ==
+"@scm-manager/ui-components@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-components/-/ui-components-3.11.0.tgz#d5ff287a53fda819e50f093cc55d93659d7ba3aa"
+  integrity sha512-/B2wipDBEb46cqtg621BReOl3HLzwFedh9XT3XNOU664IsW0u3ySbtw7+0G/psNDJv1hrEeHWFZVqkKLfNke7Q==
   dependencies:
-    "@scm-manager/ui-api" "3.10.3"
-    "@scm-manager/ui-buttons" "3.10.3"
-    "@scm-manager/ui-core" "3.10.3"
-    "@scm-manager/ui-extensions" "3.10.3"
-    "@scm-manager/ui-layout" "3.10.3"
-    "@scm-manager/ui-overlays" "3.10.3"
+    "@scm-manager/ui-api" "3.11.0"
+    "@scm-manager/ui-buttons" "3.11.0"
+    "@scm-manager/ui-core" "3.11.0"
+    "@scm-manager/ui-extensions" "3.11.0"
+    "@scm-manager/ui-layout" "3.11.0"
+    "@scm-manager/ui-overlays" "3.11.0"
     deepmerge "^4.2.2"
     hast-util-sanitize "^3.0.2"
     react-diff-view "^2.4.10"
@@ -2417,10 +2417,10 @@
     unified "^9.2.1"
     unist-util-visit "^2.0.3"
 
-"@scm-manager/ui-core@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-core/-/ui-core-3.10.3.tgz#71d95ac8d5eae069043b3d9be362775d35f19cb0"
-  integrity sha512-Xh78tkqwevrb4yqNC+rDgKeyJkenqPMYoCUE50bfvI80HA6jED8nYwPmy4Cn9uIgx8+sXY5O4EThryeEYhNdFQ==
+"@scm-manager/ui-core@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-core/-/ui-core-3.11.0.tgz#2837c789788c109c3088a2580eb202b26ab917f3"
+  integrity sha512-pgIn2f80dm6rsMcQBhfsgXigvTV32VFdAn5R4JEJCovbCBL5hEUQQ/Z7hdLQEK5f5v7hYMfqAGrjwlNSxPvp7w==
   dependencies:
     "@radix-ui/react-collapsible" "^1.0.3"
     "@radix-ui/react-dialog" "1.0.4"
@@ -2431,48 +2431,48 @@
     "@radix-ui/react-tabs" "^1.0.4"
     "@radix-ui/react-tooltip" "1.0.2"
     "@radix-ui/react-visually-hidden" "^1.0.3"
-    "@scm-manager/ui-api" "3.10.3"
+    "@scm-manager/ui-api" "3.11.0"
     mousetrap "1.6.5"
 
-"@scm-manager/ui-extensions@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-3.10.3.tgz#c263f1eeca5852d4ae9422bb452873150a3346b9"
-  integrity sha512-JDrFoaEVL5GGKnnwrBa7JqPj8jY1Etwb/ZabRwDreLCQz7UohPMyZ0B+t1lMHQVIEiuYcU2UIb8+RzcJyDVirQ==
+"@scm-manager/ui-extensions@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-extensions/-/ui-extensions-3.11.0.tgz#81d5aef49092aa76a0e3d8a24ebf72fd0d02218e"
+  integrity sha512-kYnep/kt+7TxFJbBh9IwhblLYyg3KTOF3yZyw7RVFvhP2YD0pCriUq4y0ulbnPZ7R958GMI68MP+QA6UL9xqXg==
 
-"@scm-manager/ui-forms@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-forms/-/ui-forms-3.10.3.tgz#bea6a4e1d6a59652b41d8d04600cf7824ab29270"
-  integrity sha512-rO5wCTzLvzC5mxd7nePXbaqa48R14rEZkM2CUy9bboylA4hnpvy/JRaHqJ4XxAR4WwXvbksmKaKdgfF/dJooDw==
+"@scm-manager/ui-forms@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-forms/-/ui-forms-3.11.0.tgz#3d5dd626f13d81d1edbd015a2cfb9c7362766542"
+  integrity sha512-9PlQgWAG3GqBvChriR0YzjBbMcsujrN1D1T2Y/NCOECV6WHXY7S752hNN5zefVqF0k0XHuSVHix8masZqE5VIQ==
   dependencies:
-    "@scm-manager/ui-core" "3.10.3"
+    "@scm-manager/ui-core" "3.11.0"
 
-"@scm-manager/ui-layout@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-layout/-/ui-layout-3.10.3.tgz#423c92c2261af29fb6ce9b5c6fd56eef767e50d5"
-  integrity sha512-XvUvukTlG7Ck4PtfjCMjZ3ACd3HxlRsl9TsVZe1EL7TZDWTv80VhA0tXrEC1pQnokrvOXOdiBc1Yps0Vk0KFPw==
+"@scm-manager/ui-layout@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-layout/-/ui-layout-3.11.0.tgz#f5496c7455d9377fa950b4d1ae5d277f51c65212"
+  integrity sha512-KoA3v1sQLP07OR8BYFd2iBYexnv8tLwMBii5Y3rGfPO3AQNFaIYa64dMmjkuzbJdEEOYajksPwSTgEeWnJdVsA==
   dependencies:
-    "@scm-manager/ui-core" "3.10.3"
+    "@scm-manager/ui-core" "3.11.0"
 
-"@scm-manager/ui-overlays@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-overlays/-/ui-overlays-3.10.3.tgz#1332665246843a93d9c4a44d6d066a146091f76c"
-  integrity sha512-4dXlljACcFB9U5i7JVREStRWyd0O+i0p1NCAuzUmmS73tQ/DLiJQEnarTVQk/kM2l+Q86NFUdjnGpRuMq1lwgg==
+"@scm-manager/ui-overlays@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-overlays/-/ui-overlays-3.11.0.tgz#7d852749c26389f3f9764915a3063f825eda8c20"
+  integrity sha512-mD9PtCqr+10Ztnb6QVN2TDtVR0dPurUxAaUiQZhalyZPy6agVselCjMn3BnsRDM6Ak1kTY6wNTG/W19BbJfHkg==
   dependencies:
-    "@scm-manager/ui-core" "3.10.3"
+    "@scm-manager/ui-core" "3.11.0"
 
-"@scm-manager/ui-plugins@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-3.10.3.tgz#d429e244e91c2e1bbcaed22fdb27b8e093e9bf10"
-  integrity sha512-LORdAmnXzYGqHve+ZmCt5tObX+O4ovX3cZ6KG8v6GQVw9YMG1eW9B30jSIvq7jLW2rRHwxEktZ0e+NkuV33w2w==
+"@scm-manager/ui-plugins@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-plugins/-/ui-plugins-3.11.0.tgz#57d96a9ebe88266020e66c1431681b9ba99db4eb"
+  integrity sha512-2Zwxke7OBTfChy/RK5D6v3rfv9CDBKJUzLaRjGzpzlY64ygBHwjJkBVgD7DlqX2VQHXYH38CkTuPu0FSkeTA8w==
   dependencies:
-    "@scm-manager/ui-api" "3.10.3"
-    "@scm-manager/ui-buttons" "3.10.3"
-    "@scm-manager/ui-components" "3.10.3"
-    "@scm-manager/ui-core" "3.10.3"
-    "@scm-manager/ui-extensions" "3.10.3"
-    "@scm-manager/ui-forms" "3.10.3"
-    "@scm-manager/ui-layout" "3.10.3"
-    "@scm-manager/ui-overlays" "3.10.3"
+    "@scm-manager/ui-api" "3.11.0"
+    "@scm-manager/ui-buttons" "3.11.0"
+    "@scm-manager/ui-components" "3.11.0"
+    "@scm-manager/ui-core" "3.11.0"
+    "@scm-manager/ui-extensions" "3.11.0"
+    "@scm-manager/ui-forms" "3.11.0"
+    "@scm-manager/ui-layout" "3.11.0"
+    "@scm-manager/ui-overlays" "3.11.0"
     classnames "^2.3.1"
     query-string "6.14.1"
     react "^17.0.1"
@@ -2510,10 +2510,10 @@
     webpack-cli "^4.9.1"
     webpack-dev-server "^4.4.0"
 
-"@scm-manager/ui-tests@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-tests/-/ui-tests-3.10.3.tgz#bb0383b2c1f793ec987ecc5f0caab1e74b9eb607"
-  integrity sha512-Bv/MUja4b27F4s19kWQo3Stirsx07Kqx99vxjNNBYVuHuAKZKbe6+mliIXN/XKn6/5yxtDgmC3BSI9Eprv7YAw==
+"@scm-manager/ui-tests@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-tests/-/ui-tests-3.11.0.tgz#b8ff19ff71aa102bc6c3ea0a8567252dfacbd519"
+  integrity sha512-/6FCQ4uP+B8MeAKA+pi3Se33UQ3g0/bU1R+SRz7uIcLzof7n1XPgClnahb8+HbQC5R6UG6bXkykoo769O+baVA==
   dependencies:
     "@wojtekmaj/enzyme-adapter-react-17" "^0.7.0"
     enzyme "^3.11.0"
@@ -2523,10 +2523,10 @@
     raf "^3.4.1"
     react-i18next "11"
 
-"@scm-manager/ui-types@3.10.3":
-  version "3.10.3"
-  resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-3.10.3.tgz#5bd4dc0cef04d7db42af8955d48fbc3ad7cf08ad"
-  integrity sha512-YmDUSYPMJBTfd8jSD2C8sFyk70jxMyRKUD8XsYHrGuHBLQkbZicpFIAnit/+SBTOH+cjveRmILToHbK7ozhCLg==
+"@scm-manager/ui-types@3.11.0":
+  version "3.11.0"
+  resolved "https://registry.yarnpkg.com/@scm-manager/ui-types/-/ui-types-3.11.0.tgz#378262b82e55e14e6529aca6f6a95dd9ac84c3df"
+  integrity sha512-QlOxSZQA4Mr8xH8qFBnn9iJjcTCJDYgkybQnhRc/ZOGCi+P2U00is5ybepfgmL13HLI04LDSyG3ktK2lZOgvrw==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.6"

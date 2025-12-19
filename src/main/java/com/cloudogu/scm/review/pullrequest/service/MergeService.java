@@ -174,7 +174,7 @@ public class MergeService {
     }
   }
 
-  private Collection<MergeObstacle> getObstacles(Repository repository, PullRequest pullRequest) {
+  public Collection<MergeObstacle> getObstacles(Repository repository, PullRequest pullRequest) {
     return mergeGuards.stream()
       .map(guard -> guard.getObstacles(repository, pullRequest))
       .flatMap(Collection::stream)
