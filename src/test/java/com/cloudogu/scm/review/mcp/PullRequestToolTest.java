@@ -122,7 +122,11 @@ class PullRequestToolTest {
   void shouldListPullRequestsWithoutData() {
     ToolResult result = tool.execute(input);
 
-    assertThat(result.getContent()).containsExactlyInAnyOrder("hitchhiker/hog#1", "hitchhiker/hog#2", "hacker/secret#1");
+    assertThat(result.getContent())
+      .containsExactly(
+        "I found 3 pull requests.",
+        "* hitchhiker/hog#1 [MERGED]\n* hitchhiker/hog#2 [OPEN]\n* hacker/secret#1 [DRAFT]"
+      );
     Map<String, Object> structuredContent = result.getStructuredContent();
     assertThat(structuredContent).isNullOrEmpty();
   }
@@ -139,7 +143,7 @@ class PullRequestToolTest {
     void shouldListAllPullRequests() {
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hitchhiker/hog#2", "hacker/secret#1");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
     }
 
     @Test
@@ -148,7 +152,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hitchhiker/hog#2");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
     }
 
     @Test
@@ -157,7 +161,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hitchhiker/hog#2");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
     }
 
     @Test
@@ -167,7 +171,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hitchhiker/hog#2");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
     }
 
     @Test
@@ -176,7 +180,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
     }
 
     @Test
@@ -185,7 +189,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
     }
 
     @Test
@@ -194,7 +198,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
     }
 
     @Test
@@ -203,7 +207,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#2");
+      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
     }
 
     @Test
@@ -212,7 +216,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hitchhiker/hog#2");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
     }
 
     @Test
@@ -221,7 +225,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#2", "hacker/secret#1");
+      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
     }
 
     @Test
@@ -230,7 +234,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#2");
+      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
     }
 
     @Test
@@ -239,7 +243,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#2", "hacker/secret#1");
+      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
     }
 
     @Test
@@ -248,7 +252,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hitchhiker/hog#2");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
     }
 
     @Test
@@ -257,7 +261,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hacker/secret#1", "hitchhiker/hog#2")
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]", "hitchhiker/hog#2 [OPEN]")
         .inExactOrder();
     }
 
@@ -268,7 +272,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#2", "hitchhiker/hog#1", "hacker/secret#1")
+      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
         .inExactOrder();
     }
 
@@ -278,7 +282,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hacker/secret#1", "hitchhiker/hog#2")
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]", "hitchhiker/hog#2 [OPEN]")
         .inExactOrder();
     }
 
@@ -288,7 +292,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#2", "hitchhiker/hog#1", "hacker/secret#1")
+      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
         .inExactOrder();
     }
 
@@ -299,7 +303,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hacker/secret#1")
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
         .inExactOrder();
     }
 
@@ -309,7 +313,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#2");
+      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
     }
 
     @Test
@@ -318,7 +322,7 @@ class PullRequestToolTest {
 
       ToolResult result = tool.execute(input);
 
-      assertResultWith(result, "hitchhiker/hog#1", "hitchhiker/hog#2", "hacker/secret#1");
+      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
       assertThat(result.getStructuredContent())
         .values()
         .hasOnlyElementsOfType(PullRequestDetailMcp.class);
@@ -344,7 +348,7 @@ class PullRequestToolTest {
 
         ToolResult result = tool.execute(input);
 
-        assertResultWith(result, "hitchhiker/hog#1");
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
         assertThat(result.getStructuredContent())
           .values()
           .hasOnlyElementsOfType(PullRequestDetailMcp.class);
@@ -372,24 +376,36 @@ class PullRequestToolTest {
 
         ToolResult result = tool.execute(input);
 
-        assertResultWith(result, "hitchhiker/hog#1");
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
         assertThat(result.getStructuredContent().get("hitchhiker/hog#1")).isSameAs(mappedPRWithObstacle);
       }
     }
   }
 
-  private FurtherChecks assertResultWith(ToolResult result, String... pullRequestStrings) {
-    assertThat(result.getContent()).containsExactlyInAnyOrder(pullRequestStrings);
+  private FurtherChecks assertResultWith(ToolResult result, boolean withDetails, String... pullRequestStrings) {
+    assertThat(result.getContent().get(0))
+      .contains("found " + pullRequestStrings.length);
+    if (withDetails) {
+      assertThat(result.getContent().get(1))
+        .startsWith("Detailed metadata ");
+    }
+    String[] actualPullRequestListContent = result.getContent().get(result.getContent().size() - 1).split("\n");
+    String[] expectedPullRequestListContent = Arrays.stream(pullRequestStrings).map(s -> "* " + s).toArray(String[]::new);
+    assertThat(actualPullRequestListContent)
+      .containsExactlyInAnyOrder(expectedPullRequestListContent);
     Map<String, Object> structuredContent = result.getStructuredContent();
     assertThat(structuredContent).hasSize(pullRequestStrings.length);
     Arrays.stream(pullRequestStrings).forEach(
       pullRequestString ->
-        assertThat(structuredContent.get(pullRequestString))
+      {
+        String prKey = pullRequestString.substring(0, pullRequestString.indexOf(' '));
+        assertThat(structuredContent.get(prKey))
           .isInstanceOf(PullRequestOverviewMcp.class)
           .extracting("id")
-          .isEqualTo(pullRequests.get(pullRequestString).getId())
+          .isEqualTo(pullRequests.get(prKey).getId());
+      }
     );
-    return () -> assertThat(result.getContent()).containsExactly(pullRequestStrings);
+    return () -> assertThat(actualPullRequestListContent).containsExactly(expectedPullRequestListContent);
   }
 
   private interface FurtherChecks {

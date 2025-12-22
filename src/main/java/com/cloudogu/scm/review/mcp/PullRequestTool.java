@@ -34,6 +34,8 @@ import jakarta.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
@@ -48,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Extension
 class PullRequestTool implements TypedTool<PullRequestListInput> {
   private final PullRequestStoreFactory pullRequestStoreFactory;
@@ -76,6 +79,7 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
 
   @Override
   public ToolResult execute(PullRequestListInput input) {
+    log.trace("executing request {}", input);
     Collection<Condition<PullRequest>> conditions = new ArrayList<>();
     if (!Strings.isNullOrEmpty(input.getPullRequestId())) {
       conditions.add(PullRequestQueryFields.ID.eq(input.getPullRequestId()));
@@ -168,13 +172,13 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
         .filter(result -> !input.isWithObstaclesOnly() || filterForObstacles(result))
         .toList();
 
-      List<String> pullRequestIds = all
+      String pullRequestIds = all
         .stream()
-        .map(this::formatPullRequestAsString)
-        .toList();
+        .map(this::formatPullRequestAsContentString)
+        .collect(Collectors.joining("\n"));
 
       if (input.getDetailLevel() == DETAIL_LEVEL.NONE) {
-        return ToolResult.ok(pullRequestIds, null);
+        return ToolResult.ok(List.of(String.format("I found %s pull requests.", all.size()), pullRequestIds), null);
       }
 
       Function<QueryableStore.Result<PullRequest>, Object> converter =
@@ -187,11 +191,22 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
       Map<String, Object> structuredContent = all
         .stream()
         .collect(Collectors.toMap(
-          this::formatPullRequestAsString,
+          this::formatPullRequestAsKeyString,
           converter
         ));
 
-      return ToolResult.ok(pullRequestIds, structuredContent);
+      log.trace("found {} pull requests", all.size());
+
+      List<String> content = List.of(
+        String.format("I found %s pull requests.", all.size()),
+        """
+          Detailed metadata (author, description, source and target branches, status and so on) for each is available
+          in the structured data block under their respective names.
+          """,
+        pullRequestIds
+      );
+
+      return ToolResult.ok(content, structuredContent);
     }
   }
 
@@ -223,7 +238,12 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
     return pullRequestMapper.mapWithObstacles(result.getEntity(), repository);
   }
 
-  private String formatPullRequestAsString(QueryableStore.Result<PullRequest> result) {
+  private String formatPullRequestAsContentString(QueryableStore.Result<PullRequest> result) {
+    Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
+    return String.format("* %s/%s#%s [%s]", repository.getNamespace(), repository.getName(), result.getEntity().getId(), result.getEntity().getStatus());
+  }
+
+  private String formatPullRequestAsKeyString(QueryableStore.Result<PullRequest> result) {
     Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
     return String.format("%s/%s#%s", repository.getNamespace(), repository.getName(), result.getEntity().getId());
   }
@@ -253,6 +273,7 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
 
 @Getter
 @Setter(AccessLevel.PACKAGE)
+@ToString
 class PullRequestListInput {
   @JsonPropertyDescription("Find pull requests only with this ID.")
   private String pullRequestId;
