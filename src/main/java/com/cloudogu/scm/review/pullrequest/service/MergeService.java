@@ -20,7 +20,9 @@ import com.cloudogu.scm.review.InternalMergeSwitch;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.MergeCommitDto;
 import jakarta.inject.Inject;
+import sonia.scm.repository.Branches;
 import sonia.scm.repository.Contributor;
+import sonia.scm.repository.InternalRepositoryException;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Person;
 import sonia.scm.repository.Repository;
@@ -37,6 +39,7 @@ import sonia.scm.user.DisplayUser;
 import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +50,7 @@ import java.util.stream.Collectors;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.apache.shiro.SecurityUtils.getSubject;
+import static sonia.scm.ContextEntry.ContextBuilder.entity;
 
 public class MergeService {
 
@@ -149,10 +153,29 @@ public class MergeService {
   public MergeCheckResult checkMerge(NamespaceAndName namespaceAndName, String pullRequestId) {
     try (RepositoryService repositoryService = serviceFactory.create(namespaceAndName)) {
       PullRequest pullRequest = pullRequestService.get(repositoryService.getRepository(), pullRequestId);
+      Branches branches = repositoryService.getBranchesCommand().getBranches();
+      if (branches
+        .getBranches()
+        .stream()
+        .filter(b -> b.getName().equals(pullRequest.getSource()))
+        .findFirst()
+        .isEmpty()) {
+        return MergeCheckResult.sourceBranchMissing();
+      }
+      if (branches
+        .getBranches()
+        .stream()
+        .filter(b -> b.getName().equals(pullRequest.getTarget()))
+        .findFirst()
+        .isEmpty()) {
+        return MergeCheckResult.targetBranchMissing();
+      }
       MergeDryRunCommandResult mergeDryRunCommandResult = dryRun(repositoryService, pullRequest)
         .orElse(new MergeDryRunCommandResult(false, null));
       Collection<MergeObstacle> obstacles = getObstacles(repositoryService.getRepository(), pullRequest);
       return new MergeCheckResult(!mergeDryRunCommandResult.isMergeable(), obstacles, mergeDryRunCommandResult.getReasons());
+    } catch (IOException e) {
+      throw new InternalRepositoryException(entity(namespaceAndName), "failed to check pull request", e);
     }
   }
 

@@ -26,7 +26,6 @@ import org.jboss.resteasy.mock.MockHttpResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.repository.NamespaceAndName;
@@ -72,11 +71,10 @@ class MergeResourceTest {
   @Mock
   private MergeService mergeService;
 
-  @InjectMocks
-  private MergeResource mergeResource;
-
   @BeforeEach
   void initDispatcher() {
+    MergeResource mergeResource = new MergeResource(mergeService, new MergeCheckResultDtoMapperImpl());
+
     dispatcher = new RestDispatcher();
     dispatcher.addSingletonResource(mergeResource);
   }
