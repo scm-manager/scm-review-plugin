@@ -30,10 +30,10 @@ import {
   ErrorNotification,
   Loading,
   Tag,
-  Tooltip
+  Tooltip,
 } from "@scm-manager/ui-components";
-import { LinkButton, Icon, useDocumentTitle } from "@scm-manager/ui-core";
-import { MergeCommit, PullRequest } from "./types/PullRequest";
+import { LinkButton, Icon, useDocumentTitle, Notification } from "@scm-manager/ui-core";
+import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import {
   invalidateQueries,
   prQueryKey,
@@ -42,7 +42,7 @@ import {
   useMergePullRequest,
   useReadyForReviewPullRequest,
   useRejectPullRequest,
-  useReopenPullRequest
+  useReopenPullRequest,
 } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
 import MergeButton from "./MergeButton";
@@ -70,14 +70,14 @@ type Props = {
 };
 
 const MediaContent = styled.div.attrs(() => ({
-  className: "media-content"
+  className: "media-content",
 }))`
   width: 100%;
   word-wrap: break-word;
 `;
 
 const UserLabel = styled.div.attrs(() => ({
-  className: "field-label is-inline-flex"
+  className: "field-label is-inline-flex",
 }))`
   text-align: left;
   margin-right: 0;
@@ -85,7 +85,7 @@ const UserLabel = styled.div.attrs(() => ({
 `;
 
 const UserField = styled.div.attrs(() => ({
-  className: "field-body is-inline-flex"
+  className: "field-body is-inline-flex",
 }))`
   flex-grow: 8;
 `;
@@ -98,7 +98,7 @@ const Container = styled.div`
 `;
 
 const MediaWithTopBorder = styled.div.attrs(() => ({
-  className: "media"
+  className: "media",
 }))`
   padding: 0 !important;
   border-top: none !important;
@@ -194,6 +194,26 @@ const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
   );
 };
 
+const BranchesMissingWarning: FC<{ pullRequest: PullRequest; mergeCheck: MergeCheck }> = ({
+  pullRequest,
+  mergeCheck,
+}) => {
+  const [t] = useTranslation("plugins");
+  if (pullRequest.status === "OPEN" || pullRequest.status === "DRAFT") {
+    if (mergeCheck?.sourceBranchMissing) {
+      return (
+        <Notification type={"danger"}>{t("scm-review-plugin.pullRequest.warning.sourceBranchMissing")}</Notification>
+      );
+    }
+    if (mergeCheck?.sourceBranchMissing) {
+      return (
+        <Notification type={"danger"}>{t("scm-review-plugin.pullRequest.warning.targetBranchMissing")}</Notification>
+      );
+    }
+  }
+  return null;
+};
+
 const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
   useDocumentTitle(
@@ -227,9 +247,9 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     if (!!pullRequest._links) {
       return binder
         .getExtensions("pullrequest.description.plugins", {
-          halObject: pullRequest
+          halObject: pullRequest,
         })
-        .map(pluginFactory => pluginFactory({ halObject: pullRequest }) as AstPlugin);
+        .map((pluginFactory) => pluginFactory({ halObject: pullRequest }) as AstPlugin);
     }
     return [];
   }, [pullRequest]);
@@ -240,9 +260,9 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   const [stickyHeaderHeight, setStickyHeaderHeight] = useState(0);
 
-  const enableHeaderRef = useCallback(node => {
+  const enableHeaderRef = useCallback((node) => {
     if (node !== null) {
-      const intersectionObserver = new IntersectionObserver(entries => {
+      const intersectionObserver = new IntersectionObserver((entries) => {
         const entry = entries[0];
 
         const isTargetNoLongerInViewport = () => {
@@ -255,9 +275,9 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     }
   }, []);
 
-  const contentHeightRef = useCallback(node => {
+  const contentHeightRef = useCallback((node) => {
     if (node !== null) {
-      const resizeObserver = new ResizeObserver(entries => {
+      const resizeObserver = new ResizeObserver((entries) => {
         const entry = entries[0];
 
         setStickyHeaderHeight(entry.contentRect.height);
@@ -267,7 +287,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   }, []);
 
   const findStrategyLink = (links: Link[], strategy: string) => {
-    return links?.filter(link => link.name === strategy)[0].href;
+    return links?.find((link) => link.name === strategy)?.href;
   };
 
   const performMerge = (strategy: string, commit: MergeCommit, emergency: boolean) => {
@@ -313,7 +333,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     ignoredMergeObstacles = (
       <IgnoredMergeObstacles className="mx-0 my-4 px-0 py-4">
         <strong>{t("scm-review-plugin.pullRequest.details.ignoredMergeObstacles")}</strong>
-        {ignoredMergeObstaclesArray.map(o => (
+        {ignoredMergeObstaclesArray.map((o) => (
           <OverrideModalRow key={o} result={{ rule: o, failed: true }} />
         ))}
       </IgnoredMergeObstacles>
@@ -331,7 +351,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   }
 
   if (pullRequest._links?.rejectWithMessage) {
-    rejectButton = <RejectButton reject={message => reject(message)} loading={rejectLoading} />;
+    rejectButton = <RejectButton reject={(message) => reject(message)} loading={rejectLoading} />;
     if (!!pullRequest._links.merge) {
       mergeButton = targetOrSourceBranchDeleted ? null : (
         <MergeButton
@@ -410,7 +430,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     tasksDone < totalTasks
       ? t("scm-review-plugin.pullRequest.tasks.done", {
           done: tasksDone,
-          total: totalTasks
+          total: totalTasks,
         })
       : t("scm-review-plugin.pullRequest.tasks.allDone");
 
@@ -424,6 +444,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
       {detailStickyHeader}
 
       <Container>
+        <BranchesMissingWarning pullRequest={pullRequest} mergeCheck={mergeCheck} />
         <div className="media">
           <div className="media-content">
             <StyledHeader className="is-inline has-text-weight-medium is-size-3 mr-2">
@@ -458,7 +479,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
           renderAll={true}
           props={{
             repository,
-            pullRequest
+            pullRequest,
           }}
         />
         <Statusbar repository={repository} pullRequest={pullRequest} />
@@ -471,7 +492,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
               renderAll={true}
               props={{
                 repository,
-                pullRequest
+                pullRequest,
               }}
             />
             {pullRequest.author ? (
@@ -516,7 +537,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
         renderAll={true}
         props={{
           repository,
-          pullRequest
+          pullRequest,
         }}
       />
 

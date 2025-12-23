@@ -14,26 +14,24 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-package com.cloudogu.scm.review.pullrequest.dto;
+package com.cloudogu.scm.review.pullrequest.api;
 
-import com.cloudogu.scm.review.pullrequest.service.MergeObstacle;
-import de.otto.edison.hal.HalRepresentation;
+import com.cloudogu.scm.review.pullrequest.dto.MergeCheckResultDto;
+import com.cloudogu.scm.review.pullrequest.service.MergeCheckResult;
 import de.otto.edison.hal.Links;
-import lombok.Data;
-import sonia.scm.repository.api.MergePreventReason;
+import org.mapstruct.Context;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ObjectFactory;
 
-import java.util.Collection;
+@Mapper
+interface MergeCheckResultDtoMapper {
 
-@Data
-public class MergeCheckResultDto extends HalRepresentation {
+  @Mapping(source = "reasons", target = "mergePreventReasons")
+  MergeCheckResultDto map(MergeCheckResult mergeCheckResult, @Context String selfLink);
 
-  private boolean hasConflicts;
-  private Collection<MergeObstacle> mergeObstacles;
-  private Collection<MergePreventReason> mergePreventReasons;
-  private boolean sourceBranchMissing;
-  private boolean targetBranchMissing;
-
-  public MergeCheckResultDto(Links links) {
-    super(links);
+  @ObjectFactory
+  default MergeCheckResultDto createDto(@Context String selfLink) {
+    return new MergeCheckResultDto(Links.linkingTo().self(selfLink).build());
   }
 }

@@ -58,10 +58,12 @@ public class MergeResource {
 
   static final String MERGE_PATH_V2 = "v2/merge";
   private final MergeService service;
+  private final MergeCheckResultDtoMapper mergeCheckResultDtoMapper;
 
   @Inject
-  public MergeResource(MergeService service) {
+  public MergeResource(MergeService service, MergeCheckResultDtoMapper mergeCheckResultDtoMapper) {
     this.service = service;
+    this.mergeCheckResultDtoMapper = mergeCheckResultDtoMapper;
   }
 
   @POST
@@ -150,12 +152,7 @@ public class MergeResource {
     NamespaceAndName namespaceAndName = new NamespaceAndName(namespace, name);
     MergeCheckResult mergeCheckResult = service.checkMerge(namespaceAndName, pullRequestId);
     String checkLink = new PullRequestResourceLinks(uriInfo::getBaseUri).mergeLinks().check(namespace, name, pullRequestId);
-    return new MergeCheckResultDto(
-      Links.linkingTo().self(checkLink).build(),
-      mergeCheckResult.hasConflicts(),
-      mergeCheckResult.getMergeObstacles(),
-      mergeCheckResult.getReasons()
-    );
+    return mergeCheckResultDtoMapper.map(mergeCheckResult, checkLink);
   }
 
   @POST

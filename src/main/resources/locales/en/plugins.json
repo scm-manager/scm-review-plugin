@@ -188,6 +188,10 @@
         "mergeFromAuthorNotAllowed": {
           "obstacle": "You should not merge your own pull request."
         }
+      },
+      "warning": {
+        "sourceBranchMissing": "The source branch is missing. The pull request is in an invalid state. You can either recreate the branch or reject the pull request.",
+        "targetBranchMissing": "The target branch is missing. The pull request is in an invalid state. You can either recreate the branch or reject the pull request."
       }
     },
     "pullRequestWithIDAndNamespaceName": "Pull Request #{{id}} in {{namespace}}/{{name}}",

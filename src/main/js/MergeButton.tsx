@@ -58,7 +58,7 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
         return !(pullRequest?._links?.emergencyMerge as Link[]);
       }
     }
-    return false;
+    return mergeCheck?.sourceBranchMissing || mergeCheck?.targetBranchMissing;
   };
 
   const renderButton = () => {

@@ -57,9 +57,11 @@ import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -135,6 +137,7 @@ class MergeServiceTest {
     lenient().when(repositoryService.getRepository()).thenReturn(REPOSITORY);
     lenient().when(repositoryService.getMergeCommand()).thenReturn(mergeCommandBuilder);
     lenient().when(repositoryService.getLogCommand()).thenReturn(logCommandBuilder);
+    lenient().when(repositoryService.getBranchesCommand()).thenReturn(branchesCommandBuilder);
     lenient().when(logCommandBuilder.setAncestorChangeset(any())).thenReturn(logCommandBuilder);
     lenient().when(email.getMailOrFallback(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0, User.class).getMail());
   }
@@ -312,9 +315,10 @@ class MergeServiceTest {
   }
 
   @Test
-  void shouldDoDryRun() {
+  void shouldDoDryRun() throws IOException {
     when(subject.isPermitted("repository:readPullRequest:" + REPOSITORY.getId())).thenReturn(true);
     mockPullRequest("mergeable", "master", "1");
+    mockBranchesCommand("mergeable", "master");
     when(mergeCommandBuilder.dryRun()).thenReturn(new MergeDryRunCommandResult(true));
 
     MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
@@ -324,8 +328,9 @@ class MergeServiceTest {
   }
 
   @Test
-  void shouldNotDoDryRunIfMissingPermission() {
+  void shouldNotDoDryRunIfMissingPermission() throws IOException {
     mockPullRequest("mergable", "master", "1");
+    mockBranchesCommand("mergable", "master");
 
     MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
 
@@ -413,8 +418,9 @@ class MergeServiceTest {
   }
 
   @Test
-  void shouldForwardObstaclesFromGuards() {
+  void shouldForwardObstaclesFromGuards() throws IOException {
     PullRequest pullRequest = mockPullRequest("mergeable", "master", "1");
+    mockBranchesCommand("mergeable", "master");
 
     TestMergeObstacle obstacle1 = mockMergeGuard(pullRequest, false);
     TestMergeObstacle obstacle2 = mockMergeGuard(pullRequest, false);
@@ -461,6 +467,34 @@ class MergeServiceTest {
     verify(pullRequestService, never()).setRejected(REPOSITORY, "1", PullRequestRejectedEvent.RejectionCause.SOURCE_BRANCH_DELETED);
   }
 
+  @Test
+  void shouldFailBecauseSourceBranchIsMissing() throws IOException {
+    mockPullRequest("deleted", "main", "1");
+    mockBranchesCommand("main");
+
+    MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
+
+    assertThat(mergeCheckResult.hasConflicts()).isFalse();
+    assertThat(mergeCheckResult.getMergeObstacles()).isEmpty();
+    assertThat(mergeCheckResult.getReasons()).isEmpty();
+    assertThat(mergeCheckResult.isSourceBranchMissing()).isTrue();
+    assertThat(mergeCheckResult.isTargetBranchMissing()).isFalse();
+  }
+
+  @Test
+  void shouldFailBecauseTargetBranchIsMissing() throws IOException {
+    mockPullRequest("feature", "deleted", "1");
+    mockBranchesCommand("feature");
+
+    MergeCheckResult mergeCheckResult = service.checkMerge(REPOSITORY.getNamespaceAndName(), "1");
+
+    assertThat(mergeCheckResult.hasConflicts()).isFalse();
+    assertThat(mergeCheckResult.getMergeObstacles()).isEmpty();
+    assertThat(mergeCheckResult.getReasons()).isEmpty();
+    assertThat(mergeCheckResult.isSourceBranchMissing()).isFalse();
+    assertThat(mergeCheckResult.isTargetBranchMissing()).isTrue();
+  }
+
   private TestMergeObstacle mockMergeGuard(PullRequest pullRequest, boolean overrideable) {
     MergeGuard mergeGuard = mock(MergeGuard.class);
     mergeGuards.add(mergeGuard);
@@ -476,6 +510,13 @@ class MergeServiceTest {
     pullRequest.setTarget("master");
     pullRequest.setStatus(OPEN);
     return pullRequest;
+  }
+
+  private void mockBranchesCommand(String... branchNames) throws IOException {
+    List<Branch> branchList = Arrays.stream(branchNames)
+      .map(branchName -> Branch.normalBranch(branchName, null, null, null))
+      .toList();
+    when(branchesCommandBuilder.getBranches()).thenReturn(new Branches(branchList));
   }
 
   private PullRequest mockPullRequest(String source, String target, String pullRequestId) {

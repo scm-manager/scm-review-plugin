@@ -188,6 +188,10 @@
         "mergeFromAuthorNotAllowed": {
           "obstacle": "Sie sollten nicht Ihren eigenen Pull-Request mergen."
         }
+      },
+      "warning": {
+        "sourceBranchMissing": "Der Source-Branch ist nicht mehr verfügbar. Der Pull Request ist in einem ungültigen Zustand. Stellen Sie entweder den Source-Branch wieder her oder lehnen Sie den Pull-Request ab.",
+        "targetBranchMissing": "Der Target-Branch ist nicht mehr verfügbar. Der Pull Request ist in einem ungültigen Zustand. Stellen Sie entweder den Target-Branch wieder her oder lehnen Sie den Pull-Request ab."
       }
     },
     "pullRequestWithIDAndNamespaceName": "Pull-Request #{{id}} in {{namespace}}/{{name}}",

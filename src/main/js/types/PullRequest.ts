@@ -19,7 +19,7 @@ import {
   HalRepresentation,
   HalRepresentationWithEmbedded,
   Links,
-  PagedCollection
+  PagedCollection,
 } from "@scm-manager/ui-types";
 import { ReactText } from "react";
 
@@ -157,6 +157,8 @@ export type MergeCheck = {
   hasConflicts: boolean;
   mergeObstacles: MergeObstacle[];
   mergePreventReasons?: MergePreventReason[];
+  sourceBranchMissing: boolean;
+  targetBranchMissing: boolean;
 };
 
 export type MergeObstacle = {

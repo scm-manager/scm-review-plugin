@@ -19,6 +19,7 @@ package com.cloudogu.scm.review.pullrequest.service;
 import sonia.scm.repository.api.MergePreventReason;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import static java.util.Collections.unmodifiableCollection;
 
@@ -27,22 +28,55 @@ public class MergeCheckResult {
   private final boolean hasConflicts;
   private final Collection<MergeObstacle> mergeObstacles;
   private final Collection<MergePreventReason> reasons;
+  private final boolean sourceBranchMissing;
+  private final boolean targetBranchMissing;
 
   public MergeCheckResult(boolean hasConflicts, Collection<MergeObstacle> mergeObstacles, Collection<MergePreventReason> reasons) {
-    this.hasConflicts = hasConflicts;
-    this.mergeObstacles = mergeObstacles;
-    this.reasons = reasons;
+    this(hasConflicts, mergeObstacles, reasons, false, false);
   }
 
-  public boolean hasConflicts() {
-    return hasConflicts;
+  public static MergeCheckResult sourceBranchMissing() {
+    return new MergeCheckResult(false, Collections.emptyList(), Collections.emptyList(), true, false);
   }
 
-  public Collection<MergeObstacle> getMergeObstacles() {
-    return unmodifiableCollection(mergeObstacles);
+  public static MergeCheckResult targetBranchMissing() {
+    return new MergeCheckResult(false, Collections.emptyList(), Collections.emptyList(), false, true);
   }
 
-  public Collection<MergePreventReason> getReasons() {
-    return reasons;
+  private MergeCheckResult( boolean hasConflicts,
+    Collection<MergeObstacle> mergeObstacles,
+    Collection<MergePreventReason> reasons,
+    boolean sourceBranchMissing,
+    boolean targetBranchMissing){
+      this.hasConflicts = hasConflicts;
+      this.mergeObstacles = mergeObstacles;
+      this.reasons = reasons;
+      this.sourceBranchMissing = sourceBranchMissing;
+      this.targetBranchMissing = targetBranchMissing;
+    }
+
+    public boolean hasConflicts () {
+      return hasConflicts;
+    }
+
+    //Method was defined so that the mapstruct mapper can find the corresponding attribute
+    public boolean isHasConflicts() {
+      return hasConflicts;
+    }
+
+    public Collection<MergeObstacle> getMergeObstacles () {
+      return unmodifiableCollection(mergeObstacles);
+    }
+
+    public Collection<MergePreventReason> getReasons () {
+      return reasons;
+    }
+
+    public boolean isSourceBranchMissing () {
+      return sourceBranchMissing;
+    }
+
+    public boolean isTargetBranchMissing () {
+      return targetBranchMissing;
+    }
   }
-}
