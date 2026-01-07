@@ -37,6 +37,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import sonia.scm.plugin.Extension;
+import sonia.scm.plugin.Requires;
 import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
@@ -52,6 +53,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Extension
+@Requires("scm-mcp-plugin")
 class PullRequestTool implements TypedTool<PullRequestListInput> {
   private final PullRequestStoreFactory pullRequestStoreFactory;
   private final CommentStoreFactory commentStoreFactory;
