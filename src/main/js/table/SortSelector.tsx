@@ -31,14 +31,14 @@ type Props = {
 
 const SortSelector: FC<Props> = ({ handleTypeChange, sortBy }) => {
   const [t] = useTranslation("plugins");
-  const types = ["ID_ASC", "ID_DESC", "STATUS_ASC", "STATUS_DESC", "LAST_MOD_ASC", "LAST_MOD_DESC"];
+  const types = ["LAST_MOD_DESC", "LAST_MOD_ASC", "ID_ASC", "ID_DESC", "STATUS_ASC", "STATUS_DESC"];
   const selectOptions = useMemo(
     () =>
-      types.map(sortFilter => ({
+      types.map((sortFilter) => ({
         label: t(`scm-review-plugin.pullRequest.sortSelector.${sortFilter}`),
-        value: sortFilter
+        value: sortFilter,
       })),
-    [t, types]
+    [t, types],
   );
   const selectId = useGeneratedId();
 
@@ -49,7 +49,7 @@ const SortSelector: FC<Props> = ({ handleTypeChange, sortBy }) => {
       </NoTextWrapLabel>
       <Select
         id={selectId}
-        onChange={e => handleTypeChange(e.target.value)}
+        onChange={(e) => handleTypeChange(e.target.value)}
         value={sortBy ? sortBy : "LAST_MOD_ASC"}
         options={selectOptions}
       />

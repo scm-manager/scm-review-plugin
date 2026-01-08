@@ -173,8 +173,8 @@
         "ID_DESC": "id (descending)",
         "STATUS_ASC": "status (ascending)",
         "STATUS_DESC": "status (descending)",
-        "LAST_MOD_ASC": "newest first",
-        "LAST_MOD_DESC": "latest first"
+        "LAST_MOD_ASC": "last modified (oldest first)",
+        "LAST_MOD_DESC": "last modified (newest first)"
       },
       "sortSelectorLabel": "Sort by",
       "titlePart": {
