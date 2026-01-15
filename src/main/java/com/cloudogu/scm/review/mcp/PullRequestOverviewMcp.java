@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.review.mcp;
 
+import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -28,6 +29,9 @@ import java.time.Instant;
 public class PullRequestOverviewMcp {
   private String id;
   private Repository repository;
+  private PullRequestStatus status;
+  private DisplayedUserDto author;
+  private String title;
   private Instant creationDate;
   private Instant closeDate;
   @NotBlank
@@ -35,8 +39,6 @@ public class PullRequestOverviewMcp {
   @NotBlank
   private String target;
   @NotBlank
-  private String title;
-  private PullRequestStatus status;
 
   @Value
   public static class Repository {

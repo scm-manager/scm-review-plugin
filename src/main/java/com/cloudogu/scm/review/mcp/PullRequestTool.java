@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.review.mcp;
 
+import com.cloudogu.mcp.OkResultRenderer;
 import com.cloudogu.mcp.ToolResult;
 import com.cloudogu.mcp.TypedTool;
 import com.cloudogu.scm.review.comment.service.Comment;
@@ -47,9 +48,12 @@ import sonia.scm.store.QueryableStore;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.cloudogu.mcp.OkResultRenderer.success;
 
 @Slf4j
 @Extension
@@ -174,42 +178,49 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
         .filter(result -> !input.isWithObstaclesOnly() || filterForObstacles(result))
         .toList();
 
-      String pullRequestIds = all
-        .stream()
-        .map(this::formatPullRequestAsContentString)
-        .collect(Collectors.joining("\n"));
+      OkResultRenderer resultRenderer = success(String.format("Found %s pull requests.", all.size()));
 
-      if (input.getDetailLevel() == DETAIL_LEVEL.NONE) {
-        return ToolResult.ok(List.of(String.format("I found %s pull requests.", all.size()), pullRequestIds), null);
+      switch (input.getDetailLevel()) {
+        case FULL ->
+          resultRenderer.withInfoText("Detailed metadata (creation and close date, the full description, reviser, number of open and closed tasks, and more) for each is available in the structured data block under their respective names.");
+        case WITH_OBSTACLES ->
+          resultRenderer.withInfoText("Detailed metadata (creation and close date, the full description, reviser, number of open and closed tasks, possible obstacles, and more) for each is available in the structured data block under their respective names.");
       }
 
-      Function<QueryableStore.Result<PullRequest>, Object> converter =
-        switch (input.getDetailLevel()) {
-          case OVERVIEW -> this::convertToOverview;
-          case WITH_OBSTACLES -> this::convertWithObstacles;
-          default -> this::convertWithDetails;
-        };
+      resultRenderer
+        .appendLine("Repository | Pull Request ID | Status | Author | Source Branch | Target Branch | Title")
+        .appendLine("---|---|---|---|---|---|---");
 
-      Map<String, Object> structuredContent = all
-        .stream()
-        .collect(Collectors.toMap(
-          this::formatPullRequestAsKeyString,
-          converter
-        ));
+      all.stream()
+        .map(this::formatPullRequestAsContentString)
+        .forEach(resultRenderer::appendLine);
+
+      Map<String, Object> structuredContent = createStructuredContent(input, all);
 
       log.trace("found {} pull requests", all.size());
-
-      List<String> content = List.of(
-        String.format("I found %s pull requests.", all.size()),
-        """
-          Detailed metadata (author, description, source and target branches, status and so on) for each is available
-          in the structured data block under their respective names.
-          """,
-        pullRequestIds
-      );
-
-      return ToolResult.ok(content, structuredContent);
+      return resultRenderer.render(structuredContent);
     }
+  }
+
+  private Map<String, Object> createStructuredContent(PullRequestListInput input, List<QueryableStore.Result<PullRequest>> all) {
+    if (input.getDetailLevel() == DETAIL_LEVEL.NONE) {
+      return null;
+    }
+    Function<QueryableStore.Result<PullRequest>, Object> converter =
+      switch (input.getDetailLevel()) {
+        case WITH_OBSTACLES -> this::convertWithObstacles;
+        default -> this::convertWithDetails;
+      };
+
+    Map<String, Object> structuredContent = new HashMap<>();
+    all.forEach(
+      result -> {
+        Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
+        HashMap<String, Object> repositoryMap = (HashMap<String, Object>) structuredContent.computeIfAbsent(repository.getNamespaceAndName().toString(), x -> new HashMap<String, Object>());
+        repositoryMap.put(result.getEntity().getId(), converter.apply(result));
+      }
+    );
+    return structuredContent;
   }
 
   private boolean filterForObstacles(QueryableStore.Result<PullRequest> result) {
@@ -225,11 +236,6 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
     }
   }
 
-  private PullRequestOverviewMcp convertToOverview(QueryableStore.Result<PullRequest> result) {
-    Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
-    return pullRequestMapper.mapOverview(result.getEntity(), repository);
-  }
-
   private PullRequestOverviewMcp convertWithDetails(QueryableStore.Result<PullRequest> result) {
     Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
     return pullRequestMapper.mapDetails(result.getEntity(), repository);
@@ -242,12 +248,17 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
 
   private String formatPullRequestAsContentString(QueryableStore.Result<PullRequest> result) {
     Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
-    return String.format("* %s/%s#%s [%s]", repository.getNamespace(), repository.getName(), result.getEntity().getId(), result.getEntity().getStatus());
-  }
-
-  private String formatPullRequestAsKeyString(QueryableStore.Result<PullRequest> result) {
-    Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
-    return String.format("%s/%s#%s", repository.getNamespace(), repository.getName(), result.getEntity().getId());
+    return String.format(
+      "%s/%s | %s | %s | %s | %s | %s | %s",
+      repository.getNamespace(),
+      repository.getName(),
+      result.getEntity().getId(),
+      result.getEntity().getStatus(),
+      result.getEntity().getAuthor(),
+      result.getEntity().getSource(),
+      result.getEntity().getTarget(),
+      result.getEntity().getTitle()
+    );
   }
 
   private Repository findRepository(String namespace, String name) {
@@ -269,6 +280,17 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
       All filters can be applied alone or in combination with other filters, if not stated otherwise for the filter.
       Ids of pull requests are unique only in the context of a single repository. So to get a concrete pull request,
       the repository namespace, the repository name, and the pull request id have to be set.
+      
+      The default result will contain the following data for matching pull requests:
+      - the repository of the pull request,
+      - the id of the pull request,
+      - the status of the pull request (DRAFT, OPEN, MERGED, or REJECTED),
+      - the author of the pull request,
+      - the source branch of the pull request,
+      - the target branch of the pull request, and
+      - the title of the pull request.
+      
+      To get more information about each pull request, set the detail level accordingly.
       """;
   }
 }
@@ -358,5 +380,5 @@ enum Order {
 }
 
 enum DETAIL_LEVEL {
-  NONE, OVERVIEW, FULL, WITH_OBSTACLES
+  NONE, FULL, WITH_OBSTACLES
 }

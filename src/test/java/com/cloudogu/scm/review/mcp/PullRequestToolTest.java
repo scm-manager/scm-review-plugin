@@ -25,6 +25,7 @@ import com.cloudogu.scm.review.pullrequest.service.MergeService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -122,21 +123,27 @@ class PullRequestToolTest {
   void shouldListPullRequestsWithoutData() {
     ToolResult result = tool.execute(input);
 
-    assertThat(result.getContent())
-      .containsExactly(
-        "I found 3 pull requests.",
-        "* hitchhiker/hog#1 [MERGED]\n* hitchhiker/hog#2 [OPEN]\n* hacker/secret#1 [DRAFT]"
+    assertThat(result.getContent().get(0))
+      .isEqualTo("""
+        STATUS: [SUCCESS] Found 3 pull requests.
+        ---------------------------------------------------------
+        Repository | Pull Request ID | Status | Author | Source Branch | Target Branch | Title
+        ---|---|---|---|---|---|---
+        hitchhiker/hog | 1 | MERGED | dent | feature/hog | develop | Heart Of Gold
+        hitchhiker/hog | 2 | OPEN | trillian | develop | main | Vogons
+        hacker/secret | 1 | DRAFT | smith | feature/neo | main | Neo
+        """
       );
     Map<String, Object> structuredContent = result.getStructuredContent();
     assertThat(structuredContent).isNullOrEmpty();
   }
 
   @Nested
-  class WithOverviewData {
+  class WithoutDetailData {
 
     @BeforeEach
-    void setForOverview() {
-      input.setDetailLevel(DETAIL_LEVEL.OVERVIEW);
+    void setForDetails() {
+      input.setDetailLevel(DETAIL_LEVEL.FULL);
     }
 
     @Test
@@ -323,8 +330,7 @@ class PullRequestToolTest {
       ToolResult result = tool.execute(input);
 
       assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
-      assertThat(result.getStructuredContent())
-        .values()
+      assertThat(result.getStructuredContent().values().stream().flatMap(m -> ((Map) m).values().stream()))
         .hasOnlyElementsOfType(PullRequestDetailMcp.class);
     }
 
@@ -351,8 +357,10 @@ class PullRequestToolTest {
         assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
         assertThat(result.getStructuredContent())
           .values()
-          .hasOnlyElementsOfType(PullRequestDetailMcp.class);
-        assertThat(result.getStructuredContent().get("hitchhiker/hog#1"))
+          .hasOnlyElementsOfType(Map.class);
+        assertThat(result.getStructuredContent().get("hitchhiker/hog"))
+          .asInstanceOf(InstanceOfAssertFactories.map(String.class, Map.class))
+          .extracting("1")
           .extracting("mergeObstacles")
           .asList()
           .containsExactly("no humans");
@@ -377,35 +385,52 @@ class PullRequestToolTest {
         ToolResult result = tool.execute(input);
 
         assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
-        assertThat(result.getStructuredContent().get("hitchhiker/hog#1")).isSameAs(mappedPRWithObstacle);
+        assertThat(
+          result
+            .getStructuredContent()
+            .get("hitchhiker/hog")
+        ).asInstanceOf(InstanceOfAssertFactories.map(String.class, Object.class))
+          .extracting("1")
+          .isSameAs(mappedPRWithObstacle);
       }
     }
   }
 
   private FurtherChecks assertResultWith(ToolResult result, boolean withDetails, String... pullRequestStrings) {
-    assertThat(result.getContent().get(0))
-      .contains("found " + pullRequestStrings.length);
+    String content = result.getContent().get(0);
+    assertThat(content)
+      .contains("Found " + pullRequestStrings.length);
     if (withDetails) {
-      assertThat(result.getContent().get(1))
-        .startsWith("Detailed metadata ");
+      assertThat(content)
+        .contains("Detailed metadata ");
     }
-    String[] actualPullRequestListContent = result.getContent().get(result.getContent().size() - 1).split("\n");
-    String[] expectedPullRequestListContent = Arrays.stream(pullRequestStrings).map(s -> "* " + s).toArray(String[]::new);
+    String table = content.substring(content.indexOf("---|"));
+    table = table.substring(table.indexOf("\n") + 1);
+    String[] actualPullRequestListContent =
+      Arrays.stream(table.split("\n"))
+        .map(line -> {
+          String[] fields = line.split("\\W\\|\\W");
+          return String.format("%s#%s [%s]", fields[0], fields[1], fields[2]);
+        })
+        .toArray(String[]::new);
+    assertThat(actualPullRequestListContent).hasSize(pullRequestStrings.length);
+
     assertThat(actualPullRequestListContent)
-      .containsExactlyInAnyOrder(expectedPullRequestListContent);
+      .containsExactlyInAnyOrder(pullRequestStrings);
     Map<String, Object> structuredContent = result.getStructuredContent();
-    assertThat(structuredContent).hasSize(pullRequestStrings.length);
+    assertThat(structuredContent.values().stream().mapToInt(m -> ((Map<String, Object>) m).size()).sum()).isEqualTo(pullRequestStrings.length);
     Arrays.stream(pullRequestStrings).forEach(
       pullRequestString ->
       {
-        String prKey = pullRequestString.substring(0, pullRequestString.indexOf(' '));
-        assertThat(structuredContent.get(prKey))
+        String repositoryKey = pullRequestString.substring(0, pullRequestString.indexOf('#'));
+        String prId = pullRequestString.substring(pullRequestString.indexOf('#') + 1, pullRequestString.indexOf(' '));
+        assertThat(((Map<String, Object>) structuredContent.get(repositoryKey)).get(prId))
           .isInstanceOf(PullRequestOverviewMcp.class)
           .extracting("id")
-          .isEqualTo(pullRequests.get(prKey).getId());
+          .isEqualTo(pullRequests.get(pullRequestString.substring(0, pullRequestString.indexOf(' '))).getId());
       }
     );
-    return () -> assertThat(actualPullRequestListContent).containsExactly(expectedPullRequestListContent);
+    return () -> assertThat(actualPullRequestListContent).containsExactly(pullRequestStrings);
   }
 
   private interface FurtherChecks {

@@ -32,7 +32,6 @@ import java.util.Set;
 @Data
 @SuppressWarnings("squid:S2160")
 public class PullRequestDetailMcp extends PullRequestOverviewMcp {
-  private DisplayedUserDto author;
   private DisplayedUserDto reviser;
   private String description;
   private Instant lastModified;
@@ -43,7 +42,6 @@ public class PullRequestDetailMcp extends PullRequestOverviewMcp {
   private String targetRevision;
   private boolean emergencyMerged;
   private List<String> ignoredMergeObstacles;
-  private List<String> initialTasks = new ArrayList<>();
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Collection<String> mergeObstacles;
 }
