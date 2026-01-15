@@ -34,6 +34,7 @@ import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestCreator;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -157,7 +158,7 @@ public class CommentRootResourceTest {
     when(uriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromPath("/scm"));
     dispatcher = new RestDispatcher();
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(new PullRequestMapperImpl(), null,
-            commentService, serviceFactory, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), null, channelRegistry, pullRequestChangeService)), configService, userDisplayManager);
+            new PullRequestCreator(pullRequestService, commentService), serviceFactory, Providers.of(new PullRequestResource(new PullRequestMapperImpl(), null, Providers.of(resource), null, channelRegistry, pullRequestChangeService)), configService, userDisplayManager);
     dispatcher.addSingletonResource(pullRequestRootResource);
     when(branchRevisionResolver.getRevisions(any(), any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));
     when(branchRevisionResolver.getRevisions(any(), any())).thenReturn(new BranchRevisionResolver.RevisionResult("source", "target"));

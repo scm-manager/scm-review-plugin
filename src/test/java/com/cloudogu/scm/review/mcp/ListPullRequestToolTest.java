@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith({QueryableStoreExtension.class, MockitoExtension.class})
 @QueryableStoreExtension.QueryableTypes({PullRequest.class, Comment.class})
-class PullRequestToolTest {
+class ListPullRequestToolTest {
 
   @Mock
   private RepositoryManager repositoryManager;
@@ -57,7 +57,7 @@ class PullRequestToolTest {
   private PullRequestMcpMapper pullRequestMapper;
   @Mock
   private MergeService mergeService;
-  private PullRequestTool tool;
+  private ListPullRequestTool tool;
 
   private final Map<String, PullRequest> pullRequests = new HashMap<>();
   private final PullRequestListInput input = new PullRequestListInput();
@@ -70,7 +70,7 @@ class PullRequestToolTest {
 
   @BeforeEach
   void setUpTool(PullRequestStoreFactory pullRequestStoreFactory, CommentStoreFactory commentStoreFactory) {
-    tool = new PullRequestTool(pullRequestStoreFactory, commentStoreFactory, repositoryManager, pullRequestMapper, mergeService);
+    tool = new ListPullRequestTool(pullRequestStoreFactory, commentStoreFactory, repositoryManager, pullRequestMapper, mergeService);
   }
 
   @BeforeEach

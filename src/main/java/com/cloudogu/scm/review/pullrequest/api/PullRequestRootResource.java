@@ -16,14 +16,10 @@
 
 package com.cloudogu.scm.review.pullrequest.api;
 
-import com.cloudogu.scm.review.CurrentUserResolver;
 import com.cloudogu.scm.review.PagedCollections;
 import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.PullRequestMediaType;
 import com.cloudogu.scm.review.PullRequestResourceLinks;
-import com.cloudogu.scm.review.comment.service.Comment;
-import com.cloudogu.scm.review.comment.service.CommentService;
-import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.config.service.BasePullRequestConfig;
 import com.cloudogu.scm.review.config.service.ConfigService;
 import com.cloudogu.scm.review.pullrequest.dto.DisplayedUserDto;
@@ -32,8 +28,8 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestTemplateDto;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestCreator;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.google.common.base.Strings;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
@@ -68,7 +64,6 @@ import sonia.scm.repository.NamespaceAndName;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.api.RepositoryService;
 import sonia.scm.repository.api.RepositoryServiceFactory;
-import sonia.scm.user.User;
 import sonia.scm.user.UserDisplayManager;
 import sonia.scm.web.VndMediaType;
 
@@ -84,10 +79,8 @@ import static com.cloudogu.scm.review.pullrequest.PullRequestUtil.determineTitle
 import static de.otto.edison.hal.Link.link;
 import static de.otto.edison.hal.Links.linkingTo;
 import static de.otto.edison.hal.paging.NumberedPaging.zeroBasedNumberedPaging;
-import static sonia.scm.AlreadyExistsException.alreadyExists;
 import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
-import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
 @OpenAPIDefinition(tags = {
   @Tag(name = "Pull Request", description = "Pull request endpoints provided by the review-plugin")
@@ -99,7 +92,7 @@ public class PullRequestRootResource {
 
   private final PullRequestMapper mapper;
   private final PullRequestService service;
-  private final CommentService commentService;
+  private final PullRequestCreator pullRequestCreator;
   private final RepositoryServiceFactory serviceFactory;
   private final Provider<PullRequestResource> pullRequestResourceProvider;
   private final ConfigService configService;
@@ -107,10 +100,10 @@ public class PullRequestRootResource {
   private final UserDisplayManager userDisplayManager;
 
   @Inject
-  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, CommentService commentService, RepositoryServiceFactory serviceFactory, Provider<PullRequestResource> pullRequestResourceProvider, ConfigService configService, UserDisplayManager userDisplayManager) {
+  public PullRequestRootResource(PullRequestMapper mapper, PullRequestService service, PullRequestCreator pullRequestCreator, RepositoryServiceFactory serviceFactory, Provider<PullRequestResource> pullRequestResourceProvider, ConfigService configService, UserDisplayManager userDisplayManager) {
     this.mapper = mapper;
     this.service = service;
-    this.commentService = commentService;
+    this.pullRequestCreator = pullRequestCreator;
     this.serviceFactory = serviceFactory;
     this.pullRequestResourceProvider = pullRequestResourceProvider;
     this.configService = configService;
@@ -192,48 +185,14 @@ public class PullRequestRootResource {
     )
   )
   public Response create(@Context UriInfo uriInfo, @PathParam("namespace") String namespace, @PathParam("name") String name, @NotNull @Valid PullRequestDto pullRequestDto) {
-    Repository repository = service.getRepository(namespace, name);
-    PermissionCheck.checkCreate(repository);
-
-    if (pullRequestDto.getStatus() == null) {
-      pullRequestDto.setStatus(PullRequestStatus.OPEN);
-    } else {
-      doThrow().violation("illegal status", "pullRequest", "status")
-        .when(pullRequestDto.getStatus().isClosed());
-    }
-
-    String source = pullRequestDto.getSource();
-    String target = pullRequestDto.getTarget();
-
-    service.getInProgress(repository, source, target)
-      .ifPresent(pullRequest -> {
-        throw alreadyExists(entity(repository).in("pull request", pullRequest.getId()).in(repository));
-      });
-
-    service.checkBranch(repository, source);
-    service.checkBranch(repository, target);
-
-    verifyBranchesDiffer(source, target);
-
-    User user = CurrentUserResolver.getCurrentUser();
-
-    PullRequest pullRequest = mapper.using(uriInfo).map(pullRequestDto);
-    pullRequest.setAuthor(user.getId());
-
-    String id = service.add(repository, pullRequest);
-
-    createInitialTasks(namespace, name, id, pullRequestDto.getInitialTasks());
+    String id = pullRequestCreator.openNewPullRequest(
+      namespace,
+      name,
+      mapper.using(uriInfo).map(pullRequestDto),
+      pullRequestDto.getInitialTasks()
+    );
     URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
     return Response.created(location).build();
-  }
-
-  private void createInitialTasks(String namespace, String name, String id, List<String> initialTasks) {
-    for (String task : initialTasks) {
-      Comment comment = new Comment();
-      comment.setComment(task);
-      comment.setType(CommentType.TASK_TODO);
-      commentService.add(namespace, name, id, comment);
-    }
   }
 
   @GET
@@ -374,12 +333,5 @@ public class PullRequestRootResource {
     );
 
     return Links.linkingTo().self(checkLink).build();
-  }
-
-  private void verifyBranchesDiffer(String source, String target) {
-    doThrow()
-      .violation("source branch and target branch must differ", "pullRequest", "source")
-      .violation("source branch and target branch must differ", "pullRequest", "target")
-      .when(source.equals(target));
   }
 }

@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestRootResource;
 import com.cloudogu.scm.review.pullrequest.dto.BranchRevisionResolver;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestCreator;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.google.inject.util.Providers;
 import jakarta.servlet.http.HttpServletResponse;
@@ -115,7 +116,9 @@ public class CommentResourceTest {
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(
       new PullRequestMapperImpl(),
       null,
-            commentService, serviceFactory, Providers.of(
+      new PullRequestCreator(pullRequestService, commentService),
+      serviceFactory,
+      Providers.of(
         new PullRequestResource(
           new PullRequestMapperImpl(),
           null,
@@ -136,7 +139,7 @@ public class CommentResourceTest {
           pullRequestChangeService
         )
       ),
-            configService, userDisplayManager);
+      configService, userDisplayManager);
     dispatcher.addSingletonResource(pullRequestRootResource);
 
     when(service.get("space", "name", "1", "1")).thenReturn(EXISTING_ROOT_COMMENT);

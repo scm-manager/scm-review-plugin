@@ -28,6 +28,7 @@ import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapperImpl;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestChange;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestChangeService;
+import com.cloudogu.scm.review.pullrequest.service.PullRequestCreator;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.ReviewMark;
@@ -152,7 +153,7 @@ public class PullRequestRootResourceTest {
     PullRequestRootResource pullRequestRootResource = new PullRequestRootResource(
       mapper,
       pullRequestService,
-      commentService,
+      new PullRequestCreator(pullRequestService, commentService),
       repositoryServiceFactory,
       Providers.of(new PullRequestResource(
         mapper,

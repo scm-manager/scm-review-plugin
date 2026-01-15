@@ -58,7 +58,7 @@ import static com.cloudogu.mcp.OkResultRenderer.success;
 @Slf4j
 @Extension
 @Requires("scm-mcp-plugin")
-class PullRequestTool implements TypedTool<PullRequestListInput> {
+class ListPullRequestTool implements TypedTool<PullRequestListInput> {
   private final PullRequestStoreFactory pullRequestStoreFactory;
   private final CommentStoreFactory commentStoreFactory;
   private final RepositoryManager repositoryManager;
@@ -66,11 +66,11 @@ class PullRequestTool implements TypedTool<PullRequestListInput> {
   private final MergeService mergeService;
 
   @Inject
-  PullRequestTool(PullRequestStoreFactory pullRequestStoreFactory,
-                  CommentStoreFactory commentStoreFactory,
-                  RepositoryManager repositoryManager,
-                  PullRequestMcpMapper pullRequestMapper,
-                  MergeService mergeService) {
+  ListPullRequestTool(PullRequestStoreFactory pullRequestStoreFactory,
+                      CommentStoreFactory commentStoreFactory,
+                      RepositoryManager repositoryManager,
+                      PullRequestMcpMapper pullRequestMapper,
+                      MergeService mergeService) {
     this.pullRequestStoreFactory = pullRequestStoreFactory;
     this.commentStoreFactory = commentStoreFactory;
     this.repositoryManager = repositoryManager;
