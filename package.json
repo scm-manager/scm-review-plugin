@@ -1,86 +1,86 @@
 {
-  "name": "@scm-manager/scm-review-plugin",
-  "private": false,
-  "version": "3.12.3-SNAPSHOT",
-  "license": "AGPL-3.0-only",
-  "main": "./src/main/js/index.tsx",
-  "scripts": {
-    "build": "plugin-scripts build",
-    "watch": "plugin-scripts watch",
-    "postinstall": "plugin-scripts postinstall",
-    "e2e": "integration-test-runner run -u scmadmin -p scmadmin -o ../../../build/target/ -d ./src/test/e2e",
-    "test": "jest src/main/js"
-  },
-  "dependencies": {
-    "@scm-manager/ui-api": "3.11.0",
-    "@scm-manager/ui-buttons": "3.11.0",
-    "@scm-manager/ui-components": "3.11.0",
-    "@scm-manager/ui-core": "3.11.0",
-    "@scm-manager/ui-extensions": "3.11.0",
-    "@scm-manager/ui-forms": "3.11.0",
-    "@scm-manager/ui-layout": "3.11.0",
-    "@scm-manager/ui-overlays": "3.11.0",
-    "@scm-manager/ui-plugins": "3.11.0",
-    "classnames": "^2.3.1",
-    "gitdiff-parser": "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
-    "lodash-es": "^4.17.21",
-    "query-string": "6.14.1",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-hook-form": "^7.33.1",
-    "react-i18next": "11",
-    "react-mentions": "^3.3.1",
-    "react-query": "^3.39.2",
-    "react-redux": "^5.0.7",
-    "react-router": "^5.3.1",
-    "react-router-dom": "^5.3.1",
-    "redux": "^4.0.0",
-    "styled-components": "^5.3.5"
-  },
-  "babel": {
-    "presets": [
-      "@scm-manager/babel-preset"
-    ]
-  },
-  "jest": {
-    "preset": "@scm-manager/jest-preset"
-  },
-  "prettier": "@scm-manager/prettier-config",
-  "eslintConfig": {
-    "extends": "@scm-manager/eslint-config"
-  },
-  "devDependencies": {
-    "@scm-manager/babel-preset": "^2.13.1",
-    "@scm-manager/eslint-config": "^2.17.0",
-    "@scm-manager/integration-test-runner": "^3.4.4",
-    "@scm-manager/jest-preset": "^2.14.1",
-    "@scm-manager/plugin-scripts": "^1.6.1",
-    "@scm-manager/prettier-config": "^2.12.0",
-    "@scm-manager/tsconfig": "^2.13.0",
-    "@scm-manager/ui-scripts": "2.47.0",
-    "@scm-manager/ui-tests": "3.11.0",
-    "@scm-manager/ui-types": "3.11.0",
-    "@types/classnames": "^2.3.1",
-    "@types/enzyme": "^3.10.18",
-    "@types/fetch-mock": "^7.3.1",
-    "@types/i18next": "^13.0.0",
-    "@types/jest": "^26.0.24",
-    "@types/lodash-es": "^4.17.9",
-    "@types/query-string": "6",
-    "@types/react": "^17.0.1",
-    "@types/react-mentions": "3.3.0",
-    "@types/react-redux": "5.0.7",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/styled-components": "^5.1.25",
-    "fetch-mock": "^8.0.0",
-    "jest": "^26.6.3",
-    "node-fetch": "^2.6.7",
-    "resize-observer-polyfill": "^1.5.1",
-    "tabbable": "^5.2.1",
-    "date-fns": "^2.4.1",
-    "@headlessui/react": "^1.7.17"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+    "name": "@scm-manager/scm-review-plugin",
+    "private": false,
+    "version": "3.13.0",
+    "license": "AGPL-3.0-only",
+    "main": "./src/main/js/index.tsx",
+    "scripts": {
+        "build": "plugin-scripts build",
+        "watch": "plugin-scripts watch",
+        "postinstall": "plugin-scripts postinstall",
+        "e2e": "integration-test-runner run -u scmadmin -p scmadmin -o ../../../build/target/ -d ./src/test/e2e",
+        "test": "jest src/main/js"
+    },
+    "dependencies": {
+        "@scm-manager/ui-api": "3.11.0",
+        "@scm-manager/ui-buttons": "3.11.0",
+        "@scm-manager/ui-components": "3.11.0",
+        "@scm-manager/ui-core": "3.11.0",
+        "@scm-manager/ui-extensions": "3.11.0",
+        "@scm-manager/ui-forms": "3.11.0",
+        "@scm-manager/ui-layout": "3.11.0",
+        "@scm-manager/ui-overlays": "3.11.0",
+        "@scm-manager/ui-plugins": "3.11.0",
+        "classnames": "^2.3.1",
+        "gitdiff-parser": "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
+        "lodash-es": "^4.17.21",
+        "query-string": "6.14.1",
+        "react": "^17.0.1",
+        "react-dom": "^17.0.1",
+        "react-hook-form": "^7.33.1",
+        "react-i18next": "11",
+        "react-mentions": "^3.3.1",
+        "react-query": "^3.39.2",
+        "react-redux": "^5.0.7",
+        "react-router": "^5.3.1",
+        "react-router-dom": "^5.3.1",
+        "redux": "^4.0.0",
+        "styled-components": "^5.3.5"
+    },
+    "babel": {
+        "presets": [
+            "@scm-manager/babel-preset"
+        ]
+    },
+    "jest": {
+        "preset": "@scm-manager/jest-preset"
+    },
+    "prettier": "@scm-manager/prettier-config",
+    "eslintConfig": {
+        "extends": "@scm-manager/eslint-config"
+    },
+    "devDependencies": {
+        "@scm-manager/babel-preset": "^2.13.1",
+        "@scm-manager/eslint-config": "^2.17.0",
+        "@scm-manager/integration-test-runner": "^3.4.4",
+        "@scm-manager/jest-preset": "^2.14.1",
+        "@scm-manager/plugin-scripts": "^1.6.1",
+        "@scm-manager/prettier-config": "^2.12.0",
+        "@scm-manager/tsconfig": "^2.13.0",
+        "@scm-manager/ui-scripts": "2.47.0",
+        "@scm-manager/ui-tests": "3.11.0",
+        "@scm-manager/ui-types": "3.11.0",
+        "@types/classnames": "^2.3.1",
+        "@types/enzyme": "^3.10.18",
+        "@types/fetch-mock": "^7.3.1",
+        "@types/i18next": "^13.0.0",
+        "@types/jest": "^26.0.24",
+        "@types/lodash-es": "^4.17.9",
+        "@types/query-string": "6",
+        "@types/react": "^17.0.1",
+        "@types/react-mentions": "3.3.0",
+        "@types/react-redux": "5.0.7",
+        "@types/react-router-dom": "^5.3.3",
+        "@types/styled-components": "^5.1.25",
+        "fetch-mock": "^8.0.0",
+        "jest": "^26.6.3",
+        "node-fetch": "^2.6.7",
+        "resize-observer-polyfill": "^1.5.1",
+        "tabbable": "^5.2.1",
+        "date-fns": "^2.4.1",
+        "@headlessui/react": "^1.7.17"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }
