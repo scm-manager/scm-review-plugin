@@ -19,6 +19,7 @@ package com.cloudogu.scm.review.mcp;
 import com.cloudogu.mcp.ToolSearchExtension;
 import jakarta.inject.Inject;
 import sonia.scm.plugin.Extension;
+import sonia.scm.plugin.Requires;
 import sonia.scm.repository.RepositoryManager;
 import sonia.scm.search.Hit;
 
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Extension
+@Requires("scm-mcp-plugin")
 public class PullRequestSearchExtension implements ToolSearchExtension {
 
   private final RepositoryManager repositoryManager;
