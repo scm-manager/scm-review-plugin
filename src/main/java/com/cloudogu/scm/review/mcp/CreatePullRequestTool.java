@@ -58,6 +58,8 @@ class CreatePullRequestTool implements TypedTool<CreatePullRequestInput> {
   @Override
   public ToolResult execute(CreatePullRequestInput input) {
     PullRequest pullRequest = new PullRequest(null, input.getSourceBranch(), input.getTargetBranch());
+    pullRequest.setTitle(input.getTitle());
+    pullRequest.setDescription(input.getDescription());
     pullRequest.setStatus(input.isCreateAsDraft() ? PullRequestStatus.DRAFT : PullRequestStatus.OPEN);
     try {
       String id = pullRequestCreator.openNewPullRequest(
