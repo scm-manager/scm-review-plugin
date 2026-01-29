@@ -22,6 +22,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestService;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,12 +39,12 @@ import static java.util.Optional.of;
 
 @Extension
 @Requires("scm-mcp-plugin")
-public class ListCommitsForPullRequest implements ToolListCommitsFilterEnhancement {
+public class ListCommitsForPullRequestTool implements ToolListCommitsFilterEnhancement {
 
   private final PullRequestService pullRequestService;
 
   @Inject
-  public ListCommitsForPullRequest(PullRequestService pullRequestService) {
+  public ListCommitsForPullRequestTool(PullRequestService pullRequestService) {
     this.pullRequestService = pullRequestService;
   }
 
@@ -80,6 +81,7 @@ public class ListCommitsForPullRequest implements ToolListCommitsFilterEnhanceme
 @Setter(AccessLevel.PACKAGE)
 @ToString
 class ListCommitsForPullRequestInput {
+  @NotBlank
   @JsonPropertyDescription("Find the commits fot the pull request with this ID.")
   private String id;
 }

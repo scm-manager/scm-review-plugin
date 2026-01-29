@@ -25,7 +25,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -89,19 +89,21 @@ class CreatePullRequestTool implements TypedTool<CreatePullRequestInput> {
 @Setter(AccessLevel.PACKAGE)
 @ToString
 class CreatePullRequestInput {
-  @NotEmpty
+  @NotBlank
   @JsonPropertyDescription("Create the pull requests in the repository with this namespace.")
   private String repositoryNamespace;
-  @NotEmpty
+  @NotBlank
   @JsonPropertyDescription("Create the pull requests in the repository with this name.")
   private String repositoryName;
-  @NotEmpty
+  @NotBlank
   @JsonPropertyDescription("Title of the new pull request.")
   private String title;
   @JsonPropertyDescription("The description of the new pull request. This can be formatted using markdown.")
   private String description;
+  @NotBlank
   @JsonPropertyDescription("The source branch of the new pull request.")
   private String sourceBranch;
+  @NotBlank
   @JsonPropertyDescription("The target branch of the new pull request.")
   private String targetBranch;
   @JsonPropertyDescription("A new pull request can be marked as a 'draft' to show, that it is not yet ready to be merged.")

@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ListCommitsForPullRequestTest {
+class ListCommitsForPullRequestToolTest {
 
   private static final Repository REPOSITORY = RepositoryTestData.createHeartOfGold();
 
@@ -52,11 +52,11 @@ class ListCommitsForPullRequestTest {
   private ToolListCommits.CompositeInput input;
 
   @InjectMocks
-  private ListCommitsForPullRequest listCommitsForPullRequest;
+  private ListCommitsForPullRequestTool tool;
 
   @Test
   void shouldDoNothingWithoutPRInput() {
-    Optional<String> result = listCommitsForPullRequest.configure(REPOSITORY, logCommandBuilder, input);
+    Optional<String> result = tool.configure(REPOSITORY, logCommandBuilder, input);
 
     verifyNoInteractions(logCommandBuilder);
     assertThat(result).isEmpty();
@@ -83,7 +83,7 @@ class ListCommitsForPullRequestTest {
       when(input.getExtensionInput("pullRequest"))
         .thenReturn(prInput);
 
-      Optional<String> result = listCommitsForPullRequest.configure(REPOSITORY, logCommandBuilder, input);
+      Optional<String> result = tool.configure(REPOSITORY, logCommandBuilder, input);
 
       verify(logCommandBuilder).setStartChangeset("feature");
       verify(logCommandBuilder).setAncestorChangeset("main");
@@ -100,7 +100,7 @@ class ListCommitsForPullRequestTest {
       when(input.getExtensionInput("pullRequest"))
         .thenReturn(prInput);
 
-      Optional<String> result = listCommitsForPullRequest.configure(REPOSITORY, logCommandBuilder, input);
+      Optional<String> result = tool.configure(REPOSITORY, logCommandBuilder, input);
 
       assertThat(result).isNotEmpty();
     }
