@@ -24,15 +24,15 @@ dependencies {
   optionalPlugin "sonia.scm.plugins:scm-editor-plugin:3.0.0"
   optionalPlugin "sonia.scm.plugins:scm-landingpage-plugin:2.0.0"
   optionalPlugin "sonia.scm.plugins:scm-mcp-plugin:1.1.0"
-  testImplementation "com.github.spullara.mustache.java:compiler:0.9.10"
-  implementation 'commons-io:commons-io:2.16.1'
+  testImplementation "com.github.spullara.mustache.java:compiler:0.9.14"
+  implementation 'commons-io:commons-io:2.21.0'
 
   // we don't want the transitive dependencies in the resulting smp ...
-  implementation("org.jboss.resteasy:resteasy-multipart-provider:6.2.5.Final") {
+  implementation("org.jboss.resteasy:resteasy-multipart-provider:7.0.1.Final") {
     transitive = false
   }
   // ... but we want them on the classpath for testing
-  testImplementation "org.jboss.resteasy:resteasy-multipart-provider:6.2.5.Final"
+  testImplementation "org.jboss.resteasy:resteasy-multipart-provider:7.0.1.Final"
 }
 
 scmPlugin {
