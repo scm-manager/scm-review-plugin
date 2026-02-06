@@ -244,10 +244,24 @@ class EmailNotificationHookTest {
   }
 
   @Test
+  void shouldSendEmailBecauseReviewerHadChanged() throws Exception {
+    oldPullRequest.setTitle(pullRequest.getTitle());
+    oldPullRequest.setDescription(pullRequest.getDescription());
+    pullRequest.setSubscriber(of("trillian"));
+    pullRequest.setReviewer(Map.of("trillian", false));
+
+    PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
+    emailNotificationHook.handlePullRequestEvents(event);
+
+    verify(service).sendEmail(eq(of("trillian")), isA(PullRequestEventMailTextResolver.class));
+  }
+
+  @Test
   void shouldNotSendEmailBecauseTitleDescriptionAndTargetWereUnchanged() throws Exception {
     oldPullRequest.setTitle(pullRequest.getTitle());
     oldPullRequest.setDescription(pullRequest.getDescription());
     oldPullRequest.setTarget(pullRequest.getTarget());
+    pullRequest.setReviewer(oldPullRequest.getReviewer());
 
     PullRequestEvent event = new PullRequestEvent(repository, pullRequest, oldPullRequest, HandlerEventType.MODIFY);
     emailNotificationHook.handlePullRequestEvents(event);

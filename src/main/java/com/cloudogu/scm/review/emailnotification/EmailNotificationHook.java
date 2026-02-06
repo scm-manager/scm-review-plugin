@@ -91,7 +91,9 @@ public class EmailNotificationHook {
   private boolean isRelevantChangeForMail(PullRequestEvent event) {
     return !event.getPullRequest().getTitle().equals(event.getOldItem().getTitle()) ||
       !event.getPullRequest().getDescription().equals(event.getOldItem().getDescription()) ||
-      !event.getPullRequest().getTarget().equals(event.getOldItem().getTarget());
+      !event.getPullRequest().getTarget().equals(event.getOldItem().getTarget()) ||
+      !event.getOldItem().getReviewer().keySet().containsAll(event.getPullRequest().getReviewer().keySet())
+      ;
   }
 
   @Subscribe
