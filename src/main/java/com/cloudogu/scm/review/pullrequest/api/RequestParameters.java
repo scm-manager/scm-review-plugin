@@ -20,5 +20,7 @@ public record RequestParameters(
   PullRequestSelector pullRequestSelector,
   PullRequestSortSelector pullRequestSortSelector,
   int offset,
-  int limit
+  int limit,
+  String source,
+  String target
 ) {}

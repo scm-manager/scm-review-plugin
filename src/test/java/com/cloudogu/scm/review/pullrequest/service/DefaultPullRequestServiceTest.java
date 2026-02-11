@@ -909,13 +909,75 @@ class DefaultPullRequestServiceTest {
           PullRequestSelector.ALL,
           PullRequestSortSelector.ID_ASC,
           0,
-          3
+          3,
+          null,
+          null
         )
       );
 
     assertThat(pullRequests)
       .extracting("id")
       .containsExactly("1", "2", "3");
+  }
+
+  @Test
+  void shouldFilterBySourceBranch(PullRequestStoreFactory storeFactory) {
+    when(repositoryResolver.resolve(REPOSITORY.getNamespaceAndName()))
+      .thenReturn(REPOSITORY);
+    PullRequest pullRequest1 = createPullRequest("1", null, null);
+    pullRequest1.setSource("feature/1");
+    storePullRequest(storeFactory, pullRequest1);
+    PullRequest pullRequest2 = createPullRequest("2", null, null);
+    pullRequest2.setSource("feature/2");
+    storePullRequest(storeFactory, pullRequest2);
+
+    List<PullRequest> pullRequests =
+      service.getAll(
+        REPOSITORY.getNamespace(),
+        REPOSITORY.getName(),
+        new RequestParameters(
+          PullRequestSelector.ALL,
+          PullRequestSortSelector.ID_ASC,
+          0,
+          3,
+          "feature/1",
+          null
+        )
+      );
+
+    assertThat(pullRequests)
+      .extracting("id")
+      .containsExactly("1");
+  }
+
+  @Test
+  void shouldFilterByTargetBranch(PullRequestStoreFactory storeFactory) {
+    when(repositoryResolver.resolve(REPOSITORY.getNamespaceAndName()))
+      .thenReturn(REPOSITORY);
+    PullRequest pullRequest1 = createPullRequest("1", null, null);
+    pullRequest1.setTarget("develop");
+    storePullRequest(storeFactory, pullRequest1);
+    PullRequest pullRequest2 = createPullRequest("2", null, null);
+    pullRequest2.setTarget("main");
+    storePullRequest(storeFactory, pullRequest2);
+
+    List<PullRequest> pullRequests =
+      service.getAll(
+        REPOSITORY.getNamespace(),
+        REPOSITORY.getName(),
+        new RequestParameters(
+          PullRequestSelector.ALL,
+          PullRequestSortSelector.ID_ASC,
+          0,
+          3,
+          null,
+          "develop"
+        )
+      );
+
+    assertThat(pullRequests)
+      .extracting("id")
+      .containsExactly("1");
   }
 
   private PullRequest createPullRequest(String id, Instant creationDate, Instant lastModified) {

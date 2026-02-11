@@ -25,6 +25,7 @@ import com.cloudogu.scm.review.pullrequest.api.PullRequestSelector;
 import com.cloudogu.scm.review.pullrequest.api.PullRequestSortSelector;
 import com.cloudogu.scm.review.pullrequest.api.RequestParameters;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestCheckResultDto;
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -46,7 +47,9 @@ import sonia.scm.user.User;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,7 +68,9 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.DRAF
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERGED;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.REJECTED;
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static sonia.scm.AlreadyExistsException.alreadyExists;
 
 @Slf4j
@@ -204,44 +209,49 @@ public class DefaultPullRequestService implements PullRequestService {
 
   @Override
   public List<PullRequest> getAll(String namespace, String name, RequestParameters requestParameters) {
-    Condition<PullRequest>[] conditions =
-      computeConditions(requestParameters.pullRequestSelector());
+    Collection<Condition<PullRequest>> conditions =
+      new ArrayList<>(computeConditions(requestParameters.pullRequestSelector()));
+    if (!Strings.isNullOrEmpty(requestParameters.source())) {
+      conditions.add(PullRequestQueryFields.SOURCE.eq(requestParameters.source()));
+    }
+    if (!Strings.isNullOrEmpty(requestParameters.target())) {
+      conditions.add(PullRequestQueryFields.TARGET.eq(requestParameters.target()));
+    }
     PullRequestSortSelector.Sort sort = requestParameters.pullRequestSortSelector().getSort();
     try (QueryableStore<PullRequest> store = storeFactory.createQueryable(getRepository(namespace, name))) {
       return store
-        .query(conditions)
+        .query(conditions.toArray(new Condition[0]))
         .orderBy(sort.field(), sort.orderOptions())
         .findAll(requestParameters.offset(), requestParameters.limit());
     }
   }
 
   public int count(String namespace, String name, PullRequestSelector selector) {
-    Condition<PullRequest>[] conditions =
+    Collection<Condition<PullRequest>> conditions =
       computeConditions(selector);
     try (QueryableStore<PullRequest> store = storeFactory.createQueryable(getRepository(namespace, name))) {
       return (int) store
-        .query(conditions)
+        .query(conditions.toArray(new Condition[0]))
         .count();
     }
   }
 
-  private static Condition<PullRequest>[] computeConditions(PullRequestSelector selector) {
+  private static Collection<Condition<PullRequest>> computeConditions(PullRequestSelector selector) {
     return switch (selector) {
-      case ALL -> new Condition[0];
+      case ALL -> emptyList();
       case MINE -> {
         String userId = SecurityUtils.getSubject().getPrincipal().toString();
-        yield new Condition[]{
+        yield List.of(
           PullRequestQueryFields.AUTHOR.eq(userId)
-        };
+        );
       }
-      case MERGED -> new Condition[]{PullRequestQueryFields.STATUS.eq(MERGED)};
-      case REJECTED -> new Condition[]{PullRequestQueryFields.STATUS.eq(REJECTED)};
-      case REVIEWER -> new Condition[]{
+      case MERGED -> List.of(PullRequestQueryFields.STATUS.eq(MERGED));
+      case REJECTED -> List.of(PullRequestQueryFields.STATUS.eq(REJECTED));
+      case REVIEWER -> List.of(
         PullRequestQueryFields.REVIEWER.containsKey(SecurityUtils.getSubject().getPrincipal().toString()),
         PullRequestQueryFields.STATUS.eq(OPEN)
-      };
-      case IN_PROGRESS -> new Condition[]{PullRequestQueryFields.STATUS.in(OPEN, DRAFT)};
-      case OPEN -> new Condition[]{PullRequestQueryFields.STATUS.in(OPEN, DRAFT)};
+      );
+      case IN_PROGRESS, OPEN -> List.of(PullRequestQueryFields.STATUS.in(OPEN, DRAFT));
     };
   }
 
