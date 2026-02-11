@@ -34,7 +34,7 @@ const HR = styled.hr`
 
 const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
   const [t] = useTranslation("plugins");
-  const { data, error, isLoading } = usePullRequests(repository);
+  const { data, error, isLoading } = usePullRequests(repository, { source: branch.name, pageSize: 999 });
 
   if (!repository._links.pullRequest) {
     return null;
@@ -49,7 +49,7 @@ const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
   }
 
   const matchingPullRequests = (data._embedded?.pullRequests as PullRequest[]).filter(
-    (pr: PullRequest) => pr.source === branch.name
+    (pr: PullRequest) => pr.source === branch.name,
   );
 
   let existing = null;

@@ -847,6 +847,48 @@ public class PullRequestRootResourceTest {
       .isNotNull();
   }
 
+  @Test
+  @SubjectAware(username = "rr")
+  public void shouldGetPullRequestsBySourceBranch() throws URISyntaxException, UnsupportedEncodingException {
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    String id_1 = "1";
+    String id_2 = "2";
+    PullRequest pullRequest1 = createPullRequest(id_1);
+    pullRequest1.setSource("feature/1");
+    PullRequest pullRequest2 = createPullRequest(id_2);
+    pullRequest2.setSource("feature/2");
+    List<PullRequest> pullRequests = Lists.newArrayList(pullRequest1, pullRequest2);
+    when(store.getAll()).thenReturn(pullRequests);
+
+    // request all PRs filtered by source branch
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "?source=feature/1");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"id\":\"1\"");
+    assertThat(response.getContentAsString()).doesNotContain("\"id\":\"2\"");
+  }
+
+  @Test
+  @SubjectAware(username = "rr")
+  public void shouldGetPullRequestsByTargetBranch() throws URISyntaxException, UnsupportedEncodingException {
+    when(repositoryResolver.resolve(new NamespaceAndName(REPOSITORY_NAMESPACE, REPOSITORY_NAME))).thenReturn(repository);
+    String id_1 = "1";
+    String id_2 = "2";
+    PullRequest pullRequest1 = createPullRequest(id_1);
+    pullRequest1.setTarget("develop");
+    PullRequest pullRequest2 = createPullRequest(id_2);
+    pullRequest2.setTarget("main");
+    List<PullRequest> pullRequests = Lists.newArrayList(pullRequest1, pullRequest2);
+    when(store.getAll()).thenReturn(pullRequests);
+
+    // request all PRs filtered by target branch
+    MockHttpRequest request = MockHttpRequest.get("/" + PullRequestRootResource.PULL_REQUESTS_PATH_V2 + "/" + REPOSITORY_NAMESPACE + "/" + REPOSITORY_NAME + "?target=develop");
+    dispatcher.invoke(request, response);
+    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getContentAsString()).contains("\"id\":\"1\"");
+    assertThat(response.getContentAsString()).doesNotContain("\"id\":\"2\"");
+  }
+
   private void verifyFilteredPullRequests(String status) throws URISyntaxException, IOException {
     verifyFilteredPullRequests(status, status);
   }

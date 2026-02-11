@@ -271,7 +271,9 @@ public class PullRequestRootResource {
     @QueryParam("status") @DefaultValue("IN_PROGRESS") PullRequestSelector pullRequestSelector,
     @QueryParam("sortBy") @DefaultValue("LAST_MOD_DESC") PullRequestSortSelector pullRequestSortSelector,
     @DefaultValue("0") @QueryParam("page") int page,
-    @DefaultValue("10") @QueryParam("pageSize") int pageSize
+    @DefaultValue("10") @QueryParam("pageSize") int pageSize,
+    @QueryParam("source") String source,
+    @QueryParam("target") String target
   ) {
     Repository repository = service.getRepository(namespace, name);
     PermissionCheck.checkRead(repository);
@@ -279,6 +281,8 @@ public class PullRequestRootResource {
       service.getAll(namespace, name)
         .stream()
         .filter(pullRequestSelector)
+        .filter(pr -> Strings.isNullOrEmpty(source) || source.equals(pr.getSource()))
+        .filter(pr -> Strings.isNullOrEmpty(target) || target.equals(pr.getTarget()))
         .sorted(pullRequestSortSelector.compare())
         .toList();
     List<List<PullRequest>> pagedPullRequests = Lists.partition(pullRequests, pageSize);
@@ -311,16 +315,6 @@ public class PullRequestRootResource {
         page,
         pagedPullRequests.size()
       )).build();
-  }
-
-  public Response getAll(
-    UriInfo uriInfo,
-    String namespace,
-    String name,
-    PullRequestSelector pullRequestSelector,
-    PullRequestSortSelector pullRequestSortSelector
-  ) {
-    return getAll(uriInfo, namespace, name, pullRequestSelector, pullRequestSortSelector, 0, 9999);
   }
 
   private HalRepresentation createHalRepresentation(Links.Builder linkBuilder, List<PullRequestDto> pullRequestDtos) {

@@ -27,7 +27,7 @@ import {
   MergeCommit,
   PagedPullRequestCollection,
   PossibleTransition,
-  PullRequest
+  PullRequest,
 } from "./types/PullRequest";
 import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
 import { Changeset, HalRepresentation, Link, PagedCollection, Repository } from "@scm-manager/ui-types";
@@ -316,6 +316,8 @@ type UsePullRequestsRequest = {
   sortBy?: string;
   page?: number;
   pageSize?: number;
+  source?: string;
+  target?: string;
 };
 
 export const usePullRequests = (repository: Repository, request?: UsePullRequestsRequest) => {
@@ -323,12 +325,17 @@ export const usePullRequests = (repository: Repository, request?: UsePullRequest
   const sortBy = request?.sortBy || "LAST_MOD_DESC";
   const page = request?.page ? request.page - 1 : 0;
   const pageSize = request?.pageSize || 10;
+  let queryParameters = `?status=${status}&sortBy=${sortBy}&page=${page}&pageSize=${pageSize}`;
+  if (request?.source) {
+    queryParameters += `&source=${request.source}`;
+  }
+  if (request?.target) {
+    queryParameters += `&target=${request.target}`;
+  }
   const { error, isLoading, data } = useQuery<PagedPullRequestCollection, Error>(
     ["repository", repository.namespace, repository.name, "pull-requests", status, sortBy, page],
     () => {
-      const link =
-        requiredLink(repository, "pullRequest") +
-        `?status=${status}&sortBy=${sortBy}&page=${page}&pageSize=${pageSize}`;
+      const link = requiredLink(repository, "pullRequest") + queryParameters;
       return apiClient.get(link).then((response) => response.json());
     },
   );
@@ -844,16 +851,13 @@ export function evaluateTagColor(status?: string) {
 
 const pullRequestBannerQueryKeys = (repository: Repository) => {
   return ["repository", repository.namespace, repository.name, "pullRequestBanner"];
-}
+};
 
 export const usePullRequestBanner = (repository: Repository) => {
-  const { error, data, isLoading } = useQuery<Banner[], Error>(
-    pullRequestBannerQueryKeys(repository),
-    async () => {
-      const response = await apiClient.get(requiredLink(repository, "pullRequestSuggestions"));
-      return await response.json();
-    },
-  );
+  const { error, data, isLoading } = useQuery<Banner[], Error>(pullRequestBannerQueryKeys(repository), async () => {
+    const response = await apiClient.get(requiredLink(repository, "pullRequestSuggestions"));
+    return await response.json();
+  });
 
   return {
     isLoading,
@@ -868,12 +872,12 @@ export const useDeletePullRequestBanner = (repository: Repository) => {
     (banner) => apiClient.delete(requiredLink(banner, "delete")),
     {
       onSuccess: () => {
-        return queryClient.invalidateQueries(pullRequestBannerQueryKeys(repository))
-      }
-    }
-  )
+        return queryClient.invalidateQueries(pullRequestBannerQueryKeys(repository));
+      },
+    },
+  );
 
-  return { mutate, isLoading }
+  return { mutate, isLoading };
 };
 
 const requiredLink = (halObject: HalRepresentation, linkName: string): string => {
