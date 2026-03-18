@@ -317,6 +317,20 @@ public class PullRequestRootResource {
       )).build();
   }
 
+  /**
+   * This method is used by the teamscale plugin and is just a forward to
+   * {@link #getAll(UriInfo, String, String, PullRequestSelector, PullRequestSortSelector, int, int, String, String)}.
+   */
+  public Response getAll(
+    UriInfo uriInfo,
+    String namespace,
+    String name,
+    PullRequestSelector pullRequestSelector,
+    PullRequestSortSelector pullRequestSortSelector
+  ) {
+    return getAll(uriInfo, namespace, name, pullRequestSelector, pullRequestSortSelector, 0, 9999, null, null);
+  }
+
   private HalRepresentation createHalRepresentation(Links.Builder linkBuilder, List<PullRequestDto> pullRequestDtos) {
     return new HalRepresentation(linkBuilder.build(), Embedded.embedded("pullRequests", pullRequestDtos));
   }
