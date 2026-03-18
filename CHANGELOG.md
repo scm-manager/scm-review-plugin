@@ -61,6 +61,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Suppress pull request suggestion for repositories with a single branch
 - Data is no longer stored using the XML based stores, but instead using the new SQLite based stores.
 
+## 3.9.4 - 2026-03-18
+### Fixed
+- Integration of teamscale plugin
+
 ## 3.9.3 - 2026-02-13
 ### Fixed
 - Handling missing branches in open pull requests
