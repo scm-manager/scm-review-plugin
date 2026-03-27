@@ -23,7 +23,7 @@
         "@scm-manager/ui-plugins": "3.11.0",
         "classnames": "^2.3.1",
         "gitdiff-parser": "https://github.com/scm-manager/gitdiff-parser#6baa7278824ecd17a199d842ca720d0453f68982",
-        "lodash-es": "^4.17.21",
+        "lodash-es": "^4.17.23",
         "query-string": "6.14.1",
         "react": "^17.0.1",
         "react-dom": "^17.0.1",
