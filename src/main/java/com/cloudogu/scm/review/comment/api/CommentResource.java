@@ -280,12 +280,12 @@ public class CommentResource {
     )
   )
   public void updateCommentWithImage(@PathParam("namespace") String namespace,
-                                   @PathParam("name") String name,
-                                   @PathParam("pullRequestId") String pullRequestId,
-                                   @PathParam("commentId") String commentId,
-                                   @QueryParam("sourceRevision") String expectedSourceRevision,
-                                   @QueryParam("targetRevision") String expectedTargetRevision,
-                                   @NotNull MultipartFormDataInput formInput) throws IOException {
+                                     @PathParam("name") String name,
+                                     @PathParam("pullRequestId") String pullRequestId,
+                                     @PathParam("commentId") String commentId,
+                                     @QueryParam("sourceRevision") String expectedSourceRevision,
+                                     @QueryParam("targetRevision") String expectedTargetRevision,
+                                     @NotNull MultipartFormDataInput formInput) throws IOException {
     MultipartFormDataInputHelper<CommentWithImageDto> formDataHelper = new MultipartFormDataInputHelper<>(formInput);
     CommentWithImageDto commentDto = formDataHelper.extractJsonObject(CommentWithImageDto.class, "comment");
     DtoValidator.validate(commentDto);
@@ -345,13 +345,13 @@ public class CommentResource {
     )
   )
   public void updateReplyWithImage(@PathParam("namespace") String namespace,
-                                 @PathParam("name") String name,
-                                 @PathParam("pullRequestId") String pullRequestId,
-                                 @PathParam("commentId") String commentId,
-                                 @PathParam("replyId") String replyId,
-                                 @QueryParam("sourceRevision") String expectedSourceRevision,
-                                 @QueryParam("targetRevision") String expectedTargetRevision,
-                                 @NotNull MultipartFormDataInput formInput) throws IOException {
+                                   @PathParam("name") String name,
+                                   @PathParam("pullRequestId") String pullRequestId,
+                                   @PathParam("commentId") String commentId,
+                                   @PathParam("replyId") String replyId,
+                                   @QueryParam("sourceRevision") String expectedSourceRevision,
+                                   @QueryParam("targetRevision") String expectedTargetRevision,
+                                   @NotNull MultipartFormDataInput formInput) throws IOException {
     MultipartFormDataInputHelper<ReplyWithImageDto> formDataHelper = new MultipartFormDataInputHelper<>(formInput);
     ReplyWithImageDto replyDto = formDataHelper.extractJsonObject(ReplyWithImageDto.class, "comment");
     DtoValidator.validate(replyDto);

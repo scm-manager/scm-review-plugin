@@ -18,10 +18,14 @@ package com.cloudogu.scm.review.comment.service;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import sonia.scm.repository.api.DiffLine;
 
 import java.util.OptionalInt;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ContextLine implements DiffLine {
 

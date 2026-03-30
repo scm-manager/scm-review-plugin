@@ -30,6 +30,7 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequestStatusChangedEvent
 import com.github.legman.Subscribe;
 import com.google.common.base.Strings;
 import jakarta.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import sonia.scm.EagerSingleton;
 import sonia.scm.HandlerEventType;
@@ -60,11 +61,13 @@ import static sonia.scm.ContextEntry.ContextBuilder.entity;
 import static sonia.scm.NotFoundException.notFound;
 import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
-@EagerSingleton
+@Slf4j
 @Extension
+@EagerSingleton
 public class CommentService {
 
   private final RepositoryResolver repositoryResolver;
+  private final LocationVerifier locationVerifier;
   private final PullRequestService pullRequestService;
   private final CommentStoreBuilder storeBuilder;
   private final KeyGenerator keyGenerator;
@@ -73,8 +76,16 @@ public class CommentService {
   private final MentionMapper mentionMapper;
 
   @Inject
-  public CommentService(RepositoryResolver repositoryResolver, PullRequestService pullRequestService, CommentStoreBuilder storeBuilder, KeyGenerator keyGenerator, ScmEventBus eventBus, CommentInitializer commentInitializer, MentionMapper mentionMapper) {
+  public CommentService(RepositoryResolver repositoryResolver,
+                        LocationVerifier locationVerifier,
+                        PullRequestService pullRequestService,
+                        CommentStoreBuilder storeBuilder,
+                        KeyGenerator keyGenerator,
+                        ScmEventBus eventBus,
+                        CommentInitializer commentInitializer,
+                        MentionMapper mentionMapper) {
     this.repositoryResolver = repositoryResolver;
+    this.locationVerifier = locationVerifier;
     this.pullRequestService = pullRequestService;
     this.storeBuilder = storeBuilder;
     this.keyGenerator = keyGenerator;
@@ -91,6 +102,7 @@ public class CommentService {
 
   private String addWithoutPermissionCheck(Repository repository, String pullRequestId, Comment pullRequestComment) {
     PullRequest pullRequest = pullRequestService.get(repository, pullRequestId);
+    locationVerifier.verifyLocation(pullRequestComment, pullRequest, repository);
     initializeNewComment(pullRequestComment, pullRequest, repository.getId());
     String newId = getCommentStore(repository).add(pullRequestId, pullRequestComment);
     fireMentionEventIfMentionsExist(repository, pullRequest, pullRequestComment);

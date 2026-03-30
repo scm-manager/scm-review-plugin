@@ -69,6 +69,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, ShiroExtension.class, QueryableStoreExtension.class})
@@ -95,6 +96,9 @@ class CommentServiceTest {
 
   @Mock
   private RepositoryResolver repositoryResolver;
+
+  @Mock
+  private LocationVerifier hunkVerifyer;
 
   @Mock
   private PullRequestService pullRequestService;
@@ -131,7 +135,7 @@ class CommentServiceTest {
     lenient().doNothing().when(eventBus).post(eventCaptor.capture());
 
     lenient().when(repositoryResolver.resolve(REPOSITORY.getNamespaceAndName())).thenReturn(REPOSITORY);
-    commentService = new CommentService(repositoryResolver, pullRequestService, storeBuilder, keyGenerator, eventBus, commentInitializer, mentionMapper);
+    commentService = new CommentService(repositoryResolver, hunkVerifyer, pullRequestService, storeBuilder, keyGenerator, eventBus, commentInitializer, mentionMapper);
 
     try (QueryableMutableStore<Comment> store = storeFactory.getMutable(REPOSITORY.getId(), PULL_REQUEST_ID)) {
       store.put("1", EXISTING_COMMENT);
@@ -163,12 +167,17 @@ class CommentServiceTest {
   @Test
   @SubjectAware(permissions = "repository:read,readPullRequest,commentPullRequest:repo_ID")
   void shouldAddComment(CommentStoreFactory storeFactory) {
+    PullRequest pullRequest = new PullRequest();
+    when(pullRequestService.get(REPOSITORY, PULL_REQUEST_ID)).thenReturn(pullRequest);
+
     Comment comment = createComment("2", "2. comment", author, new Location());
     commentService.add(NAMESPACE, NAME, PULL_REQUEST_ID, comment);
 
     Comment storedComment = readCommentFromStore(storeFactory, Integer.toString(lastCommentKeyId));
     assertThat(storedComment.getAuthor()).isEqualTo("author");
     assertThat(storedComment.getDate()).isEqualTo(NOW);
+
+    verify(hunkVerifyer).verifyLocation(comment, pullRequest, REPOSITORY);
   }
 
   @Test

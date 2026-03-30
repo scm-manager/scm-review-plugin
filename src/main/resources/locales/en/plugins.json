@@ -784,6 +784,10 @@
     "BcRBqXYze1": {
       "displayName": "Illegal state change",
       "description": "The requested state change is not allowed."
+    },
+    "DpVC2GL8S1": {
+      "displayName": "Location not found for diff",
+      "description": "The requested location for the comment could not be found in the diff for the pull request. Either the given file name does not exist or there is no diff for given line numbers."
     }
   },
   "workflow": {

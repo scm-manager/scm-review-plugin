@@ -319,6 +319,8 @@ class PullRequestListInput {
     Find pull requests with one of the given status
     (to find all closed pull requests set this to ['REJECTED', 'MERGED'];
      to find all pull requests that are in progress set this to ['OPEN', 'DRAFT']).
+    You should do this if you know that you are only interested in pull requests that are in progress, for example.
+    This can limit the number of pull requests in the result.
     """)
   private PullRequestStatus[] status;
   @JsonPropertyDescription("Find pull requests only with this target branch.")

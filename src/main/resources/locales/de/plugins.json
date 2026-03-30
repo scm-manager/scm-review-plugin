@@ -786,6 +786,10 @@
     "BcRBqXYze1": {
       "displayName": "Unzulässiger Statusübergang",
       "description": "Der angefragte Statusübergang ist nicht zulässig."
+    },
+    "DpVC2GL8S1": {
+      "displayName": "Die Position wurde nicht gefunden",
+      "description": "Die gegebene Position für den Kommentar wurde in dem Pull Request nicht gefunden. Entweder existiert die Datei nicht oder die angegebenen Zeilennummern existieren so nicht in dem Diff."
     }
   },
   "workflow": {
