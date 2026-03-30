@@ -4,9 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.15.0 - 2026-03-30
+### Added
+- MCP tool to read and write comments
+
 ## 3.14.0 - 2026-03-18
 ### Added
 - Extension for MCP diff tool
+
 ### Fixed
 - Integration of teamscale plugin (patch from 3.9.4)
 
