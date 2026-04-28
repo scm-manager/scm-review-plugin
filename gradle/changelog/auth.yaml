@@ -1,0 +1,4 @@
+- type: fixed
+  description: Authorization error when listing pull requests overall repositories with MCP tool
+- type: fixed
+  description: Internal server error when creating global comment with MCP tool

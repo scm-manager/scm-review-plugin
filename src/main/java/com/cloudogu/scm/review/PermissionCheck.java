@@ -53,9 +53,13 @@ public final class PermissionCheck {
   }
 
   public static boolean mayRead(Repository repository) {
-    return RepositoryPermissions.custom(READ_PULL_REQUEST, repository).isPermitted() ||
-      RepositoryPermissions.custom(CREATE_PULL_REQUEST, repository).isPermitted() ||
-      RepositoryPermissions.custom(MODIFY_PULL_REQUEST, repository).isPermitted();
+    return mayRead(repository.getId());
+  }
+
+  public static boolean mayRead(String repositoryId) {
+    return RepositoryPermissions.custom(READ_PULL_REQUEST, repositoryId).isPermitted() ||
+      RepositoryPermissions.custom(CREATE_PULL_REQUEST, repositoryId).isPermitted() ||
+      RepositoryPermissions.custom(MODIFY_PULL_REQUEST, repositoryId).isPermitted();
   }
 
   public static void checkRead(Repository repository) {

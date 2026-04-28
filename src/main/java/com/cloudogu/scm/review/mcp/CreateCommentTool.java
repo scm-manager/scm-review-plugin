@@ -29,6 +29,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 
@@ -54,7 +55,7 @@ class CreateCommentTool implements TypedTool<CreateCommentToolInput> {
     newComment.setComment(input.getText());
     newComment.setType(input.getType() == CreateCommentType.SIMPLE ? CommentType.COMMENT : CommentType.TASK_TODO);
     FileReference fileReference = input.getFileReference();
-    if (fileReference != null) {
+    if (fileReference != null && StringUtils.isNotEmpty(fileReference.getFilename())) {
       String filename = getFilenameWithoutLeadingSlash(fileReference);
       newComment.setLocation(new Location(filename));
       newComment.getLocation().setNewLineNumber(fileReference.getNewLineNumber());

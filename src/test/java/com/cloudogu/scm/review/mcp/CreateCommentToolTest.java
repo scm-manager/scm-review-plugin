@@ -58,6 +58,7 @@ class CreateCommentToolTest {
     when(commentService.add(anyString(), anyString(), anyString(), any()))
       .thenReturn("1337");
 
+    input.setFileReference(new FileReference());
     input.setType(CreateCommentType.SIMPLE);
     ToolResult result = tool.execute(input);
 

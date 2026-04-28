@@ -26,6 +26,8 @@ import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.github.sdorra.jse.ShiroExtension;
+import org.github.sdorra.jse.SubjectAware;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -47,8 +49,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
-@ExtendWith({QueryableStoreExtension.class, MockitoExtension.class})
+@ExtendWith({QueryableStoreExtension.class, MockitoExtension.class, ShiroExtension.class})
 @QueryableStoreExtension.QueryableTypes({PullRequest.class, Comment.class})
+@SubjectAware(value = "trillian")
 class ListPullRequestToolTest {
 
   @Mock
@@ -120,11 +123,33 @@ class ListPullRequestToolTest {
   }
 
   @Test
-  void shouldListPullRequestsWithoutData() {
+  @SubjectAware(permissions = "repository:readPullRequest:42")
+  void shouldFilterRepositoriesWithoutPermission() {
     ToolResult result = tool.execute(input);
 
     assertThat(result.getContent().get(0))
       .isEqualTo("""
+        STATUS: [SUCCESS] Found 2 pull requests.
+        ---------------------------------------------------------
+        Repository | Pull Request ID | Status | Author | Source Branch | Target Branch | Title
+        ---|---|---|---|---|---|---
+        hitchhiker/hog | 1 | MERGED | dent | feature/hog | develop | Heart Of Gold
+        hitchhiker/hog | 2 | OPEN | trillian | develop | main | Vogons
+        """
+      );
+    Map<String, Object> structuredContent = result.getStructuredContent();
+    assertThat(structuredContent).isNullOrEmpty();
+  }
+
+  @Nested
+  @SubjectAware(permissions = "*")
+  class WithPermissionForAllRepositories {
+
+    @Test
+    void shouldListPullRequestsWithoutData() {
+      ToolResult result = tool.execute(input);
+
+      assertThat(result.getContent().get(0)).isEqualTo("""
         STATUS: [SUCCESS] Found 3 pull requests.
         ---------------------------------------------------------
         Repository | Pull Request ID | Status | Author | Source Branch | Target Branch | Title
@@ -134,307 +159,308 @@ class ListPullRequestToolTest {
         hacker/secret | 1 | DRAFT | smith | feature/neo | main | Neo
         """
       );
-    Map<String, Object> structuredContent = result.getStructuredContent();
-    assertThat(structuredContent).isNullOrEmpty();
-  }
-
-  @Nested
-  class WithoutDetailData {
-
-    @BeforeEach
-    void setForDetails() {
-      input.setDetailLevel(DETAIL_LEVEL.FULL);
-    }
-
-    @Test
-    void shouldListAllPullRequests() {
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
-    }
-
-    @Test
-    void shouldListPullRequestsByNamespace() {
-      input.setRepositoryNamespace("hitchhiker");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
-    }
-
-    @Test
-    void shouldListPullRequestsByName() {
-      input.setRepositoryName("hog");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
-    }
-
-    @Test
-    void shouldListPullRequestsByNamespaceAndName() {
-      input.setRepositoryNamespace("hitchhiker");
-      input.setRepositoryName("hog");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
-    }
-
-    @Test
-    void shouldListPullRequestsByAuthor() {
-      input.setAuthorUserId("dent");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
-    }
-
-    @Test
-    void shouldListPullRequestsByReviewer() {
-      input.setReviewerUserId("trillian");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
-    }
-
-    @Test
-    void shouldListPullRequestsByTitle() {
-      input.setTitleContains("heart");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
-    }
-
-    @Test
-    void shouldListPullRequestsByDescription() {
-      input.setDescriptionContains("Bureaucratic");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
-    }
-
-    @Test
-    void shouldListPullRequestsByTitleOrDescription() {
-      input.setTitleOrDescriptionContains("of");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
-    }
-
-    @Test
-    void shouldListPullRequestsByStatus() {
-      input.setStatus(new PullRequestStatus[]{PullRequestStatus.DRAFT, PullRequestStatus.OPEN});
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
-    }
-
-    @Test
-    void shouldListPullRequestsBySourceBranch() {
-      input.setSourceBranch("develop");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
-    }
-
-    @Test
-    void shouldListPullRequestsByTargetBranch() {
-      input.setTargetBranch("main");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
-    }
-
-    @Test
-    void shouldListPullRequestsByAffectedBranch() {
-      input.setAffectedBranch("develop");
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
-    }
-
-    @Test
-    void shouldListPullRequestsOrderedById() {
-      input.setOrderBy(OrderBy.ID);
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]", "hitchhiker/hog#2 [OPEN]")
-        .inExactOrder();
-    }
-
-    @Test
-    void shouldListPullRequestsOrderedByDescendingId() {
-      input.setOrderBy(OrderBy.ID);
-      input.setOrder(Order.DESCENDING);
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
-        .inExactOrder();
-    }
-
-    @Test
-    void shouldListPullRequestsOrderedByCreationDate() {
-      input.setOrderBy(OrderBy.CREATION_DATE);
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]", "hitchhiker/hog#2 [OPEN]")
-        .inExactOrder();
-    }
-
-    @Test
-    void shouldListPullRequestsOrderedByModificationDate() {
-      input.setOrderBy(OrderBy.LAST_MODIFICATION);
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
-        .inExactOrder();
-    }
-
-    @Test
-    void shouldLimitPullRequests() {
-      input.setOrderBy(OrderBy.ID);
-      input.setLimit(2);
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
-        .inExactOrder();
-    }
-
-    @Test
-    void shouldListPullRequestsWithOpenTasksOnly() {
-      input.setWithOpenTasksOnly(true);
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
-    }
-
-    @Test
-    void shouldListPullRequestsWithFullDetails() {
-      input.setDetailLevel(DETAIL_LEVEL.FULL);
-
-      ToolResult result = tool.execute(input);
-
-      assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
-      assertThat(result.getStructuredContent().values().stream().flatMap(m -> ((Map) m).values().stream()))
-        .hasOnlyElementsOfType(PullRequestDetailMcp.class);
+      Map<String, Object> structuredContent = result.getStructuredContent();
+      assertThat(structuredContent).isNullOrEmpty();
     }
 
     @Nested
-    class WithObstacles {
-
-      private PullRequestDetailMcp mappedPRWithObstacle;
+    class WithoutDetailData {
 
       @BeforeEach
-      void mockMapperWithObstacles() {
-        mappedPRWithObstacle = pullRequestMapper.mapDetails(pullRequest1, repository1);
-        mappedPRWithObstacle.setMergeObstacles(List.of("no humans"));
-        when(pullRequestMapper.mapWithObstacles(pullRequest1, repository1))
-          .thenReturn(mappedPRWithObstacle);
+      void setForDetails() {
+        input.setDetailLevel(DETAIL_LEVEL.FULL);
       }
 
       @Test
-      void shouldListPullRequestsWithObstacles() {
-        input.setDetailLevel(DETAIL_LEVEL.WITH_OBSTACLES);
-        input.setLimit(1);
+      void shouldListAllPullRequests() {
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
+      }
+
+      @Test
+      void shouldListPullRequestsByNamespace() {
+        input.setRepositoryNamespace("hitchhiker");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
+      }
+
+      @Test
+      void shouldListPullRequestsByName() {
+        input.setRepositoryName("hog");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
+      }
+
+      @Test
+      void shouldListPullRequestsByNamespaceAndName() {
+        input.setRepositoryNamespace("hitchhiker");
+        input.setRepositoryName("hog");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
+      }
+
+      @Test
+      void shouldListPullRequestsByAuthor() {
+        input.setAuthorUserId("dent");
 
         ToolResult result = tool.execute(input);
 
         assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
-        assertThat(result.getStructuredContent())
-          .values()
-          .hasOnlyElementsOfType(Map.class);
-        assertThat(result.getStructuredContent().get("hitchhiker/hog"))
-          .asInstanceOf(InstanceOfAssertFactories.map(String.class, Map.class))
-          .extracting("1")
-          .extracting("mergeObstacles")
-          .asList()
-          .containsExactly("no humans");
       }
 
       @Test
-      void shouldListPullRequestsWithObstaclesOnly() {
-        when(mergeService.getObstacles(repository1, pullRequest1))
-          .thenReturn(List.of(new MergeObstacle() {
-            @Override
-            public String getMessage() {
-              return "no humans";
-            }
-
-            @Override
-            public String getKey() {
-              return "test";
-            }
-          }));
-        input.setWithObstaclesOnly(true);
+      void shouldListPullRequestsByReviewer() {
+        input.setReviewerUserId("trillian");
 
         ToolResult result = tool.execute(input);
 
         assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
-        assertThat(
-          result
-            .getStructuredContent()
-            .get("hitchhiker/hog")
-        ).asInstanceOf(InstanceOfAssertFactories.map(String.class, Object.class))
-          .extracting("1")
-          .isSameAs(mappedPRWithObstacle);
+      }
+
+      @Test
+      void shouldListPullRequestsByTitle() {
+        input.setTitleContains("heart");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
+      }
+
+      @Test
+      void shouldListPullRequestsByDescription() {
+        input.setDescriptionContains("Bureaucratic");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
+      }
+
+      @Test
+      void shouldListPullRequestsByTitleOrDescription() {
+        input.setTitleOrDescriptionContains("of");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
+      }
+
+      @Test
+      void shouldListPullRequestsByStatus() {
+        input.setStatus(new PullRequestStatus[]{PullRequestStatus.DRAFT, PullRequestStatus.OPEN});
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
+      }
+
+      @Test
+      void shouldListPullRequestsBySourceBranch() {
+        input.setSourceBranch("develop");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
+      }
+
+      @Test
+      void shouldListPullRequestsByTargetBranch() {
+        input.setTargetBranch("main");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
+      }
+
+      @Test
+      void shouldListPullRequestsByAffectedBranch() {
+        input.setAffectedBranch("develop");
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]");
+      }
+
+      @Test
+      void shouldListPullRequestsOrderedById() {
+        input.setOrderBy(OrderBy.ID);
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]", "hitchhiker/hog#2 [OPEN]")
+          .inExactOrder();
+      }
+
+      @Test
+      void shouldListPullRequestsOrderedByDescendingId() {
+        input.setOrderBy(OrderBy.ID);
+        input.setOrder(Order.DESCENDING);
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
+          .inExactOrder();
+      }
+
+      @Test
+      void shouldListPullRequestsOrderedByCreationDate() {
+        input.setOrderBy(OrderBy.CREATION_DATE);
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]", "hitchhiker/hog#2 [OPEN]")
+          .inExactOrder();
+      }
+
+      @Test
+      void shouldListPullRequestsOrderedByModificationDate() {
+        input.setOrderBy(OrderBy.LAST_MODIFICATION);
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]", "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
+          .inExactOrder();
+      }
+
+      @Test
+      void shouldLimitPullRequests() {
+        input.setOrderBy(OrderBy.ID);
+        input.setLimit(2);
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hacker/secret#1 [DRAFT]")
+          .inExactOrder();
+      }
+
+      @Test
+      void shouldListPullRequestsWithOpenTasksOnly() {
+        input.setWithOpenTasksOnly(true);
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#2 [OPEN]");
+      }
+
+      @Test
+      void shouldListPullRequestsWithFullDetails() {
+        input.setDetailLevel(DETAIL_LEVEL.FULL);
+
+        ToolResult result = tool.execute(input);
+
+        assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]", "hitchhiker/hog#2 [OPEN]", "hacker/secret#1 [DRAFT]");
+        assertThat(result.getStructuredContent().values().stream().flatMap(m -> ((Map) m).values().stream()))
+          .hasOnlyElementsOfType(PullRequestDetailMcp.class);
+      }
+
+      @Nested
+      class WithObstacles {
+
+        private PullRequestDetailMcp mappedPRWithObstacle;
+
+        @BeforeEach
+        void mockMapperWithObstacles() {
+          mappedPRWithObstacle = pullRequestMapper.mapDetails(pullRequest1, repository1);
+          mappedPRWithObstacle.setMergeObstacles(List.of("no humans"));
+          when(pullRequestMapper.mapWithObstacles(pullRequest1, repository1))
+            .thenReturn(mappedPRWithObstacle);
+        }
+
+        @Test
+        void shouldListPullRequestsWithObstacles() {
+          input.setDetailLevel(DETAIL_LEVEL.WITH_OBSTACLES);
+          input.setLimit(1);
+
+          ToolResult result = tool.execute(input);
+
+          assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
+          assertThat(result.getStructuredContent())
+            .values()
+            .hasOnlyElementsOfType(Map.class);
+          assertThat(result.getStructuredContent().get("hitchhiker/hog"))
+            .asInstanceOf(InstanceOfAssertFactories.map(String.class, Map.class))
+            .extracting("1")
+            .extracting("mergeObstacles")
+            .asList()
+            .containsExactly("no humans");
+        }
+
+        @Test
+        void shouldListPullRequestsWithObstaclesOnly() {
+          when(mergeService.getObstacles(repository1, pullRequest1))
+            .thenReturn(List.of(new MergeObstacle() {
+              @Override
+              public String getMessage() {
+                return "no humans";
+              }
+
+              @Override
+              public String getKey() {
+                return "test";
+              }
+            }));
+          input.setWithObstaclesOnly(true);
+
+          ToolResult result = tool.execute(input);
+
+          assertResultWith(result, true, "hitchhiker/hog#1 [MERGED]");
+          assertThat(
+            result
+              .getStructuredContent()
+              .get("hitchhiker/hog")
+          ).asInstanceOf(InstanceOfAssertFactories.map(String.class, Object.class))
+            .extracting("1")
+            .isSameAs(mappedPRWithObstacle);
+        }
       }
     }
-  }
 
-  private FurtherChecks assertResultWith(ToolResult result, boolean withDetails, String... pullRequestStrings) {
-    String content = result.getContent().get(0);
-    assertThat(content)
-      .contains("Found " + pullRequestStrings.length);
-    if (withDetails) {
+    private FurtherChecks assertResultWith(ToolResult result, boolean withDetails, String... pullRequestStrings) {
+      String content = result.getContent().get(0);
       assertThat(content)
-        .contains("Detailed metadata ");
-    }
-    String table = content.substring(content.indexOf("---|"));
-    table = table.substring(table.indexOf("\n") + 1);
-    String[] actualPullRequestListContent =
-      Arrays.stream(table.split("\n"))
-        .map(line -> {
-          String[] fields = line.split("\\W\\|\\W");
-          return String.format("%s#%s [%s]", fields[0], fields[1], fields[2]);
-        })
-        .toArray(String[]::new);
-    assertThat(actualPullRequestListContent).hasSize(pullRequestStrings.length);
-
-    assertThat(actualPullRequestListContent)
-      .containsExactlyInAnyOrder(pullRequestStrings);
-    Map<String, Object> structuredContent = result.getStructuredContent();
-    assertThat(structuredContent.values().stream().mapToInt(m -> ((Map<String, Object>) m).size()).sum()).isEqualTo(pullRequestStrings.length);
-    Arrays.stream(pullRequestStrings).forEach(
-      pullRequestString ->
-      {
-        String repositoryKey = pullRequestString.substring(0, pullRequestString.indexOf('#'));
-        String prId = pullRequestString.substring(pullRequestString.indexOf('#') + 1, pullRequestString.indexOf(' '));
-        assertThat(((Map<String, Object>) structuredContent.get(repositoryKey)).get(prId))
-          .isInstanceOf(PullRequestOverviewMcp.class)
-          .extracting("id")
-          .isEqualTo(pullRequests.get(pullRequestString.substring(0, pullRequestString.indexOf(' '))).getId());
+        .contains("Found " + pullRequestStrings.length);
+      if (withDetails) {
+        assertThat(content)
+          .contains("Detailed metadata ");
       }
-    );
-    return () -> assertThat(actualPullRequestListContent).containsExactly(pullRequestStrings);
-  }
+      String table = content.substring(content.indexOf("---|"));
+      table = table.substring(table.indexOf("\n") + 1);
+      String[] actualPullRequestListContent =
+        Arrays.stream(table.split("\n"))
+          .map(line -> {
+            String[] fields = line.split("\\W\\|\\W");
+            return String.format("%s#%s [%s]", fields[0], fields[1], fields[2]);
+          })
+          .toArray(String[]::new);
+      assertThat(actualPullRequestListContent).hasSize(pullRequestStrings.length);
 
-  private interface FurtherChecks {
-    void inExactOrder();
+      assertThat(actualPullRequestListContent)
+        .containsExactlyInAnyOrder(pullRequestStrings);
+      Map<String, Object> structuredContent = result.getStructuredContent();
+      assertThat(structuredContent.values().stream().mapToInt(m -> ((Map<String, Object>) m).size()).sum()).isEqualTo(pullRequestStrings.length);
+      Arrays.stream(pullRequestStrings).forEach(
+        pullRequestString ->
+        {
+          String repositoryKey = pullRequestString.substring(0, pullRequestString.indexOf('#'));
+          String prId = pullRequestString.substring(pullRequestString.indexOf('#') + 1, pullRequestString.indexOf(' '));
+          assertThat(((Map<String, Object>) structuredContent.get(repositoryKey)).get(prId))
+            .isInstanceOf(PullRequestOverviewMcp.class)
+            .extracting("id")
+            .isEqualTo(pullRequests.get(pullRequestString.substring(0, pullRequestString.indexOf(' '))).getId());
+        }
+    );
+      return () -> assertThat(actualPullRequestListContent).containsExactly(pullRequestStrings);
+    }
+
+    private interface FurtherChecks {
+      void inExactOrder();
+    }
   }
 
   private void mockRepository(Repository repository1) {

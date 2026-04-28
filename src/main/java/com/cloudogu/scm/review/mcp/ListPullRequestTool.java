@@ -19,6 +19,7 @@ package com.cloudogu.scm.review.mcp;
 import com.cloudogu.mcp.OkResultRenderer;
 import com.cloudogu.mcp.ToolResult;
 import com.cloudogu.mcp.TypedTool;
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentQueryFields;
 import com.cloudogu.scm.review.comment.service.CommentStoreFactory;
@@ -54,6 +55,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.cloudogu.mcp.OkResultRenderer.success;
+import static com.cloudogu.scm.review.PermissionCheck.mayRead;
 
 @Slf4j
 @Extension
@@ -174,6 +176,7 @@ class ListPullRequestTool implements TypedTool<PullRequestListInput> {
       List<QueryableStore.Result<PullRequest>> all = query.findAll(0, input.getLimit() == 0 ? Integer.MAX_VALUE : input.getLimit());
 
       all = all.stream()
+        .filter(result -> mayRead(result.getParentId(Repository.class).get()))
         .filter(result -> !input.isWithOpenTasksOnly() || hasOpenTasks(result))
         .filter(result -> !input.isWithObstaclesOnly() || filterForObstacles(result))
         .toList();
