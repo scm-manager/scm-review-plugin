@@ -16,6 +16,7 @@
 
 package com.cloudogu.scm.review.mcp;
 
+import com.cloudogu.mcp.CreateFrontendLinkInput;
 import com.cloudogu.mcp.OkResultRenderer;
 import com.cloudogu.mcp.ToolResult;
 import com.cloudogu.mcp.TypedTool;
@@ -36,6 +37,7 @@ import sonia.scm.plugin.Requires;
 
 import java.util.List;
 
+import static com.cloudogu.mcp.OkResultRenderer.success;
 import static java.util.Collections.emptyList;
 
 @Slf4j
@@ -44,10 +46,12 @@ import static java.util.Collections.emptyList;
 class CreatePullRequestTool implements TypedTool<CreatePullRequestInput> {
 
   private final PullRequestCreator pullRequestCreator;
+  private final PullRequestFrontendLinkResolver linkResolver;
 
   @Inject
-  CreatePullRequestTool(PullRequestCreator pullRequestCreator) {
+  CreatePullRequestTool(PullRequestCreator pullRequestCreator, PullRequestFrontendLinkResolver linkResolver) {
     this.pullRequestCreator = pullRequestCreator;
+    this.linkResolver = linkResolver;
   }
 
   @Override
@@ -68,10 +72,20 @@ class CreatePullRequestTool implements TypedTool<CreatePullRequestInput> {
         pullRequest,
         input.getInitialTasks()
       );
-      return OkResultRenderer.success("Created new pull request with id " + id).render();
+      return success("Created new pull request with id " + id)
+        .withInfoText("The repository can be viewed using the url " + computeLink(input, id))
+        .render();
     } catch (ConstraintViolationException e) {
       return ToolResult.error("The code on the branches must differ (ie. there has to be at least one commit on the source branch, that is not on the target branch).");
     }
+  }
+
+  private String computeLink(CreatePullRequestInput input, String id) {
+    CreateFrontendLinkInput linkInput = new CreateFrontendLinkInput();
+    linkInput.setId(id);
+    linkInput.setName(input.getRepositoryName());
+    linkInput.setNamespace(input.getRepositoryNamespace());
+    return linkResolver.createLink(linkInput).url();
   }
 
   @Override
