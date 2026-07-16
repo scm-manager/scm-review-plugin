@@ -22,12 +22,14 @@ import com.cloudogu.mcp.FrontendLinkResolver;
 import com.cloudogu.mcp.FrontendLinkResult;
 import jakarta.inject.Inject;
 import sonia.scm.plugin.Extension;
+import sonia.scm.plugin.Requires;
 import sonia.scm.repository.api.RepositoryServiceFactory;
 
 import java.util.Map;
 import java.util.Set;
 
 @Extension
+@Requires("scm-mcp-plugin")
 class PullRequestFrontendLinkResolver implements FrontendLinkResolver {
 
   private final RepositoryServiceFactory repositoryServiceFactory;
