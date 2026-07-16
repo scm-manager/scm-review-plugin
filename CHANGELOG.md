@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.16.1 - 2026-07-16
+### Fixed
+- Dependency to MCP plugin preventing start-up without MCP plugin
+
 ## 3.16.0 - 2026-07-14
 ### Added
 - Extension for MCP tool to create frontend links for pull requests
