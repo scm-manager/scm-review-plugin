@@ -346,18 +346,6 @@
         "submit": "Ja",
         "cancel": "Nein"
       },
-      "confirmDoneAlert": {
-        "title": "Aufgabe als erledigt markieren",
-        "message": "Soll die Aufgabe wirklich als erledigt markiert werden?",
-        "submit": "Ja",
-        "cancel": "Nein"
-      },
-      "confirmMakeTaskAlert": {
-        "title": "Aufgabe aus Kommentar erstellen",
-        "message": "Soll der Kommentar wirklich in eine Aufgabe umgewandelt werden?",
-        "submit": "Ja",
-        "cancel": "Nein"
-      },
       "reopenAlert": {
         "title": "Aufgabe als NICHT erledigt markieren",
         "message": "Soll die Aufgabe wirklich als nicht erledigt markiert werden?",
@@ -366,7 +354,7 @@
       },
       "makeCommentAlert": {
         "title": "Aufgabe in einen normalen Kommentar umwandeln",
-        "message": "Soll die Aufgabe wirklich in einen normalen Kommentar umgewandelt werden?",
+        "message": "Soll die Aufgabe wirklich in einen Kommentar umgewandelt werden? Damit geht der aktuelle Zustand der Aufgabe verloren.",
         "submit": "Ja",
         "cancel": "Nein"
       },

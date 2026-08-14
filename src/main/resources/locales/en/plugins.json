@@ -344,18 +344,6 @@
         "submit": "Yes",
         "cancel": "No"
       },
-      "confirmDoneAlert": {
-        "title": "Mark as Done",
-        "message": "Do you really want to mark this task as done?",
-        "submit": "Yes",
-        "cancel": "No"
-      },
-      "confirmMakeTaskAlert": {
-        "title": "Create a Task from this Comment",
-        "message": "Do you really want to make this comment a task?",
-        "submit": "Yes",
-        "cancel": "No"
-      },
       "reopenAlert": {
         "title": "Mark as NOT Done",
         "message": "Do you really want to reopen this task?",
@@ -364,7 +352,7 @@
       },
       "makeCommentAlert": {
         "title": "Change to a normal Comment",
-        "message": "Do you really want to transform this task to a normal comment?",
+        "message": "Do you really want to transform this task to a comment? When you do so, the current state of the task will be lost.",
         "submit": "Yes",
         "cancel": "No"
       },

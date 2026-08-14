@@ -58,7 +58,7 @@ const PullRequestComment: FC<Props> = ({
   parent,
   comment,
   createLink,
-  createWithImageLink
+  createWithImageLink,
 }) => {
   const [t] = useTranslation("plugins");
   const [collapsed, setCollapsed] = useState(comment.type === "TASK_DONE");
@@ -110,7 +110,7 @@ const PullRequestComment: FC<Props> = ({
     }
 
     const transformation = comment._embedded.possibleTransitions.find(
-      (pt: PossibleTransition) => pt.name === transition
+      (pt: PossibleTransition) => pt.name === transition,
     );
     if (!transformation) {
       throw new Error("comment does not have transition " + transition);
@@ -119,23 +119,27 @@ const PullRequestComment: FC<Props> = ({
     transform(transformation);
   };
 
-  const confirmTransition = (transition: string, translationKey: string) => {
-    confirmAlert({
-      title: t(translationKey + ".title"),
-      message: t(translationKey + ".message"),
-      buttons: [
-        {
-          className: "is-outlined",
-          label: t(translationKey + ".submit"),
-          onClick: () => executeTransition(transition)
-        },
-        {
-          label: t(translationKey + ".cancel"),
-          onClick: () => null,
-          autofocus: true
-        }
-      ]
-    });
+  const confirmTransition = (transition: string, translationKey?: string) => {
+    if (translationKey) {
+      confirmAlert({
+        title: t(translationKey + ".title"),
+        message: t(translationKey + ".message"),
+        buttons: [
+          {
+            className: "is-outlined",
+            label: t(translationKey + ".submit"),
+            onClick: () => executeTransition(transition),
+          },
+          {
+            label: t(translationKey + ".cancel"),
+            onClick: () => null,
+            autofocus: true,
+          },
+        ],
+      });
+    } else {
+      executeTransition(transition);
+    }
   };
 
   const handleChanges = (event: any) => {
@@ -231,14 +235,14 @@ const PullRequestComment: FC<Props> = ({
           buttons={[
             {
               label: t("scm-review-plugin.comment.confirmDeleteAlert.submit"),
-              onClick: () => remove(comment)
+              onClick: () => remove(comment),
             },
             {
               className: "is-info",
               label: t("scm-review-plugin.comment.confirmDeleteAlert.cancel"),
               onClick: () => null,
-              autofocus: true
-            }
+              autofocus: true,
+            },
           ]}
           close={() => setShowConfirmDeleteModal(false)}
         />
