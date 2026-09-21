@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.17.0 - 2026-09-21
+### Fixed
+- Creating line comments in pull requests when old and new line numbers differ
+
+### Changed
+- Removed confirmation dialogs for minor non-destructive changes of pull request comments
+
 ## 3.16.1 - 2026-07-16
 ### Fixed
 - Dependency to MCP plugin preventing start-up without MCP plugin
