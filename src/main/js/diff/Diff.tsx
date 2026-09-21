@@ -23,17 +23,10 @@ import {
   DiffEventContext,
   diffs,
   File,
-  FileContentFactory
+  FileContentFactory,
 } from "@scm-manager/ui-components";
 import { Comment, Comments, Location, PullRequest } from "../types/PullRequest";
-import {
-  createChangeIdFromLocation,
-  createHunkId,
-  createHunkIdFromLocation,
-  createInlineLocation,
-  evaluateLineNumbersForChangeId,
-  isInlineLocation
-} from "./locations";
+import { createChangeIdFromLocation, createHunkId, createHunkIdFromLocation, isInlineLocation } from "./locations";
 import PullRequestComment from "../comment/PullRequestComment";
 import CreateComment from "../comment/CreateComment";
 import CommentSpacingWrapper from "../comment/CommentSpacingWrapper";
@@ -47,6 +40,7 @@ import ChangeNotificationToast from "../ChangeNotificationToast";
 import { useInvalidateDiff } from "../pullRequest";
 import { useChangeNotificationContext } from "../ChangeNotificationContext";
 import LoadingDiff from "./LoadingDiff";
+import { addInlineEditor, InlineEditorState, removeInlineEditor } from "./inlineEditorState";
 
 const CommentWrapper = styled.div`
   & .inline-comment + .inline-comment {
@@ -85,7 +79,7 @@ const useHasChanged = (repository: Repository, pullRequest: PullRequest, source:
     if (revisions) {
       setRevisions({
         ...revisions,
-        changed: false
+        changed: false,
       });
     }
   };
@@ -101,10 +95,10 @@ const useHasChanged = (repository: Repository, pullRequest: PullRequest, source:
   // show notification only when source or target revision has changed
   useEffect(() => {
     if (source && target) {
-      setRevisions(rev => ({
+      setRevisions((rev) => ({
         source: source.revision,
         target: target.revision,
-        changed: !!(rev && (rev.source !== source.revision || rev.target !== target.revision))
+        changed: !!(rev && (rev.source !== source.revision || rev.target !== target.revision)),
       }));
     }
   }, [source, target]);
@@ -112,7 +106,7 @@ const useHasChanged = (repository: Repository, pullRequest: PullRequest, source:
   return {
     changed: revisions?.changed || false,
     ignore,
-    reload
+    reload,
   };
 };
 
@@ -126,45 +120,23 @@ const Diff: FC<Props> = ({
   fileContentFactory,
   reviewedFiles,
   sourceBranch,
-  stickyHeaderHeight
+  stickyHeaderHeight,
 }) => {
   const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
-  const [openEditors, setOpenEditors] = useState<{ [hunkId: string]: string[] }>({});
+  const [openInlineEditors, setOpenInlineEditors] = useState<InlineEditorState>({});
+  const [openFileEditors, setOpenFileEditors] = useState<string[]>([]);
   const { changed, ignore, reload } = useHasChanged(repository, pullRequest, sourceBranch);
 
-  const openInlineEditor = (location: Location) => {
-    if (isInlineLocation(location)) {
-      const preUpdateOpenEditors = openEditors[createHunkIdFromLocation(location)] || [];
-      setOpenEditors(prevState => ({
-        ...prevState,
-        [createHunkIdFromLocation(location)]: [
-          ...preUpdateOpenEditors,
-          !preUpdateOpenEditors.includes(createChangeIdFromLocation(location))
-            ? createChangeIdFromLocation(location)
-            : ""
-        ]
-      }));
-    }
+  const openInlineEditor = (context: DiffEventContext) => {
+    setOpenInlineEditors((state) => addInlineEditor(state, context));
   };
 
-  const closeEditor = (location: Location) => {
-    if (isInlineLocation(location)) {
-      const hunkId = createHunkIdFromLocation(location);
-      const changeId = createChangeIdFromLocation(location);
-      setOpenEditors(prevState => ({
-        ...prevState,
-        [hunkId]: [...prevState[hunkId].filter(l => l !== changeId)]
-      }));
-    } else {
-      setOpenEditors(prevState => {
-        delete prevState[location.file];
-        return { ...prevState };
-      });
-    }
+  const closeInlineEditor = (hunkId: string, changeId: string) => {
+    setOpenInlineEditors((state) => removeInlineEditor(state, hunkId, changeId));
   };
 
-  const isFileEditorOpen = (path: string) => {
-    return openEditors[path];
+  const closeFileEditor = (path: string) => {
+    setOpenFileEditors((editors) => editors.filter((editorPath) => editorPath !== path));
   };
 
   const fileAnnotationFactory = (file: File) => {
@@ -172,7 +144,7 @@ const Diff: FC<Props> = ({
     const annotations = [];
     const fileComments: Comment[] = [];
 
-    comments?._embedded.pullRequestComments.forEach(comment => {
+    comments?._embedded.pullRequestComments.forEach((comment) => {
       if (!isInlineLocation(comment.location) && comment.location?.file === path) {
         fileComments.push(comment);
       }
@@ -182,11 +154,14 @@ const Diff: FC<Props> = ({
       annotations.push(createComments(fileComments));
     }
 
-    if (isFileEditorOpen(path)) {
+    if (openFileEditors.includes(path)) {
       annotations.push(
-        createNewCommentEditor({
-          file: path
-        })
+        createNewCommentEditor(
+          {
+            file: path,
+          },
+          () => closeFileEditor(path),
+        ),
       );
     }
 
@@ -203,14 +178,14 @@ const Diff: FC<Props> = ({
     const commentsByLine: { [key: string]: Comment[] } = {};
 
     comments?._embedded.pullRequestComments
-      .filter(comment => comment.location?.hunk)
+      .filter((comment) => comment.location?.hunk)
       .filter(
-        comment =>
+        (comment) =>
           comment.location?.hunk &&
           isInlineLocation(comment.location) &&
-          createHunkIdFromLocation(comment.location) === hunkId
+          createHunkIdFromLocation(comment.location) === hunkId,
       )
-      .forEach(comment => {
+      .forEach((comment) => {
         if (comment.location) {
           const changeId = createChangeIdFromLocation(comment.location);
           let lineComments = commentsByLine[changeId];
@@ -223,30 +198,23 @@ const Diff: FC<Props> = ({
       });
 
     const lineAnnotations: { [key: string]: ReactNode[] } = {};
-    Object.keys(commentsByLine).forEach(changeId => {
+    Object.keys(commentsByLine).forEach((changeId) => {
       const createdComments = createComments(commentsByLine[changeId]);
       lineAnnotations[changeId] = [createdComments];
     });
 
-    const editors = openEditors[hunkId] || [];
+    const editors = openInlineEditors[hunkId] || {};
 
-    editors.forEach(changeId => {
+    Object.entries(editors).forEach(([changeId, location]) => {
       let line = lineAnnotations[changeId];
       if (!line) {
         line = [];
         lineAnnotations[changeId] = line;
       }
-      const lineNumbers = evaluateLineNumbersForChangeId(changeId);
-      line.push(
-        createNewCommentEditor({
-          file: diffs.getPath(context.file),
-          hunk: context.hunk.content,
-          ...lineNumbers
-        })
-      );
+      line.push(createNewCommentEditor(location, () => closeInlineEditor(hunkId, changeId)));
     });
 
-    Object.keys(lineAnnotations).forEach(changeId => {
+    Object.keys(lineAnnotations).forEach((changeId) => {
       annotations[changeId] = <InlineComments>{lineAnnotations[changeId]}</InlineComments>;
     });
 
@@ -266,7 +234,7 @@ const Diff: FC<Props> = ({
       const openFileEditor = () => {
         const path = diffs.getPath(file);
         actions.openFileCommentEditor(file);
-        setOpenEditors(prevState => ({ ...prevState, [path]: [] }));
+        setOpenFileEditors((editors) => (editors.includes(path) ? editors : [...editors, path]));
       };
       return (
         <>
@@ -289,8 +257,7 @@ const Diff: FC<Props> = ({
 
   const onGutterClick = (context: DiffEventContext) => {
     if (isPermittedToComment() && !context.hunk.expansion) {
-      const location = createInlineLocation(context);
-      openInlineEditor(location);
+      openInlineEditor(context);
     }
   };
 
@@ -316,7 +283,7 @@ const Diff: FC<Props> = ({
     );
   };
 
-  const createNewCommentEditor = (location: Location) => {
+  const createNewCommentEditor = (location: Location, closeEditor: () => void) => {
     if (createLink) {
       return (
         <CommentSpacingWrapper>
@@ -326,7 +293,7 @@ const Diff: FC<Props> = ({
             url={createLink}
             commentWithImageUrl={createLinkWithImages}
             location={location}
-            onCancel={() => closeEditor(location)}
+            onCancel={closeEditor}
             autofocus={true}
           />
         </CommentSpacingWrapper>

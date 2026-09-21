@@ -34,7 +34,7 @@ export function isInlineLocation(location?: Location): boolean {
 
 export function createFileLocation(context: BaseContext): Location {
   return {
-    file: diffs.getPath(context.file)
+    file: diffs.getPath(context.file),
   };
 }
 
@@ -43,7 +43,7 @@ export function createInlineLocation(context: DiffEventContext): Location {
 
   const location: Location = {
     file: diffs.getPath(context.file),
-    hunk: context.hunk.content
+    hunk: context.hunk.content,
   };
 
   switch (change.type) {
@@ -75,23 +75,6 @@ export function createChangeIdFromLocation(location: Location): string {
     throw new Error("at least one line number has to be set");
   }
 }
-
-type LineNumbers = { oldLineNumber?: number; newLineNumber?: number };
-
-export const evaluateLineNumbersForChangeId = (changeId: string): LineNumbers => {
-  const changeType = changeId.substr(0, 1);
-  const lineNumber = parseInt(changeId.substr(1, changeId.length - 1));
-  if (changeType === "N") {
-    return { oldLineNumber: lineNumber, newLineNumber: lineNumber };
-  }
-  if (changeType === "I") {
-    return { newLineNumber: lineNumber };
-  }
-  if (changeType === "D") {
-    return { oldLineNumber: lineNumber };
-  }
-  return {};
-};
 
 export function escapeWhitespace(path: string) {
   return path?.toLowerCase().replace(/\W/g, "-");
