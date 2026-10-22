@@ -18,6 +18,7 @@ package com.cloudogu.scm.review.pullrequest.landingpage;
 
 import com.cloudogu.scm.landingpage.mytasks.MyTask;
 import com.cloudogu.scm.landingpage.mytasks.MyTaskProvider;
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.comment.service.Comment;
 import com.cloudogu.scm.review.comment.service.CommentQueryFields;
 import com.cloudogu.scm.review.comment.service.CommentStoreFactory;
@@ -33,9 +34,11 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
+import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.store.QueryableStore;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Extension
@@ -67,6 +70,10 @@ public class MyOpenTasks implements MyTaskProvider {
         ).withIds()
         .findAll()
         .stream()
+        .filter(result -> {
+          Optional<String> repoId = result.getParentId(Repository.class);
+          return repoId.isPresent() && isReadable(repoId.get());
+        })
         .filter(
           result ->
           {
@@ -91,8 +98,10 @@ public class MyOpenTasks implements MyTaskProvider {
           }
         ).filter(Objects::nonNull)
         .collect(Collectors.toList());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
     }
+  }
+
+  private static boolean isReadable(String repositoryId) {
+    return RepositoryPermissions.read(repositoryId).isPermitted() && PermissionCheck.mayRead(repositoryId);
   }
 }

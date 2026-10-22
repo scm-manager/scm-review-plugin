@@ -18,6 +18,7 @@ package com.cloudogu.scm.review.pullrequest.landingpage;
 
 import com.cloudogu.scm.landingpage.mydata.MyData;
 import com.cloudogu.scm.landingpage.mydata.MyDataProvider;
+import com.cloudogu.scm.review.PermissionCheck;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestQueryFields;
@@ -29,6 +30,7 @@ import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.Requires;
 import sonia.scm.repository.Repository;
 import sonia.scm.repository.RepositoryManager;
+import sonia.scm.repository.RepositoryPermissions;
 import sonia.scm.store.QueryableStore;
 
 import java.util.Objects;
@@ -61,7 +63,12 @@ public class MyPullRequests implements MyDataProvider {
           PullRequestQueryFields.STATUS.in(PullRequestStatus.OPEN, PullRequestStatus.DRAFT)
         ).withIds()
         .findAll()
-        .stream().map(
+        .stream()
+        .filter(result -> {
+          Optional<String> repoId = result.getParentId(Repository.class);
+          return repoId.isPresent() && isReadable(repoId.get());
+        })
+        .map(
           result -> {
             Repository repository = repositoryManager.get(result.getParentId(Repository.class).get());
             if (repository == null) {
@@ -73,6 +80,10 @@ public class MyPullRequests implements MyDataProvider {
         ).filter(Objects::nonNull)
         .collect(Collectors.toList());
     }
+  }
+
+  private static boolean isReadable(String repositoryId) {
+    return RepositoryPermissions.read(repositoryId).isPermitted() && PermissionCheck.mayRead(repositoryId);
   }
 
   @Override

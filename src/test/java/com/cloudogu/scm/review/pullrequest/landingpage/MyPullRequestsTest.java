@@ -40,6 +40,8 @@ import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.MERG
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, QueryableStoreExtension.class})
@@ -91,6 +93,8 @@ class MyPullRequestsTest {
     try (QueryableMutableStore<PullRequest> store = storeFactory.getMutable("2")) {
       store.put("draft_dent", createPullRequest("draft_dent", DRAFT, "dent"));
     }
+    mockReadPermission("1");
+    mockReadPermission("2");
     when(repositoryManager.get("1")).thenReturn(new Repository("1", "git", "space", "X"));
     when(repositoryManager.get("2")).thenReturn(new Repository("2", "git", "space", "balls"));
 
@@ -102,6 +106,30 @@ class MyPullRequestsTest {
     assertThat(data)
       .extracting("name")
       .containsExactlyInAnyOrder("X", "balls");
+  }
+
+  @Test
+  void shouldIgnorePullRequestsInRepositoriesWithoutReadPermission(PullRequestStoreFactory storeFactory) {
+    try (QueryableMutableStore<PullRequest> store = storeFactory.getMutable("1")) {
+      store.put("open_dent", createPullRequest("open_dent", OPEN, "dent"));
+    }
+    try (QueryableMutableStore<PullRequest> store = storeFactory.getMutable("2")) {
+      store.put("unreadable_dent", createPullRequest("unreadable_dent", OPEN, "dent"));
+    }
+    mockReadPermission("1");
+    when(repositoryManager.get("1")).thenReturn(new Repository("1", "git", "space", "X"));
+
+    Iterable<MyData> data = myPullRequests.getData();
+    assertThat(data)
+      .extracting("pullRequest")
+      .extracting("id")
+      .containsExactly("open_dent");
+    verify(repositoryManager, never()).get("2");
+  }
+
+  private void mockReadPermission(String repositoryId) {
+    when(subject.isPermitted("repository:read:" + repositoryId)).thenReturn(true);
+    when(subject.isPermitted("repository:readPullRequest:" + repositoryId)).thenReturn(true);
   }
 
   private static PullRequest createPullRequest(String id, PullRequestStatus status, String author) {

@@ -23,7 +23,6 @@ import com.cloudogu.scm.review.comment.service.CommentType;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestDto;
 import com.cloudogu.scm.review.pullrequest.dto.PullRequestMapper;
 import com.cloudogu.scm.review.pullrequest.service.PullRequest;
-import com.cloudogu.scm.review.pullrequest.service.PullRequestStatus;
 import com.cloudogu.scm.review.pullrequest.service.PullRequestStoreFactory;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
@@ -44,6 +43,8 @@ import static com.cloudogu.scm.review.comment.service.CommentType.TASK_TODO;
 import static com.cloudogu.scm.review.pullrequest.service.PullRequestStatus.OPEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class, QueryableStoreExtension.class})
@@ -52,12 +53,10 @@ class MyOpenTasksTest {
 
   static final Repository PR_REPOSITORY = new Repository("1", "git", "space", "X");
 
-  static final PullRequest OPEN_PR_FOR_USER_WITHOUT_TASK = createPullRequest("open_dent", OPEN, "dent");
-  static final PullRequest OPEN_PR_FOR_USER_WITH_TASK = createPullRequest("open_dent_tasks", OPEN, "dent");
-  static final PullRequest OPEN_PR_FOR_OTHER = createPullRequest("open_tricia", OPEN, "tricia");
+  static final PullRequest OPEN_PR_FOR_USER_WITHOUT_TASK = createPullRequest("open_dent", "dent");
+  static final PullRequest OPEN_PR_FOR_USER_WITH_TASK = createPullRequest("open_dent_tasks", "dent");
+  static final PullRequest OPEN_PR_FOR_OTHER = createPullRequest("open_tricia", "tricia");
 
-  @Mock
-  OpenPullRequestProvider pullRequestProvider;
   @Mock
   PullRequestMapper mapper;
   @Mock
@@ -105,6 +104,8 @@ class MyOpenTasksTest {
       storeWithClosedTask.put(createComment(TASK_DONE));
     }
 
+    when(subject.isPermitted("repository:read:" + PR_REPOSITORY.getId())).thenReturn(true);
+    when(subject.isPermitted("repository:readPullRequest:" + PR_REPOSITORY.getId())).thenReturn(true);
     when(repositoryManager.get(PR_REPOSITORY.getId())).thenReturn(PR_REPOSITORY);
   }
 
@@ -119,13 +120,27 @@ class MyOpenTasksTest {
     assertThat(data).extracting("pullRequest").extracting("id").containsExactly("open_dent_tasks");
   }
 
-  private static PullRequest createPullRequest(String id, PullRequestStatus status, String author) {
+  @Test
+  void shouldIgnorePullRequestsInRepositoriesWithoutReadPermission(PullRequestStoreFactory pullRequestStoreFactory, CommentStoreFactory commentStoreFactory) {
+    try (QueryableMutableStore<PullRequest> prStore = pullRequestStoreFactory.getMutable("2")) {
+      prStore.put("unreadable_dent_tasks", createPullRequest("unreadable_dent_tasks", "dent"));
+    }
+    try (QueryableMutableStore<Comment> commentStore = commentStoreFactory.getMutable("2", "unreadable_dent_tasks")) {
+      commentStore.put(createComment(TASK_TODO));
+    }
+
+    Iterable<MyTask> data = myOpenTasks.getTasks();
+    assertThat(data).extracting("pullRequest").extracting("id").containsExactly("open_dent_tasks");
+    verify(repositoryManager, never()).get("2");
+  }
+
+  private static PullRequest createPullRequest(String id, String author) {
     PullRequest existingPullRequest = new PullRequest();
     existingPullRequest.setId(id);
     existingPullRequest.setTitle("title " + id);
     existingPullRequest.setSource("source");
     existingPullRequest.setTarget("target");
-    existingPullRequest.setStatus(status);
+    existingPullRequest.setStatus(OPEN);
     existingPullRequest.setAuthor(author);
     return existingPullRequest;
   }

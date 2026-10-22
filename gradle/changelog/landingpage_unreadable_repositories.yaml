@@ -1,0 +1,2 @@
+- type: fixed
+  description: Errors in "My Tasks" and "My Pull Requests" on the landing page for pull requests in repositories without read permission
