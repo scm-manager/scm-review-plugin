@@ -37,13 +37,14 @@ import {
 import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
 import styled from "styled-components";
-import { useHistory, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { Icon } from "@scm-manager/ui-core";
 import classNames from "classnames";
 
 type LoadingDiffProps = DiffObjectProps & {
   diffUrl: string;
   actions: any;
+  allCollapsed: boolean;
   pullRequestComments: Comment[];
   refetchOnWindowFocus?: boolean;
   stickyHeader?: boolean | number;
@@ -103,6 +104,7 @@ export const Divider = styled.div`
 const LoadingDiff: FC<LoadingDiffProps> = ({
   diffUrl,
   actions,
+  allCollapsed,
   pullRequestComments,
   stickyHeader,
   reviewedFiles,
@@ -116,24 +118,22 @@ const LoadingDiff: FC<LoadingDiffProps> = ({
     refetchOnWindowFocus: false,
     ignoreWhitespace: ignoreWhitespace,
   });
-  const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [prevHash, setPrevHash] = useState("");
 
   const setFilePath = (path: string) => {
     setPrevHash("");
     setLayout("Both");
-    history.push(`#diff-${encodeURIComponent(path)}`);
+    navigate(`#diff-${encodeURIComponent(path)}`);
   };
 
-  const collapseDiffs = () => {
-    if (collapsed) {
+  const setCollapseMode = (mode: CollapseMode) => {
+    if (mode === "MANUAL") {
       actions.uncollapseAll();
     } else {
       actions.collapseAll();
     }
-    setCollapsed((current) => !current);
   };
 
   if (error) {
@@ -159,7 +159,8 @@ const LoadingDiff: FC<LoadingDiffProps> = ({
         top={typeof stickyHeader === "number" && stickyHeader > buttonHeight ? (stickyHeader - buttonHeight) / 2 : 0}
       >
         <DiffDropDown
-          collapseDiffs={collapseDiffs}
+          setCollapseMode={setCollapseMode}
+          collapseMode={allCollapsed ? "ALL" : "MANUAL"}
           renderOnMount={true}
           ignoreWhitespacesMode={ignoreWhitespace}
           setIgnoreWhitespacesMode={(whiteSpaceMode: WhitespaceMode) => {
@@ -194,7 +195,6 @@ const LoadingDiff: FC<LoadingDiffProps> = ({
                 isCurrentFile,
               }) => {
                 if (isFile && reviewedFiles?.find((file) => file === path)) {
-                  console.log("rendering reviewed icon for", name);
                   const lightIcon = (
                     <StackedSpan className="fa-stack">
                       <StyledIcon
@@ -216,7 +216,15 @@ const LoadingDiff: FC<LoadingDiffProps> = ({
                   return (
                     <>
                       {lightIcon}
-                      <div className={classNames("ml-1", "has-text-secondary has-hover-color-blue", isCurrentFile ? "has-text-weight-bold": "")}>{name}</div>
+                      <div
+                        className={classNames(
+                          "ml-1",
+                          "has-text-secondary has-hover-color-blue",
+                          isCurrentFile ? "has-text-weight-bold" : "",
+                        )}
+                      >
+                        {name}
+                      </div>
                     </>
                   );
                 } else {
@@ -254,10 +262,6 @@ const LoadingDiff: FC<LoadingDiffProps> = ({
       </DiffContainer>
     </div>
   );
-};
-
-LoadingDiff.defaultProps = {
-  sideBySide: false,
 };
 
 export default LoadingDiff;

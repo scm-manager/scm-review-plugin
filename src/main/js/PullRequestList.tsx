@@ -14,21 +14,20 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { PullRequest, Reviewer } from "./types/PullRequest";
-import { Card, CardListBox } from "@scm-manager/ui-layout";
-import { Link } from "react-router-dom";
-import { DateFromNow, Notification } from "@scm-manager/ui-components";
-import { PullRequestListDetailExtension } from "./types/ExtensionPoints";
-import classNames from "classnames";
-import { evaluateTagColor } from "./pullRequest";
 import React, { FC } from "react";
-import { Repository } from "@scm-manager/ui-types";
-import styled from "styled-components";
-import { ExtensionPoint } from "@scm-manager/ui-extensions";
 import { Trans, useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import classNames from "classnames";
+import styled from "styled-components";
+import { Card, CardListBox, DateFromNow, Tooltip } from "@scm-manager/ui-core";
+import { Notification } from "@scm-manager/ui-components";
+import { ExtensionPoint } from "@scm-manager/ui-extensions";
+import { Repository } from "@scm-manager/ui-types";
+import { PullRequestListDetailExtension } from "./types/ExtensionPoints";
+import { PullRequest, Reviewer } from "./types/PullRequest";
 import PullRequestStatusColumn from "./workflow/PullRequestStatusColumn";
 import useEngineConfig from "./workflow/useEngineConfig";
-import { Tooltip } from "@scm-manager/ui-overlays";
+import { evaluateTagColor } from "./pullRequest";
 
 const SubtitleRow = styled(CardListBox.Card.Row)`
   white-space: pre;
@@ -76,16 +75,17 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
 
   return (
     <CardListBox className="p-2">
-      {pullRequests.map(pullRequest => (
+      {pullRequests.map((pullRequest) => (
         <CardListBox.Card key={pullRequest.id}>
           <Card.Row className="is-flex">
             <Card.Title>
               <Link to={`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`}>
                 {pullRequest.title}
-              </Link> <span className="has-text-secondary ml-1" aria-label={t("scm-review-plugin.pullRequests.aria.id")}>
-              <span aria-hidden>#</span>
-              {pullRequest.id}
-            </span>
+              </Link>{" "}
+              <span className="has-text-secondary ml-1" aria-label={t("scm-review-plugin.pullRequests.aria.id")}>
+                <span aria-hidden>#</span>
+                {pullRequest.id}
+              </span>
             </Card.Title>
           </Card.Row>
           <SubtitleRow className="is-flex is-flex-wrap-wrap is-size-7 has-text-secondary">
@@ -95,12 +95,12 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
               values={{
                 author: pullRequest.author?.displayName,
                 source: pullRequest.source,
-                target: pullRequest.target
+                target: pullRequest.target,
               }}
               components={{
                 highlight: <span className="has-text-default" />,
                 date: <DateFromNow className="is-relative" date={pullRequest.creationDate} />,
-                space: <span />
+                space: <span />,
               }}
             />
           </SubtitleRow>
@@ -122,7 +122,7 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
                 name="pull-requests.list.detail"
                 props={{
                   pullRequest,
-                  repository
+                  repository,
                 }}
                 renderAll
               />
@@ -130,7 +130,7 @@ const PullRequestList: FC<Props> = ({ pullRequests, repository }) => {
             <span
               className={classNames(
                 "tag is-rounded is-align-self-flex-end",
-                `is-${evaluateTagColor(pullRequest.status)}`
+                `is-${evaluateTagColor(pullRequest.status)}`,
               )}
               aria-label={t("scm-review-plugin.pullRequests.aria.status")}
             >

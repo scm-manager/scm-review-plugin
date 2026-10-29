@@ -15,28 +15,34 @@
  */
 
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { ErrorNotification, Level, Notification, SubmitButton, Subtitle } from "@scm-manager/ui-components";
-import { useDocumentTitleForRepository } from "@scm-manager/ui-core";
-import { Checkbox } from "@scm-manager/ui-forms";
-import { Branch, Repository } from "@scm-manager/ui-types";
+import { SubmitButton } from "@scm-manager/ui-components";
+import {
+  Checkbox,
+  ErrorNotification,
+  Level,
+  Notification,
+  SINGLE_REPOSITORY_BASE_ROUTE,
+  Subtitle,
+  useDocumentTitleForRepository,
+  useRepositoryFromParams,
+} from "@scm-manager/ui-core";
+import { Branch } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
 import { BasicPullRequest, CheckResult, PullRequest } from "./types/PullRequest";
 import { useCheckPullRequest, useCreatePullRequest } from "./pullRequest";
 import PullRequestInformation from "./PullRequestInformation";
-import { useHistory, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useBranches } from "@scm-manager/ui-api";
 import queryString from "query-string";
 import usePullRequestTemplate from "./config/usePullRequestTemplate";
+import { SINGLE_PULL_REQUEST_BASE } from "./routes";
 
-type Props = {
-  repository: Repository;
-};
-
-const Create: FC<Props> = ({ repository }) => {
+const Create: FC = () => {
+  const repository = useRepositoryFromParams();
   const [t] = useTranslation("plugins");
   useDocumentTitleForRepository(repository, t("scm-review-plugin.create.title"));
-  const history = useHistory();
+  const navigate = useNavigate();
   const [pullRequest, setPullRequest] = useState<PullRequest>({
     title: "",
     description: "",
@@ -46,13 +52,15 @@ const Create: FC<Props> = ({ repository }) => {
     labels: [],
     initialTasks: [],
     shouldDeleteSourceBranch: false,
-    _links: {}
+    _links: {},
   });
   const [disabled, setDisabled] = useState(true);
   const location = useLocation();
 
   const pullRequestCreated = (pullRequestId: string) => {
-    history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequestId}/comments/`);
+    navigate(
+      `/${SINGLE_REPOSITORY_BASE_ROUTE}/${repository.namespace}/${repository.name}/${SINGLE_PULL_REQUEST_BASE}/${pullRequestId}/comments`,
+    );
   };
 
   const { data: branchesData, error: branchesError, isLoading: branchesLoading } = useBranches(repository);
@@ -63,7 +71,7 @@ const Create: FC<Props> = ({ repository }) => {
   const { data: pullRequestTemplate, isLoading: isLoadingPullRequestTemplate } = usePullRequestTemplate(
     repository,
     pullRequest.source,
-    pullRequest.target
+    pullRequest.target,
   );
   const isValid = useCallback(
     (result?: CheckResult) => {
@@ -72,15 +80,15 @@ const Create: FC<Props> = ({ repository }) => {
       }
       return checkResult?.status === "PR_VALID";
     },
-    [checkResult]
+    [checkResult],
   );
   const isPullRequestValid = useCallback(
     (basicPR: BasicPullRequest, result?: CheckResult) =>
       !!basicPR.source && !!basicPR.target && !!basicPR.title && isValid(result),
-    [isValid]
+    [isValid],
   );
   const handleFormChange = useCallback((basicPR: Partial<PullRequest>) => {
-    setPullRequest(prevPr => ({ ...prevPr, ...basicPR }));
+    setPullRequest((prevPr) => ({ ...prevPr, ...basicPR }));
   }, []);
 
   useEffect(() => {
@@ -102,7 +110,7 @@ const Create: FC<Props> = ({ repository }) => {
       handleFormChange({
         source: initialSource,
         target: initialTarget,
-        status: initialStatus
+        status: initialStatus,
       });
     }
   }, [branchesData]);
@@ -112,9 +120,9 @@ const Create: FC<Props> = ({ repository }) => {
       handleFormChange({
         title: pullRequestTemplate.title ?? "",
         description: pullRequestTemplate.description,
-        reviewer: pullRequestTemplate?.defaultReviewers.map(it => ({ ...it, approved: false })),
+        reviewer: pullRequestTemplate?.defaultReviewers.map((it) => ({ ...it, approved: false })),
         initialTasks: pullRequestTemplate.defaultTasks,
-        shouldDeleteSourceBranch: pullRequestTemplate.shouldDeleteSourceBranch
+        shouldDeleteSourceBranch: pullRequestTemplate.shouldDeleteSourceBranch,
       });
     }
   }, [pullRequestTemplate]);
@@ -170,7 +178,7 @@ const Create: FC<Props> = ({ repository }) => {
             <div className="is-flex is-flex-direction-column is-align-items-end">
               <Checkbox
                 checked={pullRequest?.status === "DRAFT"}
-                onChange={event => handleFormChange({ status: event.target.checked ? "DRAFT" : "OPEN" })}
+                onChange={(event) => handleFormChange({ status: event.target.checked ? "DRAFT" : "OPEN" })}
                 label={t("scm-review-plugin.pullRequest.createAsDraft")}
               />
               <SubmitButton

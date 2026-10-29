@@ -15,16 +15,19 @@
  */
 
 import { ApiResult } from "@scm-manager/ui-api";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@scm-manager/ui-components";
 import { AvailableRules, EngineConfiguration } from "../types/EngineConfig";
 import { Link } from "@scm-manager/ui-types";
 
 export const useEngineConfigRules = (config: EngineConfiguration): ApiResult<AvailableRules> => {
-  return useQuery<AvailableRules, Error>(["workflow", "available-rules"], () => {
-    if (config._links.availableRules) {
-      return apiClient.get((config._links.availableRules as Link).href).then(response => response.json());
-    }
-    return { rules: [] };
+  return useQuery<AvailableRules, Error>({
+    queryKey: ["workflow", "available-rules"],
+    queryFn: () => {
+      if (config._links.availableRules) {
+        return apiClient.get((config._links.availableRules as Link).href).then((response) => response.json());
+      }
+      return { rules: [] };
+    },
   });
 };

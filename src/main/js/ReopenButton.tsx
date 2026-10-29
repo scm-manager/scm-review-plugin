@@ -16,8 +16,7 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Dialog } from "@scm-manager/ui-overlays";
-import { Button } from "@scm-manager/ui-buttons";
+import { Button, Dialog } from "@scm-manager/ui-core";
 
 type Props = {
   reopen: () => Promise<unknown>;

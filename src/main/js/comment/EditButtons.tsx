@@ -14,8 +14,8 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC } from "react";
-import { Level, SubmitButton, Button, confirmAlert } from "@scm-manager/ui-components";
+import React, { FC, useState } from "react";
+import { Level, SubmitButton, Button, ConfirmAlert } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { Comment } from "../types/PullRequest";
 
@@ -28,24 +28,11 @@ type Props = {
 
 const EditButtons: FC<Props> = ({ comment, onSubmit, onCancel, changed }) => {
   const { t } = useTranslation("plugins");
+  const [showModal, setShowModal] = useState(false);
 
   const confirmCancelUpdate = () => {
     if (changed()) {
-      confirmAlert({
-        title: t("scm-review-plugin.comment.confirmCancelUpdateAlert.title"),
-        message: t("scm-review-plugin.comment.confirmCancelUpdateAlert.message"),
-        buttons: [
-          {
-            className: "is-outlined",
-            label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.submit"),
-            onClick: onCancel
-          },
-          {
-            label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.cancel"),
-            onClick: () => null
-          }
-        ]
-      });
+      setShowModal(true);
     } else {
       onCancel();
     }
@@ -55,6 +42,25 @@ const EditButtons: FC<Props> = ({ comment, onSubmit, onCancel, changed }) => {
     <Level
       right={
         <>
+          {changed() && showModal ? (
+            <ConfirmAlert
+              title={t("scm-review-plugin.comment.confirmCancelUpdateAlert.title")}
+              message={t("scm-review-plugin.comment.confirmCancelUpdateAlert.message")}
+              buttons={[
+                {
+                  className: "is-outlined",
+                  label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.submit"),
+                  onClick: onCancel,
+                },
+                {
+                  label: t("scm-review-plugin.comment.confirmCancelUpdateAlert.cancel"),
+                  onClick: () => null,
+                  autofocus: true,
+                },
+              ]}
+              close={() => setShowModal(false)}
+            />
+          ) : null}
           <div className="level-item">
             <SubmitButton
               label={t("scm-review-plugin.comment.save")}

@@ -14,19 +14,16 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React from "react";
+import React, { FC } from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import ConfigEditor from "./ConfigEditor";
+import { useNamespaceFromParams } from "@scm-manager/ui-core";
+import { Link } from "@scm-manager/ui-types";
 
-type Props = {
-  link: string;
+const NamespaceConfig: FC = () => {
+  const namespace = useNamespaceFromParams();
+  const link = (namespace._links["pullRequestConfig"] as Link).href;
+  return <Configuration link={link} render={(props) => <ConfigEditor {...props} configType="namespace" />} />;
 };
-
-class NamespaceConfig extends React.Component<Props> {
-  render() {
-    const { link } = this.props;
-    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="namespace" />} />;
-  }
-}
 
 export default NamespaceConfig;

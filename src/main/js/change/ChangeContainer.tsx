@@ -19,7 +19,7 @@ import { DEFAULT_PROPERTIES, PullRequestChange } from "./ChangesTypes";
 import { useTranslation } from "react-i18next";
 import { evalChangeType } from "./util";
 import ChangeRenderer from "./ChangeRenderer";
-import { DateFromNow } from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-core";
 import { Repository } from "@scm-manager/ui-types";
 import ChangeAuthor from "./ChangeAuthor";
 
@@ -59,7 +59,7 @@ const TitleContent: FC<WithChange> = ({ change }) => {
   }
 
   return t(`scm-review-plugin.pullRequest.changes.titles.${changeType}`, {
-    propertyName: t(`scm-review-plugin.pullRequest.changes.properties.${change.property}`)
+    propertyName: t(`scm-review-plugin.pullRequest.changes.properties.${change.property}`),
   });
 };
 

@@ -14,7 +14,7 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { ClipboardEvent, FC, ReactText, useState } from "react";
+import React, { FC, useState } from "react";
 import { Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
 import { BasicComment, CommentImage, CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
@@ -35,7 +35,16 @@ type Props = {
   reply?: boolean;
 };
 
-const CreateComment: FC<Props> = ({ repository, pullRequest, url, commentWithImageUrl, location, onCancel, reply, autofocus }) => {
+const CreateComment: FC<Props> = ({
+  repository,
+  pullRequest,
+  url,
+  commentWithImageUrl,
+  location,
+  onCancel,
+  reply,
+  autofocus,
+}) => {
   const [t] = useTranslation("plugins");
 
   const { create, isLoading, error } = useCreateComment(repository, pullRequest);
@@ -51,7 +60,7 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, commentWithIma
       type: commentType,
       comment: commentText,
       mentions: mentions,
-      location
+      location,
     };
 
     if (images.length !== 0 && commentWithImageUrl) {
@@ -135,10 +144,10 @@ const CreateComment: FC<Props> = ({ repository, pullRequest, url, commentWithIma
                   value={commentText}
                   comment={{ comment: commentText, type: commentType, mentions }}
                   placeholder={evaluateTranslation()}
-                  onAddMention={(id: ReactText, displayName: string) => {
+                  onAddMention={(id: string | number, displayName: string) => {
                     setMentions([...mentions, { id, displayName, mail: "" }]);
                   }}
-                  onChange={event => setCommentText(event.target.value)}
+                  onChange={(event) => setCommentText(event.target.value)}
                   onCancel={onCancel}
                   onSubmit={submit}
                   onPaste={handleImagePaste(commentWithImageUrl, setImages, setCommentText)}

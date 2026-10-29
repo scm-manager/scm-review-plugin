@@ -31,9 +31,10 @@ import {
 } from "./types/PullRequest";
 import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
 import { Changeset, HalRepresentation, Link, PagedCollection, Repository } from "@scm-manager/ui-types";
-import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useBranches } from "@scm-manager/ui-api";
 import { PullRequestChange } from "./change/ChangesTypes";
+import { useEffect } from "react";
 
 const CONTENT_TYPE_PULLREQUEST = "application/vnd.scmm-pullRequest+json;v=2";
 
@@ -53,12 +54,18 @@ export const useInvalidatePullRequest = (repository: Repository, pullRequest: Pu
 
   return () => {
     const invalidations = [
-      queryClient.invalidateQueries(prQueryKey(repository, pullRequestId)),
-      queryClient.invalidateQueries(["mergeCheck", ...prQueryKey(repository, pullRequestId)]),
+      queryClient.invalidateQueries({ queryKey: prQueryKey(repository, pullRequestId) }),
+      queryClient.invalidateQueries({
+        queryKey: ["mergeCheck", ...prQueryKey(repository, pullRequestId)],
+      }),
     ];
 
     if (diffUrl) {
-      invalidations.push(queryClient.invalidateQueries(["link", diffUrl]));
+      invalidations.push(
+        queryClient.invalidateQueries({
+          queryKey: ["link", diffUrl],
+        }),
+      );
     }
     return Promise.all(invalidations);
   };
@@ -69,7 +76,9 @@ export const useInvalidateDiff = (repository: Repository, pullRequest: PullReque
   const diffUrl = createDiffUrl(repository, pullRequest.source, pullRequest.target);
   return async () => {
     if (diffUrl) {
-      await queryClient.invalidateQueries(["link", diffUrl]);
+      await queryClient.invalidateQueries({
+        queryKey: ["link", diffUrl],
+      });
     }
   };
 };
@@ -91,7 +100,7 @@ const prMergeCheckQueryKey = (repository: Repository, pullRequestId: string) => 
 };
 
 export const invalidateQueries = (queryClient: QueryClient, ...keys: string[][]): Promise<void> => {
-  return Promise.all(keys.map((key) => queryClient.invalidateQueries(key))).then(() => undefined);
+  return Promise.all(keys.map((key) => queryClient.invalidateQueries({ queryKey: key }))).then(() => undefined);
 };
 
 export const usePullRequest = (repository: Repository, pullRequestId?: string) => {
@@ -99,9 +108,11 @@ export const usePullRequest = (repository: Repository, pullRequestId?: string) =
     throw new Error("Could not fetch pull request without id");
   }
 
-  const { error, isLoading, data } = useQuery<PullRequest, Error>(prQueryKey(repository, pullRequestId), () =>
-    apiClient.get(requiredLink(repository, "pullRequest") + "/" + pullRequestId).then((response) => response.json()),
-  );
+  const { error, isLoading, data } = useQuery<PullRequest, Error>({
+    queryKey: prQueryKey(repository, pullRequestId),
+    queryFn: () =>
+      apiClient.get(requiredLink(repository, "pullRequest") + "/" + pullRequestId).then((response) => response.json()),
+  });
 
   return {
     error,
@@ -118,20 +129,21 @@ export const useUpdatePullRequest = (repository: Repository, pullRequest: PullRe
   }
 
   const queryClient = useQueryClient();
-  const { isLoading, error, mutate } = useMutation<unknown, Error, PullRequest>(
-    (pr) => {
+  const {
+    isPending: isLoading,
+    error,
+    mutate,
+  } = useMutation<unknown, Error, PullRequest>({
+    mutationFn: (pr) => {
       return apiClient.put(requiredLink(pr, "update"), pr, CONTENT_TYPE_PULLREQUEST);
     },
-    {
-      onSuccess: () => {
-        if (callback) {
-          callback();
-        }
-        return queryClient.invalidateQueries(prQueryKey(repository, id));
-      },
+    onSuccess: () => {
+      if (callback) {
+        callback();
+      }
+      return queryClient.invalidateQueries({ queryKey: prQueryKey(repository, id) });
     },
-  );
-
+  });
   return {
     isLoading,
     error,
@@ -147,7 +159,12 @@ export const useApproveReviewer = (repository: Repository, pullRequest: PullRequ
   }
 
   const queryClient = useQueryClient();
-  const { isLoading, error, mutate } = useMutation<unknown, Error, string>((link: string) => apiClient.post(link, {}), {
+  const {
+    isPending: isLoading,
+    error,
+    mutate,
+  } = useMutation<unknown, Error, string>({
+    mutationFn: (link: string) => apiClient.post(link, {}),
     onSuccess: () => {
       return invalidateQueries(queryClient, prQueryKey(repository, id), prMergeCheckQueryKey(repository, id));
     },
@@ -166,24 +183,27 @@ export const useApproveReviewer = (repository: Repository, pullRequest: PullRequ
 
 export const useCreatePullRequest = (repository: Repository, callback?: (id: string) => void) => {
   const queryClient = useQueryClient();
-  const { mutate, data, isLoading, error } = useMutation<PullRequest, Error, BasicPullRequest>(
-    (pr) => {
+  const {
+    mutate,
+    data,
+    isPending: isLoading,
+    error,
+  } = useMutation<PullRequest, Error, BasicPullRequest>({
+    mutationFn: (pr) => {
       return createPullRequest(requiredLink(repository, "pullRequest"), pr);
     },
-    {
-      onSuccess: (pr) => {
-        const id = pr.id;
-        if (!id) {
-          throw new Error("created pull request missing id");
-        }
-        if (callback) {
-          callback(id);
-        }
-        queryClient.setQueryData(prQueryKey(repository, id), pr);
-        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
-      },
+    onSuccess: (pr) => {
+      const id = pr.id;
+      if (!id) {
+        throw new Error("created pull request missing id");
+      }
+      if (callback) {
+        callback(id);
+      }
+      queryClient.setQueryData(prQueryKey(repository, id), pr);
+      return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
     },
-  );
+  });
   return {
     create: (pr: BasicPullRequest) => mutate(pr),
     isLoading,
@@ -214,17 +234,19 @@ export const useRejectPullRequest = (repository: Repository, pullRequest: PullRe
   }
 
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<unknown, Error, string>(
-    (message) => {
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<unknown, Error, string>({
+    mutationFn: (message) => {
       const rejectLink = requiredLink(pullRequest, "rejectWithMessage");
       return apiClient.post(rejectLink, { message });
     },
-    {
-      onSuccess: () => {
-        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
-      },
+    onSuccess: () => {
+      return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
     },
-  );
+  });
   return {
     reject: (message: string) => mutate(message),
     isLoading,
@@ -240,12 +262,15 @@ export const useReopenPullRequest = (repository: Repository, pullRequest: PullRe
   }
 
   const queryClient = useQueryClient();
-  const { mutateAsync, isLoading, error } = useMutation<unknown, Error>(
-    () => apiClient.post(requiredLink(pullRequest, "reopen")),
-    {
-      onSuccess: () => invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id)),
-    },
-  );
+  const {
+    mutateAsync,
+    isPending: isLoading,
+    error,
+  } = useMutation<unknown, Error>({
+    mutationFn: () => apiClient.post(requiredLink(pullRequest, "reopen")),
+
+    onSuccess: () => invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id)),
+  });
   return {
     reopen: () => mutateAsync(),
     isLoading,
@@ -266,19 +291,21 @@ export const useMergePullRequest = (repository: Repository, pullRequest: PullReq
   }
 
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<unknown, Error, MergeRequest>(
-    (request) => {
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<unknown, Error, MergeRequest>({
+    mutationFn: (request) => {
       if (!request.url) {
         throw new Error("Could not merge because merge url is not defined");
       }
       return apiClient.post(request.url, request.mergeCommit, "application/vnd.scmm-mergeCommand+json");
     },
-    {
-      onSuccess: () => {
-        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
-      },
+    onSuccess: () => {
+      return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
     },
-  );
+  });
   return {
     merge: (request: MergeRequest) => mutate(request),
     isLoading,
@@ -294,16 +321,18 @@ export const useReadyForReviewPullRequest = (repository: Repository, pullRequest
   }
 
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<unknown, Error, PullRequest>(
-    (pr) => {
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<unknown, Error, PullRequest>({
+    mutationFn: (pr) => {
       return apiClient.post(requiredLink(pr, "convertToPR"), {});
     },
-    {
-      onSuccess: () => {
-        return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
-      },
+    onSuccess: () => {
+      return invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, id));
     },
-  );
+  });
   return {
     readyForReview: (pr: PullRequest) => mutate(pr),
     isLoading,
@@ -332,13 +361,14 @@ export const usePullRequests = (repository: Repository, request?: UsePullRequest
   if (request?.target) {
     queryParameters += `&target=${request.target}`;
   }
-  const { error, isLoading, data } = useQuery<PagedPullRequestCollection, Error>(
-    ["repository", repository.namespace, repository.name, "pull-requests", status, sortBy, page],
-    () => {
+  const { error, isLoading, data } = useQuery<PagedPullRequestCollection, Error>({
+    queryKey: ["repository", repository.namespace, repository.name, "pull-requests", status, sortBy, page],
+    queryFn: () => {
       const link = requiredLink(repository, "pullRequest") + queryParameters;
+
       return apiClient.get(link).then((response) => response.json());
     },
-  );
+  });
 
   return {
     error,
@@ -353,19 +383,22 @@ export const useDeleteComment = (repository: Repository, pullRequest: PullReques
     throw new Error("Could not delete comment for pull request without id");
   }
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<unknown, Error, Comment>(
-    (comment) => apiClient.delete(requiredLink(comment, "delete")),
-    {
-      onSuccess: () => {
-        return invalidateQueries(
-          queryClient,
-          prQueryKey(repository, id),
-          prCommentsQueryKey(repository, id),
-          prMergeCheckQueryKey(repository, id),
-        );
-      },
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<unknown, Error, Comment>({
+    mutationFn: (comment) => apiClient.delete(requiredLink(comment, "delete")),
+
+    onSuccess: () => {
+      return invalidateQueries(
+        queryClient,
+        prQueryKey(repository, id),
+        prCommentsQueryKey(repository, id),
+        prMergeCheckQueryKey(repository, id),
+      );
     },
-  );
+  });
   return {
     remove: (comment: Comment) => mutate(comment),
     isLoading,
@@ -380,14 +413,17 @@ export const useUpdateComment = (repository: Repository, pullRequest: PullReques
   }
 
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<{}, Error, Comment>(
-    (comment) => apiClient.put(requiredLink(comment, "update"), comment),
-    {
-      onSuccess: () => {
-        return invalidateQueries(queryClient, prQueryKey(repository, id), prCommentsQueryKey(repository, id));
-      },
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<{}, Error, Comment>({
+    mutationFn: (comment) => apiClient.put(requiredLink(comment, "update"), comment),
+
+    onSuccess: () => {
+      return invalidateQueries(queryClient, prQueryKey(repository, id), prCommentsQueryKey(repository, id));
     },
-  );
+  });
   return {
     update: (comment: Comment) => mutate(comment),
     isLoading,
@@ -408,8 +444,12 @@ export const useUpdateCommentWithImages = (repository: Repository, pullRequest: 
   }
 
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<{}, Error, UpdateCommentWithImagesRequest>(
-    (updateRequest) => {
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<{}, Error, UpdateCommentWithImagesRequest>({
+    mutationFn: (updateRequest) => {
       const formData = new FormData();
       updateRequest.images.forEach((image) => formData.append(image.fileHash, image.file, image.fileHash));
       formData.append("comment", JSON.stringify(extractCommentWithFileTypes(updateRequest)));
@@ -421,12 +461,10 @@ export const useUpdateCommentWithImages = (repository: Repository, pullRequest: 
 
       return apiClient.httpRequestWithBinaryBody(options, requiredLink(updateRequest.comment, "updateWithImages"));
     },
-    {
-      onSuccess: () => {
-        return invalidateQueries(queryClient, prQueryKey(repository, id), prCommentsQueryKey(repository, id));
-      },
+    onSuccess: () => {
+      return invalidateQueries(queryClient, prQueryKey(repository, id), prCommentsQueryKey(repository, id));
     },
-  );
+  });
   return {
     update: (comment: Comment, images: CommentImage[]) => mutate({ comment, images }),
     isLoading,
@@ -441,19 +479,22 @@ export const useTransformComment = (repository: Repository, pullRequest: PullReq
   }
 
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<unknown, Error, PossibleTransition>(
-    (transition) => apiClient.post(requiredLink(transition, "transform"), transition),
-    {
-      onSuccess: () => {
-        return invalidateQueries(
-          queryClient,
-          prQueryKey(repository, id),
-          prCommentsQueryKey(repository, id),
-          prMergeCheckQueryKey(repository, id),
-        );
-      },
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<unknown, Error, PossibleTransition>({
+    mutationFn: (transition) => apiClient.post(requiredLink(transition, "transform"), transition),
+
+    onSuccess: () => {
+      return invalidateQueries(
+        queryClient,
+        prQueryKey(repository, id),
+        prCommentsQueryKey(repository, id),
+        prMergeCheckQueryKey(repository, id),
+      );
     },
-  );
+  });
   return {
     transform: (transition: PossibleTransition) => mutate(transition),
     isLoading,
@@ -481,24 +522,26 @@ export const useCreateComment = (repository: Repository, pullRequest: PullReques
     throw new Error("Could not create comment for pull request without id");
   }
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<{}, Error, CreateCommentRequest>(
-    (request) => {
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<{}, Error, CreateCommentRequest>({
+    mutationFn: (request) => {
       if (!request.url) {
         throw new Error("Could not create comment because create url is not defined");
       }
       return apiClient.post(request.url, request.comment);
     },
-    {
-      onSuccess: () => {
-        return invalidateQueries(
-          queryClient,
-          prQueryKey(repository, id),
-          prCommentsQueryKey(repository, id),
-          prMergeCheckQueryKey(repository, id),
-        );
-      },
+    onSuccess: () => {
+      return invalidateQueries(
+        queryClient,
+        prQueryKey(repository, id),
+        prCommentsQueryKey(repository, id),
+        prMergeCheckQueryKey(repository, id),
+      );
     },
-  );
+  });
   return {
     create: (url: string, comment: BasicComment) => mutate({ url, comment }),
     isLoading,
@@ -512,8 +555,12 @@ export const useCreateCommentWithImage = (repository: Repository, pullRequest: P
     throw new Error("Could not create comment for pull request without id");
   }
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error } = useMutation<{}, Error, CreateCommentWithImagesRequest>(
-    (request) => {
+  const {
+    mutate,
+    isPending: isLoading,
+    error,
+  } = useMutation<{}, Error, CreateCommentWithImagesRequest>({
+    mutationFn: (request) => {
       if (!request.url) {
         throw new Error("Could not create comment because create url is not defined");
       }
@@ -523,17 +570,15 @@ export const useCreateCommentWithImage = (repository: Repository, pullRequest: P
         formdata.append("comment", JSON.stringify(extractCommentWithFileTypes(request)));
       });
     },
-    {
-      onSuccess: () => {
-        return invalidateQueries(
-          queryClient,
-          prQueryKey(repository, id),
-          prCommentsQueryKey(repository, id),
-          prMergeCheckQueryKey(repository, id),
-        );
-      },
+    onSuccess: () => {
+      return invalidateQueries(
+        queryClient,
+        prQueryKey(repository, id),
+        prCommentsQueryKey(repository, id),
+        prMergeCheckQueryKey(repository, id),
+      );
     },
-  );
+  });
   return {
     create: (url: string, comment: BasicComment, images: CommentImage[]) => mutate({ url, comment, images }),
     isLoading,
@@ -543,15 +588,15 @@ export const useCreateCommentWithImage = (repository: Repository, pullRequest: P
 
 export const useComments = (repository: Repository, pullRequest: PullRequest) => {
   const id = pullRequest.id;
-  const { error, isLoading, data } = useQuery<Comments, Error>(
-    prCommentsQueryKey(repository, id || "new_pull_request"),
-    () => {
+  const { error, isLoading, data } = useQuery<Comments, Error>({
+    queryKey: prCommentsQueryKey(repository, id || "new_pull_request"),
+    queryFn: () => {
       if (pullRequest?._links?.comments) {
         return apiClient.get((pullRequest._links.comments as Link).href).then((response) => response.json());
       }
       return { _links: {}, _embedded: { pullRequestComments: [] } };
     },
-  );
+  });
 
   return {
     error,
@@ -565,16 +610,15 @@ export const useSubscription = (repository: Repository, pullRequest: PullRequest
   if (!id) {
     throw new Error("Could not read subscription for pull request without id");
   }
-  const { error, isLoading, data } = useQuery<HalRepresentation, Error>(
-    [...prQueryKey(repository, id), "subscription"],
-    () => {
+  const { error, isLoading, data } = useQuery<HalRepresentation, Error>({
+    queryKey: [...prQueryKey(repository, id), "subscription"],
+    queryFn: () => {
       if (pullRequest._links.subscription) {
         return apiClient.get((pullRequest._links.subscription as Link).href).then((response) => response.json());
       }
       return { _links: {} };
     },
-  );
-
+  });
   return {
     error,
     isLoading,
@@ -592,21 +636,25 @@ export const useUpdateSubscription = (repository: Repository, pullRequest: PullR
   const queryClient = useQueryClient();
   const {
     mutate: subscribe,
-    isLoading: subscribeLoading,
+    isPending: subscribeLoading,
     error: subscribeError,
-  } = useMutation<unknown, Error, void>(() => apiClient.post((data._links.subscribe as Link).href), {
+  } = useMutation<unknown, Error, void>({
+    mutationFn: () => apiClient.post((data._links.subscribe as Link).href),
     onSuccess: () => {
-      return queryClient.invalidateQueries([...prQueryKey(repository, id), "subscription"]);
+      return queryClient.invalidateQueries({
+        queryKey: [...prQueryKey(repository, id), "subscription"],
+      });
     },
   });
 
   const {
     mutate: unsubscribe,
-    isLoading: unsubscribeLoading,
+    isPending: unsubscribeLoading,
     error: unsubscribeError,
-  } = useMutation<unknown, Error, void>(() => apiClient.post((data._links.unsubscribe as Link).href), {
+  } = useMutation<unknown, Error, void>({
+    mutationFn: () => apiClient.post((data._links.unsubscribe as Link).href),
     onSuccess: () => {
-      return queryClient.invalidateQueries([...prQueryKey(repository, id), "subscription"]);
+      return queryClient.invalidateQueries({ queryKey: [...prQueryKey(repository, id), "subscription"] });
     },
   });
 
@@ -628,29 +676,31 @@ export const useUpdateReviewMark = (repository: Repository, pullRequest: PullReq
   const queryClient = useQueryClient();
   const {
     mutate: mark,
-    isLoading: markLoading,
+    isPending: markLoading,
     error: markError,
-  } = useMutation<unknown, Error, void>(
-    () => apiClient.post((pullRequest._links.reviewMark as Link).href.replace("{path}", filePath), {}),
-    {
-      onSuccess: () => {
-        return queryClient.invalidateQueries([...prQueryKey(repository, id)]);
-      },
+  } = useMutation<unknown, Error, void>({
+    mutationFn: () => apiClient.post((pullRequest._links.reviewMark as Link).href.replace("{path}", filePath), {}),
+
+    onSuccess: () => {
+      return queryClient.invalidateQueries({
+        queryKey: [...prQueryKey(repository, id)],
+      });
     },
-  );
+  });
 
   const {
     mutate: unmark,
-    isLoading: unmarkLoading,
+    isPending: unmarkLoading,
     error: unmarkError,
-  } = useMutation<unknown, Error, void>(
-    () => apiClient.delete((pullRequest._links.reviewMark as Link).href.replace("{path}", filePath)),
-    {
-      onSuccess: () => {
-        return queryClient.invalidateQueries([...prQueryKey(repository, id)]);
-      },
+  } = useMutation<unknown, Error, void>({
+    mutationFn: () => apiClient.delete((pullRequest._links.reviewMark as Link).href.replace("{path}", filePath)),
+
+    onSuccess: () => {
+      return queryClient.invalidateQueries({
+        queryKey: [...prQueryKey(repository, id)],
+      });
     },
-  );
+  });
 
   return {
     mark: () => mark(),
@@ -661,13 +711,13 @@ export const useUpdateReviewMark = (repository: Repository, pullRequest: PullReq
 };
 
 export const usePullRequestChanges = (repository: Repository, pullRequest: PullRequest) => {
-  const { error, isLoading, data } = useQuery<PullRequestChange[], Error>(
-    [...prQueryKey(repository, pullRequest?.id || pullRequest.source + pullRequest.target), "changes"],
-    async () => {
+  const { error, isLoading, data } = useQuery<PullRequestChange[], Error>({
+    queryKey: [...prQueryKey(repository, pullRequest?.id || pullRequest.source + pullRequest.target), "changes"],
+    queryFn: async () => {
       const url = requiredLink(pullRequest, "changes");
       return (await apiClient.get(url)).json();
     },
-  );
+  });
 
   return {
     error,
@@ -692,16 +742,20 @@ export const usePullRequestChangesets = (repository: Repository, pullRequest: Pu
     url += `?page=${page - 1}`;
   }
 
-  const { error, isLoading, data } = useQuery<ChangesetCollection, Error>(
-    [...prQueryKey(repository, pullRequest?.id || pullRequest.source + pullRequest.target), "changesets", page || ""],
-    () => {
+  const { error, isLoading, data } = useQuery<ChangesetCollection, Error>({
+    queryKey: [
+      ...prQueryKey(repository, pullRequest?.id || pullRequest.source + pullRequest.target),
+      "changesets",
+      page || "",
+    ],
+    queryFn: () => {
       if (!url) {
         throw new Error("Could not fetch pull request changesets because link is missing");
       }
 
       return apiClient.get(url).then((r) => r.json());
     },
-  );
+  });
 
   return {
     error,
@@ -717,14 +771,17 @@ export const usePullRequestConflicts = (repository: Repository, pullRequest: Pul
     throw new Error("Could not fetch conflicts for pull request without id");
   }
 
-  const { error, isLoading, data } = useQuery<Conflicts, Error>([...prQueryKey(repository, id), "conflicts"], () => {
-    return apiClient
-      .post(
-        requiredLink(pullRequest, "mergeConflicts"),
-        { sourceRevision: pullRequest.source, targetRevision: pullRequest.target },
-        "application/vnd.scmm-mergeCommand+json",
-      )
-      .then((r) => r.json());
+  const { error, isLoading, data } = useQuery<Conflicts, Error>({
+    queryKey: [...prQueryKey(repository, id), "conflicts"],
+    queryFn: () => {
+      return apiClient
+        .post(
+          requiredLink(pullRequest, "mergeConflicts"),
+          { sourceRevision: pullRequest.source, targetRevision: pullRequest.target },
+          "application/vnd.scmm-mergeCommand+json",
+        )
+        .then((r) => r.json());
+    },
   });
 
   return {
@@ -741,9 +798,9 @@ export const useCheckPullRequest = (
 ) => {
   const id = pullRequest.id ? `${pullRequest.id}:${pullRequest.target}` : `${pullRequest.source}:${pullRequest.target}`;
 
-  const { error, data } = useQuery<CheckResult, Error>(
-    [...prQueryKey(repository, id), "check"],
-    () => {
+  const { error, data } = useQuery<CheckResult, Error>({
+    queryKey: [...prQueryKey(repository, id), "check"],
+    queryFn: () => {
       const link = (pullRequest?._links?.check as Link)?.href ?? requiredLink(repository, "pullRequestCheck");
       return apiClient
         .get(
@@ -751,14 +808,14 @@ export const useCheckPullRequest = (
         )
         .then((r) => r.json());
     },
-    {
-      onSuccess: (result) => {
-        if (callback) {
-          callback(result);
-        }
-      },
-    },
-  );
+    enabled: !!pullRequest,
+  });
+
+  useEffect(() => {
+    if (data && callback) {
+      callback(data);
+    }
+  }, [data, callback]);
 
   return {
     error,
@@ -773,32 +830,28 @@ export const useMergeDryRun = (
 ) => {
   const id = pullRequest.id || pullRequest.source + pullRequest.target;
 
-  const { error, data, isLoading } = useQuery<MergeCheck, Error>(
-    prMergeCheckQueryKey(repository, id),
-    () => {
-      return apiClient.post((pullRequest._links.mergeCheck as Link).href).then((r) => r.json());
+  const { error, data, isLoading } = useQuery<MergeCheck, Error>({
+    queryKey: prMergeCheckQueryKey(repository, id),
+    queryFn: async () => {
+      const response = await apiClient.post((pullRequest._links.mergeCheck as Link).href);
+      return response.json();
     },
-    {
-      onSuccess: () => {
-        if (callback) {
-          callback(false);
-        }
-      },
-      onError: (err) => {
-        if (err instanceof NotFoundError && callback) {
-          callback(true);
-        }
-        if (err instanceof ConflictError) {
-          return {
-            mergeObstacles: data ? data.mergeObstacles : [],
-            hasConflicts: true,
-            mergePreventReason: data?.mergePreventReasons,
-          };
-        }
-      },
-      enabled: !!pullRequest?._links?.mergeCheck,
-    },
-  );
+    enabled: !!pullRequest?._links?.mergeCheck,
+  });
+
+  useEffect(() => {
+    if (data && callback) {
+      callback(false);
+    }
+  }, [data, callback]);
+
+  useEffect(() => {
+    if (error && callback) {
+      if (error instanceof NotFoundError) {
+        callback(true);
+      }
+    }
+  }, [error, callback]);
 
   return {
     isLoading,
@@ -854,9 +907,12 @@ const pullRequestBannerQueryKeys = (repository: Repository) => {
 };
 
 export const usePullRequestBanner = (repository: Repository) => {
-  const { error, data, isLoading } = useQuery<Banner[], Error>(pullRequestBannerQueryKeys(repository), async () => {
-    const response = await apiClient.get(requiredLink(repository, "pullRequestSuggestions"));
-    return await response.json();
+  const { error, data, isLoading } = useQuery<Banner[], Error>({
+    queryKey: pullRequestBannerQueryKeys(repository),
+    queryFn: async () => {
+      const response = await apiClient.get(requiredLink(repository, "pullRequestSuggestions"));
+      return await response.json();
+    },
   });
 
   return {
@@ -868,14 +924,12 @@ export const usePullRequestBanner = (repository: Repository) => {
 
 export const useDeletePullRequestBanner = (repository: Repository) => {
   const queryClient = useQueryClient();
-  const { mutate, isLoading } = useMutation<unknown, Error, Banner>(
-    (banner) => apiClient.delete(requiredLink(banner, "delete")),
-    {
-      onSuccess: () => {
-        return queryClient.invalidateQueries(pullRequestBannerQueryKeys(repository));
-      },
+  const { mutate, isPending: isLoading } = useMutation<unknown, Error, Banner>({
+    mutationFn: (banner) => apiClient.delete(requiredLink(banner, "delete")),
+    onSuccess: () => {
+      return queryClient.invalidateQueries({ queryKey: pullRequestBannerQueryKeys(repository) });
     },
-  );
+  });
 
   return { mutate, isLoading };
 };

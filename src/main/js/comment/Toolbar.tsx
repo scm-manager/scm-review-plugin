@@ -14,10 +14,11 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC } from "react";
+import React, { FC, ReactNode } from "react";
 
 type Props = {
   collapsed?: boolean;
+  children?: ReactNode;
 };
 
 const Toolbar: FC<Props> = ({ collapsed, children }) => {

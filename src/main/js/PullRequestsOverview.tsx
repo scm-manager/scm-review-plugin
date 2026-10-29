@@ -14,23 +14,23 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC, useCallback, useMemo, useState } from "react";
+import React, { FC, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Repository } from "@scm-manager/ui-types";
-import { ErrorPage, LinkPaginator, Loading, Notification, Subtitle, urls } from "@scm-manager/ui-components";
-import { useDocumentTitle } from "@scm-manager/ui-core";
-import StatusSelector from "./table/StatusSelector";
-import { usePullRequests } from "./pullRequest";
-import { PullRequest } from "./types/PullRequest";
-import { Redirect, useHistory, useLocation, useRouteMatch } from "react-router-dom";
-import PullRequestList from "./PullRequestList";
-import { LinkButton } from "@scm-manager/ui-buttons";
-import SortSelector from "./table/SortSelector";
+import { useNavigate, useLocation, Navigate, useParams } from "react-router";
 import styled from "styled-components";
-
-type Props = {
-  repository: Repository;
-};
+import { ErrorPage, LinkPaginator, Loading, Notification, Subtitle, urls } from "@scm-manager/ui-components";
+import { LinkButton, useDocumentTitle, useRepositoryFromParams } from "@scm-manager/ui-core";
+import SortSelector from "./table/SortSelector";
+import StatusSelector from "./table/StatusSelector";
+import { PullRequest } from "./types/PullRequest";
+import { usePullRequests } from "./pullRequest";
+import PullRequestList from "./PullRequestList";
+import {
+  PULL_REQUEST_CHANGESET_BASE,
+  resolveCreatePullRequest,
+  resolvePagedPullRequestOverview,
+  resolvePullRequestOverview,
+} from "./routes";
 
 const HeaderContainer = styled.div`
   gap: 0.5rem 1rem;
@@ -45,15 +45,17 @@ const NoGrowLinkButton = styled(LinkButton)`
   flex: 0 0 auto;
 `;
 
-const PullRequestsOverview: FC<Props> = ({ repository }) => {
+const PullRequestsOverview: FC = () => {
+  const repository = useRepositoryFromParams();
   const location = useLocation();
   const search = urls.getQueryStringFromLocation(location);
   const sortByQuery = urls.getValueStringFromLocationByKey(location, "sortBy") || "";
-  const match: { params: { page: string } } = useRouteMatch();
+  const url = resolvePullRequestOverview(repository);
+  const params = useParams<{ page: string }>();
   const [statusFilter, setStatusFilter] = useState<string>(search || "IN_PROGRESS");
   const [sortFilter, setSortFilter] = useState<string>(sortByQuery != "" ? sortByQuery : "LAST_MOD_DESC");
-  const history = useHistory();
-  const page = useMemo(() => urls.getPageFromMatch(match), [match]);
+  const navigate = useNavigate();
+  const page = parseInt(params.page || "1");
   const { data, error, isLoading } = usePullRequests(repository, {
     page,
     status: statusFilter,
@@ -71,8 +73,8 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
           name: repository.name,
         })
       : t("scm-review-plugin.pullRequestsWithStatusAndNamespaceName", {
-        status: t(`scm-review-plugin.pullRequest.titlePart.${statusFilter}`),
-        namespace: repository.namespace,
+          status: t(`scm-review-plugin.pullRequest.titlePart.${statusFilter}`),
+          namespace: repository.namespace,
           name: repository.name,
         }),
   );
@@ -81,9 +83,9 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
     (newStatus: string, newSort: string) => {
       setStatusFilter(newStatus);
       setSortFilter(newSort);
-      history.push(`1?q=${newStatus}&sortBy=${newSort}`);
+      navigate(`${url}/?q=${newStatus}&sortBy=${newSort}`);
     },
-    [history]
+    [navigate, url],
   );
 
   if (isLoading || !data) {
@@ -104,10 +106,9 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
     );
   }
 
-  const url = `/repo/${repository.namespace}/${repository.name}/pull-requests`;
-
   if (data && data.pageTotal < page && page > 1) {
-    return <Redirect to={`${url}/${data.pageTotal}`} />;
+    //TODO: Fix navigation to page 0 instead of last page
+    return <Navigate replace to={resolvePagedPullRequestOverview(repository, page)} />;
   }
 
   return (
@@ -116,19 +117,19 @@ const PullRequestsOverview: FC<Props> = ({ repository }) => {
       <HeaderContainer className="is-flex is-flex-wrap-wrap is-justify-content-space-between mb-3">
         <SortFilterContainer className="is-flex is-flex-wrap-wrap">
           <StatusSelector
-            handleTypeChange={newStatus => handleQueryChange(newStatus, sortFilter)}
+            handleTypeChange={(newStatus) => handleQueryChange(newStatus, sortFilter)}
             status={statusFilter}
           />
-          <SortSelector handleTypeChange={newSort => handleQueryChange(statusFilter, newSort)} sortBy={sortFilter} />
+          <SortSelector handleTypeChange={(newSort) => handleQueryChange(statusFilter, newSort)} sortBy={sortFilter} />
         </SortFilterContainer>
         {data?._links?.create ? (
-          <NoGrowLinkButton variant="primary" to={`${url}/add/changesets/`}>
+          <NoGrowLinkButton variant="primary" to={resolveCreatePullRequest(repository, PULL_REQUEST_CHANGESET_BASE)}>
             {t("scm-review-plugin.pullRequests.createButton")}
           </NoGrowLinkButton>
         ) : null}
       </HeaderContainer>
       <PullRequestList pullRequests={data._embedded?.pullRequests as PullRequest[]} repository={repository} />
-      <LinkPaginator collection={data} page={page} filter={statusFilter} />
+      <LinkPaginator collection={data} page={page} filter={statusFilter} baseUrl={url.substring(1)} />
     </>
   );
 };

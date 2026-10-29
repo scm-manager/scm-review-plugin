@@ -16,14 +16,11 @@
 
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Level, MarkdownView, Notification } from "@scm-manager/ui-components";
-import { CardList } from "@scm-manager/ui-layout";
-import { Menu } from "@scm-manager/ui-overlays";
-import { Icon } from "@scm-manager/ui-buttons";
 import styled from "styled-components";
+import { MarkdownView } from "@scm-manager/ui-components";
+import { CardList, Field, Icon, Label, Level, Menu, Notification } from "@scm-manager/ui-core";
 import AddDefaultTaskDialog from "./AddDefaultTaskDialog";
 import EditDefaultTaskDialog from "./EditDefaultTaskDialog";
-import { Field, Label } from "@scm-manager/ui-forms";
 
 type DefaultTaskEditorProps = {
   defaultTasks: string[];

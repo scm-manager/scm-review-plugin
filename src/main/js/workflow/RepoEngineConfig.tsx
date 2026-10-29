@@ -17,12 +17,12 @@
 import React, { FC } from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import EngineConfigEditor from "./EngineConfigEditor";
+import { useRepositoryFromParams } from "@scm-manager/ui-core";
+import {Link} from "@scm-manager/ui-types";
 
-type Props = {
-  link: string;
-};
-
-const RepoEngineConfig: FC<Props> = ({ link }) => {
+const RepoEngineConfig: FC = () => {
+  const repository = useRepositoryFromParams();
+  const link = (repository._links["workflowConfig"] as Link).href
   return <Configuration link={link} render={props => <EngineConfigEditor {...props} global={false} />} />;
 };
 

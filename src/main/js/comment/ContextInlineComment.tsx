@@ -15,7 +15,7 @@
  */
 
 import React, { FC } from "react";
-import { DateFromNow } from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-core";
 import { Comment } from "../types/PullRequest";
 import CommentSpacingWrapper from "./CommentSpacingWrapper";
 import CommentMetadata from "./CommentMetadata";

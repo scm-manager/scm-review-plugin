@@ -16,16 +16,25 @@
 
 import React, { FC, useCallback, useState } from "react";
 import { SubmitButton } from "@scm-manager/ui-components";
-import { Checkbox, ErrorNotification, Label, Level, Loading, Subtitle, useDocumentTitleForRepository } from "@scm-manager/ui-core";
+import {
+  Checkbox,
+  ErrorNotification,
+  Label,
+  Level,
+  Loading,
+  Subtitle,
+  useDocumentTitleForRepository,
+} from "@scm-manager/ui-core";
 import { Repository } from "@scm-manager/ui-types";
 import { CheckResult, PullRequest } from "./types/PullRequest";
 import EditForm from "./EditForm";
 import { useTranslation } from "react-i18next";
-import { useHistory, useRouteMatch } from "react-router-dom";
 import { useCheckPullRequest, useUpdatePullRequest } from "./pullRequest";
 import { useBranches } from "@scm-manager/ui-api";
 import { CheckResultDisplay } from "./CheckResultDisplay";
 import { BranchEditForm } from "./BranchEditForm";
+import { useNavigate } from "react-router";
+import { PULL_REQUEST_COMMENT_BASE, resolveSinglePullRequest } from "./routes";
 
 type Props = {
   repository: Repository;
@@ -35,8 +44,7 @@ type Props = {
 const Edit: FC<Props> = ({ repository, pullRequest }) => {
   const [t] = useTranslation("plugins");
   useDocumentTitleForRepository(repository, t("scm-review-plugin.edit.title"));
-  const match = useRouteMatch();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [modifiedPullRequest, setModifiedPullRequest] = useState<PullRequest>(pullRequest);
   const [targetBranchValid, setTargetBranchValid] = useState(true);
   const { data: branchesData, error: branchesError, isLoading: branchesLoading } = useBranches(repository);
@@ -45,18 +53,13 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
   });
 
   const pullRequestUpdated = useCallback(() => {
-    history.push({
-      pathname: `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/comments/`,
-      state: {
-        from: match.url + "/updated"
-      }
-    });
-  }, [history, match, pullRequest, repository]);
+    navigate(resolveSinglePullRequest(repository, pullRequest, PULL_REQUEST_COMMENT_BASE));
+  }, [navigate, pullRequest, repository]);
 
   const { error, isLoading, update } = useUpdatePullRequest(repository, pullRequest, pullRequestUpdated);
 
   const handleFormChange = useCallback((pr: Partial<PullRequest>) => {
-    setModifiedPullRequest(prev => ({ ...prev, ...pr }));
+    setModifiedPullRequest((prev) => ({ ...prev, ...pr }));
   }, []);
 
   const submit = () => {
@@ -79,7 +82,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
           branches={branchesData?._embedded?.branches}
           branchesLoading={branchesLoading}
           branchesError={branchesError}
-          handleFormChange={target => handleFormChange({ target })}
+          handleFormChange={(target) => handleFormChange({ target })}
         />
         <CheckResultDisplay checkResult={checkResult} />
         <EditForm
@@ -93,7 +96,7 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
             <Label>{t("scm-review-plugin.pullRequest.status")}</Label>
             <Checkbox
               checked={modifiedPullRequest?.status === "DRAFT"}
-              onChange={event => handleFormChange({ status: event.target.checked ? "DRAFT" : "OPEN" })}
+              onChange={(event) => handleFormChange({ status: event.target.checked ? "DRAFT" : "OPEN" })}
               label={t("scm-review-plugin.pullRequest.changeToDraft")}
               helpText={t("scm-review-plugin.pullRequest.changeToDraftHelpText")}
               disabled={modifiedPullRequest.status === "MERGED" || modifiedPullRequest.status === "REJECTED"}

@@ -16,7 +16,7 @@
 
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import styled from "styled-components";
-import { useBranch } from "@scm-manager/ui-api";
+import { useBranch, useSubject } from "@scm-manager/ui-api";
 import { Branch, Hunk, Repository } from "@scm-manager/ui-types";
 import {
   AnnotationFactoryContext,
@@ -35,7 +35,7 @@ import StyledDiffWrapper from "./StyledDiffWrapper";
 import AddCommentButton from "./AddCommentButton";
 import FileComments from "./FileComments";
 import MarkReviewedButton from "./MarkReviewedButton";
-import { useDiffCollapseState } from "./useDiffCollapseReducer";
+import { ANONYMOUS_COLLAPSE_STATE_OWNER, useDiffCollapseState } from "./useDiffCollapseReducer";
 import ChangeNotificationToast from "../ChangeNotificationToast";
 import { useInvalidateDiff } from "../pullRequest";
 import { useChangeNotificationContext } from "../ChangeNotificationContext";
@@ -122,7 +122,9 @@ const Diff: FC<Props> = ({
   sourceBranch,
   stickyHeaderHeight,
 }) => {
-  const { actions, isCollapsed } = useDiffCollapseState(pullRequest);
+  const { isLoading: isSubjectLoading, me } = useSubject();
+  const collapseStateOwner = isSubjectLoading ? undefined : me?.name || ANONYMOUS_COLLAPSE_STATE_OWNER;
+  const { actions, isCollapsed, allCollapsed } = useDiffCollapseState(repository, pullRequest, collapseStateOwner);
   const [openInlineEditors, setOpenInlineEditors] = useState<InlineEditorState>({});
   const [openFileEditors, setOpenFileEditors] = useState<string[]>([]);
   const { changed, ignore, reload } = useHasChanged(repository, pullRequest, sourceBranch);
@@ -316,6 +318,7 @@ const Diff: FC<Props> = ({
         hunkClass={(hunk: Hunk) => (hunk.expansion ? "expanded" : "commentable")}
         diffUrl={diffUrl}
         actions={actions}
+        allCollapsed={allCollapsed}
         pullRequestComments={comments?._embedded.pullRequestComments || []}
         stickyHeader={stickyHeaderHeight}
         reviewedFiles={reviewedFiles}

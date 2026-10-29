@@ -15,13 +15,13 @@
  */
 
 import React, { FC } from "react";
+import { Trans, useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import classNames from "classnames";
 import styled from "styled-components";
-import { DateFromNow, HitProps, Notification, RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
+import { HitProps, Notification, RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
+import { CardList, CardListBox, DateFromNow } from "@scm-manager/ui-core";
 import { HighlightedHitField, ValueHitField } from "@scm-manager/ui-types";
-import { Link } from "react-router-dom";
-import { CardList, CardListBox } from "@scm-manager/ui-layout";
-import { Trans, useTranslation } from "react-i18next";
 import { evaluateTagColor } from "../pullRequest";
 
 const StyledLink = styled(Link)`
@@ -72,7 +72,7 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
             i18nKey="scm-review-plugin.search.subtitle"
             values={{
               source: (hit.fields.source as ValueHitField)?.value as string,
-              target: (hit.fields.target as ValueHitField)?.value as string
+              target: (hit.fields.target as ValueHitField)?.value as string,
             }}
             components={{
               highlight: <span className="has-text-default" />,
@@ -86,14 +86,14 @@ const PullRequestHitRenderer: FC<HitProps> = ({ hit }) => {
                   }
                 />
               ),
-              space: <span />
+              space: <span />,
             }}
           />
         </div>
         <span
           className={classNames(
             "tag is-rounded ml-auto",
-            `is-${evaluateTagColor((hit.fields.status as ValueHitField)?.value as string)}`
+            `is-${evaluateTagColor((hit.fields.status as ValueHitField)?.value as string)}`,
           )}
           aria-label={t("scm-review-plugin.pullRequests.aria.status")}
         >

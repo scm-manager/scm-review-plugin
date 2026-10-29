@@ -511,8 +511,14 @@
           "userBypass": "User",
           "groupBypass": "Group",
           "add": {
-            "label": "Add",
-            "helpText": "Adds this user or group to the list of exceptions."
+            "user": {
+              "label": "User",
+              "placeholder": "Add user"
+            },
+            "group": {
+              "label": "Group",
+              "placeholder": "Add group"
+            }
           },
           "bypassedUserOrGroup": "Excepted user or group",
           "deleteBypass": "Delete exception",

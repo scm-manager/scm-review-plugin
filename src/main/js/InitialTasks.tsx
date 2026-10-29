@@ -15,11 +15,10 @@
  */
 
 import React, { FC } from "react";
-import { CardList } from "@scm-manager/ui-layout";
-import { MarkdownView, Notification } from "@scm-manager/ui-components";
-import { Button, Icon } from "@scm-manager/ui-buttons";
-import styled from "styled-components";
 import { useTranslation } from "react-i18next";
+import styled from "styled-components";
+import { MarkdownView, Notification } from "@scm-manager/ui-components";
+import { Button, CardList, Icon } from "@scm-manager/ui-core";
 
 type Props = {
   value: string[];

@@ -16,7 +16,7 @@
 
 import { DisplayedUser, HalRepresentation, Repository } from "@scm-manager/ui-types";
 import { apiClient, ApiResult, getResponseJson, requiredLink } from "@scm-manager/ui-api";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export type PullRequestTemplate = HalRepresentation & {
   defaultReviewers: DisplayedUser[];
@@ -30,11 +30,11 @@ export type PullRequestTemplate = HalRepresentation & {
 export default function usePullRequestTemplate(
   repository: Repository,
   source: string,
-  target: string
+  target: string,
 ): ApiResult<PullRequestTemplate> {
   const link = requiredLink(repository, "pullRequestTemplate");
-  return useQuery<PullRequestTemplate, Error>(
-    ["repository", repository.namespace, repository.name, "pullRequestTemplate", source, target],
-    () => apiClient.get(`${link}?source=${source}&target=${target}`).then(getResponseJson)
-  );
+  return useQuery<PullRequestTemplate, Error>({
+    queryKey: ["repository", repository.namespace, repository.name, "pullRequestTemplate", source, target],
+    queryFn: () => apiClient.get(`${link}?source=${source}&target=${target}`).then(getResponseJson),
+  });
 }

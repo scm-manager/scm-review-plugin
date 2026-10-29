@@ -16,9 +16,9 @@
 
 import React, { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "@scm-manager/ui-types";
 import { Button, CommitAuthor, Textarea } from "@scm-manager/ui-components";
-import { Checkbox } from "@scm-manager/ui-forms";
+import { Checkbox } from "@scm-manager/ui-core";
+import { Link } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
 
 type Props = {

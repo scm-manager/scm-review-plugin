@@ -15,7 +15,7 @@
  */
 
 import React, { FC, useEffect, useState } from "react";
-import { Redirect, useRouteMatch } from "react-router-dom";
+import { Navigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
 import { usePullRequestChangesets } from "./pullRequest";
@@ -25,9 +25,10 @@ import {
   LinkPaginator,
   Loading,
   NotFoundError,
-  Notification
+  Notification,
 } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
+import { usePullRequestMatchRoute } from "./routes";
 
 type Props = {
   repository: Repository;
@@ -37,22 +38,24 @@ type Props = {
 
 const Changesets: FC<Props> = ({ repository, pullRequest, shouldFetchChangesets = true }) => {
   const [t] = useTranslation("plugins");
-  const match = useRouteMatch<{ page: string }>();
+  const params = useParams<{ page: string }>();
   const [page, setPage] = useState(1);
+  const match = usePullRequestMatchRoute();
+  const url = match.pathnameBase;
 
   const { data: changesets, error, isLoading } = usePullRequestChangesets(repository, pullRequest, page);
 
   useEffect(() => {
-    if (match.params.page) {
-      setPage(parseInt(match.params.page, 10));
+    if (params.page) {
+      setPage(parseInt(params.page, 10));
     }
-  }, [match]);
+  }, [params]);
 
   const renderPaginator = () => {
     if (changesets && changesets.pageTotal > 1) {
       return (
         <div className="panel-footer">
-          <LinkPaginator collection={changesets} page={page} />
+          <LinkPaginator collection={changesets} page={page} baseUrl={url.substring(1)} />
         </div>
       );
     }
@@ -66,8 +69,7 @@ const Changesets: FC<Props> = ({ repository, pullRequest, shouldFetchChangesets 
   } else if (isLoading) {
     return <Loading />;
   } else if (changesets && changesets.pageTotal < page && page > 1) {
-    const url = `/repo/${repository.namespace}/${repository.name}/pull-request/${pullRequest.id}/changesets/${changesets.pageTotal}`;
-    return <Redirect to={url} />;
+    return <Navigate to={`${url}/${changesets.pageTotal}`} />;
   } else if (changesets && changesets._embedded && changesets._embedded.changesets) {
     if (changesets._embedded.changesets?.length !== 0) {
       return (

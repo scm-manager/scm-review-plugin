@@ -14,7 +14,7 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC, ReactText, ClipboardEvent } from "react";
+import React, { FC, ClipboardEvent } from "react";
 import styled from "styled-components";
 import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
 import { BasicComment } from "../types/PullRequest";
@@ -23,7 +23,7 @@ import { getUserSuggestions } from "./mention";
 import classNames from "classnames";
 
 const StyledSuggestion = styled.div<{ focused: boolean }>`
-  background-color: ${props => props.focused && "var(--scm-column-selection)"};
+  background-color: ${(props) => props.focused && "var(--scm-column-selection)"};
   :hover {
     background-color: var(--scm-column-selection);
   }
@@ -76,7 +76,7 @@ type Props = {
   value?: string;
   placeholder?: string;
   comment?: BasicComment;
-  onAddMention: (id: ReactText, display: string) => void;
+  onAddMention: (id: string | number, display: string) => void;
   onChange: (event: any) => void;
   onSubmit: () => void;
   onCancel?: () => void;
@@ -93,7 +93,7 @@ const MentionTextarea: FC<Props> = ({
   onSubmit,
   onCancel,
   onPaste,
-  autofocus
+  autofocus,
 }) => {
   const userSuggestions = useUserSuggestions();
 
@@ -128,7 +128,7 @@ const MentionTextarea: FC<Props> = ({
             markup="@[__id__]"
             displayTransform={(id: string) => {
               return comment?.mentions && comment.mentions.length > 0
-                ? `@${comment.mentions?.filter(entry => entry.id === id)[0]?.displayName}`
+                ? `@${comment.mentions?.filter((entry) => entry.id === id)[0]?.displayName}`
                 : `@${id}`;
             }}
             trigger="@"
@@ -139,14 +139,14 @@ const MentionTextarea: FC<Props> = ({
               search: string,
               highlightedDisplay: React.ReactNode,
               index: number,
-              focused: boolean
+              focused: boolean,
             ) => (
               <StyledSuggestion className={classNames("", { focused: focused })} index={index}>
                 {highlightedDisplay}
               </StyledSuggestion>
             )}
             style={{
-              color: "transparent"
+              color: "transparent",
             }}
             appendSpaceOnAdd={true}
           />

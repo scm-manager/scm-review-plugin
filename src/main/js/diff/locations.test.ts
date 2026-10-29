@@ -14,6 +14,9 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
+import { expect, vi } from "vitest";
+import type { Change, DiffEventContext, File, Hunk } from "@scm-manager/ui-components";
+import { Location } from "../types/PullRequest";
 import {
   createFileLocation,
   createHunkIdFromLocation,
@@ -21,8 +24,6 @@ import {
   isInlineLocation,
   createChangeIdFromLocation
 } from "./locations";
-import { Change, DiffEventContext } from "@scm-manager/ui-components";
-import { Location } from "../types/PullRequest";
 
 describe("test createChangeIdFromLocation", () => {
   const locationHead: Location = {
@@ -108,23 +109,30 @@ describe("test isInlineLocation", () => {
 });
 
 describe("test createFileLocation", () => {
+  const addedFileHunk = {
+    content: "@@ -0,0 +1,1 @@",
+    changes: [] as Change[]
+  };
+
   const createAddedFileContext = () => {
     return {
+      hunk: addedFileHunk,
       file: {
         oldPath: "/dev/null",
         newPath: "a.txt",
         type: "add"
-      }
+      } as File
     };
   };
 
   const createDeletedFileContext = () => {
     return {
+      hunk: addedFileHunk,
       file: {
         oldPath: "a.txt",
         newPath: "/dev/null",
         type: "delete"
-      }
+      } as File
     };
   };
 
@@ -156,10 +164,11 @@ describe("test createInlineLocation", () => {
         oldPath: "/dev/null",
         newPath: "a.txt",
         type: "add"
-      },
+      } as File,
       hunk: {
-        content: "@@ -0,0 +1,100 @@"
-      },
+        content: "@@ -0,0 +1,100 @@",
+        changes: []
+      } as Hunk,
       change,
       changeId: "irrelevant"
     };

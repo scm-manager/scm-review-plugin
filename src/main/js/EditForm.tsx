@@ -15,10 +15,10 @@
  */
 
 import React, { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
-import { InputField, Textarea } from "@scm-manager/ui-components";
-import { Checkbox } from "@scm-manager/ui-forms";
 import { useTranslation } from "react-i18next";
 import { useUserSuggestions } from "@scm-manager/ui-api";
+import { InputField, Textarea } from "@scm-manager/ui-components";
+import { Checkbox } from "@scm-manager/ui-core";
 import { PullRequest } from "./types/PullRequest";
 import ReviewerInput from "./ReviewerInput";
 

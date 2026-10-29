@@ -17,13 +17,18 @@
 import React, { FC } from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import EngineConfigEditor from "./EngineConfigEditor";
+import { useIndexLink } from "@scm-manager/ui-api";
+import { Loading } from "@scm-manager/ui-core";
 
-type Props = {
-  link: string;
-};
+const GlobalEngineConfig: FC = () => {
+  // 1. Link über die Hook abrufen
+  const link = useIndexLink("workflowConfig");
 
-const GlobalEngineConfig: FC<Props> = ({ link }) => {
-  return <Configuration link={link} render={props => <EngineConfigEditor {...props} global={true} />} />;
+  if (!link) {
+    return <Loading />;
+  }
+
+  return <Configuration link={link} render={(props) => <EngineConfigEditor {...props} global={true} />} />;
 };
 
 export default GlobalEngineConfig;

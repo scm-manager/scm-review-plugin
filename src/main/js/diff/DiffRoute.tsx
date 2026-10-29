@@ -40,7 +40,7 @@ const DiffRoute: FC<Props> = ({
   target,
   sourceBranch,
   stickyHeaderHeight,
-  mergePreventReasons
+  mergePreventReasons,
 }) => {
   const { t } = useTranslation("plugins");
   const { data: comments, isLoading, error } = useComments(repository, pullRequest);
@@ -49,13 +49,13 @@ const DiffRoute: FC<Props> = ({
     const baseUrl = `/repo/${repository.namespace}/${repository.name}/code/sources`;
     const sourceLink = {
       url: `${baseUrl}/${pullRequest && pullRequest.source && encodeURIComponent(pullRequest.source)}/${file.newPath}/`,
-      label: t("scm-review-plugin.diff.jumpToSource")
+      label: t("scm-review-plugin.diff.jumpToSource"),
     };
     const targetLink = pullRequest &&
       pullRequest.target && {
         url: `${baseUrl}/${encodeURIComponent(pullRequest.target)}/${file.oldPath}`,
 
-        label: t("scm-review-plugin.diff.jumpToTarget")
+        label: t("scm-review-plugin.diff.jumpToTarget"),
       };
 
     const links = [];
@@ -80,7 +80,7 @@ const DiffRoute: FC<Props> = ({
       <JumpToFileButton key={url} tooltip={label} link={url} icon="file-code" />
     ));
 
-    const hasConflict = mergePreventReasons.find(reason => isFileContainedInMergePreventReason(reason, file));
+    const hasConflict = mergePreventReasons.find((reason) => isFileContainedInMergePreventReason(reason, file));
 
     if (hasConflict) {
       const url = `/repo/${repository.namespace}/${repository.name}/pull-request/${
@@ -94,7 +94,7 @@ const DiffRoute: FC<Props> = ({
           link={url}
           icon="fas fa-exclamation-triangle"
           color="warning"
-        />
+        />,
       ];
     }
 

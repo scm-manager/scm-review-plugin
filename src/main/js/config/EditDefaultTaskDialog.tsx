@@ -16,11 +16,9 @@
 
 import React, { FC, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Menu } from "@scm-manager/ui-overlays";
-import { Button, Icon } from "@scm-manager/ui-buttons";
-import { MarkdownView, createA11yId } from "@scm-manager/ui-components";
-import { Field, Label, Textarea } from "@scm-manager/ui-forms";
 import styled from "styled-components";
+import { MarkdownView, createA11yId } from "@scm-manager/ui-components";
+import { Button, Field, Icon, Label, Menu, Textarea } from "@scm-manager/ui-core";
 
 const MarkDownWrapper = styled.pre`
   height: 10rem;

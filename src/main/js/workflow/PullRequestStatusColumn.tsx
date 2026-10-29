@@ -15,16 +15,14 @@
  */
 
 import React, { FC } from "react";
-import { useStatusbar } from "./useStatusbar";
-import { SmallLoadingSpinner } from "@scm-manager/ui-components";
-import { Repository } from "@scm-manager/ui-types";
-import { PullRequest } from "../types/PullRequest";
-import { StatusIcon, StatusVariants } from "@scm-manager/ui-core";
-import ModalRow from "./ModalRow";
-import { Popover } from "@scm-manager/ui-overlays";
 import { useTranslation } from "react-i18next";
-import { Card } from "@scm-manager/ui-layout";
+import { SmallLoadingSpinner } from "@scm-manager/ui-components";
+import { Card, Popover, StatusIcon, StatusVariants } from "@scm-manager/ui-core";
+import { Repository } from "@scm-manager/ui-types";
 import { Result } from "../types/EngineConfig";
+import { PullRequest } from "../types/PullRequest";
+import ModalRow from "./ModalRow";
+import { useStatusbar } from "./useStatusbar";
 
 type Props = {
   repository: Repository;

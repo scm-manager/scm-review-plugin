@@ -1,0 +1,2 @@
+- type: changed
+  description: File diff collapse states are now remembered across visits

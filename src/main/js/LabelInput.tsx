@@ -16,7 +16,7 @@
 
 import React, { FC, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChipInputField } from "@scm-manager/ui-forms";
+import { ChipInputField } from "@scm-manager/ui-core";
 
 const LabelInput: FC<{ labels: string[]; onChange: (newValues: string[]) => void }> = ({ labels, onChange }) => {
   const [t] = useTranslation("plugins");

@@ -15,10 +15,9 @@
  */
 
 import React, { FC } from "react";
-import { Branch, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
-import { Menu } from "@scm-manager/ui-overlays";
-import { Icon } from "@scm-manager/ui-buttons";
+import { Icon, Menu } from "@scm-manager/ui-core";
+import { Branch, Repository } from "@scm-manager/ui-types";
 
 type Props = {
   repository: Repository;

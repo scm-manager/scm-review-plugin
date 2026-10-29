@@ -513,8 +513,14 @@
           "userBypass": "Benutzer",
           "groupBypass": "Gruppe",
           "add": {
-            "label": "Hinzufügen",
-            "helpText": "Fügt diesen Benutzer oder diese Gruppe zu den Ausnahmen hinzu."
+            "user": {
+              "label": "Benutzer",
+              "placeholder": "Benutzer eingeben"
+            },
+            "group": {
+              "label": "Gruppe",
+              "placeholder": "Gruppe eingeben"
+            }
           },
           "bypassedUserOrGroup": "Ausgenommener Benutzer bzw. Gruppe",
           "deleteBypass": "Ausnahme löschen",

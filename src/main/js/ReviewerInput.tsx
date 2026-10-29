@@ -16,10 +16,10 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useUserOptions } from "@scm-manager/ui-api";
-import { ChipInputField, Combobox } from "@scm-manager/ui-forms";
-import { DisplayedUser } from "@scm-manager/ui-types";
 import classNames from "classnames";
+import { useUserOptions } from "@scm-manager/ui-api";
+import { ChipInputField, Combobox } from "@scm-manager/ui-core";
+import { DisplayedUser } from "@scm-manager/ui-types";
 
 const ReviewerInput: FC<{
   values: string[];

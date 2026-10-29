@@ -15,23 +15,23 @@
  */
 
 import React, { FC } from "react";
-import { DateFromNow, Notification, RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
+import classNames from "classnames";
+import styled from "styled-components";
+import { RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
+import { CardList, DateFromNow, Notification } from "@scm-manager/ui-core";
 import {
   DisplayedUser,
   HalRepresentationWithEmbedded,
   HitField,
   ValueHitField,
-  EmbeddedRepository
+  EmbeddedRepository,
 } from "@scm-manager/ui-types";
-import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { EmergencyMergeTag, SystemTag } from "../comment/tags";
-import styled from "styled-components";
-import { CardList } from "@scm-manager/ui-layout";
-import classNames from "classnames";
 
 const HitTitleWrapper = styled.div`
-    text-wrap: wrap;
+  text-wrap: wrap;
 `;
 
 type Embedded = EmbeddedRepository & {

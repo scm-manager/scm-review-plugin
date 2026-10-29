@@ -14,19 +14,23 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React from "react";
+import React, { FC } from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import ConfigEditor from "./ConfigEditor";
+import { useRepositoryFromParams } from "@scm-manager/ui-core";
+import { Link } from "@scm-manager/ui-types";
 
-type Props = {
-  link: string;
+const RepositoryConfig: FC = () => {
+  const repository = useRepositoryFromParams();
+  const link = (repository._links["pullRequestConfig"] as Link).href;
+  return (
+    <Configuration
+      link={link}
+      render={(props) => {
+        return <ConfigEditor {...props} configType="repository" />;
+      }}
+    />
+  );
 };
-
-class RepositoryConfig extends React.Component<Props> {
-  render() {
-    const { link } = this.props;
-    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="repository" />} />;
-  }
-}
 
 export default RepositoryConfig;

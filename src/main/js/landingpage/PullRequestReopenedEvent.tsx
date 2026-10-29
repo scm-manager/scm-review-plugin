@@ -16,7 +16,8 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
+import { CardColumnSmall } from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-core";
 import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 
 const PullRequestReopenedEvent = ({ event }) => {
@@ -27,7 +28,7 @@ const PullRequestReopenedEvent = ({ event }) => {
       {t("scm-review-plugin.landingpage.reopened.footer", {
         author: event.author,
         name: event.name,
-        namespace: event.namespace
+        namespace: event.namespace,
       })}
     </>
   );

@@ -15,10 +15,9 @@
  */
 
 import React, { FC } from "react";
-import { DateFromNow, SmallLoadingSpinner } from "@scm-manager/ui-components";
-import { Button, Icon, LinkButton } from "@scm-manager/ui-core";
+import { SmallLoadingSpinner } from "@scm-manager/ui-components";
+import { DateFromNow, Icon, LinkButton } from "@scm-manager/ui-core";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
 import { useDeletePullRequestBanner } from "./pullRequest";
 import { Banner } from "./types/PullRequest";
@@ -44,7 +43,7 @@ const StyledBanner = styled.div`
 `;
 
 const PullRequestBanner: FC<Props> = ({ repository, banner, createPullRequestLocation }) => {
-  const { mutate, isLoading } = useDeletePullRequestBanner(repository)
+  const { mutate, isLoading } = useDeletePullRequestBanner(repository);
   const [t] = useTranslation("plugins");
 
   return (
@@ -62,11 +61,15 @@ const PullRequestBanner: FC<Props> = ({ repository, banner, createPullRequestLoc
         <LinkButton to={createPullRequestLocation} variant="info">
           {t("scm-review-plugin.pullRequests.createButton")}
         </LinkButton>
-        {isLoading ? <SmallLoadingSpinner className="ml-4"/> : <button
-          className="tag is-delete flex-shrink-0 is-clickable is-rounded ml-4"
-          onClick={() => mutate(banner)}
-          aria-label={t("scm-review-plugin.pullRequests.closeBanner")}
-        />}
+        {isLoading ? (
+          <SmallLoadingSpinner className="ml-4" />
+        ) : (
+          <button
+            className="tag is-delete flex-shrink-0 is-clickable is-rounded ml-4"
+            onClick={() => mutate(banner)}
+            aria-label={t("scm-review-plugin.pullRequests.closeBanner")}
+          />
+        )}
       </div>
     </StyledBanner>
   );

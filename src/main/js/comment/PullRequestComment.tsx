@@ -14,11 +14,12 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC, ReactText, useState } from "react";
-import classNames from "classnames";
+import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
+import classNames from "classnames";
 import styled from "styled-components";
-import { ConfirmAlert, confirmAlert, DateFromNow, ErrorNotification } from "@scm-manager/ui-components";
+import { ConfirmAlert } from "@scm-manager/ui-components";
+import { AbsoluteDate, ErrorNotification } from "@scm-manager/ui-core";
 import { Repository } from "@scm-manager/ui-types";
 import { Comment, CommentImage, Mention, PossibleTransition, PullRequest } from "../types/PullRequest";
 import { useDeleteComment, useTransformComment, useUpdateComment, useUpdateCommentWithImages } from "../pullRequest";
@@ -71,6 +72,7 @@ const PullRequestComment: FC<Props> = ({
   const [commentText, setCommentText] = useState(comment.comment || "");
   const [mentions, setMentions] = useState<Mention[]>(comment.mentions || []);
   const [replyEditor, setReplyEditor] = useState<Comment>();
+  const [transitionCommand, setTransitionCommand] = useState<{ transition: string; i18nKey: string } | null>(null);
 
   const { remove, isLoading: deleteLoading, error: deleteError } = useDeleteComment(repository, pullRequest);
 
@@ -119,47 +121,57 @@ const PullRequestComment: FC<Props> = ({
     transform(transformation);
   };
 
-  const confirmTransition = (transition: string, translationKey?: string) => {
-    if (translationKey) {
-      confirmAlert({
-        title: t(translationKey + ".title"),
-        message: t(translationKey + ".message"),
-        buttons: [
-          {
-            className: "is-outlined",
-            label: t(translationKey + ".submit"),
-            onClick: () => executeTransition(transition),
-          },
-          {
-            label: t(translationKey + ".cancel"),
-            onClick: () => null,
-            autofocus: true,
-          },
-        ],
-      });
-    } else {
-      executeTransition(transition);
-    }
-  };
-
   const handleChanges = (event: any) => {
     setChanged(true);
     setCommentText(event.target.value);
   };
 
+  const confirmTransition = (transition: string, i18nKey?: string) => {
+    if (i18nKey) {
+      setTransitionCommand({ transition, i18nKey });
+    } else {
+      executeTransition(transition);
+    }
+  };
+
+  const cancelTransition = () => {
+    setTransitionCommand(null);
+  };
+
   const createEditIcons = () => {
     return (
-      <CommentActionToolbar
-        parent={parent}
-        comment={comment}
-        collapsed={collapsed}
-        createLink={createLink}
-        onUpdate={startUpdate}
-        onDelete={() => setShowConfirmDeleteModal(true)}
-        deleteLoading={deleteLoading}
-        onReply={() => setReplyEditor(comment)}
-        onTransitionChange={confirmTransition}
-      />
+      <>
+        <CommentActionToolbar
+          parent={parent}
+          comment={comment}
+          collapsed={collapsed}
+          createLink={createLink}
+          onUpdate={startUpdate}
+          onDelete={() => setShowConfirmDeleteModal(true)}
+          deleteLoading={deleteLoading}
+          onReply={() => setReplyEditor(comment)}
+          onTransitionChange={confirmTransition}
+        />
+        {transitionCommand && (
+          <ConfirmAlert
+            title={t(`${transitionCommand.i18nKey}.title`)}
+            message={t(`${transitionCommand.i18nKey}.message`)}
+            close={cancelTransition}
+            buttons={[
+              {
+                className: "is-outlined",
+                label: t(`${transitionCommand.i18nKey}.submit`),
+                onClick: () => executeTransition(transitionCommand.transition),
+              },
+              {
+                label: t(`${transitionCommand.i18nKey}.cancel`),
+                onClick: cancelTransition,
+                autofocus: true,
+              },
+            ]}
+          />
+        )}
+      </>
     );
   };
 
@@ -169,7 +181,7 @@ const PullRequestComment: FC<Props> = ({
         <MentionTextarea
           value={commentText}
           comment={{ ...comment, comment: commentText, type: commentType, mentions }}
-          onAddMention={(id: ReactText, display: string) => {
+          onAddMention={(id: string | number, display: string) => {
             setMentions([...mentions, { id: id as string, displayName: display, mail: "" }]);
           }}
           onChange={handleChanges}
@@ -261,7 +273,7 @@ const PullRequestComment: FC<Props> = ({
                 </AuthorName>
               </LinkWithInheritColor>
               <CommentMetadata>
-                <DateFromNow date={comment.date} /> <LastEdited comment={comment} />
+                <AbsoluteDate date={comment.date} /> <LastEdited comment={comment} />
               </CommentMetadata>
               {collectTags(comment)}
               <br />

@@ -16,21 +16,19 @@
 
 import React, { FC } from "react";
 import { ErrorNotification, Loading, Notification } from "@scm-manager/ui-components";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
 import PullRequestDetails from "./PullRequestDetails";
-import { Repository } from "@scm-manager/ui-types";
 import { usePullRequest } from "./pullRequest";
-import Edit from "./Edit";
 import { useTranslation } from "react-i18next";
+import { useRepositoryFromParams } from "@scm-manager/ui-core";
+import { useParams } from "react-router";
+import { useLayoutWide } from "@scm-manager/ui-core";
 
-type Props = {
-  repository: Repository;
-};
-
-const SinglePullRequest: FC<Props> = ({ repository }) => {
+const PullRequestDetailsWrapper: FC = () => {
   const [t] = useTranslation("plugins");
-  const match = useRouteMatch<{ pullRequestNumber?: string }>();
-  const { data, error, isLoading } = usePullRequest(repository, match?.params?.pullRequestNumber);
+  const repository = useRepositoryFromParams();
+  const match = useParams<{ pullRequestId: string }>();
+  const { data, error, isLoading } = usePullRequest(repository, match.pullRequestId);
+  useLayoutWide();
 
   if (!repository._links.pullRequest) {
     return <Notification type="danger">{t("scm-review-plugin.pullRequests.forbidden")}</Notification>;
@@ -44,16 +42,7 @@ const SinglePullRequest: FC<Props> = ({ repository }) => {
     return <Loading />;
   }
 
-  return (
-    <Switch>
-      <Route path={`${match.url}/edit`} exact>
-        <Edit repository={repository} pullRequest={data} />
-      </Route>
-      <Route path={`${match.url}`}>
-        <PullRequestDetails repository={repository} pullRequest={data} />
-      </Route>
-    </Switch>
-  );
+  return <PullRequestDetails repository={repository} pullRequest={data} />;
 };
 
-export default SinglePullRequest;
+export default PullRequestDetailsWrapper;

@@ -14,18 +14,28 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC } from "react";
+import React, { FC, PropsWithChildren } from "react";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import { urls } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import Changesets from "./Changesets";
-import { Link, Redirect, Route, Switch, useLocation, useRouteMatch } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useMatch } from "react-router";
 import RootComments from "./comment/RootCommentContainer";
 import { MergePreventReason, PullRequest } from "./types/PullRequest";
 import DiffRoute from "./diff/DiffRoute";
 import MergeConflicts from "./MergeConflicts";
 import RootChangesContainer from "./change/RootChangesContainer";
-import { StatusIcon } from "@scm-manager/ui-core";
+import { SINGLE_REPOSITORY_BASE_ROUTE, StatusIcon } from "@scm-manager/ui-core";
+import {
+  PAGE_BASE,
+  PULL_REQUEST_CHANGE_BASE,
+  PULL_REQUEST_CHANGESET_BASE,
+  PULL_REQUEST_COMMENT_BASE,
+  PULL_REQUEST_CONFLICT_BASE,
+  PULL_REQUEST_DIFF_BASE,
+  SINGLE_PULL_REQUEST_BASE,
+  usePullRequestMatchRoute,
+} from "./routes";
 
 type Props = {
   repository: Repository;
@@ -41,22 +51,10 @@ type Props = {
   stickyHeaderHeight: number;
 };
 
-export function isUrlSuffixMatching(baseURL: string, url: string, suffix: string) {
-  let strippedUrl = url.substring(baseURL.length);
-  if (strippedUrl.startsWith("/")) {
-    strippedUrl = strippedUrl.substring(1);
-  }
-  const slash = strippedUrl.indexOf("/");
-  if (slash >= 0) {
-    strippedUrl = strippedUrl.substring(0, slash);
-  }
-  return strippedUrl === suffix;
-}
-
-type SingleTabProps = {
+type SingleTabProps = PropsWithChildren<{
   name: string;
   activeTab: (type: string) => boolean;
-};
+}>;
 
 const SingleTab: FC<SingleTabProps> = ({ name, activeTab, children }) => {
   return (
@@ -149,7 +147,7 @@ type RouteProps = {
   stickyHeaderHeight: number;
 };
 
-const Routes: FC<RouteProps> = ({
+const PullRequestRoutes: FC<RouteProps> = ({
   repository,
   source,
   target,
@@ -162,78 +160,119 @@ const Routes: FC<RouteProps> = ({
   sourceBranch,
   stickyHeaderHeight,
 }) => {
+  const match = useMatch(
+    `/${SINGLE_REPOSITORY_BASE_ROUTE}/${repository.namespace}/${repository.name}/${SINGLE_PULL_REQUEST_BASE}/:id`,
+  );
+  if (match) {
+    return (
+      <Navigate replace to={urls.concat(baseURL + "/" + pullRequest.id, pullRequest ? "comments" : "changesets")} />
+    );
+  }
+
   let routeComments = null;
   let routeChangeset = null;
-  let routeChangesetPagination = null;
   let routeDiff = null;
   let routeConflicts = null;
   let routePrChanges = null;
+
   if (!isClosed || (pullRequest.sourceRevision && pullRequest.targetRevision)) {
     const sourceRevision = isClosed && pullRequest.sourceRevision ? pullRequest.sourceRevision : source;
     const targetRevision = isClosed && pullRequest.targetRevision ? pullRequest.targetRevision : target;
-    routeComments = (
-      <Route path={`${baseURL}/comments`} exact>
-        <div id="tabpanel-comments" role="tabpanel" aria-labelledby="tab-comments">
-          {pullRequest ? <RootComments repository={repository} pullRequest={pullRequest} /> : null}
-        </div>
-      </Route>
-    );
+
     routeChangeset = (
-      <Route path={`${baseURL}/changesets`} exact>
-        <div id="tabpanel-changesets" role="tabpanel" aria-labelledby="tab-changesets">
-          <Changesets repository={repository} pullRequest={pullRequest} shouldFetchChangesets={shouldFetchChangesets} />
-        </div>
-      </Route>
-    );
-    routeChangesetPagination = (
-      <Route path={`${baseURL}/changesets/:page`} exact>
-        <div id="tabpanel-changesets" role="tabpanel" aria-labelledby="tab-changesets">
-          <Changesets repository={repository} pullRequest={pullRequest} shouldFetchChangesets={shouldFetchChangesets} />
-        </div>
-      </Route>
-    );
-    routeDiff = (
-      <Route path={`${baseURL}/diff`} exact>
-        <div id="tabpanel-diff" role="tabpanel" aria-labelledby="tab-diff">
-          <DiffRoute
-            repository={repository}
-            pullRequest={pullRequest}
-            source={sourceRevision}
-            target={targetRevision}
-            sourceBranch={sourceBranch}
-            stickyHeaderHeight={stickyHeaderHeight}
-            mergePreventReasons={mergePreventReasons}
-          />
-        </div>
-      </Route>
-    );
-    routeConflicts = !mergeHasNoConflict && (
-      <Route path={`${baseURL}/conflicts`} exact>
-        <div id="tabpanel-conflicts" role="tabpanel" aria-labelledby="tab-conflicts">
-          <MergeConflicts repository={repository} pullRequest={pullRequest} mergePreventReasons={mergePreventReasons} />
-        </div>
+      <Route path={PULL_REQUEST_CHANGESET_BASE}>
+        <Route
+          index
+          element={
+            <div id="tabpanel-changesets" role="tabpanel" aria-labelledby="tab-changesets">
+              <Changesets
+                repository={repository}
+                pullRequest={pullRequest}
+                shouldFetchChangesets={shouldFetchChangesets}
+              />
+            </div>
+          }
+        />
+        <Route
+          path={PAGE_BASE}
+          element={
+            <div id="tabpanel-changesets" role="tabpanel" aria-labelledby="tab-changesets">
+              <Changesets
+                repository={repository}
+                pullRequest={pullRequest}
+                shouldFetchChangesets={shouldFetchChangesets}
+              />
+            </div>
+          }
+        />
       </Route>
     );
 
+    routeDiff = (
+      <Route
+        path={PULL_REQUEST_DIFF_BASE}
+        element={
+          <div id="tabpanel-diff" role="tabpanel" aria-labelledby="tab-diff">
+            <DiffRoute
+              repository={repository}
+              pullRequest={pullRequest}
+              source={sourceRevision}
+              target={targetRevision}
+              sourceBranch={sourceBranch}
+              stickyHeaderHeight={stickyHeaderHeight}
+              mergePreventReasons={mergePreventReasons}
+            />
+          </div>
+        }
+      />
+    );
+
+    routeComments = (
+      <Route
+        path={PULL_REQUEST_COMMENT_BASE}
+        element={
+          <div id="tabpanel-comments" role="tabpanel" aria-labelledby="tab-comments">
+            {pullRequest ? <RootComments repository={repository} pullRequest={pullRequest} /> : null}
+          </div>
+        }
+      />
+    );
+
     routePrChanges = (
-      <Route path={`${baseURL}/changes`} exact>
-        <div id="tabpanel-conflicts" role="tabpanel" aria-labelledby="tab-conflicts">
-          <RootChangesContainer pullRequest={pullRequest} repository={repository} />
-        </div>
-      </Route>
+      <Route
+        path={PULL_REQUEST_CHANGE_BASE}
+        element={
+          <div id="tabpanel-conflicts" role="tabpanel" aria-labelledby="tab-conflicts">
+            <RootChangesContainer pullRequest={pullRequest} repository={repository} />
+          </div>
+        }
+      />
+    );
+
+    routeConflicts = !mergeHasNoConflict && (
+      <Route
+        path={PULL_REQUEST_CONFLICT_BASE}
+        element={
+          <div id="tabpanel-conflicts" role="tabpanel" aria-labelledby="tab-conflicts">
+            <MergeConflicts
+              repository={repository}
+              pullRequest={pullRequest}
+              mergePreventReasons={mergePreventReasons}
+            />
+          </div>
+        }
+      />
     );
   }
 
   return (
-    <Switch>
-      <Redirect from={baseURL} to={urls.concat(baseURL, pullRequest ? "comments" : "changesets")} exact />
+    <Routes>
       {routeComments}
       {routeChangeset}
-      {routeChangesetPagination}
       {routeDiff}
       {routeConflicts}
       {routePrChanges}
-    </Switch>
+    </Routes>
   );
 };
 
@@ -246,12 +285,12 @@ const PullRequestInformation: FC<Props> = ({
   sourceBranch,
   ...restProps
 }) => {
-  const location = useLocation();
-  const match = useRouteMatch();
-  const baseURL = match.url;
+  const match = usePullRequestMatchRoute();
+  const baseURL = match.pathnameBase.substring(0, match.pathnameBase.lastIndexOf("/"));
 
   const activeTab = (suffix: string) => {
-    return isUrlSuffixMatching(baseURL, location.pathname, suffix);
+    // @ts-ignore
+    return match.params.tab === suffix;
   };
   const isClosedPullRequest = status === "MERGED" || status === "REJECTED";
 
@@ -265,7 +304,7 @@ const PullRequestInformation: FC<Props> = ({
         targetBranchDeleted={targetBranchDeleted}
         mergeHasNoConflict={mergeHasNoConflict}
       />
-      <Routes
+      <PullRequestRoutes
         {...restProps}
         pullRequest={pullRequest}
         isClosed={isClosedPullRequest}

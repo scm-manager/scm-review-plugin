@@ -21,6 +21,8 @@ import { binder } from "@scm-manager/ui-extensions";
 import { AvatarImage, CardColumnSmall, Icon, Tag } from "@scm-manager/ui-components";
 import ReviewerIcon from "../table/ReviewerIcon";
 import { DataType } from "./DataType";
+import { SINGLE_REPOSITORY_BASE_ROUTE } from "@scm-manager/ui-core";
+import { SINGLE_PULL_REQUEST_BASE } from "../routes";
 
 type Props = {
   data: DataType;
@@ -63,10 +65,10 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   const [t] = useTranslation("plugins");
   const { namespace, name, pullRequest } = data;
 
-  const link = `/repo/${namespace}/${name}/pull-request/${pullRequest.id}`;
+  const link = `/${SINGLE_REPOSITORY_BASE_ROUTE}/${namespace}/${name}/${SINGLE_PULL_REQUEST_BASE}/${pullRequest.id}`;
   const person = {
     name: data.pullRequest.author?.displayName,
-    mail: data.pullRequest.author?.mail
+    mail: data.pullRequest.author?.mail,
   };
   const avatar = binder.hasExtension("avatar.factory") ? (
     <AvatarImage className="level-item" person={person} />

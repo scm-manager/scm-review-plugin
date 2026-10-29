@@ -17,16 +17,18 @@
 import React from "react";
 import { Configuration } from "@scm-manager/ui-components";
 import ConfigEditor from "./ConfigEditor";
+import { useIndexLink } from "@scm-manager/ui-api";
+import { Loading } from "@scm-manager/ui-core";
 
-type Props = {
-  link: string;
-};
+const GlobalConfig: React.FC = () => {
+  // 1. Hook aufrufen, um den Link zu erhalten
+  const link = useIndexLink("pullRequestConfig");
 
-class GlobalConfig extends React.Component<Props> {
-  render() {
-    const { link } = this.props;
-    return <Configuration link={link} render={props => <ConfigEditor {...props} configType="global" />} />;
+  if (!link) {
+    return <Loading />;
   }
-}
+
+  return <Configuration link={link} render={(renderProps) => <ConfigEditor {...renderProps} configType="global" />} />;
+};
 
 export default GlobalConfig;

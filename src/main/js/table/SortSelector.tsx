@@ -16,9 +16,9 @@
 
 import React, { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Select } from "@scm-manager/ui-forms";
 import styled from "styled-components";
 import { useGeneratedId } from "@scm-manager/ui-components";
+import { Select } from "@scm-manager/ui-core";
 
 const NoTextWrapLabel = styled.label`
   text-wrap: nowrap;

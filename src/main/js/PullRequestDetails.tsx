@@ -25,17 +25,15 @@ import {
   BackendError,
   Button,
   ButtonGroup,
-  DateFromNow,
   devices,
   ErrorNotification,
   Loading,
   Tag,
   Tooltip,
 } from "@scm-manager/ui-components";
-import { LinkButton, Icon, useDocumentTitle, Notification } from "@scm-manager/ui-core";
+import { AbsoluteDate, LinkButton, Icon, useDocumentTitle, Notification } from "@scm-manager/ui-core";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import {
-  invalidateQueries,
   prQueryKey,
   prsQueryKey,
   useMergeDryRun,
@@ -61,7 +59,7 @@ import SourceTargetBranchDisplay from "./SourceTargetBranchDisplay";
 import DeleteSourceBranchButton from "./DeleteSourceBranchButton";
 import LabelsList from "./LabelsList";
 import ReopenButton from "./ReopenButton";
-import { useQueryClient } from "react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import ResizeObserver from "resize-observer-polyfill";
 
 type Props = {
@@ -188,7 +186,7 @@ const UserEntry: FC<UserEntryProps> = ({ labelKey, displayName, date }) => {
       <UserField>
         <div className="is-inline-block has-text-weight-bold">{displayName}</div>
         &nbsp;
-        {date ? <DateFromNow date={date} /> : null}
+        {date ? <AbsoluteDate date={date} /> : null}
       </UserField>
     </div>
   );
@@ -255,12 +253,13 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   }, [pullRequest]);
   const queryClient = useQueryClient();
   useEffect(() => {
-    invalidateQueries(queryClient, prsQueryKey(repository), prQueryKey(repository, pullRequest.id!));
+    queryClient.invalidateQueries({ queryKey: prsQueryKey(repository) });
+    queryClient.invalidateQueries({ queryKey: prQueryKey(repository, pullRequest.id!) });
   }, [queryClient, pullRequest.id, repository, branch]);
 
   const [stickyHeaderHeight, setStickyHeaderHeight] = useState(0);
 
-  const enableHeaderRef = useCallback((node) => {
+  const enableHeaderRef = useCallback((node: any) => {
     if (node !== null) {
       const intersectionObserver = new IntersectionObserver((entries) => {
         const entry = entries[0];
@@ -275,7 +274,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
     }
   }, []);
 
-  const contentHeightRef = useCallback((node) => {
+  const contentHeightRef = useCallback((node: any) => {
     if (node !== null) {
       const resizeObserver = new ResizeObserver((entries) => {
         const entry = entries[0];

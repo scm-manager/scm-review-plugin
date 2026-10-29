@@ -15,15 +15,14 @@
  */
 
 import React, { FC } from "react";
-import { Repository } from "@scm-manager/ui-types";
-import { AvatarImage, DateFromNow, SmallLoadingSpinner } from "@scm-manager/ui-components";
-import { Popover } from "@scm-manager/ui-overlays";
-import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 import styled from "styled-components";
-import { PullRequest } from "./types/PullRequest";
+import { AvatarImage, SmallLoadingSpinner } from "@scm-manager/ui-components";
+import { Card, DateFromNow, Popover } from "@scm-manager/ui-core";
 import { extensionPoints } from "@scm-manager/ui-extensions";
-import { Card } from "@scm-manager/ui-layout";
+import { Repository } from "@scm-manager/ui-types";
+import { PullRequest } from "./types/PullRequest";
 
 const PullRequestEntry = styled.div`
   border-radius: 5px;

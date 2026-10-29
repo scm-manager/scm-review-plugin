@@ -14,7 +14,7 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@scm-manager/ui-components";
 import { Result } from "../types/EngineConfig";
 import { HalRepresentation, Link, Repository } from "@scm-manager/ui-types";
@@ -32,19 +32,17 @@ export const useStatusbar = (repository: Repository, pullRequest: PullRequest) =
     throw new Error("Could not fetch statusbar for pull request without id");
   }
 
-  const { error, isLoading, data } = useQuery<StatusbarResult | undefined, Error>(
-    [...prQueryKey(repository, id), "statusbar"],
-    () => {
-      return apiClient.get((pullRequest._links.workflowResult as Link).href).then(response => response.json());
+  const { error, isLoading, data } = useQuery<StatusbarResult | undefined, Error>({
+    queryKey: [...prQueryKey(repository, id), "statusbar"],
+    queryFn: () => {
+      return apiClient.get((pullRequest._links.workflowResult as Link).href).then((response) => response.json());
     },
-    {
-      enabled: !!pullRequest._links.workflowResult
-    }
-  );
+    enabled: !!pullRequest._links.workflowResult,
+  });
 
   return {
     error,
     isLoading,
-    data
+    data,
   };
 };

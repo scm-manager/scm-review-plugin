@@ -15,16 +15,15 @@
  */
 
 import React, { FC } from "react";
-import { AnnotationFactory, DiffFile, FileControlFactory, Modal } from "@scm-manager/ui-components";
-import { mapCommentToFile } from "./commentToFileMapper";
-import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import { Comment } from "../types/PullRequest";
-import { createChangeIdFromLocation, escapeWhitespace } from "../diff/locations";
-
-import ContextInlineComment from "./ContextInlineComment";
-import { Icon, LinkButton } from "@scm-manager/ui-buttons";
 import { useHistory } from "react-router-dom";
+import styled from "styled-components";
+import { AnnotationFactory, DiffFile, FileControlFactory, Modal } from "@scm-manager/ui-components";
+import { Icon, LinkButton } from "@scm-manager/ui-core";
+import { createChangeIdFromLocation, escapeWhitespace } from "../diff/locations";
+import { Comment } from "../types/PullRequest";
+import { mapCommentToFile } from "./commentToFileMapper";
+import ContextInlineComment from "./ContextInlineComment";
 
 const ContextFileControl: FileControlFactory = file => {
   const history = useHistory();

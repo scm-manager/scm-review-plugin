@@ -16,7 +16,8 @@
 
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
+import { CardColumnSmall } from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-core";
 import { DataType } from "./DataType";
 import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 

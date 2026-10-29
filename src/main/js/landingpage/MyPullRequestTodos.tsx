@@ -15,9 +15,9 @@
  */
 
 import React, { FC } from "react";
-import { Tag } from "@scm-manager/ui-components";
+import { Tag, CardColumnSmall } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-core";
 import { DataType } from "./DataType";
 import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 
@@ -34,11 +34,11 @@ const PullRequestTodos: FC<Props> = ({ task }) => {
         color={"info"}
         label={t("scm-review-plugin.landingpage.todo.todo", {
           open: pullRequest.tasks.done,
-          count: pullRequest.tasks.todo + pullRequest.tasks.done
+          count: pullRequest.tasks.todo + pullRequest.tasks.done,
         })}
         title={t("scm-review-plugin.landingpage.todo.todoTitle", {
           open: pullRequest.tasks.done,
-          count: pullRequest.tasks.todo + pullRequest.tasks.done
+          count: pullRequest.tasks.todo + pullRequest.tasks.done,
         })}
       />{" "}
       <strong>{t("scm-review-plugin.landingpage.todo.title", pullRequest)}</strong>

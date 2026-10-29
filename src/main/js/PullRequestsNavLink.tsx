@@ -14,29 +14,29 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React from "react";
+import React, { FC } from "react";
 import { SecondaryNavigationItem } from "@scm-manager/ui-components";
-import { WithTranslation, withTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
+import { useRepositoryFromParams } from "@scm-manager/ui-core";
+import { resolvePullRequestOverview } from "./routes";
 
-type Props = WithTranslation & {
-  url: string;
-  activeWhenMatch: (route: any) => boolean;
+export const ACTIVE_WHEN_MATCH = ".*\\/repo\\/.+\\/.+\\/pull-requests?(\\/.*)?";
+
+const PullRequestsNavLink: FC = () => {
+  const [t] = useTranslation("plugins");
+  const repository = useRepositoryFromParams();
+  const url = resolvePullRequestOverview(repository);
+
+  return (
+    <SecondaryNavigationItem
+      to={url}
+      icon="fas fa-code-branch fa-rotate-180"
+      label={t("scm-review-plugin.navLink.pullRequest")}
+      activeWhenMatch={ACTIVE_WHEN_MATCH}
+      activeOnlyWhenExact={false}
+      title={t("scm-review-plugin.navLink.pullRequest")}
+    />
+  );
 };
 
-class PullRequestsNavLink extends React.Component<Props> {
-  render() {
-    const { url, activeWhenMatch, t } = this.props;
-
-    return (
-      <SecondaryNavigationItem
-        to={`${url}/pull-requests/`}
-        icon="fas fa-code-branch fa-rotate-180"
-        label={t("scm-review-plugin.navLink.pullRequest")}
-        activeWhenMatch={activeWhenMatch}
-        title={t("scm-review-plugin.navLink.pullRequest")}
-      />
-    );
-  }
-}
-
-export default withTranslation("plugins")(PullRequestsNavLink);
+export default PullRequestsNavLink;

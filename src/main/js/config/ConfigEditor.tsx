@@ -15,18 +15,17 @@
  */
 
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Trans, useTranslation, WithTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { Checkbox, Icon, Select, Subtitle, Textarea, Title } from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
 import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
 import DefaultTaskEditor from "./DefaultTaskEditor";
 import { isEqual } from "lodash-es";
-import { Prompt } from "react-router-dom";
 import LabelInput from "../LabelInput";
 import ReviewerInput from "../ReviewerInput";
 
-type Props = WithTranslation & {
+type Props = {
   onConfigurationChange: (config: State, valid: boolean) => void;
   initialConfiguration: Config;
   configType: "global" | "namespace" | "repository";
@@ -76,12 +75,9 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
     commitMessageTemplate,
   } = state;
 
-  // @ts-ignore
-  // @ts-ignore
-  // @ts-ignore
   return (
     <>
-      <Prompt message={t("scm-review-plugin.config.navigationPrompt")} when={hasChanges} />
+      {/* TODO: add blocker again to prevent users from leaving page when changes were made but not saved */}
       {configType === "global" ? (
         <Title title={t("scm-review-plugin.config.title")} />
       ) : (

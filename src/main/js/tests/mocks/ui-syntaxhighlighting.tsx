@@ -14,13 +14,8 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-type Route = {
-  location: {
-    pathname: string;
-  };
-};
+import React from "react";
 
-export function isRouteMatching(route: Route) {
-  const regex = /.*\/repo\/.+\/.+\/pull-requests?(\/.*)?/;
-  return !!route.location.pathname.match(regex);
-}
+export const SyntaxHighlighter = (_props: any) => null;
+export const isUrlSuffixMatching = (_base: string, _url: string, _suffix: string) => false;
+

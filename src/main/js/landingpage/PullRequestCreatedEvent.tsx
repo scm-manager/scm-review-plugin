@@ -16,7 +16,8 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { CardColumnSmall, DateFromNow } from "@scm-manager/ui-components";
+import { CardColumnSmall } from "@scm-manager/ui-components";
+import { DateFromNow } from "@scm-manager/ui-core";
 import { SmallPullRequestIcon } from "./SmallPullRequestIcon";
 
 const PullRequestCreatedEvent = ({ event }) => {
@@ -27,7 +28,7 @@ const PullRequestCreatedEvent = ({ event }) => {
       {t("scm-review-plugin.landingpage.created.footer", {
         author: event.author,
         namespace: event.namespace,
-        name: event.name
+        name: event.name,
       })}
     </>
   );
