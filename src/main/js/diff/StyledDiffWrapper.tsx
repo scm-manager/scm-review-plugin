@@ -27,19 +27,19 @@ const CommentableWrapper = styled.div`
     background-color: var(--sh-selected-color) !important;
   }
 
-  tbody.commentable .diff-gutter:hover::after {
+  .commentable .diff-gutter:hover::after {
     font-family: "Font Awesome 5 Free";
     content: " \\f075";
     color: var(--scm-column-selection);
   }
 
-  tbody.expanded .diff-gutter {
+  .expanded .diff-gutter {
     cursor: default;
   }
 `;
 
 const NotCommentableWrapper = styled.div`
-  tbody.expanded .diff-gutter {
+  .expanded .diff-gutter {
     cursor: default;
   }
 `;
