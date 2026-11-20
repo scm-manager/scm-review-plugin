@@ -15,7 +15,8 @@
  */
 
 import React, { FC, useState } from "react";
-import { Button, ErrorNotification, Level, Loading, Radio, SubmitButton } from "@scm-manager/ui-components";
+import { ErrorNotification, Level, Loading } from "@scm-manager/ui-core";
+import { Button, Radio, SubmitButton } from "@scm-manager/ui-components";
 import { BasicComment, CommentImage, CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 import { useCreateComment, useCreateCommentWithImage } from "../pullRequest";

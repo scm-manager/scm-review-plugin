@@ -17,7 +17,8 @@
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Branch, Repository } from "@scm-manager/ui-types";
-import { AddButton, ErrorNotification, Loading, SubSubtitle } from "@scm-manager/ui-components";
+import { ErrorNotification, Loading, SubSubtitle } from "@scm-manager/ui-core";
+import { AddButton } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
 import styled from "styled-components";
 import { usePullRequests } from "./pullRequest";

@@ -16,7 +16,8 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AddButton, Button, InputField, Level, Notification } from "@scm-manager/ui-components";
+import { Level, Notification } from "@scm-manager/ui-core";
+import { AddButton, Button, InputField } from "@scm-manager/ui-components";
 import styled from "styled-components";
 import { BranchProtection } from "../types/Config";
 

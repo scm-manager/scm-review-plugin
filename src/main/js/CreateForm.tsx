@@ -16,7 +16,8 @@
 
 import React, { FC } from "react";
 import { Branch } from "@scm-manager/ui-types";
-import { ErrorNotification, Select } from "@scm-manager/ui-components";
+import { ErrorNotification } from "@scm-manager/ui-core";
+import { Select } from "@scm-manager/ui-components";
 import { CheckResult, PullRequest } from "./types/PullRequest";
 import { useTranslation } from "react-i18next";
 import EditForm from "./EditForm";

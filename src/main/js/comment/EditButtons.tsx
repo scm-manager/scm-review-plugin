@@ -15,7 +15,8 @@
  */
 
 import React, { FC, useState } from "react";
-import { Level, SubmitButton, Button, ConfirmAlert } from "@scm-manager/ui-components";
+import { Level } from "@scm-manager/ui-core";
+import { SubmitButton, Button, ConfirmAlert } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { Comment } from "../types/PullRequest";
 

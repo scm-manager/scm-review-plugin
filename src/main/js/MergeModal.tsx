@@ -15,7 +15,8 @@
  */
 
 import React, { FC, useEffect, useRef, useState } from "react";
-import { Button, Modal, Notification, SubmitButton } from "@scm-manager/ui-components";
+import { Notification } from "@scm-manager/ui-core";
+import { Button, Modal, SubmitButton } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";

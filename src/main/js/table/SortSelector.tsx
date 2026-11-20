@@ -17,8 +17,7 @@
 import React, { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-import { useGeneratedId } from "@scm-manager/ui-components";
-import { Select } from "@scm-manager/ui-core";
+import { Select, useAriaId } from "@scm-manager/ui-core";
 
 const NoTextWrapLabel = styled.label`
   text-wrap: nowrap;
@@ -40,7 +39,7 @@ const SortSelector: FC<Props> = ({ handleTypeChange, sortBy }) => {
       })),
     [t, types],
   );
-  const selectId = useGeneratedId();
+  const selectId = useAriaId();
 
   return (
     <span className="is-flex">

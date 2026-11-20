@@ -19,14 +19,8 @@ import { Navigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
 import { usePullRequestChangesets } from "./pullRequest";
-import {
-  ChangesetList,
-  ErrorNotification,
-  LinkPaginator,
-  Loading,
-  NotFoundError,
-  Notification,
-} from "@scm-manager/ui-components";
+import { ErrorNotification, Loading, Notification } from "@scm-manager/ui-core";
+import { ChangesetList, LinkPaginator, NotFoundError } from "@scm-manager/ui-components";
 import { PullRequest } from "./types/PullRequest";
 import { usePullRequestMatchRoute } from "./routes";
 

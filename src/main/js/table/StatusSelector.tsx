@@ -16,8 +16,7 @@
 
 import React, { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useGeneratedId } from "@scm-manager/ui-components";
-import { Select } from "@scm-manager/ui-core";
+import { Select, useAriaId } from "@scm-manager/ui-core";
 
 type Props = {
   handleTypeChange: (p: string) => void;
@@ -36,7 +35,7 @@ const StatusSelector: FC<Props> = ({ handleTypeChange, status, className }) => {
       })),
     [t, types]
   );
-  const selectId = useGeneratedId();
+  const selectId = useAriaId();
 
   return (
     <span className="is-flex">

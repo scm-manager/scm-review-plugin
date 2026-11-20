@@ -17,7 +17,8 @@
 import React, { FC, useState } from "react";
 import { ProtectionBypass } from "../types/Config";
 import { useTranslation } from "react-i18next";
-import { Autocomplete, Button, Icon, Notification, Radio } from "@scm-manager/ui-components";
+import { Icon, Notification, Tooltip } from "@scm-manager/ui-core";
+import { Autocomplete, Button, Radio } from "@scm-manager/ui-components";
 import { AutocompleteObject, Link, Option } from "@scm-manager/ui-types";
 import { useIndexLinks } from "@scm-manager/ui-api";
 import styled from "styled-components";
@@ -40,11 +41,16 @@ const useAutoCompleteLinks = () => {
 
 const PermissionIcon: FC<{ bypass: ProtectionBypass }> = ({ bypass }) => {
   const [t] = useTranslation("plugins");
-  if (bypass.group) {
-    return <Icon title={t("scm-review-plugin.config.branchProtection.bypasses.groupBypass")} name="user-friends" />;
-  } else {
-    return <Icon title={t("scm-review-plugin.config.branchProtection.bypasses.userBypass")} name="user" />;
-  }
+  const label = bypass.group
+    ? t("scm-review-plugin.config.branchProtection.bypasses.groupBypass")
+    : t("scm-review-plugin.config.branchProtection.bypasses.userBypass");
+  return (
+    <Tooltip message={label}>
+      <Icon role="img" aria-hidden={false} aria-label={label}>
+        {bypass.group ? "user-friends" : "user"}
+      </Icon>
+    </Tooltip>
+  );
 };
 
 const BypassList: FC<{

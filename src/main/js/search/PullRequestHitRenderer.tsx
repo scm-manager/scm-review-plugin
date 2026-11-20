@@ -19,8 +19,8 @@ import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import classNames from "classnames";
 import styled from "styled-components";
-import { HitProps, Notification, RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
-import { CardList, CardListBox, DateFromNow } from "@scm-manager/ui-core";
+import { HitProps, RepositoryAvatar, TextHitField } from "@scm-manager/ui-components";
+import { CardList, CardListBox, DateFromNow, Notification } from "@scm-manager/ui-core";
 import { HighlightedHitField, ValueHitField } from "@scm-manager/ui-types";
 import { evaluateTagColor } from "../pullRequest";
 

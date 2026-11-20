@@ -16,7 +16,8 @@
 
 import React, { FC, useRef, useState } from "react";
 import { PullRequest } from "./types/PullRequest";
-import { Button, ErrorNotification, Modal, useDateFormatter } from "@scm-manager/ui-components";
+import { ErrorNotification } from "@scm-manager/ui-core";
+import { Button, Modal, useDateFormatter } from "@scm-manager/ui-components";
 import { useDeleteBranch } from "@scm-manager/ui-api";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";

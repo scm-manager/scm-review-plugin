@@ -17,7 +17,7 @@
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-import { Icon } from "@scm-manager/ui-components";
+import { Icon, Tooltip } from "@scm-manager/ui-core";
 import { PullRequest } from "./types/PullRequest";
 
 type Props = {
@@ -52,14 +52,17 @@ const ReviewerList: FC<Props> = ({ pullRequest }) => {
             <ul className="is-separated">
               {reviewers.map(reviewer => {
                 if (reviewer.approved) {
+                  const approvedLabel = t("scm-review-plugin.pullRequest.details.approved", {
+                    name: reviewer.displayName,
+                  });
                   return (
                     <li className="is-inline-block has-text-weight-bold" key={reviewer.id}>
                       {reviewer.displayName}{" "}
-                      <Icon
-                        title={t("scm-review-plugin.pullRequest.details.approved", { name: reviewer.displayName })}
-                        name="check"
-                        color="success"
-                      />
+                      <Tooltip message={approvedLabel}>
+                        <Icon className="has-text-success" role="img" aria-hidden={false} aria-label={approvedLabel}>
+                          check
+                        </Icon>
+                      </Tooltip>
                     </li>
                   );
                 }

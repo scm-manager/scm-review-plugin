@@ -15,7 +15,7 @@
  */
 
 import React, { FC } from "react";
-import { Icon, Tooltip } from "@scm-manager/ui-components";
+import { Icon, Tooltip } from "@scm-manager/ui-core";
 import { Reviewer } from "../types/PullRequest";
 import { WithTranslation, withTranslation } from "react-i18next";
 
@@ -49,8 +49,10 @@ const ReviewerIcon: FC<Props> = ({ reviewers, t }) => {
   const icon = chooseIcon(reviewers.length);
   const message = t("scm-review-plugin.pullRequest.reviewer") + ":\n" + createTooltipMessage(reviewers);
   return (
-    <Tooltip location="top" message={message}>
-      <Icon name={icon} />
+    <Tooltip side="top" message={message}>
+      <Icon role="img" aria-hidden={false} aria-label={message}>
+        {icon}
+      </Icon>
     </Tooltip>
   );
 };

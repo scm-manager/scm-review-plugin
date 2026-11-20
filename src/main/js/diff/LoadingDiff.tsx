@@ -20,10 +20,7 @@ import { useDiff } from "@scm-manager/ui-api";
 import {
   Diff as CoreDiff,
   DiffObjectProps,
-  ErrorNotification,
-  Loading,
   NotFoundError,
-  Notification,
   DiffDropDown,
   DiffStatistics,
   DiffFileTree,
@@ -38,7 +35,7 @@ import { Comment } from "../types/PullRequest";
 import PartialNotification from "./PartialNotification";
 import styled from "styled-components";
 import { useLocation, useNavigate } from "react-router";
-import { Icon } from "@scm-manager/ui-core";
+import { Icon, ErrorNotification, Loading, Notification } from "@scm-manager/ui-core";
 import classNames from "classnames";
 
 type LoadingDiffProps = DiffObjectProps & {

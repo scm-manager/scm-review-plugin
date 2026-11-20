@@ -18,10 +18,10 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import { binder } from "@scm-manager/ui-extensions";
-import { AvatarImage, CardColumnSmall, Icon, Tag } from "@scm-manager/ui-components";
+import { AvatarImage, CardColumnSmall, Tag } from "@scm-manager/ui-components";
 import ReviewerIcon from "../table/ReviewerIcon";
 import { DataType } from "./DataType";
-import { SINGLE_REPOSITORY_BASE_ROUTE } from "@scm-manager/ui-core";
+import { Icon, SINGLE_REPOSITORY_BASE_ROUTE } from "@scm-manager/ui-core";
 import { SINGLE_PULL_REQUEST_BASE } from "../routes";
 
 type Props = {
@@ -73,7 +73,7 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   const avatar = binder.hasExtension("avatar.factory") ? (
     <AvatarImage className="level-item" person={person} />
   ) : (
-    <Icon name="code-branch" className="fa-rotate-180 fa-fw fa-lg" color="inherit" />
+    <Icon className="fa-rotate-180 is-medium">code-branch</Icon>
   );
 
   const title = (
@@ -87,7 +87,7 @@ const MyPullRequest: FC<Props> = ({ data }) => {
   const branches = (
     <BranchesContainer className="is-hidden-mobile is-flex-grow-1 is-flex-shrink-1 mr-2">
       {pullRequest.source}&nbsp;
-      <Icon name="long-arrow-alt-right" />
+      <Icon>long-arrow-alt-right</Icon>
       &nbsp;{pullRequest.target}
       {todos > 0 && (
         <TodoTag label={`${todos}`} title={t("scm-review-plugin.pullRequest.tasks.todo", { count: todos })} />

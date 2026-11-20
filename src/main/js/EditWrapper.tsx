@@ -15,10 +15,9 @@
  */
 
 import React, { FC } from "react";
-import { ErrorNotification, Loading, Notification } from "@scm-manager/ui-components";
 import { usePullRequest } from "./pullRequest";
 import { useTranslation } from "react-i18next";
-import { useRepositoryFromParams } from "@scm-manager/ui-core";
+import { useRepositoryFromParams, ErrorNotification, Loading, Notification } from "@scm-manager/ui-core";
 import { useParams } from "react-router";
 import Edit from "./Edit";
 

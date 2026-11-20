@@ -16,7 +16,8 @@
 
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Checkbox, Icon, Select, Subtitle, Textarea, Title } from "@scm-manager/ui-components";
+import { Icon, Subtitle, Title } from "@scm-manager/ui-core";
+import { Checkbox, Select, Textarea } from "@scm-manager/ui-components";
 import BranchList from "./BranchList";
 import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
@@ -156,7 +157,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
                   onChange={(val) => onChange("commitMessageTemplate", val)}
                 />
                 <span>
-                  <Icon name="info-circle" color="blue-light" />
+                  <Icon className="has-text-blue-light">info-circle</Icon>
                   <Trans t={t} i18nKey="scm-review-plugin.config.commitMessageTemplate.hint">
                     <a target="_blank" href="/scm/mustacheDocs" />
                   </Trans>

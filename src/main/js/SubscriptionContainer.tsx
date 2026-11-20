@@ -15,7 +15,7 @@
  */
 
 import React, { FC } from "react";
-import { ErrorNotification } from "@scm-manager/ui-components";
+import { ErrorNotification } from "@scm-manager/ui-core";
 import { PullRequest } from "./types/PullRequest";
 import { useSubscription, useUpdateSubscription } from "./pullRequest";
 import SubscribeButton from "./SubscribeButton";

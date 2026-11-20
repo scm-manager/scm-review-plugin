@@ -15,8 +15,8 @@
  */
 
 import React, { FC } from "react";
-import { Icon } from "@scm-manager/ui-components";
+import { Icon } from "@scm-manager/ui-core";
 
 export const SmallPullRequestIcon: FC = () => {
-  return <Icon name="code-branch" className="fa-rotate-180 fa-fw fa-lg" color="inherit" />;
+  return <Icon className="fa-rotate-180 is-medium">code-branch</Icon>;
 };

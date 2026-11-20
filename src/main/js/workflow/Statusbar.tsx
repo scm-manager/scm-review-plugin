@@ -16,14 +16,13 @@
 
 import React, { FC, useState } from "react";
 import { PullRequest } from "../types/PullRequest";
-import { ErrorNotification } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import classNames from "classnames";
 import StatusModalView from "./StatusModalView";
 import { useStatusbar } from "./useStatusbar";
-import { StatusIcon, StatusVariants } from "@scm-manager/ui-core";
+import { StatusIcon, StatusVariants, ErrorNotification } from "@scm-manager/ui-core";
 
 type Props = {
   repository: Repository;

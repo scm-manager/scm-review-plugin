@@ -15,7 +15,8 @@
  */
 
 import React, { FC, useState } from "react";
-import { DiffButton, ErrorNotification } from "@scm-manager/ui-components";
+import { ErrorNotification } from "@scm-manager/ui-core";
+import { DiffButton } from "@scm-manager/ui-components";
 import { Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";
 import { useUpdateReviewMark } from "../pullRequest";

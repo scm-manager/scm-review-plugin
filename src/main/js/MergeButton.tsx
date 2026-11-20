@@ -16,8 +16,7 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Tooltip } from "@scm-manager/ui-components";
-import { Button, ButtonVariants, StatusIcon, StatusVariants } from "@scm-manager/ui-core";
+import { Button, ButtonVariants, StatusIcon, StatusVariants, Tooltip } from "@scm-manager/ui-core";
 import ManualMergeInformation from "./ManualMergeInformation";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import { Link, Repository } from "@scm-manager/ui-types";
@@ -109,8 +108,8 @@ const MergeButton: FC<Props> = ({ merge, repository, pullRequest, loading, merge
     );
     if (checkHints) {
       return (
-        <Tooltip message={checkHints} location={"top"}>
-          {button}
+        <Tooltip message={checkHints} side="top">
+          <span className="is-inline-block">{button}</span>
         </Tooltip>
       );
     } else {

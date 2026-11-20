@@ -17,7 +17,7 @@
 import React, { FC, useEffect, useRef } from "react";
 import { Comment, PullRequest } from "../types/PullRequest";
 
-import { ErrorNotification, Loading } from "@scm-manager/ui-components";
+import { ErrorNotification, Loading } from "@scm-manager/ui-core";
 import { useLocation } from "react-router-dom";
 import { Link, Repository } from "@scm-manager/ui-types";
 import PullRequestComment from "./PullRequestComment";

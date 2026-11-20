@@ -20,18 +20,17 @@ import { useTranslation } from "react-i18next";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { binder, ExtensionPoint } from "@scm-manager/ui-extensions";
 import { useBranch } from "@scm-manager/ui-api";
+import { AstPlugin, BackendError, Button, ButtonGroup, devices, Tag } from "@scm-manager/ui-components";
 import {
-  AstPlugin,
-  BackendError,
-  Button,
-  ButtonGroup,
-  devices,
+  AbsoluteDate,
+  LinkButton,
+  Icon,
+  useDocumentTitle,
+  Notification,
   ErrorNotification,
   Loading,
-  Tag,
   Tooltip,
-} from "@scm-manager/ui-components";
-import { AbsoluteDate, LinkButton, Icon, useDocumentTitle, Notification } from "@scm-manager/ui-core";
+} from "@scm-manager/ui-core";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import {
   prQueryKey,
@@ -400,8 +399,15 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
 
   const targetBranchDeletedWarning = targetOrSourceBranchDeleted ? (
     <span className="ml-2">
-      <Tooltip className="icon has-text-warning" message={t("scm-review-plugin.pullRequest.details.branchDeleted")}>
-        <i className="fas fa-exclamation-triangle" />
+      <Tooltip message={t("scm-review-plugin.pullRequest.details.branchDeleted")}>
+        <Icon
+          className="has-text-warning"
+          role="img"
+          aria-hidden={false}
+          aria-label={t("scm-review-plugin.pullRequest.details.branchDeleted")}
+        >
+          exclamation-triangle
+        </Icon>
       </Tooltip>
     </span>
   ) : null;

@@ -18,8 +18,15 @@ import React, { FC, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation, Navigate, useParams } from "react-router";
 import styled from "styled-components";
-import { ErrorPage, LinkPaginator, Loading, Notification, Subtitle, urls } from "@scm-manager/ui-components";
-import { LinkButton, useDocumentTitle, useRepositoryFromParams } from "@scm-manager/ui-core";
+import { ErrorPage, LinkPaginator, urls } from "@scm-manager/ui-components";
+import {
+  LinkButton,
+  useDocumentTitle,
+  useRepositoryFromParams,
+  Loading,
+  Notification,
+  Subtitle,
+} from "@scm-manager/ui-core";
 import SortSelector from "./table/SortSelector";
 import StatusSelector from "./table/StatusSelector";
 import { PullRequest } from "./types/PullRequest";

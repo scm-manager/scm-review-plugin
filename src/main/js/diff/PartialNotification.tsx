@@ -15,7 +15,8 @@
  */
 
 import React, { FC } from "react";
-import { Notification, Button } from "@scm-manager/ui-components";
+import { Notification } from "@scm-manager/ui-core";
+import { Button } from "@scm-manager/ui-components";
 import { Comment } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 

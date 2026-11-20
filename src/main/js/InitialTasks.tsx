@@ -17,8 +17,8 @@
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
-import { MarkdownView, Notification } from "@scm-manager/ui-components";
-import { Button, CardList, Icon } from "@scm-manager/ui-core";
+import { MarkdownView } from "@scm-manager/ui-components";
+import { Button, CardList, Icon, Notification } from "@scm-manager/ui-core";
 
 type Props = {
   value: string[];
