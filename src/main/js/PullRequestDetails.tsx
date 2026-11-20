@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { binder, ExtensionPoint } from "@scm-manager/ui-extensions";
 import { useBranch } from "@scm-manager/ui-api";
-import { AstPlugin, BackendError, Button, ButtonGroup, devices, Tag } from "@scm-manager/ui-components";
+import { AstPlugin, BackendError, devices, Tag } from "@scm-manager/ui-components";
 import {
   AbsoluteDate,
   LinkButton,
@@ -30,6 +30,7 @@ import {
   ErrorNotification,
   Loading,
   Tooltip,
+  Button,
 } from "@scm-manager/ui-core";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
 import {
@@ -101,7 +102,7 @@ const MediaWithTopBorder = styled.div.attrs(() => ({
   border-top: none !important;
 `;
 
-const MobileFlexButtonGroup = styled(ButtonGroup)`
+const MobileFlexButtonGroup = styled.div`
   @media screen and (max-width: 768px) {
     flex-direction: column;
 
@@ -369,12 +370,9 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
   }
   if (pullRequest._links?.convertToPR) {
     readyForReviewButton = (
-      <Button
-        label={t("scm-review-plugin.showPullRequest.convertDraftButton.buttonTitle")}
-        action={() => readyForReview(pullRequest)}
-        loading={readyForReviewLoading}
-        color="primary"
-      />
+      <Button variant="primary" onClick={() => readyForReview(pullRequest)} isLoading={readyForReviewLoading}>
+        {t("scm-review-plugin.showPullRequest.convertDraftButton.buttonTitle")}
+      </Button>
     );
   }
 
@@ -465,7 +463,7 @@ const PullRequestDetails: FC<Props> = ({ repository, pullRequest }) => {
             )}
           </div>
           <div className="media-right" aria-live="polite">
-            <MobileFlexButtonGroup>
+            <MobileFlexButtonGroup className="buttons">
               {subscriptionButton}
               {editButton}
             </MobileFlexButtonGroup>

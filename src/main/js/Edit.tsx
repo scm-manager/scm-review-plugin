@@ -15,7 +15,6 @@
  */
 
 import React, { FC, useCallback, useState } from "react";
-import { SubmitButton } from "@scm-manager/ui-components";
 import {
   Checkbox,
   ErrorNotification,
@@ -24,6 +23,7 @@ import {
   Loading,
   Subtitle,
   useDocumentTitleForRepository,
+  Button,
 } from "@scm-manager/ui-core";
 import { Repository } from "@scm-manager/ui-types";
 import { CheckResult, PullRequest } from "./types/PullRequest";
@@ -105,12 +105,18 @@ const Edit: FC<Props> = ({ repository, pullRequest }) => {
         ) : null}
         <Level
           right={
-            <SubmitButton
-              label={t("scm-review-plugin.edit.submitButton")}
-              action={submit}
-              loading={isLoading}
+            <Button
+              type="submit"
+              variant="primary"
+              onClick={() => {
+                submit();
+                window.scrollTo(0, 0);
+              }}
+              isLoading={isLoading}
               disabled={!changesValid()}
-            />
+            >
+              {t("scm-review-plugin.edit.submitButton")}
+            </Button>
           }
         />
       </div>

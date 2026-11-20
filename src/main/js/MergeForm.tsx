@@ -16,8 +16,8 @@
 
 import React, { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, CommitAuthor, Textarea } from "@scm-manager/ui-components";
-import { Checkbox } from "@scm-manager/ui-core";
+import { CommitAuthor, Textarea } from "@scm-manager/ui-components";
+import { Checkbox, Button } from "@scm-manager/ui-core";
 import { Link } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
 
@@ -85,7 +85,7 @@ const MergeForm: FC<InnerProps> = ({
           <CommitAuthor />
         )}
       </div>
-      <Button label={t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")} action={onResetCommitMessage} />
+      <Button onClick={onResetCommitMessage}>{t("scm-review-plugin.showPullRequest.mergeModal.resetMessage")}</Button>
       <hr />
     </>
   ) : null;

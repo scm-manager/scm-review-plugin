@@ -15,7 +15,6 @@
  */
 
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { SubmitButton } from "@scm-manager/ui-components";
 import {
   Checkbox,
   ErrorNotification,
@@ -25,6 +24,7 @@ import {
   Subtitle,
   useDocumentTitleForRepository,
   useRepositoryFromParams,
+  Button,
 } from "@scm-manager/ui-core";
 import { Branch } from "@scm-manager/ui-types";
 import CreateForm from "./CreateForm";
@@ -181,12 +181,18 @@ const Create: FC = () => {
                 onChange={(event) => handleFormChange({ status: event.target.checked ? "DRAFT" : "OPEN" })}
                 label={t("scm-review-plugin.pullRequest.createAsDraft")}
               />
-              <SubmitButton
-                label={t("scm-review-plugin.create.submitButton")}
-                action={submit}
-                loading={createLoading}
+              <Button
+                type="submit"
+                variant="primary"
+                onClick={() => {
+                  submit();
+                  window.scrollTo(0, 0);
+                }}
+                isLoading={createLoading}
                 disabled={disabled || isLoadingPullRequestTemplate}
-              />
+              >
+                {t("scm-review-plugin.create.submitButton")}
+              </Button>
             </div>
           }
         />

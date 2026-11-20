@@ -16,7 +16,8 @@
 
 import React, { FC, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Modal, SubmitButton, Textarea } from "@scm-manager/ui-components";
+import { Modal, Textarea } from "@scm-manager/ui-components";
+import { Button } from "@scm-manager/ui-core";
 
 type Props = {
   reject: (message: string) => void;
@@ -46,16 +47,20 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
 
   const footer = (
     <>
-      <SubmitButton
-        label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit")}
-        action={() => reject(message)}
-        loading={loading}
-      />
       <Button
-        label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel")}
-        action={() => setShowModal(false)}
-        color="grey"
-      />
+        type="submit"
+        variant="primary"
+        onClick={() => {
+          reject(message);
+          window.scrollTo(0, 0);
+        }}
+        isLoading={loading}
+      >
+        {t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.submit")}
+      </Button>
+      <Button onClick={() => setShowModal(false)}>
+        {t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.cancel")}
+      </Button>
     </>
   );
 
@@ -71,12 +76,9 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
           initialFocusRef={initialFocusRef}
         />
       ) : null}
-      <Button
-        label={t("scm-review-plugin.showPullRequest.rejectButton.buttonTitle")}
-        action={() => setShowModal(true)}
-        loading={loading}
-        color="warning"
-      />
+      <Button variant="signal" onClick={() => setShowModal(true)} isLoading={loading}>
+        {t("scm-review-plugin.showPullRequest.rejectButton.buttonTitle")}
+      </Button>
     </>
   );
 };

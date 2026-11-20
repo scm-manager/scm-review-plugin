@@ -16,8 +16,8 @@
 
 import React, { FC, useRef, useState } from "react";
 import { PullRequest } from "./types/PullRequest";
-import { ErrorNotification } from "@scm-manager/ui-core";
-import { Button, Modal, useDateFormatter } from "@scm-manager/ui-components";
+import { ErrorNotification, Button, Icon } from "@scm-manager/ui-core";
+import { Modal, useDateFormatter } from "@scm-manager/ui-components";
 import { useDeleteBranch } from "@scm-manager/ui-api";
 import { Branch, Repository } from "@scm-manager/ui-types";
 import { useTranslation } from "react-i18next";
@@ -124,12 +124,10 @@ const DeleteSourceBranchButton: FC<Props> = ({ pullRequest, repository, loading 
           sameRevision={sameRevision}
         />
       )}
-      <Button
-        label={t("scm-review-plugin.showPullRequest.deleteSourceBranchButton.buttonTitle")}
-        icon={sameRevision ? "" : "exclamation-triangle"}
-        loading={loading}
-        action={() => setShowModal(true)}
-      />
+      <Button isLoading={loading} onClick={() => setShowModal(true)}>
+        {sameRevision ? null : <Icon>exclamation-triangle</Icon>}
+        <span>{t("scm-review-plugin.showPullRequest.deleteSourceBranchButton.buttonTitle")}</span>
+      </Button>
     </>
   );
 };

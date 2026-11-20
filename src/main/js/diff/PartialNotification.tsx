@@ -15,8 +15,7 @@
  */
 
 import React, { FC } from "react";
-import { Notification } from "@scm-manager/ui-core";
-import { Button } from "@scm-manager/ui-components";
+import { Notification, Button } from "@scm-manager/ui-core";
 import { Comment } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 
@@ -58,7 +57,9 @@ const PartialNotification: FC<PartialNotificationProps> = ({
               })
             : t("scm-review-plugin.diff.moreDiffsAvailable")}
         </div>
-        <Button label={t("scm-review-plugin.diff.loadMore")} action={fetchNextPage} loading={isFetchingNextPage} />
+        <Button onClick={() => fetchNextPage()} isLoading={isFetchingNextPage}>
+          {t("scm-review-plugin.diff.loadMore")}
+        </Button>
       </div>
     </Notification>
   );

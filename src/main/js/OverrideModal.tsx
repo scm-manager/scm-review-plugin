@@ -15,7 +15,8 @@
  */
 
 import React, { FC, useRef, useState } from "react";
-import { Button, Modal, SubmitButton, Textarea } from "@scm-manager/ui-components";
+import { Modal, Textarea } from "@scm-manager/ui-components";
+import { Button, Icon } from "@scm-manager/ui-core";
 import { useTranslation } from "react-i18next";
 import { MergeCheck } from "./types/PullRequest";
 import styled from "styled-components";
@@ -45,13 +46,18 @@ const OverrideModal: FC<Props> = ({ mergeCheck, close, proceed }) => {
 
   const footer = (
     <>
-      <SubmitButton
-        color="danger"
-        icon="exclamation-triangle"
-        label={t("scm-review-plugin.showPullRequest.overrideModal.continue")}
-        action={() => proceed(overrideMessage)}
-      />
-      <Button label={t("scm-review-plugin.showPullRequest.overrideModal.cancel")} action={close} />
+      <Button
+        type="submit"
+        variant="danger"
+        onClick={() => {
+          proceed(overrideMessage);
+          window.scrollTo(0, 0);
+        }}
+      >
+        <Icon>exclamation-triangle</Icon>
+        <span>{t("scm-review-plugin.showPullRequest.overrideModal.continue")}</span>
+      </Button>
+      <Button onClick={() => close()}>{t("scm-review-plugin.showPullRequest.overrideModal.cancel")}</Button>
     </>
   );
 

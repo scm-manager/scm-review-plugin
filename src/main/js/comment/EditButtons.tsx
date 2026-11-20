@@ -15,8 +15,8 @@
  */
 
 import React, { FC, useState } from "react";
-import { Level } from "@scm-manager/ui-core";
-import { SubmitButton, Button, ConfirmAlert } from "@scm-manager/ui-components";
+import { Level, Button } from "@scm-manager/ui-core";
+import { ConfirmAlert } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import { Comment } from "../types/PullRequest";
 
@@ -63,15 +63,14 @@ const EditButtons: FC<Props> = ({ comment, onSubmit, onCancel, changed }) => {
             />
           ) : null}
           <div className="level-item">
-            <SubmitButton
-              label={t("scm-review-plugin.comment.save")}
-              action={onSubmit}
-              disabled={(comment.comment || "").trim() === ""}
-              scrollToTop={false}
-            />
+            <Button type="submit" variant="primary" onClick={onSubmit} disabled={(comment.comment || "").trim() === ""}>
+              {t("scm-review-plugin.comment.save")}
+            </Button>
           </div>
           <div className="level-item">
-            <Button label={t("scm-review-plugin.comment.cancel")} color="warning" action={confirmCancelUpdate} />
+            <Button variant="signal" onClick={confirmCancelUpdate}>
+              {t("scm-review-plugin.comment.cancel")}
+            </Button>
           </div>
         </>
       }

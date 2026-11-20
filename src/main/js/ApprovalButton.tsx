@@ -16,7 +16,7 @@
 
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@scm-manager/ui-components";
+import { Button, Icon } from "@scm-manager/ui-core";
 
 type Props = {
   loading: boolean;
@@ -26,13 +26,10 @@ type Props = {
 const ApprovalButton: FC<Props> = ({ loading, action }) => {
   const [t] = useTranslation("plugins");
   return (
-    <Button
-      label={t("scm-review-plugin.pullRequest.details.buttons.approve")}
-      loading={loading}
-      action={action}
-      color="link is-outlined"
-      icon="check"
-    />
+    <Button variant="secondary" isLoading={loading} onClick={action}>
+      <Icon>check</Icon>
+      <span>{t("scm-review-plugin.pullRequest.details.buttons.approve")}</span>
+    </Button>
   );
 };
 

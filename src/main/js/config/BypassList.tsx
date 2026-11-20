@@ -17,8 +17,8 @@
 import React, { FC, useState } from "react";
 import { ProtectionBypass } from "../types/Config";
 import { useTranslation } from "react-i18next";
-import { Icon, Notification, Tooltip } from "@scm-manager/ui-core";
-import { Autocomplete, Button, Radio } from "@scm-manager/ui-components";
+import { Icon, Notification, Tooltip, IconButton } from "@scm-manager/ui-core";
+import { Autocomplete, Radio } from "@scm-manager/ui-components";
 import { AutocompleteObject, Link, Option } from "@scm-manager/ui-types";
 import { useIndexLinks } from "@scm-manager/ui-api";
 import styled from "styled-components";
@@ -92,13 +92,13 @@ const BypassList: FC<{
                   <PermissionIcon bypass={bypass} /> {bypass.name}
                 </VCenteredTd>
                 <WidthVCenteredTd className="has-text-centered">
-                  <Button
-                    color="text"
-                    icon="trash"
-                    action={() => deleteBypass(bypass)}
+                  <IconButton
+                    onClick={() => deleteBypass(bypass)}
                     title={t("scm-review-plugin.config.branchProtection.bypasses.deleteBypass")}
-                    className="px-2"
-                  />
+                    aria-label={t("scm-review-plugin.config.branchProtection.bypasses.deleteBypass")}
+                  >
+                    <Icon>trash</Icon>
+                  </IconButton>
                 </WidthVCenteredTd>
               </tr>
             ))}

@@ -15,8 +15,8 @@
  */
 
 import React, { FC, useEffect, useRef, useState } from "react";
-import { Notification } from "@scm-manager/ui-core";
-import { Button, Modal, SubmitButton } from "@scm-manager/ui-components";
+import { Notification, Button, Icon } from "@scm-manager/ui-core";
+import { Modal } from "@scm-manager/ui-components";
 import { useTranslation } from "react-i18next";
 import MergeForm from "./MergeForm";
 import { MergeCheck, MergeCommit, PullRequest } from "./types/PullRequest";
@@ -123,23 +123,34 @@ const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, merg
   const footer = (
     <>
       {emergencyMerge ? (
-        <SubmitButton
-          icon="exclamation-triangle"
-          color="danger"
-          label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}
-          action={() => performMerge(true)}
-          loading={loading}
+        <Button
+          type="submit"
+          variant="danger"
+          onClick={() => {
+            performMerge(true);
+            window.scrollTo(0, 0);
+          }}
+          isLoading={loading}
           disabled={shouldDisableMergeButton()}
-        />
+        >
+          <Icon>exclamation-triangle</Icon>
+          <span>{t("scm-review-plugin.showPullRequest.mergeModal.merge")}</span>
+        </Button>
       ) : (
-        <SubmitButton
-          label={t("scm-review-plugin.showPullRequest.mergeModal.merge")}
-          action={() => performMerge(false)}
-          loading={loading}
+        <Button
+          type="submit"
+          variant="primary"
+          onClick={() => {
+            performMerge(false);
+            window.scrollTo(0, 0);
+          }}
+          isLoading={loading}
           disabled={shouldDisableMergeButton()}
-        />
+        >
+          {t("scm-review-plugin.showPullRequest.mergeModal.merge")}
+        </Button>
       )}
-      <Button label={t("scm-review-plugin.showPullRequest.mergeModal.cancel")} action={() => close()} color="grey" />
+      <Button onClick={() => close()}>{t("scm-review-plugin.showPullRequest.mergeModal.cancel")}</Button>
     </>
   );
 

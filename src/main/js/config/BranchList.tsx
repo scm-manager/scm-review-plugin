@@ -16,8 +16,8 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Level, Notification } from "@scm-manager/ui-core";
-import { AddButton, Button, InputField } from "@scm-manager/ui-components";
+import { Level, Notification, Button, Icon, IconButton } from "@scm-manager/ui-core";
+import { InputField } from "@scm-manager/ui-components";
 import styled from "styled-components";
 import { BranchProtection } from "../types/Config";
 
@@ -62,15 +62,15 @@ const BranchList: FC<Props> = ({ protections, onChange }) => {
               <VCenteredTd>{protection.branch}</VCenteredTd>
               <VCenteredTd>{protection.path}</VCenteredTd>
               <WidthVCenteredTd className="has-text-centered">
-                <Button
-                  color="text"
-                  icon="trash"
-                  action={() =>
+                <IconButton
+                  onClick={() =>
                     onChange([...protections.filter(p => p.branch !== protection.branch || p.path !== protection.path)])
                   }
                   title={t("scm-review-plugin.config.branchProtection.branches.deleteBranch")}
-                  className="px-2"
-                />
+                  aria-label={t("scm-review-plugin.config.branchProtection.branches.deleteBranch")}
+                >
+                  <Icon>trash</Icon>
+                </IconButton>
               </WidthVCenteredTd>
             </tr>
           ))}
@@ -85,15 +85,17 @@ const BranchList: FC<Props> = ({ protections, onChange }) => {
         className="is-align-items-stretch mb-4"
         right={
           <div className="field is-align-self-flex-end">
-            <AddButton
+            <Button
               title={t("scm-review-plugin.config.branchProtection.branches.add.helpText")}
-              label={t("scm-review-plugin.config.branchProtection.branches.add.label")}
-              action={() => {
+              onClick={() => {
                 onChange([...protections, newProtection]);
                 setNewProtection({ branch: "", path: "" });
               }}
               disabled={newProtection.branch.trim().length === 0 || newProtection.path.trim().length === 0}
-            />
+            >
+              <Icon>plus</Icon>
+              <span>{t("scm-review-plugin.config.branchProtection.branches.add.label")}</span>
+            </Button>
           </div>
         }
       >

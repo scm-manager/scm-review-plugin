@@ -17,8 +17,7 @@
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Branch, Repository } from "@scm-manager/ui-types";
-import { ErrorNotification, Loading, SubSubtitle } from "@scm-manager/ui-core";
-import { AddButton } from "@scm-manager/ui-components";
+import { ErrorNotification, Loading, SubSubtitle, Icon, LinkButton } from "@scm-manager/ui-core";
 import { PullRequest } from "./types/PullRequest";
 import styled from "styled-components";
 import { usePullRequests } from "./pullRequest";
@@ -63,12 +62,14 @@ const CreatePullRequestButton: FC<Props> = ({ repository, branch }) => {
       <HR />
       <SubSubtitle>{t("scm-review-plugin.branch.header")}</SubSubtitle>
       {existing}
-      <AddButton
-        label={t("scm-review-plugin.branch.createPullRequest")}
-        link={`/repo/${repository.namespace}/${
+      <LinkButton
+        to={`/repo/${repository.namespace}/${
           repository.name
         }/pull-requests/add/changesets?source=${encodeURIComponent(branch.name)}`}
-      />
+      >
+        <Icon>plus</Icon>
+        <span>{t("scm-review-plugin.branch.createPullRequest")}</span>
+      </LinkButton>
     </div>
   );
 };

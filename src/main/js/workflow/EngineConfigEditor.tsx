@@ -17,8 +17,8 @@
 import React, { FC, useState } from "react";
 import { AppliedRule, EngineConfiguration } from "../types/EngineConfig";
 import { useTranslation } from "react-i18next";
-import { ErrorNotification, Level, Loading, Notification, Title } from "@scm-manager/ui-core";
-import { AddButton, Checkbox, Select } from "@scm-manager/ui-components";
+import { ErrorNotification, Level, Loading, Notification, Title, Button, Icon } from "@scm-manager/ui-core";
+import { Checkbox, Select } from "@scm-manager/ui-components";
 import EngineConfigTable from "./EngineConfigTable";
 import styled from "styled-components";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
@@ -170,16 +170,18 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
                 />
                 <Level
                   right={
-                    <AddButton
-                      label={t("scm-review-plugin.workflow.addRule.label")}
-                      action={() =>
+                    <Button
+                      onClick={() =>
                         addRuleToConfig({
                           rule: selectedRule,
                           configuration: ruleConfiguration
                         })
                       }
                       disabled={!ruleConfigurationValid}
-                    />
+                    >
+                      <Icon>plus</Icon>
+                      <span>{t("scm-review-plugin.workflow.addRule.label")}</span>
+                    </Button>
                   }
                 />
               </RuleDetails>

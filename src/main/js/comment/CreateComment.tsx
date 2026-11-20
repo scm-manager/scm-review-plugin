@@ -15,8 +15,8 @@
  */
 
 import React, { FC, useState } from "react";
-import { ErrorNotification, Level, Loading } from "@scm-manager/ui-core";
-import { Button, Radio, SubmitButton } from "@scm-manager/ui-components";
+import { ErrorNotification, Level, Loading, Button } from "@scm-manager/ui-core";
+import { Radio } from "@scm-manager/ui-components";
 import { BasicComment, CommentImage, CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 import { useCreateComment, useCreateCommentWithImage } from "../pullRequest";
@@ -100,7 +100,11 @@ const CreateComment: FC<Props> = ({
 
   let cancelButton = null;
   if (onCancel) {
-    cancelButton = <Button label={t("scm-review-plugin.comment.cancel")} color="warning" action={onCancel} />;
+    cancelButton = (
+      <Button variant="signal" onClick={onCancel}>
+        {t("scm-review-plugin.comment.cancel")}
+      </Button>
+    );
   }
 
   let toggleType = null;
@@ -164,13 +168,15 @@ const CreateComment: FC<Props> = ({
                 right={
                   <>
                     <div className="level-item">
-                      <SubmitButton
-                        label={evaluateTranslation()}
-                        action={submit}
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        onClick={submit}
                         disabled={!isValid()}
-                        loading={isLoading}
-                        scrollToTop={false}
-                      />
+                        isLoading={isLoading}
+                      >
+                        {evaluateTranslation()}
+                      </Button>
                     </div>
                     <div className="level-item">{cancelButton}</div>
                   </>

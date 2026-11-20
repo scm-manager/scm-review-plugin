@@ -15,9 +15,9 @@
  */
 
 import React, { FC, useState } from "react";
-import { Icon } from "@scm-manager/ui-core";
+import { Icon, UnstyledButton } from "@scm-manager/ui-core";
 import { useTranslation } from "react-i18next";
-import { copyToClipboard, NoStyleButton } from "@scm-manager/ui-components";
+import { copyToClipboard } from "@scm-manager/ui-components";
 
 type Props = {
   text: string;
@@ -31,9 +31,13 @@ const CopyToClipboardButton: FC<Props> = ({ text }) => {
   };
 
   return (
-    <NoStyleButton onClick={() => copy()} title={t("scm-review-plugin.pullRequest.details.copyButton")}>
+    <UnstyledButton
+      onClick={() => copy()}
+      title={t("scm-review-plugin.pullRequest.details.copyButton")}
+      aria-label={t("scm-review-plugin.pullRequest.details.copyButton")}
+    >
       <Icon>{copied ? "clipboard-check" : "clipboard"}</Icon>
-    </NoStyleButton>
+    </UnstyledButton>
   );
 };
 
