@@ -19,6 +19,7 @@ import {
   Checkbox,
   ErrorNotification,
   Level,
+  Loading,
   Notification,
   SINGLE_REPOSITORY_BASE_ROUTE,
   Subtitle,
@@ -159,13 +160,13 @@ const Create: FC = () => {
       <div className="column is-clipped">
         <Subtitle subtitle={t("scm-review-plugin.create.subtitle", { repositoryName: repository.name })} />
         {notification}
-        {!createLoading && (
+        {branchesLoading ? <Loading /> : null}
+        {!branchesLoading && !createLoading && (
           <CreateForm
             pullRequest={pullRequest}
             branches={branchesData?._embedded?.branches}
             handleFormChange={handleFormChange}
             checkResult={checkResult}
-            branchesLoading={branchesLoading}
             branchesError={branchesError}
             disabled={isLoadingPullRequestTemplate}
             availableLabels={pullRequestTemplate?.availableLabels ?? []}

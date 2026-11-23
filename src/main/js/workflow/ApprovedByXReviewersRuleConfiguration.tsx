@@ -15,7 +15,7 @@
  */
 
 import React, { FC, useEffect, useState } from "react";
-import { InputField } from "@scm-manager/ui-components";
+import { InputField } from "@scm-manager/ui-core";
 import { useTranslation } from "react-i18next";
 
 type Configuration = {
@@ -50,11 +50,12 @@ const ApprovedByXReviewersRuleConfiguration: FC<Props> = ({ configurationChanged
       type="number"
       value={numberOfReviewers}
       label={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.label")}
-      helpText={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.helpText")}
-      validationError={validationError}
-      errorMessage={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.errorMessage")}
-      autofocus={true}
-      onChange={onValueChange}
+      descriptionText={t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.helpText")}
+      error={
+        validationError ? t("workflow.rule.ApprovedByXReviewersRule.form.numberOfReviewers.errorMessage") : undefined
+      }
+      autoFocus
+      onChange={(event) => onValueChange(event.target.value)}
     />
   );
 };

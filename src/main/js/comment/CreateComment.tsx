@@ -15,8 +15,7 @@
  */
 
 import React, { FC, useState } from "react";
-import { ErrorNotification, Level, Loading, Button } from "@scm-manager/ui-core";
-import { Radio } from "@scm-manager/ui-components";
+import { ErrorNotification, Level, Loading, Button, RadioGroup } from "@scm-manager/ui-core";
 import { BasicComment, CommentImage, CommentType, Location, Mention, PullRequest } from "../types/PullRequest";
 import { useTranslation } from "react-i18next";
 import { useCreateComment, useCreateCommentWithImage } from "../pullRequest";
@@ -112,22 +111,14 @@ const CreateComment: FC<Props> = ({
     const editorName = createCommentEditorName();
     toggleType = (
       <div className="field is-grouped">
-        <div className="control">
-          <Radio
-            name={`comment_type_${editorName}`}
-            value="COMMENT"
-            checked={commentType === "COMMENT"}
-            label={t("scm-review-plugin.comment.type.comment")}
-            onChange={() => setCommentType("COMMENT")}
-          />
-          <Radio
-            name={`comment_type_${editorName}`}
-            value="TASK_TODO"
-            checked={commentType === "TASK_TODO"}
-            label={t("scm-review-plugin.comment.type.task")}
-            onChange={() => setCommentType("TASK_TODO")}
-          />
-        </div>
+        <RadioGroup
+          name={`comment_type_${editorName}`}
+          value={commentType}
+          onValueChange={(value) => setCommentType(value as CommentType)}
+        >
+          <RadioGroup.Option value="COMMENT" label={t("scm-review-plugin.comment.type.comment")} />
+          <RadioGroup.Option value="TASK_TODO" label={t("scm-review-plugin.comment.type.task")} />
+        </RadioGroup>
       </div>
     );
   }

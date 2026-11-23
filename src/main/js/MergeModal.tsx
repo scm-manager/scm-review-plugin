@@ -60,7 +60,7 @@ const MergeModal: FC<Props> = ({ pullRequest, emergencyMerge, close, merge, merg
     shouldDeleteSourceBranch: pullRequest.shouldDeleteSourceBranch
   });
   const [commitStrategyInfos, setCommitStrategyInfos] = useState<{ [key: string]: MergeStrategyInfo }>({});
-  const initialFocusRef = useRef<HTMLInputElement>(null);
+  const initialFocusRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!messageChanged) {

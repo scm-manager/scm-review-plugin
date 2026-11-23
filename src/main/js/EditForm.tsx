@@ -17,8 +17,7 @@
 import React, { ChangeEvent, FC, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUserSuggestions } from "@scm-manager/ui-api";
-import { InputField, Textarea } from "@scm-manager/ui-components";
-import { Checkbox } from "@scm-manager/ui-core";
+import { Checkbox, InputField, TextareaField } from "@scm-manager/ui-core";
 import { PullRequest } from "./types/PullRequest";
 import ReviewerInput from "./ReviewerInput";
 
@@ -80,16 +79,15 @@ const EditForm: FC<Props> = ({
         name="title"
         value={pullRequest?.title}
         label={t("scm-review-plugin.pullRequest.title")}
-        validationError={pullRequest?.title === ""}
-        errorMessage={t("scm-review-plugin.pullRequest.validation.title")}
-        onChange={(value) => handleFormChange({ title: value })}
+        error={pullRequest?.title === "" ? t("scm-review-plugin.pullRequest.validation.title") : undefined}
+        onChange={(event) => handleFormChange({ title: event.target.value })}
         disabled={disabled}
       />
-      <Textarea
+      <TextareaField
         name="description"
-        value={pullRequest?.description}
+        value={pullRequest?.description ?? ""}
         label={t("scm-review-plugin.pullRequest.description")}
-        onChange={(value) => handleFormChange({ description: value })}
+        onChange={(event) => handleFormChange({ description: event.target.value })}
         disabled={disabled}
       />
       <ReviewerInput

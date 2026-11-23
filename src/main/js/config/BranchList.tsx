@@ -16,8 +16,7 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Level, Notification, Button, Icon, IconButton } from "@scm-manager/ui-core";
-import { InputField } from "@scm-manager/ui-components";
+import { Level, Notification, Button, Icon, IconButton, InputField } from "@scm-manager/ui-core";
 import styled from "styled-components";
 import { BranchProtection } from "../types/Config";
 
@@ -101,12 +100,12 @@ const BranchList: FC<Props> = ({ protections, onChange }) => {
       >
         <FullWidthInputField
           label={t("scm-review-plugin.config.branchProtection.branches.newBranch.label")}
-          onChange={branch => setNewProtection(prevState => ({ ...prevState, branch }))}
+          onChange={event => setNewProtection(prevState => ({ ...prevState, branch: event.target.value }))}
           value={newProtection.branch}
         />
         <FullWidthInputField
           label={t("scm-review-plugin.config.branchProtection.branches.newPath.label")}
-          onChange={path => setNewProtection(prevState => ({ ...prevState, path }))}
+          onChange={event => setNewProtection(prevState => ({ ...prevState, path: event.target.value }))}
           value={newProtection.path}
         />
       </Level>

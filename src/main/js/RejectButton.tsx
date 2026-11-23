@@ -16,8 +16,8 @@
 
 import React, { FC, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal, Textarea } from "@scm-manager/ui-components";
-import { Button } from "@scm-manager/ui-core";
+import { Modal } from "@scm-manager/ui-components";
+import { Button, TextareaField } from "@scm-manager/ui-core";
 
 type Props = {
   reject: (message: string) => void;
@@ -34,9 +34,9 @@ const RejectButton: FC<Props> = ({ reject, loading }) => {
     <>
       <p>{t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.hint")}</p>
       <hr />
-      <Textarea
+      <TextareaField
         label={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.label")}
-        helpText={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.help")}
+        descriptionText={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.help")}
         value={message}
         placeholder={t("scm-review-plugin.showPullRequest.rejectButton.confirmAlert.message.placeholder")}
         onChange={(event) => setMessage(event.target.value)}

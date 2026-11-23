@@ -15,8 +15,8 @@
  */
 
 import React, { FC, useRef, useState } from "react";
-import { Modal, Textarea } from "@scm-manager/ui-components";
-import { Button, Icon } from "@scm-manager/ui-core";
+import { Modal } from "@scm-manager/ui-components";
+import { Button, Icon, Textarea } from "@scm-manager/ui-core";
 import { useTranslation } from "react-i18next";
 import { MergeCheck } from "./types/PullRequest";
 import styled from "styled-components";
@@ -76,11 +76,18 @@ const OverrideModal: FC<Props> = ({ mergeCheck, close, proceed }) => {
         {obstacles}
         <Description>{t("scm-review-plugin.showPullRequest.overrideModal.addMessageText")}</Description>
       </div>
-      <Textarea
-        onChange={event => setOverrideMessage(event.target.value)}
-        onSubmit={() => proceed(overrideMessage)}
-        ref={initialFocusRef}
-      />
+      <div className="field">
+        <Textarea
+          aria-label={t("scm-review-plugin.showPullRequest.overrideModal.addMessageText")}
+          onChange={event => setOverrideMessage(event.target.value)}
+          onKeyDown={event => {
+            if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+              proceed(overrideMessage);
+            }
+          }}
+          ref={initialFocusRef}
+        />
+      </div>
     </>
   );
 

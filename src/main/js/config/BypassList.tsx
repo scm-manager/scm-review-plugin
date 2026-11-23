@@ -17,8 +17,8 @@
 import React, { FC, useState } from "react";
 import { ProtectionBypass } from "../types/Config";
 import { useTranslation } from "react-i18next";
-import { Icon, Notification, Tooltip, IconButton } from "@scm-manager/ui-core";
-import { Autocomplete, Radio } from "@scm-manager/ui-components";
+import { Icon, Notification, Tooltip, IconButton, RadioGroupField } from "@scm-manager/ui-core";
+import { Autocomplete } from "@scm-manager/ui-components";
 import { AutocompleteObject, Link, Option } from "@scm-manager/ui-types";
 import { useIndexLinks } from "@scm-manager/ui-api";
 import styled from "styled-components";
@@ -108,21 +108,20 @@ const BypassList: FC<{
       {!readOnly && (
         <div className="columns">
           <div className="column is-narrow">
-            <label className="label">{t("scm-review-plugin.config.branchProtection.bypasses.bypassType")}</label>
-            <div className="field is-grouped">
-              <div className="control">
-                <Radio
-                  label={t("scm-review-plugin.config.branchProtection.bypasses.userBypass")}
-                  checked={!bypassToAddIsGroup}
-                  onChange={() => setBypassToAddIsGroup(false)}
-                />
-                <Radio
-                  label={t("scm-review-plugin.config.branchProtection.bypasses.groupBypass")}
-                  checked={bypassToAddIsGroup}
-                  onChange={() => setBypassToAddIsGroup(true)}
-                />
-              </div>
-            </div>
+            <RadioGroupField
+              label={t("scm-review-plugin.config.branchProtection.bypasses.bypassType")}
+              value={bypassToAddIsGroup ? "group" : "user"}
+              onValueChange={(value) => setBypassToAddIsGroup(value === "group")}
+            >
+              <RadioGroupField.Option
+                value="user"
+                label={t("scm-review-plugin.config.branchProtection.bypasses.userBypass")}
+              />
+              <RadioGroupField.Option
+                value="group"
+                label={t("scm-review-plugin.config.branchProtection.bypasses.groupBypass")}
+              />
+            </RadioGroupField>
           </div>
           <div className="column">
             {(bypassToAddIsGroup ? links.groups : links.users) && (

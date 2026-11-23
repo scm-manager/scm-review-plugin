@@ -16,8 +16,7 @@
 
 import React, { FC } from "react";
 import { Branch } from "@scm-manager/ui-types";
-import { ErrorNotification } from "@scm-manager/ui-core";
-import { Select } from "@scm-manager/ui-components";
+import { ErrorNotification, SelectField } from "@scm-manager/ui-core";
 import { CheckResult, PullRequest } from "./types/PullRequest";
 import { useTranslation } from "react-i18next";
 import EditForm from "./EditForm";
@@ -35,7 +34,6 @@ type Props = {
   checkResult?: CheckResult;
   branches?: Branch[];
   branchesError?: Error | null;
-  branchesLoading: boolean;
   disabled?: boolean;
   availableLabels: string[];
   shouldDeleteSourceBranch: boolean;
@@ -49,7 +47,6 @@ const CreateForm: FC<Props> = ({
   checkResult,
   branches,
   branchesError,
-  branchesLoading,
   disabled,
   availableLabels,
   shouldDeleteSourceBranch
@@ -73,25 +70,21 @@ const CreateForm: FC<Props> = ({
     <form onSubmit={handleSubmit}>
       <div className="columns">
         <div className="column">
-          <Select
-            className="is-fullwidth"
+          <SelectField
             name="source"
             label={t("scm-review-plugin.pullRequest.sourceBranch")}
             options={createOptions() || []}
             onChange={e => handleFormChange({ source: e.target.value })}
-            loading={branchesLoading}
             value={pullRequest?.source}
             ref={autoFocus}
           />
         </div>
         <div className="column is-clipped">
-          <Select
-            className="is-fullwidth"
+          <SelectField
             name="target"
             label={t("scm-review-plugin.pullRequest.targetBranch")}
             options={createOptions() || []}
-            onChange={value => handleFormChange({ target: value })}
-            loading={branchesLoading}
+            onChange={e => handleFormChange({ target: e.target.value })}
             value={pullRequest?.target}
           />
         </div>

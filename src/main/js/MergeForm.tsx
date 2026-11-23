@@ -16,8 +16,8 @@
 
 import React, { ChangeEvent, FC } from "react";
 import { useTranslation } from "react-i18next";
-import { CommitAuthor, Textarea } from "@scm-manager/ui-components";
-import { Checkbox, Button } from "@scm-manager/ui-core";
+import { CommitAuthor } from "@scm-manager/ui-components";
+import { Checkbox, Button, Textarea } from "@scm-manager/ui-core";
 import { Link } from "@scm-manager/ui-types";
 import MergeStrategies from "./MergeStrategies";
 
@@ -38,7 +38,7 @@ type Props = {
 };
 
 type InnerProps = Props & {
-  innerRef: React.Ref<HTMLInputElement>;
+  innerRef: React.Ref<HTMLButtonElement>;
 };
 
 const MergeForm: FC<InnerProps> = ({
@@ -61,13 +61,20 @@ const MergeForm: FC<InnerProps> = ({
 
   const commitMessageElement = !commitMessageDisabled ? (
     <>
-      <Textarea
-        placeholder={t("scm-review-plugin.showPullRequest.mergeModal.commitMessage")}
-        disabled={loading}
-        value={commitMessage}
-        onChange={onChangeCommitMessage}
-        onSubmit={onSubmit}
-      />
+      <div className="field">
+        <Textarea
+          placeholder={t("scm-review-plugin.showPullRequest.mergeModal.commitMessage")}
+          aria-label={t("scm-review-plugin.showPullRequest.mergeModal.commitMessage")}
+          disabled={loading}
+          value={commitMessage}
+          onChange={event => onChangeCommitMessage(event.target.value)}
+          onKeyDown={event => {
+            if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+              onSubmit();
+            }
+          }}
+        />
+      </div>
       {commitMessageHint ? (
         <div className="is-size-7 mb-4">
           <span className="icon is-small has-text-info">
@@ -111,4 +118,4 @@ const MergeForm: FC<InnerProps> = ({
   );
 };
 
-export default React.forwardRef<HTMLInputElement, Props>((props, ref) => <MergeForm {...props} innerRef={ref} />);
+export default React.forwardRef<HTMLButtonElement, Props>((props, ref) => <MergeForm {...props} innerRef={ref} />);

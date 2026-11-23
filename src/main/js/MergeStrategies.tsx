@@ -17,8 +17,7 @@
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "@scm-manager/ui-types";
-import { Radio } from "@scm-manager/ui-components";
-import styled from "styled-components";
+import { RadioGroup } from "@scm-manager/ui-core";
 
 type Props = {
   selectStrategy: (strategy: string) => void;
@@ -27,49 +26,28 @@ type Props = {
 };
 
 type InnerProps = Props & {
-  innerRef: React.Ref<HTMLInputElement>;
+  innerRef: React.Ref<HTMLButtonElement>;
 };
-
-const RadioList = styled.div`
-  > label:not(:last-child) {
-    margin-bottom: 0.75rem;
-  }
-`;
 
 const MergeStrategies: FC<InnerProps> = ({ strategyLinks, selectedStrategy, selectStrategy, innerRef }) => {
   const [t] = useTranslation("plugins");
 
-  const isSelected = (strategyLink: string) => selectedStrategy === strategyLink;
-
   return (
-    <>
-      <RadioList className="is-flex is-flex-direction-column">
-        {strategyLinks &&
-          strategyLinks.map((link, index) =>
-            index === 0 ? (
-              <Radio
-                name={link.name}
-                value={link.href}
-                checked={isSelected(link.name ?? "")}
-                onChange={() => selectStrategy(link.name ?? "")}
-                label={t(`scm-review-plugin.showPullRequest.mergeStrategies.${link.name}`)}
-                helpText={t(`scm-review-plugin.showPullRequest.mergeStrategies.help.${link.name}`)}
-                ref={innerRef}
-              />
-            ) : (
-              <Radio
-                name={link.name}
-                value={link.href}
-                checked={isSelected(link.name ?? "")}
-                onChange={() => selectStrategy(link.name ?? "")}
-                label={t(`scm-review-plugin.showPullRequest.mergeStrategies.${link.name}`)}
-                helpText={t(`scm-review-plugin.showPullRequest.mergeStrategies.help.${link.name}`)}
-              />
-            )
-          )}
-      </RadioList>
-    </>
+    <RadioGroup value={selectedStrategy} onValueChange={selectStrategy}>
+      {strategyLinks &&
+        strategyLinks.map((link, index) => (
+          <RadioGroup.Option
+            key={link.name}
+            value={link.name ?? ""}
+            label={t(`scm-review-plugin.showPullRequest.mergeStrategies.${link.name}`)}
+            helpText={t(`scm-review-plugin.showPullRequest.mergeStrategies.help.${link.name}`)}
+            ref={index === 0 ? innerRef : undefined}
+          />
+        ))}
+    </RadioGroup>
   );
 };
 
-export default React.forwardRef<HTMLInputElement, Props>((props, ref) => <MergeStrategies {...props} innerRef={ref} />);
+export default React.forwardRef<HTMLButtonElement, Props>((props, ref) => (
+  <MergeStrategies {...props} innerRef={ref} />
+));

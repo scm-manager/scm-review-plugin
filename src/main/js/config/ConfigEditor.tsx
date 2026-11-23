@@ -16,8 +16,7 @@
 
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Icon, Subtitle, Title } from "@scm-manager/ui-core";
-import { Checkbox, Select, Textarea } from "@scm-manager/ui-components";
+import { Icon, Subtitle, Title, Checkbox, SelectField, TextareaField } from "@scm-manager/ui-core";
 import BranchList from "./BranchList";
 import { Config, MERGE_STRATEGIES, MergeStrategy } from "../types/Config";
 import BypassList from "./BypassList";
@@ -87,7 +86,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
       {configType !== "repository" ? (
         <Checkbox
           checked={!!disableRepositoryConfiguration}
-          onChange={(val) => onChange("disableRepositoryConfiguration", val)}
+          onChange={(event) => onChange("disableRepositoryConfiguration", event.target.checked)}
           label={
             configType === "global"
               ? t("scm-review-plugin.config.disableRepositoryAndNamespaceConfiguration.label")
@@ -103,7 +102,7 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
       {configType !== "global" ? (
         <Checkbox
           checked={!!overwriteParentConfig}
-          onChange={(val) => onChange("overwriteParentConfig", val)}
+          onChange={(event) => onChange("overwriteParentConfig", event.target.checked)}
           label={
             configType === "namespace"
               ? t("scm-review-plugin.config.overwriteGlobal.label")
@@ -121,12 +120,12 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
           <hr className="my-4" />
           <fieldset>
             <legend className="is-size-5 mb-4">{t("scm-review-plugin.config.legends.mergeDialog")}</legend>
-            <Select
+            <SelectField
               options={MERGE_STRATEGIES.map((strategy) => ({
                 label: t("scm-review-plugin.showPullRequest.mergeStrategies." + strategy),
                 value: strategy,
               }))}
-              onChange={(val) => onChange("defaultMergeStrategy", val as MergeStrategy)}
+              onChange={(event) => onChange("defaultMergeStrategy", event.target.value as MergeStrategy)}
               label={t("scm-review-plugin.config.defaultMergeStrategy.label")}
               helpText={t("scm-review-plugin.config.defaultMergeStrategy.helpText")}
               value={defaultMergeStrategy}
@@ -137,24 +136,24 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
               </legend>
               <Checkbox
                 checked={deleteBranchOnMerge}
-                onChange={(val) => onChange("deleteBranchOnMerge", val)}
+                onChange={(event) => onChange("deleteBranchOnMerge", event.target.checked)}
                 label={t("scm-review-plugin.showPullRequest.mergeModal.deleteSourceBranch.explanation")}
                 helpText={t("scm-review-plugin.config.deleteBranchOnMerge.helpText")}
               />
             </fieldset>
             <Checkbox
               checked={overwriteDefaultCommitMessage}
-              onChange={(val) => onChange("overwriteDefaultCommitMessage", val)}
+              onChange={(event) => onChange("overwriteDefaultCommitMessage", event.target.checked)}
               label={t("scm-review-plugin.config.overwriteDefaultCommitMessage.label")}
               helpText={t("scm-review-plugin.config.overwriteDefaultCommitMessage.helpText")}
             />
             {overwriteDefaultCommitMessage && (
               <>
-                <Textarea
+                <TextareaField
                   label={t("scm-review-plugin.config.commitMessageTemplate.label")}
-                  helpText={t("scm-review-plugin.config.commitMessageTemplate.helpText")}
-                  value={commitMessageTemplate}
-                  onChange={(val) => onChange("commitMessageTemplate", val)}
+                  descriptionText={t("scm-review-plugin.config.commitMessageTemplate.helpText")}
+                  value={commitMessageTemplate ?? ""}
+                  onChange={(event) => onChange("commitMessageTemplate", event.target.value)}
                 />
                 <span>
                   <Icon className="has-text-blue-light">info-circle</Icon>
@@ -199,13 +198,13 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
             <legend className="is-size-5 mb-4">{t("scm-review-plugin.config.legends.restrictions")}</legend>
             <Checkbox
               checked={preventMergeFromAuthor}
-              onChange={(val) => onChange("preventMergeFromAuthor", val)}
+              onChange={(event) => onChange("preventMergeFromAuthor", event.target.checked)}
               label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
               helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
             />
             <Checkbox
               checked={restrictBranchWriteAccess}
-              onChange={(val) => onChange("restrictBranchWriteAccess", val)}
+              onChange={(event) => onChange("restrictBranchWriteAccess", event.target.checked)}
               label={t("scm-review-plugin.config.restrictBranchWriteAccess.label")}
             />
             {restrictBranchWriteAccess && (

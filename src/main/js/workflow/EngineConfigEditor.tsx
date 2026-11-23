@@ -17,8 +17,17 @@
 import React, { FC, useState } from "react";
 import { AppliedRule, EngineConfiguration } from "../types/EngineConfig";
 import { useTranslation } from "react-i18next";
-import { ErrorNotification, Level, Loading, Notification, Title, Button, Icon } from "@scm-manager/ui-core";
-import { Checkbox, Select } from "@scm-manager/ui-components";
+import {
+  ErrorNotification,
+  Level,
+  Loading,
+  Notification,
+  Title,
+  Button,
+  Icon,
+  Checkbox,
+  SelectField,
+} from "@scm-manager/ui-core";
 import EngineConfigTable from "./EngineConfigTable";
 import styled from "styled-components";
 import { ExtensionPoint } from "@scm-manager/ui-extensions";
@@ -107,10 +116,10 @@ const EngineConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfigura
 
     if (options.length > 1) {
       return (
-        <Select
+        <SelectField
           label={t("scm-review-plugin.workflow.newRule.label")}
           helpText={t("scm-review-plugin.workflow.newRule.helpText")}
-          onChange={selectRule}
+          onChange={event => selectRule(event.target.value)}
           options={options}
           value={selectedRule}
         />
