@@ -17,12 +17,11 @@
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useBranch, useSubject } from "@scm-manager/ui-api";
-import { Branch, Hunk, Repository } from "@scm-manager/ui-types";
+import { Branch, FileDiff, Hunk, Repository } from "@scm-manager/ui-types";
 import {
   AnnotationFactoryContext,
   DiffEventContext,
   diffs,
-  File,
   FileContentFactory,
 } from "@scm-manager/ui-components";
 import { Comment, Comments, Location, PullRequest } from "../types/PullRequest";
@@ -141,7 +140,7 @@ const Diff: FC<Props> = ({
     setOpenFileEditors((editors) => editors.filter((editorPath) => editorPath !== path));
   };
 
-  const fileAnnotationFactory = (file: File) => {
+  const fileAnnotationFactory = (file: FileDiff) => {
     const path = diffs.getPath(file);
     const annotations = [];
     const fileComments: Comment[] = [];
@@ -223,7 +222,7 @@ const Diff: FC<Props> = ({
     return annotations;
   };
 
-  const createFileControlsFactory = (contentFactory: FileContentFactory) => (file: File) => {
+  const createFileControlsFactory = (contentFactory: FileContentFactory) => (file: FileDiff) => {
     const setReviewMark = (filepath: string, reviewed: boolean) => {
       if (reviewed) {
         actions.markAsReviewed(file);

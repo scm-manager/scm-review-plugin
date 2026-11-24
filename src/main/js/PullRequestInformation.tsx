@@ -16,7 +16,7 @@
 
 import React, { FC, PropsWithChildren } from "react";
 import { Branch, Repository } from "@scm-manager/ui-types";
-import { urls } from "@scm-manager/ui-components";
+import { urls } from "@scm-manager/ui-api";
 import { useTranslation } from "react-i18next";
 import Changesets from "./Changesets";
 import { Link, Navigate, Route, Routes, useMatch } from "react-router";

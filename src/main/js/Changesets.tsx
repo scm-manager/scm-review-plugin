@@ -20,7 +20,8 @@ import { useTranslation } from "react-i18next";
 import { Repository } from "@scm-manager/ui-types";
 import { usePullRequestChangesets } from "./pullRequest";
 import { ErrorNotification, Loading, Notification } from "@scm-manager/ui-core";
-import { ChangesetList, LinkPaginator, NotFoundError } from "@scm-manager/ui-components";
+import { ChangesetList, LinkPaginator } from "@scm-manager/ui-components";
+import { NotFoundError } from "@scm-manager/ui-api";
 import { PullRequest } from "./types/PullRequest";
 import { usePullRequestMatchRoute } from "./routes";
 

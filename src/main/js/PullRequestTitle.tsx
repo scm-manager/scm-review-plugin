@@ -17,7 +17,7 @@
 import React, { FC } from "react";
 import { PullRequest } from "./types/PullRequest";
 import { useBinder } from "@scm-manager/ui-extensions";
-import { SplitAndReplace, Replacement } from "@scm-manager/ui-components";
+import { SplitAndReplace, Replacement } from "@scm-manager/ui-core";
 
 type Props = {
   pullRequest: PullRequest;

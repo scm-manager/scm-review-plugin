@@ -15,7 +15,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@scm-manager/ui-components";
+import { apiClient } from "@scm-manager/ui-api";
 import { Result } from "../types/EngineConfig";
 import { HalRepresentation, Link, Repository } from "@scm-manager/ui-types";
 import { PullRequest } from "../types/PullRequest";

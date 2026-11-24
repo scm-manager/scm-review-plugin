@@ -15,7 +15,8 @@
  */
 
 import { expect, vi } from "vitest";
-import type { Change, DiffEventContext, File, Hunk } from "@scm-manager/ui-components";
+import type { DiffEventContext } from "@scm-manager/ui-components";
+import type { Change, FileDiff, Hunk } from "@scm-manager/ui-types";
 import { Location } from "../types/PullRequest";
 import {
   createFileLocation,
@@ -121,7 +122,7 @@ describe("test createFileLocation", () => {
         oldPath: "/dev/null",
         newPath: "a.txt",
         type: "add"
-      } as File
+      } as FileDiff
     };
   };
 
@@ -132,7 +133,7 @@ describe("test createFileLocation", () => {
         oldPath: "a.txt",
         newPath: "/dev/null",
         type: "delete"
-      } as File
+      } as FileDiff
     };
   };
 
@@ -164,7 +165,7 @@ describe("test createInlineLocation", () => {
         oldPath: "/dev/null",
         newPath: "a.txt",
         type: "add"
-      } as File,
+      } as FileDiff,
       hunk: {
         content: "@@ -0,0 +1,100 @@",
         changes: []

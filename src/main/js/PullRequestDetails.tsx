@@ -19,8 +19,8 @@ import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { Link, Repository } from "@scm-manager/ui-types";
 import { binder, ExtensionPoint } from "@scm-manager/ui-extensions";
-import { useBranch } from "@scm-manager/ui-api";
-import { AstPlugin, BackendError, devices, Tag } from "@scm-manager/ui-components";
+import { BackendError, useBranch } from "@scm-manager/ui-api";
+import { AstPlugin, devices, Tag } from "@scm-manager/ui-components";
 import {
   AbsoluteDate,
   LinkButton,

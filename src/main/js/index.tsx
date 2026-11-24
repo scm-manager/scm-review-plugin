@@ -15,7 +15,7 @@
  */
 
 import React, { FC } from "react";
-import { CardColumnSmall, ConfigurationBinder as cfgBinder, useShortcut } from "@scm-manager/ui-components";
+import { CardColumnSmall, ConfigurationBinder as cfgBinder } from "@scm-manager/ui-components";
 import { binder, extensionPoints } from "@scm-manager/ui-extensions";
 import { useNavigate } from "react-router";
 import PullRequestsNavLink from "./PullRequestsNavLink";
@@ -51,7 +51,7 @@ import { DataType } from "./landingpage/DataType";
 import { MyDataExtension, MyEventExtension, MyTaskExtension } from "@scm-manager/scm-landingpage-plugin";
 import PullRequestTodos from "./landingpage/MyPullRequestTodos";
 import PullRequestReview from "./landingpage/MyPullRequestReview";
-import { Icon } from "@scm-manager/ui-core";
+import { Icon, useShortcut } from "@scm-manager/ui-core";
 import MyPullRequest from "./landingpage/MyPullRequest";
 import PullRequestDetailsWrapper from "./PullRequestDetailsWrapper";
 import EditWrapper from "./EditWrapper";

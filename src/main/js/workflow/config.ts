@@ -14,9 +14,8 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { ApiResult } from "@scm-manager/ui-api";
+import { apiClient, ApiResult } from "@scm-manager/ui-api";
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@scm-manager/ui-components";
 import { AvailableRules, EngineConfiguration } from "../types/EngineConfig";
 import { Link } from "@scm-manager/ui-types";
 

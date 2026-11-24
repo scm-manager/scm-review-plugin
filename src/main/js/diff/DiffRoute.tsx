@@ -16,8 +16,8 @@
 
 import React, { FC } from "react";
 import { MergePreventReason, PullRequest } from "../types/PullRequest";
-import { Branch, Link, Repository } from "@scm-manager/ui-types";
-import { File, FileContentFactory, JumpToFileButton, getDiffAnchorId } from "@scm-manager/ui-components";
+import { Branch, FileDiff, Link, Repository } from "@scm-manager/ui-types";
+import { FileContentFactory, JumpToFileButton, getDiffAnchorId } from "@scm-manager/ui-components";
 import { ErrorNotification, Notification, Loading } from "@scm-manager/ui-core";
 import { createDiffUrl, useComments } from "../pullRequest";
 import { useTranslation } from "react-i18next";
@@ -45,7 +45,7 @@ const DiffRoute: FC<Props> = ({
   const { t } = useTranslation("plugins");
   const { data: comments, isLoading, error } = useComments(repository, pullRequest);
 
-  const fileContentFactory: FileContentFactory = (file: File) => {
+  const fileContentFactory: FileContentFactory = (file: FileDiff) => {
     const baseUrl = `/repo/${repository.namespace}/${repository.name}/code/sources`;
     const sourceLink = {
       url: `${baseUrl}/${pullRequest && pullRequest.source && encodeURIComponent(pullRequest.source)}/${file.newPath}/`,
@@ -128,7 +128,7 @@ const DiffRoute: FC<Props> = ({
   }
 };
 
-function isFileContainedInMergePreventReason(r: MergePreventReason, file: File) {
+function isFileContainedInMergePreventReason(r: MergePreventReason, file: FileDiff) {
   return (
     r.affectedPaths && (r.affectedPaths?.indexOf(file.newPath) >= 0 || r.affectedPaths?.indexOf(file.oldPath) >= 0)
   );

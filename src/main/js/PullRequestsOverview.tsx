@@ -18,7 +18,8 @@ import React, { FC, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation, Navigate, useParams } from "react-router";
 import styled from "styled-components";
-import { ErrorPage, LinkPaginator, urls } from "@scm-manager/ui-components";
+import { urls } from "@scm-manager/ui-api";
+import { ErrorPage, LinkPaginator } from "@scm-manager/ui-components";
 import {
   LinkButton,
   useDocumentTitle,

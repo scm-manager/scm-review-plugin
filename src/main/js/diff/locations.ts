@@ -75,7 +75,3 @@ export function createChangeIdFromLocation(location: Location): string {
     throw new Error("at least one line number has to be set");
   }
 }
-
-export function escapeWhitespace(path: string) {
-  return path?.toLowerCase().replace(/\W/g, "-");
-}

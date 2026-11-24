@@ -16,25 +16,24 @@
 
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useLocation } from "react-router";
 import styled from "styled-components";
 import { AnnotationFactory, DiffFile, FileControlFactory, Modal } from "@scm-manager/ui-components";
 import { Icon, LinkButton } from "@scm-manager/ui-core";
-import { createChangeIdFromLocation, escapeWhitespace } from "../diff/locations";
+import { createChangeIdFromLocation } from "../diff/locations";
 import { Comment } from "../types/PullRequest";
 import { mapCommentToFile } from "./commentToFileMapper";
 import ContextInlineComment from "./ContextInlineComment";
 
 const ContextFileControl: FileControlFactory = file => {
-  const history = useHistory();
+  const location = useLocation();
   const { t } = useTranslation("plugins");
 
-  if (history.location.pathname.includes("comments")) {
+  if (location.pathname.includes("comments")) {
     const path = file.newPath ?? file.oldPath;
-    const escapedPath = escapeWhitespace(path);
     return (
       <LinkButton
-        to={history.location.pathname.replace("comments/", `diff/#diff-${encodeURIComponent(escapedPath)}`)}
+        to={location.pathname.replace("comments/", `diff/#diff-${encodeURIComponent(path)}`)}
         title={t("scm-review-plugin.diff.jumpToSource")}
       >
         <Icon>file-code</Icon>

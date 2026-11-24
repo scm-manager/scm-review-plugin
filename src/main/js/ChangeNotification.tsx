@@ -16,7 +16,7 @@
 
 import React, { FC, useEffect, useState } from "react";
 import { Link, Repository } from "@scm-manager/ui-types";
-import { apiClient } from "@scm-manager/ui-components";
+import { apiClient } from "@scm-manager/ui-api";
 import { PullRequest } from "./types/PullRequest";
 import { useInvalidatePullRequest } from "./pullRequest";
 import ChangeNotificationToast from "./ChangeNotificationToast";

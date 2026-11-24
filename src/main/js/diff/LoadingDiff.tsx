@@ -16,11 +16,10 @@
 
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useDiff } from "@scm-manager/ui-api";
+import { NotFoundError, useDiff } from "@scm-manager/ui-api";
 import {
   Diff as CoreDiff,
   DiffObjectProps,
-  NotFoundError,
   DiffDropDown,
   DiffStatistics,
   DiffFileTree,

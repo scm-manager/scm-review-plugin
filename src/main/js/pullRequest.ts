@@ -29,10 +29,9 @@ import {
   PossibleTransition,
   PullRequest,
 } from "./types/PullRequest";
-import { apiClient, ConflictError, NotFoundError } from "@scm-manager/ui-components";
 import { Changeset, HalRepresentation, Link, PagedCollection, Repository } from "@scm-manager/ui-types";
 import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useBranches } from "@scm-manager/ui-api";
+import { apiClient, NotFoundError, useBranches } from "@scm-manager/ui-api";
 import { PullRequestChange } from "./change/ChangesTypes";
 import { useEffect } from "react";
 

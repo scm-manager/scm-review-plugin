@@ -16,7 +16,7 @@
 
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router";
 import styled from "styled-components";
 import { AvatarImage, SmallLoadingSpinner } from "@scm-manager/ui-components";
 import { Card, DateFromNow, Popover } from "@scm-manager/ui-core";
@@ -39,7 +39,7 @@ type PRListProps = {
 
 const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
   const [t] = useTranslation("plugins");
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -51,7 +51,7 @@ const PullRequestList: FC<PRListProps> = ({ repository, pullRequests }) => {
           <>
             <PullRequestEntry
               key={pr.id}
-              onClick={() => history.push(`/repo/${repository.namespace}/${repository.name}/pull-request/${pr.id}`)}
+              onClick={() => navigate(`/repo/${repository.namespace}/${repository.name}/pull-request/${pr.id}`)}
               className="is-clickable p-1 has-hover-background-blue"
             >
               <div className="px-2 pb-2">

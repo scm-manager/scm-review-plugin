@@ -14,10 +14,10 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { File } from "@scm-manager/ui-components";
+import { FileDiff } from "@scm-manager/ui-types";
 import { Comment, ContextLine } from "../types/PullRequest";
 
-export function mapCommentToFile(comment: Comment): File {
+export function mapCommentToFile(comment: Comment): FileDiff {
   const changes = comment.context.lines.map(line => mapContextLine(line));
 
   return {
