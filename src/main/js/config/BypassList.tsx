@@ -106,8 +106,8 @@ const BypassList: FC<{
         </table>
       )}
       {!readOnly && (
-        <div className="columns">
-          <div className="column is-narrow">
+        <div>
+          <div>
             <RadioGroupField
               label={t("scm-review-plugin.config.branchProtection.bypasses.bypassType")}
               value={bypassToAddIsGroup ? "group" : "user"}
@@ -123,7 +123,7 @@ const BypassList: FC<{
               />
             </RadioGroupField>
           </div>
-          <div className="column">
+          <div>
             {(bypassToAddIsGroup ? links.groups : links.users) && (
               <Autocomplete
                 type={bypassToAddIsGroup ? "group" : "user"}

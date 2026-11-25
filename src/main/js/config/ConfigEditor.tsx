@@ -202,6 +202,8 @@ const ConfigEditor: FC<Props> = ({ onConfigurationChange, initialConfiguration, 
               label={t("scm-review-plugin.config.preventMergeFromAuthor.label")}
               helpText={t("scm-review-plugin.config.preventMergeFromAuthor.helpText")}
             />
+          </fieldset>
+          <fieldset>
             <Checkbox
               checked={restrictBranchWriteAccess}
               onChange={(event) => onChange("restrictBranchWriteAccess", event.target.checked)}
